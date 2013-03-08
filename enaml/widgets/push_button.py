@@ -5,22 +5,32 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .abstract_button import AbstractButton
+from atom.api import Typed, ForwardTyped
+
+from .abstract_button import AbstractButton, ProxyAbstractButton
 from .menu import Menu
+
+
+class ProxyPushButton(ProxyAbstractButton):
+    """ The abstract definition of a proxy PushButton object.
+
+    """
+    #: A reference to the PushButton declaration.
+    declaration = ForwardTyped(lambda: PushButton)
 
 
 class PushButton(AbstractButton):
     """ A button control represented by a standard push button widget.
 
     """
+    #: A reference to the ProxyPushButton object.
+    proxy = Typed(ProxyPushButton)
+
     @property
     def menu(self):
         """ A property which returns the button menu, if defined.
 
         """
-        menu = None
-        for child in self.children:
+        for child in reversed(self.children):
             if isinstance(child, Menu):
-                menu = child
-        return menu
-
+                return child
