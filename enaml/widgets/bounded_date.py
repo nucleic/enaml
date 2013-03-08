@@ -58,7 +58,7 @@ class BoundedDate(Control):
     proxy = Typed(ProxyBoundedDate)
 
     #--------------------------------------------------------------------------
-    # Observer
+    # Observers
     #--------------------------------------------------------------------------
     @observe(('minimum', 'maximum', 'date'))
     def _update_proxy(self, change):

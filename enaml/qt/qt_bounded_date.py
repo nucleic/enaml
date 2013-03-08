@@ -111,9 +111,6 @@ class QtBoundedDate(QtControl, ProxyBoundedDate):
     def set_date(self, date):
         """ Set the widget's current date.
 
-        Implementations should enter the loopback guard using the key
-        'date' before setting the date.
-
         Parameters
         ----------
         date : date
