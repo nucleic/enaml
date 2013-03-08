@@ -7,11 +7,15 @@
 #------------------------------------------------------------------------------
 import sys
 
-from enaml.colors import parse_color
+from PyQt4.QtCore import Qt, QSize
+from PyQt4.QtGui import QWidget, QWidgetItem, QColor, QApplication
 
-from .qt.QtGui import QWidget, QWidgetItem, QColor, QApplication
-from .qt.QtCore import Qt, QSize
-from .qt_object import QtObject
+from atom.api import Typed
+
+from enaml.colors import parse_color
+from enaml.widgets.widget import ProxyWidget
+
+from .qt_toolkit_object import QtToolkitObject
 
 
 def q_parse_color(color):
@@ -37,264 +41,141 @@ def q_parse_color(color):
     return qcolor
 
 
-class QtWidget(QtObject):
-    """ A Qt4 implementation of an Enaml Widget.
+class QtWidget(QtToolkitObject, ProxyWidget):
+    """ A Qt implementation of an Enaml ProxyWidget.
 
     """
-    #: An attribute which will hold the default focus rect state if
-    #: it is ever changed by the user.
-    _default_focus_attr = None
+    #: A reference to the toolkit widget created by the proxy.
+    widget = Typed(QWidget)
 
-    #: An attribute which will hold the widget item for the widget.
-    _widget_item = None
+    #: A QWidgetItem created on-demand for the widget. This is used by
+    #: the layout engine to compute correct size hints for the widget.
+    widget_item = Typed(QWidgetItem)
 
-    #: An attribute which indicates whether or not the background
-    #: color of the widget has been changed.
-    _bgcolor_changed = False
-
-    #: An attribute which indicates whether or not the foreground
-    #: color of the widget has been changed.
-    _fgcolor_changed = False
-
-    def create_widget(self, parent, tree):
-        """ Creates the underlying QWidget object.
-
-        """
-        return QWidget(parent)
-
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
-
-        """
-        super(QtWidget, self).create(tree)
-        self.set_minimum_size(tree['minimum_size'])
-        self.set_maximum_size(tree['maximum_size'])
-        self.set_bgcolor(tree['bgcolor'])
-        self.set_fgcolor(tree['fgcolor'])
-        self.set_font(tree['font'])
-        self.set_enabled(tree['enabled'])
-        self.set_visible(tree['visible'])
-        self.set_show_focus_rect(tree['show_focus_rect'])
-        self.set_tool_tip(tree['tool_tip'])
-        self.set_status_tip(tree['status_tip'])
+    def _default_widget_item(self):
+        return QWidgetItem(self.widget)
 
     #--------------------------------------------------------------------------
-    # Public Api
+    # Initialization API
     #--------------------------------------------------------------------------
-    def widget_item(self):
-        """ Get the QWidgetItem for the underlying widget.
-
-        Returns
-        -------
-        result : QWidgetItem
-            The QWidgetItem to use for the underlying widget.
+    def create_widget(self):
+        """ Create the underlying QWidget object.
 
         """
-        res = self._widget_item
-        if res is None:
-            res = self._widget_item = QWidgetItem(self.widget())
-        return res
+        self.widget = QWidget(self.parent_widget())
 
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_enabled(self, content):
-        """ Handle the 'set_enabled' action from the Enaml widget.
+    def init_widget(self):
+        """ Initialize the underlying QWidget object.
 
         """
-        self.set_enabled(content['enabled'])
-
-    def on_action_set_visible(self, content):
-        """ Handle the 'set_visible' action from the Enaml widget.
-
-        """
-        self.set_visible(content['visible'])
-
-    def on_action_set_bgcolor(self, content):
-        """ Handle the 'set_bgcolor' action from the Enaml widget.
-
-        """
-        self.set_bgcolor(content['bgcolor'])
-
-    def on_action_set_fgcolor(self, content):
-        """ Handle the 'set_fgcolor' action from the Enaml widget.
-
-        """
-        self.set_fgcolor(content['fgcolor'])
-
-    def on_action_set_font(self, content):
-        """ Handle the 'set_font' action from the Enaml widget.
-
-        """
-        self.set_font(content['font'])
-
-    def on_action_set_minimum_size(self, content):
-        """ Handle the 'set_minimum_size' action from the Enaml widget.
-
-        """
-        self.set_minimum_size(content['minimum_size'])
-
-    def on_action_set_maximum_size(self, content):
-        """ Handle the 'set_maximum_size' action from the Enaml widget.
-
-        """
-        self.set_maximum_size(content['maximum_size'])
-
-    def on_action_set_show_focus_rect(self, content):
-        """ Handle the 'set_show_focus_rect' action from the Enaml
-        widget.
-
-        """
-        self.set_show_focus_rect(content['show_focus_rect'])
-
-    def on_action_set_tool_tip(self, content):
-        """ Handle the 'set_tool_tip' action from the Enaml widget.
-
-        """
-        self.set_tool_tip(content['tool_tip'])
-
-    def on_action_set_status_tip(self, content):
-        """ Handle the 'set_status_tip' action from the Enaml widget.
-
-        """
-        self.set_status_tip(content['status_tip'])
+        super(QtWidget, self).init_widget()
+        d = self.declaration
+        if d.background:
+            self.set_background(d.background)
+        if d.foreground:
+            self.set_foreground(d.foreground)
+        if d.font:
+            self.set_font(d.font)
+        if d.show_focus_rect is not None:
+            self.set_show_focus_rect(d.show_focus_rect)
+        if -1 not in d.minimum_size:
+            self.set_minimum_size(d.minimum_size)
+        if -1 not in d.maximum_size:
+            self.set_maximum_size(d.maximum_size)
+        if d.tool_tip:
+            self.set_tool_tip(d.tool_tip)
+        if d.status_tip:
+            self.set_status_tip(d.status_tip)
+        self.set_enabled(d.enabled)
+        self.set_visible(d.visible)
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyWidget API
     #--------------------------------------------------------------------------
     def set_minimum_size(self, min_size):
-        """ Sets the minimum size on the underlying widget.
-
-        Parameters
-        ----------
-        min_size : (int, int)
-            The minimum size allowable for the widget. A value of
-            (-1, -1) indicates the default min size.
+        """ Sets the minimum size of the widget.
 
         """
         # QWidget uses (0, 0) as the minimum size.
         if -1 in min_size:
             min_size = (0, 0)
-        self.widget().setMinimumSize(QSize(*min_size))
+        self.widget.setMinimumSize(QSize(*min_size))
 
     def set_maximum_size(self, max_size):
-        """ Sets the maximum size on the underlying widget.
-
-        Parameters
-        ----------
-        max_size : (int, int)
-            The minimum size allowable for the widget. A value of
-            (-1, -1) indicates the default max size.
+        """ Sets the maximum size of the widget.
 
         """
         # QWidget uses 16777215 as the max size
         if -1 in max_size:
             max_size = (16777215, 16777215)
-        self.widget().setMaximumSize(QSize(*max_size))
+        self.widget.setMaximumSize(QSize(*max_size))
 
     def set_enabled(self, enabled):
-        """ Set the enabled state on the underlying widget.
-
-        Parameters
-        ----------
-        enabled : bool
-            Whether or not the widget is enabled.
+        """ Set the enabled state of the widget.
 
         """
-        self.widget().setEnabled(enabled)
+        self.widget.setEnabled(enabled)
 
     def set_visible(self, visible):
-        """ Set the visibility state on the underlying widget.
-
-        Parameters
-        ----------
-        visible : bool
-            Whether or not the widget is visible.
+        """ Set the visibility of the widget.
 
         """
-        self.widget().setVisible(visible)
+        self.widget.setVisible(visible)
 
-    def set_bgcolor(self, bgcolor):
-        """ Set the background color on the underlying widget.
-
-        Parameters
-        ----------
-        bgcolor : str
-            The background color of the widget as a CSS color string.
+    def set_background(self, background):
+        """ Set the background color of the widget.
 
         """
-        if bgcolor or self._bgcolor_changed:
-            widget = self.widget()
-            role = widget.backgroundRole()
-            qcolor = q_parse_color(bgcolor)
-            if not qcolor.isValid():
-                app_palette = QApplication.instance().palette(widget)
-                qcolor = app_palette.color(role)
-                widget.setAutoFillBackground(False)
-            else:
-                widget.setAutoFillBackground(True)
-            palette = widget.palette()
-            palette.setColor(role, qcolor)
-            widget.setPalette(palette)
-            self._bgcolor_changed = True
+        widget = self.widget
+        role = widget.backgroundRole()
+        qcolor = q_parse_color(background)
+        if not qcolor.isValid():
+            app_palette = QApplication.instance().palette(widget)
+            qcolor = app_palette.color(role)
+            widget.setAutoFillBackground(False)
+        else:
+            widget.setAutoFillBackground(True)
+        palette = widget.palette()
+        palette.setColor(role, qcolor)
+        widget.setPalette(palette)
 
-    def set_fgcolor(self, fgcolor):
-        """ Set the foreground color on the underlying widget.
-
-        Parameters
-        ----------
-        fgcolor : str
-            The foreground color of the widget as a CSS color string.
+    def set_foreground(self, foreground):
+        """ Set the foreground color of the widget.
 
         """
-        if fgcolor or self._fgcolor_changed:
-            widget = self.widget()
-            role = widget.foregroundRole()
-            qcolor = q_parse_color(fgcolor)
-            if not qcolor.isValid():
-                app_palette = QApplication.instance().palette(widget)
-                qcolor = app_palette.color(role)
-            palette = widget.palette()
-            palette.setColor(role, qcolor)
-            widget.setPalette(palette)
-            self._fgcolor_changed = True
+        widget = self.widget
+        role = widget.foregroundRole()
+        qcolor = q_parse_color(foreground)
+        if not qcolor.isValid():
+            app_palette = QApplication.instance().palette(widget)
+            qcolor = app_palette.color(role)
+        palette = widget.palette()
+        palette.setColor(role, qcolor)
+        widget.setPalette(palette)
 
     def set_font(self, font):
-        """ Set the font on the underlying widget.
-
-        Parameters
-        ----------
-        font : str
-            The font for the widget as a CSS font string.
+        """ Set the font of the widget.
 
         """
         pass
 
     def set_show_focus_rect(self, show):
-        """ Sets whether or not to show the focus rectangle around
-        the widget. This is currently only supported on OSX.
+        """ Set whether or not to show the focus rect.
+
+        This is currently only supported on OSX.
 
         """
         if sys.platform == 'darwin':
-            widget = self.widget()
-            attr = Qt.WA_MacShowFocusRect
-            if show is None:
-                if self._default_focus_attr is not None:
-                    widget.setAttribute(attr, self._default_focus_attr)
-            else:
-                if self._default_focus_attr is None:
-                    self._default_focus_attr = widget.testAttribute(attr)
-                widget.setAttribute(attr, show)
+            self.widget.setAttribute(Qt.WA_MacShowFocusRect, bool(show))
 
     def set_tool_tip(self, tool_tip):
-        """ Set the tool tip for this widget.
+        """ Set the tool tip for the widget.
 
         """
-        self.widget().setToolTip(tool_tip)
+        self.widget.setToolTip(tool_tip)
 
     def set_status_tip(self, status_tip):
-        """ Set the status tip for this widget.
+        """ Set the status tip for the widget.
 
         """
-        self.widget().setStatusTip(status_tip)
-
+        self.widget.setStatusTip(status_tip)
