@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .constraint_variable import ConstraintVariable
+from casuarius import ConstraintVariable
 
 
 class BoxModel(object):
@@ -33,10 +33,10 @@ class BoxModel(object):
             model.
 
         """
-        self.left = ConstraintVariable('left', owner)
-        self.top = ConstraintVariable('top', owner)
-        self.width = ConstraintVariable('width', owner)
-        self.height = ConstraintVariable('height', owner)
+        self.left = ConstraintVariable('left')
+        self.top = ConstraintVariable('top')
+        self.width = ConstraintVariable('width')
+        self.height = ConstraintVariable('height')
         self.right = self.left + self.width
         self.bottom = self.top + self.height
         self.v_center = self.top + self.height / 2.0
@@ -70,12 +70,11 @@ class ContentsBoxModel(BoxModel):
 
         """
         super(ContentsBoxModel, self).__init__(owner)
-        self.contents_left = ConstraintVariable('contents_left', owner)
-        self.contents_right = ConstraintVariable('contents_right', owner)
-        self.contents_top = ConstraintVariable('contents_top', owner)
-        self.contents_bottom = ConstraintVariable('contents_bottom', owner)
+        self.contents_left = ConstraintVariable('contents_left')
+        self.contents_right = ConstraintVariable('contents_right')
+        self.contents_top = ConstraintVariable('contents_top')
+        self.contents_bottom = ConstraintVariable('contents_bottom')
         self.contents_width = self.contents_right - self.contents_left
         self.contents_height = self.contents_bottom - self.contents_top
         self.contents_v_center = self.contents_top + self.contents_height / 2.0
         self.contents_h_center = self.contents_left + self.contents_width / 2.0
-

@@ -5,23 +5,37 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from abc import ABCMeta, abstractmethod
+from atom.api import Atom, Bool, Tuple, Dict, Callable, Value, List, null
+
 from heapq import heappush, heappop
 from itertools import count
-import logging
 from threading import Lock
 
 
-logger = logging.getLogger(__name__)
-
-
-class ScheduledTask(object):
+class ScheduledTask(Atom):
     """ An object representing a task in the scheduler.
 
     """
-    #: A sentinel object indicating that the result of the task is
-    #: undefined or that the task has not yet been executed.
-    undefined = object()
+    #: The callable to run when the task is executed.
+    _callback = Callable()
+
+    #: The args to pass to the callable.
+    _args = Tuple()
+
+    #: The keywords to pass to the callable.
+    _kwargs = Dict()
+
+    #: The result of invoking the callback.
+    _result = Value(null)
+
+    #: Whether or not the task is still valid.
+    _valid = Bool(True)
+
+    #: Whether or not the task is still pending.
+    _pending = Bool(True)
+
+    #: A callable to invoke with the result of running the task.
+    _notify = Callable()
 
     def __init__(self, callback, args, kwargs):
         """ Initialize a ScheduledTask.
@@ -41,10 +55,6 @@ class ScheduledTask(object):
         self._callback = callback
         self._args = args
         self._kwargs = kwargs
-        self._result = self.undefined
-        self._valid = True
-        self._pending = True
-        self._notify = None
 
     #--------------------------------------------------------------------------
     # Private API
@@ -60,7 +70,7 @@ class ScheduledTask(object):
                 if self._notify is not None:
                     self._notify(self._result)
         finally:
-            self._notify = None
+            del self._notify
             self._pending = False
 
     #--------------------------------------------------------------------------
@@ -102,14 +112,21 @@ class ScheduledTask(object):
         return self._result
 
 
-class Application(object):
+class Application(Atom):
     """ The application object which manages the top-level communication
     protocol for serving Enaml views.
 
     """
-    __metaclass__ = ABCMeta
+    #: The task heap for application tasks.
+    _task_heap = List()
 
-    #: Private storage for the singleton application instance.
+    #: The count to break heap ties.
+    _count = Value(factory=count)
+
+    #: The heap lock for protecting heap access.
+    _heap_lock = Value(factory=Lock)
+
+    #: Private class storage for the singleton application instance.
     _instance = None
 
     @staticmethod
@@ -135,26 +152,9 @@ class Application(object):
         """
         if Application._instance is not None:
             raise RuntimeError('An Application instance already exists')
-        self = super(Application, cls).__new__(cls)
+        self = super(Application, cls).__new__(cls, *args, **kwargs)
         Application._instance = self
         return self
-
-    def __init__(self, factories):
-        """ Initialize an Enaml Application.
-
-        Parameters
-        ----------
-        factories : iterable
-            An iterable of SessionFactory instances that will be used
-            to create the sessions for the application.
-
-        """
-        self._all_factories = []
-        self._named_factories = {}
-        self._task_heap = []
-        self._counter = count()
-        self._heap_lock = Lock()
-        self.add_factories(factories)
 
     #--------------------------------------------------------------------------
     # Private API
@@ -182,87 +182,18 @@ class Application(object):
     #--------------------------------------------------------------------------
     # Abstract API
     #--------------------------------------------------------------------------
-    @abstractmethod
-    def start_session(self, name):
-        """ Start a new session of the given name.
-
-        This method will create a new session object for the requested
-        session type and return the new session_id. If the session name
-        is invalid, an exception will be raised.
-
-        Parameters
-        ----------
-        name : str
-            The name of the session to start.
-
-        Returns
-        -------
-        result : str
-            The unique identifier for the created session.
-
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def end_session(self, session_id):
-        """ End the session with the given session id.
-
-        This method will close down the existing session. If the session
-        id is not valid, an exception will be raised.
-
-        Parameters
-        ----------
-        session_id : str
-            The unique identifier for the session to close.
-
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def session(self, session_id):
-        """ Get the session for the given session id.
-
-        Parameters
-        ----------
-        session_id : str
-            The unique identifier for the session to retrieve.
-
-        Returns
-        -------
-        result : Session or None
-            The session object with the given id, or None if the id
-            does not correspond to an active session.
-
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def sessions(self):
-        """ Get the currently active sessions for the application.
-
-        Returns
-        -------
-        result : list
-            The list of currently active sessions for the application.
-
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def start(self):
         """ Start the application's main event loop.
 
         """
         raise NotImplementedError
 
-    @abstractmethod
     def stop(self):
         """ Stop the application's main event loop.
 
         """
         raise NotImplementedError
 
-    @abstractmethod
     def deferred_call(self, callback, *args, **kwargs):
         """ Invoke a callable on the next cycle of the main event loop
         thread.
@@ -279,7 +210,6 @@ class Application(object):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def timed_call(self, ms, callback, *args, **kwargs):
         """ Invoke a callable on the main event loop thread at a
         specified time in the future.
@@ -300,7 +230,6 @@ class Application(object):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def is_main_thread(self):
         """ Indicates whether the caller is on the main gui thread.
 
@@ -308,6 +237,23 @@ class Application(object):
         -------
         result : bool
             True if called from the main gui thread. False otherwise.
+
+        """
+        raise NotImplementedError
+
+    def create_proxy(self, declaration):
+        """ Create the proxy object for the given declaration.
+
+        Parameters
+        ----------
+        declaration : ToolkitObject
+            The object for which a toolkit proxy should be created.
+
+        Returns
+        -------
+        result : ProxyToolkitObject or null
+            An appropriate toolkit proxy object, or null if one cannot
+            be create for the given declaration object.
 
         """
         raise NotImplementedError
@@ -375,44 +321,6 @@ class Application(object):
             has_pending = len(heap) > 0
         return has_pending
 
-    def add_factories(self, factories):
-        """ Add session factories to the application.
-
-        Parameters
-        ----------
-        factories : iterable
-            An iterable of SessionFactory instances to add to the
-            application.
-
-        """
-        all_factories = self._all_factories
-        named_factories = self._named_factories
-        for factory in factories:
-            name = factory.name
-            if name in named_factories:
-                msg = 'Multiple session factories named `%s`; ' % name
-                msg += 'replacing previous value.'
-                logger.warn(msg)
-                old_factory = named_factories.pop(name)
-                all_factories.remove(old_factory)
-            all_factories.append(factory)
-            named_factories[name] = factory
-
-    def discover(self):
-        """ Get a dictionary of session information for the application.
-
-        Returns
-        -------
-        result : list
-            A list of dicts of information about the available sessions.
-
-        """
-        info = [
-            {'name': fact.name, 'description': fact.description}
-            for fact in self._all_factories
-        ]
-        return info
-
     def destroy(self):
         """ Destroy this application instance.
 
@@ -420,10 +328,7 @@ class Application(object):
         new application can be instantiated.
 
         """
-        for session in self.sessions():
-            self.end_session(session.session_id)
-        self._all_factories = []
-        self._named_factories = {}
+        self.stop()
         Application._instance = None
 
 
@@ -538,4 +443,3 @@ def schedule(callback, args=None, kwargs=None, priority=0):
     if app is None:
         raise RuntimeError('Application instance does not exist')
     return app.schedule(callback, args, kwargs, priority)
-

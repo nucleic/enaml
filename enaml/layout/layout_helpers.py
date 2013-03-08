@@ -10,10 +10,10 @@ from collections import defaultdict
 from uuid import uuid4
 
 from atom.api import Atom, Range, Coerced
+from casuarius import ConstraintVariable, LinearSymbolic, STRENGTH_MAP
 
 from .ab_constrainable import ABConstrainable
 from .box_model import BoxModel
-from .constraint_variable import ConstraintVariable, LinearSymbolic, STRENGTHS
 from .geometry import Box
 
 
@@ -109,7 +109,7 @@ class DeferredConstraints(object):
         if isinstance(other, (float, int, long)):
             self.default_weight = float(other)
         elif isinstance(other, basestring):
-            if other not in STRENGTHS:
+            if other not in STRENGTH_MAP:
                 raise ValueError('Invalid strength %r' % other)
             self.default_strength = other
         else:
