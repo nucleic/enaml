@@ -5,11 +5,28 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Unicode, Enum, observe, set_default
+from atom.api import Typed, ForwardTyped, Unicode, Enum, observe, set_default
 
 from enaml.core.declarative import d_
 
-from .control import Control
+from .control import Control, ProxyControl
+
+
+class ProxyLabel(ProxyControl):
+    """ The abstract definition of a proxy Label object.
+
+    """
+    #: A reference to the Label declaration.
+    declaration = ForwardTyped(lambda: Label)
+
+    def set_text(self, text):
+        raise NotImplementedError
+
+    def set_align(self, align):
+        raise NotImplementedError
+
+    def set_vertical_align(self, align):
+        raise NotImplementedError
 
 
 class Label(Control):
@@ -28,24 +45,16 @@ class Label(Control):
     #: Labels hug their width weakly by default.
     hug_width = set_default('weak')
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the dict of creation attributes for the control.
+    #: A reference to the ProxyLabel object.
+    proxy = Typed(ProxyLabel)
 
-        """
-        snap = super(Label, self).snapshot()
-        snap['text'] = self.text
-        snap['align'] = self.align
-        snap['vertical_align'] = self.vertical_align
-        return snap
-
-    @observe(r'^(text|align|vertical_align)$', regex=True)
-    def send_member_change(self, change):
-        """ An observe which sends the state change to the client.
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('text', 'align', 'vertical_align'))
+    def _update_proxy(self, change):
+        """ An observer which sends the state change to the proxy.
 
         """
         # The superclass implementation is sufficient.
-        super(Label, self).send_member_change(change)
-
+        super(Label, self)._update_proxy(change)

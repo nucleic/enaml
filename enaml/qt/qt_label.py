@@ -5,8 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt
-from .qt.QtGui import QLabel
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QLabel
+
+from atom.api import Typed
+
+from enaml.widgets.label import ProxyLabel
+
 from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
@@ -26,77 +31,61 @@ VERTICAL_ALIGN_MAP = {
 }
 
 
-class QtLabel(QtControl):
-    """ A Qt implementation of an Enaml Label.
+class QtLabel(QtControl, ProxyLabel):
+    """ A Qt implementation of an Enaml ProxyLabel.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QLabel)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying label widget.
 
         """
-        return QLabel(parent)
+        self.widget = QLabel(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        super(QtLabel, self).create(tree)
-        self.set_text(tree['text'])
-        self.set_align(tree['align'])
-        self.set_vertical_align(tree['vertical_align'])
+        super(QtLabel, self).init_widget()
+        d = self.declaration
+        self.set_text(d.text, sh_guard=False)
+        self.set_align(d.align)
+        self.set_vertical_align(d.vertical_align)
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # ProxyLabel API
     #--------------------------------------------------------------------------
-    def on_action_set_text(self, content):
-        """ Handle the 'set_text' action from the Enaml widget.
+    def set_text(self, text, sh_guard=True):
+        """ Set the text in the widget.
 
         """
-        with size_hint_guard(self):
-            self.set_text(content['text'])
-
-    def on_action_set_align(self, content):
-        """ Handle the 'set_align' action from the Enaml widget.
-
-        """
-        self.set_align(content['align'])
-
-    def on_action_set_vertical_align(self, content):
-        """ Handle the 'set_vertical_align' action from the Enaml widget.
-
-        """
-        self.set_vertical_align(content['vertical_align'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
-    #--------------------------------------------------------------------------
-    def set_text(self, text):
-        """ Set the text in the underlying widget.
-
-        """
-        self.widget().setText(text)
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setText(text)
+        else:
+            self.widget.setText(text)
 
     def set_align(self, align):
-        """ Set the alignment of the text in the underlying widget.
+        """ Set the alignment of the text in the widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         alignment = widget.alignment()
         alignment &= ~Qt.AlignHorizontal_Mask
         alignment |= ALIGN_MAP[align]
         widget.setAlignment(alignment)
 
     def set_vertical_align(self, align):
-        """ Set the vertical alignment of the text in the underlying
-        widget.
+        """ Set the vertical alignment of the text in the widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         alignment = widget.alignment()
         alignment &= ~Qt.AlignVertical_Mask
         alignment |= VERTICAL_ALIGN_MAP[align]
         widget.setAlignment(alignment)
-
