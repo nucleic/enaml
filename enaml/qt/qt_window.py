@@ -5,17 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import logging
+from atom.api import Bool, Typed
 
-from .qt.QtCore import Qt, QSize, Signal
-from .qt.QtGui import QFrame, QLayout, QIcon, QImage, QPixmap
-from .q_deferred_caller import deferredCall
+from PyQt4.QtCore import Qt, QSize, pyqtSignal
+from PyQt4.QtGui import QFrame, QLayout, QIcon
+
+from enaml.widgets.window import ProxyWindow
+
 from .q_single_widget_layout import QSingleWidgetLayout
-from .qt_container import QtContainer
 from .qt_widget import QtWidget
-
-
-logger = logging.getLogger(__name__)
 
 
 MODALITY = {
@@ -68,7 +66,7 @@ class QWindow(QFrame):
 
     """
     #: A signal emitted when the window is closed.
-    closed = Signal()
+    closed = pyqtSignal()
 
     def __init__(self, parent=None):
         """ Initialize a QWindow.
@@ -190,49 +188,50 @@ class QWindow(QFrame):
         self.layout().update()
 
 
-class QtWindow(QtWidget):
-    """ A Qt implementation of an Enaml Window.
+class QtWindow(QtWidget, ProxyWindow):
+    """ A Qt implementation of an Enaml ProxyWindow.
 
     """
-    #: Temporary internal storage for the icon source url.
-    _icon_source = ''
+    #: A reference to the toolkit widget created by the proxy.
+    widget = Typed(QWindow)
+
+    #: A flag indicating when the window hierarchy has been created.
+    _window_created = Bool(False)
 
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying QWindow object.
+    def create_widget(self):
+        """ Create the QWindow widget.
 
         """
-        return QWindow(parent)
+        self.widget = QWindow(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
+    def init_widget(self):
+        """ Initialize the widget.
 
         """
-        super(QtWindow, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_initial_size(tree['initial_size'])
-        self.set_modality(tree['modality'])
-        self._icon_source = tree['icon_source']
-        self.widget().closed.connect(self.on_closed)
+        super(QtWindow, self).init_widget()
+        d = self.declaration
+        if d.title:
+            self.set_title(d.title)
+        if -1 not in d.initial_size:
+            self.set_initial_size(d.initial_size)
+        if d.modality != 'non_modal':
+            self.set_modality(d.modality)
+        if d.icon:
+            self.set_icon(d.icon)
+        self.widget.closed.connect(self.on_closed)
 
     def init_layout(self):
-        """ Perform layout initialization for the control.
+        """ Initialize the widget layout.
 
         """
         super(QtWindow, self).init_layout()
-        self.widget().setCentralWidget(self.central_widget())
-
-    def activate(self):
-        """ Activate the window.
-
-        """
-        self.set_icon_source(self._icon_source)
-        super(QtWindow, self).activate()
+        self.widget.setCentralWidget(self.central_widget())
 
     #--------------------------------------------------------------------------
-    # Utility Methods
+    # Public API
     #--------------------------------------------------------------------------
     def central_widget(self):
         """ Find and return the central widget child for this widget.
@@ -244,125 +243,66 @@ class QtWindow(QtWidget):
             is not defined.
 
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, QtContainer):
-                widget = child.widget()
-        return widget
+        c = self.declaration.central_widget
+        if c is not None:
+            return c.proxy.widget or None
 
-    #--------------------------------------------------------------------------
-    # Child Events
-    #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtWindow.
-
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setCentralWidget(self.central_widget())
-
-    def child_added(self, child):
-        """ Handle the child added event for a QtWindow.
-
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setCentralWidget(self.central_widget())
-
-    #--------------------------------------------------------------------------
-    # Signal Handlers
-    #--------------------------------------------------------------------------
     def on_closed(self):
         """ The signal handler for the 'closed' signal.
 
+        This method will fire the 'closed' event on the declaration.
+
         """
-        self.send_action('closed', {})
+        self.declaration.closed()
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # ProxyWindow API
     #--------------------------------------------------------------------------
-    def on_action_close(self, content):
-        """ Handle the 'close' action from the Enaml widget.
+    def create_if_needed(self):
+        """ Build the underlying widget window hierarchy.
 
         """
-        self.close()
+        if not self._window_created:
+            self.init_top_down_pass()
+            self.init_bottom_up_pass()
+            self._window_created = True
 
-    def on_action_maximize(self, content):
-        """ Handle the 'maximize' action from the Enaml widget.
-
-        """
-        self.maximize()
-
-    def on_action_minimize(self, content):
-        """ Handle the 'minimize' action from the Enaml widget.
-
-        """
-        self.minimize()
-
-    def on_action_restore(self, content):
-        """ Handle the 'restore' action from the Enaml widget.
-
-        """
-        self.restore()
-
-    def on_action_set_icon_source(self, content):
-        """ Handle the 'set_icon_source' action from the Enaml widget.
-
-        """
-        self.set_icon_source(content['icon_source'])
-
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        self.set_title(content['title'])
-
-    def on_action_set_modality(self, content):
-        """ Handle the 'set_modality' action from the Enaml widget.
-
-        """
-        self.set_modality(content['modality'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
-    #--------------------------------------------------------------------------
     def close(self):
         """ Close the window
 
         """
-        self.widget().close()
+        self.widget.close()
 
     def maximize(self):
         """ Maximize the window.
 
         """
-        self.widget().showMaximized()
+        self.widget.showMaximized()
 
     def minimize(self):
         """ Minimize the window.
 
         """
-        self.widget().showMinimized()
+        self.widget.showMinimized()
 
     def restore(self):
         """ Restore the window after a minimize or maximize.
 
         """
-        self.widget().showNormal()
+        self.widget.showNormal()
 
-    def set_icon_source(self, icon_source):
-        """ Set the window icon source.
+    def set_icon(self, icon):
+        """ Set the window icon.
 
         """
-        if icon_source:
-            loader = self._session.load_resource(icon_source)
-            loader.on_load(self._on_icon_load)
-        else:
-            self._on_icon_load(QIcon())
+        # XXX convert icon
+        self.widget.setWindowIcon(QIcon())
 
     def set_title(self, title):
         """ Set the title of the window.
 
         """
-        self.widget().setWindowTitle(title)
+        self.widget.setWindowTitle(title)
 
     def set_initial_size(self, size):
         """ Set the initial size of the window.
@@ -370,46 +310,10 @@ class QtWindow(QtWidget):
         """
         if -1 in size:
             return
-        self.widget().resize(QSize(*size))
+        self.widget.resize(QSize(*size))
 
     def set_modality(self, modality):
         """ Set the modality of the window.
 
         """
-        self.widget().setWindowModality(MODALITY[modality])
-
-    def set_visible(self, visible):
-        """ Set the visibility on the window.
-
-        This is an overridden parent class method to set the visibility
-        at a later time, so that layout can be initialized before the
-        window is displayed.
-
-        """
-        # XXX this could be done better.
-        deferredCall(super(QtWindow, self).set_visible, visible)
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _on_icon_load(self, icon):
-        """ A private resource loader callback.
-
-        This method is invoked when the requested icon is successfully
-        loaded. It will update the icon on the action and issue a size
-        hint updated event to the layout system if needed.
-
-        Parameters
-        ----------
-        icon : QIcon or QImage
-            The icon or image that was loaded by the request.
-
-        """
-        if isinstance(icon, QImage):
-            icon = QIcon(QPixmap.fromImage(icon))
-        elif not isinstance(icon, QIcon):
-            msg = 'got incorrect type for icon: `%s`'
-            logger.error(msg % type(icon).__name__)
-            icon = QIcon()
-        self.widget().setWindowIcon(icon)
-
+        self.widget.setWindowModality(MODALITY[modality])
