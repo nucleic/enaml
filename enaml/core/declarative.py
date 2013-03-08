@@ -270,7 +270,21 @@ class Declarative(Object):
                 self.populate(description, identifiers, f_globals)
 
     def initialize(self):
-        pass
+        """ Initialize this object all of its children recursively.
+
+        This is called to give the objects in the tree the opportunity
+        to initialize additional state which depends upon the object
+        tree being fully built. It is the responsibility of external
+        code to call this method at the appropriate time. This will
+        emit the `initialized` signal after all of the children have
+        been initialized.
+
+        """
+        for child in self.children[:]:
+            if isinstance(child, Declarative):
+                child.initialize()
+        self.is_initialized = True
+        self.initialized()
 
     def destroy(self):
         """ An overridden destructor method for declarative cleanup.
