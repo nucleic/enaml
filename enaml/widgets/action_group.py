@@ -5,15 +5,32 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, observe
+from atom.api import Bool, Typed, ForwardTyped, observe
 
-from enaml.core.declarative import Declarative, d_
-from enaml.core.messenger import Messenger
+from enaml.core.declarative import d_
 
 from .action import Action
+from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
-class ActionGroup(Messenger, Declarative):
+class ProxyActionGroup(ProxyToolkitObject):
+    """ The abstract definition of a proxy ActionGroup object.
+
+    """
+    #: A reference to the Control declaration.
+    declaration = ForwardTyped(lambda: ActionGroup)
+
+    def set_exclusive(self, exclusive):
+        raise NotImplementedError
+
+    def set_enabled(self, enabled):
+        raise NotImplementedError
+
+    def set_visible(self, visible):
+        raise NotImplementedError
+
+
+class ActionGroup(ToolkitObject):
     """ A non visible widget used to group actions.
 
     An action group can be used in a MenuBar or a ToolBar to group a
@@ -31,6 +48,9 @@ class ActionGroup(Messenger, Declarative):
     #: Whether or not the actions in this group are visible.
     visible = d_(Bool(True))
 
+    #: A reference to the ProxyActionGroup object.
+    proxy = Typed(ProxyActionGroup)
+
     @property
     def actions(self):
         """ A read only property which returns the group's actions.
@@ -41,23 +61,12 @@ class ActionGroup(Messenger, Declarative):
         return tuple(items)
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dict for the ActionGroup.
-
-        """
-        snap = super(ActionGroup, self).snapshot()
-        snap['exclusive'] = self.exclusive
-        snap['enabled'] = self.enabled
-        snap['visible'] = self.visible
-        return snap
-
-    @observe(r'^(exclusive|enabled|visible)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends the state change for the group.
+    @observe(('exclusive', 'enabled', 'visible'))
+    def _update_proxy(self, change):
+        """ An observer which updates the proxy when the group changes.
 
         """
         # The superclass implementation is sufficient.
-        super(ActionGroup, self).send_member_change(change)
-
+        super(ActionGroup, self)._update_proxy(change)

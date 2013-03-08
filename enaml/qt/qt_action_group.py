@@ -5,9 +5,14 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QActionGroup
+from PyQt4.QtGui import QActionGroup
+
+from atom.api import Typed
+
+from enaml.widgets.action_group import ProxyActionGroup
+
 from .qt_action import QtAction
-from .qt_object import QtObject
+from .qt_toolkit_object import QtToolkitObject
 
 
 class QCustomActionGroup(QActionGroup):
@@ -63,65 +68,68 @@ class QCustomActionGroup(QActionGroup):
                         action.setChecked(False)
 
 
-class QtActionGroup(QtObject):
-    """ A Qt implementation of an Enaml ActionGroup.
+class QtActionGroup(QtToolkitObject, ProxyActionGroup):
+    """ A Qt implementation of an Enaml ProxyActionGroup.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QCustomActionGroup)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying action group widget.
 
         """
-        return QCustomActionGroup(parent)
+        self.widget = QCustomActionGroup(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying control.
+    def init_widget(self):
+        """ Initialize the control.
 
         """
-        super(QtActionGroup, self).create(tree)
-        self.set_exclusive(tree['exclusive'])
-        self.set_enabled(tree['enabled'])
-        self.set_visible(tree['visible'])
+        super(QtActionGroup, self).init_widget()
+        d = self.declaration
+        self.set_exclusive(d.exclusive)
+        self.set_enabled(d.enabled)
+        self.set_visible(d.visible)
 
     def init_layout(self):
-        """ Initialize the layout for the underlying control.
+        """ Initialize the layout for the control.
 
         """
         super(QtActionGroup, self).init_layout()
-        widget = self.widget()
-        for child in self.children():
-            if isinstance(child, QtAction):
-                widget.addAction(child.widget())
+        widget = self.widget
+        for action in self.actions():
+            widget.addAction(action)
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtActionGroup.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event for a QtActionGroup.
 
-        """
-        if isinstance(child, QtAction):
-            action = child.widget()
-            self.widget().removeAction(action)
-            parent = self.parent()
-            if parent is not None:
-                parent.widget().removeAction(action)
+    #     """
+    #     if isinstance(child, QtAction):
+    #         action = child.widget()
+    #         self.widget().removeAction(action)
+    #         parent = self.parent()
+    #         if parent is not None:
+    #             parent.widget().removeAction(action)
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtActionGroup.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtActionGroup.
 
-        """
-        # The easiest way to handle the insert is to tell the parent to
-        # insert all the current actions. It will work out the proper
-        # ordering automatically.
-        if isinstance(child, QtAction):
-            self.widget().addAction(child.widget())
-            parent = self.parent()
-            if parent is not None:
-                before = parent.find_next_action(self)
-                parent.widget().insertActions(before, self.actions())
+    #     """
+    #     # The easiest way to handle the insert is to tell the parent to
+    #     # insert all the current actions. It will work out the proper
+    #     # ordering automatically.
+    #     if isinstance(child, QtAction):
+    #         self.widget().addAction(child.widget())
+    #         parent = self.parent()
+    #         if parent is not None:
+    #             before = parent.find_next_action(self)
+    #             parent.widget().insertActions(before, self.actions())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -139,47 +147,25 @@ class QtActionGroup(QtObject):
 
         """
         isinst = isinstance
-        return [c.widget() for c in self.children() if isinst(c, QtAction)]
+        return [c.widget for c in self.children() if isinst(c, QtAction)]
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_exclusive(self, content):
-        """ Handle the 'set_exclusive' action from the Enaml widget.
-
-        """
-        self.set_exclusive(content['exclusive'])
-
-    def on_action_set_enabled(self, content):
-        """ Handle the 'set_enabled' action from the Enaml widget.
-
-        """
-        self.set_enabled(content['enabled'])
-
-    def on_action_set_visible(self, content):
-        """ Handle the 'set_visible' action from the Enaml widget.
-
-        """
-        self.set_visible(content['visible'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyActionGroup API
     #--------------------------------------------------------------------------
     def set_exclusive(self, exclusive):
         """ Set the exclusive state of the underlying control.
 
         """
-        self.widget().setExclusive(exclusive)
+        self.widget.setExclusive(exclusive)
 
     def set_enabled(self, enabled):
         """ Set the enabled state of the underlying control.
 
         """
-        self.widget().setEnabled(enabled)
+        self.widget.setEnabled(enabled)
 
     def set_visible(self, visible):
         """ Set the visible state of the underlying control.
 
         """
-        self.widget().setVisible(visible)
-
+        self.widget.setVisible(visible)
