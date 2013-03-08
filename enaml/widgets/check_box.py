@@ -5,9 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import set_default
+from atom.api import Typed, ForwardTyped, set_default
 
-from .abstract_button import AbstractButton
+from .abstract_button import AbstractButton, ProxyAbstractButton
+
+
+class ProxyCheckBox(ProxyAbstractButton):
+    """ The abstract definition of a proxy PushButton object.
+
+    """
+    #: A reference to the CheckBox declaration.
+    declaration = ForwardTyped(lambda: CheckBox)
 
 
 class CheckBox(AbstractButton):
@@ -27,3 +35,5 @@ class CheckBox(AbstractButton):
     #: Check boxes are checkable by default.
     checkable = set_default(True)
 
+    #: A reference to the ProxyPushButton object.
+    proxy = Typed(ProxyCheckBox)

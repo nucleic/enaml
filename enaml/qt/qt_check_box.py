@@ -5,17 +5,24 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QCheckBox
+from PyQt4.QtGui import QCheckBox
+
+from atom.api import Typed
+
+from enaml.widgets.check_box import ProxyCheckBox
+
 from .qt_abstract_button import QtAbstractButton
 
 
-class QtCheckBox(QtAbstractButton):
-    """ A Qt implementation of an Enaml CheckBox.
+class QtCheckBox(QtAbstractButton, ProxyCheckBox):
+    """ A Qt implementation of an Enaml ProxyCheckBox.
 
     """
-    def create_widget(self, parent, tree):
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QCheckBox)
+
+    def create_widget(self):
         """ Create the underlying check box widget.
 
         """
-        return QCheckBox(parent)
-
+        self.widget = QCheckBox(self.parent_widget())
