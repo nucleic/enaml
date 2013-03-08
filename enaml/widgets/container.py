@@ -6,14 +6,24 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Constant, Coerced, CachedProperty, List, observe, set_default
+    Bool, Constant, Coerced, ForwardTyped, Typed, observe, set_default
 )
 
 from enaml.core.declarative import d_
 from enaml.layout.geometry import Box
 from enaml.layout.layout_helpers import vbox
 
-from .constraints_widget import ConstraintsWidget, ConstraintMember
+from .constraints_widget import (
+    ConstraintsWidget, ProxyConstraintsWidget, ConstraintMember
+)
+
+
+class ProxyContainer(ProxyConstraintsWidget):
+    """ The abstract definition of a proxy Container object.
+
+    """
+    #: A reference to the Container declaration.
+    declaration = ForwardTyped(lambda: Container)
 
 
 class Container(ConstraintsWidget):
@@ -92,11 +102,11 @@ class Container(ConstraintsWidget):
     #: and the content box. The default padding is (10, 10, 10, 10).
     #: Certain subclasses, such as GroupBox, may provide additional
     #: margin than what is specified by the padding.
-    padding = d_(Coerced(Box, factory=lambda: Box(10, 10, 10, 10)))
+    padding = d_(Coerced(Box, (10, 10, 10, 10)))
 
     #: A cached property which returns the children defined on the
     #: container which are instances of ConstraintsWidget.
-    widgets = CachedProperty(List())
+    #widgets = CachedProperty(List())
 
     #: Containers freely exapnd in width and height. The size hint
     #: constraints for a Container are used when the container is
@@ -104,6 +114,9 @@ class Container(ConstraintsWidget):
     #: container is typically desired.
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
+
+    #: A reference to the ProxyContainer object.
+    proxy = Typed(ProxyContainer)
 
     #--------------------------------------------------------------------------
     # Property Handlers
@@ -117,9 +130,9 @@ class Container(ConstraintsWidget):
         return [child for child in self.children if isinst(child, target)]
 
     #--------------------------------------------------------------------------
-    # Widget Updates
+    # Observers
     #--------------------------------------------------------------------------
-    @observe(r'^(share_layout|padding)$', regex=True)
+    @observe(('share_layout', 'padding'))
     def _layout_invalidated(self, change):
         """ A private observer which invalidates the layout.
 
@@ -130,51 +143,43 @@ class Container(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_added(self, child):
-        """ Handle the child added event on the container.
+    # def child_added(self, child):
+    #     """ Handle the child added event on the container.
 
-        This event handler will send a relayout event if the `Container`
-        is active and the user has not defined their own constraints.
+    #     This event handler will send a relayout event if the `Container`
+    #     is active and the user has not defined their own constraints.
 
-        """
-        super(Container, self).child_added(child)
-        # XXX these can probably be collapsed
-        CachedProperty.reset(self, 'widgets')
-        if self.is_active and not self.constraints:
-            self._send_relayout()
+    #     """
+    #     super(Container, self).child_added(child)
+    #     # XXX these can probably be collapsed
+    #     CachedProperty.reset(self, 'widgets')
+    #     if self.is_active and not self.constraints:
+    #         self._send_relayout()
 
-    def child_removed(self, child):
-        """ Handle the child removed event on the container.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event on the container.
 
-        This event handler will send a relayout event if the `Container`
-        is active and the user has not defined their own constraints.
+    #     This event handler will send a relayout event if the `Container`
+    #     is active and the user has not defined their own constraints.
 
-        """
-        super(Container, self).child_removed(child)
-        # XXX these can probably be collapsed
-        CachedProperty.reset(self, 'widgets')
-        if self.is_active and not self.constraints:
-            self._send_relayout()
+    #     """
+    #     super(Container, self).child_removed(child)
+    #     # XXX these can probably be collapsed
+    #     CachedProperty.reset(self, 'widgets')
+    #     if self.is_active and not self.constraints:
+    #         self._send_relayout()
 
     #--------------------------------------------------------------------------
     # Constraints Generation
     #--------------------------------------------------------------------------
-    def _layout_info(self):
-        """ An overridden parent class method which adds the 'share'
-        layout key to the dict of layout information sent to the client.
-
-        """
-        layout = super(Container, self)._layout_info()
-        layout['share_layout'] = self.share_layout
-        layout['padding'] = self.padding
-        return layout
-
     def _get_default_constraints(self):
-        """ Supplies a default vbox constraint to the constraints
-        children of the container if other constraints are not given.
+        """ The default constraints for a Container.
+
+        This method supplies default vbox constraint to the children of
+        the container if other constraints are not given.
 
         """
         cns = super(Container, self)._get_default_constraints()
-        cns.append(vbox(*self.widgets))
+        ws = (c for c in self.children if isinstance(c, ConstraintsWidget))
+        cns.append(vbox(*ws))
         return cns
-

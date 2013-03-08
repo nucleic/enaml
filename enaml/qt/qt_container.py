@@ -7,85 +7,17 @@
 #------------------------------------------------------------------------------
 from collections import deque
 
+from PyQt4.QtCore import QSize, pyqtSignal
+from PyQt4.QtGui import QFrame
+
+from atom.api import Bool, List, Callable, Value, Typed
+
 from casuarius import weak
+
 from enaml.layout.layout_manager import LayoutManager
+from enaml.widgets.container import ProxyContainer
 
-from .qt.QtCore import QSize, Signal
-from .qt.QtGui import QFrame
-from .qt_constraints_widget import (
-    QtConstraintsWidget, LayoutBox, size_hint_guard,
-)
-
-
-def _convert_cn_info(info, owners):
-    """ Converts the lhs or rhs of a linear constraint info dict into
-    its corresponding casuarius object.
-
-    """
-    cn_type = info['type']
-    if cn_type == 'linear_expression':
-        const = info['constant']
-        terms = info['terms']
-        convert = _convert_cn_info
-        res = sum(convert(t, owners) for t in terms) + const
-    elif cn_type == 'term':
-        coeff = info['coeff']
-        var = info['var']
-        res = coeff * _convert_cn_info(var, owners)
-    elif cn_type == 'linear_symbolic':
-        sym_name = info['name']
-        owner_id = info['owner']
-        owner = owners.get(owner_id, None)
-        if owner is None:
-            owner = owners[owner_id] = LayoutBox('_virtual', owner_id)
-        res = owner.primitive(sym_name)
-    else:
-        msg = 'Unhandled constraint info type `%s`' % cn_type
-        raise ValueError(msg)
-    return res
-
-
-def as_linear_constraint(info, owners):
-    """ Converts a constraint info dict into a casuarius linear
-    constraint.
-
-    For constraints specified in the info dict which do not have a
-    corresponding owner (e.g. those created by box helpers) a
-    constraint variable will be synthesized.
-
-    Parameters
-    ----------
-    info : dict
-        A dictionary sent from an Enaml widget which specifies the
-        information for a linear constraint.
-
-    owners : dict
-        A mapping from constraint id to an owner object which holds
-        the actual casuarius constraint variables as attributes.
-
-    Returns
-    -------
-    result : LinearConstraint
-        A casuarius linear constraint for the given dict.
-
-    """
-    if info['type'] != 'linear_constraint':
-        msg = 'The info dict does not specify a linear constraint.'
-        raise ValueError(msg)
-    convert = _convert_cn_info
-    lhs = convert(info['lhs'], owners)
-    rhs = convert(info['rhs'], owners)
-    op = info['op']
-    if op == '==':
-        cn = lhs == rhs
-    elif op == '<=':
-        cn = lhs <= rhs
-    elif op == '>=':
-        cn = lhs >= rhs
-    else:
-        msg = 'Unhandled constraint operator `%s`' % op
-        raise ValueError(msg)
-    return cn | info['strength'] | info['weight']
+from .qt_constraints_widget import QtConstraintsWidget, size_hint_guard
 
 
 class QContainer(QFrame):
@@ -93,7 +25,7 @@ class QContainer(QFrame):
 
     """
     #: A signal which is emitted on a resize event.
-    resized = Signal()
+    resized = pyqtSignal()
 
     #: The internally cached size hint.
     _size_hint = QSize()
@@ -131,105 +63,110 @@ class QContainer(QFrame):
         return self.minimumSize()
 
 
-class QtContainer(QtConstraintsWidget):
+class QtContainer(QtConstraintsWidget, ProxyContainer):
     """ A Qt implementation of an Enaml Container.
 
     """
-    #: Whether or not this container should share its layout with a
-    #: parent container.
-    _share_layout = False
-
-    #: The padding to use when constraining the layout.
-    _padding = (10, 10, 10, 10)
+    #: A reference to the toolkit widget created by the proxy.
+    widget = Typed(QContainer)
 
     #: Whether or not this container owns its layout. A container which
     #: does not own its layout is not responsible for laying out its
     #: children on a resize event, and will proxy the call to its owner.
-    _owns_layout = True
+    _owns_layout = Bool(True)
 
     #: The object which has taken ownership of the layout for this
     #: container, if any.
-    _layout_owner = None
+    _layout_owner = Value()
 
     #: The LayoutManager instance to use for solving the layout system
     #: for this container.
-    _layout_manager = None
+    _layout_manager = Value()
 
     #: The function to use for refreshing the layout on a resize event.
-    _refresh = lambda *args, **kwargs: None
+    _refresh = Callable(lambda *args, **kwargs: None)
 
     #: The table of offsets to use during a layout pass.
-    _offset_table = []
+    _offset_table = List()
 
     #: The table of (index, updater) pairs to use during a layout pass.
-    _layout_table = []
-
-    #: A dict mapping constraint owner id to associated LayoutBox
-    _cn_owners = {}
+    _layout_table = List()
 
     #: A list of the current contents constraints for the widget.
-    _contents_cns = []
-
-    #: A list of the current size hint constraints for the widget.
-    _size_hint_cns = []
+    _contents_cns = List()
 
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the underlying QContainer widget.
+    def create_widget(self):
+        """ Creates the QContainer widget.
 
         """
-        return QContainer(parent)
+        self.widget = QContainer(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
+    def init_widget(self):
+        """ Initialize the widget.
 
         """
-        super(QtContainer, self).create(tree)
-        layout = tree['layout']
-        self._share_layout = layout['share_layout']
-        self._padding = layout['padding']
-        # The resized signal is connected directly to the refresh
-        # method to save the overhead of the extra function call.
-        self.widget().resized.connect(self.refresh)
+        super(QtContainer, self).init_widget()
+        self.widget.resized.connect(self.on_resized)
 
     def init_layout(self):
-        """ Initializes the layout for the container.
+        """ Initialize the layout of the widget.
 
         """
         super(QtContainer, self).init_layout()
+        self.init_cns_layout()
+
+    def init_cns_layout(self):
+        """ Initialize the constraints layout.
+
+        """
         # Layout ownership can only be transferred *after* this init
         # layout method is called, since layout occurs bottom up. So,
-        # we only initialize a layout manager if we are not going to
-        # transfer ownership at some point.
+        # we only initialize a layout manager if ownership is unlikely
+        # to be transferred.
         if not self.will_transfer():
             offset_table, layout_table = self._build_layout_table()
             cns = self._generate_constraints(layout_table)
-            # Initializing the layout manager can fail if the objective
-            # function is unbounded. We let that failure occur so it can
-            # be logged. Nothing is stored until it succeeds.
             manager = LayoutManager()
             manager.initialize(cns)
             self._offset_table = offset_table
             self._layout_table = layout_table
             self._layout_manager = manager
             self._refresh = self._build_refresher(manager)
-            self.refresh_sizes()
+            self._update_sizes()
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def on_resized(self):
+        """ Update the position of the widgets in the layout.
+
+        This makes a layout pass over the descendents if this widget
+        owns the responsibility for their layout.
+
+        """
+        # The _refresh function is generated on every relayout and has
+        # already taken into account whether or not the container owns
+        # the layout.
+        self._refresh()
 
     #--------------------------------------------------------------------------
     # Public Layout Handling
     #--------------------------------------------------------------------------
     def relayout(self):
-        """ Rebuilds the constraints layout for this widget if it owns
-        the responsibility for laying out its descendents.
+        """ Rebuild the constraints layout for the widget.
+
+        If this object does not own the layout, the call is proxied to
+        the layout owner.
 
         """
         if self._owns_layout:
-            item = self.widget_item()
+            item = self.widget_item
             old_hint = item.sizeHint()
-            self.init_layout()
-            self.refresh()
+            self.init_cns_layout()
+            self._refresh()
             new_hint = item.sizeHint()
             # If the size hint constraints are empty, it indicates that
             # they were previously cleared. In this case, the layout
@@ -239,28 +176,6 @@ class QtContainer(QtConstraintsWidget):
                 self.size_hint_updated()
         else:
             self._layout_owner.relayout()
-
-    def refresh(self):
-        """ Makes a layout pass over the descendents if this widget owns
-        the responsibility for their layout.
-
-        """
-        # The _refresh function is generated on every relayout and has
-        # already taken into account whether or not the container owns
-        # the layout.
-        self._refresh()
-
-    def refresh_sizes(self):
-        """ Refresh the min/max/best sizes for the underlying widget.
-
-        This method is normally called automatically at the proper
-        times. It should not normally need to be called by user code.
-
-        """
-        widget = self.widget()
-        widget.setSizeHint(self.compute_best_size())
-        widget.setMinimumSize(self.compute_min_size())
-        widget.setMaximumSize(self.compute_max_size())
 
     def replace_constraints(self, old_cns, new_cns):
         """ Replace constraints in the given layout.
@@ -285,8 +200,8 @@ class QtContainer(QtConstraintsWidget):
             if manager is not None:
                 with size_hint_guard(self):
                     manager.replace_constraints(old_cns, new_cns)
-                    self.refresh_sizes()
-                    self.refresh()
+                    self._update_sizes()
+                    self._refresh()
         else:
             self._layout_owner.replace_constraints(old_cns, new_cns)
 
@@ -307,27 +222,6 @@ class QtContainer(QtConstraintsWidget):
         else:
             self._layout_owner.clear_constraints(cns)
 
-    def layout(self):
-        """ The callback invoked by the layout manager when there are
-        new layout values available.
-
-        This iterates over the layout table and calls the geometry
-        updater functions.
-
-        """
-        # We explicitly don't use enumerate() to generate the running
-        # index because this method is on the code path of the resize
-        # event and hence called *often*. The entire code path for a
-        # resize event is micro optimized and justified with profiling.
-        offset_table = self._offset_table
-        layout_table = self._layout_table
-        running_index = 1
-        for offset_index, updater in layout_table:
-            dx, dy = offset_table[offset_index]
-            new_offset = updater(dx, dy)
-            offset_table[running_index] = new_offset
-            running_index += 1
-
     def contents_margins(self):
         """ Get the contents margins for the container.
 
@@ -347,8 +241,7 @@ class QtContainer(QtConstraintsWidget):
         return (0, 0, 0, 0)
 
     def contents_margins_updated(self):
-        """ Notify the layout system that the contents margins of this
-        widget have been updated.
+        """ Notify the system that the contents margins have changed.
 
         """
         old_cns = self._contents_cns
@@ -370,23 +263,14 @@ class QtContainer(QtConstraintsWidget):
         """
         cns = self._contents_cns
         if not cns:
-            padding = self._padding
+            d = self.declaration
             margins = self.contents_margins()
-            tval, rval, bval, lval = map(sum, zip(padding, margins))
-            primitive = self.layout_box.primitive
-            top = primitive('top')
-            left = primitive('left')
-            width = primitive('width')
-            height = primitive('height')
-            contents_top = primitive('contents_top')
-            contents_left = primitive('contents_left')
-            contents_right = primitive('contents_right')
-            contents_bottom = primitive('contents_bottom')
+            tval, rval, bval, lval = map(sum, zip(d.padding, margins))
             cns = [
-                contents_top == (top + tval),
-                contents_left == (left + lval),
-                contents_right == (left + width - rval),
-                contents_bottom == (top + height - bval),
+                d.contents_top == (d.top + tval),
+                d.contents_left == (d.left + lval),
+                d.contents_right == (d.left + d.width - rval),
+                d.contents_bottom == (d.top + d.height - bval),
             ]
             self._contents_cns = cns
         return cns
@@ -394,9 +278,40 @@ class QtContainer(QtConstraintsWidget):
     #--------------------------------------------------------------------------
     # Private Layout Handling
     #--------------------------------------------------------------------------
+    def _layout(self):
+        """ The layout callback invoked by the layout manager.
+
+        This iterates over the layout table and calls the geometry
+        updater functions.
+
+        """
+        # We explicitly don't use enumerate() to generate the running
+        # index because this method is on the code path of the resize
+        # event and hence called *often*. The entire code path for a
+        # resize event is micro optimized and justified with profiling.
+        offset_table = self._offset_table
+        layout_table = self._layout_table
+        running_index = 1
+        for offset_index, updater in layout_table:
+            dx, dy = offset_table[offset_index]
+            new_offset = updater(dx, dy)
+            offset_table[running_index] = new_offset
+            running_index += 1
+
+    def _update_sizes(self):
+        """ Update the min/max/best sizes for the underlying widget.
+
+        This method is called automatically at the proper times. It
+        should not normally need to be called by user code.
+
+        """
+        widget = self.widget
+        widget.setSizeHint(self.compute_best_size())
+        widget.setMinimumSize(self.compute_min_size())
+        widget.setMaximumSize(self.compute_max_size())
+
     def _build_refresher(self, manager):
-        """ A private method which will build a function which, when
-        called, will refresh the layout for the container.
+        """ Build the refresh function for the container.
 
         Parameters
         ----------
@@ -410,20 +325,17 @@ class QtContainer(QtConstraintsWidget):
         # Python code. It exists purely for the sake of efficiency,
         # justified with profiling.
         mgr_layout = manager.layout
-        layout = self.layout
-        primitive = self.layout_box.primitive
-        width_var = primitive('width')
-        height_var = primitive('height')
-        widget = self._widget
+        d = self.declaration
+        layout = self._layout
+        width_var = d.width
+        height_var = d.height
+        widget = self.widget
         width = widget.width
         height = widget.height
-        def refresher():
-            mgr_layout(layout, width_var, height_var, (width(), height()))
-        return refresher
+        return lambda: mgr_layout(layout, width_var, height_var, (width(), height()))
 
     def _build_layout_table(self):
-        """ A private method which will build the layout table for
-        this container.
+        """ Build the layout table for this container.
 
         A layout table is a pair of flat lists which hold the required
         objects for laying out the child widgets of this container.
@@ -509,50 +421,29 @@ class QtContainer(QtConstraintsWidget):
             the layout manager.
 
         """
-        # The mapping of constraint owners and the list of constraint
-        # info dictionaries provided by the Enaml widgets.
-        box = self.layout_box
-        cn_owners = {self.object_id(): box}
-        cn_dicts = list(self.user_constraints())
-        cn_dicts_extend = cn_dicts.extend
-
         # The list of raw casuarius constraints which will be returned
         # from this method to be added to the casuarius solver.
-        raw_cns = self.hard_constraints() + self.contents_constraints()
-        raw_cns_extend = raw_cns.extend
+        cns = self.contents_constraints()[:]
+        cns.extend(self.declaration._hard_constraints())
+        cns.extend(self.declaration._collect_constraints())
 
         # The first element in a layout table item is its offset index
         # which is not relevant to constraints generation.
-        isinst = isinstance
-        QtContainer_ = QtContainer
         for _, updater in layout_table:
             child = updater.item
-            cn_owners[child.object_id()] = child.layout_box
-            raw_cns_extend(child.hard_constraints())
-            if isinst(child, QtContainer_):
+            d = child.declaration
+            cns.extend(d._hard_constraints())
+            if isinstance(child, QtContainer):
                 if child.transfer_layout_ownership(self):
-                    cn_dicts_extend(child.user_constraints())
-                    raw_cns_extend(child.contents_constraints())
+                    cns.extend(d._collect_constraints())
+                    cns.extend(child.contents_constraints())
                 else:
-                    raw_cns_extend(child.size_hint_constraints())
+                    cns.extend(child.size_hint_constraints())
             else:
-                raw_cns_extend(child.size_hint_constraints())
-                cn_dicts_extend(child.user_constraints())
+                cns.extend(d._collect_constraints())
+                cns.extend(child.size_hint_constraints())
 
-        # Convert the list of Enaml constraints info dicts to actual
-        # casuarius LinearConstraint objects for the solver.
-        add_cn = raw_cns.append
-        as_cn = as_linear_constraint
-        for info in cn_dicts:
-            add_cn(as_cn(info, cn_owners))
-
-        # We keep a strong reference to the constraint owners dict,
-        # since it may include instances of LayoutBox which were
-        # created on-the-fly and hold constraint variables which
-        # should not be deleted.
-        self._cn_owners = cn_owners
-
-        return raw_cns
+        return cns
 
     #--------------------------------------------------------------------------
     # Auxiliary Methods
@@ -579,15 +470,14 @@ class QtContainer(QtConstraintsWidget):
             True if the transfer was allowed, False otherwise.
 
         """
-        if not self._share_layout:
+        if not self.declaration.share_layout:
             return False
         self._owns_layout = False
         self._layout_owner = owner
-        self._layout_manager = None
-        self._refresh = owner.refresh
-        self._offset_table = []
-        self._layout_table = []
-        self._cn_owners = {}
+        del self._layout_manager
+        del self._refresh
+        del self._offset_table
+        del self._layout_table
         return True
 
     def will_transfer(self):
@@ -600,10 +490,8 @@ class QtContainer(QtConstraintsWidget):
         can override the behavior if necessary.
 
         """
-        if self._share_layout:
-            if isinstance(self.parent(), QtContainer):
-                return True
-        return False
+        d = self.declaration
+        return d.share_layout and isinstance(self.parent(), QtContainer)
 
     def compute_min_size(self):
         """ Calculates the minimum size of the container which would
@@ -620,18 +508,15 @@ class QtContainer(QtConstraintsWidget):
             required to satisfy all constraints.
 
         """
-        resist_width, resist_height = self._resist
+        d = self.declaration
         shrink = ('ignore', 'weak')
-        if resist_width in shrink and resist_height in shrink:
+        if d.resist_width in shrink and d.resist_height in shrink:
             return QSize(0, 0)
         if self._owns_layout and self._layout_manager is not None:
-            primitive = self.layout_box.primitive
-            width = primitive('width')
-            height = primitive('height')
-            w, h = self._layout_manager.get_min_size(width, height)
-            if resist_width in shrink:
+            w, h = self._layout_manager.get_min_size(d.width, d.height)
+            if d.resist_width in shrink:
                 w = 0
-            if resist_height in shrink:
+            if d.resist_height in shrink:
                 h = 0
             return QSize(w, h)
         return QSize()
@@ -655,10 +540,8 @@ class QtContainer(QtConstraintsWidget):
 
         """
         if self._owns_layout and self._layout_manager is not None:
-            primitive = self.layout_box.primitive
-            width = primitive('width')
-            height = primitive('height')
-            w, h = self._layout_manager.get_min_size(width, height, weak)
+            d = self.declaration
+            w, h = self._layout_manager.get_min_size(d.width, d.height, weak)
             return QSize(w, h)
         return QSize()
 
@@ -677,19 +560,15 @@ class QtContainer(QtConstraintsWidget):
             allowable while still satisfying all constraints.
 
         """
-        hug_width, hug_height = self._hug
+        d = self.declaration
         expanding = ('ignore', 'weak')
-        if hug_width in expanding and hug_height in expanding:
+        if d.hug_width in expanding and d.hug_height in expanding:
             return QSize(16777215, 16777215)
         if self._owns_layout and self._layout_manager is not None:
-            primitive = self.layout_box.primitive
-            width = primitive('width')
-            height = primitive('height')
-            w, h = self._layout_manager.get_max_size(width, height)
-            if w < 0 or hug_width in expanding:
+            w, h = self._layout_manager.get_max_size(d.width, d.height)
+            if w < 0 or d.hug_width in expanding:
                 w = 16777215
-            if h < 0 or hug_height in expanding:
+            if h < 0 or d.hug_height in expanding:
                 h = 16777215
             return QSize(w, h)
         return QSize(16777215, 16777215)
-
