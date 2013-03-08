@@ -27,8 +27,10 @@ class ProxyDatetimeSelector(ProxyBoundedDatetime):
 
 
 class DatetimeSelector(BoundedDatetime):
-    """ A datetime widget that displays a Python datetime.datetime
-    object using an appropriate toolkit specific control.
+    """ A widget to edit a Python datetime.datetime object.
+
+    This is a geometrically smaller control than what is provided by
+    Calendar.
 
     """
     #: A python date format string to format the datetime. If None is
