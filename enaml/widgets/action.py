@@ -5,13 +5,50 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Unicode, Bool, Str, TypedEvent, observe
+from atom.api import Typed, ForwardTyped, Unicode, Bool, Event, observe
 
-from enaml.core.declarative import Declarative, d_
-from enaml.core.messenger import Messenger
+from enaml.core.declarative import d_
+from enaml.icon import Icon
+
+from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
-class Action(Messenger, Declarative):
+class ProxyAction(ProxyToolkitObject):
+    """ The abstract definition of a proxy Action object.
+
+    """
+    #: A reference to the Control declaration.
+    declaration = ForwardTyped(lambda: Action)
+
+    def set_text(self, text):
+        raise NotImplementedError
+
+    def set_tool_tip(self, tool_tip):
+        raise NotImplementedError
+
+    def set_status_tip(self, status_tip):
+        raise NotImplementedError
+
+    def set_icon(self, icon):
+        raise NotImplementedError
+
+    def set_checkable(self, checkable):
+        raise NotImplementedError
+
+    def set_checked(self, checked):
+        raise NotImplementedError
+
+    def set_enabled(self, enabled):
+        raise NotImplementedError
+
+    def set_visible(self, visible):
+        raise NotImplementedError
+
+    def set_separator(self, separator):
+        raise NotImplementedError
+
+
+class Action(ToolkitObject):
     """ A non visible widget used in a ToolBar or Menu.
 
     An Action represents an actionable item in a ToolBar or a Menu.
@@ -31,8 +68,8 @@ class Action(Messenger, Declarative):
     #: hovers over the action.
     status_tip = d_(Unicode())
 
-    #: The source url for the icon to use for the Action.
-    icon_source = d_(Str())
+    #: The icon to use for the Action.
+    icon = d_(Typed(Icon))
 
     #: Whether or not the action can be checked.
     checkable = d_(Bool(False))
@@ -52,60 +89,26 @@ class Action(Messenger, Declarative):
     separator = d_(Bool(False))
 
     #: An event fired when the action is triggered by user interaction.
-    #: They payload will be the current checked state.
-    triggered = TypedEvent(bool)
+    #: They payload will be the current checked state. This event is
+    #: triggered by the proxy object when the action is triggerd.
+    triggered = Event(bool)
 
     #: An event fired when a checkable action changes its checked state.
-    #: The payload will be the current checked state.
-    toggled = TypedEvent(bool)
+    #: The payload will be the current checked state. This event is
+    #: triggerd by the proxy object when the action is toggled.
+    toggled = Event(bool)
+
+    #: A reference to the ProxyAction object.
+    proxy = Typed(ProxyAction)
 
     #--------------------------------------------------------------------------
-    # Messaging API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dict for the Action.
-
-        """
-        snap = super(Action, self).snapshot()
-        snap['text'] = self.text
-        snap['tool_tip'] = self.tool_tip
-        snap['status_tip'] = self.status_tip
-        snap['icon_source'] = self.icon_source
-        snap['checkable'] = self.checkable
-        snap['checked'] = self.checked
-        snap['enabled'] = self.enabled
-        snap['visible'] = self.visible
-        snap['separator'] = self.separator
-        return snap
-
-    #--------------------------------------------------------------------------
-    # Action Updates
-    #--------------------------------------------------------------------------
-    @observe(r'^(text|tool_tip|status_tip|icon_source|checkable|checked|'
-             r'enabled|visible|separator)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer for the changes for the action sate.
+    @observe(('text', 'tool_tip', 'status_tip', 'icon', 'checkable', 'checked',
+        'enabled', 'visible', 'separator'))
+    def _update_proxy(self, change):
+        """ An observer which updates the proxy when the Action changes.
 
         """
         # The superclass implementation is sufficient
-        super(Action, self).send_member_change(change)
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_triggered(self, content):
-        """ Handle the 'triggered' action from the client widget.
-
-        """
-        checked = content['checked']
-        self.set_guarded(checked=checked)
-        self.triggered(checked)
-
-    def on_action_toggled(self, content):
-        """ Handle the 'toggled' action from the client widget.
-
-        """
-        checked = content['checked']
-        self.set_guarded(checked=checked)
-        self.toggled(checked)
-
+        super(Action, self)._update_proxy(change)
