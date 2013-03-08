@@ -5,174 +5,137 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import logging
+from PyQt4.QtCore import QSize
+from PyQt4.QtGui import QAbstractButton, QIcon
 
-from .qt.QtCore import QSize
-from .qt.QtGui import QIcon, QImage, QPixmap
+from atom.api import Int, Typed
+
+from enaml.widgets.abstract_button import ProxyAbstractButton
+
 from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
-logger = logging.getLogger(__name__)
+# cyclic notification guard flags
+CHECKED_GUARD = 0x1
 
 
-class QtAbstractButton(QtControl):
-    """ A Qt implementation of the Enaml AbstractButton class.
+class QtAbstractButton(QtControl, ProxyAbstractButton):
+    """ A Qt implementation of the Enaml ProxyAbstractButton.
 
     This class can serve as a base class for widgets that implement
     button behavior such as CheckBox, RadioButton and PushButtons.
     It is not meant to be used directly.
 
     """
-    #: Temporary internal storage for the icon source url.
-    _icon_source = ''
+    #: A reference to the widget created by the proxy
+    widget = Typed(QAbstractButton)
+
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
 
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ This method must be implemented by subclasses to create
-        the proper button widget.
+    def create_widget(self):
+        """ Implement in a subclass to create the widget.
 
         """
         raise NotImplementedError
 
-    def create(self, tree):
-        """ Create and initialize the abstract button widget.
+    def init_widget(self):
+        """ Initialize the button widget.
 
         """
-        super(QtAbstractButton, self).create(tree)
-        self.set_checkable(tree['checkable'])
-        self.set_checked(tree['checked'])
-        self.set_text(tree['text'])
-        self._icon_source = tree['icon_source']
-        self.set_icon_size(tree['icon_size'])
-        widget = self.widget()
+        super(QtAbstractButton, self).init_widget()
+        d = self.declaration
+        if d.text:
+            self.set_text(d.text, sh_guard=False)
+        if d.icon:
+            self.set_icon(d.icon, sh_guard=False)
+        if -1 not in d.icon_size:
+            self.set_icon_size(d.icon_size, sh_guard=False)
+        self.set_checkable(d.checkable)
+        self.set_checked(d.checked)
+        widget = self.widget
         widget.clicked.connect(self.on_clicked)
         widget.toggled.connect(self.on_toggled)
-
-    def activate(self):
-        """ Activate the button widget.
-
-        """
-        self.set_icon_source(self._icon_source)
-        super(QtAbstractButton, self).activate()
 
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
-    def on_clicked(self):
+    def on_clicked(self, checked):
         """ The signal handler for the 'clicked' signal.
 
         """
-        content = {'checked': self.widget().isChecked()}
-        self.send_action('clicked', content)
+        if not self._guard & CHECKED_GUARD:
+            self.declaration.checked = checked
+            self.declaration.clicked(checked)
 
-    def on_toggled(self):
+    def on_toggled(self, checked):
         """ The signal handler for the 'toggled' signal.
 
         """
-        content = {'checked': self.widget().isChecked()}
-        self.send_action('toggled', content)
+        if not self._guard & CHECKED_GUARD:
+            self.declaration.checked = checked
+            self.declaration.toggled(checked)
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # ProxyAbstractButton API
     #--------------------------------------------------------------------------
-    def on_action_set_checked(self, content):
-        """ Handle the 'set_checked' action from the Enaml widget.
+    def set_text(self, text, sh_guard=True):
+        """ Sets the widget's text with the provided value.
 
         """
-        self.set_checked(content['checked'])
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setText(text)
+        else:
+            self.widget.setText(text)
 
-    def on_action_set_text(self, content):
-        """ Handle the 'set_text' action from the Enaml widget.
-
-        """
-        with size_hint_guard(self):
-            self.set_text(content['text'])
-
-    def on_action_set_icon_source(self, content):
-        """ Handle the 'set_icon_source' action from the Enaml widget.
+    def set_icon(self, icon, sh_guard=True):
+        """ Set the icon on the widget.
 
         """
-        self.set_icon_source(content['icon_source'])
+        # XXX convert the icon
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setIcon(QIcon())
+        else:
+            self.widget.setIcon(QIcon())
 
-    def on_action_set_icon_size(self, content):
-        """ Handle the 'set_icon_size' action from the Enaml widget.
+    def set_icon_size(self, size, sh_guard=True):
+        """ Sets the widget's icon size.
 
         """
-        with size_hint_guard(self):
-            self.set_icon_size(content['icon_size'])
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setIconSize(QSize(*size))
+        else:
+            self.widget.setIconSize(QSize(*size))
 
-    #--------------------------------------------------------------------------
-    # Widget update methods
-    #--------------------------------------------------------------------------
     def set_checkable(self, checkable):
         """ Sets whether or not the widget is checkable.
 
         """
-        self.widget().setCheckable(checkable)
+        self.widget.setCheckable(checkable)
 
     def set_checked(self, checked):
         """ Sets the widget's checked state with the provided value.
 
         """
-        widget = self.widget()
+        widget = self.widget
         # This handles the case where, by default, Qt will not allow
         # all of the radio buttons in a group to be disabled. By
         # temporarily turning off auto-exclusivity, we are able to
         # handle that case.
-        if not checked and widget.isChecked() and widget.autoExclusive():
-            widget.setAutoExclusive(False)
-            widget.setChecked(checked)
-            widget.setAutoExclusive(True)
-        else:
-            widget.setChecked(checked)
-
-    def set_text(self, text):
-        """ Sets the widget's text with the provided value.
-
-        """
-        self.widget().setText(text)
-
-    def set_icon_source(self, icon_source):
-        """ Sets the widget's icon to the provided image.
-
-        """
-        if icon_source:
-            loader = self._session.load_resource(icon_source)
-            loader.on_load(self._on_icon_load)
-        else:
-            self._on_icon_load(QIcon())
-
-    def set_icon_size(self, icon_size):
-        """ Sets the widget's icon size to the provided size.
-
-        """
-        self.widget().setIconSize(QSize(*icon_size))
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _on_icon_load(self, icon):
-        """ A private resource loader callback.
-
-        This method is invoked when the requested icon is successfully
-        loaded. It will update the icon on the button widget and issue
-        a size hint updated event to the layout system if needed.
-
-        Parameters
-        ----------
-        icon : QIcon or QImage
-            The icon or image that was loaded by the request.
-
-        """
-        if isinstance(icon, QImage):
-            icon = QIcon(QPixmap.fromImage(icon))
-        elif not isinstance(icon, QIcon):
-            msg = 'got incorrect type for icon: `%s`'
-            logger.error(msg % type(icon).__name__)
-            icon = QIcon()
-        with size_hint_guard(self):
-            self.widget().setIcon(icon)
-
+        self._guard |= CHECKED_GUARD
+        try:
+            if not checked and widget.isChecked() and widget.autoExclusive():
+                widget.setAutoExclusive(False)
+                widget.setChecked(checked)
+                widget.setAutoExclusive(True)
+            else:
+                widget.setChecked(checked)
+        finally:
+            self._guard &= ~CHECKED_GUARD
