@@ -131,19 +131,14 @@ class Window(Widget):
     def show(self):
         """ Show the window to the screen.
 
-        This will create the underlying toolkit window as-needed.
+        This is a reimplemented parent class method which will init
+        and build the window hierarchy if needed.
 
         """
         if not self.is_initialized:
             self.initialize()
         self.proxy.create_if_needed()
-        self.visible = True
-
-    def hide(self):
-        """ Hide the window from the screen.
-
-        """
-        self.visible = False
+        super(Window, self).show()
 
     #--------------------------------------------------------------------------
     # Observers
