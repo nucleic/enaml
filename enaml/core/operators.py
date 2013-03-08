@@ -35,6 +35,8 @@ identifiers : dict
 """
 from collections import namedtuple
 
+from atom.api import null
+
 from .declarative import DeclarativeExpression, DeclarativeProperty
 from .dynamic_scope import DynamicScope, Nonlocals
 from .funchelper import call_func
@@ -111,9 +113,14 @@ class OpNotify(OperatorBase):
         """
         owner = change['object']
         nonlocals = Nonlocals(owner, None)
-        event = NotificationEvent(
-            owner, change['name'], change['oldvalue'], change['newvalue']
-        )
+        if change['type'] == 'event':
+            event = NotificationEvent(
+                owner, change['name'], null, change['value']
+            )
+        else:
+            event = NotificationEvent(
+                owner, change['name'], change['oldvalue'], change['newvalue']
+            )
         overrides = {
             'event': event,  # backwards compatibility
             'change': change, 'nonlocals': nonlocals, 'self': owner
