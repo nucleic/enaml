@@ -5,60 +5,58 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt, QDate
+from PyQt4.QtCore import QDate
+
+from atom.api import Int
+
+from enaml.widgets.bounded_date import ProxyBoundedDate
+
 from .qt_control import QtControl
 
 
-def as_qdate(iso_date):
-    """ Convert an iso date string to a QDate
+def as_qdate(pydate):
+    """ Convert a Python date into a QDate.
 
     """
-    return QDate.fromString(iso_date, Qt.ISODate)
+    return QDate(pydate.year, pydate.month, pydate.day)
 
 
-def as_iso_date(qdate):
-    """ Convert a QDate object into and iso date string.
+def as_pydate(qdate):
+    """ Convert a QDate object into a Python date.
 
     """
-    return qdate.toString(Qt.ISODate)
+    return qdate.toPyDate()
 
 
-class QtBoundedDate(QtControl):
+# cyclic notification guard flags
+CHANGED_GUARD = 0x1
+
+
+class QtBoundedDate(QtControl, ProxyBoundedDate):
     """ A base class for implementing Qt-Enaml date widgets.
 
     """
-    #--------------------------------------------------------------------------
-    # Setup Methods
-    #--------------------------------------------------------------------------
-    def create(self, tree):
-        """ Create and initialize the underyling date widget.
-
-        """
-        super(QtBoundedDate, self).create(tree)
-        self.set_min_date(as_qdate(tree['minimum']))
-        self.set_max_date(as_qdate(tree['maximum']))
-        self.set_date(as_qdate(tree['date']))
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # Initialization API
     #--------------------------------------------------------------------------
-    def on_action_set_date(self, content):
-        """ Handle the 'set_date' action from the Enaml widget.
+    def create_widget(self):
+        """ Implement in a subclass to create the date widget.
 
         """
-        self.set_date(as_qdate(content['date']))
+        raise NotImplementedError
 
-    def on_action_set_minimum(self, content):
-        """ Handle the 'set_minimum' action from the Enaml widget.
-
-        """
-        self.set_min_date(as_qdate(content['minimum']))
-
-    def on_action_set_maximum(self, content):
-        """ Handle the 'set_maximum' action from the Enaml widget.
+    def create(self):
+        """ Initialize the date widget.
 
         """
-        self.set_max_date(as_qdate(content['maximum']))
+        super(QtBoundedDate, self).create()
+        d = self.declaration
+        self.set_minimum(d.minimum)
+        self.set_maximum(d.maximum)
+        self.set_date(d.date)
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -71,21 +69,44 @@ class QtBoundedDate(QtControl):
         widget the 'date_changed' action.
 
         """
-        if 'date' not in self.loopback_guard:
-            qdate = self.get_date()
-            content = {'date': as_iso_date(qdate)}
-            self.send_action('date_changed', content)
+        if not self._guard & CHANGED_GUARD:
+            self.declaration.date = self.get_date()
 
     #--------------------------------------------------------------------------
-    # Abstract Methods
+    # Utility Methods
     #--------------------------------------------------------------------------
     def get_date(self):
         """ Return the current date in the control.
 
         Returns
         -------
-        result : QDate
-            The current control date as a QDate object.
+        result : date
+            The current control date as a date object.
+
+        """
+        raise NotImplementedError
+
+    #--------------------------------------------------------------------------
+    # ProxyBoundedDate API
+    #--------------------------------------------------------------------------
+    def set_minimum(self, date):
+        """ Set the widget's minimum date.
+
+        Parameters
+        ----------
+        date : date
+            The date object to use for setting the minimum date.
+
+        """
+        raise NotImplementedError
+
+    def set_maximum(self, date):
+        """ Set the widget's maximum date.
+
+        Parameters
+        ----------
+        date : date
+            The date object to use for setting the maximum date.
 
         """
         raise NotImplementedError
@@ -98,31 +119,8 @@ class QtBoundedDate(QtControl):
 
         Parameters
         ----------
-        date : QDate
-            The QDate object to use for setting the date.
+        date : date
+            The date object to use for setting the date.
 
         """
         raise NotImplementedError
-
-    def set_max_date(self, date):
-        """ Set the widget's maximum date.
-
-        Parameters
-        ----------
-        date : QDate
-            The QDate object to use for setting the maximum date.
-
-        """
-        raise NotImplementedError
-
-    def set_min_date(self, date):
-        """ Set the widget's minimum date.
-
-        Parameters
-        ----------
-        date : QDate
-            The QDate object to use for setting the minimum date.
-
-        """
-        raise NotImplementedError
-

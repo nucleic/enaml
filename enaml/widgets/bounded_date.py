@@ -7,12 +7,28 @@
 #------------------------------------------------------------------------------
 from datetime import date as pydate
 
-from atom.api import Typed, observe
-from dateutil.parser import parse as parse_iso_dt
+from atom.api import Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
-from .control import Control
+from .control import Control, ProxyControl
+
+
+class ProxyBoundedDate(ProxyControl):
+    """ The abstract defintion of a proxy BoundedDate object.
+
+    """
+    #: A reference to the BoundedDate declaration.
+    declaration = ForwardTyped(lambda: BoundedDate)
+
+    def set_minimum(self, minimum):
+        raise NotImplementedError
+
+    def set_maximum(self, maximum):
+        raise NotImplementedError
+
+    def set_date(self, date):
+        raise NotImplementedError
 
 
 class BoundedDate(Control):
@@ -38,45 +54,25 @@ class BoundedDate(Control):
     #: maximum and minimum values. The default is date.today().
     date = d_(Typed(pydate, factory=pydate.today))
 
+    #: A reference to the ProxyBoundedDate object.
+    proxy = Typed(ProxyBoundedDate)
+
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observer
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Get the snapshot dictionary for the control.
+    @observe(('minimum', 'maximum', 'date'))
+    def _update_proxy(self, change):
+        """ An observer which updates the proxy when the data changes.
 
         """
-        snap = super(BoundedDate, self).snapshot()
-        snap['minimum'] = self.minimum.isoformat()
-        snap['maximum'] = self.maximum.isoformat()
-        snap['date'] = self.date.isoformat()
-        return snap
-
-    @observe(r'^(minimum|maximum|date)$', regex=True)
-    def send_date_change(self, change):
-        """ An observer which sends state change to the client.
-
-        """
-        name = change.name
-        if name not in self.loopback_guard:
-            content = {name: change.new.isoformat()}
-            self.send_action('set_' + name, content)
+        # The superclass implementation is sufficient.
+        super(BoundedDate, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
-    # Widget Updates
+    # Post Setattr Handlers
     #--------------------------------------------------------------------------
-    def on_action_date_changed(self, content):
-        """ Handle the 'date_changed' action from the UI control.
-
-        """
-        print 'datewidget', self
-        date = parse_iso_dt(content['date']).date()
-        self.set_guarded(date=date)
-
-    #--------------------------------------------------------------------------
-    # Post Validation Handlers
-    #--------------------------------------------------------------------------
-    def _post_validate_minimum(self, old, new):
-        """ Post validate the minimum date.
+    def _post_setattr_minimum(self, old, new):
+        """ Post setattr the minimum date.
 
         If the new minimum is greater than the current value or the
         maximum, those values are adjusted up.
@@ -86,10 +82,9 @@ class BoundedDate(Control):
             self.maximum = new
         if new > self.date:
             self.date = new
-        return new
 
-    def _post_validate_maximum(self, old, new):
-        """ Post validate the maximum date.
+    def _post_setattr_maximum(self, old, new):
+        """ Post setattr the maximum date.
 
         If the new maximum is less than the current value or the
         minimum, those values are adjusted down.
@@ -99,8 +94,10 @@ class BoundedDate(Control):
             self.minimum = new
         if new < self.date:
             self.date = new
-        return new
 
+    #--------------------------------------------------------------------------
+    # Post Validate Handlers
+    #--------------------------------------------------------------------------
     def _post_validate_date(self, old, new):
         """ Post validate the date for the control.
 
@@ -109,4 +106,3 @@ class BoundedDate(Control):
 
         """
         return max(self.minimum, min(new, self.maximum))
-
