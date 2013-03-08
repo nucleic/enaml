@@ -1,0 +1,78 @@
+body {
+	background-color: #D8D8D8;
+}
+
+#editor { 
+	float: left;
+    position: relative;
+    height: 96%;
+    width: 100%;
+    background-color: #fff;
+}
+
+#tabs {
+	width: 100%;
+	margin: 0;
+	float: left;
+}
+
+#tabs button:active {
+	text-shadow: 0 -1px 1px rgba(0,0,0,0.5);
+}
+
+#add_button {
+	float: left;
+	background: none;
+	border: none;
+	font-size: 1.2em;
+}
+
+#tab_list {
+	float: left;
+	margin: 0;
+	padding: 0;
+	width: 96%;
+	list-style-type: none;
+	display: table;
+}
+
+#tab_list li {
+	display: table-cell;
+	border-bottom: 1px solid #000;
+	border-top: 1px solid #000;
+	border-right: 1px solid #000;
+	background-color: gray;
+	border-radius: 10px 10px 0 0;
+	padding: 5px 10px 5px 10px;
+	background-color: gray;
+	color: #000;
+}
+
+#tab_list li:first_child {
+	border-left: 1px solid #000;
+}
+
+#tab_list li:hover {
+	cursor: default;
+}
+
+#tab_list li.current {
+	background-color: #000;
+	color: #fff;
+}
+
+#tab_list li button {
+	background: none;
+	border: none;
+	margin: 0 0 0 5px;
+	padding: 0;
+	float: right;
+	color: #000;
+}
+
+#tab_list li.current button {
+	color: #fff;
+}
+
+#tab_list li.current button:active {
+	text-shadow: 0 -1px 1px rgba(255,255,255,0.5);

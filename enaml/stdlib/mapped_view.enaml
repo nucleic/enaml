@@ -1,0 +1,61 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from collections import Iterable
+
+from enaml.widgets.include import Include
+
+
+def _mappedview_helper(model, typemap, kwargs, modelkey):
+    """ A helper function for the MappedView component.
+
+    This helper instantiates the view for the given configuration of
+    a MappedView component.
+
+    """
+    for t in type(model).mro():
+        if t in typemap:
+            if modelkey:
+                kwargs = dict(kwargs)
+                kwargs[modelkey] = model
+            r = typemap[t](**kwargs)
+            return list(r) if isinstance(r, Iterable) else [r]
+    raise TypeError('Unhandled model type `%s`' % type(model).__name__)
+
+
+enamldef MappedView(Include):
+    """ A custom Include subtype which will automatically create a
+    view based on the type of a given model object.
+
+    Attributes
+    ----------
+    model : object
+        The object acting as the model for this view. The mro of the
+        type of this object is traversed to find a match in the given
+        type map. If a match exists, the corresponding view is created.
+
+    typemap : dict
+        A dictionary which maps object type to a callable which returns
+        a view or iterable of views when invoked.
+
+    kwargs : dict, optional
+        Additional keyword arguments to pass to the matching callable.
+        The default is an empty dictionary.
+
+    modelkey : str, optional
+        If non-empty, this key will be added to the dict of keyword
+        arguments passed to a matching callable in the typemap. The
+        value of the key will be the model instance associated with
+        this AutoView. The default is 'model'.
+
+    """
+    attr model
+    attr typemap: dict
+    attr kwargs: dict = {}
+    attr modelkey: str = 'model'
+    objects << _mappedview_helper(model, typemap, kwargs, modelkey)
+

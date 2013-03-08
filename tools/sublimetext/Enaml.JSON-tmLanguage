@@ -1,0 +1,155 @@
+{ "name": "Enaml",
+  "scopeName": "source.enaml",
+  "fileTypes": ["enaml"],
+  "patterns": [
+    {
+      "comment": "Enaml Identifier",
+      "match": "^\\s*(id):\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*$",
+      "captures": {
+        "1": { "name": "keyword.other" },
+        "2": { "name": "variable.other" }
+      }
+    },
+    {
+      "comment": "Enaml Declaration",
+      "match": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):\\s*$",
+      "captures": {
+        "1": { "name": "storage.type"},
+        "2": { "name": "entity.name.type" },
+        "3": { "name": "entity.other.inherited-class" }
+      }
+    },
+    {
+      "comment": "Enaml Declaration with id",
+      "match": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*$",
+      "captures": {
+        "1": { "name": "storage.type"},
+        "2": { "name": "entity.name.type" },
+        "3": { "name": "entity.other.inherited-class" },
+        "4": { "name": "variable.other" }
+      }
+    },
+    {
+      "comment": "Enaml Declaration one liner with id",
+      "begin": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):\\s*([A-Za-z_][A-Za-z0-9_]*):",
+      "beginCaptures": {
+        "1": { "name": "storage.type"},
+        "2": { "name": "entity.name.type" },
+        "3": { "name": "entity.other.inherited-class" },
+        "4": { "name": "variable.other" }
+      },
+      "patterns": [
+        { "include": "source.python" }
+      ],
+      "end": "$"
+    },
+    {
+      "comment": "Enaml Declaration one liner",
+      "begin": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):",
+      "beginCaptures": {
+        "1": { "name": "storage.type"},
+        "2": { "name": "entity.name.type" },
+        "3": { "name": "entity.other.inherited-class" }
+      },
+      "patterns": [
+        { "include": "source.python" }
+      ],
+      "end": "$"
+    },
+    {
+      "comment": "Enaml Instantiation",
+      "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*$",
+      "captures": {
+        "1": { "name": "support.class" }
+      }
+    },
+    {
+      "comment": "Enaml Instantiation with id",
+      "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*$",
+      "captures": {
+        "1": { "name": "support.class" },
+        "2": { "name": "variable.other" }
+      }
+    },
+    {
+      "comment": "Enaml Instantiation one liner with id",
+      "begin": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*([A-Za-z_][A-Za-z0-9_]*):",
+      "beginCaptures": {
+        "1": { "name": "support.class" },
+        "2": { "name": "variable.other" }
+      },
+      "patterns": [
+        { "include": "source.python" }
+      ],
+      "end": "$"
+    },
+    {
+      "comment": "Enaml Instantiation one liner",
+      "begin": "^\\s*([A-Za-z_][A-Za-z0-9_]*):",
+      "beginCaptures": {
+        "1": { "name": "support.class" }
+      },
+      "patterns": [
+        { "include": "source.python" }
+      ],
+      "end": "$"
+    },
+    {
+      "comment": "Enaml Attribute Declaration",
+      "match": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
+      "captures": {
+        "1": { "name": "storage.type" },
+        "2": { "name": "entity.other.attribute-name" }
+      }
+    },
+    {
+      "comment": "Enaml Attribute Declaration with Type",
+      "match": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
+      "captures": {
+        "1": { "name": "storage.type" },
+        "2": { "name": "entity.other.attribute-name" },
+        "3": { "name": "support.class" }
+      }
+    },
+    {
+      "comment": "Enaml Attribute Declaration with Binding",
+      "begin": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "beginCaptures": {
+        "1": { "name": "storage.type" },
+        "2": { "name": "entity.other.attribute-name" },
+        "3": { "name": "keyword.operator" }
+      },
+      "patterns": [
+        { "include": "source.python" }
+      ],
+      "end": "$"
+    },
+    {
+      "comment": "Enaml Attribute Declaration with Type and Binding",
+      "begin": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "beginCaptures": {
+        "1": { "name": "storage.type" },
+        "2": { "name": "entity.other.attribute-name" },
+        "3": { "name": "support.class" },
+        "4": { "name": "keyword.operator" }
+      },
+      "patterns": [
+        { "include": "source.python" }
+      ],
+      "end": "$"
+    },
+    {
+      "comment": "Enaml Attribute Binding",
+      "begin": "^\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "beginCaptures": {
+        "2": { "name": "keyword.operator" }
+      },
+      "patterns": [
+        { "include": "source.python" }
+      ],
+      "end": "$"
+    },
+    { "include": "source.python" }
+  ],
+  "uuid": "df282ee7-7441-487e-9a58-bfebbd01a9ff"
+}

@@ -1,0 +1,157 @@
+<html>
+<head>
+	<script src="${resource_path}/ace/ace.js" type="text/javascript"></script>
+	<script src="${resource_path}/jquery-1.7.2.min.js" 
+		type="text/javascript"></script>
+	<script src="${resource_path}/jquery-ui-1.8.21.custom.min.js" 
+		type="text/javascript"></script>
+	<link rel="stylesheet" href="${resource_path}/editor.css" />
+	<title>ACE</title>
+</head>
+<body>
+	<div id="tabs">
+		<ul id="tab_list">
+			<li data-sessionid="initial">Untitled</li>
+		</ul>
+		<button id="add_button">+</button>
+	</div>
+	<div id="editor"></div>
+
+	<script type="text/javascript">
+	    var EditSession = require('ace/edit_session').EditSession
+		var editor = ace.edit("editor");
+		var tab_list = jQuery('#tab_list');
+		tab_list.sortable({
+			helper: 'clone',
+			scroll: false,
+			distance: 15,
+			axis: 'x'
+		});
+
+		var sessions = {
+			'initial' : new EditSession("")
+		}
+
+		tab_list.__defineSetter__("current_tab", function(tab) {
+			jQuery(tab).addClass('current');
+			this._current_tab = tab
+		});
+
+		tab_list.__defineGetter__("current_tab", function() {
+			return this._current_tab
+		});
+
+		tab_list.__defineSetter__("old_tab", function(tab) {
+			jQuery(tab).removeClass('current');
+			this._old_tab = tab
+		});
+
+		tab_list.__defineGetter__("old_tab", function() {
+			return this._old_tab
+		});
+
+		function removeTabItem() {
+			/* handler for when the 'x' on a tab is clicked
+
+			*/
+			li_list = jQuery('li', tab_list);
+			item = jQuery(this).parent();
+			if (item.attr('data-sessionid') == 
+				jQuery(tab_list.current_tab).attr('data-sessionid')) {
+				if (li_list.index(item) == li_list.length-1) {
+					tab_list.current_tab = item.prev();
+				}
+				else
+					tab_list.current_tab = item.next();
+			}
+			s = sessions[jQuery(tab_list.current_tab).attr('data-sessionid')]
+			editor.setSession(s);
+
+			jQuery(this).parent().remove();
+			delete sessions[item.attr('data-sessionid')];
+
+			li_list = jQuery("li", tab_list);
+
+			if (li_list.length == 1) {
+				jQuery('button', li_list).hide();
+				tab_list.sortable('disable');
+			}
+		}
+
+		function generateId() {
+			/* Generate a random 32 character id
+
+			*/
+			var result = '';
+			for(var j=0; j<32; j++) {
+				var i = Math.floor(Math.random()*16).toString(16).toUpperCase();
+				result = result + i;
+			}
+			return result
+		}
+
+		function addTabItem() {
+			/* Handler for when the '+' button is clicked
+
+			*/
+			li_list = jQuery('li', tab_list);
+			if (li_list.length == 1) {
+				jQuery('button', li_list[0]).show();
+				tab_list.sortable('enable');
+			}
+			li = document.createElement('li');
+			li.innerHTML = 'Untitled'
+			var id = generateId();
+			jQuery(li).attr('data-sessionid', id);
+			last_li = li_list[li_list.length-1]
+			jQuery(li).insertAfter(last_li);
+			setupTab(li);
+			sessions[id] = new EditSession('')
+		}
+
+		function clickTabItem() {
+			/* Handler for when a tab is clicked
+
+			*/
+			var id = jQuery(this).attr("data-sessionid");
+			var session = sessions[id];
+			if (jQuery(this) != tab_list.current_tab) {
+				editor.setSession(session);
+				tab_list.old_tab = tab_list.current_tab
+				tab_list.current_tab = jQuery(this);
+			}
+		}
+
+		function setupTab(tab) {
+			/* Sets up a tab by wrapping the text in a span and
+			adding the close button
+
+			*/
+			jQuery(tab).click(clickTabItem);
+			var span = document.createElement('span');
+			jQuery(tab).wrapInner(span);
+			var button = document.createElement('button');
+			button.innerHTML = "x";
+			if (jQuery('li', tab_list).length == 1)
+				jQuery(button).hide();
+			jQuery(button).insertAfter(jQuery('span', tab)[0]);
+			jQuery(button).click(removeTabItem);
+		}
+
+		var item_list  = jQuery('li', tab_list);
+		for (var i=0; i<item_list.length; i++) {
+			setupTab(item_list[i]);
+		}
+
+		tab_list.current_tab = jQuery('li', tab_list)[0];
+		tab_list._old_tab = tab_list.current_tab
+		jQuery('#add_button').click(addTabItem);
+
+		editor.setSession(sessions['initial']);
+
+		${events}
+		${bindings}
+	</script>
+</body>
+
+</html>

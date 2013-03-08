@@ -1,0 +1,16 @@
+*.pyc
+*.un~
+*.swp
+*.egg-info
+*.so
+*.pyd
+*.DS_Store
+*.enamlc
+*.c
+/build
+/dist
+/docs/build
+/docs/source/api_ref/widgets/*.rst
+
+.gitignore~
+*.orig
