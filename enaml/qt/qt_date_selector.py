@@ -91,18 +91,18 @@ class QtDateSelector(QtBoundedDate, ProxyDateSelector):
         finally:
             self._guard &= ~CHANGED_GUARD
 
-    def set_date_format(self, date_format):
+    def set_date_format(self, format):
         """ Set the widget's date format.
 
         Parameters
         ----------
-        date_format : str
+        format : str
             A Python time formatting string.
 
         """
         # XXX make sure Python's and Qt's format strings are the
         # same, or convert between the two.
-        self.widget.setDisplayFormat(date_format)
+        self.widget.setDisplayFormat(format)
 
     def set_calendar_popup(self, popup):
         """ Set whether a calendar popup is available on the widget.
