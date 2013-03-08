@@ -34,7 +34,7 @@ class ProxyWindow(ProxyWidget):
     def set_modality(self, modality):
         raise NotImplementedError
 
-    def set_icon_source(self, source):
+    def set_icon(self, icon):
         raise NotImplementedError
 
     def close(self):
