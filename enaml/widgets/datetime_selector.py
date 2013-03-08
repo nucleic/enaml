@@ -5,11 +5,25 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Str, observe, set_default
+from atom.api import Bool, Str, Typed, ForwardTyped, observe, set_default
 
 from enaml.core.declarative import d_
 
-from .bounded_datetime import BoundedDatetime
+from .bounded_datetime import BoundedDatetime, ProxyBoundedDatetime
+
+
+class ProxyDatetimeSelector(ProxyBoundedDatetime):
+    """ The abstract defintion of a proxy DatetimeSelector object.
+
+    """
+    #: A reference to the DateSelector declaration.
+    declaration = ForwardTyped(lambda: DatetimeSelector)
+
+    def set_datetime_format(self, format):
+        raise NotImplementedError
+
+    def set_calendar_popup(self, popup):
+        raise NotImplementedError
 
 
 class DatetimeSelector(BoundedDatetime):
@@ -28,23 +42,16 @@ class DatetimeSelector(BoundedDatetime):
     #: A datetime selector expands freely in width by default
     hug_width = set_default('ignore')
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Get the snapshot dictionary for the control.
+    #: A reference to the ProxyDateSelector object.
+    proxy = Typed(ProxyDatetimeSelector)
 
-        """
-        snap = super(DatetimeSelector, self).snapshot()
-        snap['datetime_format'] = self.datetime_format
-        snap['calendar_popup'] = self.calendar_popup
-        return snap
-
-    @observe(r'^(datetime_format|calendar_popup)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('datetime_format', 'calendar_popup'))
+    def _update_proxy(self, change):
+        """ An observer which updates the proxy with state change.
 
         """
         # The superclass implementation is sufficient.
-        super(DatetimeSelector, self).send_member_change(change)
-
+        super(DatetimeSelector, self)._update_proxy(change)
