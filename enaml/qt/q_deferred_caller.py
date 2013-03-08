@@ -109,4 +109,3 @@ def timedCall(ms, callback, *args, **kwargs):
     if c is None:
         c = _caller = QDeferredCaller()
     c.timedCall(ms, callback, *args, **kwargs)
-
