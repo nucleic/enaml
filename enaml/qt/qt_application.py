@@ -5,12 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from PyQt4.QtCore import QThread
+from PyQt4.QtGui import QApplication
+
 from atom.api import Typed, null
 
 from enaml.application import Application
 
-from .qt.QtCore import QThread
-from .qt.QtGui import QApplication
 from .q_deferred_caller import deferredCall, timedCall
 from .qt_factories import register_default
 from .qt_widget_registry import QtWidgetRegistry
