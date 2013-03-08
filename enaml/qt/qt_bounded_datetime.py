@@ -15,7 +15,7 @@ from .qt_control import QtControl
 
 
 def as_qdatetime(pydatetime):
-    """ Convert an iso datetime string to a QDateTime.
+    """ Convert a Python datetime into a QDateTime.
 
     """
     d = pydatetime
@@ -23,7 +23,7 @@ def as_qdatetime(pydatetime):
 
 
 def as_pydatetime(qdatetime):
-    """ Convert a QDateTime object into an iso datetime string.
+    """ Convert a QDateTime into a Python datetime.
 
     """
     return qdatetime.toPyDateTime()
@@ -44,7 +44,7 @@ class QtBoundedDatetime(QtControl, ProxyBoundedDatetime):
     # Initialization API
     #--------------------------------------------------------------------------
     def create_widget(self):
-        """ Implement in a subclass to create the date widget.
+        """ Implement in a subclass to create the datetime widget.
 
         """
         raise NotImplementedError
@@ -63,11 +63,7 @@ class QtBoundedDatetime(QtControl, ProxyBoundedDatetime):
     # Signal Handlers
     #--------------------------------------------------------------------------
     def on_datetime_changed(self):
-        """ A signal handler to connect to the datetime changed signal
-        of the underlying widget.
-
-        This will convert the QDateTime to iso format and send the Enaml
-        widget the 'event-changed' action.
+        """ A signal handler for the datetime changed signal.
 
         """
         if not self._guard & CHANGED_GUARD:

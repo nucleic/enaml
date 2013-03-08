@@ -62,11 +62,7 @@ class QtBoundedDate(QtControl, ProxyBoundedDate):
     # Signal Handlers
     #--------------------------------------------------------------------------
     def on_date_changed(self):
-        """ A signal handler to connect to the date changed signal of
-        the underlying widget.
-
-        This will convert the QDate to iso format and send the Enaml
-        widget the 'date_changed' action.
+        """ A signal handler for the date changed signal.
 
         """
         if not self._guard & CHANGED_GUARD:
