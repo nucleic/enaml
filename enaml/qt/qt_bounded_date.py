@@ -48,11 +48,11 @@ class QtBoundedDate(QtControl, ProxyBoundedDate):
         """
         raise NotImplementedError
 
-    def create(self):
+    def init_widget(self):
         """ Initialize the date widget.
 
         """
-        super(QtBoundedDate, self).create()
+        super(QtBoundedDate, self).init_widget()
         d = self.declaration
         self.set_minimum(d.minimum)
         self.set_maximum(d.maximum)
