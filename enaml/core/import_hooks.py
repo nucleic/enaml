@@ -14,8 +14,6 @@ import struct
 import sys
 import types
 
-from enaml.utils import abstractclassmethod
-
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
 
@@ -61,6 +59,17 @@ def make_file_info(src_path):
     fn = ''.join((fnroot, '.', MAGIC_TAG, os.path.extsep, 'enamlc'))
     cache_path = os.path.join(cache_dir, fn)
     return EnamlFileInfo(src_path, cache_path, cache_dir)
+
+
+class abstractclassmethod(classmethod):
+    """ A backport of the Python 3's abc.abstractclassmethod.
+
+    """
+    __isabstractmethod__ = True
+
+    def __init__(self, func):
+        func.__isabstractmethod__ = True
+        super(abstractclassmethod, self).__init__(func)
 
 
 #------------------------------------------------------------------------------
