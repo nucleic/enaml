@@ -33,7 +33,7 @@ CHANGED_GUARD = 0x1
 
 
 class QtBoundedDate(QtControl, ProxyBoundedDate):
-    """ A base class for implementing Qt-Enaml date widgets.
+    """ A base class for implementing Qt Enaml date widgets.
 
     """
     #: Cyclic notification guard. This a bitfield of multiple guards.
@@ -73,7 +73,7 @@ class QtBoundedDate(QtControl, ProxyBoundedDate):
             self.declaration.date = self.get_date()
 
     #--------------------------------------------------------------------------
-    # Utility Methods
+    # Abstract Methods and ProxyBoundedDate API
     #--------------------------------------------------------------------------
     def get_date(self):
         """ Return the current date in the control.
@@ -86,9 +86,6 @@ class QtBoundedDate(QtControl, ProxyBoundedDate):
         """
         raise NotImplementedError
 
-    #--------------------------------------------------------------------------
-    # ProxyBoundedDate API
-    #--------------------------------------------------------------------------
     def set_minimum(self, date):
         """ Set the widget's minimum date.
 
