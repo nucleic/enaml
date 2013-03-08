@@ -5,24 +5,53 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Unicode, observe
+from atom.api import Bool, Typed, ForwardTyped, Unicode, observe
 
 from enaml.core.declarative import d_
 
 from .action import Action
 from .action_group import ActionGroup
-from .widget import Widget
+from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
-class Menu(Widget):
+class ProxyMenu(ProxyToolkitObject):
+    """ The abstract definition of a proxy Menu object.
+
+    """
+    #: A reference to the Control declaration.
+    declaration = ForwardTyped(lambda: Menu)
+
+    def set_title(self, title):
+        raise NotImplementedError
+
+    def set_enabled(self, enabled):
+        raise NotImplementedError
+
+    def set_visible(self, visible):
+        raise NotImplementedError
+
+    def set_context_menu(self, context):
+        raise NotImplementedError
+
+
+class Menu(ToolkitObject):
     """ A widget used as a menu in a MenuBar.
 
     """
     #: The title to use for the menu.
     title = d_(Unicode())
 
+    #: Whether or not the menu is enabled.
+    enabled = d_(Bool(True))
+
+    #: Whether or not the menu is visible.
+    visible = d_(Bool(True))
+
     #: Whether this menu should behave as a context menu for its parent.
     context_menu = d_(Bool(False))
+
+    #: A reference to the ProxyMenu object.
+    proxy = Typed(ProxyMenu)
 
     @property
     def items(self):
@@ -33,26 +62,15 @@ class Menu(Widget):
         """
         isinst = isinstance
         allowed = (Action, ActionGroup, Menu)
-        items = (child for child in self.children if isinst(child, allowed))
-        return tuple(items)
+        return [child for child in self.children if isinst(child, allowed)]
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dict for the Menu.
-
-        """
-        snap = super(Menu, self).snapshot()
-        snap['title'] = self.title
-        snap['context_menu'] = self.context_menu
-        return snap
-
-    @observe(r'^(title|context_menu)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends menu state change.
+    @observe(('title', 'enabled', 'visible', 'context_menu'))
+    def _update_proxy(self, change):
+        """ An observer which updates the proxy when the menu changes.
 
         """
         # The superclass implementation is sufficient.
-        super(Menu, self).send_member_change(change)
-
+        super(Menu, self)._update_proxy(change)

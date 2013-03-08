@@ -5,11 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt
-from .qt.QtGui import QMenu
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QMenu
+
+from atom.api import Typed
+
+from enaml.widgets.menu import ProxyMenu
+
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup
-from .qt_widget import QtWidget
+from .qt_toolkit_object import QtToolkitObject
 
 
 class QCustomMenu(QMenu):
@@ -96,141 +101,134 @@ class QCustomMenu(QMenu):
             remove(action)
 
 
-class QtMenu(QtWidget):
-    """ A Qt implementation of an Enaml Menu.
+class QtMenu(QtToolkitObject, ProxyMenu):
+    """ A Qt implementation of an Enaml ProxyMenu.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QCustomMenu)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying menu widget.
 
         """
-        return QCustomMenu(parent)
+        self.widget = QCustomMenu(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
+    def init_widget(self):
+        """ Initialize the widget.
 
         """
-        super(QtMenu, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_context_menu(tree['context_menu'])
+        super(QtMenu, self).init_widget()
+        d = self.declaration
+        self.set_title(d.title)
+        self.set_enabled(d.enabled)
+        self.set_visible(d.visible)
+        self.set_context_menu(d.context_menu)
 
     def init_layout(self):
-        """ Initialize the layout for the underlying widget.
+        """ Initialize the layout of the widget.
 
         """
         super(QtMenu, self).init_layout()
-        widget = self.widget()
+        widget = self.widget
         for child in self.children():
             if isinstance(child, QtMenu):
-                widget.addMenu(child.widget())
+                widget.addMenu(child.widget)
             elif isinstance(child, QtAction):
-                widget.addAction(child.widget())
+                widget.addAction(child.widget)
             elif isinstance(child, QtActionGroup):
                 widget.addActions(child.actions())
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """  Handle the child removed event for a QtMenu.
+    # def child_removed(self, child):
+    #     """  Handle the child removed event for a QtMenu.
 
-        """
-        if isinstance(child, QtMenu):
-            self.widget().removeAction(child.widget().menuAction())
-        elif isinstance(child, QtAction):
-            self.widget().removeAction(child.widget())
-        elif isinstance(child, QtActionGroup):
-            self.widget().removeActions(child.actions())
+    #     """
+    #     if isinstance(child, QtMenu):
+    #         self.widget().removeAction(child.widget().menuAction())
+    #     elif isinstance(child, QtAction):
+    #         self.widget().removeAction(child.widget())
+    #     elif isinstance(child, QtActionGroup):
+    #         self.widget().removeActions(child.actions())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtMenu.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtMenu.
 
-        """
-        before = self.find_next_action(child)
-        if isinstance(child, QtMenu):
-            self.widget().insertMenu(before, child.widget())
-        elif isinstance(child, QtAction):
-            self.widget().insertAction(before, child.widget())
-        elif isinstance(child, QtActionGroup):
-            self.widget().insertActions(before, child.actions())
+    #     """
+    #     before = self.find_next_action(child)
+    #     if isinstance(child, QtMenu):
+    #         self.widget().insertMenu(before, child.widget())
+    #     elif isinstance(child, QtAction):
+    #         self.widget().insertAction(before, child.widget())
+    #     elif isinstance(child, QtActionGroup):
+    #         self.widget().insertActions(before, child.actions())
 
     #--------------------------------------------------------------------------
     # Utility Methods
     #--------------------------------------------------------------------------
-    def find_next_action(self, child):
-        """ Get the QAction instance which comes immediately after the
-        actions of the given child.
+    # def find_next_action(self, child):
+    #     """ Get the QAction instance which comes immediately after the
+    #     actions of the given child.
 
-        Parameters
-        ----------
-        child : QtMenu, QtActionGroup, or QtAction
-            The child of interest.
+    #     Parameters
+    #     ----------
+    #     child : QtMenu, QtActionGroup, or QtAction
+    #         The child of interest.
 
-        Returns
-        -------
-        result : QAction or None
-            The QAction which comes immediately after the actions of the
-            given child, or None if no actions follow the child.
+    #     Returns
+    #     -------
+    #     result : QAction or None
+    #         The QAction which comes immediately after the actions of the
+    #         given child, or None if no actions follow the child.
 
-        """
-        # The target action must be tested for membership against the
-        # current actions on the menu itself, since this method may be
-        # called after a child is added, but before the actions for the
-        # child have actually been added to the menu.
-        index = self.index_of(child)
-        if index != -1:
-            actions = set(self.widget().actions())
-            for child in self.children()[index + 1:]:
-                target = None
-                if isinstance(child, QtMenu):
-                    target = child.widget().menuAction()
-                elif isinstance(child, QtAction):
-                    target = child.widget()
-                elif isinstance(child, QtActionGroup):
-                    acts = child.actions()
-                    target = acts[0] if acts else None
-                if target in actions:
-                    return target
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        self.set_title(content['title'])
-
-    def on_action_set_context_menu(self, content):
-        """ Handle the 'set_context_menu' action from the Enaml widget.
-
-        """
-        self.set_context_menu(content['context_menu'])
+    #     """
+    #     # The target action must be tested for membership against the
+    #     # current actions on the menu itself, since this method may be
+    #     # called after a child is added, but before the actions for the
+    #     # child have actually been added to the menu.
+    #     index = self.index_of(child)
+    #     if index != -1:
+    #         actions = set(self.widget().actions())
+    #         for child in self.children()[index + 1:]:
+    #             target = None
+    #             if isinstance(child, QtMenu):
+    #                 target = child.widget().menuAction()
+    #             elif isinstance(child, QtAction):
+    #                 target = child.widget()
+    #             elif isinstance(child, QtActionGroup):
+    #                 acts = child.actions()
+    #                 target = acts[0] if acts else None
+    #             if target in actions:
+    #                 return target
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyMenu API
     #--------------------------------------------------------------------------
-    def set_visible(self, visible):
-        """ Set the visibility on the underlying widget.
-
-        This is an overridden method which sets the visibility on the
-        underlying QAction for the menu instead of on the menu itself.
-
-        """
-        self.widget().menuAction().setVisible(visible)
-
     def set_title(self, title):
         """ Set the title of the underlying widget.
 
         """
-        self.widget().setTitle(title)
+        self.widget.setTitle(title)
+
+    def set_visible(self, visible):
+        """ Set the visibility on the underlying widget.
+
+        """
+        self.widget.menuAction().setVisible(visible)
+
+    def set_enabled(self, enabled):
+        """ Set the enabled state of the widget.
+
+        """
+        self.widget.setEnabled(enabled)
 
     def set_context_menu(self, context):
         """ Set whether or not the menu is a context menu.
 
         """
-        self.widget().setContextMenu(context)
-
+        self.widget.setContextMenu(context)
