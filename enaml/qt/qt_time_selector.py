@@ -5,98 +5,100 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QTimeEdit
-from .qt_bounded_time import QtBoundedTime
+from PyQt4.QtGui import QTimeEdit
+
+from atom.api import Typed
+
+from enaml.widgets.time_selector import ProxyTimeSelector
+
+from .qt_bounded_time import QtBoundedTime, CHANGED_GUARD, as_qtime, as_pytime
 
 
-class QtTimeSelector(QtBoundedTime):
-    """ A Qt implementation of an Enaml TimeSelector.
+class QtTimeSelector(QtBoundedTime, ProxyTimeSelector):
+    """ A Qt implementation of an Enaml ProxyTimeSelector.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QTimeEdit)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying QTimeEdit widget.
+    def create_widget(self):
+        """ Create the QTimeEdit widget.
 
         """
-        return QTimeEdit(parent)
+        self.widget = QTimeEdit(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
-
-        """
-        super(QtTimeSelector, self).create(tree)
-        self.set_time_format(tree['time_format'])
-        self.widget().timeChanged.connect(self.on_time_changed)
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_time_format(self, content):
-        """ Handle the 'set_time_format' action from the Enaml widget.
+    def init_widget(self):
+        """ Initialize the widget.
 
         """
-        self.set_time_format(content['time_format'])
+        super(QtTimeSelector, self).init_widget()
+        d = self.declaration
+        self.set_time_format(d.time_format)
+        self.widget.timeChanged.connect(self.on_time_changed)
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # Abstract API Implementation
     #--------------------------------------------------------------------------
     def get_time(self):
         """ Return the current time in the control.
 
         Returns
         -------
-        result : QTime
-            The current control time as a QTime object.
+        result : time
+            The current control time as a time object.
 
         """
-        return self.widget().time()
+        return as_pytime(self.widget.time())
+
+    def set_minimum(self, time):
+        """ Set the widget's minimum time.
+
+        Parameters
+        ----------
+        time : time
+            The time object to use for setting the minimum time.
+
+        """
+        self.widget.setMinimumTime(as_qtime(time))
+
+    def set_maximum(self, time):
+        """ Set the widget's maximum time.
+
+        Parameters
+        ----------
+        time : time
+            The time object to use for setting the maximum time.
+
+        """
+        self.widget.setMaximumTime(as_qtime(time))
 
     def set_time(self, time):
         """ Set the widget's current time.
 
         Parameters
         ----------
-        time : QTime
-            The QTime object to use for setting the time.
+        time : time
+            The time object to use for setting the date.
 
         """
-        with self.loopback_guard('time'):
-            self.widget().setTime(time)
+        self._guard |= CHANGED_GUARD
+        try:
+            self.widget.setTime(as_qtime(time))
+        finally:
+            self._guard &= ~CHANGED_GUARD
 
-    def set_max_time(self, time):
-        """ Set the widget's maximum time.
-
-        Parameters
-        ----------
-        time : QTime
-            The QTime object to use for setting the maximum time.
-
-        """
-        self.widget().setMaximumTime(time)
-
-    def set_min_time(self, time):
-        """ Set the widget's minimum time.
-
-        Parameters
-        ----------
-        time : QTime
-            The QTime object to use for setting the minimum time.
-
-        """
-        self.widget().setMinimumTime(time)
-
-    def set_time_format(self, time_format):
+    def set_time_format(self, format):
         """ Set the widget's time format.
 
         Parameters
         ----------
-        time_format : str
+        format : str
             A Python time formatting string.
 
         """
         # XXX make sure Python's and Qt's format strings are the
         # same, or convert between the two.
-        self.widget().setDisplayFormat(time_format)
-
+        self.widget.setDisplayFormat(format)

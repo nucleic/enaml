@@ -5,11 +5,22 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Str, observe, set_default
+from atom.api import Str, Typed, ForwardTyped, observe, set_default
 
 from enaml.core.declarative import d_
 
-from .bounded_time import BoundedTime
+from .bounded_time import BoundedTime, ProxyBoundedTime
+
+
+class ProxyTimeSelector(ProxyBoundedTime):
+    """ The abstract defintion of a proxy TimeSelector object.
+
+    """
+    #: A reference to the TimeSelector declaration.
+    declaration = ForwardTyped(lambda: TimeSelector)
+
+    def set_time_format(self, format):
+        raise NotImplementedError
 
 
 class TimeSelector(BoundedTime):
@@ -25,23 +36,16 @@ class TimeSelector(BoundedTime):
     #: A time selector is free to expand in width by default.
     hug_width = set_default('ignore')
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Return a dictionary which contains all the state necessary to
-        initialize a client widget.
+    #: A reference to the ProxyDateSelector object.
+    proxy = Typed(ProxyTimeSelector)
 
-        """
-        snap = super(TimeSelector, self).snapshot()
-        snap['time_format'] = self.time_format
-        return snap
-
-    @observe('time_format', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe('time_format')
+    def _update_proxy(self, change):
+        """ An observer which updates the proxy with state change.
 
         """
         # The superclass implementation is sufficient.
-        super(TimeSelector, self).send_member_change(change)
-
+        super(TimeSelector, self)._update_proxy(change)
