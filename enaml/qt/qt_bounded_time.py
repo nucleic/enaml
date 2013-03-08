@@ -5,87 +5,101 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt, QTime
+from PyQt4.QtCore import QTime
+
+from atom.api import Int
+
+from enaml.widgets.bounded_time import ProxyBoundedTime
+
 from .qt_control import QtControl
 
 
-def as_qtime(iso_time):
-    """ Convert an iso time string to a QTime.
+def as_qtime(pytime):
+    """ Convert a Python time into a QTime.
 
     """
-    return QTime.fromString(iso_time, Qt.ISODate)
+    return QTime(pytime.hour, pytime.minute, pytime.second)
 
 
-def as_iso_time(qtime):
-    """ Convert a QTime object into and iso time string.
+def as_pytime(qtime):
+    """ Convert a QTime object into a Python time.
 
     """
-    return qtime.toString(Qt.ISODate)
+    return qtime.toPyTime()
 
 
-class QtBoundedTime(QtControl):
+# cyclic notification guard flags
+CHANGED_GUARD = 0x1
+
+
+class QtBoundedTime(QtControl, ProxyBoundedTime):
     """ A base class for implementing Qt-Enaml time widgets.
 
     """
-    #--------------------------------------------------------------------------
-    # Setup Methods
-    #--------------------------------------------------------------------------
-    def create(self, tree):
-        """ Create and initialize the underyling time widget.
-
-        """
-        super(QtBoundedTime, self).create(tree)
-        self.set_min_time(as_qtime(tree['minimum']))
-        self.set_max_time(as_qtime(tree['maximum']))
-        self.set_time(as_qtime(tree['time']))
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # Initialization API
     #--------------------------------------------------------------------------
-    def on_action_set_time(self, content):
-        """ Handle the 'set_time' action from the Enaml widget.
+    def create_widget(self):
+        """ Implement in a subclass to create the time widget.
 
         """
-        self.set_time(as_qtime(content['time']))
+        raise NotImplementedError
 
-    def on_action_set_minimum(self, content):
-        """ Handle the 'set_minimum' action from the Enaml widget.
-
-        """
-        self.set_min_time(as_qtime(content['minimum']))
-
-    def on_action_set_maximum(self, content):
-        """ Handle the 'set_maximum' action from the Enaml widget.
+    def init_widget(self):
+        """ Create and initialize the underlying time widget.
 
         """
-        self.set_max_time(as_qtime(content['maximum']))
+        super(QtBoundedTime, self).init_widget()
+        d = self.declaration
+        self.set_minimum(d.minimum)
+        self.set_maximum(d.maximum)
+        self.set_time(d.time)
 
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
     def on_time_changed(self):
-        """ A signal handler to connect to the time changed signal of
-        the underlying widget.
-
-        This will convert the QTime to iso format and send the Enaml
-        widget the 'time_changed' action.
+        """ A signal handler for the time changed signal.
 
         """
-        if 'time' not in self.loopback_guard:
-            qtime = self.get_time()
-            content = {'time': as_iso_time(qtime)}
-            self.send_action('time_changed', content)
+        if not self._guard & CHANGED_GUARD:
+            self.declaration.time = self.get_time()
 
     #--------------------------------------------------------------------------
-    # Abstract Methods
+    # Abstract Methods and ProxyBoundedDate API
     #--------------------------------------------------------------------------
     def get_time(self):
         """ Return the current time in the control.
 
         Returns
         -------
-        result : QTime
-            The current control time as a QTime object.
+        result : time
+            The current control time as a time object.
+
+        """
+        raise NotImplementedError
+
+    def set_minimum(self, time):
+        """ Set the widget's minimum time.
+
+        Parameters
+        ----------
+        time : time
+            The time object to use for setting the minimum time.
+
+        """
+        raise NotImplementedError
+
+    def set_maximum(self, time):
+        """ Set the widget's maximum time.
+
+        Parameters
+        ----------
+        time : time
+            The time object to use for setting the maximum time.
 
         """
         raise NotImplementedError
@@ -93,36 +107,10 @@ class QtBoundedTime(QtControl):
     def set_time(self, time):
         """ Set the widget's current time.
 
-        Implementations should enter the loopback guard using the key
-        'time' before setting the time.
-
         Parameters
         ----------
-        time : QTime
-            The QTime object to use for setting the time.
+        time : time
+            The time object to use for setting the time.
 
         """
         raise NotImplementedError
-
-    def set_max_time(self, time):
-        """ Set the widget's maximum time.
-
-        Parameters
-        ----------
-        time : QTime
-            The QTime object to use for setting the maximum time.
-
-        """
-        raise NotImplementedError
-
-    def set_min_time(self, time):
-        """ Set the widget's minimum time.
-
-        Parameters
-        ----------
-        time : QTime
-            The QTime object to use for setting the minimum time.
-
-        """
-        raise NotImplementedError
-

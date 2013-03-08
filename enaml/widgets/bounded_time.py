@@ -7,12 +7,28 @@
 #------------------------------------------------------------------------------
 from datetime import datetime, time as pytime
 
-from atom.api import Typed, observe
-from dateutil.parser import parse as parse_iso_dt
+from atom.api import Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
-from .control import Control
+from .control import Control, ProxyControl
+
+
+class ProxyBoundedTime(ProxyControl):
+    """ The abstract defintion of a proxy BoundedTime object.
+
+    """
+    #: A reference to the BoundedDate declaration.
+    declaration = ForwardTyped(lambda: BoundedTime)
+
+    def set_minimum(self, minimum):
+        raise NotImplementedError
+
+    def set_maximum(self, maximum):
+        raise NotImplementedError
+
+    def set_time(self, time):
+        raise NotImplementedError
 
 
 class BoundedTime(Control):
@@ -33,44 +49,25 @@ class BoundedTime(Control):
     #: The value is clipped between :attr:`minimum` and :attr:`maximum`.
     time = d_(Typed(pytime, factory=lambda: datetime.now().time()))
 
+    #: A reference to the ProxyBoundedTime object.
+    proxy = Typed(ProxyBoundedTime)
+
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Get the snapshot dictionary for the control.
+    @observe(('minimum', 'maximum', 'time'))
+    def _update_proxy(self, change):
+        """ An observer which updates the proxy when the data changes.
 
         """
-        snap = super(BoundedTime, self).snapshot()
-        snap['minimum'] = self.minimum.isoformat()
-        snap['maximum'] = self.maximum.isoformat()
-        snap['time'] = self.time.isoformat()
-        return snap
-
-    @observe(r'^(minimum|maximum|date)$', regex=True)
-    def send_time_change(self, change):
-        """ An observer which sends state change to the client.
-
-        """
-        name = change.name
-        if name not in self.loopback_guard:
-            content = {name: change.new.isoformat()}
-            self.send_action('set_' + name, content)
+        # The superclass implementation is sufficient.
+        super(BoundedTime, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
-    # Widget Updates
+    # Post Setattr Handlers
     #--------------------------------------------------------------------------
-    def on_action_time_changed(self, content):
-        """ Handle for the 'time_changed' action sent by the client.
-
-        """
-        time = parse_iso_dt(content['time']).time()
-        self.set_guarded(time=time)
-
-    #--------------------------------------------------------------------------
-    # Post Validation Handlers
-    #--------------------------------------------------------------------------
-    def _post_validate_minimum(self, old, new):
-        """ Post validate the minimum time.
+    def _post_setattr_minimum(self, old, new):
+        """ Post setattr the minimum time.
 
         If the new minimum is greater than the current value or the
         maximum, those values are adjusted up.
@@ -80,10 +77,9 @@ class BoundedTime(Control):
             self.maximum = new
         if new > self.time:
             self.time = new
-        return new
 
-    def _post_validate_maximum(self, old, new):
-        """ Post validate the maximum time.
+    def _post_setattr_maximum(self, old, new):
+        """ Post setattr the maximum time.
 
         If the new maximum is less than the current value or the
         minimum, those values are adjusted down.
@@ -92,9 +88,11 @@ class BoundedTime(Control):
         if new < self.minimum:
             self.minimum = new
         if new < self.time:
-            self.date = new
-        return new
+            self.time = new
 
+    #--------------------------------------------------------------------------
+    # Post Validate Handlers
+    #--------------------------------------------------------------------------
     def _post_validate_time(self, old, new):
         """ Post validate the time for the control.
 
@@ -103,4 +101,3 @@ class BoundedTime(Control):
 
         """
         return max(self.minimum, min(new, self.maximum))
-
