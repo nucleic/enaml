@@ -5,60 +5,59 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt, QDateTime
+from PyQt4.QtCore import QDateTime
+
+from atom.api import Int
+
+from enaml.widgets.bounded_datetime import ProxyBoundedDatetime
+
 from .qt_control import QtControl
 
 
-def as_qdatetime(iso_datetime):
+def as_qdatetime(pydatetime):
     """ Convert an iso datetime string to a QDateTime.
 
     """
-    return QDateTime.fromString(iso_datetime, Qt.ISODate)
+    d = pydatetime
+    return QDateTime(d.year, d.month, d.day, d.hour, d.minute, d.second)
 
 
-def as_iso_datetime(qdatetime):
+def as_pydatetime(qdatetime):
     """ Convert a QDateTime object into an iso datetime string.
 
     """
-    return qdatetime.toString(Qt.ISODate)
+    return qdatetime.toPyDateTime()
 
 
-class QtBoundedDatetime(QtControl):
-    """ A base class for implementing Qt-Enaml datetime widgets.
+# cyclic notification guard flags
+CHANGED_GUARD = 0x1
+
+
+class QtBoundedDatetime(QtControl, ProxyBoundedDatetime):
+    """ A base class for implementing Qt Enaml datetime widgets.
 
     """
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create(self, create):
+    def create_widget(self):
+        """ Implement in a subclass to create the date widget.
+
+        """
+        raise NotImplementedError
+
+    def init_widget(self):
         """ Create and initialize the underlying datetime widget.
 
         """
-        super(QtBoundedDatetime, self).create(create)
-        self.set_min_datetime(as_qdatetime(create['minimum']))
-        self.set_max_datetime(as_qdatetime(create['maximum']))
-        self.set_datetime(as_qdatetime(create['datetime']))
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_datetime(self, content):
-        """ Handle the 'set_datetime' action from the Enaml widget.
-
-        """
-        self.set_datetime(as_qdatetime(content['datetime']))
-
-    def on_action_set_minimum(self, content):
-        """ Handle the 'set_minimum' action from the Enaml widget.
-
-        """
-        self.set_min_datetime(as_qdatetime(content['minimum']))
-
-    def on_action_set_maximum(self, content):
-        """ Handle the 'set_maximum' action from the Enaml widget.
-
-        """
-        self.set_max_datetime(as_qdatetime(content['maximum']))
+        super(QtBoundedDatetime, self).init_widget()
+        d = self.declaration
+        self.set_minimum(d.minimum)
+        self.set_maximum(d.maximum)
+        self.set_datetime(d.datetime)
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -71,21 +70,41 @@ class QtBoundedDatetime(QtControl):
         widget the 'event-changed' action.
 
         """
-        if 'datetime' not in self.loopback_guard:
-            qdatetime = self.get_datetime()
-            content = {'datetime': as_iso_datetime(qdatetime)}
-            self.send_action('datetime_changed', content)
+        if not self._guard & CHANGED_GUARD:
+            self.declaration.datetime = self.get_datetime()
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # Abstract Methods and ProxyBoundedDate API
     #--------------------------------------------------------------------------
     def get_datetime(self):
         """ Return the current datetime in the control.
 
         Returns
         -------
-        result : QDateTime
-            The current control datetime as a QDateTime object.
+        result : datetime
+            The current control datetime as a datetime object.
+
+        """
+        raise NotImplementedError
+
+    def set_minimum(self, datetime):
+        """ Set the widget's minimum datetime.
+
+        Parameters
+        ----------
+        datetime : datetime
+            The datetime object to use for setting the minimum datetime.
+
+        """
+        raise NotImplementedError
+
+    def set_maximum(self, datetime):
+        """ Set the widget's maximum datetime.
+
+        Parameters
+        ----------
+        datetime : datetime
+            The datetime object to use for setting the maximum datetime.
 
         """
         raise NotImplementedError
@@ -93,36 +112,10 @@ class QtBoundedDatetime(QtControl):
     def set_datetime(self, datetime):
         """ Set the widget's current datetime.
 
-        Implementations should enter the loopback guard using the key
-        'datetime' before setting the datetime.
-
         Parameters
         ----------
-        datetime : QDateTime
-            The QDateTime object to use for setting the datetime.
+        datetime : datetime
+            The datetime object to use for setting the datetime.
 
         """
         raise NotImplementedError
-
-    def set_max_datetime(self, datetime):
-        """ Set the widget's maximum datetime.
-
-        Parameters
-        ----------
-        datetime : QDateTime
-            The QDateTime object to use for setting the maximum datetime.
-
-        """
-        raise NotImplementedError
-
-    def set_min_datetime(self, datetime):
-        """ Set the widget's minimum datetime.
-
-        Parameters
-        ----------
-        datetime : QDateTime
-            The QDateTime object to use for setting the minimum datetime.
-
-        """
-        raise NotImplementedError
-
