@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import QObject, QTimer, Qt, Signal
-from .qt.QtGui import QApplication
+from PyQt4.QtCore import QObject, QTimer, Qt, pyqtSignal
+from PyQt4.QtGui import QApplication
 
 
 class QDeferredCaller(QObject):
@@ -14,7 +14,7 @@ class QDeferredCaller(QObject):
     main application thread.
 
     """
-    _posted = Signal(object)
+    _posted = pyqtSignal(object)
 
     def __init__(self):
         """ Initialize a QDeferredCaller.
