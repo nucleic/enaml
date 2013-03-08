@@ -6,12 +6,29 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, List, Int, CachedProperty, Unicode, set_default, observe
+    Bool, List, Int, Property, Unicode, Typed, ForwardTyped, set_default, observe
 )
 
 from enaml.core.declarative import d_
 
-from .control import Control
+from .control import Control, ProxyControl
+
+
+class ProxyComboBox(ProxyControl):
+    """ The abstract defintion of a proxy ComboBox object.
+
+    """
+    #: A reference to the ComboBox declaration.
+    declaration = ForwardTyped(lambda: ComboBox)
+
+    def set_items(self, items):
+        raise NotImplementedError
+
+    def set_index(self, index):
+        raise NotImplementedError
+
+    def set_editable(self, editable):
+        raise NotImplementedError
 
 
 class ComboBox(Control):
@@ -34,49 +51,28 @@ class ComboBox(Control):
     #: A readonly property that will return the currently selected
     #: item. If the index falls out of range, the selected item will
     #: be the empty string.
-    selected_item = CachedProperty(Unicode())
+    selected_item = Property(cached=True)
 
     #: A combo box hugs its width weakly by default.
     hug_width = set_default('weak')
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Get the snapshot dict for the control.
-
-        """
-        snap = super(ComboBox, self).snapshot()
-        snap['items'] = self.items
-        snap['index'] = self.index
-        snap['editable'] = self.editable
-        return snap
-
-    @observe(r'^(index|items|editable)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
-
-        """
-        # The superclass handler implementation is sufficient.
-        super(ComboBox, self).send_member_change(change)
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_index_changed(self, content):
-        """ The message handler for the 'index_changed' action from the
-        client widget. The content will contain the selected 'index'.
-
-        """
-        index = content['index']
-        self.set_guarded(index=index)
+    #: A reference to the ProxyComboBox object.
+    proxy = Typed(ProxyComboBox)
 
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(r'^(index|items)$', regex=True)
+    @observe(('index', 'items', 'editable'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
+
+        """
+        # The superclass handler implementation is sufficient.
+        super(ComboBox, self)._update_proxy(change)
+
+    @observe(('index', 'items'))
     def _reset_selected_item(self, change):
-        CachedProperty.reset(self, 'selected_item')
+        self.get_member('selected_item').reset(self)
 
     #--------------------------------------------------------------------------
     # Property Handlers
@@ -90,4 +86,3 @@ class ComboBox(Control):
         if idx < 0 or idx >= len(items):
             return u''
         return items[idx]
-
