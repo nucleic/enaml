@@ -5,7 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .bounded_date import BoundedDate
+from atom.api import Typed, ForwardTyped
+
+from .bounded_date import BoundedDate, ProxyBoundedDate
+
+
+class ProxyCalendar(ProxyBoundedDate):
+    """ The abstract defintion of a proxy Calendar object.
+
+    """
+    #: A reference to the Calendar declaration.
+    declaration = ForwardTyped(lambda: Calendar)
 
 
 class Calendar(BoundedDate):
@@ -13,6 +23,5 @@ class Calendar(BoundedDate):
     a widget which resembles a calendar.
 
     """
-    # The BoundedDate interface is sufficient for a Calendar
-    pass
-
+    #: A reference to the ProxyCalendar object.
+    proxy = Typed(ProxyCalendar)
