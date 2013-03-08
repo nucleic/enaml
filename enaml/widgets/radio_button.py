@@ -5,9 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool
+from atom.api import Typed, ForwardTyped, set_default
 
-from .abstract_button import AbstractButton
+from .abstract_button import AbstractButton, ProxyAbstractButton
+
+
+class ProxyRadioButton(ProxyAbstractButton):
+    """ The abstract definition of a proxy PushButton object.
+
+    """
+    #: A reference to the RadioButton declaration.
+    declaration = ForwardTyped(lambda: RadioButton)
 
 
 class RadioButton(AbstractButton):
@@ -26,5 +34,7 @@ class RadioButton(AbstractButton):
 
     """
     #: Radio buttons are checkable by default.
-    checkable = Bool(True)
+    checkable = set_default(True)
 
+    #: A reference to the ProxyRadioButton object.
+    proxy = Typed(ProxyRadioButton)
