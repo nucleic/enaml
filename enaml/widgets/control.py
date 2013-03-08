@@ -5,7 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .constraints_widget import ConstraintsWidget
+from atom.api import Typed, ForwardTyped
+
+from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
+
+
+class ProxyControl(ProxyConstraintsWidget):
+    """ The abstract definition of a proxy Control object.
+
+    """
+    #: A reference to the Control declaration.
+    declaration = ForwardTyped(lambda: Control)
 
 
 class Control(ConstraintsWidget):
@@ -16,5 +26,5 @@ class Control(ConstraintsWidget):
     a placeholder for potential future functionality.
 
     """
-    pass
-
+    #: A reference to the proxy Control object.
+    proxy = Typed(ProxyControl)
