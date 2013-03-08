@@ -52,6 +52,12 @@ class ProxyWidget(ProxyToolkitObject):
     def set_show_focus_rect(self, show_focus_rect):
         raise NotImplementedError
 
+    def ensure_visible(self):
+        raise NotImplementedError
+
+    def ensure_hidden(self):
+        raise NotImplementedError
+
 
 class Widget(ToolkitObject):
     """ The base class of visible widgets in Enaml.
@@ -110,3 +116,24 @@ class Widget(ToolkitObject):
         """
         # The superclass implementation is sufficient.
         super(Widget, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def show(self):
+        """ Ensure the widget is shown.
+
+        Calling this method will also set the widget visibility to True.
+
+        """
+        self.visible = True
+        self.proxy.ensure_visible()
+
+    def hide(self):
+        """ Ensure the widget is hidden.
+
+        Calling this method will also set the widget visibility to False.
+
+        """
+        self.visible = False
+        self.proxy.ensure_hidden()

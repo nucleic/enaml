@@ -179,3 +179,15 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setStatusTip(status_tip)
+
+    def ensure_visible(self):
+        """ Ensure the widget is visible.
+
+        """
+        self.widget.setVisible(True)
+
+    def ensure_hidden(self):
+        """ Ensure the widget is hidden.
+
+        """
+        self.widget.setVisible(False)
