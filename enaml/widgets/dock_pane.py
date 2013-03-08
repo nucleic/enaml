@@ -5,12 +5,49 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import List, Enum, Unicode, Bool, Event, observe
+from atom.api import (
+    List, Enum, Unicode, Bool, Event, Typed, ForwardTyped, observe
+)
 
 from enaml.core.declarative import d_
 
 from .container import Container
-from .widget import Widget
+from .widget import Widget, ProxyWidget
+
+
+class ProxyDockPane(ProxyWidget):
+    """ The abstract definition of a proxy DockPane object.
+
+    """
+    #: A reference to the Control declaration.
+    declaration = ForwardTyped(lambda: DockPane)
+
+    def set_title(self, title):
+        raise NotImplementedError
+
+    def set_title_bar_visible(self, visible):
+        raise NotImplementedError
+
+    def set_title_bar_orientation(self, orientation):
+        raise NotImplementedError
+
+    def set_closable(self, closable):
+        raise NotImplementedError
+
+    def set_movable(self, movable):
+        raise NotImplementedError
+
+    def set_floatable(self, floatable):
+        raise NotImplementedError
+
+    def set_floating(self, floating):
+        raise NotImplementedError
+
+    def set_dock_area(self, area):
+        raise NotImplementedError
+
+    def set_allowed_dock_areas(self, areas):
+        raise NotImplementedError
 
 
 class DockPane(Widget):
@@ -56,87 +93,27 @@ class DockPane(Widget):
     #: dock pane's close button.
     closed = Event()
 
+    #: A reference to the ProxyDockPane object.
+    proxy = Typed(ProxyDockPane)
+
     @property
     def dock_widget(self):
         """ A read only property which returns the dock widget.
 
         """
-        widget = None
-        for child in self.children:
+        for child in reversed(self.children):
             if isinstance(child, Container):
-                widget = child
-        return widget
+                return child
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dict for the DockPane.
-
-        """
-        snap = super(DockPane, self).snapshot()
-        snap['title'] = self.title
-        snap['title_bar_visible'] = self.title_bar_visible
-        snap['title_bar_orientation'] = self.title_bar_orientation
-        snap['closable'] = self.closable
-        snap['movable'] = self.movable
-        snap['floatable'] = self.floatable
-        snap['floating'] = self.floating
-        snap['dock_area'] = self.dock_area
-        snap['allowed_dock_areas'] = self.allowed_dock_areas
-        return snap
-
-    @observe(r'^(title|title_bar_visible|title_bar_orientation|closable|'
-             r'movable|floatable|floating|dock_area|allowed_dock_areas)$',
-             regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    @observe(('title', 'title_bar_visible', 'title_bar_orientation',
+        'closable', 'movable', 'floatable', 'floating', 'dock_area',
+        'allowed_dock_areas'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(DockPane, self).send_member_change(change)
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_closed(self, content):
-        """ Handle the 'closed' action from the client widget.
-
-        """
-        self.set_guarded(visible=False)
-        self.closed()
-
-    def on_action_floated(self, content):
-        """ Handle the 'floated' action from the client widget.
-
-        """
-        self.set_guarded(floating=True)
-
-    def on_action_docked(self, content):
-        """ Handle the 'docked' action from the client widget.
-
-        """
-        self.set_guarded(floating=False)
-        self.set_guarded(dock_area=content['dock_area'])
-
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
-    def open(self):
-        """ Open the dock pane in the MainWindow.
-
-        Calling this method will also set the pane visibility to True.
-
-        """
-        self.set_guarded(visible=True)
-        self.send_action('open', {})
-
-    def close(self):
-        """ Close the dock pane in the MainWindow.
-
-        Calling this method will set the pane visibility to False.
-
-        """
-        self.set_guarded(visible=False)
-        self.send_action('close', {})
-
+        super(DockPane, self)._update_proxy(change)

@@ -5,9 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt, Signal
-from .qt.QtGui import QDockWidget, QWidget
-from .qt_container import QtContainer
+from PyQt4.QtCore import Qt, pyqtSignal
+from PyQt4.QtGui import QDockWidget, QWidget
+
+from atom.api import Int, Typed
+
+from enaml.widgets.dock_pane import ProxyDockPane
+
 from .qt_widget import QtWidget
 
 
@@ -36,26 +40,20 @@ class QCustomDockWidget(QDockWidget):
 
     """
     #: A signal emitted when the dock widget is closed by the user.
-    closed = Signal()
+    closed = pyqtSignal()
 
     #: A signal emitted when the dock widget is floated.
-    floated = Signal()
+    floated = pyqtSignal()
 
     #: A signal emitted when the dock widget is docked. The payload
     #: will be the new dock area.
-    docked = Signal(object)
+    docked = pyqtSignal(object)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, parent=None):
         """ Initialize a QCustomDockWidget.
 
-        Parameters
-        ----------
-        *args, **kwargs
-            The positional and keyword arguments needed to initialize
-            a QDockWidget.
-
         """
-        super(QCustomDockWidget, self).__init__(*args, **kwargs)
+        super(QCustomDockWidget, self).__init__(parent)
         self._title_bar_visible = True
         self._dock_area = Qt.LeftDockWidgetArea
         self.topLevelChanged.connect(self._onTopLevelChanged)
@@ -158,34 +156,45 @@ class QCustomDockWidget(QDockWidget):
                 self._hideTitleBar()
 
 
-class QtDockPane(QtWidget):
-    """ A Qt implementation of an Enaml DockPane.
+# cyclic notification guard flags
+FLOATED_GUARD = 0x1
+
+
+class QtDockPane(QtWidget, ProxyDockPane):
+    """ A Qt implementation of an Enaml ProxyDockPane.
 
     """
+    #: A reference tot he widget created by the proxy.
+    widget = Typed(QCustomDockWidget)
+
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying dock pane widget.
+    def create_widget(self):
+        """ Create the QCustomDockWidget widget.
 
         """
-        return QCustomDockWidget(parent)
+        self.widget = QCustomDockWidget(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the dock pane control.
+    def init_widget(self):
+        """ Initialize the dock pane control.
 
         """
-        super(QtDockPane, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_title_bar_visible(tree['title_bar_visible'])
-        self.set_title_bar_orientation(tree['title_bar_orientation'])
-        self.set_closable(tree['closable'])
-        self.set_movable(tree['movable'])
-        self.set_floatable(tree['floatable'])
-        self.set_floating(tree['floating'])
-        self.set_dock_area(tree['dock_area'])
-        self.set_allowed_dock_areas(tree['allowed_dock_areas'])
-        widget = self.widget()
+        super(QtDockPane, self).init_widget()
+        d = self.declaration
+        self.set_title(d.title)
+        self.set_title_bar_visible(d.title_bar_visible)
+        self.set_title_bar_orientation(d.title_bar_orientation)
+        self.set_closable(d.closable)
+        self.set_movable(d.movable)
+        self.set_floatable(d.floatable)
+        self.set_floating(d.floating)
+        self.set_dock_area(d.dock_area)
+        self.set_allowed_dock_areas(d.allowed_dock_areas)
+        widget = self.widget
         widget.closed.connect(self.on_closed)
         widget.floated.connect(self.on_floated)
         widget.docked.connect(self.on_docked)
@@ -195,7 +204,7 @@ class QtDockPane(QtWidget):
 
         """
         super(QtDockPane, self).init_layout()
-        self.widget().setWidget(self.dock_widget())
+        self.widget.setWidget(self.dock_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -210,28 +219,26 @@ class QtDockPane(QtWidget):
             not defined.
 
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, QtContainer):
-                widget = child.widget()
-        return widget
+        d = self.declaration.dock_widget
+        if d is not None:
+            return d.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtDockPane.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event for a QtDockPane.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setWidget(self.dock_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setWidget(self.dock_widget())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtDockPane.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtDockPane.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setWidget(self.dock_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setWidget(self.dock_widget())
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -242,116 +249,52 @@ class QtDockPane(QtWidget):
         """
         # The closed signal is only emitted when the widget is closed
         # by the user, so there is no need for a loopback guard.
-        self.send_action('closed', {})
+        self.declaration.visible = False
+        self.declaration.closed()
 
     def on_floated(self):
         """ The signal handler for the 'floated' signal.
 
         """
-        if 'floating' not in self.loopback_guard:
-            self.send_action('floated', {})
+        if not self._guard & FLOATED_GUARD:
+            self._guard |= FLOATED_GUARD
+            try:
+                self.declaration.floating = True
+            finally:
+                self._guard &= ~FLOATED_GUARD
 
     def on_docked(self, area):
         """ The signal handler for the 'docked' signal.
 
         """
-        if 'floating' not in self.loopback_guard:
-            content = {'dock_area': _DOCK_AREA_INV_MAP[area]}
-            self.send_action('docked', content)
+        if not self._guard & FLOATED_GUARD:
+            self._guard |= FLOATED_GUARD
+            try:
+                self.declaration.floating = False
+                self.declaration.dock_area = _DOCK_AREA_INV_MAP[area]
+            finally:
+                self._guard &= ~FLOATED_GUARD
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        self.set_title(content['title'])
-
-    def on_action_set_title_bar_visible(self, content):
-        """ Handle the 'set_title_bar_visible' action from the Enaml
-        widget.
-
-        """
-        self.set_title_bar_visible(content['title_bar_visible'])
-
-    def on_action_set_title_bar_orientation(self, content):
-        """ Handle the 'set_title_bar_orientation' action from the
-        Enaml widget.
-
-        """
-        self.set_title_bar_orientation(content['title_bar_orientation'])
-
-    def on_action_set_closable(self, content):
-        """ Handle the 'set_closable' action from the Enaml widget.
-
-        """
-        self.set_closable(content['closable'])
-
-    def on_action_set_movable(self, content):
-        """ Handle the 'set_movable' action from the Enaml widget.
-
-        """
-        self.set_movable(content['movable'])
-
-    def on_action_set_floatable(self, content):
-        """ Handle the 'set_floatable' action from the Enaml widget.
-
-        """
-        self.set_floatable(content['floatable'])
-
-    def on_action_set_floating(self, content):
-        """ Handle the 'set_floating' action from the Enaml widget.
-
-        """
-        self.set_floating(content['floating'])
-
-    def on_action_set_dock_area(self, content):
-        """ Handle the 'set_dock_area' action from the Enaml widget.
-
-        """
-        self.set_dock_area(content['dock_area'])
-
-    def on_action_set_allowed_dock_areas(self, content):
-        """ Handle the 'set_allowed_dock_areas' action from the Enaml
-        widget.
-
-        """
-        self.set_allowed_dock_areas(content['allowed_dock_areas'])
-
-    def on_action_open(self, content):
-        """ Handle the 'open' action from the Enaml widget.
-
-        """
-        self.widget().setVisible(True)
-
-    def on_action_close(self, content):
-        """ Handle the 'close' action from the Enaml widget.
-
-        """
-        # Don't call widget.close() since that will fire a closeEvent.
-        self.widget().setVisible(False)
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyDockPane API
     #--------------------------------------------------------------------------
     def set_title(self, title):
         """ Set the title on the underlying widget.
 
         """
-        self.widget().setWindowTitle(title)
+        self.widget.setWindowTitle(title)
 
     def set_title_bar_visible(self, visible):
         """ Set the title bar visibility of the underlying widget.
 
         """
-        self.widget().setTitleBarVisible(visible)
+        self.widget.setTitleBarVisible(visible)
 
     def set_title_bar_orientation(self, orientation):
         """ Set the title bar orientation of the underyling widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         features = widget.features()
         if orientation == 'vertical':
             features |= QDockWidget.DockWidgetVerticalTitleBar
@@ -363,7 +306,7 @@ class QtDockPane(QtWidget):
         """ Set the closable state on the underlying widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         features = widget.features()
         if closable:
             features |= QDockWidget.DockWidgetClosable
@@ -375,7 +318,7 @@ class QtDockPane(QtWidget):
         """ Set the movable state on the underlying widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         features = widget.features()
         if movable:
             features |= QDockWidget.DockWidgetMovable
@@ -387,7 +330,7 @@ class QtDockPane(QtWidget):
         """ Set the floatable state on the underlying widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         features = widget.features()
         if floatable:
             features |= QDockWidget.DockWidgetFloatable
@@ -399,14 +342,18 @@ class QtDockPane(QtWidget):
         """ Set the floating staet on the underlying widget.
 
         """
-        with self.loopback_guard('floating'):
-            self.widget().setFloating(floating)
+        if not self._guard & FLOATED_GUARD:
+            self._guard |= FLOATED_GUARD
+            try:
+                self.widget.setFloating(floating)
+            finally:
+                self._guard &= ~FLOATED_GUARD
 
     def set_dock_area(self, dock_area):
         """ Set the dock area on the underlying widget.
 
         """
-        self.widget().setDockArea(_DOCK_AREA_MAP[dock_area])
+        self.widget.setDockArea(_DOCK_AREA_MAP[dock_area])
 
     def set_allowed_dock_areas(self, dock_areas):
         """ Set the allowed dock areas on the underlying widget.
@@ -415,5 +362,4 @@ class QtDockPane(QtWidget):
         qt_areas = Qt.NoDockWidgetArea
         for area in dock_areas:
             qt_areas |= _DOCK_AREA_MAP[area]
-        self.widget().setAllowedAreas(qt_areas)
-
+        self.widget.setAllowedAreas(qt_areas)
