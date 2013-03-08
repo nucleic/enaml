@@ -30,4 +30,3 @@ version_info = version_info(MAJOR, MINOR, MICRO)
 
 # Remove everything but the 'version_info' from this module.
 del namedtuple, MAJOR, MINOR, MICRO
-
