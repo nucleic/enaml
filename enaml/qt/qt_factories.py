@@ -35,6 +35,11 @@ def container_factory():
     return QtContainer
 
 
+def control_factory():
+    from .qt_control import QtControl
+    return QtControl
+
+
 def date_selector_factory():
     from .qt_date_selector import QtDateSelector
     return QtDateSelector
@@ -240,6 +245,7 @@ def register_default():
     register('CheckBox', check_box_factory)
     register('ComboBox', combo_box_factory)
     register('Container', container_factory)
+    register('Control', control_factory)
     register('DateSelector', date_selector_factory)
     register('DatetimeSelector', datetime_selector_factory)
     register('DockPane', dock_pane_factory)
