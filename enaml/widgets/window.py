@@ -139,6 +139,7 @@ class Window(Widget):
         and build the window hierarchy if needed.
 
         """
+        # XXX i'm still not sure this is where this code should live.
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
