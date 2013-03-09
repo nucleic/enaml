@@ -52,8 +52,8 @@ class ProxyToolkitObject(Atom):
 
         Returns
         -------
-        result : iterable
-            An iterable of the child toolkit objects for this object.
+        result : generator
+            A generator which yields the child proxy objects.
 
         """
         for d in self.declaration.children:
@@ -77,18 +77,20 @@ class ToolkitObject(Declarative):
     #: True by external code after the proxy widget hierarchy is setup.
     proxy_is_active = flag_property(ACTIVE_PROXY_FLAG)
 
-    def __init__(self, parent=None, **kwargs):
-        """ Initialize a ToolkitObject.
+    def initialize(self):
+        """ A reimplemented initializer.
+
+        This initializer will invoke the application to create the
+        proxy if one has not already been provided.
 
         """
-        super(ToolkitObject, self).__init__(parent, **kwargs)
-        app = Application.instance()
-        if app is not None:
+        if not self.proxy:
+            app = Application.instance()
+            if app is None:
+                msg = 'cannot create a proxy without an active Application'
+                raise RuntimeError(msg)
             self.proxy = app.create_proxy(self)
-        else:
-            msg = 'the Application must be created before creating any '
-            msg += 'instances of ToolkitObject'
-            raise RuntimeError(msg)
+        super(ToolkitObject, self).initialize()
 
     def destroy(self):
         """ A reimplemented destructor.
