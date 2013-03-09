@@ -147,7 +147,8 @@ class ConstraintsWidget(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('constraints', 'hug_width', 'hug_height', 'resist_width', 'resist_height'))
+    @observe(('constraints', 'hug_width', 'hug_height', 'resist_width',
+        'resist_height'))
     def _layout_invalidated(self, change):
         """ An observer which will relayout the proxy widget.
 
@@ -164,12 +165,16 @@ class ConstraintsWidget(Widget):
         trigger that will be dispatched on the next event cycle.
 
         """
-        app = Application.instance()
-        if app is not None:
-            if not self._layout_task:
-                task = app.schedule(lambda: self.proxy.relayout())
-                task.notify(lambda: delattr(self, '_layout_task'))
-                self._layout_task = task
+        if self.proxy_is_active and not self._layout_task:
+            def layout_task():
+                if self.proxy_is_active:
+                    self.proxy.relayout()
+            def task_completed(r):
+                del self._layout_task
+            app = Application.instance()
+            task = app.schedule(layout_task)
+            task.notify(task_completed)
+            self._layout_task = task
 
     def when(self, switch):
         """ A method which returns `self` or None based on the truthness
