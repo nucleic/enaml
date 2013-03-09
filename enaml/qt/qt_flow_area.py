@@ -5,7 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QScrollArea, QFrame
+from PyQt4.QtGui import QScrollArea, QFrame
+
+from atom.api import Typed
+
+from enaml.widgets.flow_area import ProxyFlowArea
+
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_flow_item import QtFlowItem
 from .q_flow_layout import QFlowLayout
@@ -69,126 +74,95 @@ class QFlowArea(QScrollArea):
         raise TypeError("Cannot set layout on a QFlowArea.")
 
 
-class QtFlowArea(QtConstraintsWidget):
-    """ A Qt implementation of an Enaml FlowArea.
+class QtFlowArea(QtConstraintsWidget, ProxyFlowArea):
+    """ A Qt implementation of an Enaml ProxyFlowArea.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QFlowArea)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying widget.
 
         """
-        return QFlowArea(parent)
+        self.widget = QFlowArea(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying control.
+    def init_widget(self):
+        """ Initialize the underlying control.
 
         """
-        super(QtFlowArea, self).create(tree)
-        self.set_direction(tree['direction'])
-        self.set_align(tree['align'])
-        self.set_horizontal_spacing(tree['horizontal_spacing'])
-        self.set_vertical_spacing(tree['vertical_spacing'])
-        self.set_margins(tree['margins'])
+        super(QtFlowArea, self).init_widget()
+        d = self.declaration
+        self.set_direction(d.direction)
+        self.set_align(d.align)
+        self.set_horizontal_spacing(d.horizontal_spacing)
+        self.set_vertical_spacing(d.vertical_spacing)
+        self.set_margins(d.margins)
 
     def init_layout(self):
         """ Initialize the layout for the underlying control.
 
         """
         super(QtFlowArea, self).init_layout()
-        layout = self.widget().layout()
+        layout = self.widget.layout()
         for child in self.children():
             if isinstance(child, QtFlowItem):
-                layout.addWidget(child.widget())
+                layout.addWidget(child.widget)
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtMdiArea.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event for a QtMdiArea.
 
-        """
-        if isinstance(child, QtFlowItem):
-            self.widget().layout().removeWidget(child.widget())
+    #     """
+    #     if isinstance(child, QtFlowItem):
+    #         self.widget().layout().removeWidget(child.widget())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtMdiArea.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtMdiArea.
 
-        """
-        if isinstance(child, QtFlowItem):
-            index = self.index_of(child)
-            self.widget().layout().insertWidget(index, child.widget())
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_direction(self, content):
-        """ Handle the 'set_direction' action from the Enaml widget.
-
-        """
-        self.set_direction(content['direction'])
-
-    def on_action_set_align(self, content):
-        """ Handle the 'set_align' action from the Enaml widget.
-
-        """
-        self.set_align(content['align'])
-
-    def on_action_set_horizontal_spacing(self, content):
-        """ Handle the 'set_horizontal_spacing' action from the Enaml
-        widget.
-
-        """
-        self.set_horizontal_spacing(content['horizontal_spacing'])
-
-    def on_action_set_vertical_spacing(self, content):
-        """ Handle the 'set_vertical_spacing' action from the Enaml
-        widget.
-
-        """
-        self.set_vertical_spacing(content['vertical_spacing'])
-
-    def on_action_set_margins(self, content):
-        """ Handle the 'set_margins' action from the Enaml widget.
-
-        """
-        self.set_margins(content['margins'])
+    #     """
+    #     if isinstance(child, QtFlowItem):
+    #         index = self.index_of(child)
+    #         self.widget().layout().insertWidget(index, child.widget())
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyFlowArea API
     #--------------------------------------------------------------------------
     def set_direction(self, direction):
         """ Set the direction for the underlying control.
 
         """
-        self.widget().layout().setDirection(_DIRECTION_MAP[direction])
+        self.widget.layout().setDirection(_DIRECTION_MAP[direction])
 
     def set_align(self, align):
         """ Set the alignment for the underlying control.
 
         """
-        self.widget().layout().setAlignment(_ALIGN_MAP[align])
+        self.widget.layout().setAlignment(_ALIGN_MAP[align])
 
     def set_horizontal_spacing(self, spacing):
         """ Set the horizontal spacing of the underyling control.
 
         """
-        self.widget().layout().setHorizontalSpacing(spacing)
+        self.widget.layout().setHorizontalSpacing(spacing)
 
     def set_vertical_spacing(self, spacing):
         """ Set the vertical spacing of the underlying control.
 
         """
-        self.widget().layout().setVerticalSpacing(spacing)
+        self.widget.layout().setVerticalSpacing(spacing)
 
     def set_margins(self, margins):
         """ Set the margins of the underlying control.
 
         """
         top, right, bottom, left = margins
-        self.widget().layout().setContentsMargins(left, top, right, bottom)
+        self.widget.layout().setContentsMargins(left, top, right, bottom)
 
     #--------------------------------------------------------------------------
     # Overrides
@@ -210,4 +184,3 @@ class QtFlowArea(QtConstraintsWidget):
 
         """
         pass
-

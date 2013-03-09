@@ -5,13 +5,38 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Enum, Range, Coerced, observe, set_default
+from atom.api import (
+    Enum, Range, Coerced, Typed, ForwardTyped, observe, set_default
+)
 
 from enaml.core.declarative import d_
 from enaml.layout.geometry import Box
 
-from .constraints_widget import ConstraintsWidget
+from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .flow_item import FlowItem
+
+
+class ProxyFlowArea(ProxyConstraintsWidget):
+    """ The abstract definition of a proxy FlowArea object.
+
+    """
+    #: A reference to the FlowArea declaration.
+    declaration = ForwardTyped(lambda: FlowArea)
+
+    def set_direction(self, direction):
+        raise NotImplementedError
+
+    def set_align(self, align):
+        raise NotImplementedError
+
+    def set_horizontal_spacing(self, spacing):
+        raise NotImplementedError
+
+    def set_vertical_spacing(self, spacing):
+        raise NotImplementedError
+
+    def set_margins(self, margins):
+        raise NotImplementedError
 
 
 class FlowArea(ConstraintsWidget):
@@ -34,42 +59,29 @@ class FlowArea(ConstraintsWidget):
     vertical_spacing = d_(Range(low=0, value=10))
 
     #: The margins to use around the outside of the flow area.
-    margins = d_(Coerced(Box, factory=lambda: Box(10, 10, 10, 10)))
+    margins = d_(Coerced(Box, (10, 10, 10, 10)))
 
     #: A FlowArea expands freely in width and height by default.
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 
-    @property
+    #: A reference to the ProxyFlowArea object.
+    proxy = Typed(ProxyFlowArea)
+
     def flow_items(self):
-        """ A read only property which returns the flow items.
+        """ Get the flow item children defined on this area.
 
         """
-        isinst = isinstance
-        target = FlowItem
-        return [child for child in self.children if isinst(child, target)]
+        return [c for c in self.children if isinstance(c, FlowItem)]
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dict for the FlowArea.
-
-        """
-        snap = super(FlowArea, self).snapshot()
-        snap['direction'] = self.direction
-        snap['align'] = self.align
-        snap['horizontal_spacing'] = self.horizontal_spacing
-        snap['vertical_spacing'] = self.vertical_spacing
-        snap['margins'] = self.margins
-        return snap
-
-    @observe(r'^(direction|align|horizontal_spacing|vertical_spacing|'
-             r'margins)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    @observe(('direction', 'align', 'horizontal_spacing', 'vertical_spacing',
+        'margins'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(FlowArea, self).send_member_change(change)
-
+        super(FlowArea, self)._update_proxy(change)
