@@ -7,8 +7,13 @@
 #------------------------------------------------------------------------------
 import sys
 
-from .qt.QtCore import Qt, QSize, Signal
-from .qt.QtGui import QGroupBox
+from PyQt4.QtCore import Qt, QSize, pyqtSignal
+from PyQt4.QtGui import QGroupBox
+
+from atom.api import Typed
+
+from enaml.widgets.group_box import ProxyGroupBox
+
 from .qt_container import QtContainer
 
 
@@ -24,7 +29,7 @@ class QResizingGroupBox(QGroupBox):
 
     """
     #: A signal which is emitted on a resize event.
-    resized = Signal()
+    resized = pyqtSignal()
 
     #: The internally cached size hint.
     _size_hint = QSize()
@@ -62,33 +67,37 @@ class QResizingGroupBox(QGroupBox):
         return self.sizeHint()
 
 
-class QtGroupBox(QtContainer):
+class QtGroupBox(QtContainer, ProxyGroupBox):
     """ A Qt implementation of an Enaml GroupBox.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QResizingGroupBox)
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Creates the underlying QGroupBox control.
 
         """
-        widget = QResizingGroupBox(parent)
+        widget = QResizingGroupBox(self.parent_widget())
         if sys.platform == 'darwin':
             # On OSX, the widget item layout rect is too small.
             # Setting this attribute forces the widget item to
             # use the widget rect for layout.
             widget.setAttribute(Qt.WA_LayoutUsesWidgetRect, True)
-        return widget
+        self.widget = widget
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        super(QtGroupBox, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_flat(tree['flat'])
-        self.set_title_align(tree['title_align'])
+        super(QtGroupBox, self).init_widget()
+        d = self.declaration
+        self.set_title(d.title, cm_update=False)
+        self.set_flat(d.flat)
+        self.set_title_align(d.title_align)
 
     #--------------------------------------------------------------------------
     # Layout Handling
@@ -97,54 +106,35 @@ class QtGroupBox(QtContainer):
         """ Get the current contents margins for the group box.
 
         """
-        m = self.widget().contentsMargins()
+        m = self.widget.contentsMargins()
         return (m.top(), m.right(), m.bottom(), m.left())
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # ProxyGroupBox API
     #--------------------------------------------------------------------------
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        widget = self.widget()
-        old_margins = widget.contentsMargins()
-        self.set_title(content['title'])
-        new_margins = widget.contentsMargins()
-        if old_margins != new_margins:
-            self.contents_margins_updated()
-
-    def on_action_set_title_align(self, content):
-        """ Handle the 'set_title_align' action from the Enaml widget.
-
-        """
-        self.set_title_align(content['title_align'])
-
-    def on_action_set_flat(self, content):
-        """ Handle the 'set_flat' action from the Enaml widget.
-
-        """
-        self.set_flat(content['flat'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update methods
-    #--------------------------------------------------------------------------
-    def set_title(self, title):
+    def set_title(self, title, cm_update=True):
         """ Updates the title of group box.
 
         """
-        self.widget().setTitle(title)
+        if not cm_update:
+            self.widget.setTitle(title)
+            return
+        widget = self.widget
+        old_margins = widget.contentsMargins()
+        widget.setTitle(title)
+        new_margins = widget.contentsMargins()
+        if old_margins != new_margins:
+            self.contents_margins_updated()
 
     def set_flat(self, flat):
         """ Updates the flattened appearance of the group box.
 
         """
-        self.widget().setFlat(flat)
+        self.widget.setFlat(flat)
 
     def set_title_align(self, align):
         """ Updates the alignment of the title of the group box.
 
         """
         qt_align = QT_ALIGNMENTS[align]
-        self.widget().setAlignment(qt_align)
-
+        self.widget.setAlignment(qt_align)

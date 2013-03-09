@@ -5,11 +5,28 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Unicode, Enum, observe
+from atom.api import Bool, Unicode, Enum, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
-from .container import Container
+from .container import Container, ProxyContainer
+
+
+class ProxyGroupBox(ProxyContainer):
+    """ The abstract definition of a proxy GroupBox object.
+
+    """
+    #: A reference to the GroupBox declaration.
+    declaration = ForwardTyped(lambda: GroupBox)
+
+    def set_title(self, title):
+        raise NotImplementedError
+
+    def set_flat(self, flat):
+        raise NotImplementedError
+
+    def set_title_align(self, align):
+        raise NotImplementedError
 
 
 class GroupBox(Container):
@@ -28,24 +45,16 @@ class GroupBox(Container):
     #: The alignment of the title text.
     title_align = d_(Enum('left', 'right', 'center'))
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Populates the initial attributes dict for the component.
+    #: A reference to the ProxyGroupBox object.
+    proxy = Typed(ProxyGroupBox)
 
-        """
-        snap = super(GroupBox, self).snapshot()
-        snap['title'] = self.title
-        snap['flat'] = self.flat
-        snap['title_align'] = self.title_align
-        return snap
-
-    @observe(r'^(title|title_align|flat)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('title', 'flat', 'title_align'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(GroupBox, self).send_member_change(change)
-
+        super(GroupBox, self)._update_proxy(change)
