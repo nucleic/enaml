@@ -53,16 +53,14 @@ class Menu(ToolkitObject):
     #: A reference to the ProxyMenu object.
     proxy = Typed(ProxyMenu)
 
-    @property
     def items(self):
-        """ A read only property for the items declared on the menu.
+        """ Get the items defined on the Menu.
 
         A menu item is one of Action, ActionGroup, or Menu.
 
         """
-        isinst = isinstance
         allowed = (Action, ActionGroup, Menu)
-        return [child for child in self.children if isinst(child, allowed)]
+        return [c for c in self.children if isinstance(c, allowed)]
 
     #--------------------------------------------------------------------------
     # Observers
