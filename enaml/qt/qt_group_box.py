@@ -68,7 +68,7 @@ class QResizingGroupBox(QGroupBox):
 
 
 class QtGroupBox(QtContainer, ProxyGroupBox):
-    """ A Qt implementation of an Enaml GroupBox.
+    """ A Qt implementation of an Enaml ProxyGroupBox.
 
     """
     #: A reference to the widget created by the proxy.
