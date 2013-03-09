@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Typed
+from atom.api import Typed
 
 from PyQt4.QtCore import Qt, QSize, pyqtSignal
 from PyQt4.QtGui import QFrame, QLayout, QIcon
@@ -195,9 +195,6 @@ class QtWindow(QtWidget, ProxyWindow):
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QWindow)
 
-    #: A flag indicating when the window hierarchy has been created.
-    _window_created = Bool(False)
-
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
@@ -243,9 +240,9 @@ class QtWindow(QtWidget, ProxyWindow):
             is not defined.
 
         """
-        c = self.declaration.central_widget
-        if c is not None:
-            return c.proxy.widget or None
+        d = self.declaration.central_widget()
+        if d is not None:
+            return d.proxy.widget or None
 
     def on_closed(self):
         """ The signal handler for the 'closed' signal.
@@ -258,14 +255,15 @@ class QtWindow(QtWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # ProxyWindow API
     #--------------------------------------------------------------------------
-    def create_if_needed(self):
-        """ Build the underlying widget window hierarchy.
+    def setup_window(self):
+        """ Setup widget window hierarchy.
+
+        This method is called by the declaration the first time the
+        window is shown.
 
         """
-        if not self._window_created:
-            self.init_top_down_pass()
-            self.init_bottom_up_pass()
-            self._window_created = True
+        self.init_top_down_pass()
+        self.init_bottom_up_pass()
 
     def close(self):
         """ Close the window

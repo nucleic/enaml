@@ -15,6 +15,7 @@ from enaml.icon import Icon
 from enaml.layout.geometry import Size
 
 from .container import Container
+from .toolkit_object import ToolkitObject
 from .widget import Widget, ProxyWidget
 
 
@@ -25,7 +26,7 @@ class ProxyWindow(ProxyWidget):
     #: A reference to the Window declaration.
     declaration = ForwardTyped(lambda: Window)
 
-    def create_if_needed(self):
+    def setup_window(self):
         raise NotImplementedError
 
     def set_title(self, title):
@@ -93,7 +94,6 @@ class Window(Widget):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    @property
     def central_widget(self):
         """ Get the central widget defined on the window.
 
@@ -108,25 +108,29 @@ class Window(Widget):
         """ Send the 'close' action to the client widget.
 
         """
-        self.proxy.close()
+        if self.proxy_is_active:
+            self.proxy.close()
 
     def maximize(self):
         """ Send the 'maximize' action to the client widget.
 
         """
-        self.proxy.maximize()
+        if self.proxy_is_active:
+            self.proxy.maximize()
 
     def minimize(self):
         """ Send the 'minimize' action to the client widget.
 
         """
-        self.proxy.minimize()
+        if self.proxy_is_active:
+            self.proxy.minimize()
 
     def restore(self):
         """ Send the 'restore' action to the client widget.
 
         """
-        self.proxy.restore()
+        if self.proxy_is_active:
+            self.proxy.restore()
 
     def show(self):
         """ Show the window to the screen.
@@ -137,7 +141,11 @@ class Window(Widget):
         """
         if not self.is_initialized:
             self.initialize()
-        self.proxy.create_if_needed()
+        if not self.proxy_is_active:
+            self.proxy.setup_window()
+            for node in self.traverse():
+                if isinstance(node, ToolkitObject):
+                    node.proxy_is_active = True
         super(Window, self).show()
 
     #--------------------------------------------------------------------------
