@@ -75,11 +75,6 @@ def flow_item_factory():
     return QtFlowItem
 
 
-def form_factory():
-    from .qt_form import QtForm
-    return QtForm
-
-
 def group_box_factory():
     from .qt_group_box import QtGroupBox
     return QtGroupBox
@@ -253,7 +248,6 @@ def register_default():
     register('FileDialog', file_dialog_factory)
     register('FlowArea', flow_area_factory)
     register('FlowItem', flow_item_factory)
-    register('Form', form_factory)
     register('GroupBox', group_box_factory)
     register('Html', html_factory)
     register('Image', image_factory)
