@@ -120,8 +120,8 @@ class Application(Atom):
     #: The task heap for application tasks.
     _task_heap = List()
 
-    #: The count to break heap ties.
-    _count = Value(factory=count)
+    #: The counter to break heap ties.
+    _counter = Value(factory=count)
 
     #: The heap lock for protecting heap access.
     _heap_lock = Value(factory=Lock)
