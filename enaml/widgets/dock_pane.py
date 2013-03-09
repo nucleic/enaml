@@ -96,9 +96,10 @@ class DockPane(Widget):
     #: A reference to the ProxyDockPane object.
     proxy = Typed(ProxyDockPane)
 
-    @property
     def dock_widget(self):
-        """ A read only property which returns the dock widget.
+        """ Get the dock widget defined for the dock pane.
+
+        The last child Container is considered the dock widget.
 
         """
         for child in reversed(self.children):

@@ -219,7 +219,7 @@ class QtDockPane(QtWidget, ProxyDockPane):
             not defined.
 
         """
-        d = self.declaration.dock_widget
+        d = self.declaration.dock_widget()
         if d is not None:
             return d.proxy.widget
 
