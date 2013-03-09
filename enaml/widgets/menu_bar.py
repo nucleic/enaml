@@ -5,20 +5,29 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from atom.api import Typed, ForwardTyped
+
 from .menu import Menu
-from .widget import Widget
+from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
-class MenuBar(Widget):
+class ProxyMenuBar(ProxyToolkitObject):
+    """ The abstract definition of a proxy MenuBar object.
+
+    """
+    #: A reference to the Window declaration.
+    declaration = ForwardTyped(lambda: MenuBar)
+
+
+class MenuBar(ToolkitObject):
     """ A widget used as a menu bar in a MainWindow.
 
     """
-    @property
+    #: A reference to the ProxyMenuBar object.
+    proxy = Typed(ProxyMenuBar)
+
     def menus(self):
-        """ A property which returns the menus defined on the menu bar.
+        """ Get the menus defined as children on the menu bar.
 
         """
-        isinst = isinstance
-        menus = (child for child in self.children if isinst(child, Menu))
-        return tuple(menus)
-
+        return [child for child in self.children if isinstance(child, Menu)]
