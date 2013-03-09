@@ -127,7 +127,8 @@ class Widget(ToolkitObject):
 
         """
         self.visible = True
-        self.proxy.ensure_visible()
+        if self.proxy_is_active:
+            self.proxy.ensure_visible()
 
     def hide(self):
         """ Ensure the widget is hidden.
@@ -136,4 +137,5 @@ class Widget(ToolkitObject):
 
         """
         self.visible = False
-        self.proxy.ensure_hidden()
+        if self.proxy_is_active:
+            self.proxy.ensure_hidden()
