@@ -73,7 +73,7 @@ class ToolBar(ConstraintsWidget):
     #: by the user. This value only has meaning if the tool bar is the
     #: child of a MainWindow.
     allowed_dock_areas = d_(List(
-        Enum('top', 'right', 'left', 'bottom', 'all'), default=['all'],
+        Enum('top', 'right', 'left', 'bottom', 'all'), ['all'],
     ))
 
     #: The orientation of the toolbar. This only has meaning when the
