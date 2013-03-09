@@ -1000,7 +1000,7 @@ class QFlowLayout(QLayout):
         # lie between their minimum height and desired height.
         height = rect.height()
         play_space = max(0, height - min_height)
-        diff_space = max(total_diff, 1) # Guard against divide by zero
+        diff_space = max(total_diff, 1)  # Guard against divide by zero
         layout_height = 0
         for row in rows:
             d = play_space * row.diff_height / diff_space
@@ -1072,7 +1072,7 @@ class QFlowLayout(QLayout):
         # which lie between their minimum width and desired width.
         width = rect.width()
         play_space = max(0, width - min_width)
-        diff_space = max(total_diff, 1) # Guard against divide by zero
+        diff_space = max(total_diff, 1)  # Guard against divide by zero
         layout_width = 0
         for col in cols:
             d = play_space * col.diff_width / diff_space
@@ -1118,4 +1118,3 @@ class _LayoutOptions(object):
 
     #: The vertical spacing between items or lines in the layout.
     v_spacing = 10
-
