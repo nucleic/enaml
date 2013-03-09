@@ -5,11 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import QSize, QEvent
-from .qt.QtGui import QFrame, QLayout
+from PyQt4.QtCore import QSize, QEvent
+from PyQt4.QtGui import QFrame, QLayout
+
+from atom.api import Typed
+
+from enaml.widgets.flow_item import ProxyFlowItem
+
 from .q_flow_layout import QFlowLayout, AbstractFlowWidget, FlowLayoutData
 from .q_single_widget_layout import QSingleWidgetLayout
-from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -203,35 +207,39 @@ class QFlowItem(QFrame):
 AbstractFlowWidget.register(QFlowItem)
 
 
-class QtFlowItem(QtWidget):
-    """ A Qt implementation of an Enaml FlowItem.
+class QtFlowItem(QtWidget, ProxyFlowItem):
+    """ A Qt implementation of an Enaml ProxyFlowItem.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QFlowItem)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying QFlowItem widget.
 
         """
-        return QFlowItem(parent)
+        self.widget = QFlowItem(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying control.
+    def init_widget(self):
+        """ Iitialize the underlying control.
 
         """
-        super(QtFlowItem, self).create(tree)
-        self.set_preferred_size(tree['preferred_size'])
-        self.set_align(tree['align'])
-        self.set_stretch(tree['stretch'])
-        self.set_ortho_stretch(tree['ortho_stretch'])
+        super(QtFlowItem, self).init_widget()
+        d = self.declaration
+        self.set_preferred_size(d.preferred_size)
+        self.set_align(d.align)
+        self.set_stretch(d.stretch)
+        self.set_ortho_stretch(d.ortho_stretch)
 
     def init_layout(self):
         """ Initialize the layout for the underyling widget.
 
         """
         super(QtFlowItem, self).init_layout()
-        self.widget().setFlowWidget(self.flow_widget())
+        self.widget.setFlowWidget(self.flow_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -246,81 +254,50 @@ class QtFlowItem(QtWidget):
             not defined.
 
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, QtContainer):
-                widget = child.widget()
-        return widget
+        d = self.declaration.flow_widget()
+        if d is not None:
+            return d.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child added event for a QtFlowItem.
+    # def child_removed(self, child):
+    #     """ Handle the child added event for a QtFlowItem.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setFlowWidget(self.flow_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setFlowWidget(self.flow_widget())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtFlowItem.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtFlowItem.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setFlowWidget(self.flow_widget())
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_preferred_size(self, content):
-        """ Handle the 'set_preferred_size' action from the Enaml
-        widget.
-
-        """
-        self.set_preferred_size(content['preferred_size'])
-
-    def on_action_set_align(self, content):
-        """ Handle the 'set_align' action from the Enaml widget.
-
-        """
-        self.set_align(content['align'])
-
-    def on_action_set_stretch(self, content):
-        """ Handle the 'set_stretch' action from the Enaml widget.
-
-        """
-        self.set_stretch(content['stretch'])
-
-    def on_action_set_ortho_stretch(self, content):
-        """ Handle the 'set_ortho_stretch' action from the Enaml widget.
-
-        """
-        self.set_ortho_stretch(content['ortho_stretch'])
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setFlowWidget(self.flow_widget())
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyFlowItem API
     #--------------------------------------------------------------------------
     def set_preferred_size(self, size):
         """ Set the preferred size of the underlying widget.
 
         """
-        self.widget().setPreferredSize(QSize(*size))
+        self.widget.setPreferredSize(QSize(*size))
 
     def set_align(self, align):
         """ Set the alignment of the underlying widget.
 
         """
-        self.widget().setAlignment(_ALIGN_MAP[align])
+        self.widget.setAlignment(_ALIGN_MAP[align])
 
     def set_stretch(self, stretch):
         """ Set the stretch factor of the underlying widget.
 
         """
-        self.widget().setStretch(stretch)
+        self.widget.setStretch(stretch)
 
     def set_ortho_stretch(self, stretch):
         """ Set the ortho stretch factor of the underling widget.
 
         """
-        self.widget().setOrthoStretch(stretch)
-
+        self.widget.setOrthoStretch(stretch)

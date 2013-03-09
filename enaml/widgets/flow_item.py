@@ -5,13 +5,33 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Enum, Range, Coerced, observe
+from atom.api import Enum, Range, Coerced, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 from enaml.layout.geometry import Size
 
 from .container import Container
-from .widget import Widget
+from .widget import Widget, ProxyWidget
+
+
+class ProxyFlowItem(ProxyWidget):
+    """ The abstract definition of a proxy FlowItem object.
+
+    """
+    #: A reference to the FlowItem declaration.
+    declaration = ForwardTyped(lambda: FlowItem)
+
+    def set_preferred_size(self, size):
+        raise NotImplementedError
+
+    def set_align(self, align):
+        raise NotImplementedError
+
+    def set_stretch(self, stretch):
+        raise NotImplementedError
+
+    def set_ortho_stretch(self, stretch):
+        raise NotImplementedError
 
 
 class FlowItem(Widget):
@@ -26,7 +46,7 @@ class FlowItem(Widget):
     #: the size of the item in the layout, bounded to the computed min
     #: and max size. A size of (-1, -1) indicates to use the widget's
     #: size hint as the preferred size.
-    preferred_size = d_(Coerced(Size, factory=lambda: Size(-1, -1)))
+    preferred_size = d_(Coerced(Size, (-1, -1)))
 
     #: The alignment of this item in the direction orthogonal to the
     #: layout flow.
@@ -44,36 +64,26 @@ class FlowItem(Widget):
     #: orthogonal to the layout flow.
     ortho_stretch = d_(Range(low=0, value=0))
 
-    @property
+    #: A reference to the ProxyFlowItem object.
+    proxy = Typed(ProxyFlowItem)
+
     def flow_widget(self):
-        """ A read only property which returns the flow widget.
+        """ Get the flow widget defined on this flow item.
+
+        The last Container defined on the item is the flow widget.
 
         """
-        widget = None
-        for child in self.children:
+        for child in reversed(self.children):
             if isinstance(child, Container):
-                widget = child
-        return widget
+                return child
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dict for the FlowItem.
-
-        """
-        snap = super(FlowItem, self).snapshot()
-        snap['preferred_size'] = self.preferred_size
-        snap['align'] = self.align
-        snap['stretch'] = self.stretch
-        snap['ortho_stretch'] = self.ortho_stretch
-        return snap
-
-    @observe(r'^(preferred_size|align|stretch|ortho_stretch)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    @observe(('preferred_size', 'align', 'stretch', 'ortho_stretch'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(FlowItem, self).send_member_change(change)
-
+        super(FlowItem, self)._update_proxy(change)
