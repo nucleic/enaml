@@ -16,7 +16,7 @@ class ProxyHtml(ProxyControl):
     """ The abstract definition of a proxy Html object.
 
     """
-    #: A reference to the Window declaration.
+    #: A reference to the Html declaration.
     declaration = ForwardTyped(lambda: Html)
 
     def set_source(self, source):
