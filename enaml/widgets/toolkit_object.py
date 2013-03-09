@@ -9,6 +9,7 @@ from atom.api import Atom, Typed, ForwardTyped
 
 from enaml.application import Application
 from enaml.core.declarative import Declarative
+from enaml.core.object import flag_generator, flag_property
 
 
 class ProxyToolkitObject(Atom):
@@ -32,6 +33,37 @@ class ProxyToolkitObject(Atom):
         """
         del self.declaration
 
+    def parent(self):
+        """ Get the parent proxy object for this object.
+
+        Returns
+        -------
+        result : QtToolkitObject or None
+            The parent toolkit object of this object, or None if no
+            such parent exists.
+
+        """
+        d = self.declaration.parent
+        if isinstance(d, ToolkitObject):
+            return d.proxy
+
+    def children(self):
+        """ Get the child objects for this object.
+
+        Returns
+        -------
+        result : iterable
+            An iterable of the child toolkit objects for this object.
+
+        """
+        for d in self.declaration.children:
+            if isinstance(d, ToolkitObject):
+                yield d.proxy
+
+
+#: A flag indicating that the object's proxy is ready for use.
+ACTIVE_PROXY_FLAG = flag_generator.next()
+
 
 class ToolkitObject(Declarative):
     """ The base class of all toolkit objects in Enaml.
@@ -39,6 +71,11 @@ class ToolkitObject(Declarative):
     """
     #: A reference to the ProxyToolkitObject
     proxy = Typed(ProxyToolkitObject)
+
+    #: A property which gets and sets the active proxy flag. This should
+    #: not be manipulated directly by user code. This flag will be set to
+    #: True by external code after the proxy widget hierarchy is setup.
+    proxy_is_active = flag_property(ACTIVE_PROXY_FLAG)
 
     def __init__(self, parent=None, **kwargs):
         """ Initialize a ToolkitObject.
@@ -61,7 +98,9 @@ class ToolkitObject(Declarative):
 
         """
         super(ToolkitObject, self).destroy()
+        self.proxy_is_active = False
         self.proxy.destroy()
+        del self.proxy
 
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
@@ -71,7 +110,7 @@ class ToolkitObject(Declarative):
         as a base observer handler
 
         """
-        if change['type'] == 'updated':
+        if self.proxy_is_active and change['type'] == 'updated':
             handler = getattr(self.proxy, 'set_' + change['name'], None)
             if handler is not None:
                 handler(change['newvalue'])

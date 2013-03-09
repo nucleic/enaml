@@ -9,7 +9,7 @@ from PyQt4.QtCore import QObject
 
 from atom.api import Typed
 
-from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
+from enaml.widgets.toolkit_object import ProxyToolkitObject
 
 
 class QtToolkitObject(ProxyToolkitObject):
@@ -38,7 +38,8 @@ class QtToolkitObject(ProxyToolkitObject):
         """ Initialize the proxy tree with a bottom-up pass.
 
         This method will initialize the entire tree and should only be
-        called on the root object in the tree.
+        called on the root object in the tree. The 'active' flag is set
+        to True at the end of this method.
 
         """
         for child in self.children():
@@ -96,33 +97,6 @@ class QtToolkitObject(ProxyToolkitObject):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def parent(self):
-        """ Get the parent proxy object for this object.
-
-        Returns
-        -------
-        result : QtToolkitObject or None
-            The parent toolkit object of this object, or None if no
-            such parent exists.
-
-        """
-        d = self.declaration.parent
-        if isinstance(d, ToolkitObject):
-            return d.proxy
-
-    def children(self):
-        """ Get the child objects for this object.
-
-        Returns
-        -------
-        result : iterable
-            An iterable of the child toolkit objects for this object.
-
-        """
-        for d in self.declaration.children:
-            if isinstance(d, ToolkitObject):
-                yield d.proxy
-
     def parent_widget(self):
         """ Get the parent toolkit widget for this object.
 
