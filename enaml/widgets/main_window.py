@@ -17,7 +17,7 @@ class ProxyMainWindow(ProxyWindow):
     """ The abstract definition of a proxy MainWindow object.
 
     """
-    #: A reference to the Window declaration.
+    #: A reference to the MainWindow declaration.
     declaration = ForwardTyped(lambda: MainWindow)
 
 
