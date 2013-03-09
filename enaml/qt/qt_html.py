@@ -5,47 +5,45 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QTextEdit
+from PyQt4.QtGui import QTextEdit
+
+from atom.api import Typed
+
+from enaml.widgets.html import ProxyHtml
+
 from .qt_control import QtControl
 
 
-class QtHtml(QtControl):
+class QtHtml(QtControl, ProxyHtml):
     """ A Qt implementation of an Enaml HTML widget.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QTextEdit)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying html widget.
 
         """
-        widget = QTextEdit(parent)
+        widget = QTextEdit(self.parent_widget())
         widget.setReadOnly(True)
-        return widget
+        self.widget = widget
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
-
-        """
-        super(QtHtml, self).create(tree)
-        self.set_source(tree['source'])
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_source(self, content):
-        """ Handle the 'set_source' action from the Enaml widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        self.set_source(content['source'])
+        super(QtHtml, self).init_widget()
+        self.set_source(self.declaration.source)
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyHtml API
     #--------------------------------------------------------------------------
     def set_source(self, source):
         """ Set the source of the html widget
 
         """
-        self.widget().setHtml(source)
-
+        self.widget.setHtml(source)
