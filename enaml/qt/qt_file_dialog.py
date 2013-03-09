@@ -5,166 +5,187 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt import qt_api
-from .qt.QtGui import QFileDialog
-from .qt_object import QtObject
+from PyQt4.QtGui import QFileDialog
+
+from atom.api import Typed
+
+from enaml.widgets.file_dialog import ProxyFileDialog
+
+from .q_deferred_caller import deferredCall
+from .qt_toolkit_object import QtToolkitObject
 
 
-# A mapping from the Enaml dialog modes to the name of the static method
-# on QFileDialog which will launch the appropriate native dialog.
-if qt_api == 'pyqt':
-    _NATIVE_METHOD_NAMES = {
-        'open_file': 'getOpenFileNameAndFilter',
-        'open_files': 'getOpenFileNamesAndFilter',
-        'save_file': 'getSaveFileNameAndFilter',
-        'directory': 'getExistingDirectory',
-    }
-else:
-    _NATIVE_METHOD_NAMES = {
-        'open_file': 'getOpenFileName',
-        'open_files': 'getOpenFileNames',
-        'save_file': 'getSaveFileName',
-        'directory': 'getExistingDirectory',
-    }
+class QtFileDialog(QtToolkitObject, ProxyFileDialog):
+    """ A Qt implementation of an Enaml ProxyFileDialog.
 
-
-class QtFileDialog(QtObject):
-    """ A Qt implementation of an Enaml FileDialog.
+    The handling of file dialogs is a bit special. A QFileDialog is only
+    created when not using the native file dialog methods. Those methods
+    always block, so opening a native dialog in non-blocking mode means
+    is must be executed in a deferred fashion.
 
     """
-    #--------------------------------------------------------------------------
-    # Setup Methods
-    #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying widget.
+    #: A reference to the widget created by the proxy. This is only used
+    #: when using non-native file dialogs.
+    widget = Typed(QFileDialog)
 
-        The file dialog widget is created on-demand when the open action
-        is received. There is no persistent widget created for the file
-        dialog.
+    def create_non_native_dialog(self):
+        """ Create a non-native QFileDialog.
 
-        """
-        return None
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_open(self, content):
-        """ Handle the 'open' action from the Enaml widget.
+        This will use the current state of the declaration to populate
+        the new dialog.
 
         """
-        if content['native_dialog']:
-            result = self._open_native(content)
+        widget = QFileDialog(self.parent_widget())
+        d = self.declaration
+        if d.mode == 'open_file':
+            widget.setAcceptMode(QFileDialog.AcceptOpen)
+            widget.setFileMode(QFileDialog.ExistingFile)
+        elif d.mode == 'open_files':
+            widget.setAcceptMode(QFileDialog.AcceptOpen)
+            widget.setFileMode(QFileDialog.ExistingFiles)
+        elif d.mode == 'save_file':
+            widget.setAcceptMode(QFileDialog.AcceptSave)
+            widget.setFileMode(QFileDialog.AnyFile)
         else:
-            result = self._open_non_native(content)
-        self.send_action('closed', result)
+            widget.setAcceptMode(QFileDialog.AcceptOpen)
+            widget.setFileMode(QFileDialog.Directory)
+            widget.setOption(QFileDialog.ShowDirsOnly, True)
+        if d.title:
+            widget.setWindowTitle(d.title)
+        widget.setDirectory(d.path)
+        widget.setNameFilters(d.filters)
+        widget.selectNameFilter(d.selected_filter)
+        return widget
 
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _open_native(self, content):
-        """ Open a native dialog for the given configuration.
-
-        Parameters
-        ----------
-        content : dict
-            The content dict sent by the Enaml widget for the `open`
-            action.
-
-        Returns
-        -------
-        result : dict
-            The content dict for the `closed` action to be sent back
-            to the Enaml widget.
+    def open_non_native_dialog(self):
+        """ Create and open a non-native QFileDialog.
 
         """
-        mode = content['mode']
-        assert mode in ('open_file', 'open_files', 'save_file', 'directory')
+        self.widget = dialog = self.create_non_native_dialog()
+        dialog.finished.connect(self.on_non_native_finished)
+        dialog.open()
 
-        def unpack_content():
-            parent = self.parent_widget()
-            caption = content['title']
-            path = content['path']
-            filters = u';;'.join(content['filters'])
-            selected_filter = content['selected_filter']
-            if mode == 'directory':
-                args = (parent, caption, path)
-            else:
-                args = (parent, caption, path, filters, selected_filter)
-            return args
-
-        def pack_result(result):
-            if mode == 'directory':
-                paths = [result] if result else []
-                selected_filter = u''
-            elif mode == 'open_files':
-                paths, selected_filter = result
-            else:
-                p, selected_filter = result
-                paths = [p] if p else []
-            content = {}
-            if paths:
-                content['result'] = 'accepted'
-                content['paths'] = paths
-                content['selected_filter'] = selected_filter
-            else:
-                content['result'] = 'rejected'
-            return content
-
-        method = getattr(QFileDialog, _NATIVE_METHOD_NAMES[mode])
-        return pack_result(method(*unpack_content()))
-
-    def _open_non_native(self, content):
-        """ Open a non-native dialog for the given configuration.
-
-        Parameters
-        ----------
-        content : dict
-            The content dict sent by the Enaml widget for the `open`
-            action.
-
-        Returns
-        -------
-        result : dict
-            The content dict for the `closed` action to be sent back
-            to the Enaml widget.
+    def on_non_native_finished(self, result):
+        """ The handler for the 'finished' signal on a QFileDialog.
 
         """
-        mode = content['mode']
-        assert mode in ('open_file', 'open_files', 'save_file', 'directory')
-
-        dlg = QFileDialog(self.parent_widget())
-        if mode == 'open_file':
-            dlg.setAcceptMode(QFileDialog.AcceptOpen)
-            dlg.setFileMode(QFileDialog.ExistingFile)
-        elif mode == 'open_files':
-            dlg.setAcceptMode(QFileDialog.AcceptOpen)
-            dlg.setFileMode(QFileDialog.ExistingFiles)
-        elif mode == 'save_file':
-            dlg.setAcceptMode(QFileDialog.AcceptSave)
-            dlg.setFileMode(QFileDialog.AnyFile)
+        dialog = self.widget
+        if result and dialog:
+            paths = dialog.selectedFiles()
+            selected_filter = dialog.selectedNameFilter()
+            dialog.setParent(None)
+            del self.widget
         else:
-            dlg.setAcceptMode(QFileDialog.AcceptOpen)
-            dlg.setFileMode(QFileDialog.Directory)
-            dlg.setOption(QFileDialog.ShowDirsOnly, True)
+            paths = []
+            selected_filter = u''
+        self.handle_close(paths, selected_filter)
 
-        caption = content['title']
-        path = content['path']
-        filters = content['filters']
-        selected_filter = content['selected_filter']
+    def exec_non_native_dialog(self):
+        """ Create and exec a non-native QFileDialog.
 
-        if caption:
-            dlg.setWindowTitle(caption)
-        dlg.setDirectory(path)
-        dlg.setNameFilters(filters)
-        dlg.selectNameFilter(selected_filter)
-
-        result = {}
-        if dlg.exec_():
-            result['result'] = 'accepted'
-            result['paths'] = dlg.selectedFiles()
-            result['selected_filter'] = dlg.selectedNameFilter()
+        """
+        self.widget = dialog = self.create_non_native_dialog()
+        if dialog.exec_():
+            paths = dialog.selectedFiles()
+            selected_filter = dialog.selectedNameFilter()
         else:
-            result['result'] = 'rejected'
+            paths = []
+            selected_filter = u''
+        dialog.setParent(None)
+        del self.widget
+        self.handle_close(paths, selected_filter)
 
-        return result
+    def open_native_dialog(self):
+        """ Open a native file dialog in a non-blocking fashion.
 
+        """
+        # Native dialogs always block. Open them "non blocking" by
+        # using a deferred closure
+        def closure():
+            paths, selected_filter = self.exec_native_dialog()
+            self.handle_close(paths, selected_filter)
+        deferredCall(closure)
+
+    def exec_native_dialog(self):
+        """ Exec a native file dialog.
+
+        """
+        parent = self.parent_widget()
+        d = self.declaration
+        path = d.path
+        caption = d.title
+        filters = ';;'.join(d.filters)
+        selected_filter = d.selected_filter
+        if d.mode == 'open_file':
+            path, selected_filter = QFileDialog.getOpenFileNameAndFilter(
+                parent, caption, path, filters, selected_filter
+            )
+            paths = [path] if path else []
+        elif d.mode == 'open_files':
+            paths, selected_filter = QFileDialog.getOpenFileNamesAndFilter(
+                parent, caption, path, filters, selected_filter
+            )
+            path = paths[0] if path else u''
+        elif d.mode == 'save_file':
+            path, selected_filter = QFileDialog.getSaveFileNameAndFilter(
+                parent, caption, path, filters, selected_filter
+            )
+            paths = [path] if path else []
+        else:
+            path = QFileDialog.getExistingDirectory(parent, caption, path)
+            paths = [path] if path else []
+        self.handle_close(paths, selected_filter)
+
+    def handle_close(self, paths, selected_filter):
+        """ Handle the close results of a dialog.
+
+        """
+        d = self.declaration
+        if paths:
+            d.result = 'accepted'
+            d.paths = paths
+            d.path = paths[0]
+            d.selected_filter = selected_filter
+        else:
+            d.result = 'rejected'
+        d._handle_close()
+
+    #--------------------------------------------------------------------------
+    # ProxyFileDialog API
+    #--------------------------------------------------------------------------
+    def open(self):
+        """ Run the dialog in a non-blocking fashion.
+
+        This call will return immediately.
+
+        """
+        d = self.declaration
+        if d.native_dialog:
+            self.open_native_dialog()
+        else:
+            self.open_non_native_dialog()
+
+    def exec_(self):
+        """ Run the dialog in a blocking fashion.
+
+        This call will return when the user has closed the dialog.
+
+        """
+        if self.declaration.native_dialog:
+            self.exec_native_dialog()
+        else:
+            self.exec_non_native_dialog()
+
+    def accept(self):
+        """ Accept the current selection and close the dialog.
+
+        """
+        if self.widget:
+            self.widget.accept()
+
+    def reject(self):
+        """ Reject the current selection and close the dialog.
+
+        """
+        if self.widget:
+            self.widget.reject()
