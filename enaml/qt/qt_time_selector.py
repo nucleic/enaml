@@ -11,7 +11,7 @@ from atom.api import Typed
 
 from enaml.widgets.time_selector import ProxyTimeSelector
 
-from .qt_bounded_time import QtBoundedTime, CHANGED_GUARD, as_qtime, as_pytime
+from .qt_bounded_time import QtBoundedTime, CHANGED_GUARD
 
 
 class QtTimeSelector(QtBoundedTime, ProxyTimeSelector):
@@ -51,7 +51,7 @@ class QtTimeSelector(QtBoundedTime, ProxyTimeSelector):
             The current control time as a time object.
 
         """
-        return as_pytime(self.widget.time())
+        return self.widget.time().toPyTime()
 
     def set_minimum(self, time):
         """ Set the widget's minimum time.
@@ -62,7 +62,7 @@ class QtTimeSelector(QtBoundedTime, ProxyTimeSelector):
             The time object to use for setting the minimum time.
 
         """
-        self.widget.setMinimumTime(as_qtime(time))
+        self.widget.setMinimumTime(time)
 
     def set_maximum(self, time):
         """ Set the widget's maximum time.
@@ -73,7 +73,7 @@ class QtTimeSelector(QtBoundedTime, ProxyTimeSelector):
             The time object to use for setting the maximum time.
 
         """
-        self.widget.setMaximumTime(as_qtime(time))
+        self.widget.setMaximumTime(time)
 
     def set_time(self, time):
         """ Set the widget's current time.
@@ -86,7 +86,7 @@ class QtTimeSelector(QtBoundedTime, ProxyTimeSelector):
         """
         self._guard |= CHANGED_GUARD
         try:
-            self.widget.setTime(as_qtime(time))
+            self.widget.setTime(time)
         finally:
             self._guard &= ~CHANGED_GUARD
 

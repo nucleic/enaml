@@ -11,7 +11,7 @@ from atom.api import Typed
 
 from enaml.widgets.date_selector import ProxyDateSelector
 
-from .qt_bounded_date import QtBoundedDate, CHANGED_GUARD, as_qdate, as_pydate
+from .qt_bounded_date import QtBoundedDate, CHANGED_GUARD
 
 
 class QtDateSelector(QtBoundedDate, ProxyDateSelector):
@@ -52,7 +52,7 @@ class QtDateSelector(QtBoundedDate, ProxyDateSelector):
             The current control date as a date object.
 
         """
-        return as_pydate(self.widget.date())
+        return self.widget.date().toPyDate()
 
     def set_minimum(self, date):
         """ Set the widget's minimum date.
@@ -63,7 +63,7 @@ class QtDateSelector(QtBoundedDate, ProxyDateSelector):
             The date object to use for setting the minimum date.
 
         """
-        self.widget.setMinimumDate(as_qdate(date))
+        self.widget.setMinimumDate(date)
 
     def set_maximum(self, date):
         """ Set the widget's maximum date.
@@ -74,7 +74,7 @@ class QtDateSelector(QtBoundedDate, ProxyDateSelector):
             The date object to use for setting the maximum date.
 
         """
-        self.widget.setMaximumDate(as_qdate(date))
+        self.widget.setMaximumDate(date)
 
     def set_date(self, date):
         """ Set the widget's current date.
@@ -87,7 +87,7 @@ class QtDateSelector(QtBoundedDate, ProxyDateSelector):
         """
         self._guard |= CHANGED_GUARD
         try:
-            self.widget.setDate(as_qdate(date))
+            self.widget.setDate(date)
         finally:
             self._guard &= ~CHANGED_GUARD
 

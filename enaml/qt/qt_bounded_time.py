@@ -5,27 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QTime
-
 from atom.api import Int
 
 from enaml.widgets.bounded_time import ProxyBoundedTime
 
 from .qt_control import QtControl
-
-
-def as_qtime(pytime):
-    """ Convert a Python time into a QTime.
-
-    """
-    return QTime(pytime.hour, pytime.minute, pytime.second)
-
-
-def as_pytime(qtime):
-    """ Convert a QTime object into a Python time.
-
-    """
-    return qtime.toPyTime()
 
 
 # cyclic notification guard flags

@@ -5,27 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QDate
-
 from atom.api import Int
 
 from enaml.widgets.bounded_date import ProxyBoundedDate
 
 from .qt_control import QtControl
-
-
-def as_qdate(pydate):
-    """ Convert a Python date into a QDate.
-
-    """
-    return QDate(pydate.year, pydate.month, pydate.day)
-
-
-def as_pydate(qdate):
-    """ Convert a QDate object into a Python date.
-
-    """
-    return qdate.toPyDate()
 
 
 # cyclic notification guard flags

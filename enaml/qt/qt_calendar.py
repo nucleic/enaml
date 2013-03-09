@@ -11,7 +11,7 @@ from atom.api import Typed
 
 from enaml.widgets.calendar import ProxyCalendar
 
-from .qt_bounded_date import QtBoundedDate, CHANGED_GUARD, as_qdate, as_pydate
+from .qt_bounded_date import QtBoundedDate, CHANGED_GUARD
 
 
 class QtCalendar(QtBoundedDate, ProxyCalendar):
@@ -49,41 +49,41 @@ class QtCalendar(QtBoundedDate, ProxyCalendar):
             The current control date as a Python date object.
 
         """
-        return as_pydate(self.widget.selectedDate())
+        return self.widget.selectedDate().toPyDate()
 
     def set_minimum(self, date):
         """ Set the widget's minimum date.
 
         Parameters
         ----------
-        date : QDate
-            The QDate object to use for setting the minimum date.
+        date : date
+            The date object to use for setting the minimum date.
 
         """
-        self.widget.setMinimumDate(as_qdate(date))
+        self.widget.setMinimumDate(date)
 
     def set_maximum(self, date):
         """ Set the widget's maximum date.
 
         Parameters
         ----------
-        date : QDate
-            The QDate object to use for setting the maximum date.
+        date : date
+            The date object to use for setting the maximum date.
 
         """
-        self.widget.setMaximumDate(as_qdate(date))
+        self.widget.setMaximumDate(date)
 
     def set_date(self, date):
         """ Set the widget's current date.
 
         Parameters
         ----------
-        date : QDate
-            The QDate object to use for setting the date.
+        date : date
+            The date object to use for setting the date.
 
         """
         self._guard |= CHANGED_GUARD
         try:
-            self.widget.setSelectedDate(as_qdate(date))
+            self.widget.setSelectedDate(date)
         finally:
             self._guard &= ~CHANGED_GUARD
