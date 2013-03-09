@@ -7,9 +7,9 @@
 #------------------------------------------------------------------------------
 from collections import Iterable
 
-from atom.api import Instance, Tuple
+from atom.api import Instance, List
 
-from .declarative import scope_lookup, d
+from .declarative import scope_lookup, d_
 from .templated import Templated
 
 
@@ -32,7 +32,7 @@ class Looper(Templated):
 
     """
     #: The iterable to use when creating the items for the looper.
-    iterable = d(Instance(Iterable))
+    iterable = d_(Instance(Iterable))
 
     #: A read-only property which returns the tuple of items created
     #: by the looper when it passes over the objects in the iterable.
@@ -41,7 +41,7 @@ class Looper(Templated):
     items = property(lambda self: self._items)
 
     #: Private storage for the `items` property.
-    _items = Tuple()
+    _items = List()
 
     #--------------------------------------------------------------------------
     # Lifetime API
@@ -123,7 +123,6 @@ class Looper(Templated):
                 items.append(tuple(iteration))
 
         old_items = self._items
-        self._items = items = tuple(items)
         if len(old_items) > 0 or len(items) > 0:
             if len(old_items) > 0:
                 for iteration in old_items:
@@ -135,4 +134,4 @@ class Looper(Templated):
                 self.parent.insert_children(self, flat)
                 for item in flat:
                     item.initialize()
-
+        self._items = items
