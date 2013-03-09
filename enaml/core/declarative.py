@@ -239,6 +239,7 @@ class Declarative(Object):
     #: when a bound expression has been invalidated. This should not
     #: be manipulated by user code.
     _expression_notifier = Value()
+
     def _default__expression_notifier(self):
         return ExpressionNotifier(self)
 
@@ -280,6 +281,8 @@ class Declarative(Object):
         been initialized.
 
         """
+        # Iterate over a copy since the children add and remove
+        # other children during initialization.
         for child in self.children[:]:
             if isinstance(child, Declarative):
                 child.initialize()
