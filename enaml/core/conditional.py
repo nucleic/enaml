@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, List
 
-from .declarative import DeclartiveProperty as d, scope_lookup
+from .declarative import d_, scope_lookup
 from .templated import Templated
 
 
@@ -24,7 +24,7 @@ class Conditional(Templated):
     #: The condition variable. If this is True, a copy of the children
     #: will be inserted into the parent. Otherwise, the old copies will
     #: be destroyed.
-    condition = d(Bool(True))
+    condition = d_(Bool(True))
 
     #: The list of items created by the conditional. This should not be
     #: manipulated directly by user code.
@@ -68,7 +68,7 @@ class Conditional(Templated):
         if self.is_initialized:
             self._refresh_items()
 
-    def _refresh_items(self):
+    def _refresh_conditional_items(self):
         """ A private method which refreshes the conditional items.
 
         This method destroys the old items and creates and initializes
