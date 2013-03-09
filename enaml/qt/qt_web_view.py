@@ -5,59 +5,54 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import QUrl
-from .qt.QtWebKit import QWebView
+from PyQt4.QtCore import QUrl
+from PyQt4.QtWebKit import QWebView
+
+from atom.api import Typed
+
+from enaml.widgets.web_view import ProxyWebView
+
 from .qt_control import QtControl
 
 
-class QtWebView(QtControl):
-    """ A Qt implementation of an Enaml WebView.
+class QtWebView(QtControl, ProxyWebView):
+    """ A Qt implementation of an Enaml ProxyWebView.
 
     """
-    def create_widget(self, parent, tree):
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QWebView)
+
+    #--------------------------------------------------------------------------
+    # Initialization API
+    #--------------------------------------------------------------------------
+    def create_widget(self):
         """ Create the underlying QWebView control.
 
         """
-        return QWebView(parent)
+        self.widget = QWebView(self.parent_widget())
 
-    def create(self, tree):
+    def init_widget(self):
         """ Create and initialize the underlying control.
 
         """
-        super(QtWebView, self).create(tree)
-        html = tree['html']
-        if html:
-            self.set_html(html)
-        else:
-            self.set_url(tree['url'])
+        super(QtWebView, self).init_widget()
+        d = self.declaration
+        if d.html:
+            self.set_html(d.html)
+        elif d.url:
+            self.set_url(d.url)
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_url(self, content):
-        """ Handle the 'set_url' action from the Enaml widget.
-
-        """
-        self.set_url(content['url'])
-
-    def on_action_set_html(self, content):
-        """ Handle the 'set_html' action from the Enaml widget.
-
-        """
-        self.set_html(content['html'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyWebView API
     #--------------------------------------------------------------------------
     def set_url(self, url):
         """ Set the url for the underlying control.
 
         """
-        self.widget().setUrl(QUrl(url))
+        self.widget.setUrl(QUrl(url))
 
     def set_html(self, html):
         """ Set the html source for the underlying control.
 
         """
-        self.widget().setHtml(html, 'c:/')
-
+        self.widget.setHtml(html, QUrl(self.declaration.base_url))

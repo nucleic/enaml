@@ -5,11 +5,25 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Unicode, observe, set_default
+from atom.api import Unicode, Typed, ForwardTyped, observe, set_default
 
 from enaml.core.declarative import d_
 
-from .control import Control
+from .control import Control, ProxyControl
+
+
+class ProxyWebView(ProxyControl):
+    """ The abstract definition of a proxy WebView object.
+
+    """
+    #: A reference to the WebView declaration.
+    declaration = ForwardTyped(lambda: WebView)
+
+    def set_url(self, url):
+        raise NotImplementedError
+
+    def set_html(self, html):
+        raise NotImplementedError
 
 
 class WebView(Control):
@@ -28,27 +42,23 @@ class WebView(Control):
     #: exclusive of `url`.
     html = d_(Unicode())
 
+    #: The base url for loading content in statically supplied 'html'.
+    base_url = d_(Unicode())
+
     #: A web view expands freely in height and width by default.
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Create the snapshot for the widget.
+    #: A reference to the ProxyWebView object.
+    proxy = Typed(ProxyWebView)
 
-        """
-        snap = super(WebView, self).snapshot()
-        snap['url'] = self.url
-        snap['html'] = self.html
-        return snap
-
-    @observe(r'^(url|html)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('url', 'html'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(WebView, self).send_member_change(change)
-
+        super(WebView, self)._update_proxy(change)
