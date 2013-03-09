@@ -5,10 +5,20 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-#from .dock_pane import DockPane
+from atom.api import Typed, ForwardTyped
+
+from .dock_pane import DockPane
 from .menu_bar import MenuBar
-#from .tool_bar import ToolBar
-from .window import Window
+from .tool_bar import ToolBar
+from .window import Window, ProxyWindow
+
+
+class ProxyMainWindow(ProxyWindow):
+    """ The abstract definition of a proxy MainWindow object.
+
+    """
+    #: A reference to the Window declaration.
+    declaration = ForwardTyped(lambda: MainWindow)
 
 
 class MainWindow(Window):
@@ -22,53 +32,28 @@ class MainWindow(Window):
     available space.
 
     """
-    @property
+    #: A reference to the ProxyMainWindow object.
+    proxy = Typed(ProxyMainWindow)
+
     def menu_bar(self):
-        """ A read only property which returns the window's MenuBar.
+        """ Get the menu bar defined as a child on the window.
+
+        The last MenuBar declared as a child is used as the official
+        menu bar of the window.
 
         """
-        menu = None
-        for child in self.children:
+        for child in reversed(self.children):
             if isinstance(child, MenuBar):
-                menu = child
-        return menu
+                return child
 
-    #: A read only property which returns the window's ToolBars.
-    #tool_bars = Property(depends_on='children')
+    def dock_panes(self):
+        """ Get the dock panes defined as children on the window.
 
-    #: A read only property which returns the window's DockPanes.
-    #dock_panes = Property(depends_on='children')
+        """
+        return [c for c in self.children if isinstance(c, DockPane)]
 
-    #: A read only property which returns the window's StatusBar.
-    # status_bar = Property(depends_on='children')
+    def tool_bars(self):
+        """ Get the tool bars defined as children on the window.
 
-    #@cached_property
-    # def _get_tool_bars(self):
-    #     """ The getter for the 'tool_bars' property.
-
-    #     Returns
-    #     -------
-    #     result : tuple
-    #         The tuple of ToolBar instances defined as children of this
-    #         MainWindow.
-
-    #     """
-    #     isinst = isinstance
-    #     panes = (child for child in self.children if isinst(child, ToolBar))
-    #     return tuple(panes)
-
-    # #@cached_property
-    # def _get_dock_panes(self):
-    #     """ The getter for the 'dock_panes' property.
-
-    #     Returns
-    #     -------
-    #     result : tuple
-    #         The tuple of DockPane instances defined as children of this
-    #         MainWindow.
-
-    #     """
-    #     isinst = isinstance
-    #     panes = (child for child in self.children if isinst(child, DockPane))
-    #     return tuple(panes)
-
+        """
+        return [c for c in self.children if isinstance(c, ToolBar)]
