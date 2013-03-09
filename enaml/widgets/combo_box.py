@@ -6,7 +6,8 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, List, Int, Property, Unicode, Typed, ForwardTyped, set_default, observe
+    Bool, List, Int, Unicode, Typed, ForwardTyped, set_default, observe,
+    cached_property
 )
 
 from enaml.core.declarative import d_
@@ -48,16 +49,25 @@ class ComboBox(Control):
     #: Whether the text in the combo box can be edited by the user.
     editable = d_(Bool(False))
 
-    #: A readonly property that will return the currently selected
-    #: item. If the index falls out of range, the selected item will
-    #: be the empty string.
-    selected_item = Property(cached=True)
-
     #: A combo box hugs its width weakly by default.
     hug_width = set_default('weak')
 
     #: A reference to the ProxyComboBox object.
     proxy = Typed(ProxyComboBox)
+
+    @cached_property
+    def selected_item(self):
+        """ A read only cached property which returns the selected item.
+
+        If the index falls out of range, the selected item will be an
+        empty string.
+
+        """
+        items = self.items
+        idx = self.index
+        if idx < 0 or idx >= len(items):
+            return u''
+        return items[idx]
 
     #--------------------------------------------------------------------------
     # Observers
@@ -72,17 +82,7 @@ class ComboBox(Control):
 
     @observe(('index', 'items'))
     def _reset_selected_item(self, change):
-        self.get_member('selected_item').reset(self)
-
-    #--------------------------------------------------------------------------
-    # Property Handlers
-    #--------------------------------------------------------------------------
-    def _get_selected_item(self):
-        """ The getter for the `selected_item` property.
+        """ Reset the selected item when the index or items changes.
 
         """
-        items = self.items
-        idx = self.index
-        if idx < 0 or idx >= len(items):
-            return u''
-        return items[idx]
+        self.get_member('selected_item').reset(self)
