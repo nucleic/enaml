@@ -12,7 +12,6 @@ from atom.api import Typed
 from enaml.widgets.push_button import ProxyPushButton
 
 from .qt_abstract_button import QtAbstractButton
-from .qt_menu import QtMenu
 
 
 class QtPushButton(QtAbstractButton, ProxyPushButton):
@@ -50,7 +49,7 @@ class QtPushButton(QtAbstractButton, ProxyPushButton):
             The menu defined for this widget, or None if not defined.
 
         """
-        m = self.declaration.menu
+        m = self.declaration.menu()
         if m is not None:
             return m.proxy.widget or None
 

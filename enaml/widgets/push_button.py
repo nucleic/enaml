@@ -26,9 +26,8 @@ class PushButton(AbstractButton):
     #: A reference to the ProxyPushButton object.
     proxy = Typed(ProxyPushButton)
 
-    @property
     def menu(self):
-        """ A property which returns the button menu, if defined.
+        """ Get the menu defined for the PushButton, if any.
 
         """
         for child in reversed(self.children):
