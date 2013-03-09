@@ -5,13 +5,39 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, List, observe
+from atom.api import Bool, Enum, List, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
 from .action import Action
 from .action_group import ActionGroup
-from .constraints_widget import ConstraintsWidget
+from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
+
+
+class ProxyToolBar(ProxyConstraintsWidget):
+    """ The abstract definition of a proxy ToolBar object.
+
+    """
+    #: A reference to the Window declaration.
+    declaration = ForwardTyped(lambda: ToolBar)
+
+    def set_movable(self, movable):
+        raise NotImplementedError
+
+    def set_floatable(self, floatable):
+        raise NotImplementedError
+
+    def set_floating(self, floating):
+        raise NotImplementedError
+
+    def set_dock_area(self, area):
+        raise NotImplementedError
+
+    def set_allowed_dock_areas(self, areas):
+        raise NotImplementedError
+
+    def set_orientation(self, orientation):
+        raise NotImplementedError
 
 
 class ToolBar(ConstraintsWidget):
@@ -47,7 +73,7 @@ class ToolBar(ConstraintsWidget):
     #: by the user. This value only has meaning if the tool bar is the
     #: child of a MainWindow.
     allowed_dock_areas = d_(List(
-        Enum('top', 'right', 'left', 'bottom', 'all'), value=['all'],
+        Enum('top', 'right', 'left', 'bottom', 'all'), default=['all'],
     ))
 
     #: The orientation of the toolbar. This only has meaning when the
@@ -55,76 +81,34 @@ class ToolBar(ConstraintsWidget):
     #: a constraints based layout.
     orientation = d_(Enum('horizontal', 'vertical'))
 
-    #: A flag indicating whether the user has explicitly set the hug
-    #: property. If it is not explicitly set, the hug values will be
-    #: updated automatically when the orientation changes.
-    _explicit_hug = Bool(False)
+    #: Whether or not to automatically adjust the 'hug_width' and
+    #: 'hug_height' values based on the value of 'orientation'.
+    auto_hug = Bool(True)
 
-    @property
+    #: A reference to the ProxyToolBar object.
+    proxy = Typed(ProxyToolBar)
+
     def items(self):
-        """ A read only property which returns the list of toolbar items.
+        """ Get the items defined on the tool bar.
 
         """
-        isinst = isinstance
-        types = (Action, ActionGroup)
-        return [child for child in self.children if isinst(child, types)]
-
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dict for the DockPane.
-
-        """
-        snap = super(ToolBar, self).snapshot()
-        snap['movable'] = self.movable
-        snap['floatable'] = self.floatable
-        snap['floating'] = self.floating
-        snap['dock_area'] = self.dock_area
-        snap['allowed_dock_areas'] = self.allowed_dock_areas
-        snap['orientation'] = self.orientation
-        return snap
-
-    @observe(r'^(movable|floatable|floating|dock_area|allowed_dock_areas|'
-             r'orientation)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
-
-        """
-        # The superclass handler implementation is sufficient.
-        super(ToolBar, self).send_member_change(change)
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_floated(self, content):
-        """ Handle the 'floated' action from the client widget.
-
-        """
-        self.set_guarded(floating=True)
-
-    def on_action_docked(self, content):
-        """ Handle the 'docked' action from the client widget.
-
-        """
-        self.set_guarded(floating=False)
-        self.set_guarded(dock_area=content['dock_area'])
+        allowed = (Action, ActionGroup)
+        return [c for c in self.children if isinstance(c, allowed)]
 
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    def _observe_orientation(self, change):
-        """ Updates the hug properties if they are not explicitly set.
+    @observe(('movable', 'floatable', 'floating', 'dock_area',
+        'allowed_dock_areas', 'orientation'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
-        if not self._explicit_hug:
-            self.hug_width = self._default_hug_width()
-            self.hug_height = self._default_hug_height()
-            # Reset to False to remove the effect of the above.
-            self._explicit_hug = False
+        # The superclass handler implementation is sufficient.
+        super(ToolBar, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
-    # Default Handlers
+    # DefaultValue Handlers
     #--------------------------------------------------------------------------
     def _default_hug_width(self):
         """ Get the default hug width for the slider.
@@ -147,23 +131,18 @@ class ToolBar(ConstraintsWidget):
         return 'strong'
 
     #--------------------------------------------------------------------------
-    # Post Validation Handlers
+    # PostSetAttr Handlers
     #--------------------------------------------------------------------------
-    def _post_validate_hug_width(self, old, new):
-        """ Post validate the hug width for the slider.
+    def _post_setattr_orientation(self, old, new):
+        """ Post setattr the orientation for the tool bar.
 
-        This sets the explicit hug flag to True.
-
-        """
-        self._explicit_hug = True
-        return new
-
-    def _post_validate_hug_height(self, old, new):
-        """ Post validate the hug height for the slider.
-
-        This sets the explicit hug flag to True.
+        If auto hug is enabled, the hug values will be updated.
 
         """
-        self._explicit_hug = True
-        return new
-
+        if self.auto_hug:
+            if new == 'vertical':
+                self.hug_width = 'strong'
+                self.hug_height = 'ignore'
+            else:
+                self.hug_width = 'ignore'
+                self.hug_height = 'strong'
