@@ -104,10 +104,6 @@ class Container(ConstraintsWidget):
     #: margin than what is specified by the padding.
     padding = d_(Coerced(Box, (10, 10, 10, 10)))
 
-    #: A cached property which returns the children defined on the
-    #: container which are instances of ConstraintsWidget.
-    #widgets = CachedProperty(List())
-
     #: Containers freely exapnd in width and height. The size hint
     #: constraints for a Container are used when the container is
     #: not sharing its layout. In these cases, expansion of the
@@ -119,15 +115,38 @@ class Container(ConstraintsWidget):
     proxy = Typed(ProxyContainer)
 
     #--------------------------------------------------------------------------
-    # Property Handlers
+    # Public API
     #--------------------------------------------------------------------------
-    def _get_widgets(self):
-        """ The getter for the 'widgets' cached property
+    def widgets(self):
+        """ Get the child ConstraintsWidgets defined on the container.
 
         """
-        isinst = isinstance
-        target = ConstraintsWidget
-        return [child for child in self.children if isinst(child, target)]
+        return [c for c in self.children if isinstance(c, ConstraintsWidget)]
+
+    #--------------------------------------------------------------------------
+    # Child Events
+    #--------------------------------------------------------------------------
+    def child_added(self, child):
+        """ Handle the child added event on the container.
+
+        This event handler will send a relayout event if the `Container`
+        is active and the user has not defined their own constraints.
+
+        """
+        super(Container, self).child_added(child)
+        if isinstance(child, ConstraintsWidget):
+            self.relayout()
+
+    def child_removed(self, child):
+        """ Handle the child removed event on the container.
+
+        This event handler will send a relayout event if the `Container`
+        is active and the user has not defined their own constraints.
+
+        """
+        super(Container, self).child_removed(child)
+        if isinstance(child, ConstraintsWidget):
+            self.relayout()
 
     #--------------------------------------------------------------------------
     # Observers
@@ -139,35 +158,6 @@ class Container(ConstraintsWidget):
         """
         # The superclass handler is sufficient.
         super(Container, self)._layout_invalidated(change)
-
-    #--------------------------------------------------------------------------
-    # Child Events
-    #--------------------------------------------------------------------------
-    # def child_added(self, child):
-    #     """ Handle the child added event on the container.
-
-    #     This event handler will send a relayout event if the `Container`
-    #     is active and the user has not defined their own constraints.
-
-    #     """
-    #     super(Container, self).child_added(child)
-    #     # XXX these can probably be collapsed
-    #     CachedProperty.reset(self, 'widgets')
-    #     if self.is_active and not self.constraints:
-    #         self._send_relayout()
-
-    # def child_removed(self, child):
-    #     """ Handle the child removed event on the container.
-
-    #     This event handler will send a relayout event if the `Container`
-    #     is active and the user has not defined their own constraints.
-
-    #     """
-    #     super(Container, self).child_removed(child)
-    #     # XXX these can probably be collapsed
-    #     CachedProperty.reset(self, 'widgets')
-    #     if self.is_active and not self.constraints:
-    #         self._send_relayout()
 
     #--------------------------------------------------------------------------
     # Constraints Generation
