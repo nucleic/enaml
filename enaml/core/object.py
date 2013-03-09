@@ -34,7 +34,7 @@ def flag_property(flag):
 
     """
     def getter(self):
-        return (self._flags & flag) == 1
+        return (self._flags & flag) != 0
     def setter(self, value):
         if value:
             self._flags |= flag
