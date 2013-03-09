@@ -51,14 +51,14 @@ class ActionGroup(ToolkitObject):
     #: A reference to the ProxyActionGroup object.
     proxy = Typed(ProxyActionGroup)
 
-    @property
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
     def actions(self):
-        """ A read only property which returns the group's actions.
+        """ Get Actions defined as children of the ActionGroup.
 
         """
-        isinst = isinstance
-        items = (child for child in self.children if isinst(child, Action))
-        return tuple(items)
+        return [child for child in self.children if isinstance(child, Action)]
 
     #--------------------------------------------------------------------------
     # Observers
