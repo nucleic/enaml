@@ -11,7 +11,7 @@ from enaml.core.declarative import d_
 from enaml.layout.layout_helpers import align, hbox, vbox
 
 from .constraints_widget import ConstraintMember
-from .container import  Container
+from .container import Container
 
 
 class Form(Container):
@@ -45,7 +45,7 @@ class Form(Container):
 
         """
         # FIXME: do something sensible when children are not visible.
-        children = list(self.widgets)
+        children = list(self.widgets())
         labels = children[::2]
         widgets = children[1::2]
 
@@ -95,4 +95,3 @@ class Form(Container):
 
         """
         return []
-
