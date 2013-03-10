@@ -31,8 +31,8 @@ class QtFileDialog(QtToolkitObject, ProxyFileDialog):
     def create_non_native_dialog(self):
         """ Create a non-native QFileDialog.
 
-        This will use the current state of the declaration to populate
-        the new dialog.
+        This will use the current state of the declaration object to
+        populate the state of the new dialog.
 
         """
         widget = QFileDialog(self.parent_widget())
@@ -60,6 +60,10 @@ class QtFileDialog(QtToolkitObject, ProxyFileDialog):
     def open_non_native_dialog(self):
         """ Create and open a non-native QFileDialog.
 
+        This call will return immediately. The created dialog will be
+        stored in the 'widget' attribute and the processing of the
+        results will occur when its 'connect' signal is emitted.
+
         """
         self.widget = dialog = self.create_non_native_dialog()
         dialog.finished.connect(self.on_non_native_finished)
@@ -67,6 +71,9 @@ class QtFileDialog(QtToolkitObject, ProxyFileDialog):
 
     def on_non_native_finished(self, result):
         """ The handler for the 'finished' signal on a QFileDialog.
+
+        This handler will process the results of the dialog and then
+        call the 'handle_close' method.
 
         """
         dialog = self.widget
@@ -83,6 +90,9 @@ class QtFileDialog(QtToolkitObject, ProxyFileDialog):
     def exec_non_native_dialog(self):
         """ Create and exec a non-native QFileDialog.
 
+        This call blocks. When the dialog is closed, this method will
+        invoke the 'handle' close method.
+
         """
         self.widget = dialog = self.create_non_native_dialog()
         if dialog.exec_():
@@ -98,6 +108,9 @@ class QtFileDialog(QtToolkitObject, ProxyFileDialog):
     def open_native_dialog(self):
         """ Open a native file dialog in a non-blocking fashion.
 
+        Native file dialogs always block, so this method will dispatch
+        the execution of the call to the next cycle of the event loop.
+
         """
         # Native dialogs always block. Open them "non blocking" by
         # using a deferred closure
@@ -108,6 +121,9 @@ class QtFileDialog(QtToolkitObject, ProxyFileDialog):
 
     def exec_native_dialog(self):
         """ Exec a native file dialog.
+
+        This call blocks. When the dialog is closed, this method will
+        invoke the 'handle' close method.
 
         """
         parent = self.parent_widget()
@@ -139,6 +155,10 @@ class QtFileDialog(QtToolkitObject, ProxyFileDialog):
     def handle_close(self, paths, selected_filter):
         """ Handle the close results of a dialog.
 
+        This method will update the state of the declaration based on
+        the results of the dialog and then calls the '_handle_close'
+        method of the declaration.
+
         """
         d = self.declaration
         if paths:
@@ -168,7 +188,7 @@ class QtFileDialog(QtToolkitObject, ProxyFileDialog):
     def exec_(self):
         """ Run the dialog in a blocking fashion.
 
-        This call will return when the user has closed the dialog.
+        This call will block until the user closes the dialog.
 
         """
         if self.declaration.native_dialog:

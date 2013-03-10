@@ -147,7 +147,9 @@ class FileDialog(ToolkitObject):
         """ Called by the proxy object when the dialog is closed.
 
         The proxy should first update the dialog state, then call this
-        method to fire off the appropriate closed events.
+        method to fire off the appropriate closed events. If the dialog
+        is set to destroy on the close, the call to destroy will occur
+        on the next cycle of the event loop.
 
         """
         if self.callback:
