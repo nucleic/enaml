@@ -5,88 +5,78 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt
-from .qt.QtGui import QFrame, QVBoxLayout
-from .qt_constraints_widget import size_hint_guard
-from .qt_control import QtControl
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QFrame, QVBoxLayout
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
 
+from atom.api import Typed
 
-class QtMPLCanvas(QtControl):
-    """ A Qt implementation of an Enaml MPLCanvas.
+from enaml.widgets.mpl_canvas import ProxyMPLCanvas
+
+from .qt_constraints_widget import size_hint_guard
+from .qt_control import QtControl
+
+
+class QtMPLCanvas(QtControl, ProxyMPLCanvas):
+    """ A Qt implementation of an Enaml ProxyMPLCanvas.
 
     """
-    #: Internal storage for the matplotlib figure.
-    _figure = None
-
-    #: Internal storage for whether or not to show the toolbar.
-    _toolbar_visible = False
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QFrame)
 
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying widget.
 
         """
-        widget = QFrame(parent)
+        widget = QFrame(self.parent_widget())
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         widget.setLayout(layout)
-        return widget
-
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
-
-        """
-        super(QtMPLCanvas, self).create(tree)
-        self._figure = tree['figure']
-        self._toolbar_visible = tree['toolbar_visible']
+        self.widget = widget
 
     def init_layout(self):
         """ Initialize the layout of the underlying widget.
 
         """
         super(QtMPLCanvas, self).init_layout()
-        self.refresh_mpl_widget()
+        self._refresh_mpl_widget()
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # ProxyMPLCanvas API
     #--------------------------------------------------------------------------
-    def on_action_set_figure(self, content):
-        """ Handle the 'set_figure' action from the Enaml widget.
+    def set_figure(self, figure):
+        """ Set the MPL figure for the widget.
 
         """
-        self._figure = content['figure']
         with size_hint_guard(self):
-            self.refresh_mpl_widget()
+            self._refresh_mpl_widget()
 
-    def on_action_set_toolbar_visible(self, content):
-        """ Handle the 'set_toolbar_visible' action from the Enaml
-        widget.
+    def set_toolbar_visible(self, visible):
+        """ Set the toolbar visibility for the widget.
 
         """
-        visible = content['toolbar_visible']
-        self._toolbar_visible = visible
-        layout = self.widget().layout()
+        layout = self.widget.layout()
         if layout.count() == 2:
             with size_hint_guard(self):
                 toolbar = layout.itemAt(0).widget()
                 toolbar.setVisible(visible)
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # Private API
     #--------------------------------------------------------------------------
-    def refresh_mpl_widget(self):
+    def _refresh_mpl_widget(self):
         """ Create the mpl widget and update the underlying control.
 
         """
         # Delete the old widgets in the layout, it's just shenanigans
         # to try to reuse the old widgets when the figure changes.
-        widget = self.widget()
+        widget = self.widget
         layout = widget.layout()
         while layout.count():
             layout_item = layout.takeAt(0)
@@ -98,14 +88,13 @@ class QtMPLCanvas(QtControl):
         # which is certainly not desired in this case. This appears to
         # be a limitation of matplotlib. The canvas is manually set to
         # visible, or QVBoxLayout will ignore it for size hinting.
-        figure = self._figure
-        if figure is not None:
+        figure = self.declaration.figure
+        if figure:
             canvas = FigureCanvasQTAgg(figure)
             canvas.setParent(widget)
             canvas.setFocusPolicy(Qt.ClickFocus)
             canvas.setVisible(True)
             toolbar = NavigationToolbar2QTAgg(canvas, widget)
-            toolbar.setVisible(self._toolbar_visible)
+            toolbar.setVisible(self.declaration.toolbar_visible)
             layout.addWidget(toolbar)
             layout.addWidget(canvas)
-

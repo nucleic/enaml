@@ -5,17 +5,32 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import ForwardInstance, Bool, observe, set_default
+from atom.api import Typed, ForwardTyped, Bool, observe, set_default
 
 from enaml.core.declarative import d_
 
-from .control import Control
+from .control import Control, ProxyControl
 
 
-#: Delay the import of matplotlib until needed
+#: Delay the import of matplotlib until needed. This removes the hard
+#: dependecy on matplotlib for the rest of the Enaml code base.
 def Figure():
     from matplotlib.figure import Figure
     return Figure
+
+
+class ProxyMPLCanvas(ProxyControl):
+    """ The abstract definition of a proxy MPLCanvas object.
+
+    """
+    #: A reference to the MPLCanvas declaration.
+    declaration = ForwardTyped(lambda: MPLCanvas)
+
+    def set_figure(self, figure):
+        raise NotImplementedError
+
+    def set_toolbar_visible(self, visible):
+        raise NotImplementedError
 
 
 class MPLCanvas(Control):
@@ -23,7 +38,7 @@ class MPLCanvas(Control):
 
     """
     #: The matplotlib figure to display in the widget.
-    figure = d_(ForwardInstance(Figure))
+    figure = d_(ForwardTyped(Figure))
 
     #: Whether or not the matplotlib figure toolbar is visible.
     toolbar_visible = d_(Bool(False))
@@ -32,23 +47,16 @@ class MPLCanvas(Control):
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Get the snapshot dict for the MPLCanvas.
+    #: A reference to the ProxyMPLCanvas object.
+    proxy = Typed(ProxyMPLCanvas)
 
-        """
-        snap = super(MPLCanvas, self).snapshot()
-        snap['figure'] = self.figure
-        snap['toolbar_visible'] = self.toolbar_visible
-        return snap
-
-    @observe(r'^(figure|toolbar_visible)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('figure', 'toolbar_visible'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(MPLCanvas, self).send_member_change(change)
-
+        super(MPLCanvas, self)._update_proxy(change)
