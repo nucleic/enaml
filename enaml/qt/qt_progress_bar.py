@@ -5,73 +5,65 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QProgressBar
+from PyQt4.QtGui import QProgressBar
+
+from atom.api import Typed
+
+from enaml.widgets.progress_bar import ProxyProgressBar
+
 from .qt_control import QtControl
 
 
-class QtProgressBar(QtControl):
-    """ A Qt implementation of an Enaml ProgressBar.
+class QtProgressBar(QtControl, ProxyProgressBar):
+    """ A Qt implementation of an Enaml ProxyProgressBar.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QProgressBar)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying progress bar widget.
 
         """
-        widget = QProgressBar(parent)
-        widget.setTextVisible(False)
-        return widget
+        self.widget = QProgressBar(self.parent_widget())
 
-    def create(self, tree):
+    def init_widget(self):
         """ Create and initialize the underlying widget.
 
         """
-        super(QtProgressBar, self).create(tree)
-        self.set_minimum(tree['minimum'])
-        self.set_maximum(tree['maximum'])
-        self.set_value(tree['value'])
+        super(QtProgressBar, self).init_widget()
+        d = self.declaration
+        self.set_minimum(d.minimum)
+        self.set_maximum(d.maximum)
+        self.set_value(d.value)
+        self.set_text_visible(d.text_visible)
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_minimum(self, content):
-        """ Handle the 'set_minimum' action from the Enaml widget.
-
-        """
-        self.set_minimum(content['minimum'])
-
-    def on_action_set_maximum(self, content):
-        """ Handle the 'set_maximum' action from the Enaml widget.
-
-        """
-        self.set_maximum(content['maximum'])
-
-    def on_action_set_value(self, content):
-        """ Handle the 'set_value' action from the Enaml widget.
-
-        """
-        self.set_value(content['value'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyProgressBar API
     #--------------------------------------------------------------------------
     def set_minimum(self, value):
-        """ Set the minimum value of the progress bar
+        """ Set the minimum value of the widget.
 
         """
-        self.widget().setMinimum(value)
+        self.widget.setMinimum(value)
 
     def set_maximum(self, value):
-        """ Set the maximum value of the progress bar
+        """ Set the maximum value of the widget.
 
         """
-        self.widget().setMaximum(value)
+        self.widget.setMaximum(value)
 
     def set_value(self, value):
-        """ Set the value of the progress bar
+        """ Set the value of the widget.
 
         """
-        self.widget().setValue(value)
+        self.widget.setValue(value)
 
+    def set_text_visible(self, visible):
+        """ Set the text visibility on the widget.
+
+        """
+        self.widget.setTextVisible(visible)

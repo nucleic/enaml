@@ -5,11 +5,33 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import CachedProperty, Int, observe, set_default
+from atom.api import (
+    Typed, ForwardTyped, Bool, Int, cached_property, observe, set_default
+)
 
 from enaml.core.declarative import d_
 
-from .control import Control
+from .control import Control, ProxyControl
+
+
+class ProxyProgressBar(ProxyControl):
+    """ The abstract defintion of a proxy ProgressBar object.
+
+    """
+    #: A reference to the ProgressBar declaration.
+    declaration = ForwardTyped(lambda: ProgressBar)
+
+    def set_minimum(self, minimum):
+        raise NotImplementedError
+
+    def set_maximum(self, maximum):
+        raise NotImplementedError
+
+    def set_value(self, value):
+        raise NotImplementedError
+
+    def set_text_visible(self, visible):
+        raise NotImplementedError
 
 
 class ProgressBar(Control):
@@ -24,46 +46,28 @@ class ProgressBar(Control):
     #: The maximum progress value. If the maximum value is changed such
     #: that it becomes smaller than the current value or the minimum
     #: value, then those values will be adjusted. The default is 100.
-    maximum = d_(Int(10))
+    maximum = d_(Int(100))
 
     #: The position value of the Slider. The value will be clipped to
     #: always fall between the minimum and maximum.
     value = d_(Int(0))
 
-    #: The percentage completed, rounded to an integer. This is a
-    #: readonly value for convenient use by other Components.
-    percentage = CachedProperty(Int())
+    #: Whether or not to display progress percentage on the control.
+    #: This may not be supported by all toolkits and platforms.
+    text_visible = d_(Bool(False))
 
     #: How strongly a component hugs it's content. ProgressBars expand
     #: to fill the available horizontal space by default.
     hug_width = set_default('ignore')
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the dict of creation attributes for the control.
+    #: A reference to the ProxyProgressBar object.
+    proxy = Typed(ProxyProgressBar)
 
-        """
-        snap = super(ProgressBar, self).snapshot()
-        snap['maximum'] = self.maximum
-        snap['minimum'] = self.minimum
-        snap['value'] = self.value
-        return snap
+    @cached_property
+    def percentage(self):
+        """ The percentage completed, rounded to an int.
 
-    @observe(r'^(minimum|maximum|value)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
-
-        """
-        # The superclass handler implementation is sufficient.
-        super(ProgressBar, self).send_member_change(change)
-
-    #--------------------------------------------------------------------------
-    # Property Handlers
-    #--------------------------------------------------------------------------
-    def _get_percentage(self):
-        """ The property getter for the ProgressBar percentage.
+        This is a readonly convenience property.
 
         """
         minimum = self.minimum
@@ -83,18 +87,31 @@ class ProgressBar(Control):
             res = min(res, 99)
         return res
 
-    @observe(r'^(minimum|maximum|value)$', regex=True)
-    def _reset_percentage(self, change):
-        """ Reset the percentage property when its dependencies change.
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('minimum', 'maximum', 'value', 'text_visible'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
+
+        This observer also resets the 'percentage' property.
 
         """
-        CachedProperty.reset(self, 'percentage')
+        # The superclass handler implementation is sufficient.
+        super(ProgressBar, self)._update_proxy(change)
+
+    @observe(('minimum', 'maximum', 'value'))
+    def _reset_percentage(self, change):
+        """ An observer which resets the percentage property.
+
+        """
+        self.get_member('percentage').reset(self)
 
     #--------------------------------------------------------------------------
-    # Post Validation Handlers
+    # PostSetAttr Handlers
     #--------------------------------------------------------------------------
-    def _post_validate_minimum(self, old, new):
-        """ Post validate the minimum value for the progress bar.
+    def _post_setattr_minimum(self, old, new):
+        """ Post setattr the minimum value for the progress bar.
 
         If the new minimum is greater than the current value or maximum,
         those values are adjusted up.
@@ -104,10 +121,9 @@ class ProgressBar(Control):
             self.maximum = new
         if new > self.value:
             self.value = new
-        return new
 
-    def _post_validate_maximum(self, old, new):
-        """ Post validate the maximum value for the progress bar.
+    def _post_setattr_maximum(self, old, new):
+        """ Post setattr the maximum value for the progress bar.
 
         If the new maximum is less than the current value or the minimum,
         those values are adjusted down.
@@ -117,8 +133,10 @@ class ProgressBar(Control):
             self.minimum = new
         if new < self.value:
             self.value = new
-        return new
 
+    #--------------------------------------------------------------------------
+    # PostValidate Handlers
+    #--------------------------------------------------------------------------
     def _post_validate_value(self, old, new):
         """ Post validate the value for the progress bar.
 
@@ -126,4 +144,3 @@ class ProgressBar(Control):
 
         """
         return max(self.minimum, min(new, self.maximum))
-
