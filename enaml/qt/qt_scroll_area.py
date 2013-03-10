@@ -100,7 +100,7 @@ class QCustomScrollArea(QScrollArea):
 
 
 class QtScrollArea(QtConstraintsWidget, ProxyScrollArea):
-    """ A Qt implementation of an Enaml ScrollArea.
+    """ A Qt implementation of an Enaml ProxyScrollArea.
 
     """
     #: A reference to the widget created by the proxy.
