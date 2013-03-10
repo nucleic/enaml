@@ -5,12 +5,32 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Enum, Bool, observe, set_default
+from atom.api import Enum, Bool, Typed, ForwardTyped, observe, set_default
 
 from enaml.core.declarative import d_
 
-from .constraints_widget import ConstraintsWidget
+from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .page import Page
+
+
+class ProxyNotebook(ProxyConstraintsWidget):
+    """ The abstract definition of a proxy Notebook object.
+
+    """
+    #: A reference to the Notebook declaration.
+    declaration = ForwardTyped(lambda: Notebook)
+
+    def set_tab_style(self, style):
+        raise NotImplementedError
+
+    def set_tab_position(self, position):
+        raise NotImplementedError
+
+    def set_tabs_closable(self, closable):
+        raise NotImplementedError
+
+    def set_tabs_movable(self, movable):
+        raise NotImplementedError
 
 
 class Notebook(ConstraintsWidget):
@@ -36,34 +56,22 @@ class Notebook(ConstraintsWidget):
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 
-    @property
+    #: A reference to the ProxyNotebook object.
+    proxy = Typed(ProxyNotebook)
+
     def pages(self):
-        """ A read-only property which returns the notebook pages.
+        """ Get the Page children defined on the notebook.
 
         """
-        isinst = isinstance
-        pages = (child for child in self.children if isinst(child, Page))
-        return tuple(pages)
+        return [c for c in self.children if isinstance(c, Page)]
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot for the control.
-
-        """
-        snap = super(Notebook, self).snapshot()
-        snap['tab_style'] = self.tab_style
-        snap['tab_position'] = self.tab_position
-        snap['tabs_closable'] = self.tabs_closable
-        snap['tabs_movable'] = self.tabs_movable
-        return snap
-
-    @observe(r'^(tab_style|tab_position|tabs_closable|tabs_movable)$', regex=True)
-    def send_member_change(self):
-        """ Send the state change for the members.
+    @observe(('tab_style', 'tab_position', 'tabs_closable', 'tabs_movable'))
+    def _update_proxy(self, change):
+        """ Send the state change to the proxy.
 
         """
         # The superclass implementation is sufficient.
-        super(Notebook, self).send_member_change()
-
+        super(Notebook, self)._update_proxy(change)

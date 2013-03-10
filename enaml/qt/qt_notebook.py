@@ -8,10 +8,14 @@
 import sys
 from weakref import WeakKeyDictionary
 
-from .qt.QtCore import Qt, QEvent, Signal
-from .qt.QtGui import QTabWidget, QTabBar, QResizeEvent, QApplication
+from PyQt4.QtCore import Qt, QEvent, pyqtSignal
+from PyQt4.QtGui import QTabWidget, QTabBar, QResizeEvent, QApplication
+
+from atom.api import Typed
+
+from enaml.widgets.notebook import ProxyNotebook
+
 from .qt_constraints_widget import QtConstraintsWidget
-from .qt_page import QtPage
 
 
 TAB_POSITIONS = {
@@ -35,7 +39,7 @@ class QNotebook(QTabWidget):
     #: A signal emitted when a LayoutRequest event is posted to the
     #: notebook widget. This will typically occur when the size hint
     #: of the notebook is no longer valid.
-    layoutRequested = Signal()
+    layoutRequested = pyqtSignal()
 
     def __init__(self, *args, **kwargs):
         """ Initialize a QNotebook.
@@ -256,64 +260,77 @@ class QNotebook(QTabWidget):
         self._refreshTabBar()
 
 
-class QtNotebook(QtConstraintsWidget):
-    """ A Qt implementation of an Enaml Notebook.
+class QtNotebook(QtConstraintsWidget, ProxyNotebook):
+    """ A Qt implementation of an Enaml ProxyNotebook.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QNotebook)
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying notebook widget.
 
         """
-        widget = QNotebook(parent)
+        widget = QNotebook(self.parent_widget())
         if sys.platform == 'darwin':
             # On OSX, the widget item layout rect is too small.
             # Setting this attribute forces the widget item to
             # use the widget rect for layout.
             widget.setAttribute(Qt.WA_LayoutUsesWidgetRect, True)
-        return widget
+        self.widget = widget
 
-    def create(self, tree):
-        """ Create and initialize the underyling widget.
+    def init_widget(self):
+        """ Initialize the underyling widget.
 
         """
-        super(QtNotebook, self).create(tree)
-        self.set_tab_style(tree['tab_style'])
-        self.set_tab_position(tree['tab_position'])
-        self.set_tabs_closable(tree['tabs_closable'])
-        self.set_tabs_movable(tree['tabs_movable'])
+        super(QtNotebook, self).init_widget()
+        d = self.declaration
+        self.set_tab_style(d.tab_style)
+        self.set_tab_position(d.tab_position)
+        self.set_tabs_closable(d.tabs_closable)
+        self.set_tabs_movable(d.tabs_movable)
 
     def init_layout(self):
         """ Handle the layout initialization for the notebook.
 
         """
         super(QtNotebook, self).init_layout()
-        widget = self.widget()
-        for child in self.children():
-            if isinstance(child, QtPage):
-                widget.addPage(child.widget())
+        widget = self.widget
+        for page in self.pages():
+            widget.addPage(page)
         widget.layoutRequested.connect(self.on_layout_requested)
+
+    #--------------------------------------------------------------------------
+    # Utility Method
+    #--------------------------------------------------------------------------
+    def pages(self):
+        """ Get the pages defined for the notebook.
+
+        """
+        for p in self.declaration.pages():
+            yield p.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtNotebook.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event for a QtNotebook.
 
-        """
-        if isinstance(child, QtPage):
-            self.widget().removePage(child.widget())
+    #     """
+    #     if isinstance(child, QtPage):
+    #         self.widget().removePage(child.widget())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtNotebook.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtNotebook.
 
-        """
-        if isinstance(child, QtPage):
-            index = self.index_of(child)
-            if index != -1:
-                self.widget().insertPage(index, child.widget())
+    #     """
+    #     if isinstance(child, QtPage):
+    #         index = self.index_of(child)
+    #         if index != -1:
+    #             self.widget().insertPage(index, child.widget())
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -325,56 +342,28 @@ class QtNotebook(QtConstraintsWidget):
         self.size_hint_updated()
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_tab_style(self, content):
-        """ Handle the 'set_tab_style' action from the Enaml widget.
-
-        """
-        self.set_tab_style(content['tab_style'])
-
-    def on_action_set_tab_position(self, content):
-        """ Handle the 'set_tab_position' action from the Enaml widget.
-
-        """
-        self.set_tab_position(content['tab_position'])
-
-    def on_action_set_tabs_closable(self, content):
-        """ Handle the 'set_tabs_closable' action from the Enaml widget.
-
-        """
-        self.set_tabs_closable(content['tabs_closable'])
-
-    def on_action_set_tabs_movable(self, content):
-        """ Handle the 'set_tabs_movable' action from the Enaml widget.
-
-        """
-        self.set_tabs_movable(content['tabs_movable'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyNotebook API
     #--------------------------------------------------------------------------
     def set_tab_style(self, style):
         """ Set the tab style for the tab bar in the widget.
 
         """
-        self.widget().setDocumentMode(DOCUMENT_MODES[style])
+        self.widget.setDocumentMode(DOCUMENT_MODES[style])
 
     def set_tab_position(self, position):
         """ Set the position of the tab bar in the widget.
 
         """
-        self.widget().setTabPosition(TAB_POSITIONS[position])
+        self.widget.setTabPosition(TAB_POSITIONS[position])
 
     def set_tabs_closable(self, closable):
         """ Set whether or not the tabs are closable.
 
         """
-        self.widget().setTabsClosable(closable)
+        self.widget.setTabsClosable(closable)
 
     def set_tabs_movable(self, movable):
         """ Set whether or not the tabs are movable.
 
         """
-        self.widget().setMovable(movable)
-
+        self.widget.setMovable(movable)
