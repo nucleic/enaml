@@ -5,10 +5,18 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import set_default
+from atom.api import Typed, ForwardTyped, set_default
 
-from .constraints_widget import ConstraintsWidget
+from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .mdi_window import MdiWindow
+
+
+class ProxyMdiArea(ProxyConstraintsWidget):
+    """ The abstract definition of a proxy MdiArea object.
+
+    """
+    #: A reference to the MdiArea declaration.
+    declaration = ForwardTyped(lambda: MdiArea)
 
 
 class MdiArea(ConstraintsWidget):
@@ -28,12 +36,11 @@ class MdiArea(ConstraintsWidget):
     resist_width = set_default('weak')
     resist_height = set_default('weak')
 
-    @property
+    #: A reference to the ProxyMdiArea object.
+    proxy = Typed(ProxyMdiArea)
+
     def mdi_windows(self):
-        """ Return a list of the MdiWindow children.
+        """ Get the mdi windows defined for the area.
 
         """
-        isinst = isinstance
-        target = MdiWindow
-        return [child for child in self.children if isinst(child, target)]
-
+        return [c for c in self.children if isinstance(c, MdiWindow)]
