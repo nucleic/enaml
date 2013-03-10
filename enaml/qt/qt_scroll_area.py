@@ -5,16 +5,20 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt, QEvent, QSize, Signal
-from .qt.QtGui import QScrollArea
+from PyQt4.QtCore import Qt, QEvent, QSize, pyqtSignal
+from PyQt4.QtGui import QScrollArea
+
+from atom.api import Typed, Value
+
+from enaml.widgets.scroll_area import ProxyScrollArea
+
 from .qt_constraints_widget import QtConstraintsWidget
-from .qt_container import QtContainer
 
 
-SCROLLBAR_MAP = {
-    'as_needed' : Qt.ScrollBarAsNeeded,
-    'always_off' : Qt.ScrollBarAlwaysOff,
-    'always_on' : Qt.ScrollBarAlwaysOn
+POLICIES = {
+    'as_needed': Qt.ScrollBarAsNeeded,
+    'always_off': Qt.ScrollBarAlwaysOff,
+    'always_on': Qt.ScrollBarAlwaysOn
 }
 
 
@@ -27,7 +31,7 @@ class QCustomScrollArea(QScrollArea):
     #: A signal emitted when a LayoutRequest event is posted to the
     #: scroll area. This will typically occur when the size hint of
     #: the scroll area is no longer valid.
-    layoutRequested = Signal()
+    layoutRequested = pyqtSignal()
 
     #: A private internally cached size hint.
     _size_hint = QSize()
@@ -54,7 +58,7 @@ class QCustomScrollArea(QScrollArea):
 
         """
         self._size_hint = QSize()
-        self.takeWidget() # Let Python keep ownership of the old widget
+        self.takeWidget()  # Let Python keep ownership of the old widget
         super(QCustomScrollArea, self).setWidget(widget)
 
     def sizeHint(self):
@@ -95,37 +99,41 @@ class QCustomScrollArea(QScrollArea):
         return QSize(hint)
 
 
-class QtScrollArea(QtConstraintsWidget):
+class QtScrollArea(QtConstraintsWidget, ProxyScrollArea):
     """ A Qt implementation of an Enaml ScrollArea.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QCustomScrollArea)
+
     #: A private cache of the old size hint for the scroll area.
-    _old_hint = None
+    _old_hint = Value()
 
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying QScrollArea widget.
 
         """
-        return QCustomScrollArea(parent)
+        self.widget = QCustomScrollArea(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        super(QtScrollArea, self).create(tree)
-        self.set_horizontal_policy(tree['horizontal_policy'])
-        self.set_vertical_policy(tree['vertical_policy'])
-        self.set_widget_resizable(tree['widget_resizable'])
+        super(QtScrollArea, self).init_widget()
+        d = self.declaration
+        self.set_horizontal_policy(d.horizontal_policy)
+        self.set_vertical_policy(d.vertical_policy)
+        self.set_widget_resizable(d.widget_resizable)
 
     def init_layout(self):
         """ Initialize the layout of the underlying widget.
 
         """
         super(QtScrollArea, self).init_layout()
-        widget = self.widget()
+        widget = self.widget
         widget.setWidget(self.scroll_widget())
         widget.layoutRequested.connect(self.on_layout_requested)
 
@@ -135,35 +143,27 @@ class QtScrollArea(QtConstraintsWidget):
     def scroll_widget(self):
         """ Find and return the scroll widget child for this widget.
 
-        Returns
-        -------
-        result : QWidget or None
-            The scroll widget defined for this widget, or None if one is
-            not defined.
-
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, QtContainer):
-                widget = child.widget()
-        return widget
+        w = self.declaration.scroll_widget()
+        if w is not None:
+            return w.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtScrollArea.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event for a QtScrollArea.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setWidget(self.scroll_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setWidget(self.scroll_widget())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtScrollArea.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtScrollArea.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setWidget(self.scroll_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setWidget(self.scroll_widget())
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -172,7 +172,7 @@ class QtScrollArea(QtConstraintsWidget):
         """ Handle the `layoutRequested` signal from the QScrollArea.
 
         """
-        new_hint = self.widget().sizeHint()
+        new_hint = self.widget.sizeHint()
         if new_hint != self._old_hint:
             self._old_hint = new_hint
             self.size_hint_updated()
@@ -199,47 +199,22 @@ class QtScrollArea(QtConstraintsWidget):
         pass
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_horizontal_policy(self, content):
-        """ Handle the 'set_horizontal_policy' action from the Enaml
-        widget.
-
-        """
-        self.set_horizontal_policy(content['horizontal_policy'])
-
-    def on_action_set_vertical_policy(self, content):
-        """ Handle the 'set_vertical_policy' action from the Enaml
-        widget.
-
-        """
-        self.set_vertical_policy(content['vertical_policy'])
-
-    def on_action_set_widget_resizable(self, content):
-        """ Handle the 'set_widget_resizable' action from the Enaml
-        widget.
-
-        """
-        self.set_widget_resizable(content['widget_resizable'])
-
-    #--------------------------------------------------------------------------
     # Widget Update Methods
     #--------------------------------------------------------------------------
     def set_horizontal_policy(self, policy):
         """ Set the horizontal scrollbar policy of the widget.
 
         """
-        self.widget().setHorizontalScrollBarPolicy(SCROLLBAR_MAP[policy])
+        self.widget.setHorizontalScrollBarPolicy(POLICIES[policy])
 
     def set_vertical_policy(self, policy):
         """ Set the vertical scrollbar policy of the widget.
 
         """
-        self.widget().setVerticalScrollBarPolicy(SCROLLBAR_MAP[policy])
+        self.widget.setVerticalScrollBarPolicy(POLICIES[policy])
 
     def set_widget_resizable(self, resizable):
         """ Set whether or not the scroll widget is resizable.
 
         """
-        self.widget().setWidgetResizable(resizable)
-
+        self.widget.setWidgetResizable(resizable)

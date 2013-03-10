@@ -5,12 +5,29 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Enum, Bool, observe, set_default
+from atom.api import Enum, Bool, Typed, ForwardTyped, observe, set_default
 
 from enaml.core.declarative import d_
 
-from .constraints_widget import ConstraintsWidget
+from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .container import Container
+
+
+class ProxyScrollArea(ProxyConstraintsWidget):
+    """ The abstract definition of a proxy ScrollArea.
+
+    """
+    #: A reference to the ScrollArea declaration.
+    declaration = ForwardTyped(lambda: ScrollArea)
+
+    def set_horizontal_policy(self, policy):
+        raise NotImplementedError
+
+    def set_vertical_policy(self, policy):
+        raise NotImplementedError
+
+    def set_widget_resizable(self, resizable):
+        raise NotImplementedError
 
 
 class ScrollArea(ConstraintsWidget):
@@ -33,35 +50,26 @@ class ScrollArea(ConstraintsWidget):
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 
-    @property
+    #: A reference to the ProxyScrollArea object.
+    proxy = Typed(ProxyScrollArea)
+
     def scroll_widget(self):
-        """ A read only property which returns the scrolled widget.
+        """ Get the scroll widget child defined on the area.
+
+        The scroll widget is the last Container child.
 
         """
-        widget = None
-        for child in self.children:
+        for child in reversed(self.children):
             if isinstance(child, Container):
-                widget = child
-        return widget
+                return child
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Get the snapshot dictionary for the control.
-
-        """
-        snap = super(ScrollArea, self).snapshot()
-        snap['horizontal_policy'] = self.horizontal_policy
-        snap['vertical_policy'] = self.vertical_policy
-        snap['widget_resizable'] = self.widget_resizable
-        return snap
-
-    @observe(r'^(horizontal_policy|vertical_policy|widget_resizable)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    @observe(('horizontal_policy', 'vertical_policy', 'widget_resizable'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(ScrollArea, self).send_member_change(change)
-
+        super(ScrollArea, self)._update_proxy(change)
