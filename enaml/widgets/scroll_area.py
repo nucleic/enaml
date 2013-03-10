@@ -14,7 +14,7 @@ from .container import Container
 
 
 class ProxyScrollArea(ProxyConstraintsWidget):
-    """ The abstract definition of a proxy ScrollArea.
+    """ The abstract definition of a proxy ScrollArea object.
 
     """
     #: A reference to the ScrollArea declaration.
