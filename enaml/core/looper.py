@@ -65,14 +65,14 @@ class Looper(Templated):
 
         """
         parent = self.parent
-        if parent is not None and not parent.is_destroying:
+        if parent is not None and not parent.is_destroyed:
             for iteration in self._items:
                 for item in iteration:
                     if not item.is_destroyed:
                         item.destroy()
         super(Looper, self).destroy()
-        self.iterable = None
-        self._items = ()
+        del self.iterable
+        del self._items
 
     #--------------------------------------------------------------------------
     # Private API
@@ -98,7 +98,7 @@ class Looper(Templated):
         iterable = self.iterable
         templates = self._templates
 
-        if iterable is not None and len(templates) > 0:
+        if iterable and len(templates) > 0:
             for loop_index, loop_item in enumerate(iterable):
                 # Each template is a 3-tuple of identifiers, globals, and
                 # list of description dicts. There will only typically be
