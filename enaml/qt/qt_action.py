@@ -11,6 +11,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.action import ProxyAction
 
+from .q_resource_helper import get_cached_qicon
 from .qt_toolkit_object import QtToolkitObject
 
 
@@ -111,8 +112,11 @@ class QtAction(QtToolkitObject, ProxyAction):
         """ Set the icon for the action.
 
         """
-        # XXX convert icon
-        self.widget.setIcon(QIcon())
+        if icon:
+            qicon = get_cached_qicon(icon)
+        else:
+            qicon = QIcon()
+        self.widget.setIcon(qicon)
 
     def set_checkable(self, checkable):
         """ Set the checkable state on the underlying control.

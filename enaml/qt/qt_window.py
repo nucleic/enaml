@@ -12,6 +12,7 @@ from PyQt4.QtGui import QFrame, QLayout, QIcon
 
 from enaml.widgets.window import ProxyWindow
 
+from .q_resource_helper import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
 from .qt_widget import QtWidget
 
@@ -293,8 +294,11 @@ class QtWindow(QtWidget, ProxyWindow):
         """ Set the window icon.
 
         """
-        # XXX convert icon
-        self.widget.setWindowIcon(QIcon())
+        if icon:
+            qicon = get_cached_qicon(icon)
+        else:
+            qicon = QIcon()
+        self.widget.setWindowIcon(qicon)
 
     def set_title(self, title):
         """ Set the title of the window.
