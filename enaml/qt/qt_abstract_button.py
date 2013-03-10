@@ -12,6 +12,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.abstract_button import ProxyAbstractButton
 
+from .q_resource_helper import get_cached_qicon
 from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
@@ -97,12 +98,15 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
         """ Set the icon on the widget.
 
         """
-        # XXX convert the icon
+        if icon:
+            qicon = get_cached_qicon(icon)
+        else:
+            qicon = QIcon()
         if sh_guard:
             with size_hint_guard(self):
-                self.widget.setIcon(QIcon())
+                self.widget.setIcon(qicon)
         else:
-            self.widget.setIcon(QIcon())
+            self.widget.setIcon(qicon)
 
     def set_icon_size(self, size, sh_guard=True):
         """ Sets the widget's icon size.
