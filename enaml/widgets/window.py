@@ -10,6 +10,7 @@ from atom.api import (
     set_default
 )
 
+from enaml.application import deferred_call
 from enaml.core.declarative import d_
 from enaml.icon import Icon
 from enaml.layout.geometry import Size
@@ -50,6 +51,12 @@ class ProxyWindow(ProxyWidget):
     def restore(self):
         raise NotImplementedError
 
+    def send_to_front(self):
+        raise NotImplementedError
+
+    def send_to_back(self):
+        raise NotImplementedError
+
 
 class Window(Widget):
     """ A top-level Window component.
@@ -80,6 +87,9 @@ class Window(Widget):
 
     #: The title bar icon.
     icon = d_(Typed(Icon))
+
+    #: Whether or not the window remains on top of all others.
+    always_on_top = d_(Bool(False))
 
     #: An event fired when the window is closed. This event is triggered
     #: by the proxy object when the window is closed.
@@ -132,6 +142,20 @@ class Window(Widget):
         if self.proxy_is_active:
             self.proxy.restore()
 
+    def send_to_front(self):
+        """ Send the window to the top of the Z order.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.send_to_front()
+
+    def send_to_back(self):
+        """ Send the window to the bottom of the Z order.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.send_to_back()
+
     def show(self):
         """ Show the window to the screen.
 
@@ -159,3 +183,15 @@ class Window(Widget):
         """
         # The superclass handler implementation is sufficient.
         super(Window, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _handle_close(self):
+        """ Handle the close event from the proxy widget.
+
+        """
+        self.visible = False
+        self.closed()
+        if self.destroy_on_close:
+            deferred_call(self.destroy)

@@ -251,7 +251,7 @@ class QtWindow(QtWidget, ProxyWindow):
         This method will fire the 'closed' event on the declaration.
 
         """
-        self.declaration.closed()
+        self.declaration._handle_close()
 
     #--------------------------------------------------------------------------
     # ProxyWindow API
@@ -289,6 +289,18 @@ class QtWindow(QtWidget, ProxyWindow):
 
         """
         self.widget.showNormal()
+
+    def send_to_front(self):
+        """ Move the window to the top of the Z order.
+
+        """
+        self.widget.raise_()
+
+    def send_to_back(self):
+        """ Move the window to the bottom of the Z order.
+
+        """
+        self.widget.lower()
 
     def set_icon(self, icon):
         """ Set the window icon.
