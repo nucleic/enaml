@@ -18,7 +18,7 @@ class ProxyMenu(ProxyToolkitObject):
     """ The abstract definition of a proxy Menu object.
 
     """
-    #: A reference to the Control declaration.
+    #: A reference to the Menu declaration.
     declaration = ForwardTyped(lambda: Menu)
 
     def set_title(self, title):

@@ -17,7 +17,7 @@ class ProxyActionGroup(ProxyToolkitObject):
     """ The abstract definition of a proxy ActionGroup object.
 
     """
-    #: A reference to the Control declaration.
+    #: A reference to the ActionGroup declaration.
     declaration = ForwardTyped(lambda: ActionGroup)
 
     def set_exclusive(self, exclusive):

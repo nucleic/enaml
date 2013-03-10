@@ -19,7 +19,7 @@ class ProxyDockPane(ProxyWidget):
     """ The abstract definition of a proxy DockPane object.
 
     """
-    #: A reference to the Control declaration.
+    #: A reference to the DockPane declaration.
     declaration = ForwardTyped(lambda: DockPane)
 
     def set_title(self, title):

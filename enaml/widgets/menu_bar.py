@@ -15,7 +15,7 @@ class ProxyMenuBar(ProxyToolkitObject):
     """ The abstract definition of a proxy MenuBar object.
 
     """
-    #: A reference to the Window declaration.
+    #: A reference to the MenuBar declaration.
     declaration = ForwardTyped(lambda: MenuBar)
 
 

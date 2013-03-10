@@ -18,7 +18,7 @@ class ProxyBoundedTime(ProxyControl):
     """ The abstract defintion of a proxy BoundedTime object.
 
     """
-    #: A reference to the BoundedDate declaration.
+    #: A reference to the BoundedTime declaration.
     declaration = ForwardTyped(lambda: BoundedTime)
 
     def set_minimum(self, minimum):

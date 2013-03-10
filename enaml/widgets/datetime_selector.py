@@ -16,7 +16,7 @@ class ProxyDatetimeSelector(ProxyBoundedDatetime):
     """ The abstract defintion of a proxy DatetimeSelector object.
 
     """
-    #: A reference to the DateSelector declaration.
+    #: A reference to the DatetimeSelector declaration.
     declaration = ForwardTyped(lambda: DatetimeSelector)
 
     def set_datetime_format(self, format):

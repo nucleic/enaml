@@ -18,7 +18,7 @@ class ProxyToolBar(ProxyConstraintsWidget):
     """ The abstract definition of a proxy ToolBar object.
 
     """
-    #: A reference to the Window declaration.
+    #: A reference to the ToolBar declaration.
     declaration = ForwardTyped(lambda: ToolBar)
 
     def set_movable(self, movable):

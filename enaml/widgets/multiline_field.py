@@ -16,7 +16,7 @@ class ProxyMultilineField(ProxyControl):
     """ The abstract definition of a proxy MultilineField object.
 
     """
-    #: A reference to the Multiline declaration.
+    #: A reference to the MultilineField declaration.
     declaration = ForwardTyped(lambda: MultilineField)
 
     def set_text(self, text):
