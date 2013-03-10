@@ -27,12 +27,6 @@ class ProxyFileDialog(ProxyToolkitObject):
     def exec_(self):
         raise NotImplementedError
 
-    def accept(self):
-        raise NotImplementedError
-
-    def reject(self):
-        raise NotImplementedError
-
 
 class FileDialog(ToolkitObject):
     """ A dialog widget that allows the user to open and save files and
@@ -64,7 +58,9 @@ class FileDialog(ToolkitObject):
     #: will also be updated when the dialog is closed and accepted.
     selected_filter = d_(Unicode())
 
-    #: Whether to use a platform native dialog, when available.
+    #: Whether to use a platform native dialog, when available. This
+    #: attribute is deprecated and no longer has any effect. Native
+    #: dialogs are always used when available in a given toolkit.
     native_dialog = d_(Bool(True))
 
     #: An enum indicating if the dialog was accepted or rejected by
@@ -82,8 +78,8 @@ class FileDialog(ToolkitObject):
     #: the selected path.
     accepted = Event(unicode)
 
-    #: An event fired when the dialog is rejected.
-    rejected = Event(unicode)
+    #: An event fired when the dialog is rejected. It has no payload.
+    rejected = Event()
 
     #: An event fired when the dialog is closed. This is deprecated,
     #: use 'accepted' or 'rejected' intead.
@@ -103,8 +99,6 @@ class FileDialog(ToolkitObject):
         will be updated when the dialog is closed by the user.
 
         """
-        if not self.parent:
-            raise ValueError('FileDialog cannot be opened without a parent')
         if not self.is_initialized:
             self.initialize()
         self.proxy.open()
@@ -126,38 +120,36 @@ class FileDialog(ToolkitObject):
             return self.path
         return u''
 
-    def accept(self):
-        """ Close the dialog, accepting the current selection.
-
-        """
-        if self.is_initialized:
-            self.proxy.accept()
-
-    def reject(self):
-        """ Close the dialog, rejecting the current selection.
-
-        """
-        if self.is_initialized:
-            self.proxy.reject()
-
     #--------------------------------------------------------------------------
     # Utility Methods
     #--------------------------------------------------------------------------
-    def _handle_close(self):
+    def _handle_close(self, result, paths, selected_filter):
         """ Called by the proxy object when the dialog is closed.
 
-        The proxy should first update the dialog state, then call this
-        method to fire off the appropriate closed events. If the dialog
-        is set to destroy on the close, the call to destroy will occur
-        on the next cycle of the event loop.
+        Parameters
+        ----------
+        result : str
+            The result of the dialog; either 'accepted' or 'rejected'.
+
+        paths : list
+            The list of user selected paths. If the result is 'rejected'
+            this should be an empty list.
+
+        selected_filter : unicode
+            The user selected name filter. If the result is 'rejected'
+            this should be an empty string.
 
         """
-        if self.callback:
-            self.callback(self)
-        if self.result == 'accepted':
+        self.result = result
+        if result == 'accepted':
+            self.paths = paths
+            self.path = paths[0] if paths else u''
+            self.selected_filter = selected_filter
             self.accepted(self.path)
         else:
             self.rejected()
+        if self.callback:
+            self.callback(self)
         self.closed()
         if self.destroy_on_close:
             deferred_call(self.destroy)
