@@ -5,18 +5,27 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QMdiSubWindow, QLayout
+from PyQt4.QtGui import QMdiSubWindow, QLayout, QIcon
+
+from atom.api import Typed
+
+from enaml.widgets.mdi_window import ProxyMdiWindow
+
+from .q_resource_helper import get_cached_qicon
 from .qt_widget import QtWidget
 
 
-class QtMdiWindow(QtWidget):
-    """ A Qt implementation of an Enaml MdiWindow.
+class QtMdiWindow(QtWidget, ProxyMdiWindow):
+    """ A Qt implementation of an Enaml ProxyMdiWindow.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QMdiSubWindow)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying QMdiSubWindow widget.
 
         """
@@ -29,7 +38,18 @@ class QtMdiWindow(QtWidget):
         # the framework.
         widget = QMdiSubWindow()
         widget.layout().setSizeConstraint(QLayout.SetMinAndMaxSize)
-        return widget
+        self.widget = widget
+
+    def init_widget(self):
+        """ Initialize the widget.
+
+        """
+        super(QtMdiWindow, self).init_widget()
+        d = self.declaration
+        if d.title:
+            self.set_title(d.title)
+        if d.icon:
+            self.set_icon(d.icon)
 
     def init_layout(self):
         """ Initialize the layout for the underlying control.
@@ -44,35 +64,46 @@ class QtMdiWindow(QtWidget):
     def mdi_widget(self):
         """ Find and return the mdi widget child for this widget.
 
-        Returns
-        -------
-        result : QWidget or None
-            The mdi widget defined for this widget, or None if one is
-            not defined.
-
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, QtWidget):
-                widget = child.widget()
-        return widget
+        w = self.declaration.mdi_widget()
+        if w:
+            return w.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtMdiWindow.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event for a QtMdiWindow.
+
+    #     """
+    #     if isinstance(child, QtWidget):
+    #         self._set_window_widget(self.mdi_widget())
+
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtMdiWindow.
+
+    #     """
+    #     if isinstance(child, QtWidget):
+    #         self._set_window_widget(self.mdi_widget())
+
+    #--------------------------------------------------------------------------
+    # ProxyMdiWindow API
+    #--------------------------------------------------------------------------
+    def set_icon(self, icon):
+        """ Set the mdi window icon.
 
         """
-        if isinstance(child, QtWidget):
-            self._set_window_widget(self.mdi_widget())
+        if icon:
+            qicon = get_cached_qicon(icon)
+        else:
+            qicon = QIcon()
+        self.widget.setWindowIcon(qicon)
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtMdiWindow.
+    def set_title(self, title):
+        """ Set the title of the mdi window.
 
         """
-        if isinstance(child, QtWidget):
-            self._set_window_widget(self.mdi_widget())
+        self.widget.setWindowTitle(title)
 
     #--------------------------------------------------------------------------
     # Private API
@@ -88,7 +119,7 @@ class QtMdiWindow(QtWidget):
         """
         # We need to first set the window widget to None, or Qt will
         # complain if a widget is already set on the window.
-        widget = self.widget()
+        widget = self.widget
         widget.setWidget(None)
         if mdi_widget is None:
             return
@@ -100,4 +131,3 @@ class QtMdiWindow(QtWidget):
         # On OSX, the resize gripper will be obscured unless we
         # lower the widget in the window's stacking order.
         mdi_widget.lower()
-
