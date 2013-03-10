@@ -19,7 +19,7 @@ class ProxyField(ProxyControl):
     """ The abstract definition of a proxy Field object.
 
     """
-    #: A reference to the Window declaration.
+    #: A reference to the Field declaration.
     declaration = ForwardTyped(lambda: Field)
 
     def set_text(self, text):
