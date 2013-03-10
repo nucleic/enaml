@@ -5,20 +5,26 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import QSize
-from .qt.QtGui import QFrame
+from PyQt4.QtCore import QSize
+from PyQt4.QtGui import QFrame
+
+from atom.api import Typed
+
+from enaml.widgets.separator import ProxySeparator
+
+from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
 # A mapping from Enaml orientation to frame shape enum.
-_SHAPE_MAP = {
+LINE_SHAPES = {
     'horizontal': QFrame.HLine,
     'vertical': QFrame.VLine,
 }
 
 
 # A mapping from Enaml line style to frame shadow enum.
-_SHADOW_MAP = {
+LINE_STYLES = {
     'sunken': QFrame.Sunken,
     'raised': QFrame.Raised,
     'plain': QFrame.Plain
@@ -47,83 +53,74 @@ class QSeparator(QFrame):
         return hint
 
 
-class QtSeparator(QtControl):
-    """ A Qt implementation of an Enaml Separator.
+class QtSeparator(QtControl, ProxySeparator):
+    """ A Qt implementation of an Enaml ProxySeparator.
 
     """
-    def create_widget(self, parent, tree):
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QSeparator)
+
+    #--------------------------------------------------------------------------
+    # Initialization API
+    #--------------------------------------------------------------------------
+    def create_widget(self):
         """ Create underlying QSeparator control.
 
         """
-        return QSeparator(parent)
+        self.widget = QSeparator(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
-
-        """
-        super(QtSeparator, self).create(tree)
-        self.set_orientation(tree['orientation'])
-        self.set_line_style(tree['line_style'])
-        self.set_line_width(tree['line_width'])
-        self.set_midline_width(tree['midline_width'])
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_orientation(self, content):
-        """ Handle the 'set_orientation' action from the Enaml widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        self.set_orientation(content['orientation'])
-        self.size_hint_updated()
-
-    def on_action_set_line_style(self, content):
-        """ Handle the 'set_line_style' action from the Enaml widget.
-
-        """
-        self.set_line_style(content['line_style'])
-        self.size_hint_updated()
-
-    def on_action_set_line_width(self, content):
-        """ Handle the 'set_line_width' action from the Enaml widget.
-
-        """
-        self.set_line_width(content['line_width'])
-        self.size_hint_updated()
-        self.widget().update()
-
-    def on_action_set_midline_width(self, content):
-        """ Handle the 'set_midline_width' action from the Enaml widget.
-
-        """
-        self.set_midline_width(content['midline_width'])
-        self.size_hint_updated()
-        self.widget().update()
+        super(QtSeparator, self).init_widget()
+        d = self.declaration
+        self.set_orientation(d.orientation, sh_guard=False)
+        self.set_line_style(d.line_style, sh_guard=False)
+        self.set_line_width(d.line_width, sh_guard=False)
+        self.set_midline_width(d.midline_width, sh_guard=False)
 
     #--------------------------------------------------------------------------
     # Widget Update Methods
     #--------------------------------------------------------------------------
-    def set_orientation(self, orientation):
+    def set_orientation(self, orientation, sh_guard=True):
         """ Set the orientation of the underlying widget.
 
         """
-        self.widget().setFrameShape(_SHAPE_MAP[orientation])
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setFrameShape(LINE_SHAPES[orientation])
+        else:
+            self.widget.setFrameShape(LINE_SHAPES[orientation])
 
-    def set_line_style(self, style):
+    def set_line_style(self, style, sh_guard=True):
         """ Set the line style of the underlying widget.
 
         """
-        self.widget().setFrameShadow(_SHADOW_MAP[style])
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setFrameShadow(LINE_STYLES[style])
+        else:
+            self.widget.setFrameShadow(LINE_STYLES[style])
 
-    def set_line_width(self, width):
+    def set_line_width(self, width, sh_guard=True):
         """ Set the line width of the underlying widget.
 
         """
-        self.widget().setLineWidth(width)
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setLineWidth(width)
+        else:
+            self.widget.setLineWidth(width)
+        self.widget.update()
 
-    def set_midline_width(self, width):
+    def set_midline_width(self, width, sh_guard=True):
         """ Set the midline width of the underlying widget.
 
         """
-        self.widget().setMidLineWidth(width)
-
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setMidLineWidth(width)
+        else:
+            self.widget.setMidLineWidth(width)
+        self.widget.update()

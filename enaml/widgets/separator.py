@@ -5,10 +5,30 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Range, Enum, observe
+from atom.api import Bool, Range, Enum, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
-from .control import Control
+from .control import Control, ProxyControl
+
+
+class ProxySeparator(ProxyControl):
+    """ The abstract definition of a proxy Separator object.
+
+    """
+    #: A reference to the Separator declaration.
+    declaration = ForwardTyped(lambda: Separator)
+
+    def set_orientation(self, resizable):
+        raise NotImplementedError
+
+    def set_line_style(self, style):
+        raise NotImplementedError
+
+    def set_line_width(self, width):
+        raise NotImplementedError
+
+    def set_midline_width(self, width):
+        raise NotImplementedError
 
 
 class Separator(Control):
@@ -28,48 +48,26 @@ class Separator(Control):
     #: effect for the 'sunken' and 'raised' line styles.
     midline_width = d_(Range(low=0, high=3, value=0))
 
-    #: A flag indicating whether the user has explicitly set the hug
-    #: property. If it is not explicitly set, the hug values will be
-    #: updated automatically when the orientation changes.
-    _explicit_hug = Bool(False)
+    #: Whether or not to automatically adjust the 'hug_width' and
+    #: 'hug_height' values based on the value of 'orientation'.
+    auto_hug = Bool(True)
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dictionary for the Separator.
-
-        """
-        snap = super(Separator, self).snapshot()
-        snap['orientation'] = self.orientation
-        snap['line_style'] = self.line_style
-        snap['line_width'] = self.line_width
-        snap['midline_width'] = self.midline_width
-        return snap
-
-    @observe(r'^(orientation|line_style|line_width|midline_width)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
-
-        """
-        # The superclass handler implementation is sufficient.
-        super(Separator, self).send_member_change(change)
+    #: A reference to the ProxySeparator object.
+    proxy = Typed(ProxySeparator)
 
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    def _observe_orientation(self, change):
-        """ Update the hug properties if they are not explicitly set.
+    @observe(('orientation', 'line_style', 'line_width', 'midline_width'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
-        if not self._explicit_hug:
-            self.hug_width = self._default_hug_width()
-            self.hug_height = self._default_hug_height()
-            # Reset to False to remove the effect of the above.
-            self._explicit_hug = False
+        # The superclass handler implementation is sufficient.
+        super(Separator, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
-    # Default Handlers
+    # DefaultValue Handlers
     #--------------------------------------------------------------------------
     def _default_hug_width(self):
         """ Get the default hug width for the separator.
@@ -92,49 +90,18 @@ class Separator(Control):
         return 'strong'
 
     #--------------------------------------------------------------------------
-    # Property Methods
+    # PostSetAttr Handlers
     #--------------------------------------------------------------------------
-    def _get_hug_width(self):
-        """ The property getter for 'hug_width'.
+    def _post_setattr_orientation(self, old, new):
+        """ Post setattr the orientation for the tool bar.
 
-        Returns a computed hug value unless overridden by the user.
+        If auto hug is enabled, the hug values will be updated.
 
         """
-        res = self._hug_width
-        if res is None:
-            if self.orientation == 'horizontal':
-                res = 'ignore'
+        if self.auto_hug:
+            if new == 'vertical':
+                self.hug_width = 'strong'
+                self.hug_height = 'ignore'
             else:
-                res = 'strong'
-        return res
-
-    def _get_hug_height(self):
-        """ The proper getter for 'hug_height'.
-
-        Returns a computed hug value unless overridden by the user.
-
-        """
-        res = self._hug_height
-        if res is None:
-            if self.orientation == 'vertical':
-                res = 'ignore'
-            else:
-                res = 'strong'
-        return res
-
-    def _set_hug_width(self, value):
-        """ The property setter for 'hug_width'.
-
-        Overrides the computed value.
-
-        """
-        self._hug_width = value
-
-    def _set_hug_height(self, value):
-        """ The property setter for 'hug_height'.
-
-        Overrides the computed value.
-
-        """
-        self._hug_height = value
-
+                self.hug_width = 'ignore'
+                self.hug_height = 'strong'
