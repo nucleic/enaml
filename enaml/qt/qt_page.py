@@ -5,16 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import logging
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui import QFrame, QIcon
 
-from .qt.QtCore import Signal
-from .qt.QtGui import QFrame, QIcon, QImage, QPixmap
+from atom.api import Typed
+
+from enaml.widgets.page import ProxyPage
+
+from .q_resource_helper import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
-from .qt_container import QtContainer
 from .qt_widget import QtWidget
-
-
-logger = logging.getLogger(__name__)
 
 
 class QPage(QFrame):
@@ -22,7 +22,7 @@ class QPage(QFrame):
 
     """
     #: A signal emitted when the page has been closed by the user.
-    pageClosed = Signal()
+    pageClosed = pyqtSignal()
 
     def __init__(self, *args, **kwargs):
         """ Initialize a QPage.
@@ -130,8 +130,8 @@ class QPage(QFrame):
         """
         return self._is_open
 
-    def open(self):
-        """ Open the page in the notebook.
+    def show(self):
+        """ Show the page in the notebook.
 
         """
         self._is_open = True
@@ -139,8 +139,8 @@ class QPage(QFrame):
         if notebook is not None:
             notebook.showPage(self)
 
-    def close(self):
-        """ Close the page in the notebook.
+    def hide(self):
+        """ Hide the page in the notebook.
 
         """
         self._is_open = False
@@ -281,45 +281,40 @@ class QPage(QFrame):
         self._pageIndexOperation(closure)
 
 
-class QtPage(QtWidget):
-    """ A Qt implementation of an Enaml notebook Page.
+class QtPage(QtWidget, ProxyPage):
+    """ A Qt implementation of an Enaml ProxyPage.
 
     """
-    #: Temporary internal storage for the icon source url.
-    _icon_source = ''
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QPage)
 
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying page widget.
 
         """
-        return QPage(parent)
+        self.widget = QPage(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        super(QtPage, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_closable(tree['closable'])
-        self._icon_source = tree['icon_source']
-        self.widget().pageClosed.connect(self.on_page_closed)
+        super(QtPage, self).init_widget()
+        d = self.declaration
+        self.set_title(d.title)
+        self.set_closable(d.closable)
+        if d.icon:
+            self.set_icon(d.icon)
+        self.widget.pageClosed.connect(self.on_page_closed)
 
     def init_layout(self):
         """ Initialize the layout for the underyling widget.
 
         """
         super(QtPage, self).init_layout()
-        self.widget().setPageWidget(self.page_widget())
-
-    def activate(self):
-        """ Activate the page widget.
-
-        """
-        self.set_icon_source(self._icon_source)
-        super(QtPage, self).activate()
+        self.widget.setPageWidget(self.page_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -327,35 +322,27 @@ class QtPage(QtWidget):
     def page_widget(self):
         """ Find and return the page widget child for this widget.
 
-        Returns
-        -------
-        result : QWidget or None
-            The page widget defined for this widget, or None if one is
-            not defined.
-
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, QtContainer):
-                widget = child.widget()
-        return widget
+        p = self.declaration.page_widget()
+        if p is not None:
+            return p.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtPage.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event for a QtPage.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setPageWidget(self.page_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setPageWidget(self.page_widget())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtPage.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtPage.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setPageWidget(self.page_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setPageWidget(self.page_widget())
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -364,104 +351,60 @@ class QtPage(QtWidget):
         """ The signal handler for the 'pageClosed' signal.
 
         """
-        self.send_action('closed', {})
+        self.declaration._handle_close()
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        self.set_title(content['title'])
-
-    def on_action_set_closable(self, content):
-        """ Handle the 'set_closable' action from the Enaml widget.
-
-        """
-        self.set_closable(content['closable'])
-
-    def on_action_set_icon_source(self, content):
-        """ Handle the 'set_icon_source' action from the Enaml widget.
-
-        """
-        self.set_icon_source(content['icon_source'])
-
-    def on_action_open(self, content):
-        """ Handle the 'open' action from the Enaml widget.
-
-        """
-        self.widget().open()
-
-    def on_action_close(self, content):
-        """ Handle the 'close' action from the Enaml widget.
-
-        """
-        self.widget().close()
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyPage API
     #--------------------------------------------------------------------------
     def set_visible(self, visible):
         """ An overridden visibility setter which to opens|closes the
         notebook page.
 
         """
-        widget = self.widget()
         if visible:
-            widget.open()
+            self.widget.show()
         else:
-            widget.close()
+            self.widget.hide()
+
+    def ensure_visible(self):
+        """ An overridden visibility setter which to opens|closes the
+        notebook page.
+
+        """
+        self.set_visible(True)
+
+    def ensure_hidden(self):
+        """ An overridden visibility setter which to opens|closes the
+        notebook page.
+
+        """
+        self.set_visible(False)
 
     def set_enabled(self, enabled):
         """ An overridden enabled setter which sets the tab enabled
         state.
 
         """
-        self.widget().setTabEnabled(enabled)
+        self.widget.setTabEnabled(enabled)
 
     def set_title(self, title):
         """ Set the title of the tab for this page.
 
         """
-        self.widget().setTitle(title)
+        self.widget.setTitle(title)
+
+    def set_icon(self, icon):
+        """ Sets the widget's icon to the provided image.
+
+        """
+        if icon:
+            qicon = get_cached_qicon(icon)
+        else:
+            qicon = QIcon()
+        self.widget.setIcon(qicon)
 
     def set_closable(self, closable):
         """ Set whether or not this page is closable.
 
         """
-        self.widget().setClosable(closable)
-
-    def set_icon_source(self, icon_source):
-        """ Sets the widget's icon to the provided image.
-
-        """
-        if icon_source:
-            loader = self._session.load_resource(icon_source)
-            loader.on_load(self._on_icon_load)
-        else:
-            self._on_icon_load(QIcon())
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _on_icon_load(self, icon):
-        """ A private resource loader callback.
-
-        This method is invoked when the requested icon is successfully
-        loaded. It will update the icon on the page widget.
-
-        Parameters
-        ----------
-        icon : QIcon or QImage
-            The icon or image that was loaded by the request.
-
-        """
-        if isinstance(icon, QImage):
-            icon = QIcon(QPixmap.fromImage(icon))
-        elif not isinstance(icon, QIcon):
-            msg = 'got incorrect type for icon: `%s`'
-            logger.error(msg % type(icon).__name__)
-            icon = QIcon()
-        self.widget().setIcon(icon)
-
+        self.widget.setClosable(closable)

@@ -5,12 +5,30 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Unicode, Bool, Str, Event, observe
+from atom.api import Unicode, Bool, Event, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
+from enaml.icon import Icon
 
 from .container import Container
-from .widget import Widget
+from .widget import Widget, ProxyWidget
+
+
+class ProxyPage(ProxyWidget):
+    """ The abstract definition for a proxy Page.
+
+    """
+    #: A reference to the Page declaration.
+    declaration = ForwardTyped(lambda: Page)
+
+    def set_title(self, title):
+        raise NotImplementedError
+
+    def set_icon(self, icon):
+        raise NotImplementedError
+
+    def set_closable(self, closable):
+        raise NotImplementedError
 
 
 class Page(Widget):
@@ -24,8 +42,8 @@ class Page(Widget):
     #: The title to use for the page in the notebook.
     title = d_(Unicode())
 
-    #: The source url for the icon to use for the page.
-    icon_source = d_(Str())
+    #: The icon to use for the page tab.
+    icon = d_(Typed(Icon))
 
     #: Whether or not this individual page is closable. Note that the
     #: 'tabs_closable' flag on the parent Notebook must be set to True
@@ -33,70 +51,58 @@ class Page(Widget):
     closable = d_(Bool(True))
 
     #: An event fired when the user closes the page by clicking on
-    #: the tab's close button. This event is fired by the parent
-    #: Notebook when the tab is closed. This event has no payload.
+    #: the tab's close button.
     closed = Event()
 
-    @property
+    #: A reference to the ProxyPage object.
+    proxy = Typed(ProxyPage)
+
     def page_widget(self):
-        """ A read only property which returns the page widget.
+        """ Get the page widget defined for the page.
+
+        The last child Container is the page widget.
 
         """
-        widget = None
-        for child in self.children:
+
+        for child in reversed(self.children):
             if isinstance(child, Container):
-                widget = child
-        return widget
+                return child
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Return the snapshot for the control.
-
-        """
-        snap = super(Page, self).snapshot()
-        snap['title'] = self.title
-        snap['closable'] = self.closable
-        snap['icon_source'] = self.icon_source
-        return snap
-
-    @observe(r'^(title|closable|icon_source)$', regex=True)
-    def send_member_change(self, change):
-        """ Send the member state change to the client.
-
-        """
-        # The superclass implementation is suffient
-        super(Page, self).send_member_change(change)
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_closed(self, content):
-        """ Handle the 'closed' action from the client widget.
-
-        """
-        self.set_guarded(visible=False)
-        self.closed()
-
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
     def open(self):
         """ Open the page in the Notebook.
 
         Calling this method will also set the page visibility to True.
+        This method is deprectated, use 'show()' instead.
 
         """
-        self.set_guarded(visible=True)
-        self.send_action('open', {})
+        self.show()
 
     def close(self):
         """ Close the page in the Notebook.
 
         Calling this method will set the page visibility to False.
+        This method is deprectated, use 'hide()' instead.
 
         """
-        self.set_guarded(visible=False)
-        self.send_action('close', {})
+        self.hide()
 
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('title', 'closable', 'icon'))
+    def _update_proxy(self, change):
+        """ Send the member state change to the proxy.
+
+        """
+        # The superclass implementation is suffient
+        super(Page, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _handle_close(self):
+        """ A method called by the proxy when the user closes the page.
+
+        """
+        self.visible = False
+        self.closed()
