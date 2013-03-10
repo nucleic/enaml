@@ -5,117 +5,74 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import Qt
-from .qt.QtGui import QSlider
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QSlider
+
+from atom.api import Int, Typed
+
+from enaml.widgets.slider import ProxySlider
+
 from .qt_control import QtControl
 
 
 #: A map from Enaml constants to QSlider TickPosition values.
-_TICK_POSITION_MAP = {
+TICK_POSITION = {
     'no_ticks': QSlider.NoTicks,
     'left': QSlider.TicksLeft,
     'right': QSlider.TicksRight,
     'top': QSlider.TicksAbove,
     'bottom': QSlider.TicksBelow,
-    'both':QSlider.TicksBothSides
+    'both': QSlider.TicksBothSides
 }
 
 
 #: A map from Enaml enums to Qt constants for horizontal or vertical
 #: orientation.
-_ORIENTATION_MAP = {
+ORIENTATION = {
     'horizontal': Qt.Horizontal,
     'vertical': Qt.Vertical
 }
 
 
-class QtSlider(QtControl):
-    """ A Qt implementation of an Enaml Slider.
+#: A cyclic guard flag
+VALUE_FLAG = 0x1
+
+
+class QtSlider(QtControl, ProxySlider):
+    """ A Qt implementation of an Enaml ProxySlider.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QSlider)
+
+    #: Cyclic notification guard flags.
+    _guard = Int(0)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying QSlider widget.
 
         """
-        return QSlider(parent)
+        self.widget = QSlider(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying widget.
-
-        """
-        super(QtSlider, self).create(tree)
-        # Initialize the value after the minimum and maximum to avoid
-        # the potential for premature internal clipping of the value.
-        self.set_minimum(tree['minimum'])
-        self.set_maximum(tree['maximum'])
-        self.set_value(tree['value'])
-        self.set_orientation(tree['orientation'])
-        self.set_page_step(tree['page_step'])
-        self.set_single_step(tree['single_step'])
-        self.set_tick_interval(tree['tick_interval'])
-        self.set_tick_position(tree['tick_position'])
-        self.set_tracking(tree['tracking'])
-        self.widget().valueChanged.connect(self.on_value_changed)
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_value(self, content):
-        """ Handle the 'set_value' action from the Enaml widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        self.set_value(content['value'])
-
-    def on_action_set_maximum(self, content):
-        """ Handle the 'set_maximum' action from the Enaml widget.
-
-        """
-        self.set_maximum(content['maximum'])
-
-    def on_action_set_minimum(self, content):
-        """ Handle the 'set_minimum' action from the Enaml widget.
-
-        """
-        self.set_minimum(content['minimum'])
-
-    def on_action_set_orientation(self, content):
-        """ Handle the 'set_orientation' action from the Enaml widget.
-
-        """
-        self.set_orientation(content['orientation'])
-
-    def on_action_set_page_step(self, content):
-        """ Handle the 'set_page_step' action from the Enaml widget.
-
-        """
-        self.set_page_step(content['page_step'])
-
-    def on_action_set_single_step(self, content):
-        """ Handle the 'set_single_step' action from the Enaml widget.
-
-        """
-        self.set_single_step(content['single_step'])
-
-    def on_action_set_tick_interval(self, content):
-        """ Handle the 'set_tick_interval' action from the Enaml widget.
-
-        """
-        self.set_tick_interval(content['tick_interval'])
-
-    def on_action_set_tick_position(self, content):
-        """ Handle the 'set_tick_position' action from the Enaml widget.
-
-        """
-        self.set_tick_position(content['tick_position'])
-
-    def on_action_set_tracking(self, content):
-        """ Handle the 'set_tracking' action from the Enaml widget.
-
-        """
-        self.set_tracking(content['tracking'])
+        super(QtSlider, self).init_widget()
+        d = self.declaration
+        self.set_minimum(d.minimum)
+        self.set_maximum(d.maximum)
+        self.set_value(d.value)
+        self.set_orientation(d.orientation)
+        self.set_page_step(d.page_step)
+        self.set_single_step(d.single_step)
+        self.set_tick_interval(d.tick_interval)
+        self.set_tick_position(d.tick_position)
+        self.set_tracking(d.tracking)
+        self.widget.valueChanged.connect(self.on_value_changed)
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -125,65 +82,71 @@ class QtSlider(QtControl):
         slider value has changed.
 
         """
-        if 'value' not in self.loopback_guard:
-            content = {'value': self.widget().value()}
-            self.send_action('value_changed', content)
+        if not self._guard & VALUE_FLAG:
+            self._guard |= VALUE_FLAG
+            try:
+                self.declaration.value = self.widget.value()
+            finally:
+                self._guard &= ~VALUE_FLAG
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxySlider API
     #--------------------------------------------------------------------------
-    def set_value(self, value):
-        """ Set the value of the underlying widget.
-
-        """
-        with self.loopback_guard('value'):
-            self.widget().setValue(value)
-
     def set_maximum(self, maximum):
         """ Set the maximum value of the underlying widget.
 
         """
-        self.widget().setMaximum(maximum)
+        self.widget.setMaximum(maximum)
 
     def set_minimum(self, minimum):
         """ Set the minimum value of the underlying widget.
 
         """
-        self.widget().setMinimum(minimum)
+        self.widget.setMinimum(minimum)
 
-    def set_orientation(self, orientation):
-        """ Set the orientation of the underlying widget.
+    def set_value(self, value):
+        """ Set the value of the underlying widget.
 
         """
-        self.widget().setOrientation(_ORIENTATION_MAP[orientation])
+        if not self._guard & VALUE_FLAG:
+            self._guard |= VALUE_FLAG
+            try:
+                self.widget.setValue(value)
+            finally:
+                self._guard &= ~VALUE_FLAG
 
     def set_page_step(self, page_step):
         """ Set the page step of the underlying widget.
 
         """
-        self.widget().setPageStep(page_step)
+        self.widget.setPageStep(page_step)
 
     def set_single_step(self, single_step):
         """ Set the single step of the underlying widget.
 
         """
-        self.widget().setSingleStep(single_step)
+        self.widget.setSingleStep(single_step)
 
     def set_tick_interval(self, interval):
         """ Set the tick interval of the underlying widget.
 
         """
-        self.widget().setTickInterval(interval)
+        self.widget.setTickInterval(interval)
 
     def set_tick_position(self, tick_position):
         """ Set the tick position of the underlying widget.
 
         """
-        self.widget().setTickPosition(_TICK_POSITION_MAP[tick_position])
+        self.widget.setTickPosition(TICK_POSITION[tick_position])
+
+    def set_orientation(self, orientation):
+        """ Set the orientation of the underlying widget.
+
+        """
+        self.widget.setOrientation(ORIENTATION[orientation])
 
     def set_tracking(self, tracking):
         """ Set the tracking of the underlying widget.
 
         """
-        self.widget().setTracking(tracking)
-
+        self.widget.setTracking(tracking)

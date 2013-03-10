@@ -5,14 +5,50 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, Int, Range, observe
+from atom.api import Bool, Enum, Int, Range, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
-from .control import Control
+from .control import Control, ProxyControl
 
 
+#: The base tick position enum defintion.
 TickPosition = Enum('no_ticks', 'left', 'right', 'top', 'bottom', 'both')
+
+
+class ProxySlider(ProxyControl):
+    """ The abstract definition of a proxy Slider object.
+
+    """
+    #: A reference to the Slider declaration.
+    declaration = ForwardTyped(lambda: Slider)
+
+    def set_minimum(self, minimum):
+        raise NotImplementedError
+
+    def set_maximum(self, maximum):
+        raise NotImplementedError
+
+    def set_value(self, value):
+        raise NotImplementedError
+
+    def set_single_step(self, step):
+        raise NotImplementedError
+
+    def set_page_step(self, step):
+        raise NotImplementedError
+
+    def set_tick_position(self, position):
+        raise NotImplementedError
+
+    def set_tick_interval(self, interval):
+        raise NotImplementedError
+
+    def set_orientation(self, orientation):
+        raise NotImplementedError
+
+    def set_tracking(self, tracking):
+        raise NotImplementedError
 
 
 class Slider(Control):
@@ -71,38 +107,24 @@ class Slider(Control):
     #: only updated when the slider is released. Defaults to True.
     tracking = d_(Bool(True))
 
-    #: A flag indicating whether the user has explicitly set the hug
-    #: property. If it is not explicitly set, the hug values will be
-    #: updated automatically when the orientation changes.
-    _explicit_hug = Bool(False)
+    #: Whether or not to automatically adjust the 'hug_width' and
+    #: 'hug_height' values based on the value of 'orientation'.
+    auto_hug = Bool(True)
+
+    #: A reference to the ProxySlider object.
+    proxy = Typed(ProxySlider)
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Get the snapshot dict for the slider.
-
-        """
-        snap = super(Slider, self).snapshot()
-        snap['minimum'] = self.minimum
-        snap['maximum'] = self.maximum
-        snap['value'] = self.value
-        snap['single_step'] = self.single_step
-        snap['page_step'] = self.page_step
-        snap['tick_position'] = self.tick_position
-        snap['tick_interval'] = self.tick_interval
-        snap['orientation'] = self.orientation
-        snap['tracking'] = self.tracking
-        return snap
-
-    @observe(r'^(minimum|maximum|value|single_step|page_step|tick_position|'
-             r'tick_interval|orientation|tracking)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    @observe(('minimum', 'maximum', 'value', 'single_step', 'page_step',
+        'tick_position', 'tick_interval', 'orientation', 'tracking'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(Slider, self).send_member_change(change)
+        super(Slider, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
     # Update Handlers
@@ -116,23 +138,10 @@ class Slider(Control):
         self.set_guarded(value=content['value'])
 
     #--------------------------------------------------------------------------
-    # Observers
-    #--------------------------------------------------------------------------
-    def _observe_orientation(self, change):
-        """ Updates the hug properties if they are not explicitly set.
-
-        """
-        if not self._explicit_hug:
-            self.hug_width = self._default_hug_width()
-            self.hug_height = self._default_hug_height()
-            # Reset to False to remove the effect of the above.
-            self._explicit_hug = False
-
-    #--------------------------------------------------------------------------
-    # Default Handlers
+    # DefaultValue Handlers
     #--------------------------------------------------------------------------
     def _default_hug_width(self):
-        """ Get the default hug width for the slider.
+        """ Get the default hug width for the separator.
 
         The default hug width is computed based on the orientation.
 
@@ -142,7 +151,7 @@ class Slider(Control):
         return 'strong'
 
     def _default_hug_height(self):
-        """ Get the default hug height for the slider.
+        """ Get the default hug height for the separator.
 
         The default hug height is computed based on the orientation.
 
@@ -152,10 +161,24 @@ class Slider(Control):
         return 'strong'
 
     #--------------------------------------------------------------------------
-    # Post Validation Handlers
+    # PostSetAttr Handlers
     #--------------------------------------------------------------------------
-    def _post_validate_minimum(self, old, new):
-        """ Post validate the minimum value for the slider.
+    def _post_setattr_orientation(self, old, new):
+        """ Post setattr the orientation for the tool bar.
+
+        If auto hug is enabled, the hug values will be updated.
+
+        """
+        if self.auto_hug:
+            if new == 'vertical':
+                self.hug_width = 'strong'
+                self.hug_height = 'ignore'
+            else:
+                self.hug_width = 'ignore'
+                self.hug_height = 'strong'
+
+    def _post_setattr_minimum(self, old, new):
+        """ Post setattr the minimum value for the slider.
 
         If the new minimum is greater than the current value or maximum,
         those values are adjusted up.
@@ -165,10 +188,9 @@ class Slider(Control):
             self.maximum = new
         if new > self.value:
             self.value = new
-        return new
 
-    def _post_validate_maximum(self, old, new):
-        """ Post validate the maximum value for the slider.
+    def _post_setattr_maximum(self, old, new):
+        """ Post setattr the maximum value for the slider.
 
         If the new maximum is less than the current value or the minimum,
         those values are adjusted down.
@@ -178,8 +200,10 @@ class Slider(Control):
             self.minimum = new
         if new < self.value:
             self.value = new
-        return new
 
+    #--------------------------------------------------------------------------
+    # Post Validation Handlers
+    #--------------------------------------------------------------------------
     def _post_validate_value(self, old, new):
         """ Post validate the value for the slider.
 
@@ -187,22 +211,3 @@ class Slider(Control):
 
         """
         return max(self.minimum, min(new, self.maximum))
-
-    def _post_validate_hug_width(self, old, new):
-        """ Post validate the hug width for the slider.
-
-        This sets the explicit hug flag to True.
-
-        """
-        self._explicit_hug = True
-        return new
-
-    def _post_validate_hug_height(self, old, new):
-        """ Post validate the hug height for the slider.
-
-        This sets the explicit hug flag to True.
-
-        """
-        self._explicit_hug = True
-        return new
-
