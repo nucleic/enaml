@@ -194,7 +194,10 @@ class WxWindow(WxWidget):
         """ Handle the layout request event from the central widget.
 
         """
-        self.widget().UpdateClientSizeHints()
+        # wx likes to send events after the widget is destroyed.
+        widget = self.widget()
+        if widget is not None:
+            widget.UpdateClientSizeHints()
 
     #--------------------------------------------------------------------------
     # Message Handlers
