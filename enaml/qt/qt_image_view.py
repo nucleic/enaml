@@ -5,14 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import logging
+from PyQt4.QtGui import QFrame, QPainter, QPixmap
 
-from .qt.QtGui import QFrame, QPainter, QImage, QPixmap
+from atom.api import Typed
+
+from enaml.widgets.image_view import ProxyImageView
+
+from .q_resource_helper import get_cached_qimage
 from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
-
-
-logger = logging.getLogger(__name__)
 
 
 class QImageView(QFrame):
@@ -132,7 +133,7 @@ class QImageView(QFrame):
             The QPixmap to use as the image in the widget.
 
         """
-        self._pixmap  = pixmap
+        self._pixmap = pixmap
         self.update()
 
     def scaledContents(self):
@@ -201,128 +202,67 @@ class QImageView(QFrame):
         self.update()
 
 
-class QtImageView(QtControl):
-    """ A Qt implementation of an Enaml ImageView widget.
+class QtImageView(QtControl, ProxyImageView):
+    """ A Qt implementation of an Enaml ProxyImageView.
 
     """
-    #: Temporary internal storage for the image source url.
-    _image_source = ''
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QImageView)
 
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying QImageView control.
+    def create_widget(self):
+        """ Create the underlying QImageView widget.
 
         """
-        return QImageView(parent)
+        self.widget = QImageView(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying control.
-
-        """
-        super(QtImageView, self).create(tree)
-        self._image_source = tree['source']
-        self.set_scale_to_fit(tree['scale_to_fit'])
-        self.set_allow_upscaling(tree['allow_upscaling'])
-        self.set_preserve_aspect_ratio(tree['preserve_aspect_ratio'])
-
-    def activate(self):
-        """ Activate the image view.
-
-        This method will request the initial image source for the
-        widget.
+    def init_widget(self):
+        """ Initialize the underlying control.
 
         """
-        self.set_source(self._image_source)
-        super(QtImageView, self).activate()
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_source(self, content):
-        """ Handle the 'set_source' action from the Enaml widget.
-
-        """
-        self.set_source(content['source'])
-
-    def on_action_set_scale_to_fit(self, content):
-        """ Handle the 'set_scale_to_fit' action from the Enaml widget.
-
-        """
-        self.set_scale_to_fit(content['scale_to_fit'])
-
-    def on_action_set_allow_upscaling(self, content):
-        """ Handle the 'set_allow_upscaling' action from the Enaml
-        widget.
-
-        """
-        self.set_allow_upscaling(content['allow_upscaling'])
-
-    def on_action_set_preserve_aspect_ratio(self, content):
-        """ Handle the 'set_preserve_aspect_ratio' action from the
-        Enaml widget
-
-        """
-        self.set_preserve_aspect_ratio(content['preserve_aspect_ratio'])
+        super(QtImageView, self).init_widget()
+        d = self.declaration
+        self.set_image(d.image)
+        self.set_scale_to_fit(d.scale_to_fit)
+        self.set_allow_upscaling(d.allow_upscaling)
+        self.set_preserve_aspect_ratio(d.preserve_aspect_ratio)
 
     #--------------------------------------------------------------------------
     # Widget Update Methods
     #--------------------------------------------------------------------------
-    def set_scale_to_fit(self, scale_to_fit):
+    def set_image(self, image, sh_guard=True):
+        """ Set the image on the underlying widget.
+
+        """
+        qpixmap = None
+        if image:
+            qimage = get_cached_qimage(image)
+            qpixmap = QPixmap.fromImage(qimage)
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setPixmap(qpixmap)
+        else:
+            self.widget.setPixmap(qpixmap)
+
+    def set_scale_to_fit(self, scale):
         """ Sets whether or not the image scales with the underlying
         control.
 
         """
-        self.widget().setScaledContents(scale_to_fit)
+        self.widget.setScaledContents(scale)
 
     def set_allow_upscaling(self, allow):
         """ Sets whether or not the image will scale beyond its natural
         size.
 
         """
-        self.widget().setAllowUpscaling(allow)
+        self.widget.setAllowUpscaling(allow)
 
     def set_preserve_aspect_ratio(self, preserve):
         """ Sets whether or not to preserve the aspect ratio of the
         image when scaling.
 
         """
-        self.widget().setPreserveAspectRatio(preserve)
-
-    def set_source(self, source):
-        """ Set the image source for the underlying widget.
-
-        This will trigger a deferred load of the image pointed to by
-        the given source url.
-
-        """
-        if source:
-            loader = self._session.load_resource(source)
-            loader.on_load(self._on_image_load)
-        else:
-            self._on_image_load(QImage())
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _on_image_load(self, image):
-        """ A private resource loader callback.
-
-        This method is invoked when the requested image is successfully
-        loaded. It will update the image in the image view widget and
-        issue a size hint updated event to the layout system if needed.
-
-        Parameters
-        ----------
-        image : QImage
-            The QImage that was loaded by the resource request.
-
-        """
-        if not isinstance(image, QImage):
-            msg = 'got incorrect type for image: `%s`'
-            logger.error(msg % type(image).__name__)
-            image = QImage()
-        with size_hint_guard(self):
-            self.widget().setPixmap(QPixmap.fromImage(image))
-
+        self.widget.setPreserveAspectRatio(preserve)

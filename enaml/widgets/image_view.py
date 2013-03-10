@@ -5,19 +5,40 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Str, observe, set_default
+from atom.api import Bool, Typed, ForwardTyped, observe, set_default
 
-from enaml.declarative.api import d_
+from enaml.core.declarative import d_
+from enaml.image import Image
 
-from .control import Control
+from .control import Control, ProxyControl
+
+
+class ProxyImageView(ProxyControl):
+    """ The abstract definition of a proxy ImageView object.
+
+    """
+    #: A reference to the ImageView declaration.
+    declaration = ForwardTyped(lambda: ImageView)
+
+    def set_image(self, image):
+        raise NotImplementedError
+
+    def set_scale_to_fit(self, scale):
+        raise NotImplementedError
+
+    def set_allow_upscaling(self, allow):
+        raise NotImplementedError
+
+    def set_preserve_aspect_ratio(self, preserve):
+        raise NotImplementedError
 
 
 class ImageView(Control):
     """ A widget which can display an Image with optional scaling.
 
     """
-    #: The source url of the image to load.
-    source = d_(Str())
+    #: The image to display in the viewer.
+    image = d_(Typed(Image))
 
     #: Whether or not to scale the image with the size of the component.
     scale_to_fit = d_(Bool(False))
@@ -34,26 +55,16 @@ class ImageView(Control):
     #: An image view hugs its height weakly by default.
     hug_height = set_default('weak')
 
-    #--------------------------------------------------------------------------
-    # Messenger API
-    #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the dict of creation attribute for the control.
+    #: A reference to the ProxyImageView object.
+    proxy = Typed(ProxyImageView)
 
-        """
-        snap = super(ImageView, self).snapshot()
-        snap['source'] = self.source
-        snap['scale_to_fit'] = self.scale_to_fit
-        snap['allow_upscaling'] = self.allow_upscaling
-        snap['preserve_aspect_ratio'] = self.preserve_aspect_ratio
-        return snap
-
-    @observe(r'^(source|scale_to_fit|allow_upscaling|preserve_aspect_ratio)$',
-             regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('image', 'scale_to_fit', 'allow_upscaling', 'preserve_aspect_ratio'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(ImageView, self).send_member_change(change)
-
+        super(ImageView, self)._update_proxy(change)
