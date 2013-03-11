@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import QObject
 
-from atom.api import Typed
+from atom.api import Typed, null
 
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 
@@ -109,7 +109,9 @@ class QtToolkitObject(ProxyToolkitObject):
         """
         d = self.parent()
         if d is not None:
-            return d.widget or None
+            w = d.widget
+            if w is not null:
+                return w
 
     def child_widgets(self):
         """ Get the child toolkit widgets for this object.
@@ -121,5 +123,6 @@ class QtToolkitObject(ProxyToolkitObject):
 
         """
         for child in self.children():
-            if child.widget:
-                yield child.widget
+            w = child.widget
+            if w is not null:
+                yield w
