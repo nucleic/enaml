@@ -10,7 +10,7 @@ import sys
 from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QToolBar, QMainWindow
 
-from atom.api import Int, Typed
+from atom.api import Int, Typed, null
 
 from enaml.widgets.tool_bar import ProxyToolBar
 
@@ -205,60 +205,61 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """  Handle the child removed event for a QtToolBar.
+    def find_next_action(self, child):
+        """ Locate QAction object which logically follows the child.
 
-    #     """
-    #     if isinstance(child, QtAction):
-    #         self.widget().removeAction(child.widget())
-    #     elif isinstance(child, QtActionGroup):
-    #         self.widget().removeActions(child.actions())
+        Parameters
+        ----------
+        child : QtToolkitObject
+            The child object of interest.
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtToolBar.
+        Returns
+        -------
+        result : QAction or None
+            The QAction which logically follows the position of the
+            child in the list of children. None will be returned if
+            a relevant QAction is not found.
 
-    #     """
-    #     before = self.find_next_action(child)
-    #     if isinstance(child, QtAction):
-    #         self.widget().insertAction(before, child.widget())
-    #     elif isinstance(child, QtActionGroup):
-    #         self.widget().insertActions(before, child.actions())
+        """
+        found = False
+        for dchild in self.children():
+            if found:
+                if isinstance(dchild, QtAction):
+                    return dchild.widget
+                if isinstance(dchild, QtActionGroup):
+                    acts = dchild.actions()
+                    if len(acts) > 0:
+                        return acts[0]
+            else:
+                found = dchild is child
 
-    #--------------------------------------------------------------------------
-    # Utility Methods
-    #--------------------------------------------------------------------------
-    # def find_next_action(self, child):
-    #     """ Get the QAction instance which comes immediately after the
-    #     actions of the given child.
+    def child_added(self, child):
+        """ Handle the child added event for a QtToolBar.
 
-    #     Parameters
-    #     ----------
-    #     child : QtActionGroup, or QtAction
-    #         The child of interest.
+        This handler will scan the children to find the proper point
+        at which to insert the action.
 
-    #     Returns
-    #     -------
-    #     result : QAction or None
-    #         The QAction which comes immediately after the actions of the
-    #         given child, or None if no actions follow the child.
+        """
+        if isinstance(child, QtAction):
+            before = self.find_next_action(child)
+            self.widget.insertAction(before, child.widget)
+        elif isinstance(child, QtActionGroup):
+            before = self.find_next_action(child)
+            self.widget.insertActions(before, child.actions())
+        else:
+            super(QtToolBar, self).child_added(child)
 
-    #     """
-    #     # The target action must be tested for membership against the
-    #     # current actions on the tool bar itself, since this method may
-    #     # be called after a child is added, but before the actions for
-    #     # the child have actually been added to the tool bar.
-    #     index = self.index_of(child)
-    #     if index != -1:
-    #         actions = set(self.widget().actions())
-    #         for child in self.children()[index + 1:]:
-    #             target = None
-    #             if isinstance(child, QtAction):
-    #                 target = child.widget()
-    #             elif isinstance(child, QtActionGroup):
-    #                 acts = child.actions()
-    #                 target = acts[0] if acts else None
-    #             if target in actions:
-    #                 return target
+    def child_removed(self, child):
+        """  Handle the child removed event for a QtToolBar.
+
+        """
+        if isinstance(child, QtAction):
+            if child.widget is not null:
+                self.widget.removeAction(child.widget)
+        elif isinstance(child, QtActionGroup):
+            self.widget.removeActions(child.actions())
+        else:
+            super(QtToolBar, self).child_removed(child)
 
     #--------------------------------------------------------------------------
     # Signal Handlers
