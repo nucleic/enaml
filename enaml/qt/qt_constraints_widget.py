@@ -7,9 +7,9 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from PyQt4.QtCore import QRect
+from PyQt4.QtCore import QRect, QTimer
 
-from atom.api import List
+from atom.api import List, Typed
 
 from enaml.widgets.constraints_widget import ProxyConstraintsWidget
 
@@ -44,10 +44,77 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     #: constraints are computed once and then cached. If the size hint
     #: of a widget changes at run time, then `size_hint_updated` should
     #: be called to trigger an appropriate relayout of the widget.
-    _size_hint_cns = List()
+    size_hint_cns = List()
+
+    #: A timer used to collapse relayout requests. The timer is created
+    #: on an as needed basis and destroyed when it is no longer needed.
+    layout_timer = Typed(QTimer)
+
+    def _default_size_hint_cns(self):
+        """ Creates the list of size hint constraints for this widget.
+
+        This method uses the provided size hint of the widget and the
+        policies for 'hug' and 'resist' to generate constraints which
+        respect the size hinting of the widget.
+
+        If the size hint of the underlying widget is not valid, then
+        no constraints will be generated.
+
+        Returns
+        -------
+        result : list
+            A list of casuarius LinearConstraint instances.
+
+        """
+        cns = []
+        hint = self.widget_item.sizeHint()
+        if hint.isValid():
+            width_hint = hint.width()
+            height_hint = hint.height()
+            d = self.declaration
+            if width_hint >= 0:
+                if d.hug_width != 'ignore':
+                    cns.append((d.width == width_hint) | d.hug_width)
+                if d.resist_width != 'ignore':
+                    cns.append((d.width >= width_hint) | d.resist_width)
+            if height_hint >= 0:
+                if d.hug_height != 'ignore':
+                    cns.append((d.height == height_hint) | d.hug_height)
+                if d.resist_height != 'ignore':
+                    cns.append((d.height >= height_hint) | d.resist_height)
+        return cns
 
     #--------------------------------------------------------------------------
     # ProxyConstraintsWidget API
+    #--------------------------------------------------------------------------
+    def request_relayout(self):
+        """ Request a relayout of the proxy widget.
+
+        This call will be placed on a collapsed timer. The first request
+        will cause updates to be disabled on the widget. The updates will
+        be reenabled after the actual relayout is performed.
+
+        """
+        if not self.layout_timer:
+            self.widget.setUpdatesEnabled(False)
+            self.layout_timer = timer = QTimer()
+            timer.setSingleShot(True)
+            timer.timeout.connect(self.on_layout_triggered)
+        self.layout_timer.start()
+
+    def on_layout_triggered(self):
+        """ Handle the timeout even from the layout trigger timer.
+
+        This handler will drop the reference to the timer, invoke the
+        'relayout' method, and reenable the updates on the widget.
+
+        """
+        del self.layout_timer
+        self.relayout()
+        self.widget.setUpdatesEnabled(True)
+
+    #--------------------------------------------------------------------------
+    # Public API
     #--------------------------------------------------------------------------
     def relayout(self):
         """ Peform a relayout for this constraints widget.
@@ -64,9 +131,6 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
         if isinstance(parent, QtConstraintsWidget):
             parent.relayout()
 
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
     def replace_constraints(self, old_cns, new_cns):
         """ Replace constraints in the current layout system.
 
@@ -121,45 +185,9 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
         # starting with its parent.
         parent = self.parent()
         if isinstance(parent, QtConstraintsWidget):
-            cns = self._size_hint_cns
-            self._size_hint_cns = []
+            cns = self.size_hint_cns
+            del self._size_hint_cns
             parent.clear_constraints(cns)
-
-    def size_hint_constraints(self):
-        """ Creates the list of size hint constraints for this widget.
-
-        This method uses the provided size hint of the widget and the
-        policies for 'hug' and 'resist' to generate constraints which
-        respect the size hinting of the widget.
-
-        If the size hint of the underlying widget is not valid, then
-        no constraints will be generated.
-
-        Returns
-        -------
-        result : list
-            A list of casuarius LinearConstraint instances.
-
-        """
-        cns = self._size_hint_cns
-        if not cns:
-            cns = self._size_hint_cns = []
-            hint = self.widget_item.sizeHint()
-            if hint.isValid():
-                width_hint = hint.width()
-                height_hint = hint.height()
-                d = self.declaration
-                if width_hint >= 0:
-                    if d.hug_width != 'ignore':
-                        cns.append((d.width == width_hint) | d.hug_width)
-                    if d.resist_width != 'ignore':
-                        cns.append((d.width >= width_hint) | d.resist_width)
-                if height_hint >= 0:
-                    if d.hug_height != 'ignore':
-                        cns.append((d.height == height_hint) | d.hug_height)
-                    if d.resist_height != 'ignore':
-                        cns.append((d.height >= height_hint) | d.resist_height)
-        return cns
 
     def size_hint_updated(self):
         """ Notify the layout system that the size hint has changed.
@@ -175,9 +203,9 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
         # starting with its parent.
         parent = self.parent()
         if isinstance(parent, QtConstraintsWidget):
-            old_cns = self._size_hint_cns
-            self._size_hint_cns = []
-            new_cns = self.size_hint_constraints()
+            old_cns = self.size_hint_cns
+            del self.size_hint_cns
+            new_cns = self.size_hint_cns
             parent.replace_constraints(old_cns, new_cns)
 
     def geometry_updater(self):
