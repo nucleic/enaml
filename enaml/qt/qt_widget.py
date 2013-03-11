@@ -8,37 +8,14 @@
 import sys
 
 from PyQt4.QtCore import Qt, QSize
-from PyQt4.QtGui import QWidget, QWidgetItem, QColor, QApplication
+from PyQt4.QtGui import QWidget, QWidgetItem, QApplication
 
 from atom.api import Typed
 
-from enaml.colors import parse_color
 from enaml.widgets.widget import ProxyWidget
 
+from .q_color_helpers import q_parse_color
 from .qt_toolkit_object import QtToolkitObject
-
-
-def q_parse_color(color):
-    """ Convert a color string into a QColor.
-
-    Parameters
-    ----------
-    color : string
-        A CSS3 color string to convert to a QColor.
-
-    Returns
-    -------
-    result : QColor
-        The QColor for the given color string
-
-    """
-    rgba = parse_color(color)
-    if rgba is None:
-        qcolor = QColor()
-    else:
-        r, g, b, a = rgba
-        qcolor = QColor.fromRgbF(r, g, b, a)
-    return qcolor
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):

@@ -5,9 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.fonts import parse_font
+from PyQt4.QtGui import QFont, QApplication
 
-from .qt.QtGui import QFont, QApplication
+from enaml.fonts import parse_font
 
 
 STYLE = {
