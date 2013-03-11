@@ -88,9 +88,12 @@ class OpSimple(OperatorBase):
 
         """
         overrides = {'nonlocals': Nonlocals(owner, None), 'self': owner}
-        scope = DynamicScope(owner, self.f_locals, overrides, None)
+        func = self.func
+        scope = DynamicScope(
+            owner, self.f_locals, overrides, func.func_globals, None
+        )
         with owner.operators:
-            return call_func(self.func, (), {}, scope)
+            return call_func(func, (), {}, scope)
 
 
 DeclarativeExpression.register(OpSimple)
@@ -125,9 +128,12 @@ class OpNotify(OperatorBase):
             'event': event,  # backwards compatibility
             'change': change, 'nonlocals': nonlocals, 'self': owner
         }
-        scope = DynamicScope(owner, self.f_locals, overrides, None)
+        func = self.func
+        scope = DynamicScope(
+            owner, self.f_locals, overrides, func.func_globals, None
+        )
         with owner.operators:
-            call_func(self.func, (), {}, scope)
+            call_func(func, (), {}, scope)
 
 
 class OpUpdate(OperatorBase):
@@ -146,9 +152,12 @@ class OpUpdate(OperatorBase):
         nonlocals = Nonlocals(owner, None)
         overrides = {'nonlocals': nonlocals, 'self': owner}
         inverter = StandardInverter(nonlocals)
-        scope = DynamicScope(owner, self.f_locals, overrides, None)
+        func = self.func
+        scope = DynamicScope(
+            owner, self.f_locals, overrides, func.func_globals, None
+        )
         with owner.operators:
-            call_func(self.func, (inverter, change['newvalue']), {}, scope)
+            call_func(func, (inverter, change['newvalue']), {}, scope)
 
 
 class SubscriptionNotifier(object):
@@ -218,13 +227,16 @@ class OpSubscribe(OperatorBase):
         """
         tracer = StandardTracer()
         overrides = {'nonlocals': Nonlocals(owner, tracer), 'self': owner}
-        scope = DynamicScope(owner, self.f_locals, overrides, tracer)
+        func = self.func
+        scope = DynamicScope(
+            owner, self.f_locals, overrides, func.func_globals, tracer
+        )
         with owner.operators:
-            result = call_func(self.func, (tracer,), {}, scope)
+            result = call_func(func, (tracer,), {}, scope)
 
         notifier = self.notifier
         if notifier is not None:
-            notifier.notifier = None # invalidate the old notifier
+            notifier.notifier = None  # invalidate the old notifier
         onotifier = owner._expression_notifier
         notifier = SubscriptionNotifier(onotifier, self.func.__name__)
         self.notifier = notifier
@@ -253,9 +265,11 @@ class OpDelegate(OpSubscribe):
         nonlocals = Nonlocals(owner, None)
         inverter = StandardInverter(nonlocals)
         overrides = {'nonlocals': nonlocals, 'self': owner}
-        scope = DynamicScope(owner, self.f_locals, overrides, None)
+        func = self.func._update
+        scope = DynamicScope(
+            owner, self.f_locals, overrides, func.func_globals, None
+        )
         with owner.operators:
-            func = self.func._update
             call_func(func, (inverter, change['newvalue']), {}, scope)
 
 
@@ -330,4 +344,3 @@ OPERATORS = {
     '__operator_ColonColon__': op_notify,
     '__operator_GreaterGreater__': op_update,
 }
-

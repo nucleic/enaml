@@ -56,7 +56,7 @@ class DynamicScope(object):
     order to avoid unnecessary reference cycles.
 
     """
-    def __init__(self, obj, identifiers, overrides, listener):
+    def __init__(self, obj, identifiers, overrides, f_globals, listener):
         """ Initialize a DynamicScope.
 
         Parameters
@@ -71,6 +71,10 @@ class DynamicScope(object):
             A dict of objects which should have higher precedence than
             the identifiers.
 
+        f_globals : dict
+            The dict or globals to use for lookup up scope. This dict
+            should have a '__builtins__' key.
+
         listener : DynamicScopeListener or None
             A listener which should be notified when a name is loaded
             via dynamic scoping.
@@ -79,6 +83,7 @@ class DynamicScope(object):
         self._obj = obj
         self._identifiers = identifiers
         self._overrides = overrides
+        self._f_globals = f_globals
         self._listener = listener
 
     def __getitem__(self, name):
@@ -99,6 +104,12 @@ class DynamicScope(object):
         if name in dct:
             return dct[name]
         dct = self._identifiers
+        if name in dct:
+            return dct[name]
+        dct = self._f_globals
+        if name in dct:
+            return dct[name]
+        dct = dct['__builtins__']
         if name in dct:
             return dct[name]
         parent = self._obj
