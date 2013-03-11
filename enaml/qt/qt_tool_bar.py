@@ -240,26 +240,24 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         at which to insert the action.
 
         """
+        super(QtToolBar, self).child_added(child)
         if isinstance(child, QtAction):
             before = self.find_next_action(child)
             self.widget.insertAction(before, child.widget)
         elif isinstance(child, QtActionGroup):
             before = self.find_next_action(child)
             self.widget.insertActions(before, child.actions())
-        else:
-            super(QtToolBar, self).child_added(child)
 
     def child_removed(self, child):
         """  Handle the child removed event for a QtToolBar.
 
         """
+        super(QtToolBar, self).child_removed(child)
         if isinstance(child, QtAction):
             if child.widget is not null:
                 self.widget.removeAction(child.widget)
         elif isinstance(child, QtActionGroup):
             self.widget.removeActions(child.actions())
-        else:
-            super(QtToolBar, self).child_removed(child)
 
     #--------------------------------------------------------------------------
     # Signal Handlers

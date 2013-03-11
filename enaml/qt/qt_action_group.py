@@ -143,14 +143,13 @@ class QtActionGroup(QtToolkitObject, ProxyActionGroup):
         since a QActionGroup only serves as a management container.
 
         """
+        super(QtActionGroup, self).child_added(child)
         if isinstance(child, QtAction):
             self.widget.addAction(child.widget)
             parent = self.parent()
             if parent is not None:
                 before = self.find_next_action(child)
                 parent.widget.insertAction(before, child.widget)
-        else:
-            super(QtActionGroup, self).child_added(child)
 
     def child_removed(self, child):
         """ Handle the child removed event for a QtActionGroup.
@@ -159,13 +158,12 @@ class QtActionGroup(QtToolkitObject, ProxyActionGroup):
         since a QActionGroup only serves as a management container.
 
         """
+        super(QtActionGroup, self).child_removed(child)
         if isinstance(child, QtAction):
             self.widget.removeAction(child.widget)
             parent = self.parent()
             if parent is not None:
                 parent.widget.removeAction(child.widget)
-        else:
-            super(QtActionGroup, self).child_removed(child)
 
     #--------------------------------------------------------------------------
     # Utility Methods
