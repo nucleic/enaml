@@ -381,8 +381,13 @@ class Declarative(Object):
         if len(children) > 0:
             for child in children:
                 cls = scope_lookup(child['type'], f_globals, child)
-                instance = cls(self)
+                # Create the child without a parent so that all of the
+                # expressions which provide default values are bound and
+                # all of subchildren are added before the parent of this
+                # child receives a child_added event.
+                instance = cls()
                 instance.populate(child, identifiers, f_globals)
+                instance.set_parent(self)
 
     def setup_bindings(self, bindings, identifiers, f_globals):
         """ Setup the expression bindings for the object.
