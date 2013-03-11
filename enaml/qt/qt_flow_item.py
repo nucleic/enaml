@@ -14,6 +14,7 @@ from enaml.widgets.flow_item import ProxyFlowItem
 
 from .q_flow_layout import QFlowLayout, AbstractFlowWidget, FlowLayoutData
 from .q_single_widget_layout import QSingleWidgetLayout
+from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -261,19 +262,21 @@ class QtFlowItem(QtWidget, ProxyFlowItem):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child added event for a QtFlowItem.
+    def child_added(self, child):
+        """ Handle the child added event for a QtFlowItem.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setFlowWidget(self.flow_widget())
+        """
+        super(QtFlowItem, self).child_added(child)
+        if isinstance(child, QtContainer):
+            self.widget.setFlowWidget(self.flow_widget())
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtFlowItem.
+    def child_removed(self, child):
+        """ Handle the child added event for a QtFlowItem.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setFlowWidget(self.flow_widget())
+        """
+        super(QtFlowItem, self).child_removed(child)
+        if isinstance(child, QtContainer):
+            self.widget.setFlowWidget(self.flow_widget())
 
     #--------------------------------------------------------------------------
     # ProxyFlowItem API
