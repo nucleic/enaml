@@ -34,14 +34,11 @@ class Looper(Templated):
     #: The iterable to use when creating the items for the looper.
     iterable = d_(Instance(Iterable))
 
-    #: A read-only property which returns the tuple of items created
-    #: by the looper when it passes over the objects in the iterable.
-    #: Each item in the tuple represents one iteration of the loop and
-    #: is a tuple of the items generated during that iteration.
-    items = property(lambda self: self._items)
-
-    #: Private storage for the `items` property.
-    _items = List()
+    #: The list of items created by the conditional. Each item in the
+    #: list represents one iteration of the loop and is a list of the
+    #: items generated during that iteration. This should not be
+    #: manipulated directly by user code.
+    items = List()
 
     #--------------------------------------------------------------------------
     # Lifetime API
@@ -54,7 +51,13 @@ class Looper(Templated):
 
         """
         super(Looper, self).initialize()
-        self._refresh_loop_items()
+        self._refresh_items()
+        # The looper is responsible for initializing new items during
+        # the initialization pass. At all other times, the parent
+        # declarative object will initialize new children.
+        for iteration in self.items:
+            for item in iteration:
+                item.initialize()
 
     def destroy(self):
         """ A reimplemented destructor
@@ -66,13 +69,13 @@ class Looper(Templated):
         """
         parent = self.parent
         if parent is not None and not parent.is_destroyed:
-            for iteration in self._items:
+            for iteration in self.items:
                 for item in iteration:
                     if not item.is_destroyed:
                         item.destroy()
         super(Looper, self).destroy()
         del self.iterable
-        del self._items
+        del self.items
 
     #--------------------------------------------------------------------------
     # Private API
@@ -85,9 +88,9 @@ class Looper(Templated):
 
         """
         if self.is_initialized:
-            self._refresh_loop_items()
+            self._refresh_items()
 
-    def _refresh_loop_items(self):
+    def _refresh_items(self):
         """ A private method which refreshes the loop items.
 
         This method destroys the old items and creates and initializes
@@ -120,18 +123,14 @@ class Looper(Templated):
                         instance = cls()
                         instance.populate(descr, scope, f_globals)
                         iteration.append(instance)
-                items.append(tuple(iteration))
+                items.append(iteration)
 
-        old_items = self._items
-        if len(old_items) > 0 or len(items) > 0:
-            if len(old_items) > 0:
-                for iteration in old_items:
-                    for old in iteration:
-                        if not old.is_destroyed:
-                            old.destroy()
-            if len(items) > 0:
-                flat = sum(items, ())
-                self.parent.insert_children(self, flat)
-                for item in flat:
-                    item.initialize()
-        self._items = items
+        old_items = self.items
+        if len(old_items) > 0:
+            for iteration in old_items:
+                for old in iteration:
+                    if not old.is_destroyed:
+                        old.destroy()
+        if len(items) > 0:
+            self.parent.insert_children(self, sum(items, []))
+        self.items = items

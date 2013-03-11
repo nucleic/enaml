@@ -38,7 +38,12 @@ class Conditional(Templated):
 
         """
         super(Conditional, self).initialize()
-        self._refresh_conditional_items()
+        self._refresh_items()
+        # The conditional is responsible for initializing new items
+        # during the initialization pass. At all other times, the
+        # parent declarative object will initialize new children.
+        for item in self.items:
+            item.initialize()
 
     def destroy(self):
         """ A reimplemented destructor
@@ -68,7 +73,7 @@ class Conditional(Templated):
         if self.is_initialized:
             self._refresh_items()
 
-    def _refresh_conditional_items(self):
+    def _refresh_items(self):
         """ A private method which refreshes the conditional items.
 
         This method destroys the old items and creates and initializes
@@ -98,13 +103,10 @@ class Conditional(Templated):
                     items.append(instance)
 
         old_items = self.items
-        if len(old_items) > 0 or len(items) > 0:
-            if len(old_items) > 0:
-                for old in old_items:
-                    if not old.is_destroyed:
-                        old.destroy()
-            if len(items) > 0:
-                self.parent.insert_children(self, items)
-                for item in items:
-                    item.initialize()
+        if len(old_items) > 0:
+            for old in old_items:
+                if not old.is_destroyed:
+                    old.destroy()
+        if len(items) > 0:
+            self.parent.insert_children(self, items)
         self.items = items
