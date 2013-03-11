@@ -19,6 +19,12 @@ class ProxyToolkitObject(Atom):
     the Declarative declaration of the object and then implementation
     object which actually performs the behavior.
 
+    Initialization of proxy is backend dependent behavior. Most uses
+    will want to initialize the entire proxy tree using traversals
+    which are appropriate for their use case. The top level Window
+    widget provides a entry point method into the proxy tree for this
+    to occur.
+
     """
     #: A reference to the ToolkitObject declaration.
     declaration = ForwardTyped(lambda: ToolkitObject)
@@ -38,7 +44,7 @@ class ProxyToolkitObject(Atom):
 
         Returns
         -------
-        result : QtToolkitObject or None
+        result : ProxyToolkitObject or None
             The parent toolkit object of this object, or None if no
             such parent exists.
 
@@ -63,6 +69,9 @@ class ProxyToolkitObject(Atom):
     def child_added(self, child):
         """ Handle a child being added to the object.
 
+        This method will only be called after the proxy tree is active
+        and the UI is running. The default implementation is a no-op.
+
         Parameters
         ----------
         child : ProxyToolkitObject
@@ -73,6 +82,12 @@ class ProxyToolkitObject(Atom):
 
     def child_removed(self, child):
         """ Handle a child being removed from the object.
+
+        This method will only be called after the proxy tree is active
+        and the UI is running. Notably, it will not be called when the
+        child is removed because it was destroyed. To handle that case,
+        reimplement the 'destroy' method in a subclass. The default
+        implementation is a no-op.
 
         Parameters
         ----------
@@ -127,10 +142,28 @@ class ToolkitObject(Declarative):
         del self.proxy
 
     def child_added(self, child):
-        pass
+        """ A reimplemented child added event handler.
+
+        This handler will invoke the superclass handler and then invoke
+        the 'child_added()' method on an active proxy.
+
+        """
+        super(ToolkitObject, self).child_added(child)
+        if isinstance(child, ToolkitObject) and self.proxy_is_active:
+            self.proxy.child_added(child.proxy)
 
     def child_removed(self, child):
-        pass
+        """ A reimplemented child removed event handler.
+
+        This handler will invoke the superclass handler and then invoke
+        the 'child_removed()' method on an active proxy, provided that
+        the child is not destroyed.
+
+        """
+        super(ToolkitObject, self).child_removed(child)
+        if isinstance(child, ToolkitObject) and self.proxy_is_active:
+            if not child.is_destroyed:
+                self.proxy.child_removed(child.proxy)
 
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
