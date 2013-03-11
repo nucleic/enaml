@@ -206,7 +206,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
     # Child Events
     #--------------------------------------------------------------------------
     def find_next_action(self, child):
-        """ Locate QAction object which logically follows the child.
+        """ Locate the QAction object which logically follows the child.
 
         Parameters
         ----------
