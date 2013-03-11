@@ -70,7 +70,12 @@ from .code_tracing import inject_tracing, inject_inversion
 #     out the object tree has been shifted to the Declarative class. This
 #     is a touch slower, but provides a ton more flexibility and enables
 #     templated components like `Looper` and `Conditional`.
-COMPILER_VERSION = 8
+# 9 : Generate description dicts for attrs and events - 11 March 2013
+#     This augments the description dictionary for an enamldef with
+#     a list of dicts describing the 'attr' and 'event' keywords for
+#     the given enamldef block. These dicts are used by the compiler
+#     helper to generate atom members for the new class.
+COMPILER_VERSION = 9
 
 
 # The Enaml compiler translates an Enaml AST into a decription dict
@@ -481,6 +486,8 @@ class DeclarationCompiler(_NodeVisitor):
             'block': self.block,
             'children': [],
             'bindings': [],
+            'attrs': [],
+            'events': [],
         }
         self.stack.append(obj)
         for item in node.body:
@@ -489,12 +496,19 @@ class DeclarationCompiler(_NodeVisitor):
     def visit_AttributeDeclaration(self, node):
         """ Add an attribute declaration to the description.
 
-        The attributes will have already been added to the subclass, so
-        this visitor just dispatches to any default bindings which may
-        exist on the attribute declaration, since the binding happens
-        at instantiation time via operators.
-
         """
+        obj = self.stack[-1]
+        decl = {
+            'lineno': node.lineno,
+            'block': self.block,
+            'filename': self.filename,
+            'name': node.name,
+            'type': node.type,
+        }
+        if node.is_event:
+            obj['events'].append(decl)
+        else:
+            obj['attrs'].append(decl)
         default = node.default
         if default is not None:
             self.visit(node.default)
@@ -659,39 +673,3 @@ class EnamlCompiler(_NodeVisitor):
             (CALL_FUNCTION, 0x0004),
             (STORE_NAME, name),
         ])
-
-        # We now have a new Declarative subclass stored at 'name' to
-        # which we need to add any user defined attributes and events.
-        #code_ops.extend([
-        #    (LOAD_NAME, name),
-        #    (LOAD_ATTR, '_add_user_attribute'),
-        #])
-
-        # Dispatch to add any class-level info contained within the
-        # declaration body. Visit nonstrict since not all child nodes
-        # are valid at the class-level. The '_add_user_attribute'
-        # class method is left on the top of the stack and popped
-        # at the end of the visitors.
-        #for child_node in node.body:
-        #    self.visit_nonstrict(child_node)
-
-        #code_ops.append((POP_TOP, None))
-
-    def visit_AttributeDeclaration(self, node):
-        """ Creates the bytecode ops for an attribute declaration.
-
-        This will add the ops to add the user attrs and events to
-        the new type.
-
-        """
-        attr_type = node.type or 'object'
-        self.code_ops.extend([
-            (SetLineno, node.lineno),
-            (DUP_TOP, None),                # cls._add_user_attribute(name, type, is_event)
-            (LOAD_CONST, node.name),
-            (LOAD_NAME, attr_type),
-            (LOAD_CONST, node.is_event),
-            (CALL_FUNCTION, 0x0003),
-            (POP_TOP, None),
-        ])
-

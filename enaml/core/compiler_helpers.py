@@ -7,8 +7,25 @@
 #------------------------------------------------------------------------------
 from types import FunctionType
 
-from .declarative import Declarative
+from atom.api import ForwardTyped, Event
+
+from .declarative import Declarative, d_
 from .enaml_def import EnamlDef
+from .exceptions import DeclarativeNameError, InvalidOverrideError
+
+
+class EnamlDefAttr(ForwardTyped):
+    """ A sentinel class to distinguish from a normal ForwardTyped.
+
+    """
+    pass
+
+
+class EnamlDefEvent(Event):
+    """ A sentinel class to distinguish from a normal Event.
+
+    """
+    pass
 
 
 def _setup_binding_funcs(description, f_globals):
@@ -49,6 +66,42 @@ def _setup_binding_funcs(description, f_globals):
             _setup_binding_funcs(child, f_globals)
 
 
+def _attr_type_resolver(attr, f_globals):
+    """ Create a closure which will resolve the type of an attr.
+
+    Parameters
+    ----------
+    attr : dict
+        The description dictionary for the 'attr' or 'event' keyword.
+
+    f_globals : dict
+        The globals dictionary for the scope of the attr declaration.
+        This dict should contain a reference to '__builtins__'.
+
+
+    Returns
+    -------
+    result : FunctionType
+        A function which can be passed to a ForwardTyped atom member to
+        resolve the attr type on-demand.
+
+    """
+    def resolver():
+        attr_type = attr['type']
+        try:
+            item = f_globals[attr_type]
+        except KeyError:
+            try:
+                item = f_globals['__builtins__'][attr_type]
+            except KeyError:
+                lineno = attr['lineno']
+                filename = attr['filename']
+                block = attr['block']
+                raise DeclarativeNameError(attr_type, filename, lineno, block)
+        return item
+    return resolver
+
+
 def _make_enamldef_helper_(name, base, description, f_globals):
     """ A compiler helper function for creating a new EnamlDef type.
 
@@ -82,15 +135,56 @@ def _make_enamldef_helper_(name, base, description, f_globals):
         A new enamldef subclass of the given base class.
 
     """
+    # Ensure the subclass is inheriting from Declarative.
     if not isinstance(base, type) or not issubclass(base, Declarative):
         msg = "can't derive enamldef from '%s'"
         raise TypeError(msg % base)
+
+    # Generate the function objects and the dict for the new class.
     _setup_binding_funcs(description, f_globals)
     dct = {
         '__module__': f_globals.get('__name__', ''),
         '__doc__': description.get('__doc__', ''),
     }
+
+    # Add the class members for the 'attr' keywords.
+    base_members = base.members()
+    for attr in description['attrs']:
+        attr_name = attr['name']
+        if attr_name in base_members:
+            m = base_members[attr_name]
+            if not isinstance(m, d_) or not isinstance(m.delegate, EnamlDefAttr):
+                filename = attr['filename']
+                lineno = attr['lineno']
+                block = attr['block']
+                suffix = "the '%s' member on the '%s' base class"
+                suffix %= (attr_name, base.__name__)
+                raise InvalidOverrideError(suffix, filename, lineno, block)
+        if attr['type']:
+            resolver = _attr_type_resolver(attr, f_globals)
+        else:
+            resolver = lambda: object
+        dct[attr_name] = d_(EnamlDefAttr(resolver))
+
+    # Add the class members for the 'event' keyword.
+    for evt in description['events']:
+        evt_name = evt['name']
+        if evt_name in base_members:
+            m = base_members[evt_name]
+            if not isinstance(m, EnamlDefEvent):
+                filename = evt['filename']
+                lineno = evt['lineno']
+                block = evt['block']
+                suffix = "the '%s' member on the '%s' base class"
+                suffix %= (evt_name, base.__name__)
+                raise InvalidOverrideError(suffix, filename, lineno, block)
+        if evt['type']:
+            resolver = _attr_type_resolver(evt, f_globals)
+        else:
+            resolver = lambda: object
+        dct[evt_name] = EnamlDefEvent(ForwardTyped(resolver))
+
+    # Create the class and give it a reference to the descriptions.
     decl_cls = EnamlDef(name, (base,), dct)
     decl_cls.__declarative_descriptions__ += ((description, f_globals),)
     return decl_cls
-
