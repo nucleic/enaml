@@ -5,9 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QFrame, QSplitter, QLayout
+from PyQt4.QtGui import QFrame, QSplitter, QLayout
+
+from atom.api import Typed, null
+
+from enaml.widgets.split_item import ProxySplitItem
+
 from .q_single_widget_layout import QSingleWidgetLayout
-from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -110,33 +114,37 @@ class QSplitItem(QFrame):
             return parent.setCollapsible(parent.indexOf(self), collapsible)
 
 
-class QtSplitItem(QtWidget):
-    """ A Qt implementation of an Enaml SplitItem.
+class QtSplitItem(QtWidget, ProxySplitItem):
+    """ A Qt implementation of an Enaml ProxySplitItem.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QSplitItem)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying QStackItem widget.
 
         """
-        return QSplitItem(parent)
+        self.widget = QSplitItem(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underyling widget.
+    def init_widget(self):
+        """ Initialize the underyling widget.
 
         """
-        super(QtSplitItem, self).create(tree)
-        self.set_stretch(tree['stretch'])
-        self.set_collapsible(tree['collapsible'])
+        super(QtSplitItem, self).init_widget()
+        d = self.declaration
+        self.set_stretch(d.stretch)
+        self.set_collapsible(d.collapsible)
 
     def init_layout(self):
         """ Initialize the layout for the underyling widget.
 
         """
         super(QtSplitItem, self).init_layout()
-        self.widget().setSplitWidget(self.split_widget())
+        self.widget.setSplitWidget(self.split_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -144,63 +152,41 @@ class QtSplitItem(QtWidget):
     def split_widget(self):
         """ Find and return the split widget child for this widget.
 
-        Returns
-        -------
-        result : QWidget or None
-            The split widget defined for this widget, or None if one is
-            not defined.
-
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, QtContainer):
-                widget = child.widget()
-        return widget
+        d = self.declaration.split_widget()
+        if d is not None:
+            w = d.proxy.widget
+            if w is not null:
+                return w
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a QtSplitItem.
+    # def child_removed(self, child):
+    #     """ Handle the child removed event for a QtSplitItem.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setSplitWidget(self.split_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setSplitWidget(self.split_widget())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtSplitItem.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtSplitItem.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setSplitWidget(self.split_widget())
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_stretch(self, content):
-        """ Handle the 'set_stretch' action from the Enaml widget.
-
-        """
-        self.set_stretch(content['stretch'])
-
-    def on_action_set_collapsible(self, content):
-        """ Handle the 'set_collapsible' action from the Enaml widget.
-
-        """
-        self.set_collapsible(content['collapsible'])
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setSplitWidget(self.split_widget())
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxySplitItem API
     #--------------------------------------------------------------------------
     def set_stretch(self, stretch):
         """ Set the stretch factor for the underlying widget.
 
         """
-        self.widget().setStretch(stretch)
+        self.widget.setStretch(stretch)
 
     def set_collapsible(self, collapsible):
         """ Set the collapsible flag for the underlying widget.
 
         """
-        self.widget().setCollapsible(collapsible)
-
+        self.widget.setCollapsible(collapsible)

@@ -5,12 +5,26 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Range, Value, observe
+from atom.api import Bool, Range, Value, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
 from .container import Container
-from .widget import Widget
+from .widget import Widget, ProxyWidget
+
+
+class ProxySplitItem(ProxyWidget):
+    """ The abstract definition of a proxy SplitItem object.
+
+    """
+    #: A reference to the SplitItem declaration.
+    declaration = ForwardTyped(lambda: SplitItem)
+
+    def set_stretch(self, stretch):
+        raise NotImplementedError
+
+    def set_collapsible(self, collapsible):
+        raise NotImplementedError
 
 
 class SplitItem(Widget):
@@ -33,34 +47,26 @@ class SplitItem(Widget):
     #: This is a deprecated attribute. It should no longer be used.
     preferred_size = d_(Value())
 
-    @property
+    #: A reference to the ProxySplitItem object.
+    proxy = Typed(ProxySplitItem)
+
     def split_widget(self):
-        """ A read only property that returns the split widget.
+        """ Get the split widget defined on the item.
+
+        The split widget is the last child Container.
 
         """
-        widget = None
-        for child in self.children:
+        for child in reversed(self.children):
             if isinstance(child, Container):
-                widget = child
-        return widget
+                return child
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Return the dict of creation attributes for the control.
-
-        """
-        snap = super(SplitItem, self).snapshot()
-        snap['stretch'] = self.stretch
-        snap['collapsible'] = self.collapsible
-        return snap
-
-    @observe(r'^(stretch|collapsible)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    @observe(('stretch', 'collapsible'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(SplitItem, self).send_member_change(change)
-
+        super(SplitItem, self)._update_proxy(change)
