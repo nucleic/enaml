@@ -256,16 +256,6 @@ class QtWindow(QtWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # ProxyWindow API
     #--------------------------------------------------------------------------
-    def setup_window(self):
-        """ Setup widget window hierarchy.
-
-        This method is called by the declaration the first time the
-        window is shown.
-
-        """
-        self.init_top_down_pass()
-        self.init_bottom_up_pass()
-
     def close(self):
         """ Close the window
 

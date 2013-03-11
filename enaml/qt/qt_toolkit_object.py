@@ -22,30 +22,6 @@ class QtToolkitObject(ProxyToolkitObject):
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
-    def init_top_down_pass(self):
-        """ Initialize the proxy tree with a top-down pass.
-
-        This method will initialize the entire tree and should only be
-        called on the root object in the tree.
-
-        """
-        self.create_widget()
-        self.init_widget()
-        for child in self.children():
-            child.init_top_down_pass()
-
-    def init_bottom_up_pass(self):
-        """ Initialize the proxy tree with a bottom-up pass.
-
-        This method will initialize the entire tree and should only be
-        called on the root object in the tree. The 'active' flag is set
-        to True at the end of this method.
-
-        """
-        for child in self.children():
-            child.init_bottom_up_pass()
-        self.init_layout()
-
     def create_widget(self):
         """ Create the toolkit widget for the proxy object.
 
@@ -79,6 +55,19 @@ class QtToolkitObject(ProxyToolkitObject):
     #--------------------------------------------------------------------------
     # ProxyToolkitObject API
     #--------------------------------------------------------------------------
+    def init_top_down(self):
+        """ Initialize the proxy tree for the top-down pass.
+
+        """
+        self.create_widget()
+        self.init_widget()
+
+    def init_bottom_up(self):
+        """ Initialize the proxy tree for the bottom-up pass.
+
+        """
+        self.init_layout()
+
     def destroy(self):
         """ A reimplemented destructor.
 
@@ -87,12 +76,22 @@ class QtToolkitObject(ProxyToolkitObject):
         top-most toolkit object is destroyed, saving time.
 
         """
-        if self.widget:
+        if self.widget is not null:
             d = self.declaration.parent
             if d is None or not d.is_destroyed:
                 self.widget.setParent(None)
                 del self.widget
         super(QtToolkitObject, self).destroy()
+
+    def child_removed(self, child):
+        """ Handle the child removed event from the declaration.
+
+        This handler will unparent the child toolkit widget. Subclasses
+        which need more control should reimplement this method.
+
+        """
+        if child.widget is not null:
+            child.widget.setParent(None)
 
     #--------------------------------------------------------------------------
     # Public API

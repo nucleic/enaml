@@ -29,6 +29,24 @@ class ProxyToolkitObject(Atom):
     #: A reference to the ToolkitObject declaration.
     declaration = ForwardTyped(lambda: ToolkitObject)
 
+    def init_top_down(self):
+        """ A method called by the declaration to init the proxy.
+
+        This method is the first of two passes made over the proxy
+        tree for initialization. This method is called top-down.
+
+        """
+        pass
+
+    def init_bottom_up(self):
+        """ A method called by the declaration to init the proxy.
+
+        This method is the second of two passes made over the proxy
+        tree for initialization. This method is called bottom-up.
+
+        """
+        pass
+
     def destroy(self):
         """ Destroy the proxy and any of its resources.
 
@@ -150,6 +168,8 @@ class ToolkitObject(Declarative):
         """
         super(ToolkitObject, self).child_added(child)
         if isinstance(child, ToolkitObject) and self.proxy_is_active:
+            if not child.proxy_is_active:
+                child.activate_proxy()
             self.proxy.child_added(child.proxy)
 
     def child_removed(self, child):
@@ -164,6 +184,42 @@ class ToolkitObject(Declarative):
         if isinstance(child, ToolkitObject) and self.proxy_is_active:
             if not child.is_destroyed:
                 self.proxy.child_removed(child.proxy)
+
+    def activate_proxy(self):
+        """ Activate the proxy object tree.
+
+        This method should be called by a node to activate the proxy
+        tree by making two initialization passes over the tree, from
+        this node downward. This method is automatically at the proper
+        times and should not normally need to be invoked by user code.
+
+        """
+        self._activate_proxy_top_down()
+        self._activate_proxy_bottom_up()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _activate_proxy_top_down(self):
+        """ Run the top-down initialization pass for the proxy tree.
+
+        """
+        self.proxy.init_top_down()
+        for child in self.children:
+            if isinstance(child, ToolkitObject):
+                child._activate_proxy_top_down()
+
+    def _activate_proxy_bottom_up(self):
+        """ Run the bottom up initialization pass for the proxy tree.
+
+        On completion, the active proxy flag is set to True.
+
+        """
+        for child in self.children:
+            if isinstance(child, ToolkitObject):
+                child._activate_proxy_bottom_up()
+        self.proxy.init_bottom_up()
+        self.proxy_is_active = True
 
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.

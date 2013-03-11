@@ -16,7 +16,6 @@ from enaml.icon import Icon
 from enaml.layout.geometry import Size
 
 from .container import Container
-from .toolkit_object import ToolkitObject
 from .widget import Widget, ProxyWidget
 
 
@@ -26,9 +25,6 @@ class ProxyWindow(ProxyWidget):
     """
     #: A reference to the Window declaration.
     declaration = ForwardTyped(lambda: Window)
-
-    def setup_window(self):
-        raise NotImplementedError
 
     def set_title(self, title):
         raise NotImplementedError
@@ -163,14 +159,10 @@ class Window(Widget):
         and build the window hierarchy if needed.
 
         """
-        # XXX i'm still not sure this is where this code should live.
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
-            self.proxy.setup_window()
-            for node in self.traverse():
-                if isinstance(node, ToolkitObject):
-                    node.proxy_is_active = True
+            self.activate_proxy()
         super(Window, self).show()
 
     #--------------------------------------------------------------------------
