@@ -12,6 +12,7 @@ from atom.api import Typed
 from enaml.widgets.mdi_area import ProxyMdiArea
 
 from .qt_constraints_widget import QtConstraintsWidget
+from .qt_mdi_window import QtMdiWindow
 
 
 class QtMdiArea(QtConstraintsWidget, ProxyMdiArea):
@@ -67,19 +68,22 @@ class QtMdiArea(QtConstraintsWidget, ProxyMdiArea):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtMdiArea.
+    def child_added(self, child):
+        """ Handle the child added event for a QtMdiArea.
 
-    #     """
-    #     if isinstance(child, QtMdiWindow):
-    #         self.widget().removeSubWindow(child.widget())
+        """
+        # The size hint of a QMdiArea is typically quite large and the
+        # size hint constraints are usually ignored. There is no need
+        # to notify of a change in size hint here.
+        super(QtMdiArea, self).child_added(child)
+        if isinstance(child, QtMdiWindow):
+            self.widget.addSubWindow(child.widget)
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtMdiArea.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtMdiArea.
 
-    #     """
-    #     # The size hint of a QMdiArea is typically quite large and the
-    #     # size hint constraints are usually ignored. There is no need
-    #     # to notify of a change in size hint here.
-    #     if isinstance(child, QtMdiWindow):
-    #         self.widget().addSubWindow(child.widget())
+        """
+        if isinstance(child, QtMdiWindow):
+            self.widget.removeSubWindow(child.widget)
+        else:
+            super(QtMdiArea, self).child_removed(child)

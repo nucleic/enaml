@@ -72,19 +72,21 @@ class QtMdiWindow(QtWidget, ProxyMdiWindow):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtMdiWindow.
+    def child_added(self, child):
+        """ Handle the child added event for a QtMdiWindow.
 
-    #     """
-    #     if isinstance(child, QtWidget):
-    #         self._set_window_widget(self.mdi_widget())
+        """
+        super(QtMdiWindow, self).child_added(child)
+        if isinstance(child, QtWidget):
+            self._set_window_widget(self.mdi_widget())
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtMdiWindow.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtMdiWindow.
 
-    #     """
-    #     if isinstance(child, QtWidget):
-    #         self._set_window_widget(self.mdi_widget())
+        """
+        super(QtMdiWindow, self).child_added(child)
+        if isinstance(child, QtWidget):
+            self._set_window_widget(self.mdi_widget())
 
     #--------------------------------------------------------------------------
     # ProxyMdiWindow API
