@@ -107,7 +107,7 @@ class DeclarativeNameError(NameError):
 class OperatorLookupError(LookupError):
     """ A LookupError subclass which nicely formats the exception.
 
-    This class is intended for used by Declarative and its subclasses to
+    This class is intended for use by Declarative and its subclasses to
     report errors for failed operator lookups when building the object
     tree.
 
@@ -157,3 +157,43 @@ class OperatorLookupError(LookupError):
         text += "\n\nOperatorLookupError: failed to load operator %s" % optext
         return text
 
+
+class InvalidOverrideError(TypeError):
+    """ A TypeError subclass which nicely formats the exception.
+
+    This class is intended for use by the Enaml compiler machinery to
+    indicate that overriding the given member is not allowed.
+
+    """
+    def __init__(self, suffix, filename, lineno, block):
+        """ Initialize an InvalidOverrideError.
+
+        Parameters
+        ----------
+        suffix : str
+            The suffix to append to the end of the error message.
+
+        filename : str
+            The filename where the lookup failed.
+
+        lineno : int
+            The line number of the error.
+
+        block : str
+            The name of the lexical block in which the lookup failed.
+
+        """
+        super(InvalidOverrideError, self).__init__(suffix)
+        self.suffix = suffix
+        self.filename = filename
+        self.lineno = lineno
+        self.block = block
+
+    def __str__(self):
+        """ A nicely formatted representaion of the exception.
+
+        """
+        text = '\n\n'
+        text += _format_source_error(self.filename, self.lineno, self.block)
+        text += "\n\nInvalidOverrideError: cannot override %s" % self.suffix
+        return text
