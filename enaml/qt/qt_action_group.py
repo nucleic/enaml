@@ -106,30 +106,66 @@ class QtActionGroup(QtToolkitObject, ProxyActionGroup):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtActionGroup.
+    def find_next_action(self, child):
+        """ Locate the QAction object which logically follows the child.
 
-    #     """
-    #     if isinstance(child, QtAction):
-    #         action = child.widget()
-    #         self.widget().removeAction(action)
-    #         parent = self.parent()
-    #         if parent is not None:
-    #             parent.widget().removeAction(action)
+        If the given child is last in the list of children, then the
+        parent object will be invoked to find the QAction which follows
+        this action group.
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtActionGroup.
+        Parameters
+        ----------
+        child : QtToolkitObject
+            The child object of interest.
 
-    #     """
-    #     # The easiest way to handle the insert is to tell the parent to
-    #     # insert all the current actions. It will work out the proper
-    #     # ordering automatically.
-    #     if isinstance(child, QtAction):
-    #         self.widget().addAction(child.widget())
-    #         parent = self.parent()
-    #         if parent is not None:
-    #             before = parent.find_next_action(self)
-    #             parent.widget().insertActions(before, self.actions())
+        Returns
+        -------
+        result : QAction or None
+            The QAction which logically follows the position of the
+            child in the list of children. None will be returned if
+            a relevant QAction is not found.
+
+        """
+        found = False
+        for dchild in self.children():
+            if found and isinstance(dchild, QtAction):
+                return dchild.widget
+            else:
+                found = child is dchild
+        parent = self.parent()
+        if parent is not None:
+            return parent.find_next_action(self)
+
+    def child_added(self, child):
+        """ Handle the child added event for a QtActionGroup.
+
+        This handler will also add the widget to the parent widget,
+        since a QActionGroup only serves as a management container.
+
+        """
+        if isinstance(child, QtAction):
+            self.widget.addAction(child.widget)
+            parent = self.parent()
+            if parent is not None:
+                before = self.find_next_action(child)
+                parent.widget.insertAction(before, child.widget)
+        else:
+            super(QtActionGroup, self).child_added(child)
+
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtActionGroup.
+
+        This handler will also remove the widget to the parent widget,
+        since a QActionGroup only serves as a management container.
+
+        """
+        if isinstance(child, QtAction):
+            self.widget.removeAction(child.widget)
+            parent = self.parent()
+            if parent is not None:
+                parent.widget.removeAction(child.widget)
+        else:
+            super(QtActionGroup, self).child_removed(child)
 
     #--------------------------------------------------------------------------
     # Utility Methods
