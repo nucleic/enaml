@@ -11,7 +11,6 @@ from atom.api import (
 
 from casuarius import ConstraintVariable
 
-from enaml.application import Application, ScheduledTask
 from enaml.core.declarative import d_
 from enaml.layout.ab_constrainable import ABConstrainable
 from enaml.layout.layout_helpers import expand_constraints
@@ -49,7 +48,7 @@ class ProxyConstraintsWidget(ProxyWidget):
     #: A reference to the ConstraintsWidget declaration.
     declaration = ForwardTyped(lambda: ConstraintsWidget)
 
-    def relayout(self):
+    def request_relayout(self):
         raise NotImplementedError
 
 
@@ -141,9 +140,6 @@ class ConstraintsWidget(Widget):
     #: A reference to the ProxyConstraintsWidget object.
     proxy = Typed(ProxyConstraintsWidget)
 
-    #: A private application task used to collapse layout requests.
-    _layout_task = Typed(ScheduledTask)
-
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
@@ -153,28 +149,20 @@ class ConstraintsWidget(Widget):
         """ An observer which will relayout the proxy widget.
 
         """
-        self.relayout()
+        self.request_relayout()
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def relayout(self):
-        """ Trigger a relayout of the proxy widget.
+    def request_relayout(self):
+        """ Request a relayout from the proxy widget.
 
-        Multiple `relayout` triggers will be collapsed into a single
-        trigger that will be dispatched on the next event cycle.
+        This will invoke the 'request_relayout' method on an active
+        proxy. The proxy should collapse the requests as necessary.
 
         """
-        if self.proxy_is_active and not self._layout_task:
-            def layout_task():
-                if self.proxy_is_active:
-                    self.proxy.relayout()
-            def task_completed(r):
-                del self._layout_task
-            app = Application.instance()
-            task = app.schedule(layout_task)
-            task.notify(task_completed)
-            self._layout_task = task
+        if self.proxy_is_active:
+            self.proxy.request_relayout()
 
     def when(self, switch):
         """ A method which returns `self` or None based on the truthness

@@ -129,24 +129,24 @@ class Container(ConstraintsWidget):
     def child_added(self, child):
         """ Handle the child added event on the container.
 
-        This event handler will send a relayout event if the `Container`
-        is active and the user has not defined their own constraints.
+        This event handler will request a relayout if the added child
+        is an instance of 'ConstraintsWidget'.
 
         """
         super(Container, self).child_added(child)
         if isinstance(child, ConstraintsWidget):
-            self.relayout()
+            self.request_relayout()
 
     def child_removed(self, child):
         """ Handle the child removed event on the container.
 
-        This event handler will send a relayout event if the `Container`
-        is active and the user has not defined their own constraints.
+        This event handler will request a relayout if the removed child
+        is an instance of 'ConstraintsWidget'.
 
         """
         super(Container, self).child_removed(child)
         if isinstance(child, ConstraintsWidget):
-            self.relayout()
+            self.request_relayout()
 
     #--------------------------------------------------------------------------
     # Observers
