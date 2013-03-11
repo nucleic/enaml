@@ -12,7 +12,7 @@ from atom.api import Typed
 
 from enaml.widgets.page import ProxyPage
 
-from .q_resource_helper import get_cached_qicon
+from .q_resource_helpers import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
 from .qt_widget import QtWidget
 

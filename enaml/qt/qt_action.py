@@ -11,7 +11,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.action import ProxyAction
 
-from .q_resource_helper import get_cached_qicon
+from .q_resource_helpers import get_cached_qicon
 from .qt_toolkit_object import QtToolkitObject
 
 

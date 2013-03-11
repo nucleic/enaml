@@ -12,7 +12,7 @@ from PyQt4.QtGui import QFrame, QLayout, QIcon
 
 from enaml.widgets.window import ProxyWindow
 
-from .q_resource_helper import get_cached_qicon
+from .q_resource_helpers import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
 from .qt_widget import QtWidget
 

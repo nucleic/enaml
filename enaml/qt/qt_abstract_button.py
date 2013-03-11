@@ -12,7 +12,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.abstract_button import ProxyAbstractButton
 
-from .q_resource_helper import get_cached_qicon
+from .q_resource_helpers import get_cached_qicon
 from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 

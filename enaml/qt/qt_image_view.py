@@ -11,7 +11,7 @@ from atom.api import Typed
 
 from enaml.widgets.image_view import ProxyImageView
 
-from .q_resource_helper import get_cached_qimage
+from .q_resource_helpers import get_cached_qimage
 from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 

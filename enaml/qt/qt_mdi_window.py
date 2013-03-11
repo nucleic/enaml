@@ -11,7 +11,7 @@ from atom.api import Typed
 
 from enaml.widgets.mdi_window import ProxyMdiWindow
 
-from .q_resource_helper import get_cached_qicon
+from .q_resource_helpers import get_cached_qicon
 from .qt_widget import QtWidget
 
 
