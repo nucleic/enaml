@@ -11,7 +11,6 @@ from atom.api import (
     Member, Validate, DefaultValue, ReadOnly, Value, Event, List, Str, null
 )
 
-#from .dynamic_scope import DynamicAttributeError
 from .exceptions import DeclarativeNameError, OperatorLookupError
 from .object import Object, flag_generator, flag_property
 from .operator_context import OperatorContext

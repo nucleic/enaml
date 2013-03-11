@@ -42,17 +42,6 @@ class AbstractScopeListener(object):
 #------------------------------------------------------------------------------
 # Dynamic Scope
 #------------------------------------------------------------------------------
-class DynamicAttributeError(AttributeError):
-    """ A custom Attribute error for use with dynamic scoping.
-
-    DynamicScope operates by catching AttributeError and converting it
-    into a key error. This DynamicAttributeError can be raised by user
-    code in order to escape the trapping and bubble up.
-
-    """
-    pass
-
-
 class DynamicScope(object):
     """ A custom mapping object that implements Enaml's dynamic scope.
 
@@ -116,8 +105,6 @@ class DynamicScope(object):
         while parent is not None:
             try:
                 value = getattr(parent, name)
-            except DynamicAttributeError:
-                raise
             except AttributeError:
                 parent = parent.parent
             else:
@@ -264,8 +251,6 @@ class Nonlocals(object):
         while parent is not None:
             try:
                 value = getattr(parent, name)
-            except DynamicAttributeError:
-                raise
             except AttributeError:
                 parent = parent.parent
             else:
@@ -320,4 +305,3 @@ class Nonlocals(object):
         else:
             res = False
         return res
-
