@@ -115,20 +115,23 @@ class QtFlowArea(QtConstraintsWidget, ProxyFlowArea):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtMdiArea.
+    def child_added(self, child):
+        """ Handle the child added event for a QtMdiArea.
 
-    #     """
-    #     if isinstance(child, QtFlowItem):
-    #         self.widget().layout().removeWidget(child.widget())
+        """
+        super(QtFlowArea, self).child_added(child)
+        if isinstance(child, QtFlowItem):
+            for index, dchild in enumerate(self.children()):
+                if dchild is child:
+                    self.widget.layout().insertWidget(index, child.widget)
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtMdiArea.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtMdiArea.
 
-    #     """
-    #     if isinstance(child, QtFlowItem):
-    #         index = self.index_of(child)
-    #         self.widget().layout().insertWidget(index, child.widget())
+        """
+        super(QtFlowArea, self).child_removed(child)
+        if isinstance(child, QtFlowItem):
+            self.widget.layout().removeWidget(child.widget)
 
     #--------------------------------------------------------------------------
     # ProxyFlowArea API
