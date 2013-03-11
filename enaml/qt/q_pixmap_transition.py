@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtCore import QPoint, QRect, QVariantAnimation, Signal
-from .qt.QtGui import QPainter, QPixmap, QPainterPath
+from PyQt4.QtCore import QPoint, QPointF, QRect, QVariantAnimation, pyqtSignal
+from PyQt4.QtGui import QPainter, QPixmap, QPainterPath
 
 
 class QPixmapTransition(QVariantAnimation):
@@ -20,7 +20,7 @@ class QPixmapTransition(QVariantAnimation):
     #: A signal emmitted when the output pixmap has been updated with
     #: a new frame in the transition animation. The paylod will be the
     #: output pixmap of the transition.
-    pixmapUpdated = Signal(QPixmap)
+    pixmapUpdated = pyqtSignal(QPixmap)
 
     def __init__(self):
         """ Initialize a QPixmapTransition.
@@ -117,7 +117,7 @@ class QPixmapTransition(QVariantAnimation):
             in the animation.
 
         """
-        if self.state() == self.State.Running:
+        if self.state() == self.Running:
             self.updatePixmap(value)
             self.pixmapUpdated.emit(self.outPixmap())
 
@@ -365,7 +365,7 @@ class QIrisTransition(QPixmapTransition):
         rx = rect.width()
         ry = rect.height()
         path = QPainterPath()
-        path.addEllipse(QPoint(x, y), rx, ry)
+        path.addEllipse(QPointF(x, y), float(rx), float(ry))
         painter = QPainter(self.outPixmap())
         painter.setClipPath(path)
         painter.drawPixmap(QPoint(0, 0), self.endPixmap())
@@ -440,4 +440,3 @@ class QCrossFadeTransition(QPixmapTransition):
         painter.drawPixmap(QPoint(0, 0), self.startPixmap())
         painter.setOpacity(alpha)
         painter.drawPixmap(QPoint(0, 0), self.endPixmap())
-
