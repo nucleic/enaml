@@ -60,6 +60,28 @@ class ProxyToolkitObject(Atom):
             if isinstance(d, ToolkitObject):
                 yield d.proxy
 
+    def child_added(self, child):
+        """ Handle a child being added to the object.
+
+        Parameters
+        ----------
+        child : ProxyToolkitObject
+            The toolkit proxy child added to the object.
+
+        """
+        pass
+
+    def child_removed(self, child):
+        """ Handle a child being removed from the object.
+
+        Parameters
+        ----------
+        child : ProxyToolkitObject
+            The toolkit proxy removed the object.
+
+        """
+        pass
+
 
 #: A flag indicating that the object's proxy is ready for use.
 ACTIVE_PROXY_FLAG = flag_generator.next()
@@ -103,6 +125,12 @@ class ToolkitObject(Declarative):
         self.proxy_is_active = False
         self.proxy.destroy()
         del self.proxy
+
+    def child_added(self, child):
+        pass
+
+    def child_removed(self, child):
+        pass
 
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.

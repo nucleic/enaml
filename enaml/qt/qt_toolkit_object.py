@@ -77,7 +77,7 @@ class QtToolkitObject(ProxyToolkitObject):
         pass
 
     #--------------------------------------------------------------------------
-    # Proxy API
+    # ProxyToolkitObject API
     #--------------------------------------------------------------------------
     def destroy(self):
         """ A reimplemented destructor.
