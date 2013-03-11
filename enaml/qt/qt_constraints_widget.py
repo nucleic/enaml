@@ -186,7 +186,7 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
         parent = self.parent()
         if isinstance(parent, QtConstraintsWidget):
             cns = self.size_hint_cns
-            del self._size_hint_cns
+            del self.size_hint_cns
             parent.clear_constraints(cns)
 
     def size_hint_updated(self):
