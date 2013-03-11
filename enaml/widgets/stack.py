@@ -5,12 +5,47 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Dict, Int, observe, set_default
+from atom.api import (
+    Atom, Enum, Int, Range, Typed, ForwardTyped, observe, set_default
+)
 
 from enaml.core.declarative import d_
 
-from .constraints_widget import ConstraintsWidget
+from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .stack_item import StackItem
+
+
+class Transition(Atom):
+    """ An object representing an animated transition.
+
+    Once a transition is created, it should be considered read-only.
+
+    """
+    #: The type of transition effect to use.
+    type = Enum('slide', 'wipe', 'iris', 'fade', 'crossfade')
+
+    #: The direction of the transition effect. Some transition types
+    #: will ignore the direction if it doesn't apply to the effect.
+    direction = Enum(
+        'left_to_right', 'right_to_left', 'top_to_bottom', 'bottom_to_top'
+    )
+
+    #: The duration of the transition, in milliseconds.
+    duration = Range(low=0, value=250)
+
+
+class ProxyStack(ProxyConstraintsWidget):
+    """ The abstract definition of a proxy Stack object.
+
+    """
+    #: A reference to the Stack declaration.
+    declaration = ForwardTyped(lambda: Stack)
+
+    def set_index(self, index):
+        raise NotImplementedError
+
+    def set_transition(self, transition):
+        raise NotImplementedError
 
 
 class Stack(ConstraintsWidget):
@@ -24,50 +59,29 @@ class Stack(ConstraintsWidget):
     #: the range of stack items, no widget will be visible.
     index = d_(Int(0))
 
-    #: The transition to use when change between stack items.
-    #: XXX Document the supported transitions.
-    transition = d_(Dict())
+    #: The item transition to use when changing between stack items.
+    transition = d_(Typed(Transition))
 
     #: A Stack expands freely in height and width by default
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 
-    @property
+    #: A reference to the ProxyStack widget.
+    proxy = Typed(ProxyStack)
+
     def stack_items(self):
-        """ A read only property which returns the list of stack items.
+        """ Get the stack items defined on the stack
 
         """
-        isinst = isinstance
-        target = StackItem
-        return [child for child in self.children if isinst(child, target)]
+        return [c for c in self.children if isinstance(c, StackItem)]
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dict for the control.
-
-        """
-        snap = super(Stack, self).snapshot()
-        snap['index'] = self.index
-        snap['transition'] = self.transition
-        return snap
-
-    @observe(r'^(index|transition)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    @observe(('index', 'transition'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(Stack, self).send_member_change(change)
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_index_changed(self, content):
-        """ Handle the `index_changed` action from the client widget.
-
-        """
-        with self.loopback_guard('index'):
-            self.index = content['index']
-
+        super(Stack, self)._update_proxy(change)
