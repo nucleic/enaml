@@ -12,6 +12,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.dock_pane import ProxyDockPane
 
+from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -226,19 +227,21 @@ class QtDockPane(QtWidget, ProxyDockPane):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtDockPane.
+    def child_added(self, child):
+        """ Handle the child added event for a QtDockPane.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setWidget(self.dock_widget())
+        """
+        super(QtDockPane, self).child_added(child)
+        if isinstance(child, QtContainer):
+            self.widget.setWidget(self.dock_widget())
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtDockPane.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtDockPane.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setWidget(self.dock_widget())
+        """
+        super(QtDockPane, self).child_removed(child)
+        if isinstance(child, QtContainer):
+            self.widget.setWidget(self.dock_widget())
 
     #--------------------------------------------------------------------------
     # Signal Handlers
