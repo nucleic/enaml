@@ -7,15 +7,19 @@
 #------------------------------------------------------------------------------
 import sys
 
-from .qt.QtCore import Qt, QEvent, Signal
-from .qt.QtGui import (
+from PyQt4.QtCore import Qt, QEvent, pyqtSignal
+from PyQt4.QtGui import (
     QSplitter, QSplitterHandle, QVBoxLayout, QFrame, QApplication
 )
-from .qt_constraints_widget import QtConstraintsWidget
-from .qt_split_item import QtSplitItem
+
+from atom.api import Typed, null
+
+from enaml.widgets.splitter import ProxySplitter
+
+from .qt_constraints_widget import QtConstraintsWidget, size_hint_guard
 
 
-_ORIENTATION_MAP = {
+ORIENTATION = {
     'horizontal': Qt.Horizontal,
     'vertical': Qt.Vertical,
 }
@@ -56,7 +60,7 @@ class QCustomSplitter(QSplitter):
     #: A signal emitted when a LayoutRequest event is posted to the
     #: splitter widget. This will typically occur when the size hint
     #: of the splitter is no longer valid.
-    layoutRequested = Signal()
+    layoutRequested = pyqtSignal()
 
     def createHandle(self):
         """ A reimplemented virtual method to create splitter handles.
@@ -100,36 +104,39 @@ class QCustomSplitter(QSplitter):
         return res
 
 
-class QtSplitter(QtConstraintsWidget):
+class QtSplitter(QtConstraintsWidget, ProxySplitter):
     """ A Qt implementation of an Enaml Splitter.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QCustomSplitter)
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Creates the underlying QSplitter control.
 
         """
-        return QCustomSplitter(parent)
+        self.widget = QCustomSplitter(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying control.
+    def init_widget(self):
+        """ Initialize the underlying control.
 
         """
-        super(QtSplitter, self).create(tree)
-        self.set_orientation(tree['orientation'])
-        self.set_live_drag(tree['live_drag'])
+        super(QtSplitter, self).init_widget()
+        d = self.declaration
+        self.set_orientation(d.orientation, sh_guard=False)
+        self.set_live_drag(d.live_drag)
 
     def init_layout(self):
         """ Handle the layout initialization for the splitter.
 
         """
         super(QtSplitter, self).init_layout()
-        widget = self.widget()
-        for child in self.children():
-            if isinstance(child, QtSplitItem):
-                widget.addWidget(child.widget())
+        widget = self.widget
+        for item in self.split_items():
+            widget.addWidget(item)
         widget.layoutRequested.connect(self.on_layout_requested)
 
         # On Windows, messages are consumed from three different queues,
@@ -157,14 +164,26 @@ class QtSplitter(QtConstraintsWidget):
     # base child_removed event will set the parent to None, and that is
     # all that is needed.
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtSplitter.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtSplitter.
+
+    #     """
+    #     if isinstance(child, QtSplitItem):
+    #         index = self.index_of(child)
+    #         if index != -1:
+    #             self.widget().insertWidget(index, child.widget())
+
+    #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def split_items(self):
+        """ Get the split items defined for the widget.
 
         """
-        if isinstance(child, QtSplitItem):
-            index = self.index_of(child)
-            if index != -1:
-                self.widget().insertWidget(index, child.widget())
+        for d in self.declaration.split_items():
+            w = d.proxy.widget
+            if w is not null:
+                yield w
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -183,38 +202,24 @@ class QtSplitter(QtConstraintsWidget):
         resize events when opaque resizing is turned on.
 
         """
-        if self.widget().opaqueResize():
+        if self.widget.opaqueResize():
             QApplication.sendPostedEvents()
 
     #--------------------------------------------------------------------------
-    # Message Handler Methods
+    # ProxySplitter API
     #--------------------------------------------------------------------------
-    def on_action_set_orientation(self, content):
-        """ Handle the 'set_orientation' action from the Enaml widget.
-
-        """
-        self.set_orientation(content['orientation'])
-        self.size_hint_updated()
-
-    def on_action_set_live_drag(self, content):
-        """ Handle the 'set_live_drag' action from the Enaml widget.
-
-        """
-        self.set_live_drag(content['live_drag'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
-    #--------------------------------------------------------------------------
-    def set_orientation(self, orientation):
+    def set_orientation(self, orientation, sh_guard=True):
         """ Update the orientation of the QSplitter.
 
         """
-        q_orientation = _ORIENTATION_MAP[orientation]
-        self.widget().setOrientation(q_orientation)
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.setOrientation(ORIENTATION[orientation])
+        else:
+            self.widget.setOrientation(ORIENTATION[orientation])
 
     def set_live_drag(self, live_drag):
         """ Update the dragging mode of the QSplitter.
 
         """
-        self.widget().setOpaqueResize(live_drag)
-
+        self.widget.setOpaqueResize(live_drag)
