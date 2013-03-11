@@ -5,23 +5,76 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Coerced, Enum, Range, observe, set_default
+from atom.api import (
+    Bool, Coerced, Enum, Range, Int, Typed, ForwardTyped, observe, set_default
+)
 
 from enaml.core.declarative import d_
+from enaml.datamodels.abstractitemmodel import AbstractItemModel
 from enaml.layout.geometry import Size
 
-from .control import Control
-from .list_item import ListItem
+from .control import Control, ProxyControl
+#from .list_item import ListItem
 
 
-class ListControl(Control):
-    """ A `ListControl` displays a collection `ListItem` children.
-
-    `ListItem` objects are flexible and convenient, but they are also
-    fairly heavy weight. `ListControl` is well suited for use when the
-    number of `ListItem` children is under ~1000.
+class ProxyListView(ProxyControl):
+    """ The abstract definition of a proxy ListView object.
 
     """
+    #: A reference to the ListView declaration.
+    declaration = ForwardTyped(lambda: ListView)
+
+    def set_item_model(self, model):
+        raise NotImplementedError
+
+    def set_model_column(self, column):
+        raise NotImplementedError
+
+    def set_view_mode(self, mode):
+        raise NotImplementedError
+
+    def set_resize_mode(self, mode):
+        raise NotImplementedError
+
+    def set_flow_mode(self, mode):
+        raise NotImplementedError
+
+    def set_item_wrap(self, wrap):
+        raise NotImplementedError
+
+    def set_word_wrap(self, wrap):
+        raise NotImplementedError
+
+    def set_item_spacing(self, spacing):
+        raise NotImplementedError
+
+    def set_icon_size(self, size):
+        raise NotImplementedError
+
+    def set_uniform_item_sizes(self, uniform):
+        raise NotImplementedError
+
+    def set_layout_mode(self, mode):
+        raise NotImplementedError
+
+    def set_batch_size(self, size):
+        raise NotImplementedError
+
+    def refresh_items_layout(self):
+        raise NotImplementedError
+
+
+class ListView(Control):
+    """ A control for displaying a list of data.
+
+    """
+    #: The data model to use for the list. If not explicitly given,
+    #: one will be created using any given ListItem children.
+    item_model = d_(Typed(AbstractItemModel))
+
+    #: The column index to use for pulling data from the model.
+    model_column = d_(Int(0))
+
     #: The viewing mode of the list control. The 'list' mode arranges
     #: all items in a vertical list with small icons. The 'icon' mode
     #: uses large icons and a grid layout.
@@ -51,7 +104,7 @@ class ListControl(Control):
 
     #: The size to render the icons in the list control. The default
     #: indicates that the toolkit is free to choose a proper size.
-    icon_size = d_(Coerced(Size, factory=lambda: Size(-1, -1)))
+    icon_size = d_(Coerced(Size, (-1, -1)))
 
     #: Whether or not the items in the model have uniform sizes. If
     #: all the items have uniform size, then the layout algorithm
@@ -74,47 +127,27 @@ class ListControl(Control):
     hug_width = set_default('weak')
     hug_height = set_default('weak')
 
-    @property
+    #: A reference to the ProxyListView object.
+    proxy = Typed(ProxyListView)
+
     def list_items(self):
-        """ A read only property which returns a generator.
-
-        The generator will yield the children of the control which are
-        instances of ListItem.
+        """ Get the ListItem children defined on the control.
 
         """
-        isinst = isinstance
-        target = ListItem
-        return (child for child in self.children if isinst(child, target))
+        return [c for c in self.children if isinstance(c, ListItem)]
 
     #--------------------------------------------------------------------------
-    # Messenger API
+    # Observers
     #--------------------------------------------------------------------------
-    def snapshot(self):
-        """ Returns the snapshot dictionary for the list control.
-
-        """
-        snap = super(ListControl, self).snapshot()
-        snap['view_mode'] = self.view_mode
-        snap['resize_mode'] = self.resize_mode
-        snap['flow_mode'] = self.flow_mode
-        snap['item_wrap'] = self.item_wrap
-        snap['word_wrap'] = self.word_wrap
-        snap['item_spacing'] = self.item_spacing
-        snap['icon_size'] = self.icon_size
-        snap['uniform_item_sizes'] = self.uniform_item_sizes
-        snap['layout_mode'] = self.layout_mode
-        snap['batch_size'] = self.batch_size
-        return snap
-
-    @observe(r'^(view_mode|resize_mode|flow_mode|item_wrap|word_wrap|'
-             r'item_spacing|icon_size|uniform_item_sizes|layout_mode|'
-             r'batch_size)$', regex=True)
-    def send_member_change(self, change):
-        """ An observer which sends state change to the client.
+    @observe(('item_model', 'model_colum', 'view_mode', 'resize_mode',
+        'flow_mode', 'item_wrap', 'word_wrap', 'item_spacing', 'icon_size',
+        'layout_mode', 'uniform_item_sizes', 'batch_size'))
+    def _update_proxy(self, change):
+        """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
-        super(ListControl, self).send_member_change(change)
+        super(ListView, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -123,5 +156,5 @@ class ListControl(Control):
         """ Request an items layout refresh from the client widget.
 
         """
-        self.send_action('refresh_items_layout', {})
-
+        if self.proxy_is_active:
+            self.proxy.refresh_items_layout()
