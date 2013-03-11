@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtGui import QActionGroup
 
-from atom.api import Typed
+from atom.api import Typed, null
 
 from enaml.widgets.action_group import ProxyActionGroup
 
@@ -159,7 +159,7 @@ class QtActionGroup(QtToolkitObject, ProxyActionGroup):
 
         """
         super(QtActionGroup, self).child_removed(child)
-        if isinstance(child, QtAction):
+        if isinstance(child, QtAction) and child.widget is not null:
             self.widget.removeAction(child.widget)
             parent = self.parent()
             if parent is not None:

@@ -176,14 +176,14 @@ class ToolkitObject(Declarative):
         """ A reimplemented child removed event handler.
 
         This handler will invoke the superclass handler and then invoke
-        the 'child_removed()' method on an active proxy, provided that
-        the child is not destroyed.
+        the 'child_removed()' method on an active proxy. The method on
+        the active proxy will be called even if the child proxy has been
+        destroyed.
 
         """
         super(ToolkitObject, self).child_removed(child)
         if isinstance(child, ToolkitObject) and self.proxy_is_active:
-            if not child.is_destroyed:
-                self.proxy.child_removed(child.proxy)
+            self.proxy.child_removed(child.proxy)
 
     def activate_proxy(self):
         """ Activate the proxy object tree.

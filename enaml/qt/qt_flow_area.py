@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtGui import QScrollArea, QFrame
 
-from atom.api import Typed
+from atom.api import Typed, null
 
 from enaml.widgets.flow_area import ProxyFlowArea
 
@@ -130,7 +130,7 @@ class QtFlowArea(QtConstraintsWidget, ProxyFlowArea):
 
         """
         super(QtFlowArea, self).child_removed(child)
-        if isinstance(child, QtFlowItem):
+        if isinstance(child, QtFlowItem) and child.widget is not null:
             self.widget.layout().removeWidget(child.widget)
 
     #--------------------------------------------------------------------------
