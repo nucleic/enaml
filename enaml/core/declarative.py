@@ -260,7 +260,9 @@ class Declarative(Object):
 
         """
         self.operators = OperatorContext.active_context()
-        super(Declarative, self).__init__(parent, **kwargs)
+        # Populate the object before calling super. This ensures that
+        # all of the expressions are bound and children created before
+        # the parent receives a child_added event.
         descriptions = self.__declarative_descriptions__
         if len(descriptions) > 0:
             # Each description is an independent `enamldef` block
@@ -268,6 +270,7 @@ class Declarative(Object):
             for description, f_globals in descriptions:
                 identifiers = {}
                 self.populate(description, identifiers, f_globals)
+        super(Declarative, self).__init__(parent, **kwargs)
 
     def initialize(self):
         """ Initialize this object all of its children recursively.
@@ -383,8 +386,8 @@ class Declarative(Object):
                 cls = scope_lookup(child['type'], f_globals, child)
                 # Create the child without a parent so that all of the
                 # expressions which provide default values are bound and
-                # all of subchildren are added before the parent of this
-                # child receives a child_added event.
+                # all of the subchildren are added before this object
+                # receives a child_added event.
                 instance = cls()
                 instance.populate(child, identifiers, f_globals)
                 instance.set_parent(self)
