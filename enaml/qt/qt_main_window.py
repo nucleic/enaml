@@ -193,6 +193,8 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
                 deferredCall(bar_widget.setFloating, True)
             if sys.platform == 'darwin':
                 self.widget.setVisible(True)
+        else:
+            super(QtMainWindow, self).child_added(child)
 
     def child_removed(self, child):
         """ Handle the child removed event for a QtMainWindow.
@@ -206,3 +208,5 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
             self.widget.setCentralWidget(self.central_widget())
         elif isinstance(child, QtMenuBar):
             self.widget.setMenuBar(self.menu_bar())
+        else:
+            super(QtMainWindow, self).child_removed(child)
