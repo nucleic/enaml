@@ -5,9 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .qt.QtGui import QFrame
+from PyQt4.QtGui import QFrame
+
+from atom.api import Typed, null
+
+from enaml.widgets.stack_item import ProxyStackItem
+
 from .q_single_widget_layout import QSingleWidgetLayout
-from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -53,25 +57,28 @@ class QStackItem(QFrame):
         self.layout().setWidget(widget)
 
 
-class QtStackItem(QtWidget):
-    """ A Qt implementation of an Enaml StackItem.
+class QtStackItem(QtWidget, ProxyStackItem):
+    """ A Qt implementation of an Enaml ProxyStackItem.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QStackItem)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying QStackItem widget.
 
         """
-        return QStackItem(parent)
+        self.widget = QStackItem(self.parent_widget())
 
     def init_layout(self):
         """ Initialize the layout for the underyling widget.
 
         """
         super(QtStackItem, self).init_layout()
-        self.widget().setStackWidget(self.stack_widget())
+        self.widget.setStackWidget(self.stack_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -79,35 +86,29 @@ class QtStackItem(QtWidget):
     def stack_widget(self):
         """ Find and return the stack widget child for this widget.
 
-        Returns
-        -------
-        result : QWidget or None
-            The stack widget defined for this widget, or None if one is
-            not defined.
-
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, QtContainer):
-                widget = child.widget()
-        return widget
+        d = self.declaration.stack_widget()
+        if d is not None:
+            w = d.proxy.widget
+            if w is not null:
+                return w
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child added event for a QtStackItem.
+    # def child_removed(self, child):
+    #     """ Handle the child added event for a QtStackItem.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setStackWidget(self.stack_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setStackWidget(self.stack_widget())
 
-    def child_added(self, child):
-        """ Handle the child added event for a QtStackItem.
+    # def child_added(self, child):
+    #     """ Handle the child added event for a QtStackItem.
 
-        """
-        if isinstance(child, QtContainer):
-            self.widget().setStackWidget(self.stack_widget())
+    #     """
+    #     if isinstance(child, QtContainer):
+    #         self.widget().setStackWidget(self.stack_widget())
 
     #--------------------------------------------------------------------------
     # Widget Update Methods
@@ -120,4 +121,3 @@ class QtStackItem(QtWidget):
 
         """
         pass
-

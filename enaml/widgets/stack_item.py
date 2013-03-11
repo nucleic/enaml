@@ -5,8 +5,18 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from atom.api import Typed, ForwardTyped
+
 from .container import Container
-from .widget import Widget
+from .widget import Widget, ProxyWidget
+
+
+class ProxyStackItem(ProxyWidget):
+    """ The abstract definition of a proxy StackItem object.
+
+    """
+    #: A reference to the StackItem declaration.
+    declaration = ForwardTyped(lambda: StackItem)
 
 
 class StackItem(Widget):
@@ -17,14 +27,15 @@ class StackItem(Widget):
     instance of Container.
 
     """
-    @property
+    #: A reference to the ProxyStackItem object.
+    proxy = Typed(ProxyStackItem)
+
     def stack_widget(self):
-        """ A read only property which returns the item's stack widget.
+        """ Get the stack widget defined for the item.
+
+        The stack widget is the last child Container.
 
         """
-        widget = None
-        for child in self.children:
+        for child in reversed(self.children):
             if isinstance(child, Container):
-                widget = child
-        return widget
-
+                return child
