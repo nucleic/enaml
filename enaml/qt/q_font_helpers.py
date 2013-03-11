@@ -192,4 +192,3 @@ class QtFontCache(object):
 
 
 QtGlobalFontCache = QtFontCache()
-
