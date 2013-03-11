@@ -292,11 +292,26 @@ class Declarative(Object):
     def destroy(self):
         """ An overridden destructor method for declarative cleanup.
 
+        This destructor will remove the bound expression from the
+        object and break the explicitly created reference cycles.
+
         """
         del self._expressions
         self._expression_notifier.owner = None  # break the ref cycle
         del self._expression_notifier
         super(Declarative, self).destroy()
+
+    def child_added(self, child):
+        """ An overridden child added event handler.
+
+        This handler will automatically initialize a declarative child
+        if this object itself has already been initialized.
+
+        """
+        super(Declarative, self).child_added(child)
+        if isinstance(child, Declarative):
+            if self.is_initialized and not child.is_initialized:
+                child.initialize()
 
     def populate(self, description, identifiers, f_globals):
         """ Populate this declarative instance from a description.
