@@ -12,6 +12,7 @@ from atom.api import Typed, null
 from enaml.widgets.split_item import ProxySplitItem
 
 from .q_single_widget_layout import QSingleWidgetLayout
+from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -162,19 +163,21 @@ class QtSplitItem(QtWidget, ProxySplitItem):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtSplitItem.
+    def child_added(self, child):
+        """ Handle the child added event for a QtSplitItem.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setSplitWidget(self.split_widget())
+        """
+        super(QtSplitItem, self).child_added(child)
+        if isinstance(child, QtContainer):
+            self.widget.setSplitWidget(self.split_widget())
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtSplitItem.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtSplitItem.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setSplitWidget(self.split_widget())
+        """
+        super(QtSplitItem, self).child_removed(child)
+        if isinstance(child, QtContainer):
+            self.widget.setSplitWidget(self.split_widget())
 
     #--------------------------------------------------------------------------
     # ProxySplitItem API
