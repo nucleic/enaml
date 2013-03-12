@@ -12,6 +12,7 @@ from atom.api import Typed
 from enaml.widgets.push_button import ProxyPushButton
 
 from .qt_abstract_button import QtAbstractButton
+from .qt_menu import QtMenu
 
 
 class QtPushButton(QtAbstractButton, ProxyPushButton):
@@ -56,16 +57,18 @@ class QtPushButton(QtAbstractButton, ProxyPushButton):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtPushButton.
+    def child_added(self, child):
+        """ Handle the child added event for a QtPushButton.
 
-    #     """
-    #     if isinstance(child, QtMenu):
-    #         self.widget().setMenu(self.menu())
+        """
+        super(QtPushButton, self).child_added(child)
+        if isinstance(child, QtMenu):
+            self.widget.setMenu(self.menu())
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtPushButton.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtPushButton.
 
-    #     """
-    #     if isinstance(child, QtMenu):
-    #         self.widget().setMenu(self.menu())
+        """
+        super(QtPushButton, self).child_removed(child)
+        if isinstance(child, QtMenu):
+            self.widget.setMenu(self.menu())
