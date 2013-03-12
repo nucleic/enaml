@@ -31,22 +31,8 @@ class QtMenuBar(QtToolkitObject, ProxyMenuBar):
         """ Create the underlying menu bar widget.
 
         """
-        # On OSX, there is a weird issue where creating a QMenuBar with
-        # a parent will cause the menu bar to not show up when its added
-        # to the main window. On that platform we work around the issue
-        # by having the QMainWindow create the menu bar for us, or by
-        # creating it without a parent. This issue is even more weird,
-        # because in the C++ code for QMainWindow::menuBar() the newly
-        # created menu bar is given the QMainWindow as its parent...
-        parent = self.parent_widget()
-        if sys.platform == 'darwin':
-            if isinstance(parent, QMainWindow):
-                menu_bar = parent.menuBar()
-            else:
-                menu_bar = QMenuBar()
-        else:
-            menu_bar = QMenuBar(parent)
-        self.widget = menu_bar
+        # Qt behaves better when creating the menu bar without a parent.
+        self.widget = QMenuBar()
 
     def init_layout(self):
         """ Initialize the layout for the menu bar.
@@ -58,52 +44,55 @@ class QtMenuBar(QtToolkitObject, ProxyMenuBar):
             if isinstance(child, QtMenu):
                 widget.addMenu(child.widget)
 
+    def destroy(self):
+        """ A reimplemented destructor.
+
+        Qt takes ownership of the menubar, so the destructor does not
+        attempt to unparent the menubar. The child_removed handler on
+        the main window will reset the menu bar.
+
+        """
+        del self.declaration
+
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtMenuBar.
+    def find_next_action(self, child):
+        """ Get the QAction instance which follows the child.
 
-    #     """
-    #     if isinstance(child, QtMenu):
-    #         self.widget().removeAction(child.widget().menuAction())
+        Parameters
+        ----------
+        child : QtMenu
+            The child menu of interest.
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtMenuBar.
+        Returns
+        -------
+        result : QAction or None
+            The QAction which comes immediately after the actions of the
+            given child, or None if no actions follow the child.
 
-    #     """
-    #     if isinstance(child, QtMenu):
-    #         before = self.find_next_action(child)
-    #         self.widget().insertMenu(before, child.widget())
+        """
+        found = False
+        for dchild in self.children():
+            if found:
+                if isinstance(dchild, QtMenu):
+                    return dchild.widget.menuAction()
+            else:
+                found = dchild is child
 
-    #--------------------------------------------------------------------------
-    # Utility Methods
-    #--------------------------------------------------------------------------
-    # def find_next_action(self, child):
-    #     """ Get the QAction instance which comes immediately after the
-    #     actions of the given child.
+    def child_added(self, child):
+        """ Handle the child added event for a QtMenuBar.
 
-    #     Parameters
-    #     ----------
-    #     child : QtMenu
-    #         The child menu of interest.
+        """
+        super(QtMenuBar, self).child_added(child)
+        if isinstance(child, QtMenu):
+            before = self.find_next_action(child)
+            self.widget.insertMenu(before, child.widget)
 
-    #     Returns
-    #     -------
-    #     result : QAction or None
-    #         The QAction which comes immediately after the actions of the
-    #         given child, or None if no actions follow the child.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtMenuBar.
 
-    #     """
-    #     # The target action must be tested for membership against the
-    #     # current actions on the menu bar itself, since this method may
-    #     # be called after a child is added, but before the actions for
-    #     # the child have actually added to the menu.
-    #     index = self.index_of(child)
-    #     if index != -1:
-    #         actions = set(self.widget().actions())
-    #         for child in self.children()[index + 1:]:
-    #             if isinstance(child, QtMenu):
-    #                 target = child.widget().menuAction()
-    #                 if target in actions:
-    #                     return target
+        """
+        super(QtMenuBar, self).child_removed(child)
+        if isinstance(child, QtMenu):
+            self.widget.removeAction(child.widget.menuAction())
