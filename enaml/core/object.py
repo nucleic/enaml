@@ -167,11 +167,12 @@ class Object(Atom):
 
         Parameters
         ----------
-        before : Object or None
-            A child object to use as the marker for inserting the new
-            children. The new children will be inserted directly before
-            this marker. If the Object is None or not a child, then the
-            new children will be added to the end of the children.
+        before : Object, int or None
+            A child object or int to use as the marker for inserting
+            the new children. The new children will be inserted before
+            this marker. If the Object is None or not a child, or if
+            the int is not a valid index, then the new children will be
+            added to the end of the children.
 
         insert : iterable
             An iterable of Object children to insert into this object.
@@ -190,6 +191,12 @@ class Object(Atom):
             raise ValueError('cannot insert duplicate children')
         if not all(isinstance(child, Object) for child in insert_list):
             raise TypeError('children must be an Object instances')
+
+        if isinstance(before, int):
+            try:
+                before = self._children[before]
+            except IndexError:
+                before = None
 
         new = []
         added = False
