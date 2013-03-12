@@ -88,6 +88,7 @@ class QtToolkitObject(ProxyToolkitObject):
         which need more control should reimplement this method.
 
         """
+        super(QtToolkitObject, self).child_removed(child)
         if child.widget is not null:
             child.widget.setParent(None)
 
