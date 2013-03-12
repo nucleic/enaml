@@ -25,7 +25,7 @@ ext_modules = [
        language='c++',
     ),
     Extension(
-        'enaml.funchelper',
+        'enaml.core.funchelper',
         ['enaml/src/funchelper.cpp'],
         language='c++',
     )
@@ -44,5 +44,6 @@ setup(
     install_requires=['distribute'],
     packages=find_packages(),
     package_data={'enaml.stdlib': ['*.enaml']},
-    entry_points = {'console_scripts': ['enaml-run = enaml.runner:main']},
+    entry_points={'console_scripts': ['enaml-run = enaml.runner:main']},
+    ext_modules=ext_modules,
 )
