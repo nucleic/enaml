@@ -13,6 +13,7 @@ from atom.api import Typed, Value
 from enaml.widgets.scroll_area import ProxyScrollArea
 
 from .qt_constraints_widget import QtConstraintsWidget
+from .qt_container import QtContainer
 
 
 POLICIES = {
@@ -151,19 +152,21 @@ class QtScrollArea(QtConstraintsWidget, ProxyScrollArea):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtScrollArea.
+    def child_added(self, child):
+        """ Handle the child added event for a QtScrollArea.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setWidget(self.scroll_widget())
+        """
+        super(QtScrollArea, self).child_added(child)
+        if isinstance(child, QtContainer):
+            self.widget.setWidget(self.scroll_widget())
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtScrollArea.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtScrollArea.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setWidget(self.scroll_widget())
+        """
+        super(QtScrollArea, self).child_removed(child)
+        if isinstance(child, QtContainer):
+            self.widget.setWidget(self.scroll_widget())
 
     #--------------------------------------------------------------------------
     # Signal Handlers
