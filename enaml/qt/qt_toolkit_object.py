@@ -77,10 +77,8 @@ class QtToolkitObject(ProxyToolkitObject):
 
         """
         if self.widget is not null:
-            d = self.declaration.parent
-            if d is None or not d.is_destroyed:
-                self.widget.setParent(None)
-                del self.widget
+            self.widget.setParent(None)
+            del self.widget
         super(QtToolkitObject, self).destroy()
 
     def child_removed(self, child):
