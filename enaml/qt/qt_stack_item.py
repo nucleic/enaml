@@ -12,6 +12,7 @@ from atom.api import Typed, null
 from enaml.widgets.stack_item import ProxyStackItem
 
 from .q_single_widget_layout import QSingleWidgetLayout
+from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -96,19 +97,21 @@ class QtStackItem(QtWidget, ProxyStackItem):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child added event for a QtStackItem.
+    def child_added(self, child):
+        """ Handle the child added event for a QtStackItem.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setStackWidget(self.stack_widget())
+        """
+        super(QtStackItem, self).child_added(child)
+        if isinstance(child, QtContainer):
+            self.widget.setStackWidget(self.stack_widget())
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtStackItem.
+    def child_removed(self, child):
+        """ Handle the child added event for a QtStackItem.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setStackWidget(self.stack_widget())
+        """
+        super(QtStackItem, self).child_removed(child)
+        if isinstance(child, QtContainer):
+            self.widget.setStackWidget(self.stack_widget())
 
     #--------------------------------------------------------------------------
     # Widget Update Methods

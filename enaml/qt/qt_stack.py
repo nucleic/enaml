@@ -12,12 +12,13 @@ from atom.api import Int, Typed, null
 
 from enaml.widgets.stack import ProxyStack
 
-from .qt_constraints_widget import QtConstraintsWidget
 from .q_pixmap_painter import QPixmapPainter
 from .q_pixmap_transition import (
     QDirectedTransition, QSlideTransition, QWipeTransition, QIrisTransition,
     QFadeTransition, QCrossFadeTransition
 )
+from .qt_constraints_widget import QtConstraintsWidget
+from .qt_stack_item import QtStackItem
 
 
 TRANSITION_TYPE = {
@@ -276,21 +277,23 @@ class QtStack(QtConstraintsWidget, ProxyStack):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtStack.
+    def child_added(self, child):
+        """ Handle the child added event for a QtStack.
 
-    #     """
-    #     if isinstance(child, QtStackItem):
-    #         self.widget().removeWidget(child.widget())
+        """
+        super(QtStack, self).child_added(child)
+        if isinstance(child, QtStackItem):
+            for index, dchild in enumerate(self.children()):
+                if child is dchild:
+                    self.widget.insertWidget(index, child.widget)
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtStack.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtStack.
 
-    #     """
-    #     if isinstance(child, QtStackItem):
-    #         index = self.index_of(child)
-    #         if index != -1:
-    #             self.widget().insertWidget(index, child.widget())
+        """
+        super(QtStack, self).child_removed(child)
+        if isinstance(child, QtStackItem):
+            self.widget.removeWidget(child.widget)
 
     #--------------------------------------------------------------------------
     # Signal Handlers
