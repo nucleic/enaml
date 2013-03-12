@@ -145,66 +145,61 @@ class QtMenu(QtToolkitObject, ProxyMenu):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """  Handle the child removed event for a QtMenu.
+    def find_next_action(self, child):
+        """ Get the QAction instance which follows the child.
 
-    #     """
-    #     if isinstance(child, QtMenu):
-    #         self.widget().removeAction(child.widget().menuAction())
-    #     elif isinstance(child, QtAction):
-    #         self.widget().removeAction(child.widget())
-    #     elif isinstance(child, QtActionGroup):
-    #         self.widget().removeActions(child.actions())
+        Parameters
+        ----------
+        child : QtToolkitObject
+            The child of interest.
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtMenu.
+        Returns
+        -------
+        result : QAction or None
+            The QAction which comes immediately after the actions of the
+            given child, or None if no actions follow the child.
 
-    #     """
-    #     before = self.find_next_action(child)
-    #     if isinstance(child, QtMenu):
-    #         self.widget().insertMenu(before, child.widget())
-    #     elif isinstance(child, QtAction):
-    #         self.widget().insertAction(before, child.widget())
-    #     elif isinstance(child, QtActionGroup):
-    #         self.widget().insertActions(before, child.actions())
+        """
+        found = False
+        for dchild in self.children():
+            if found:
+                if isinstance(dchild, QtMenu):
+                    return dchild.widget.menuAction()
+                if isinstance(dchild, QtAction):
+                    return dchild.widget
+                if isinstance(dchild, QtActionGroup):
+                    acts = dchild.actions()
+                    if len(acts) > 0:
+                        return acts[0]
+            else:
+                found = dchild is child
 
-    #--------------------------------------------------------------------------
-    # Utility Methods
-    #--------------------------------------------------------------------------
-    # def find_next_action(self, child):
-    #     """ Get the QAction instance which comes immediately after the
-    #     actions of the given child.
+    def child_added(self, child):
+        """ Handle the child added event for a QtMenu.
 
-    #     Parameters
-    #     ----------
-    #     child : QtMenu, QtActionGroup, or QtAction
-    #         The child of interest.
+        """
+        super(QtMenu, self).child_added(child)
+        if isinstance(child, QtMenu):
+            before = self.find_next_action(child)
+            self.widget.insertMenu(before, child.widget)
+        elif isinstance(child, QtAction):
+            before = self.find_next_action(child)
+            self.widget.insertAction(before, child.widget)
+        elif isinstance(child, QtActionGroup):
+            before = self.find_next_action(child)
+            self.widget.insertActions(before, child.actions())
 
-    #     Returns
-    #     -------
-    #     result : QAction or None
-    #         The QAction which comes immediately after the actions of the
-    #         given child, or None if no actions follow the child.
+    def child_removed(self, child):
+        """  Handle the child removed event for a QtMenu.
 
-    #     """
-    #     # The target action must be tested for membership against the
-    #     # current actions on the menu itself, since this method may be
-    #     # called after a child is added, but before the actions for the
-    #     # child have actually been added to the menu.
-    #     index = self.index_of(child)
-    #     if index != -1:
-    #         actions = set(self.widget().actions())
-    #         for child in self.children()[index + 1:]:
-    #             target = None
-    #             if isinstance(child, QtMenu):
-    #                 target = child.widget().menuAction()
-    #             elif isinstance(child, QtAction):
-    #                 target = child.widget()
-    #             elif isinstance(child, QtActionGroup):
-    #                 acts = child.actions()
-    #                 target = acts[0] if acts else None
-    #             if target in actions:
-    #                 return target
+        """
+        super(QtMenu, self).child_removed(child)
+        if isinstance(child, QtMenu):
+            self.widget.removeAction(child.widget.menuAction())
+        elif isinstance(child, QtAction):
+            self.widget.removeAction(child.widget)
+        elif isinstance(child, QtActionGroup):
+            self.widget.removeActions(child.actions())
 
     #--------------------------------------------------------------------------
     # ProxyMenu API
