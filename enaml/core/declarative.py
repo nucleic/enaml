@@ -8,7 +8,7 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 from atom.api import (
-    Member, Validate, DefaultValue, ReadOnly, Value, Event, List, Str, null
+    Delegator, DefaultValue, ReadOnly, List, Value, Event, Str, null
 )
 
 from .exceptions import DeclarativeNameError, OperatorLookupError
@@ -16,18 +16,18 @@ from .object import Object, flag_generator, flag_property
 from .operator_context import OperatorContext
 
 
-class DeclarativeProperty(Member):
-    """ A custom member which enables data binding in Enaml.
+class DeclarativeProperty(Delegator):
+    """ A delegator member which enables data binding in Enaml.
 
     A declarative property is used to wrap another member on an Atom
     subclass to enable that member to be bound by Enaml syntax. The
     declarative property will compute the default value using a bound
     expression. If that fails, the wrapped member will be used to get
-    the default value. Validation is performed by the wrapped member
-    unless overridden by the user.
+    the default value. All other behavior is delegated to the wrapped
+    member.
 
     """
-    __slots__ = 'delegate'
+    __slots__ = ()
 
     def __init__(self, delegate):
         """ Initialize a DeclarativeProperty.
@@ -36,63 +36,19 @@ class DeclarativeProperty(Member):
         ----------
         delegate : Member
             The Atom Member which provides the behavior for the property.
-            The member should use standard slot behavior semantics.
 
         """
-        self.delegate = delegate
-        self.set_validate_mode(Validate.Delegate, delegate)
-        super(DeclarativeProperty, self).set_default_value_mode(
+        super(DeclarativeProperty, self).__init__(delegate)
+        super(Delegator, self).set_default_value_mode(
             DefaultValue.MemberMethod_Object, "default_value"
         )
-
-    def set_name(self, name):
-        """ Assign the name to this member.
-
-        This method keeps the name of the delegate member in sync.
-
-        """
-        super(DeclarativeProperty, self).set_name(name)
-        self.delegate.set_name(name)
-
-    def set_index(self, index):
-        """ Assign the index to this member.
-
-        This method keeps the index of the delegate member in sync.
-
-        """
-        super(DeclarativeProperty, self).set_index(index)
-        self.delegate.set_index(index)
-
-    def set_default_value_mode(self, mode, context):
-        """ Set the default value mode for the member.
-
-        The default value mode of a DeclarativeProperty cannot be
-        changed. This method proxies the call to the internal delegate
-        which will be used for the default value if there is no bound
-        expression for the property.
-
-        """
-        self.delegate.set_default_value_mode(mode, context)
-
-    def clone(self):
-        """ Create a clone of the declarative property.
-
-        This method also creates a clone of the internal delegate.
-
-        """
-        clone = super(DeclarativeProperty, self).clone()
-        delegate = self.delegate
-        clone.delegate = delegate_clone = delegate.clone()
-        mode, old = clone.validate_mode
-        if old is delegate:
-            clone.set_validate_mode(mode, delegate_clone)
-        return clone
 
     def default_value(self, owner):
         """ Compute the default value for the declarative property.
 
-        The default is retrieved from a bound expression first,
-        followed by the internal delegate.
+        The default value is retrieved by evaluating a bound expression.
+        If no bound expression exists for the member, then the internal
+        delegate member is invoked for the default value.
 
         """
         value = owner.evaluate_expression(self.name)
