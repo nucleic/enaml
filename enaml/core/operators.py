@@ -238,7 +238,7 @@ class OpSubscribe(OperatorBase):
         if notifier is not None:
             notifier.notifier = None  # invalidate the old notifier
         onotifier = owner._expression_notifier
-        notifier = SubscriptionNotifier(onotifier, self.func.__name__)
+        notifier = SubscriptionNotifier(onotifier, func.__name__)
         self.notifier = notifier
         for obj, name in tracer.traced_items:
             obj.observe(name, notifier)
