@@ -76,30 +76,6 @@ class QtListView(QtControl, ProxyListView):
         self.set_batch_size(d.batch_size)
 
     #--------------------------------------------------------------------------
-    # Child Events
-    #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtListView.
-
-    #     """
-    #     if not self._destroying and isinstance(child, QtListItem):
-    #         widget = self.widget()
-    #         item = child.item()
-    #         if item is not None:
-    #             row = widget.row(item)
-    #             widget.takeItem(row)
-
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtListView.
-
-    #     """
-    #     if isinstance(child, QtListItem):
-    #         row = self.index_of(child)
-    #         item = child.create_item()
-    #         self.widget().insertItem(row, item)
-    #         child.initialize_item()
-
-    #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
     def on_item_changed(self, item):

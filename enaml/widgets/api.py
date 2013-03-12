@@ -24,7 +24,6 @@ from .html import Html
 from .image_view import ImageView
 from .label import Label
 from .list_view import ListView
-#from .list_item import ListItem
 from .main_window import MainWindow
 from .mdi_area import MdiArea
 from .mdi_window import MdiWindow
