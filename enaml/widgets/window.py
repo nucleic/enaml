@@ -66,6 +66,12 @@ class Window(Widget):
     such functionality, use a MainWindow widget.
 
     """
+    #: A static set of windows being used by the application. A window
+    #: adds itself to this list when it is initialized, and removes
+    #: itself when it is destroyed. This allows toplevel windows with
+    #: no parent to persist without any other strong references.
+    windows = set()
+
     #: The titlebar text.
     title = d_(Unicode())
 
@@ -96,6 +102,24 @@ class Window(Widget):
 
     #: A reference to the ProxyWindow object.
     proxy = Typed(ProxyWindow)
+
+    def initialize(self):
+        """ An overridden initializer method.
+
+        This method adds the window to the static set of Windows.
+
+        """
+        super(Window, self).initialize()
+        Window.windows.add(self)
+
+    def destroy(self):
+        """ An overridden destructor method.
+
+        This method removes the window from the static set of Windows.
+
+        """
+        super(Window, self).destroy()
+        Window.windows.discard(self)
 
     #--------------------------------------------------------------------------
     # Public API
