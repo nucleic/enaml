@@ -16,6 +16,7 @@ from atom.api import Typed
 from enaml.widgets.notebook import ProxyNotebook
 
 from .qt_constraints_widget import QtConstraintsWidget
+from .qt_page import QtPage
 
 
 TAB_POSITIONS = {
@@ -316,21 +317,23 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtNotebook.
+    def child_added(self, child):
+        """ Handle the child added event for a QtNotebook.
 
-    #     """
-    #     if isinstance(child, QtPage):
-    #         self.widget().removePage(child.widget())
+        """
+        super(QtNotebook, self).child_added(child)
+        if isinstance(child, QtPage):
+            for index, dchild in enumerate(self.children()):
+                if child is dchild:
+                    self.widget.insertPage(index, child.widget)
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtNotebook.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtNotebook.
 
-    #     """
-    #     if isinstance(child, QtPage):
-    #         index = self.index_of(child)
-    #         if index != -1:
-    #             self.widget().insertPage(index, child.widget())
+        """
+        super(QtNotebook, self).child_removed(child)
+        if isinstance(child, QtPage):
+            self.widget.removePage(child.widget)
 
     #--------------------------------------------------------------------------
     # Signal Handlers

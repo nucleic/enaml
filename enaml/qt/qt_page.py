@@ -14,6 +14,7 @@ from enaml.widgets.page import ProxyPage
 
 from .q_resource_helpers import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
+from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -330,19 +331,21 @@ class QtPage(QtWidget, ProxyPage):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    # def child_removed(self, child):
-    #     """ Handle the child removed event for a QtPage.
+    def child_added(self, child):
+        """ Handle the child added event for a QtPage.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setPageWidget(self.page_widget())
+        """
+        super(QtPage, self).child_removed(child)
+        if isinstance(child, QtContainer):
+            self.widget.setPageWidget(self.page_widget())
 
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtPage.
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtPage.
 
-    #     """
-    #     if isinstance(child, QtContainer):
-    #         self.widget().setPageWidget(self.page_widget())
+        """
+        super(QtPage, self).child_removed(child)
+        if isinstance(child, QtContainer):
+            self.widget.setPageWidget(self.page_widget())
 
     #--------------------------------------------------------------------------
     # Signal Handlers
