@@ -17,6 +17,7 @@ from atom.api import Typed, null
 from enaml.widgets.splitter import ProxySplitter
 
 from .qt_constraints_widget import QtConstraintsWidget, size_hint_guard
+from .qt_split_item import QtSplitItem
 
 
 ORIENTATION = {
@@ -159,19 +160,19 @@ class QtSplitter(QtConstraintsWidget, ProxySplitter):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
+    def child_added(self, child):
+        """ Handle the child added event for a QtSplitter.
+
+        """
+        super(QtSplitter, self).child_added(child)
+        if isinstance(child, QtSplitItem):
+            for index, dchild in enumerate(self.children()):
+                if child is dchild:
+                    self.widget.insertWidget(index, child.widget)
 
     # QSplitter automatically removes a widget when it's reparented. The
-    # base child_removed event will set the parent to None, and that is
-    # all that is needed.
-
-    # def child_added(self, child):
-    #     """ Handle the child added event for a QtSplitter.
-
-    #     """
-    #     if isinstance(child, QtSplitItem):
-    #         index = self.index_of(child)
-    #         if index != -1:
-    #             self.widget().insertWidget(index, child.widget())
+    # base child_removed event handler will set the parent to None, and
+    # that is all that is needed.
 
     #--------------------------------------------------------------------------
     # Utility Methods
