@@ -7,8 +7,7 @@
 #------------------------------------------------------------------------------
 from .conditional import Conditional
 from .declarative import Declarative
-#from .include import Include
+from .include import Include
 from .looper import Looper
 from .object import Object
 from .templated import Templated
-
