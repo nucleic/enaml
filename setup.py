@@ -28,6 +28,11 @@ ext_modules = [
         'enaml.core.funchelper',
         ['enaml/src/funchelper.cpp'],
         language='c++',
+    ),
+    Extension(
+        'enaml.color',
+        ['enaml/src/color.cpp'],
+        language='c++',
     )
 ]
 
