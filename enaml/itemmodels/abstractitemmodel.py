@@ -103,7 +103,7 @@ class AbstractItemModel(Atom):
             indices. The default makes an item enabled and selectable.
 
         """
-        return ItemFlag.ITEM_IS_ENABLED | ItemFlag.ITEM_IS_SELECTABLE
+        return ItemFlag.ItemIsEnabled | ItemFlag.ItemIsSelectable
 
     def edit_data(self, row, column):
         """ Get the item edit data for the given indices.
@@ -190,28 +190,6 @@ class AbstractItemModel(Atom):
         """
         return None
 
-    def font(self, row, column):
-        """ Get the font for the given item indices.
-
-        Parameters
-        ----------
-        row : int
-            The row index of the item.
-
-        column : int
-            The column index of the item.
-
-        Returns
-        -------
-        result : str or None
-            The font string for the item, or None if there is no font
-            available. The font string should conform to the shorthand
-            CSS3 font specification. The default implementation of this
-            method returns None.
-
-        """
-        return None
-
     def background(self, row, column):
         """ Get the background color for the given item indices.
 
@@ -256,6 +234,28 @@ class AbstractItemModel(Atom):
         """
         return None
 
+    def font(self, row, column):
+        """ Get the font for the given item indices.
+
+        Parameters
+        ----------
+        row : int
+            The row index of the item.
+
+        column : int
+            The column index of the item.
+
+        Returns
+        -------
+        result : str or None
+            The font string for the item, or None if there is no font
+            available. The font string should conform to the shorthand
+            CSS3 font specification. The default implementation of this
+            method returns None.
+
+        """
+        return None
+
     def text_alignment(self, row, column):
         """ Get the text alignment for the given indices.
 
@@ -272,10 +272,10 @@ class AbstractItemModel(Atom):
         result : int
             An or'd combination of AlignmentFlag enum values for the
             given indices. The default implementation of this method
-            returns AlignmentFlag.ALIGN_CENTER.
+            returns AlignmentFlag.AlignCenter.
 
         """
-        return AlignmentFlag.ALIGN_CENTER
+        return AlignmentFlag.AlignCenter
 
     def check_state(self, row, column):
         """ Get the check state for the given indices.

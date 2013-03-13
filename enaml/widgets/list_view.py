@@ -10,9 +10,7 @@ from atom.api import (
 )
 
 from enaml.core.declarative import d_
-from enaml.datamodels.abstractitemmodel import AbstractItemModel
-from enaml.datamodels.list_item import ListItem
-from enaml.datamodels.list_item_model import ListItemModel
+from enaml.itemmodels.abstractitemmodel import AbstractItemModel
 from enaml.layout.geometry import Size
 
 from .control import Control, ProxyControl
@@ -130,17 +128,6 @@ class ListView(Control):
 
     #: A reference to the ProxyListView object.
     proxy = Typed(ProxyListView)
-
-    def initialize(self):
-        super(ListView, self).initialize()
-        if not self.item_model:
-            self.item_model = ListItemModel(items=self.list_items())
-
-    def list_items(self):
-        """ Get the ListItem children defined on the control.
-
-        """
-        return [c for c in self.children if isinstance(c, ListItem)]
 
     #--------------------------------------------------------------------------
     # Observers

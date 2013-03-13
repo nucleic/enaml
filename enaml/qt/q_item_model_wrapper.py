@@ -58,7 +58,10 @@ class QItemModelWrapper(QAbstractTableModel):
         return self._model.column_count()
 
     def flags(self, index):
-        return Qt.ItemFlags(self._model.flags(index.row(), index.column()))
+        f = self._model.flags(index.row(), index.column())
+        if f is not None:
+            return Qt.ItemFlags(f)
+        return Qt.ItemFlags(0)
 
     def data(self, index, role):
         handler = self.role_handlers[role]
@@ -99,7 +102,9 @@ class QItemModelWrapper(QAbstractTableModel):
             return self._fonts[font]
 
     def _item_text_alignment_role(self, row, column):
-        return Qt.Alignment(self._model.text_alignment(row, column))
+        a = self._model.text_alignment(row, column)
+        if a is not None:
+            return Qt.Alignment(a)
 
     def _item_background_role(self, row, column):
         color = self._model.background(row, column)

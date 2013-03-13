@@ -14,21 +14,21 @@ class ItemFlag(object):
     These enum values are equivalent to the Qt::ItemFlag enum values.
 
     """
-    NO_ITEM_FLAGS = 0x0
+    NoItemFlags = 0x0
 
-    ITEM_IS_SELECTABLE = 0x1
+    ItemIsSelectable = 0x1
 
-    ITEM_IS_EDITABLE = 0x2
+    ItemIsEditable = 0x2
 
-    # TODO: ITEM_IS_DRAG_ENABLED = 0x4
+    # TODO: ItemIsDragEnabled = 0x4
 
-    # TODO: ITEM_IS_DROP_ENABLED = 0x8
+    # TODO: ItemIsDropEnabled = 0x8
 
-    ITEM_IS_USER_CHECKABLE = 0x10
+    ItemIsUserCheckable = 0x10
 
-    ITEM_IS_ENABLED = 0x20
+    ItemIsEnabled = 0x20
 
-    # TODO: ITEM_IS_TRISTATE = 0x40
+    # TODO: ItemIsTristate = 0x40
 
 
 class CheckState(object):
@@ -37,11 +37,11 @@ class CheckState(object):
     These enum values are equivalent to the Qt::CheckState enum values.
 
     """
-    UNCHECKED = 0
+    Unchecked = 0
 
-    # TODO: PARTIALLY_CHECKED = 1
+    # TODO: PartiallyChecked = 1
 
-    CHECKED = 2
+    Checked = 2
 
 
 class AlignmentFlag(object):
@@ -53,24 +53,22 @@ class AlignmentFlag(object):
     These enum values are equivalent to the Qt::AlignmentFlag values.
 
     """
-    ALIGN_LEFT = 0x1
+    AlignLeft = 0x1
 
-    ALIGN_RIGHT = 0x2
+    AlignRight = 0x2
 
-    ALIGN_H_CENTER = 0x4
+    AlignHCenter = 0x4
 
-    ALIGN_JUSTIFY = 0x8
+    AlignJustify = 0x8
 
-    ALIGN_TOP = 0x20
+    AlignTop = 0x20
 
-    ALIGN_BOTTOM = 0x40
+    AlignBottom = 0x40
 
-    ALIGN_V_CENTER = 0x80
+    AlignVCenter = 0x80
 
-    ALIGN_CENTER = ALIGN_H_CENTER | ALIGN_V_CENTER
+    AlignCenter = AlignHCenter | AlignVCenter
 
-    ALIGN_HORIZONTAL_MASK = (
-        ALIGN_LEFT | ALIGN_RIGHT | ALIGN_H_CENTER | ALIGN_JUSTIFY
-    )
+    AlignHorizontalMask = AlignLeft | AlignRight | AlignHCenter | AlignJustify
 
-    ALIGN_VERTICAL_MASK = (ALIGN_TOP | ALIGN_BOTTOM | ALIGN_V_CENTER)
+    AlignVerticalMask = AlignTop | AlignBottom | AlignVCenter

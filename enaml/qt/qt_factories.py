@@ -210,6 +210,11 @@ def stack_item_factory():
     return QtStackItem
 
 
+def table_view_factory():
+    from .qt_table_view import QtTableView
+    return QtTableView
+
+
 #def text_editor_factory():
 #    from .qt_text_editor import QtTextEditor
 #    return QtTextEditor
@@ -280,6 +285,7 @@ def register_default():
     register('Splitter', splitter_factory)
     register('Stack', stack_factory)
     register('StackItem', stack_item_factory)
+    register('TableView', table_view_factory)
     register('TimeSelector', time_selector_factory)
     register('ToolBar', tool_bar_factory)
     register('WebView', web_view_factory)

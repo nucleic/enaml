@@ -44,6 +44,7 @@ from .split_item import SplitItem
 from .splitter import Splitter
 from .stack import Stack, Transition
 from .stack_item import StackItem
+from .table_view import TableView
 #from .text_editor import TextEditor
 from .time_selector import TimeSelector
 from .tool_bar import ToolBar
