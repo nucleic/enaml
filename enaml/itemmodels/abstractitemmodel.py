@@ -203,11 +203,9 @@ class AbstractItemModel(Atom):
 
         Returns
         -------
-        result : str or None
-            The background color string for the item, or None if there
-            is no background color available. The color string should
-            conform to the CSS3 color specification. The default
-            implementation of this method returns None.
+        result : Color or None
+            The background color of the item as an Enaml Color object,
+            or None if the item has no background color.
 
         """
         return None
@@ -225,11 +223,9 @@ class AbstractItemModel(Atom):
 
         Returns
         -------
-        result : str or None
-            The foreground color string for the item, or None if there
-            is no foreground color available. The color string should
-            conform to the CSS3 color specification. The default
-            implementation of this method returns None.
+        result : Color or None
+            The foreground color of the item as an Enaml Color object,
+            or None if the item has no foreground color.
 
         """
         return None
@@ -247,11 +243,9 @@ class AbstractItemModel(Atom):
 
         Returns
         -------
-        result : str or None
-            The font string for the item, or None if there is no font
-            available. The font string should conform to the shorthand
-            CSS3 font specification. The default implementation of this
-            method returns None.
+        result : Font or None
+            The font of the item as an Enaml Font object, or None if
+            the item has no font.
 
         """
         return None
@@ -317,6 +311,7 @@ class AbstractItemModel(Atom):
             method returns None.
 
         """
+        # TODO make this a Size object?
         return None
 
     def set_data(self, row, column, value):
