@@ -30,8 +30,13 @@ ext_modules = [
         language='c++',
     ),
     Extension(
-        'enaml.color',
-        ['enaml/src/color.cpp'],
+        'enaml.colorext',
+        ['enaml/src/colorext.cpp'],
+        language='c++',
+    ),
+    Extension(
+        'enaml.fontext',
+        ['enaml/src/fontext.cpp'],
         language='c++',
     )
 ]
