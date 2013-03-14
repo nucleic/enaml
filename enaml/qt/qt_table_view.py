@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QTableView
 
 from atom.api import Typed
@@ -30,6 +31,7 @@ class QtTableView(QtControl, ProxyTableView):
 
         """
         self.widget = QTableView(self.parent_widget())
+        self.widget.setAttribute(Qt.WA_StaticContents, True)
 
     def init_widget(self):
         """ Create and initialize the underlying control.
