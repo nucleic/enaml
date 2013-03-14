@@ -7,9 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QAbstractTableModel, QSize
 
-from .q_color_helpers import q_parse_color
-from .q_font_helpers import QtFontCache
-from .q_resource_helpers import get_cached_qicon
+from .q_resource_helpers import get_cached_qcolor, get_cached_qfont, get_cached_qicon
 
 
 class QItemModelWrapper(QAbstractTableModel):
@@ -31,8 +29,6 @@ class QItemModelWrapper(QAbstractTableModel):
     def __init__(self, model):
         super(QItemModelWrapper, self).__init__()
         self._model = model
-        self._colors = {}
-        self._fonts = QtFontCache()
         model.data_changed.connect(self._on_data_changed)
         model.model_changed.connect(self._on_model_changed)
 
@@ -58,10 +54,7 @@ class QItemModelWrapper(QAbstractTableModel):
         return self._model.column_count()
 
     def flags(self, index):
-        f = self._model.flags(index.row(), index.column())
-        if f is not None:
-            return Qt.ItemFlags(f)
-        return Qt.ItemFlags(0)
+        return Qt.ItemFlags(self._model.flags(index.row(), index.column()))
 
     def data(self, index, role):
         handler = self.role_handlers[role]
@@ -85,7 +78,10 @@ class QItemModelWrapper(QAbstractTableModel):
     def _item_decoration_role(self, row, column):
         icon = self._model.icon(row, column)
         if icon is not None:
-            return get_cached_qicon(icon)
+            tk = icon._tkdata
+            if tk is None:
+                tk = get_cached_qicon(icon)
+            return tk
 
     def _item_edit_role(self, row, column):
         return self._model.edit_data(row, column)
@@ -98,33 +94,30 @@ class QItemModelWrapper(QAbstractTableModel):
 
     def _item_font_role(self, row, column):
         font = self._model.font(row, column)
-        if font:
-            return self._fonts[font]
+        if font is not None:
+            tk = font._tkdata
+            if tk is None:
+                tk = get_cached_qfont(font)
+            return tk
 
     def _item_text_alignment_role(self, row, column):
-        a = self._model.text_alignment(row, column)
-        if a is not None:
-            return Qt.Alignment(a)
+        return Qt.Alignment(self._model.text_alignment(row, column))
 
     def _item_background_role(self, row, column):
         color = self._model.background(row, column)
-        if color:
-            colors = self._colors
-            if color in colors:
-                qcolor = colors[color]
-            else:
-                qcolor = colors[color] = q_parse_color(color)
-            return qcolor
+        if color is not None:
+            tk = color._tkdata
+            if tk is None:
+                tk = get_cached_qcolor(color)
+            return tk
 
     def _item_foreground_role(self, row, column):
         color = self._model.foreground(row, column)
-        if color:
-            colors = self._colors
-            if color in colors:
-                qcolor = colors[color]
-            else:
-                qcolor = colors[color] = q_parse_color(color)
-            return qcolor
+        if color is not None:
+            tk = color._tkdata
+            if tk is None:
+                tk = get_cached_qcolor(color)
+            return tk
 
     def _item_check_state_role(self, row, column):
         state = self._model.check_state(row, column)
