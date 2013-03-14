@@ -1,0 +1,8 @@
+from enaml.widgets.api import *
+from simple_models import datamodel
+
+
+enamldef Main(Window):
+    Container:
+        TableView:
+            item_model = datamodel
