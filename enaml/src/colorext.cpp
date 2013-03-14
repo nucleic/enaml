@@ -6,6 +6,7 @@
 | The full license is in the file COPYING.txt, distributed with this software.
 |----------------------------------------------------------------------------*/
 #include "inttypes.h"
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include "pythonhelpers.h"
@@ -13,43 +14,56 @@
 using namespace PythonHelpers;
 
 
-// The fact that this needs to be an extension module is depressing.
 typedef struct {
     PyObject_HEAD
-    uint32_t color;  // Store using Qt's #AARRGGBB byte order.
+    PyObject* tkdata;   // Toolkit specific color representation.
+    uint32_t argb;      // Stored using Qt's #AARRGGBB byte order.
 } Color;
 
 
 static PyObject*
 Color_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
-    uint32_t r = 0;
-    uint32_t g = 0;
-    uint32_t b = 0;
-    uint32_t a = 255;
+    int32_t r = -1;
+    int32_t g = -1;
+    int32_t b = -1;
+    int32_t a = 255;
     static char* kwlist[] = { "red", "green", "blue", "alpha", 0 };
-    if( !PyArg_ParseTupleAndKeywords( args, kwargs, "|kkkk", kwlist, &r, &g, &b, &a ) )
+    if( !PyArg_ParseTupleAndKeywords( args, kwargs, "|llll", kwlist, &r, &g, &b, &a ) )
         return 0;
     PyObjectPtr colorptr( PyType_GenericNew( type, args, kwargs ) );
     if( !colorptr )
         return 0;
     Color* color = reinterpret_cast<Color*>( colorptr.get() );
-    r = r > 255 ? 255 : r;
-    g = g > 255 ? 255 : g;
-    b = b > 255 ? 255 : b;
-    a = a > 255 ? 255 : a;
-    color->color = (a << 24) | (r << 16) | (g << 8) | b;
+    if( r < 0 || g < 0 || b < 0 || a < 0 )
+        color->argb = 0;
+    else
+    {
+        r = std::max( 0, std::min( r, 255 ) );
+        g = std::max( 0, std::min( g, 255 ) );
+        b = std::max( 0, std::min( b, 255 ) );
+        a = std::max( 0, std::min( a, 255 ) );
+        color->argb = static_cast<uint32_t>( ( a << 24 ) | ( r << 16 ) | ( g << 8 ) | b );
+    }
     return colorptr.release();
+}
+
+
+static PyObject*
+Color_dealloc( Color* self )
+{
+    Py_CLEAR( self->tkdata );
+    self->ob_type->tp_free( reinterpret_cast<PyObject*>( self ) );
 }
 
 
 static PyObject*
 Color_repr( Color* self )
 {
-    uint32_t a = ( self->color >> 24 ) & 255;
-    uint32_t r = ( self->color >> 16 ) & 255;
-    uint32_t g = ( self->color >> 8 ) & 255;
-    uint32_t b = self->color & 255;
+    uint32_t a = ( self->argb >> 24 ) & 255;
+    uint32_t r = ( self->argb >> 16 ) & 255;
+    uint32_t g = ( self->argb >> 8 ) & 255;
+    uint32_t b = self->argb & 255;
     std::ostringstream ostr;
     ostr << "Color(red=" << r << ", green=" << g << ", blue=" << b << ", alpha=" << a << ")";
     return PyString_FromString(ostr.str().c_str());
@@ -59,7 +73,7 @@ Color_repr( Color* self )
 static PyObject*
 Color_get_alpha( Color* self, void* context )
 {
-    uint32_t a = ( self->color >> 24 ) & 255;
+    uint32_t a = ( self->argb >> 24 ) & 255;
     return PyInt_FromLong( a );
 }
 
@@ -67,7 +81,7 @@ Color_get_alpha( Color* self, void* context )
 static PyObject*
 Color_get_red( Color* self, void* context )
 {
-    uint32_t r = ( self->color >> 16 ) & 255;
+    uint32_t r = ( self->argb >> 16 ) & 255;
     return PyInt_FromLong( r );
 }
 
@@ -75,7 +89,7 @@ Color_get_red( Color* self, void* context )
 static PyObject*
 Color_get_green( Color* self, void* context )
 {
-    uint32_t g = ( self->color >> 8 ) & 255;
+    uint32_t g = ( self->argb >> 8 ) & 255;
     return PyInt_FromLong( g );
 }
 
@@ -83,15 +97,39 @@ Color_get_green( Color* self, void* context )
 static PyObject*
 Color_get_blue( Color* self, void* context )
 {
-    uint32_t b = self->color & 255;
+    uint32_t b = self->argb & 255;
     return PyInt_FromLong( b );
 }
 
 
 static PyObject*
-Color_get_color( Color* self, void* context )
+Color_get_argb( Color* self, void* context )
 {
-    return PyLong_FromUnsignedLong( self->color );
+    return PyLong_FromUnsignedLong( self->argb );
+}
+
+
+static PyObject*
+Color_get_tkdata( Color* self, void* context )
+{
+    if( !self->tkdata )
+        Py_RETURN_NONE;
+    Py_INCREF( self->tkdata );
+    return self->tkdata;
+}
+
+
+static int
+Color_set_tkdata( Color* self, PyObject* value, void* context )
+{
+    // don't let users do something silly which would require GC
+    if( reinterpret_cast<PyObject*>( self ) == value )
+        return 0;
+    PyObject* old = self->tkdata;
+    self->tkdata = value;
+    Py_XINCREF( value );
+    Py_XDECREF( old );
+    return 0;
 }
 
 
@@ -105,8 +143,10 @@ Color_getset[] = {
       "Get the green value for the color." },
     { "blue", ( getter )Color_get_blue, 0,
       "Get the blue value for the color." },
-    { "color", ( getter )Color_get_color, 0,
+    { "argb", ( getter )Color_get_argb, 0,
       "Get the color as an #AARRGGBB unsigned long." },
+    { "_tkdata", ( getter )Color_get_tkdata, ( setter )Color_set_tkdata,
+      "Get and set the toolkit specific color representation." },
     { 0 } // sentinel
 };
 
@@ -114,10 +154,10 @@ Color_getset[] = {
 PyTypeObject Color_Type = {
     PyObject_HEAD_INIT( 0 )
     0,                                      /* ob_size */
-    "color.Color",                          /* tp_name */
+    "colorext.Color",                       /* tp_name */
     sizeof( Color ),                        /* tp_basicsize */
     0,                                      /* tp_itemsize */
-    (destructor)PyObject_Del,               /* tp_dealloc */
+    (destructor)Color_dealloc,              /* tp_dealloc */
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
@@ -163,15 +203,15 @@ PyTypeObject Color_Type = {
 
 
 static PyMethodDef
-color_methods[] = {
+colorext_methods[] = {
     { 0 } // Sentinel
 };
 
 
 PyMODINIT_FUNC
-initcolor( void )
+initcolorext( void )
 {
-    PyObject* mod = Py_InitModule( "color", color_methods );
+    PyObject* mod = Py_InitModule( "colorext", colorext_methods );
     if( !mod )
         return;
 
