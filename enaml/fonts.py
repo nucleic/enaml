@@ -8,43 +8,74 @@
 """ A utility module for dealing with CSS3 font strings.
 
 """
-from collections import namedtuple
+from .fontext import Font, FontStyle, FontCaps
 
 
-#: CSS3 keywords for font style.
-_styles = set(['normal', 'italic', 'oblique'])
-
-#: CSS3 keywords for font variants.
-_variants = set(['normal', 'small-caps'])
-
-#: CSS3 keywords for font weight.
-_weights = set([
-    'normal', 'bold', 'bolder', 'lighter', '100', '200', '300', '400',
-    '500', '600', '700', '800', '900'
-])
-
-#: CSS3 keywords for font sizes.
-_sizes = set([
-    'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large',
-    'larger', 'smaller',
-])
-
-#: CSS3 font size unit suffixes.
-_units = set(['in', 'cm', 'mm', 'pt', 'pc', 'px'])
+#: A mapping from CSS font style keyword to style enum
+_STYLES = {
+    'normal': FontStyle.Normal,
+    'italic': FontStyle.Italic,
+    'oblique': FontStyle.Oblique,
+}
 
 
-#: A namedtuple for storing parsed font information.
-Font = namedtuple('Font', 'style variant weight size family')
+#: A mapping from CSS font variant keyword to caps enum
+_VARIANTS = {
+    'normal': FontCaps.MixedCase,
+    'small-caps':  FontCaps.SmallCaps,
+}
+
+
+#: A mapping from CSS font weight to integer weight. These values are
+#: pulled from the Qt stylesheet implementation of font parsing. Enaml
+#: does not support the 'bolder' and 'lighter' keywords.
+_WEIGHTS = {
+    '100': 12,
+    '200': 25,
+    '300': 37,
+    '400': 50,
+    '500': 62,
+    '600': 75,
+    '700': 87,
+    '800': 99,
+    '900': 99,
+    'normal': 50,
+    'bold': 75,
+}
+
+
+#: A mapping from CSS font size keywords to font point sizes. These are
+#: based on a standard 12 point font size.
+_SIZES = {
+    'xx-small': 7,
+    'x-small': 8,
+    'small': 9,
+    'medium': 12,
+    'large': 14,
+    'x-large': 18,
+    'xx-large': 24,
+}
+
+
+#: A mapping from CSS font units to functions which convert to points.
+_UNITS = {
+    'in': lambda size: int(size * 72.0),
+    'cm': lambda size: int(size * 72.0 / 2.54),
+    'mm': lambda size: int(size * 72.0 / 254.0),
+    'pt': lambda size: int(size),
+    'pc': lambda size: int(size * 12.0),
+    'px': lambda size: int(size * 0.75),
+}
 
 
 def parse_font(font):
-    """ Parse a CSS shorthand font string into a Font namedtuple.
+    """ Parse a CSS3 shorthand font string into an Enaml Font object.
 
     Returns
     -------
     result : Font or None
-        A namedtuple of font information for the given string, or None
-        if the given string is not a valid CSS shorthand font.
+        A font object representing the parsed font. If the string is
+        invalid, None will be returned.
 
     """
     token = []
@@ -78,11 +109,11 @@ def parse_font(font):
     families = []
     optionals = []
     for token in tokens:
-        if token in _styles or token in _variants or token in _weights:
+        if token in _STYLES or token in _VARIANTS or token in _WEIGHTS:
             if len(sizes) > 0 or len(families) > 0:
                 return None
             optionals.append(token)
-        elif token in _sizes or token[-1] == '%' or token[-2:] in _units:
+        elif token in _SIZES or token[-2:] in _UNITS:
             if len(families) > 0:
                 return None
             sizes.append(token)
@@ -99,41 +130,39 @@ def parse_font(font):
     style = None
     variant = None
     weight = None
-    size = sizes[0]
-    family = families[0]
 
     for opt in optionals:
         if opt == 'normal':
             continue
-        elif opt in _styles:
+        elif opt in _STYLES:
             if style is not None:
                 return None
             style = opt
-        elif opt in _variants:
+        elif opt in _VARIANTS:
             if variant is not None:
                 return None
             variant = opt
-        elif opt in _weights:
+        elif opt in _WEIGHTS:
             if weight is not None:
                 return None
             weight = opt
         else:
             return None
 
-    style = style or 'normal'
-    variant = variant or 'normal'
-    weight = weight or 'normal'
-
-    if size[-1] == '%':
-        try:
-            float(size[:-1])
-        except ValueError:
-            return None
+    size = sizes[0]
+    if size in _SIZES:
+        size = _SIZES[size]
     else:
+        sizenum, units = size[:-2], size[-2:]
         try:
-            float(size[:-2])
+            sizenum = float(sizenum)
         except ValueError:
             return None
+        size = _UNITS[units](sizenum)
 
-    return Font(style, variant, weight, size, family)
+    family = families[0]
+    weight = _WEIGHTS[weight] if weight else _WEIGHTS['normal']
+    style = _STYLES[style] if style else _STYLES['normal']
+    variant = _VARIANTS[variant] if variant else _VARIANTS['normal']
 
+    return Font(family, size, weight, style, variant)
