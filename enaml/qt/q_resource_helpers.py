@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QSize
-from PyQt4.QtGui import QImage, QIcon, QPixmap
+from PyQt4.QtGui import QColor, QFont, QImage, QIcon, QPixmap
 
 
 ASPECT_RATIO_MODE = {
@@ -130,3 +130,82 @@ def get_cached_qicon(icon):
     if not isinstance(qicon, QIcon):
         qicon = icon._tkdata = QIcon_from_Icon(icon)
     return qicon
+
+
+def QColor_from_Color(color):
+    """ Convert the given Enaml Color into a QColor.
+
+    Parameters
+    ----------
+    color : Color
+        The Enaml Color object.
+
+    Returns
+    -------
+    result : QColor
+        The QColor instance for the given Enaml color.
+
+    """
+    return QColor.fromRgba(color.argb)
+
+
+def get_cached_qcolor(color):
+    """ Get the cached QColor for the Enaml Color.
+
+    Parameters
+    ----------
+    color : Color
+        The Enaml Color object.
+
+    Returns
+    -------
+    result : QColor
+        The cached QColor for the color. If no cached color exists, one
+        will be created.
+
+    """
+    qcolor = color._tkdata
+    if not isinstance(qcolor, QColor):
+        qcolor = color._tkdata = QColor_from_Color(color)
+    return qcolor
+
+
+def QFont_from_Font(font):
+    """ Convert the given Enaml Font into a QFont.
+
+    Parameters
+    ----------
+    font : Font
+        The Enaml Font object.
+
+    Returns
+    -------
+    result : QFont
+        The QFont instance for the given Enaml font.
+
+    """
+    qfont = QFont(font.family, font.pointsize, font.weight)
+    qfont.setStyle(font.style)
+    qfont.setCapitalization(font.caps)
+    return qfont
+
+
+def get_cached_qfont(font):
+    """ Get the cached QFont for the Enaml Font.
+
+    Parameters
+    ----------
+    font : Font
+        The Enaml Font object.
+
+    Returns
+    -------
+    result : QFont
+        The cached QFont for the font. If no cached font exists, one
+        will be created.
+
+    """
+    qfont = font._tkdata
+    if not isinstance(qfont, QFont):
+        qfont = font._tkdata = QFont_from_Font(font)
+    return qfont
