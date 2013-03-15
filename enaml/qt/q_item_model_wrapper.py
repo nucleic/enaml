@@ -96,6 +96,20 @@ ROLE_HANDLERS = {
 }
 
 
+def set_edit_role_handler(model, row, column, value):
+    return model.set_data(row, column, value)
+
+
+def set_check_state_role_handler(model, row, column, value):
+    return model.set_check_state(row, column, value)
+
+
+SET_ROLE_HANDLERS = {
+    Qt.EditRole: set_edit_role_handler,
+    Qt.CheckStateRole: set_check_state_role_handler,
+}
+
+
 #------------------------------------------------------------------------------
 # Item model wrapper
 #------------------------------------------------------------------------------
@@ -135,10 +149,7 @@ class QItemModelWrapper(QAbstractTableModel):
         return ROLE_HANDLERS[role](self._model, index.row(), index.column())
 
     def setData(self, index, value, role):
-        # row = index.row()
-        # column = index.column()
-        # if role == Qt.EditRole:
-        #     return self._model.set_data(row, column, value)
-        # if role == Qt.CheckStateRole:
-        #     return self._model.set_check_state(row, column, value)
+        handler = SET_ROLE_HANDLERS.get(role)
+        if handler is not None:
+            return handler(self._model, index.row(), index.column(), value)
         return False

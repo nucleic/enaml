@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, Str, List
 
-from .item import Item
+from .baseitem import BaseItem
 
 
 class Group(Atom):
@@ -28,7 +28,7 @@ class Group(Atom):
     #: when dealing with a large number of model instances, only create
     #: the minimum necessary items and share them. The list of items
     #: will not be copied on assignment, so the list can also be shared.
-    items = List(Item, copy=False)
+    items = List(BaseItem, copy=False)
 
     def __init__(self, name, **kwargs):
         """ Initialize an Group.

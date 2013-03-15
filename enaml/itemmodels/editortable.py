@@ -161,3 +161,19 @@ class EditorTable(AbstractItemModel):
         item = self._items[row * self._column_count + column]
         if item is not None:
             return item.get_size_hint(self._editors[row].model)
+
+    def set_data(self, row, column, value):
+        item = self._items[row * self._column_count + column]
+        if item is not None:
+            if item.set_data(self._editors[row].model, value):
+                self.data_changed.emit(row, column)
+                return True
+        return False
+
+    def set_check_state(self, row, column, value):
+        item = self._items[row * self._column_count + column]
+        if item is not None:
+            if item.set_check_state(self._editors[row].model, value):
+                self.data_changed.emit(row, column)
+                return True
+        return False

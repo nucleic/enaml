@@ -5,21 +5,49 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Str
+from atom.api import Callable, Int, Str, null
 
-from .enums import ItemFlag, AlignmentFlag
+from enaml.colors import ColorMember
+from enaml.fonts import FontMember
+
+from .baseitem import BaseItem, DefaultItemFlags, DefaultTextAlignment
 
 
-class Item(Atom):
-    """ A base class for defining items for item models.
+class Item(BaseItem):
+    """ A BaseItem subclass which provides convenient storage.
 
-    Subclasses should reimplement the methods of the class as needed to
-    implemented appropriate behavior for a class of models.
+    The standard Item class provides storage for commonly used item data
+    which does not typically depend on a particular model instance. This
+    allows developers to easily supply the data without needing to write
+    a BaseItem subclass.
+
+    An Item will retrieve the data from a model instance by looking up
+    the 'name' attribute on the item. The data on the model is updated
+    in a similar fashion.
 
     """
-    #: Storage for the item name. By default, the name is used to access
-    #: an attribute on a given data model.
+    #: The string name of the item. By default, the name is used to
+    #: access the named attribute on the model as the item data.
     name = Str()
+
+    #: The flags for the item. The default is selectable and enabled.
+    flags = Int(DefaultItemFlags)
+
+    #: The background color of the item. The default value is None.
+    background = ColorMember()
+
+    #: The foreground color of the item. The default value is None.
+    foreground = ColorMember()
+
+    #: The font of the item. The default value is None.
+    font = FontMember()
+
+    #: The text alignment for the item. The default value is centered.
+    text_alignment = Int(DefaultTextAlignment)
+
+    #: Storage for a callable to convert the user input value into a
+    #: value appropriate for assigning to the data attribute. The
+    converter = Callable()
 
     def __init__(self, name, **kwargs):
         """ Initialize an Item.
@@ -66,79 +94,10 @@ class Item(Atom):
         -------
         result : ItemFlag
             An or'd combination of ItemFlag enum values. The default
-            method returns an or'd combo of selectable and enabled.
+            method returns the value of the 'flags' attribute.
 
         """
-        return ItemFlag.ItemIsSelectable | ItemFlag.ItemIsEnabled
-
-    def get_edit_data(self, model):
-        """ Get the edit data for the model item.
-
-        Parameters
-        ----------
-        model : object
-            The relevant model object for the operation.
-
-        Returns
-        -------
-        result : object
-            The data to show in the UI for the particular model item
-            when the item is opened for editing. The default method
-            simply returns the display data.
-
-        """
-        return self.get_data(model)
-
-    def get_icon(self, model):
-        """ Get the icon for the model item.
-
-        Parameters
-        ----------
-        model : object
-            The relevant model object for the operation.
-
-        Returns
-        -------
-        result : Icon or None
-            The Enaml icon object for the model item, or None if the
-            item has no icon. The default method returns None.
-
-        """
-        return None
-
-    def get_tool_tip(self, model):
-        """ Get the tool tip for the model item.
-
-        Parameters
-        ----------
-        model : object
-            The relevant model object for the operation.
-
-        Returns
-        -------
-        result : unicode or None
-            The unicode tool tip value for the model item, or None if
-            the item has no tool tip. The default method returns None.
-
-        """
-        return None
-
-    def get_status_tip(self, model):
-        """ Get the status tip for the model item.
-
-        Parameters
-        ----------
-        model : object
-            The relevant model object for the operation.
-
-        Returns
-        -------
-        result : unicode or None
-            The unicode status tip value for the model item, or None if
-            the item has no status tip. The default method returns None.
-
-        """
-        return None
+        return self.flags
 
     def get_background(self, model):
         """ Get the background color for the model item.
@@ -153,10 +112,10 @@ class Item(Atom):
         result : Color
             The background color for the model item, or None if the
             item has no background color. The default method returns
-            None.
+            the value of the 'background' attribute.
 
         """
-        return None
+        return self.background
 
     def get_foreground(self, model):
         """ Get the foreground color for the model item.
@@ -171,10 +130,10 @@ class Item(Atom):
         result : Color
             The foreground color for the model item, or None if the
             item has no foreground color. The default method returns
-            None.
+            the value of the 'foreground' attribute.
 
         """
-        return None
+        return self.foreground
 
     def get_font(self, model):
         """ Get the font for the model item.
@@ -188,10 +147,11 @@ class Item(Atom):
         -------
         result : Font
             The font for the model item, or None if the item has no
-            font. The default method returns None.
+            font. The default method returns the value of the 'font'
+            attribute.
 
         """
-        return None
+        return self.font
 
     def get_text_alignment(self, model):
         """ Get the text alignment flags for the model item.
@@ -205,33 +165,11 @@ class Item(Atom):
         -------
         result : AlignmentFlag
             An or'd combination of AlignmentFlag enum values. The
-            default method returns AlignCenter.
+            default method returns the value of the 'text_alignment'
+            attribute.
 
         """
-        return AlignmentFlag.AlignCenter
-
-    def get_check_state(self, model):
-        """ Get the check state for the model item.
-
-        Parameters
-        ----------
-        model : object
-            The relevant model object for the operation.
-
-        Returns
-        -------
-        result : CheckState or None
-            The CheckState for the model item, or None if the item has
-            no check state. The default method returns None.
-
-        """
-        return None
-
-    def get_size_hint(self, model):
-        """ Get the size hint for the model item.
-
-        """
-        return None
+        return self.text_alignment
 
     def set_data(self, model, value):
         """ Set the data for the model item.
@@ -248,27 +186,13 @@ class Item(Atom):
         -------
         result : bool
             True if the model item was successfully updated, False
-            otherwise. The default method returns False.
+            otherwise. The default method attempt to conver the value
+            using any supplied converter and then assigns it to the
+            attribute.
 
         """
-        return False
-
-    def set_check_state(self, model, value):
-        """ Set the check state for the model item.
-
-        Parameters
-        ----------
-        model : object
-            The relevant model object for the operation.
-
-        value : CheckState
-            The check state enum value to set for the model item.
-
-        Returns
-        -------
-        result : bool
-            True if the model item was successfully updated, False
-            otherwise. The default method returns False.
-
-        """
-        return False
+        converter = self.converter
+        if converter is not null:
+            value = converter(value)
+        setattr(model, self.name, value)
+        return True
