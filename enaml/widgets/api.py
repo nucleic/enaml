@@ -14,6 +14,7 @@ from .container import Container
 from .date_selector import DateSelector
 from .datetime_selector import DatetimeSelector
 from .dock_pane import DockPane
+from .dual_slider import DualSlider
 from .field import Field
 from .file_dialog import FileDialog
 from .flow_area import FlowArea
