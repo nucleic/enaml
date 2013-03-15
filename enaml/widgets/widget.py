@@ -5,9 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import (
-    Bool, Str, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
-)
+from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
 
 from enaml.colors import ColorMember
 from enaml.core.declarative import d_
