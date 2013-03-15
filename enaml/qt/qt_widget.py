@@ -8,13 +8,13 @@
 import sys
 
 from PyQt4.QtCore import Qt, QSize
-from PyQt4.QtGui import QWidget, QWidgetItem, QApplication
+from PyQt4.QtGui import QFont, QWidget, QWidgetItem, QApplication
 
 from atom.api import Typed
 
 from enaml.widgets.widget import ProxyWidget
 
-from .q_color_helpers import q_parse_color
+from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
 
 
@@ -105,13 +105,13 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """
         widget = self.widget
         role = widget.backgroundRole()
-        qcolor = q_parse_color(background)
-        if not qcolor.isValid():
+        if background is not None:
+            qcolor = get_cached_qcolor(background)
+            widget.setAutoFillBackground(True)
+        else:
             app_palette = QApplication.instance().palette(widget)
             qcolor = app_palette.color(role)
             widget.setAutoFillBackground(False)
-        else:
-            widget.setAutoFillBackground(True)
         palette = widget.palette()
         palette.setColor(role, qcolor)
         widget.setPalette(palette)
@@ -122,8 +122,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """
         widget = self.widget
         role = widget.foregroundRole()
-        qcolor = q_parse_color(foreground)
-        if not qcolor.isValid():
+        if foreground is not None:
+            qcolor = get_cached_qcolor(foreground)
+        else:
             app_palette = QApplication.instance().palette(widget)
             qcolor = app_palette.color(role)
         palette = widget.palette()
@@ -134,7 +135,11 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """ Set the font of the widget.
 
         """
-        pass
+        widget = self.widget
+        if font is not None:
+            widget.setFont(get_cached_qfont(font))
+        else:
+            widget.setFont(QFont())
 
     def set_show_focus_rect(self, show):
         """ Set whether or not to show the focus rect.

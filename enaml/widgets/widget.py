@@ -9,7 +9,9 @@ from atom.api import (
     Bool, Str, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
 )
 
+from enaml.colors import ColorMember
 from enaml.core.declarative import d_
+from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
@@ -69,14 +71,14 @@ class Widget(ToolkitObject):
     #: Whether or not the widget is visible.
     visible = d_(Bool(True))
 
-    #: The background color of the widget. Supports CSS3 color strings.
-    background = d_(Str())
+    #: The background color of the widget.
+    background = d_(ColorMember())
 
-    #: The foreground color of the widget. Supports CSS3 color strings.
-    foreground = d_(Str())
+    #: The foreground color of the widget.
+    foreground = d_(ColorMember())
 
-    #: The font used for the widget. Supports CSS font formats.
-    font = d_(Str())
+    #: The font used for the widget.
+    font = d_(FontMember())
 
     #: The minimum size for the widget. The default means that the
     #: client should determine an intelligent minimum size.
