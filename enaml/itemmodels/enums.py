@@ -72,3 +72,14 @@ class AlignmentFlag(object):
     AlignHorizontalMask = AlignLeft | AlignRight | AlignHCenter | AlignJustify
 
     AlignVerticalMask = AlignTop | AlignBottom | AlignVCenter
+
+
+class Orientation(object):
+    """ The orientation values for a given item header.
+
+    These enum values are equivalent to the Qt::Orientation values.
+
+    """
+    Horizontal = 0x1
+
+    Vertical = 0x2
