@@ -43,6 +43,11 @@ class AbstractItemModel(Atom):
     #: columns removed.
     columns_removed = Signal()
 
+    #: A signal which should be emitted when a header changes. The
+    #: payload is the orientation of the header the indices of the
+    #: first and last changed sections, respectively.
+    header_data_changed = Signal()
+
     def row_count(self):
         """ Get the number of rows in the model.
 
@@ -65,6 +70,9 @@ class AbstractItemModel(Atom):
         """
         raise NotImplementedError
 
+    #--------------------------------------------------------------------------
+    # Item Data Methods
+    #--------------------------------------------------------------------------
     def data(self, row, column):
         """ Get the item data for the given indices.
 
@@ -100,7 +108,7 @@ class AbstractItemModel(Atom):
         -------
         result : int
             An or'd combination of ItemFlag enum values for the given
-            indices. The default makes an item enabled and selectable.
+            indices. The default is enabled and centered.
 
         """
         return ItemFlag.ItemIsEnabled | ItemFlag.ItemIsSelectable
@@ -123,8 +131,7 @@ class AbstractItemModel(Atom):
         -------
         result : object or None
             The edit data value for the given indices, or None if no
-            edit data is available. The default implementation of this
-            method returns the result of the `data` method.
+            edit data is available. The default delegates to 'data()'.
 
         """
         return self.data(row, column)
@@ -143,7 +150,7 @@ class AbstractItemModel(Atom):
         Returns
         -------
         result : Icon or None
-            The icon for the item or None.
+            The icon for the item or None. The default is None.
 
         """
         return None
@@ -163,8 +170,7 @@ class AbstractItemModel(Atom):
         -------
         result : unicode or None
             The tool tip for the item, or None if no tool tip is
-            available. The default implementation of this method
-            returns None.
+            available. The default is None.
 
         """
         return None
@@ -184,8 +190,7 @@ class AbstractItemModel(Atom):
         -------
         result : unicode or None
             The status tip for the item, or None if no status tip is
-            available. The default implementation of this method
-            returns None.
+            available. The default is None.
 
         """
         return None
@@ -205,7 +210,8 @@ class AbstractItemModel(Atom):
         -------
         result : Color or None
             The background color of the item as an Enaml Color object,
-            or None if the item has no background color.
+            or None if the item has no background color. The default is
+            None.
 
         """
         return None
@@ -225,7 +231,8 @@ class AbstractItemModel(Atom):
         -------
         result : Color or None
             The foreground color of the item as an Enaml Color object,
-            or None if the item has no foreground color.
+            or None if the item has no foreground color. The default is
+            None.
 
         """
         return None
@@ -245,7 +252,7 @@ class AbstractItemModel(Atom):
         -------
         result : Font or None
             The font of the item as an Enaml Font object, or None if
-            the item has no font.
+            the item has no font. The default is None.
 
         """
         return None
@@ -265,8 +272,7 @@ class AbstractItemModel(Atom):
         -------
         result : int
             An or'd combination of AlignmentFlag enum values for the
-            given indices. The default implementation of this method
-            returns AlignmentFlag.AlignCenter.
+            given indices. The default is centered.
 
         """
         return AlignmentFlag.AlignCenter
@@ -286,8 +292,7 @@ class AbstractItemModel(Atom):
         -------
         result : int or None
             One of the CheckState enum values, or None if the item has
-            no check state. The default implementation of this method
-            returns None.
+            no check state. The default is None.
 
         """
         return None
@@ -307,8 +312,7 @@ class AbstractItemModel(Atom):
         -------
         result : tuple or None
             The (width, height) size hint for the item, or None if the
-            item has no size hint. The default implementation of this
-            method returns None.
+            item has no size hint. The default is None.
 
         """
         # TODO make this a Size object?
@@ -331,8 +335,8 @@ class AbstractItemModel(Atom):
         Returns
         -------
         result : bool
-            True if the item was set successfully, False otherwise. The
-            default implementation of this method returns False.
+            True if the item was set successfully, False otherwise.
+            The default is False.
 
         """
         return False
@@ -355,7 +359,191 @@ class AbstractItemModel(Atom):
         -------
         result : bool
             True if the item state set successfully, False otherwise.
-            The default implementation of this method returns False.
+            The default is False.
 
         """
         return False
+
+    #--------------------------------------------------------------------------
+    # Header Data Methods
+    #--------------------------------------------------------------------------
+    def header_data(self, orientation, section):
+        """ Get the header data for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : object or None
+            The data value for the given header section, or None if no
+            data is available. The default is the section index.
+
+        """
+        return section
+
+    def header_icon(self, orientation, section):
+        """ Get the header icon for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : Icon or None
+            The icon for the header section or None. The default is
+            None.
+
+        """
+        return None
+
+    def header_tool_tip(self, orientation, section):
+        """ Get the header tool tip for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : unicode or None
+            The unicode tool tip for the header section or None. The
+            default is None.
+
+        """
+        return None
+
+    def header_status_tip(self, orientation, section):
+        """ Get the header status tip for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : unicode or None
+            The unicode status tip for the header section or None. The
+            default is None.
+
+        """
+        return None
+
+    def header_background(self, orientation, section):
+        """ Get the header background for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : Color or None
+            The background color for the header section or None. The
+            default is None.
+
+        """
+        return None
+
+    def header_foreground(self, orientation, section):
+        """ Get the header foreground for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : Color or None
+            The foreground color for the header section or None. The
+            default is None.
+
+        """
+        return None
+
+    def header_font(self, orientation, section):
+        """ Get the header font for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : Font or None
+            The font for the header section or None. The default is
+            None.
+
+        """
+        return None
+
+    def header_text_alignment(self, orientation, section):
+        """ Get the header text alignment for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : int
+            An or'd combination of AlignmentFlag enum values for the
+            given indices. The default is centered.
+
+        """
+        return AlignmentFlag.AlignCenter
+
+    def header_size_hint(self, orientation, section):
+        """ Get the header text alignment for the given section.
+
+        Parameters
+        ----------
+        orientation : Orientation
+            The orienation value for the given header.
+
+        section : int
+            The relevant section index of the header.
+
+        Returns
+        -------
+        result : tuple or None
+            The (width, height) size hint for the header section, or
+            None if the item has no size hint. The default is None.
+
+        """
+        # TODO make this a Size object?
+        return None
