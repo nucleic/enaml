@@ -11,6 +11,8 @@
 from colorsys import hls_to_rgb
 import re
 
+from atom.api import Coerced
+
 from .colorext import Color
 
 
@@ -200,7 +202,7 @@ def _parse_hex_color(color):
             r = int_(hex_str[:2], 16)
             g = int_(hex_str[2:4], 16)
             b = int_(hex_str[4:6], 16)
-        return (r / 255.0, g / 255.0, b / 255.0, 1.0)
+        return Color(r, g, b, 255)
 
 
 def _parse_rgb_color(color):
@@ -213,10 +215,10 @@ def _parse_rgb_color(color):
     match = _RGB_NUM_RE.match(color)
     if match is not None:
         rs, gs, bs = match.groups()
-        r = max_(0, min_(255, int_(rs))) / 255.0
-        g = max_(0, min_(255, int_(gs))) / 255.0
-        b = max_(0, min_(255, int_(bs))) / 255.0
-        return (r, g, b, 1.0)
+        r = max_(0, min_(255, int_(rs)))
+        g = max_(0, min_(255, int_(gs)))
+        b = max_(0, min_(255, int_(bs)))
+        return Color(r, g, b, 255)
 
     float_ = float
     match = _RGB_PER_RE.match(color)
@@ -225,16 +227,20 @@ def _parse_rgb_color(color):
         r = max_(0.0, min_(100.0, float_(rs))) / 100.0
         g = max_(0.0, min_(100.0, float_(gs))) / 100.0
         b = max_(0.0, min_(100.0, float_(bs))) / 100.0
-        return (r, g, b, 1.0)
+        r = int_(255 * r)
+        g = int_(255 * g)
+        b = int_(255 * b)
+        return Color(r, g, b, 255)
 
     match = _RGBA_NUM_RE.match(color)
     if match is not None:
         rs, gs, bs, as_ = match.groups()
-        r = max_(0, min_(255, int_(rs))) / 255.0
-        g = max_(0, min_(255, int_(gs))) / 255.0
-        b = max_(0, min_(255, int_(bs))) / 255.0
+        r = max_(0, min_(255, int_(rs)))
+        g = max_(0, min_(255, int_(gs)))
+        b = max_(0, min_(255, int_(bs)))
         a = max_(0.0, min_(1.0, float_(as_)))
-        return (r, g, b, a)
+        a = int_(255 * a)
+        return Color(r, g, b, a)
 
     match = _RGBA_PER_RE.match(color)
     if match is not None:
@@ -243,7 +249,11 @@ def _parse_rgb_color(color):
         g = max_(0.0, min_(100.0, float_(gs))) / 100.0
         b = max_(0.0, min_(100.0, float_(bs))) / 100.0
         a = max_(0.0, min_(1.0, float_(as_)))
-        return (r, g, b, a)
+        r = int_(255 * r)
+        g = int_(255 * g)
+        b = int_(255 * b)
+        a = int_(255 * a)
+        return Color(r, g, b, a)
 
 
 def _parse_hsl_color(color):
@@ -251,6 +261,7 @@ def _parse_hsl_color(color):
 
     """
     float_ = float
+    int_ = int
     min_ = min
     max_ = max
     match = _HSL_RE.match(color)
@@ -260,7 +271,10 @@ def _parse_hsl_color(color):
         s = max_(0.0, min_(100.0, float_(ss))) / 100.0
         l = max_(0.0, min_(100.0, float_(ls))) / 100.0
         r, g, b = hls_to_rgb(h, l, s)
-        return (r, g, b, 1.0)
+        r = int_(255 * r)
+        g = int_(255 * g)
+        b = int_(255 * b)
+        return Color(r, g, b, 255)
 
     match = _HSLA_RE.match(color)
     if match is not None:
@@ -270,7 +284,11 @@ def _parse_hsl_color(color):
         l = max_(0.0, min_(100.0, float_(ls))) / 100.0
         a = max_(0.0, min_(1.0, float_(as_)))
         r, g, b = hls_to_rgb(h, l, s)
-        return (r, g, b, a)
+        r = int_(255 * r)
+        g = int_(255 * g)
+        b = int_(255 * b)
+        a = int_(255 * a)
+        return Color(r, g, b, a)
 
 
 #: A dispatch table of color parser functions.
@@ -303,3 +321,48 @@ def parse_color(color):
         key = color[0]
         if key in _COLOR_PARSERS:
             return _COLOR_PARSERS[key](color)
+
+
+def coerce_color(color):
+    """ The coercing function for the ColorMember.
+
+    """
+    if isinstance(color, basestring):
+        return parse_color(color)
+
+
+class ColorMember(Coerced):
+    """ An Atom member class which coerces a value to a color.
+
+    A color member can be set to a Color, a string, or None. A string
+    color will be parsed into a Color object. If the parsing fails,
+    the color will be None.
+
+    """
+    __slots__ = ()
+
+    def __init__(self, default=None, factory=None):
+        """ Initialize a ColorMember.
+
+        default : Color, string, or None, optional
+            The default color to use for the member.
+
+        factory : callable, optional
+            An optional callable which takes no arguments and returns
+            the default value for the member. If this is provided, it
+            will override any value passed as 'default'.
+
+        Notes
+        -----
+        When providing a default color value, prefer using a Color
+        object or a named color string as these color objects will be
+        shared among all instances of the class. Using a color string
+        which must be parsed will result in a new Color object being
+        created for each class instance.
+
+        """
+        if factory is None:
+            factory = lambda: default
+        kind = (Color, type(None))
+        sup = super(ColorMember, self)
+        sup.__init__(kind, factory=factory, coercer=coerce_color)

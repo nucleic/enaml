@@ -8,6 +8,8 @@
 """ A utility module for dealing with CSS3 font strings.
 
 """
+from atom.api import Coerced
+
 from .fontext import Font, FontStyle, FontCaps
 
 
@@ -160,9 +162,53 @@ def parse_font(font):
             return None
         size = _UNITS[units](sizenum)
 
-    family = families[0]
+    family = str(families[0])
     weight = _WEIGHTS[weight] if weight else _WEIGHTS['normal']
     style = _STYLES[style] if style else _STYLES['normal']
     variant = _VARIANTS[variant] if variant else _VARIANTS['normal']
 
     return Font(family, size, weight, style, variant)
+
+
+def coerce_font(font):
+    """ The coercing function for the FontMember.
+
+    """
+    if isinstance(font, basestring):
+        return parse_font(font)
+
+
+class FontMember(Coerced):
+    """ An Atom member class which coerces a value to a font.
+
+    A font member can be set to a Font, a string, or None. A string
+    font will be parsed into a Font object. If the parsing fails,
+    the font will be None.
+
+    """
+    __slots__ = ()
+
+    def __init__(self, default=None, factory=None):
+        """ Initialize a FontMember.
+
+        default : Font, string, or None, optional
+            The default font to use for the member.
+
+        factory : callable, optional
+            An optional callable which takes no arguments and returns
+            the default value for the member. If this is provided, it
+            will override any value passed as 'default'.
+
+        Notes
+        -----
+        When providing a default font value, prefer using a Font object
+        directly as this object will be shared among all instances of
+        the class. Using a font string will result in a new Font object
+        being created for each class instance.
+
+        """
+        if factory is None:
+            factory = lambda: default
+        kind = (Font, type(None))
+        sup = super(FontMember, self)
+        sup.__init__(kind, factory=factory, coercer=coerce_font)
