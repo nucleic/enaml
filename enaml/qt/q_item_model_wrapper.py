@@ -7,11 +7,13 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QAbstractTableModel, QSize
 
+from enaml.itemmodels.enums import Orientation
+
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont, get_cached_qicon
 
 
 #------------------------------------------------------------------------------
-# Data Role Handlers
+# Item Data Role Handlers
 #------------------------------------------------------------------------------
 def display_role_handler(model, row, column):
     return model.data(row, column)
@@ -81,7 +83,7 @@ def size_hint_role_handler(model, row, column):
         return QSize(*size)
 
 
-ROLE_HANDLERS = {
+ITEM_DATA_ROLE_HANDLERS = {
     Qt.DisplayRole: display_role_handler,
     Qt.DecorationRole: decoration_role_handler,
     Qt.EditRole: edit_role_handler,
@@ -104,11 +106,88 @@ def set_check_state_role_handler(model, row, column, value):
     return model.set_check_state(row, column, value)
 
 
-SET_ROLE_HANDLERS = {
+ITEM_DATA_SET_ROLE_HANDLERS = {
     Qt.EditRole: set_edit_role_handler,
     Qt.CheckStateRole: set_check_state_role_handler,
 }
 
+
+#------------------------------------------------------------------------------
+# Header Data Role Handlers
+#------------------------------------------------------------------------------
+def header_display_role_handler(model, orientation, section):
+    return model.header_data(orientation, section)
+
+
+def header_decoration_role_handler(model, orientation, section):
+    icon = model.header_icon(orientation, section)
+    if icon is not None:
+        tk = icon._tkdata
+        if tk is None:
+            tk = get_cached_qicon(icon)
+        return tk
+
+
+def header_tool_tip_role_handler(model, orientation, section):
+    return model.header_tool_tip(orientation, section)
+
+
+def header_status_tip_role_handler(model, orientation, section):
+    return model.header_status_tip(orientation, section)
+
+
+
+
+def header_text_alignment_role_handler(model, orientation, section):
+    return Qt.Alignment(model.header_text_alignment(orientation, section))
+
+
+def header_background_role_handler(model, orientation, section):
+    color = model.header_background(orientation, section)
+    if color is not None:
+        tk = color._tkdata
+        if tk is None:
+            tk = get_cached_qcolor(color)
+        return tk
+
+
+def header_foreground_role_handler(model, orientation, section):
+    color = model.header_foreground(orientation, section)
+    if color is not None:
+        tk = color._tkdata
+        if tk is None:
+            tk = get_cached_qcolor(color)
+        return tk
+
+
+def header_font_role_handler(model, orientation, section):
+    font = model.header_font(orientation, section)
+    if font is not None:
+        tk = font._tkdata
+        if tk is None:
+            tk = get_cached_qfont(font)
+        return tk
+
+
+def header_size_hint_role_handler(model, orientation, section):
+    size = model.header_size_hint(orientation, section)
+    if size is not None:
+        return QSize(*size)
+
+
+HEADER_DATA_ROLE_HANDLERS = {
+    Qt.DisplayRole: display_role_handler,
+    Qt.DecorationRole: decoration_role_handler,
+    Qt.EditRole: edit_role_handler,
+    Qt.ToolTipRole: tool_tip_role_handler,
+    Qt.StatusTipRole: status_tip_role_handler,
+    Qt.FontRole: font_role_handler,
+    Qt.TextAlignmentRole: text_alignment_role_handler,
+    Qt.BackgroundRole: background_role_handler,
+    Qt.ForegroundRole: foreground_role_handler,
+    Qt.CheckStateRole: check_state_role_handler,
+    Qt.SizeHintRole: size_hint_role_handler,
+}
 
 #------------------------------------------------------------------------------
 # Item model wrapper
@@ -146,10 +225,12 @@ class QItemModelWrapper(QAbstractTableModel):
         return Qt.ItemFlags(self._model.flags(index.row(), index.column()))
 
     def data(self, index, role):
-        return ROLE_HANDLERS[role](self._model, index.row(), index.column())
+        handler = ITEM_DATA_ROLE_HANDLERS.get(role)
+        if handler is not None:
+            return handler(self._model, index.row(), index.column())
 
     def setData(self, index, value, role):
-        handler = SET_ROLE_HANDLERS.get(role)
+        handler = ITEM_DATA_SET_ROLE_HANDLERS.get(role)
         if handler is not None:
             return handler(self._model, index.row(), index.column(), value)
         return False
