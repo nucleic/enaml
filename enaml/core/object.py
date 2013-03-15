@@ -221,8 +221,9 @@ class Object(Atom):
 
         self._children = new
         child_added = self.child_added
-        for child in insert_set:
-            child_added(child)
+        for child in insert_list:
+            if child in insert_set:
+                child_added(child)
 
     def parent_changed(self, old, new):
         """ A method invoked when the parent of the object changes.
