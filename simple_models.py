@@ -1,8 +1,9 @@
-from atom.api import Atom, Int, Str
+from atom.api import Atom, Int, Float, Str
 
 from enaml.colors import parse_color
-from enaml.itemmodels.api import Editor, Group, Item, StyledItem, EditorTable
-
+from enaml.itemmodels.api import (
+    Editor, Group, Item, IntItem, StrItem, FloatItem, EditorTable
+)
 
 #------------------------------------------------------------------------------
 # Custom Items
@@ -30,10 +31,10 @@ class Foo(Atom):
     groups = [
         Group('Ints',
             items=[
-                Item('name'),
-                Item('a'),
+                StrItem('name'),
+                IntItem('a'),
                 AltBlue('b'),
-                StyledItem('c', foreground='red', font='bold 12pt arial'),
+                IntItem('c', foreground='red', font='bold 12pt arial'),
             ]
         )
     ]
@@ -47,9 +48,9 @@ class Bar(Foo):
     groups = Foo.groups + [
         Group('Strings',
             items=[
-                Item('d'),
-                StyledItem('e', background='goldenrod'),
-                Item('i'),
+                StrItem('d'),
+                StrItem('e', background='goldenrod'),
+                StrItem('i'),
             ]
         )
     ]
@@ -57,15 +58,15 @@ class Bar(Foo):
 
 class Baz(Bar):
     f = Int()
-    g = Int()
+    g = Float()
     h = Int()
 
     groups = Bar.groups + [
         Group('Ints',
             items=[
-                StyledItem('f', font='bold italic 24pt times'),
-                Item('g'),
-                Item('i'),
+                IntItem('f', font='bold italic 24pt times'),
+                FloatItem('g'),
+                IntItem('i'),
             ]
         )
     ]
@@ -90,6 +91,7 @@ for i in range(10000):
 datamodel = EditorTable()
 for m in models:
     datamodel.add_editor(Editor(model=m, groups=m.groups))
+
 import time
 t1 = time.clock()
 datamodel.layout()
