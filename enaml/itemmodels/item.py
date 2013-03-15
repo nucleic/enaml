@@ -5,21 +5,36 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Str, List, Typed
+from atom.api import Atom, Str
 
 from .enums import ItemFlag, AlignmentFlag
 
 
-class ItemEditor(Atom):
-    """ A base class for defining item editors for models.
+class Item(Atom):
+    """ A base class for defining items for item models.
 
-    Subclasses should reimplement the methods below as needed to edit
-    the relevant item in a particular class of data model.
+    Subclasses should reimplement the methods of the class as needed to
+    implemented appropriate behavior for a class of models.
 
     """
-    #: Storage for the item name. The semantic meaning of the name is
-    #: left to the writer of the subclass.
+    #: Storage for the item name. By default, the name is used to access
+    #: an attribute on a given data model.
     name = Str()
+
+    def __init__(self, name, **kwargs):
+        """ Initialize an Item.
+
+        Parameters
+        ----------
+        name : str
+            The name of the item.
+
+        **kwargs
+            Additional keyword arguments to pass to the superclass
+            constructor.
+
+        """
+        super(Item, self).__init__(name=name, **kwargs)
 
     def get_data(self, model):
         """ Get the data for the model item.
@@ -33,10 +48,11 @@ class ItemEditor(Atom):
         -------
         result : object
             The data to show in the UI for the particular model item.
-            The default method returns None.
+            The default method accesses the 'name' attribute on the
+            model.
 
         """
-        return None
+        return getattr(model, self.name)
 
     def get_flags(self, model):
         """ Get the flags for the model item.
@@ -256,72 +272,3 @@ class ItemEditor(Atom):
 
         """
         return False
-
-
-class AttrEditor(ItemEditor):
-    """ An ItemEditor which accesses an attribute on the model.
-
-    The 'name' assigned to the editor is used as the attribute name to
-    lookup on the model when data is corrected.
-
-    """
-    def get_data(self, model):
-        """ Get the data for the model item.
-
-        This method retrieves the data by doing a getattr on the model
-        using the 'name' provided to the editor.
-
-        """
-        return getattr(model, self.name)
-
-    def set_data(self, model, value):
-        """ Set the data for the model item.
-
-        This method sets the data by doing a setattr on the model
-        using the 'name' provided to the editor.
-
-        """
-        setattr(model, self.name, value)
-        return True
-
-
-class EditGroup(Atom):
-    """ A class which groups together a collection of item editors.
-
-    An EditGroup is used to collect related item editors into a logical
-    collection. The various item models use these groups to generate
-    their internal item layouts.
-
-    """
-    #: The name of the edit group. The semantic meaning of the name is
-    #: left to the particular item model consuming the group.
-    name = Str()
-
-    #: The list of item editors for the edit group. Whenever possible,
-    #: ItemEditor instances should be shared in an application. The
-    #: various item models will keep strong references to these editors,
-    #: so to keep the memory footprint low when dealing with a large
-    #: number of models, only create the minimum necessary editors and
-    #: share them. This list will not be copied on assignment, so lists
-    #: of item editors can also be shared.
-    item_editors = List(ItemEditor, copy=False)
-
-
-class ModelEditor(Atom):
-    """ A class which defines an editor for a model object.
-
-    A ModelEditor comprises a 'model' object and a collection of editors
-    for that model. Instances of 'ModelEditor' are give to the various
-    item model implementations to generate a model usable by the UI.
-
-    """
-    #: The model object to be edited by this editor. Subclasses may
-    #: redefine this member to enforce more strict type checking.
-    model = Typed(object)
-
-    #: The list of edit groups for the model editor. When possible,
-    #: EditGroup instances should be shared between ModelEditors.
-    #: This helps keep the memory footprint of an application low.
-    #: This list will not be copied on assignment, so lists of edit
-    #: goups can also be shared.
-    edit_groups = List(EditGroup, copy=False)
