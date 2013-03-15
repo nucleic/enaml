@@ -70,12 +70,12 @@ class DualSlider(Control):
     #: The low position value of the DualSlider. The value will be clipped to
     #: always fall between the minimum and maximum and be smaller than
     #: the high value
-    low_value = d_(Int(0))
+    low_value = d_(Int())
 
      #: The high position value of the DualSlider. The value will be
     #: clipped to always fall between the minimum and maximum
     #: and be larger than the low_value
-    high_value = d_(Int(100)) 
+    high_value = d_(Int()) 
 
     #: A TickPosition enum value indicating how to display the tick
     #: marks. Note that the orientation takes precedence over the tick
@@ -141,7 +141,7 @@ class DualSlider(Control):
     # DefaultValue Handlers
     #--------------------------------------------------------------------------
     def _default_hug_width(self):
-        """ Get the default hug width for the separator.
+        """ Get the default hug width for the slider.
 
         The default hug width is computed based on the orientation.
 
@@ -151,7 +151,7 @@ class DualSlider(Control):
         return 'strong'
 
     def _default_hug_height(self):
-        """ Get the default hug height for the separator.
+        """ Get the default hug height for the slider.
 
         The default hug height is computed based on the orientation.
 
@@ -159,6 +159,22 @@ class DualSlider(Control):
         if self.orientation == 'vertical':
             return 'ignore'
         return 'strong'
+
+    def _default_low_value(self):
+        """ Get the default low value for the slider
+
+        The default low value is the minimum of the slider.
+
+        """
+        return self.minimum
+
+    def _default_high_value(self):
+        """ Get the default high value for the slider
+
+        The default high value is the maximum of the slider.
+
+        """
+        return self.maximum
 
     #--------------------------------------------------------------------------
     # PostSetAttr Handlers
