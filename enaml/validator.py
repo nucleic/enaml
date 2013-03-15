@@ -117,7 +117,7 @@ class FloatValidator(Validator):
 
     #: The maximum value allowed for the float, inclusive, or null if
     #: there is no upper bound.
-    minimum = Typed(float)
+    maximum = Typed(float)
 
     #: Whether or not to allow exponents like '1e6' in the input.
     allow_exponent = Bool(True)
