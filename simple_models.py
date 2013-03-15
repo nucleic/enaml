@@ -1,49 +1,22 @@
 from atom.api import Atom, Int, Str
 
 from enaml.colors import parse_color
-from enaml.fonts import parse_font
-from enaml.itemmodels.modeleditor import ModelEditor, EditGroup, AttrEditor
-from enaml.itemmodels.editortablemodel import EditorTableModel
+from enaml.itemmodels.api import Editor, Group, Item, StyledItem, EditorTable
+
 
 #------------------------------------------------------------------------------
-# Custom Item Editors
+# Custom Items
 #------------------------------------------------------------------------------
 lightskyblue = parse_color('lightskyblue')
 steelblue = parse_color('steelblue')
-red = parse_color('red')
-goldenrod = parse_color('goldenrod')
 
-arial = parse_font('bold 12pt arial')
-ariallarge = parse_font('bold italic 24pt times')
-
-
-class BEditor(AttrEditor):
+class AltBlue(Item):
 
     def get_background(self, model):
-        if model.b % 7 != 0:
+        if getattr(model, self.name) % 7 != 0:
             return lightskyblue
         return steelblue
 
-
-class CEditor(AttrEditor):
-
-    def get_foreground(self, model):
-        return red
-
-    def get_font(self, model):
-        return arial
-
-
-class EEditor(AttrEditor):
-
-    def get_background(self, model):
-        return goldenrod
-
-
-class FEditor(AttrEditor):
-
-    def get_font(self, model):
-        return ariallarge
 
 #------------------------------------------------------------------------------
 # Data Models
@@ -54,14 +27,13 @@ class Foo(Atom):
     b = Int()
     c = Int()
 
-    edit_groups = [
-        EditGroup(
-            name='Ints',
-            item_editors=[
-                AttrEditor(name='name'),
-                AttrEditor(name='a'),
-                BEditor(name='b'),
-                CEditor(name='c'),
+    groups = [
+        Group('Ints',
+            items=[
+                Item('name'),
+                Item('a'),
+                AltBlue('b'),
+                StyledItem('c', foreground='red', font='bold 12pt arial'),
             ]
         )
     ]
@@ -72,13 +44,12 @@ class Bar(Foo):
     e = Str()
     i = Str()
 
-    edit_groups = Foo.edit_groups + [
-        EditGroup(
-            name='Strings',
-            item_editors=[
-                AttrEditor(name='d'),
-                EEditor(name='e'),
-                AttrEditor(name='i'),
+    groups = Foo.groups + [
+        Group('Strings',
+            items=[
+                Item('d'),
+                StyledItem('e', background='goldenrod'),
+                Item('i'),
             ]
         )
     ]
@@ -89,13 +60,12 @@ class Baz(Bar):
     g = Int()
     h = Int()
 
-    edit_groups = Bar.edit_groups + [
-        EditGroup(
-            name='Ints',
-            item_editors=[
-                FEditor(name='f'),
-                AttrEditor(name='g'),
-                AttrEditor(name='i'),
+    groups = Bar.groups + [
+        Group('Ints',
+            items=[
+                StyledItem('f', font='bold italic 24pt times'),
+                Item('g'),
+                Item('i'),
             ]
         )
     ]
@@ -106,7 +76,7 @@ class Baz(Bar):
 #------------------------------------------------------------------------------
 count = 0
 models = []
-for i in range(100000):
+for i in range(10000):
     si = str(i)
     f = Foo(name='item ' + str(count), a=i, b=i, c=i)
     b = Bar(name='item ' + str(count + 1), a=i, b=i, c=i, d='D ' + si, e='E ' + si, i='I ' + si)
@@ -117,9 +87,9 @@ for i in range(100000):
     count += 3
 
 
-datamodel = EditorTableModel()
+datamodel = EditorTable()
 for m in models:
-    datamodel.add_editor(ModelEditor(model=m, edit_groups=m.edit_groups))
+    datamodel.add_editor(Editor(model=m, groups=m.groups))
 import time
 t1 = time.clock()
 datamodel.layout()
