@@ -365,4 +365,3 @@ def inject_inversion(codelist):
         raise ValueError("can't invert code")
 
     return new_code
-

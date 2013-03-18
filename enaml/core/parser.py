@@ -30,15 +30,6 @@ Load = ast.Load()
 Del = ast.Del()
 
 
-# The translation table for expression operators
-operator_table = {
-    '=': 'Equal',
-    '<': 'Less',
-    '>': 'Greater',
-    ':': 'Colon',
-}
-
-
 # The allowed ast node types for ast.Store contexts
 context_allowed = set([
     ast.Attribute,
@@ -162,17 +153,6 @@ class FakeToken(object):
         self.lineno = lineno
 
 
-def translate_operator(op):
-    """ Converts a symbolic operator into a string of the form
-    __operator_<name>__ where <name> is result of translating the
-    symbolic operator using the operator_table.
-
-    """
-    op_table = operator_table
-    name = ''.join(op_table[char] for char in op)
-    return '__operator_%s__' % name
-
-
 def set_context(node, ctx, p):
     """ Recursively sets the context of the node to the given context
     which should be Store or Del. If the node is not one of the allowed
@@ -242,6 +222,7 @@ def ast_for_dotted_name(dotted_name):
 # The nodes which can be inverted to form an assignable expression.
 _INVERTABLE = (ast.Name, ast.Attribute, ast.Call, ast.Subscript)
 
+
 def validate_invertable(node, lineno, p):
     """ Validates that its possible for the compiler to generated
     inversion code for the given ast node.
@@ -299,16 +280,12 @@ def build_attr_declaration(kw, name, attr_type, default, lineno, p):
 
     """
     if kw not in ('attr', 'event'):
-        msg = "Expected keyword 'attr' or 'event', got '%s' instead." % kw
+        msg = "expected keyword 'attr' or 'event', got '%s' instead." % kw
         syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
-    if kw == 'attr':
-        res = enaml_ast.AttributeDeclaration(
-            name, attr_type, default, False, lineno,
-        )
-    else:
-        res = enaml_ast.AttributeDeclaration(
-            name, attr_type, default, True, lineno,
-        )
+    is_event = kw == 'event'
+    res = enaml_ast.AttributeDeclaration(
+        name, attr_type, default, is_event, lineno,
+    )
     return res
 
 
@@ -393,14 +370,26 @@ def p_enaml_module_body2(p):
     p[0] = [p[1]]
 
 
+def p_enaml_module_item1(p):
+    ''' enaml_module_item : stmt '''
+    p[0] = p[1]
+
+
 def p_enaml_module_item2(p):
     ''' enaml_module_item : declaration '''
     p[0] = p[1]
 
 
-def p_enaml_module_item1(p):
-    ''' enaml_module_item : stmt '''
-    p[0] = p[1]
+def p_enaml_module_item3(p):
+    ''' enaml_module_item : decorators declaration '''
+    declaration = p[2]
+    decorators = []
+    for decnode in p[1]:
+        expr = ast.Expression()
+        expr.body = decnode
+        decorators.append(expr)
+    declaration.decorators = decorators
+    p[0] = declaration
 
 
 #------------------------------------------------------------------------------
@@ -408,8 +397,8 @@ def p_enaml_module_item1(p):
 #------------------------------------------------------------------------------
 def p_declaration1(p):
     ''' declaration : ENAMLDEF NAME LPAR NAME RPAR COLON declaration_body '''
-    doc, idn, items = p[7]
-    p[0] = enaml_ast.Declaration(p[2], p[4], idn, doc, items, p.lineno(1))
+    doc, items = p[7]
+    p[0] = enaml_ast.Declaration(p[2], p[4], None, doc, items, p.lineno(1))
 
 
 def p_declaration2(p):
@@ -419,12 +408,8 @@ def p_declaration2(p):
 
 def p_declaration3(p):
     ''' declaration : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON declaration_body '''
-    lineno = p.lineno(1)
-    doc, idn, items = p[9]
-    if idn is not None:
-        msg = 'multiple identifiers declared'
-        syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
-    p[0] = enaml_ast.Declaration(p[2], p[4], p[7], doc, items, lineno)
+    doc, items = p[9]
+    p[0] = enaml_ast.Declaration(p[2], p[4], p[7], doc, items, p.lineno(1))
 
 
 def p_declaration4(p):
@@ -436,38 +421,14 @@ def p_declaration_body1(p):
     ''' declaration_body : NEWLINE INDENT declaration_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
-    p[0] = ('', None, items)
+    p[0] = ('', items)
 
 
 def p_declaration_body2(p):
-    ''' declaration_body : NEWLINE INDENT identifier DEDENT '''
-    p[0] = ('', p[3], [])
-
-
-def p_declaration_body3(p):
-    ''' declaration_body : NEWLINE INDENT identifier declaration_body_items DEDENT '''
-    # Filter out any pass statements
-    items = filter(None, p[4])
-    p[0] = ('', p[3], items)
-
-
-def p_declaration_body4(p):
     ''' declaration_body : NEWLINE INDENT STRING NEWLINE declaration_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[5])
-    p[0] = (p[3], None, items)
-
-
-def p_declaration_body5(p):
-    ''' declaration_body : NEWLINE INDENT STRING NEWLINE identifier DEDENT '''
-    p[0] = (p[3], p[5], [])
-
-
-def p_declaration_body6(p):
-    ''' declaration_body : NEWLINE INDENT STRING NEWLINE identifier declaration_body_items DEDENT '''
-    # Filter out any pass statements
-    items = filter(None, p[6])
-    p[0] = (p[3], p[5], items)
+    p[0] = (p[3], items)
 
 
 def p_declaration_body_items1(p):
@@ -530,24 +491,11 @@ def p_attribute_declaration4(p):
 
 
 #------------------------------------------------------------------------------
-# Identifier
-#------------------------------------------------------------------------------
-def p_identifier(p):
-    ''' identifier : NAME COLON NAME NEWLINE '''
-    lhs = p[1]
-    if lhs != 'id':
-        msg = "'id' required. Got '%s' instead." % lhs
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    p[0] = p[3]
-
-
-#------------------------------------------------------------------------------
 # Instantiation
 #------------------------------------------------------------------------------
 def p_instantiation1(p):
     ''' instantiation : NAME COLON instantiation_body '''
-    identifier, items = p[3]
-    p[0] = enaml_ast.Instantiation(p[1], identifier, items, p.lineno(1))
+    p[0] = enaml_ast.Instantiation(p[1], None, p[3], p.lineno(1))
 
 
 def p_instantiation2(p):
@@ -556,46 +504,40 @@ def p_instantiation2(p):
 
 
 def p_instantiation3(p):
+    ''' instantiation : NAME COLON attribute_declaration '''
+    p[0] = enaml_ast.Instantiation(p[1], None, [p[3]], p.lineno(1))
+
+
+def p_instantiation4(p):
     ''' instantiation : NAME COLON PASS NEWLINE '''
     p[0] = enaml_ast.Instantiation(p[1], None, [], p.lineno(1))
 
 
-def p_instantiation4(p):
-    ''' instantiation : NAME COLON NAME COLON instantiation_body '''
-    identifier, items = p[5]
-    if identifier is not None:
-        msg = 'multiple identifiers declared'
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    p[0] = enaml_ast.Instantiation(p[1], p[3], items, p.lineno(1))
-
-
 def p_instantiation5(p):
+    ''' instantiation : NAME COLON NAME COLON instantiation_body '''
+    p[0] = enaml_ast.Instantiation(p[1], p[3], p[5], p.lineno(1))
+
+
+def p_instantiation6(p):
     ''' instantiation : NAME COLON NAME COLON attribute_binding '''
     p[0] = enaml_ast.Instantiation(p[1], p[3], [p[5]], p.lineno(1))
 
 
-def p_instantiation6(p):
+def p_instantiation7(p):
+    ''' instantiation : NAME COLON NAME COLON attribute_declaration '''
+    p[0] = enaml_ast.Instantiation(p[1], p[3], [p[5]], p.lineno(1))
+
+
+def p_instantiation8(p):
     ''' instantiation : NAME COLON NAME COLON PASS NEWLINE '''
     p[0] = enaml_ast.Instantiation(p[1], p[3], [], p.lineno(1))
 
 
-def p_instantiation_body1(p):
+def p_instantiation_body(p):
     ''' instantiation_body : NEWLINE INDENT instantiation_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
-    p[0] = (None, items)
-
-
-def p_instantiation_body2(p):
-    ''' instantiation_body : NEWLINE INDENT identifier DEDENT '''
-    p[0] = (p[3], [])
-
-
-def p_instantiation_body3(p):
-    ''' instantiation_body : NEWLINE INDENT identifier instantiation_body_items DEDENT '''
-    # Filter out any pass statements
-    items = filter(None, p[4])
-    p[0] = (p[3], items)
+    p[0] = items
 
 
 def p_instantiation_body_items1(p):
@@ -619,6 +561,11 @@ def p_instantiation_body_item2(p):
 
 
 def p_instantiation_body_item3(p):
+    ''' instantiation_body_item : attribute_declaration '''
+    p[0] = p[1]
+
+
+def p_instantiation_body_item4(p):
     ''' instantiation_body_item : PASS NEWLINE '''
     p[0] = None
 
@@ -635,12 +582,11 @@ def p_binding1(p):
     ''' binding : EQUAL test NEWLINE
                 | LEFTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
-    operator = translate_operator(p[1])
     expr = ast.Expression(body=p[2])
     expr.lineno = lineno
     ast.fix_missing_locations(expr)
     expr_node = enaml_ast.Python(expr, lineno)
-    p[0] = enaml_ast.BoundExpression(operator, expr_node, lineno)
+    p[0] = enaml_ast.BoundExpression(p[1], expr_node, lineno)
 
 
 def p_binding2(p):
@@ -648,18 +594,16 @@ def p_binding2(p):
                 | RIGHTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
     validate_invertable(p[2], lineno, p)
-    operator = translate_operator(p[1])
     expr = ast.Expression(body=p[2])
     expr.lineno = lineno
     ast.fix_missing_locations(expr)
     expr_node = enaml_ast.Python(expr, lineno)
-    p[0] = enaml_ast.BoundExpression(operator, expr_node, lineno)
+    p[0] = enaml_ast.BoundExpression(p[1], expr_node, lineno)
 
 
 def p_binding3(p):
     ''' binding : DOUBLECOLON suite '''
     lineno = p.lineno(1)
-    operator = translate_operator(p[1])
     mod = ast.Module()
     mod.body = p[2]
     for item in ast.walk(mod):
@@ -668,7 +612,7 @@ def p_binding3(p):
             msg = msg % notification_disallowed[type(item)]
             syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
     expr_node = enaml_ast.Python(mod, lineno)
-    p[0] = enaml_ast.BoundExpression(operator, expr_node, lineno)
+    p[0] = enaml_ast.BoundExpression(p[1], expr_node, lineno)
 
 
 #------------------------------------------------------------------------------
@@ -3192,4 +3136,3 @@ def parse(enaml_source, filename='Enaml'):
         return _parser.parse(enaml_source, debug=0, lexer=lexer)
     except ParsingError as parse_error:
         raise parse_error()
-

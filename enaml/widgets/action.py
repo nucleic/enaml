@@ -91,12 +91,12 @@ class Action(ToolkitObject):
     #: An event fired when the action is triggered by user interaction.
     #: They payload will be the current checked state. This event is
     #: triggered by the proxy object when the action is triggerd.
-    triggered = Event(bool)
+    triggered = d_(Event(bool), writable=False)
 
     #: An event fired when a checkable action changes its checked state.
     #: The payload will be the current checked state. This event is
     #: triggerd by the proxy object when the action is toggled.
-    toggled = Event(bool)
+    toggled = d_(Event(bool), writable=False)
 
     #: A reference to the ProxyAction object.
     proxy = Typed(ProxyAction)

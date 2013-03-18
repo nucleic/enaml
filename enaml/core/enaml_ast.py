@@ -83,6 +83,7 @@ class Declaration(ASTNode):
         self.identifier = identifier
         self.doc = doc
         self.body = body
+        self.decorators = []
 
 
 class Instantiation(ASTNode):
@@ -170,4 +171,3 @@ class BoundExpression(ASTNode):
         super(BoundExpression, self).__init__(lineno)
         self.op = op
         self.expr = expr
-

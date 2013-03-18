@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, List
 
-from .declarative import d_, scope_lookup
+from .declarative import d_
 from .templated import Templated
 
 
@@ -26,8 +26,8 @@ class Conditional(Templated):
     #: be destroyed.
     condition = d_(Bool(True))
 
-    #: The list of items created by the conditional. This should not be
-    #: manipulated directly by user code.
+    #: The list of items created by the conditional. This list should
+    #: not be manipulated directly by user code.
     items = List()
 
     #--------------------------------------------------------------------------
@@ -89,24 +89,21 @@ class Conditional(Templated):
             # list of description dicts. There will only typically be
             # one template, but more can exist if the conditional was
             # subclassed via enamldef to provided default children.
-            for identifiers, f_globals, descriptions in templates:
+            for f_locals, f_globals, descriptions in templates:
                 # Each conditional gets a new scope derived from the
                 # existing scope. This also allows the new children
-                # to add their own independent identifiers. The items
-                # are constructed with no parent since they are
-                # parented via `insert_children` later on.
-                scope = identifiers.copy()
+                # to add their own independent locals. The items are
+                # constructed with no parent since they are parented
+                # via `insert_children` later on.
+                new_scope = f_locals.copy()
                 for descr in descriptions:
-                    cls = scope_lookup(descr['type'], f_globals, descr)
-                    instance = cls()
-                    instance.populate(descr, scope, f_globals)
+                    instance = descr['class']()
+                    instance._populate(descr, new_scope, f_globals)
                     items.append(instance)
 
-        old_items = self.items
-        if len(old_items) > 0:
-            for old in old_items:
-                if not old.is_destroyed:
-                    old.destroy()
+        for old in self.items:
+            if not old.is_destroyed:
+                old.destroy()
         if len(items) > 0:
             self.parent.insert_children(self, items)
         self.items = items

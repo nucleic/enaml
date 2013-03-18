@@ -7,99 +7,176 @@
 #------------------------------------------------------------------------------
 from types import FunctionType
 
-from atom.api import ForwardTyped, Event
+from atom.api import Typed, Value, Event
 
 from .declarative import Declarative, d_
 from .enaml_def import EnamlDef
-from .exceptions import DeclarativeNameError, InvalidOverrideError
+from .exceptions import (
+    DeclarativeNameError, DeclarativeError, OperatorLookupError,
+)
+from .operators import DEFAULT_OPERATORS
 
 
-class EnamlDefAttr(ForwardTyped):
-    """ A sentinel class to distinguish from a normal ForwardTyped.
+def _do_process_enamldef(klass, descr, f_globals):
+    """ A helper function which post processes an enamldef class.
 
-    """
-    pass
-
-
-class EnamlDefEvent(Event):
-    """ A sentinel class to distinguish from a normal Event.
-
-    """
-    pass
-
-
-def _setup_binding_funcs(description, f_globals):
-    """ A helper function which creates the functions for the bindings.
-
-    This function is used to create the binding functions once, instead
-    of several times for each instance on which the binding is used.
-    This function will recursively operation on the entired description
-    tree.
+    The post processing phase is responsible for adding member storage
+    for local scope dicts, resolving class types for the descriptions,
+    adding the user defined attributes and events, making the functions
+    for the expression code objects, and calling the operators to bind
+    the expressions.
 
     Parameters
     ----------
-    description : dict
-        The description dictionary created by the Enaml compiler.
+    klass : EnamlDef
+        The enamldef class to be processed.
+
+    descr : dict
+        The description dictionary for the enamldef.
 
     f_globals : dict
-        The dictionary of globals created by the Enaml compiler.
+        The global scope of the .enaml module.
 
     """
-    bindings = description['bindings']
-    if len(bindings) > 0:
-        for binding in bindings:
-            code = binding['code']
-            name = binding['name']
-            # If the code is a tuple, it represents a delegation
-            # expression which is a combination of subscription
-            # and update functions.
+    # Add the resolved class definition for the enamldef. Since the
+    # enamldef is already an independent subclass, it does not need
+    # to be subclassed again before the transformations are made.
+    # If the class has no __operators__ attribute then the default
+    # operators will be used. Operators can be applied by using a
+    # decorator or by setting the attribute before the module has
+    # been fully imported.
+    descr['class'] = klass
+    if not hasattr(klass, '__operators__'):
+        operators = klass.__operators__ = DEFAULT_OPERATORS
+    else:
+        operators = klass.__operators__
+
+    # Pass over the child descriptions and resolve the classes. Child
+    # types with user attrs or bound expressions are subclassed.
+    stack = list(descr['children'])
+    while stack:
+        d = stack.pop()
+        try:
+            rcls = f_globals[d['type']]
+        except KeyError:
+            raise DeclarativeNameError(d['type'], d)
+        if not isinstance(rcls, type) or not issubclass(rcls, Declarative):
+            message = "'%s' is not a Declarative subclass" % d['type']
+            raise DeclarativeError(message, d)
+        if d['bindings'] or d['attrs']:
+            modname = f_globals['__name__']
+            dct = {'__module__': modname, '__doc__': rcls.__doc__}
+            d['class'] = type(rcls)(rcls.__name__, (rcls,), dct)
+        else:
+            d['class'] = rcls
+        stack.extend(d['children'])
+
+    # After the classes are resolved and the subclasses created, the
+    # member creations and transformations can be performed.
+    stack = [descr]
+    while stack:
+        d = stack.pop()
+        thisklass = d['class']
+        members = thisklass.members()
+
+        # If the block has locals and the given item has bindings, then
+        # a member needs to be added to store the scope. It is possible
+        # that the member was already added by '_make_enamldef_helper_'.
+        scopename = d['scopename']
+        if scopename and scopename not in members and d['bindings']:
+            v = Value()
+            v.set_name(scopename)
+            v.set_index(len(members))
+            members[scopename] = v
+            setattr(thisklass, scopename, v)
+
+        # Add the user defined attributes. If an attribute cannot be
+        # overridden, an appropriate exception will be raised.
+        for attr in d['attrs']:
+            attrname = attr['name']
+            if attrname in members:
+                m = members[attrname]
+                if m.metadata is None or not m.metadata.get('d_member'):
+                    message = "cannot override non-declarative member '%s'"
+                    message = message % attrname
+                    raise DeclarativeError(message, attr)
+                if m.metadata.get('d_final'):
+                    message = "cannot override the final member '%s'"
+                    message = message % attrname
+                    raise DeclarativeError(message, attr)
+            attrtypename = attr['type']
+            if attrtypename:
+                try:
+                    attrtype = f_globals[attrtypename]
+                except KeyError:
+                    try:
+                        attrtype = f_globals['__builtins__'][attrtypename]
+                    except KeyError:
+                        raise DeclarativeNameError(attrtypename, attr)
+            else:
+                attrtype = object
+            if attr['is_event']:
+                newmember = d_(Event(attrtype), writable=False)
+            else:
+                newmember = d_(Typed(attrtype))
+            if attrname in members:
+                m = members[attrname]
+                newmember.set_index(m.index)
+                newmember.copy_static_observers(m)
+            else:
+                newmember.set_index(len(members))
+            newmember.set_name(attrname)
+            members[attrname] = newmember
+            setattr(thisklass, attrname, newmember)
+
+        # Create the function objects for the operator bindings and
+        # call the operators to bind the expressions.
+        for b in d['bindings']:
+            code = b['code']
+            name = b['name']
+            # If the code is a tuple, it represents the ':=' operator
+            # which is a combination of '<<' and '>>' functions.
             if isinstance(code, tuple):
                 sub_code, upd_code = code
                 func = FunctionType(sub_code, f_globals, name)
-                func._update = FunctionType(upd_code, f_globals, name)
+                func2 = FunctionType(upd_code, f_globals, name)
+                b['func'] = func
+                b['func2'] = func2  # TODO this could be cleaner
             else:
                 func = FunctionType(code, f_globals, name)
-            binding['func'] = func
-    children = description['children']
-    if len(children) > 0:
-        for child in children:
-            _setup_binding_funcs(child, f_globals)
+                b['func'] = func
+            try:
+                operator = operators[b['operator']]
+            except KeyError:
+                raise OperatorLookupError(b['operator'], b)
+            operator(thisklass, b)
+
+        # Process the children of the description.
+        stack.extend(d['children'])
 
 
-def _attr_type_resolver(attr, f_globals):
-    """ Create a closure which will resolve the type of an attr.
+def _post_process_enamldefs_(enamldefs, f_globals):
+    """ Post process the descriptions created by the compiler.
+
+    This function will resolve the symbols for the class definitions and
+    create the necessary subclasses with relevant bound expressions.
+
+    This function is imported and called by code generated by the Enaml
+    compiler when it parses and compiles a .enaml file.
 
     Parameters
     ----------
-    attr : dict
-        The description dictionary for the 'attr' or 'event' keyword.
+    enamldefs : list
+        A list of 2-tuples of the form (class, descr) where the class
+        is an enamldef class and descr is the description dict for that
+        class.
 
     f_globals : dict
-        The globals dictionary for the scope of the attr declaration.
-        This dict should contain a reference to '__builtins__'.
-
-
-    Returns
-    -------
-    result : FunctionType
-        A function which can be passed to a ForwardTyped atom member to
-        resolve the attr type on-demand.
+        The dictionary of globals for the .enaml module.
 
     """
-    def resolver():
-        attr_type = attr['type']
-        try:
-            item = f_globals[attr_type]
-        except KeyError:
-            try:
-                item = f_globals['__builtins__'][attr_type]
-            except KeyError:
-                lineno = attr['lineno']
-                filename = attr['filename']
-                block = attr['block']
-                raise DeclarativeNameError(attr_type, filename, lineno, block)
-        return item
-    return resolver
+    for klass, descr in enamldefs:
+        _do_process_enamldef(klass, descr, f_globals)
 
 
 def _make_enamldef_helper_(name, base, description, f_globals):
@@ -135,56 +212,20 @@ def _make_enamldef_helper_(name, base, description, f_globals):
         A new enamldef subclass of the given base class.
 
     """
-    # Ensure the subclass is inheriting from Declarative.
     if not isinstance(base, type) or not issubclass(base, Declarative):
         msg = "can't derive enamldef from '%s'"
         raise TypeError(msg % base)
-
-    # Generate the function objects and the dict for the new class.
-    _setup_binding_funcs(description, f_globals)
-    dct = {
-        '__module__': f_globals.get('__name__', ''),
-        '__doc__': description.get('__doc__', ''),
-    }
-
-    # Add the class members for the 'attr' keywords.
-    base_members = base.members()
-    for attr in description['attrs']:
-        attr_name = attr['name']
-        if attr_name in base_members:
-            m = base_members[attr_name]
-            if not isinstance(m, d_) or not isinstance(m.delegate, EnamlDefAttr):
-                filename = attr['filename']
-                lineno = attr['lineno']
-                block = attr['block']
-                suffix = "the '%s' member on the '%s' base class"
-                suffix %= (attr_name, base.__name__)
-                raise InvalidOverrideError(suffix, filename, lineno, block)
-        if attr['type']:
-            resolver = _attr_type_resolver(attr, f_globals)
-        else:
-            resolver = lambda: object
-        dct[attr_name] = d_(EnamlDefAttr(resolver))
-
-    # Add the class members for the 'event' keyword.
-    for evt in description['events']:
-        evt_name = evt['name']
-        if evt_name in base_members:
-            m = base_members[evt_name]
-            if not isinstance(m, EnamlDefEvent):
-                filename = evt['filename']
-                lineno = evt['lineno']
-                block = evt['block']
-                suffix = "the '%s' member on the '%s' base class"
-                suffix %= (evt_name, base.__name__)
-                raise InvalidOverrideError(suffix, filename, lineno, block)
-        if evt['type']:
-            resolver = _attr_type_resolver(evt, f_globals)
-        else:
-            resolver = lambda: object
-        dct[evt_name] = EnamlDefEvent(ForwardTyped(resolver))
-
-    # Create the class and give it a reference to the descriptions.
+    dct = {}
+    dct['__module__'] = f_globals.get('__name__', '')
+    dct['__doc__'] = description['doc']
+    # Add the member which will hold the local scope dict for the given
+    # scope name. This needs to be done before the post process handler
+    # creates any subclasses of the enamldef during class resolution.
+    #
+    # TODO I think local scope management can be done better.
+    scopename = description['scopename']
+    if scopename and description['bindings']:
+        dct[scopename] = Value()
     decl_cls = EnamlDef(name, (base,), dct)
-    decl_cls.__declarative_descriptions__ += ((description, f_globals),)
+    decl_cls.__descriptions__ += ((description, f_globals),)
     return decl_cls

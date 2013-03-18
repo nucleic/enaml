@@ -5,40 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" The default Enaml operators.
+from atom.api import DefaultValue
 
-The operator functions are called by the Enaml runtime to implement the
-expression binding semantics of the Enaml operators. The functions are
-passed a number of arguments in order to perform their work:
-
-Parameters
-----------
-obj : Declarative
-    The Declarative object which owns the expression which is being
-    bound.
-
-name : string
-    The name of the attribute on the object which is being bound.
-
-func : types.FunctionType
-    A function with bytecode that has been patched by the Enaml compiler
-    for semantics specific to the operator. The docs for each operator
-    given a more complete description of this function, since it varies
-    for each operator.
-
-identifiers : dict
-    The dictionary of identifiers available to the expression. This dict
-    is shared amongst all expressions within a given lexical scope. It
-    should therefore not be modified or copied since identifiers may
-    continue to be added to this dict as runtime execution continues.
-
-"""
-from collections import namedtuple
-
-from atom.api import null
-
-from .declarative import DeclarativeExpression, DeclarativeProperty
 from .dynamic_scope import DynamicScope, Nonlocals
+from .exceptions import DeclarativeError
 from .funchelper import call_func
 from .standard_inverter import StandardInverter
 from .standard_tracer import StandardTracer
@@ -48,299 +18,394 @@ class OperatorBase(object):
     """ The base class of the standard Enaml operator implementations.
 
     """
-    __slots__ = ('func', 'f_locals')
+    __slots__ = 'binding'
 
-    def __init__(self, func, f_locals):
-        """ Initialize a BaseExpression.
+    def __init__(self, binding):
+        """ Initialize an OperatorBase.
 
         Parameters
         ----------
-        func : types.FunctionType
-            A function created by the Enaml compiler with bytecode that
-            has been patched to support the semantics required of the
-            expression.
-
-        f_locals : dict
-            The dictionary of local identifiers for the function.
+        binding : dict
+            The dict created by the compiler which represents the
+            operator binding.
 
         """
-        self.func = func
-        self.f_locals = f_locals
+        self.binding = binding
 
-    @property
-    def name(self):
-        """ Get the name to which the operator is bound.
+    def get_locals(self, owner):
+        """ Get the local scope for this operator and owner.
+
+        Parameters
+        ----------
+        owner : Declarative
+            The declarative object of interest.
 
         """
-        return self.func.__name__
+        scopename = self.binding['scopename']
+        if scopename:
+            return getattr(owner, scopename)
+        return {}
+
+    def release(self, owner):
+        """ Release any resources held for the given owner.
+
+        This method is called by a declarative object when it is being
+        destroyed. It provides an opportunity for the operator to clean
+        up any owner-specific state it may be holding. By default, this
+        method is a no-op.
+
+        Parameters
+        ----------
+        owner : Declarative
+            The declarative object being destroyed.
+
+        """
+        pass
 
 
 class OpSimple(OperatorBase):
-    """ A class which implements the `=` operator.
-
-    This class implements the `DeclarativeExpression` interface.
+    """ An operator class which implements the `=` operator semantics.
 
     """
     __slots__ = ()
 
-    def evaluate(self, owner):
+    def eval(self, owner):
         """ Evaluate and return the expression value.
+
+        This method is called by the '_run_eval_operator()' method on
+        a Declarative instance.
+
+        Parameters
+        ----------
+        owner : Declarative
+            The declarative object requesting the evaluation.
 
         """
         overrides = {'nonlocals': Nonlocals(owner, None), 'self': owner}
-        func = self.func
+        f_locals = self.get_locals(owner)
+        func = self.binding['func']
         scope = DynamicScope(
-            owner, self.f_locals, overrides, func.func_globals, None
+            owner, f_locals, overrides, func.func_globals, None
         )
-        with owner.operators:
-            return call_func(func, (), {}, scope)
-
-
-DeclarativeExpression.register(OpSimple)
-
-
-NotificationEvent = namedtuple('NotificationEvent', 'obj name old new')
+        return call_func(func, (), {}, scope)
 
 
 class OpNotify(OperatorBase):
-    """ A class which implements the `::` operator.
-
-    Instances of this class can be used as Atom observers.
+    """ An operator class which implements the `::` operator semantics.
 
     """
     __slots__ = ()
 
-    def __call__(self, change):
-        """ Called when the attribute on the owner has changed.
+    def notify(self, change):
+        """ Run the notification code bound to the operator.
+
+        This method is called by the '_run_notify_operator()' method on
+        a Declarative instance.
+
+        Parameters
+        ----------
+        change : dict
+            The change dict for the change on the requestor.
 
         """
         owner = change['object']
         nonlocals = Nonlocals(owner, None)
-        if change['type'] == 'event':
-            event = NotificationEvent(
-                owner, change['name'], null, change['value']
-            )
-        else:
-            event = NotificationEvent(
-                owner, change['name'], change['oldvalue'], change['newvalue']
-            )
-        overrides = {
-            'event': event,  # backwards compatibility
-            'change': change, 'nonlocals': nonlocals, 'self': owner
-        }
-        func = self.func
+        overrides = {'change': change, 'nonlocals': nonlocals, 'self': owner}
+        f_locals = self.get_locals(owner)
+        func = self.binding['func']
         scope = DynamicScope(
-            owner, self.f_locals, overrides, func.func_globals, None
+            owner, f_locals, overrides, func.func_globals, None
         )
-        with owner.operators:
-            call_func(func, (), {}, scope)
+        call_func(func, (), {}, scope)
 
 
 class OpUpdate(OperatorBase):
-    """ A class which implements the `>>` operator.
-
-    Instances of this class can be used as Atom observers.
+    """ An operator class which implements the `>>` operator semantics.
 
     """
     __slots__ = ()
 
-    def __call__(self, change):
-        """ Called when the attribute on the owner has changed.
+    def notify(self, change):
+        """ Run the notification code bound to the operator.
+
+        This method is called by the '_run_notify_operator()' method on
+        a Declarative instance.
+
+        Parameters
+        ----------
+        change : dict
+            The change dict for the change on the requestor.
 
         """
         owner = change['object']
         nonlocals = Nonlocals(owner, None)
         overrides = {'nonlocals': nonlocals, 'self': owner}
         inverter = StandardInverter(nonlocals)
-        func = self.func
+        f_locals = self.get_locals(owner)
+        func = self.binding['func']
         scope = DynamicScope(
-            owner, self.f_locals, overrides, func.func_globals, None
+            owner, f_locals, overrides, func.func_globals, None
         )
-        with owner.operators:
-            call_func(func, (inverter, change['newvalue']), {}, scope)
+        if change['type'] == 'event':
+            value = change['value']
+        else:
+            value = change['newvalue']
+        call_func(func, (inverter, value), {}, scope)
 
 
-class SubscriptionNotifier(object):
-    """ A simple object used for attaching notification handlers.
+class SubscriptionObserver(object):
+    """ An observer used to listen for changes in "<<" expressions.
+
+    Instances of this class are created and managed by the OpSubscribe
+    class when the operator is evaluated and traced.
 
     """
-    __slots__ = ('notifier', 'name')
+    __slots__ = ('owner', 'name')
 
-    def __init__(self, notifier, name):
-        """ Initialize a SubscriptionNotifier.
+    def __init__(self, owner, name):
+        """ Initialize a SubscriptionObserver.
 
         Parameters
         ----------
-        notifier : callable
-            A callable object provided by the Declarative owner which
-            should be invoked when the expression is invalid. The name
-            of the bound expression is passed as an argument.
+        owner : Declarative
+            The declarative owner of interest.
 
         name : str
-            The name to which the expression is bound.
-
-        keyval : object
-            An object to use for testing equivalency of notifiers.
+            The name to which the operator is bound.
 
         """
-        self.notifier = notifier  # will be reset to None by OpSubscribe
+        self.owner = owner  # will be reset to None by OpSubscribe
         self.name = name
 
     def __nonzero__(self):
-        """ The notifier is valid when it has an internal notifier.
+        """ The notifier is valid when it has an internal owner.
 
         The atom observer mechanism will remove the observer when it
         tests boolean False. This removes the need to keep a weakref
-        to the notifier.
+        to the owner.
 
         """
-        return self.notifier is not None
+        return self.owner is not None
 
     def __call__(self, change):
-        """ The handler for the notification event.
+        """ The handler for the change notification.
 
         This will be invoked by the Atom observer mechanism when the
         item which is being observed changes.
 
         """
-        self.notifier(self.name)
+        owner = self.owner
+        if owner is not None:
+            name = self.name
+            setattr(owner, name, owner._run_eval_operator(name))
 
 
 class OpSubscribe(OperatorBase):
-    """ A class which implements the `<<` operator.
-
-    This class implements the `DeclarativeExpression` interface.
+    """ An operator class which implements the `<<` operator semantics.
 
     """
-    __slots__ = 'notifier'
+    __slots__ = 'observers'
 
-    def __init__(self, func, f_locals):
-        """ Initialize a SubscriptionExpression.
+    def __init__(self, binding):
+        """ Initialize a subscription operator.
 
         """
-        super(OpSubscribe, self).__init__(func, f_locals)
-        self.notifier = None
+        super(OpSubscribe, self).__init__(binding)
+        self.observers = {}
 
-    def evaluate(self, owner):
+    def release(self, owner):
+        """ Release the resources held for the given owner.
+
+        """
+        observer = self.observers.pop(owner, None)
+        if observer is not None:
+            observer.owner = None
+
+    def eval(self, owner):
         """ Evaluate and return the expression value.
 
         """
         tracer = StandardTracer()
         overrides = {'nonlocals': Nonlocals(owner, tracer), 'self': owner}
-        func = self.func
+        f_locals = self.get_locals(owner)
+        func = self.binding['func']
         scope = DynamicScope(
-            owner, self.f_locals, overrides, func.func_globals, tracer
+            owner, f_locals, overrides, func.func_globals, tracer
         )
-        with owner.operators:
-            result = call_func(func, (tracer,), {}, scope)
+        result = call_func(func, (tracer,), {}, scope)
 
-        notifier = self.notifier
-        if notifier is not None:
-            notifier.notifier = None  # invalidate the old notifier
-        onotifier = owner._expression_notifier
-        notifier = SubscriptionNotifier(onotifier, func.__name__)
-        self.notifier = notifier
+        # Invalidate the old observer and create a new observer which
+        # is subscribed to the traced dependencies in the expression.
+        observers = self.observers
+        if owner in observers:
+            observers[owner].owner = None
+        observer = SubscriptionObserver(owner, self.binding['name'])
+        observers[owner] = observer
         for obj, name in tracer.traced_items:
-            obj.observe(name, notifier)
+            obj.observe(name, observer)
 
         return result
 
 
-DeclarativeExpression.register(OpSubscribe)
-
-
 class OpDelegate(OpSubscribe):
-    """ An expression and listener implementation for the `:=` operator.
-
-    Instances of this class can by used at Atom notifiers.
+    """ An operator class which implements the `:=` operator semantics.
 
     """
     __slots__ = ()
 
-    def __call__(self, change):
-        """ Called when the attribute on the owner has changed.
+    def notify(self, change):
+        """ Run the notification code bound to the operator.
+
+        This method is called by the '_run_notify_operator()' method on
+        a Declarative instance.
+
+        Parameters
+        ----------
+        change : dict
+            The change dict for the change on the requestor.
 
         """
         owner = change['object']
         nonlocals = Nonlocals(owner, None)
         inverter = StandardInverter(nonlocals)
         overrides = {'nonlocals': nonlocals, 'self': owner}
-        func = self.func._update
+        f_locals = self.get_locals(owner)
+        func = self.binding['func2']
         scope = DynamicScope(
-            owner, self.f_locals, overrides, func.func_globals, None
+            owner, f_locals, overrides, func.func_globals, None
         )
-        with owner.operators:
-            call_func(func, (inverter, change['newvalue']), {}, scope)
+        call_func(func, (inverter, change['newvalue']), {}, scope)
 
 
-# XXX generate a pseudo line number traceback for binding failures
+def assert_d_member(klass, binding, readable, writable):
+    """ Assert binding points to a valid declarative member.
 
-def op_simple(obj, name, func, identifiers):
-    """ The default Enaml operator function for `=` bindings.
+    Parameters
+    ----------
+    klass : Declarative
+        The declarative class which owns the binding.
 
-    """
-    member = obj.get_member(name)
-    if not isinstance(member, DeclarativeProperty):
-        msg = "Cannot bind expression. '%s' is not a declarative property "
-        msg += "on a '%s' object."
-        raise TypeError(msg % (name, type(obj).__name__))
-    obj._expressions.append(OpSimple(func, identifiers))
+    binding : dict
+        The binding dict created by the enaml compiler.
 
+    readable : bool
+        Whether the member should have the 'd_readable' metadata flag.
 
-def op_notify(obj, name, func, identifiers):
-    """ The default Enaml operator function for `::` bindings.
+    writable : bool
+        Whether the member should have the 'd_writable' metadata flag.
 
-    """
-    member = obj.get_member(name)
-    if member is None:
-        msg = "Cannot bind expression. '%s' is not an observable member "
-        msg += "on the '%s' object."
-        raise TypeError(msg % (name, type(obj).__name__))
-    obj.observe(name, OpNotify(func, identifiers))
+    Returns
+    -------
+    result : tuple
+        A 2-tuple of (name, member) on which the binding should operate.
 
-
-def op_update(obj, name, func, identifiers):
-    """ The default Enaml operator function for `>>` bindings.
+    Raises
+    ------
+    DeclarativeError
+        This will be raised if the member is not valid for the spec.
 
     """
-    member = obj.get_member(name)
-    if member is None:
-        msg = "Cannot bind expression. '%s' is not an observable member "
-        msg += "on the '%s' object."
-        raise TypeError(msg % (name, type(obj).__name__))
-    obj.observe(name, OpUpdate(func, identifiers))
+    members = klass.members()
+    name = binding['name']
+    m = members.get(name)
+    if m is None or m.metadata is None or not m.metadata.get('d_member'):
+        message = "'%s' is not a declarative member" % name
+        raise DeclarativeError(message, binding)
+    if readable and not m.metadata.get('d_readable'):
+        message = "'%s' is not readable from enaml" % name
+        raise DeclarativeError(message, binding)
+    if writable and not m.metadata.get('d_writable'):
+        message = "'%s' is not writable from enaml" % name
+        raise DeclarativeError(message, binding)
+    return (name, m)
 
 
-def op_subscribe(obj, name, func, identifiers):
-    """ The default Enaml operator function for `<<` bindings.
+def bind_read_operator(klass, binding, operator):
+    """ Bind a readable operator for the binding to the given klass.
+
+    Parameters
+    ----------
+    klass : Declarative
+        The declarative class which owns the binding.
+
+    binding : dict
+        The binding dict created by the enaml compiler.
+
+    operator : object
+        The operator to bind to the class.
 
     """
-    member = obj.get_member(name)
-    if not isinstance(member, DeclarativeProperty):
-        msg = "Cannot bind expression. '%s' is not a declarative property "
-        msg += "on a '%s' object."
-        raise TypeError(msg % (name, type(obj).__name__))
-    obj._expressions.append(OpSubscribe(func, identifiers))
+    name, member = assert_d_member(klass, binding, True, False)
+    klass._notify_operators().setdefault(name, []).append(operator)
+    member.add_static_observer('_run_notify_operator')
 
 
-def op_delegate(obj, name, func, identifiers):
-    """ The default Enaml operator function for `:=` bindings.
+def bind_write_operator(klass, binding, operator):
+    """ Bind a writable operator for the binding to the given klass.
+
+    Parameters
+    ----------
+    klass : Declarative
+        The declarative class which owns the binding.
+
+    binding : dict
+        The binding dict created by the enaml compiler.
+
+    operator : object
+        The operator to bind to the class.
 
     """
-    member = obj.get_member(name)
-    if not isinstance(member, DeclarativeProperty):
-        msg = "Cannot bind expression. '%s' is not a declarative property "
-        msg += "on a '%s' object."
-        raise TypeError(msg % (name, type(obj).__name__))
-    expr = OpDelegate(func, identifiers)
-    obj._expressions.append(expr)
-    obj.observe(name, expr)
+    name, member = assert_d_member(klass, binding, False, True)
+    klass._eval_operators()[name] = operator
+    mode = (DefaultValue.ObjectMethod_Name, '_run_eval_operator')
+    if member.default_value_mode != mode:
+        clone = member.clone()
+        clone.set_default_value_mode(*mode)
+        klass.members()[name] = clone
+        setattr(klass, name, clone)
 
 
-OPERATORS = {
-    '__operator_Equal__': op_simple,
-    '__operator_LessLess__': op_subscribe,
-    '__operator_ColonEqual__': op_delegate,
-    '__operator_ColonColon__': op_notify,
-    '__operator_GreaterGreater__': op_update,
+def op_simple(klass, binding):
+    """ The default Enaml operator function for the `=` operator.
+
+    """
+    bind_write_operator(klass, binding, OpSimple(binding))
+
+
+def op_notify(klass, binding):
+    """ The default Enaml operator function for the `::` operator.
+
+    """
+    bind_read_operator(klass, binding, OpNotify(binding))
+
+
+def op_update(klass, binding):
+    """ The default Enaml operator function for the `>>` operator.
+
+    """
+    bind_read_operator(klass, binding, OpUpdate(binding))
+
+
+def op_subscribe(klass, binding):
+    """ The default Enaml operator function for the `<<` operator.
+
+    """
+    bind_write_operator(klass, binding, OpSubscribe(binding))
+
+
+def op_delegate(klass, binding):
+    """ The default Enaml operator function for the `:=` operator.
+
+    """
+    operator = OpDelegate(binding)
+    bind_read_operator(klass, binding, operator)
+    bind_write_operator(klass, binding, operator)
+
+
+DEFAULT_OPERATORS = {
+    '=': op_simple,
+    '::': op_notify,
+    '>>': op_update,
+    '<<': op_subscribe,
+    ':=': op_delegate,
 }

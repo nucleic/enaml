@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from functools import partial
+
 from atom.api import (
     Typed, ForwardTyped, Bool, Int, cached_property, observe, set_default
 )
@@ -63,6 +65,7 @@ class ProgressBar(Control):
     #: A reference to the ProxyProgressBar object.
     proxy = Typed(ProxyProgressBar)
 
+    @partial(d_, writable=False)
     @cached_property
     def percentage(self):
         """ The percentage completed, rounded to an int.
