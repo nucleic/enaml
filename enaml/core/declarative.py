@@ -5,155 +5,41 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from abc import ABCMeta, abstractmethod, abstractproperty
+from atom.api import Str, Event, null
 
-from atom.api import (
-    Delegator, DefaultValue, ReadOnly, List, Value, Event, Str, null
-)
-
-from .exceptions import DeclarativeNameError, OperatorLookupError
 from .object import Object, flag_generator, flag_property
-from .operator_context import OperatorContext
 
 
-class DeclarativeProperty(Delegator):
-    """ A delegator member which enables data binding in Enaml.
-
-    A declarative property is used to wrap another member on an Atom
-    subclass to enable that member to be bound by Enaml syntax. The
-    declarative property will compute the default value using a bound
-    expression. If that fails, the wrapped member will be used to get
-    the default value. All other behavior is delegated to the wrapped
-    member.
-
-    """
-    __slots__ = ()
-
-    def __init__(self, delegate):
-        """ Initialize a DeclarativeProperty.
-
-        Parameters
-        ----------
-        delegate : Member
-            The Atom Member which provides the behavior for the property.
-
-        """
-        super(DeclarativeProperty, self).__init__(delegate)
-        super(Delegator, self).set_default_value_mode(
-            DefaultValue.MemberMethod_Object, "default_value"
-        )
-
-    def default_value(self, owner):
-        """ Compute the default value for the declarative property.
-
-        The default value is retrieved by evaluating a bound expression.
-        If no bound expression exists for the member, then the internal
-        delegate member is invoked for the default value.
-
-        """
-        value = owner.evaluate_expression(self.name)
-        if value is null:
-            value = self.delegate.do_default_value(owner)
-        return value
-
-
-#: Export the DeclarativeProperty class as something easier to type.
-d_ = DeclarativeProperty
-
-
-class DeclarativeExpression(object):
-    """ An interface for defining declarative expressions.
-
-    Then Enaml operators are responsible for assigning an expression to
-    the data struct of the relevant `DeclarativeProperty`.
-
-    """
-    __metaclass__ = ABCMeta
-
-    @abstractproperty
-    def name(self):
-        """ Get the name to which the expression is bound.
-
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def evaluate(self, owner):
-        """ Evaluate and return the results of the expression.
-
-        Parameters
-        ----------
-        owner : Declarative
-            The declarative object which owns the expression.
-
-        """
-        raise NotImplementedError
-
-
-class ExpressionNotifier(object):
-    """ A simple notifier object used by Declarative.
-
-    DeclarativeExpression objects which are bound to a declarative will
-    use this notifier to notify the declarative when their expression
-    is invalid and should be recomputed.
-
-    """
-    __slots__ = 'owner'
-
-    def __init__(self, owner):
-        """ Initialize an ExpressionNotifier.
-
-        Parameters
-        ----------
-        owner : Declarative
-            The declarative object which owns this notifier.
-
-        """
-        # The strong internal reference cycle is deliberate. It will be
-        # cleared during the `destroy` method of the Declarative.
-        self.owner = owner
-
-    def __call__(self, name):
-        """ Notify the declarative owner that the expression is invalid.
-
-        Parameters
-        ----------
-        name : str
-            The name of the expression which is invalid.
-
-        """
-        owner = self.owner
-        if owner is not None:
-            setattr(owner, name, owner.evaluate_expression(name))
-
-
-def scope_lookup(name, scope, description):
-    """ A function which retrieves a name from a scope.
-
-    If the lookup fails, a DeclarativeNameError is raised. This can
-    be used to lookup names for a description dict from a global scope
-    with decent error reporting when the lookup fails.
+def d_(member, readable=True, writable=True, final=True):
+    """ Mark an Atom member as bindable from Enaml syntax.
 
     Parameters
     ----------
-    name : str
-        The name to retreive from the scope.
+    member : Member
+        The atom member to mark as bindable from Enaml syntax.
 
-    scope : mapping
-        A mapping object.
+    readable : bool, optional
+        Whether the member is readable from Enaml syntax. The member
+        must be readable to use the '>>', ':=', and '::' operators.
 
-    description : dict
-        The description dictionary associated with the lookup.
+    writable : bool, optional
+        Whether the member is writable from Enaml syntax. The member
+        must be writable to use the '=', '<<', and ':=' operators.
+
+    final : bool, optional
+        Whether or not the member can be redefined from Enaml syntax
+        using the 'attr' keyword. The default is True and indicates
+        that the member cannot be overridden.
 
     """
-    try:
-        item = scope[name]
-    except KeyError:
-        lineno = description['lineno']
-        filename = description['filename']
-        block = description['block']
-        raise DeclarativeNameError(name, filename, lineno, block)
-    return item
+    metadata = member.metadata
+    if metadata is None:
+        metadata = member.metadata = {}
+    metadata['d_member'] = True
+    metadata['d_readable'] = readable
+    metadata['d_writable'] = writable
+    metadata['d_final'] = final
+    return member
 
 
 #: The flag indicating that the Declarative object has been initialized.
@@ -169,12 +55,8 @@ class Declarative(Object):
     visual representation; that functionality is added by subclasses.
 
     """
-    #: Redefine `name` as a declarative property.
+    #: Export the 'name' attribute as a declarative member.
     name = d_(Str())
-
-    #: The operator context used to build out this instance. This is
-    #: assigned during object instantiation.
-    operators = ReadOnly()
 
     #: A property which gets and sets the initialized flag. This should
     #: not be manipulated directly by user code.
@@ -183,50 +65,7 @@ class Declarative(Object):
     #: An event fired when an object is initialized. It is triggered
     #: once during the object lifetime, at the end of the initialize
     #: method.
-    initialized = Event()
-
-    #: The list of value-providing subscription expressions for the
-    #: object. The operators will append expressions to this list
-    #: as-needed.
-    _expressions = List()
-
-    #: An object which is used by the operators to notify this object
-    #: when a bound expression has been invalidated. This should not
-    #: be manipulated by user code.
-    _expression_notifier = Value()
-
-    def _default__expression_notifier(self):
-        return ExpressionNotifier(self)
-
-    #: Seed the class heirarchy with an empty descriptions tuple. The
-    #: enaml compiler machinery will populate this for each enamldef.
-    __declarative_descriptions__ = ()
-
-    def __init__(self, parent=None, **kwargs):
-        """ Initialize a declarative component.
-
-        Parameters
-        ----------
-        parent : Object or None, optional
-            The Object instance which is the parent of this object, or
-            None if the object has no parent. Defaults to None.
-
-        **kwargs
-            Additional keyword arguments needed for initialization.
-
-        """
-        self.operators = OperatorContext.active_context()
-        # Populate the object before calling super. This ensures that
-        # all of the expressions are bound and children created before
-        # the parent receives a child_added event.
-        descriptions = self.__declarative_descriptions__
-        if len(descriptions) > 0:
-            # Each description is an independent `enamldef` block
-            # which gets its own independent identifiers scope.
-            for description, f_globals in descriptions:
-                identifiers = {}
-                self.populate(description, identifiers, f_globals)
-        super(Declarative, self).__init__(parent, **kwargs)
+    initialized = d_(Event(), writable=False)
 
     def initialize(self):
         """ Initialize this object all of its children recursively.
@@ -250,13 +89,17 @@ class Declarative(Object):
     def destroy(self):
         """ An overridden destructor method for declarative cleanup.
 
-        This destructor will remove the bound expression from the
-        object and break the explicitly created reference cycles.
-
         """
-        del self._expressions
-        self._expression_notifier.owner = None  # break the ref cycle
-        del self._expression_notifier
+        members = self.members()
+        for d, f_globals in self.__descriptions__:
+            scopename = d['scopename']
+            if scopename in members:
+                delattr(self, scopename)
+        for op in type(self).__eval_operators__.itervalues():
+            op.release(self)
+        for oplist in type(self).__notify_operators__.itervalues():
+            for op in oplist:
+                op.release(self)
         super(Declarative, self).destroy()
 
     def child_added(self, child):
@@ -271,130 +114,128 @@ class Declarative(Object):
             if self.is_initialized and not child.is_initialized:
                 child.initialize()
 
-    def populate(self, description, identifiers, f_globals):
+    #--------------------------------------------------------------------------
+    # Private Framework API
+    #--------------------------------------------------------------------------
+    #: Class level storage for declarative description dictionaries.
+    #: This is populated by the compiler when the class is created.
+    #: It should not be modified by user code.
+    __descriptions__ = ()
+
+    #: Class level storage for eval operators. This dict is populated
+    #: by the Enaml compiler when the operators are invoked at class
+    # creation time. It should not be modified by user code.
+    __eval_operators__ = {}
+
+    #: Class level storage for notify operators. This dict is populated
+    #: by the Enaml compiler when the operators are invoked at class
+    # creation time. It should not be modified by user code.
+    __notify_operators__ = {}
+
+    @classmethod
+    def _eval_operators(cls):
+        """ Get the eval operators for this class.
+
+        This classmethod will ensure the dict returned is owned by
+        the class. The returned value should not be modified by user
+        code.
+
+        """
+        if '__eval_operators__' in cls.__dict__:
+            return cls.__eval_operators__
+        exprs = cls.__eval_operators__ = cls.__eval_operators__.copy()
+        return exprs
+
+    @classmethod
+    def _notify_operators(cls):
+        """ Get the notify operators for this class.
+
+        This classmethod will ensure the dict returned is owned by
+        the class. The returned value should not be modified by user
+        code.
+
+        """
+        if '__notify_operators__' in cls.__dict__:
+            return cls.__notify_operators__
+        ops = {}
+        for key, oplist in cls.__notify_operators__.iteritems():
+            ops[key] = oplist[:]
+        cls.__notify_operators__ = ops
+        return ops
+
+    def _run_eval_operator(self, name):
+        """ Run the eval operator attached to the given name.
+
+        This method is used as a default value handler by the Enaml
+        operators when an eval operator is bound to the object.
+
+        Parameters
+        ----------
+        name : str
+            The name to which the operator of interest is bound.
+
+        Returns
+        -------
+        result : object or null
+            The result of the evaluated operator, or null if there
+            is no eval operator bound for the given name.
+
+        """
+        op = type(self).__eval_operators__.get(name)
+        if op is not None:
+            return op.eval(self)
+        return null
+
+    def _run_notify_operator(self, change):
+        """ Invoke a bound notify operator for the given change.
+
+        This method is used as a static observer by the Enaml
+        operators when a notify operator is bound to the object.
+
+        Parameters
+        ----------
+        change : dict
+            The change dictionary for the notification.
+
+        """
+        oplist = type(self).__notify_operators__.get(change['name'])
+        if oplist is not None:
+            for op in oplist:
+                op.notify(change)
+
+    def _populate(self, description, f_locals, f_globals):
         """ Populate this declarative instance from a description.
 
-        This method is called when the object was created from within
-        a declarative context. In particular, there are two times when
-        it may be called:
-
-            - The first is when a type created from the `enamldef`
-              keyword is instatiated; in this case, the method is
-              invoked by the Declarative constructor.
-
-            - The second occurs when the object is instantiated by
-              its parent from within its parent's `populate` method.
-
-        In the first case, the description dict will contain the key
-        `enamldef: True`, indicating that the object is being created
-        from a "top-level" `enamldef` block.
-
-        In the second case, the dict will have the key `enamldef: False`
-        indicating that the object is being populated as a declarative
-        child of some other parent.
-
-        Subclasses may reimplement this method to gain custom control
-        over how the children for its instances are created.
-
-        *** This method may be called multiple times ***
-
-        Consider the following sample:
-
-        enamldef Foo(PushButton):
-            text = 'bar'
-
-        enamldef Bar(Foo):
-            fgcolor = 'red'
-
-        enamldef Main(Window):
-            Container:
-                Bar:
-                    bgcolor = 'blue'
-
-        The instance of `Bar` which is created as the `Container` child
-        will have its `populate` method called three times: the first
-        to populate the data from the `Foo` block, the second to populate
-        the data from the `Bar` block, and the third to populate the
-        data from the `Main` block.
+        This is called by the EnamlDef metaclass when an enamldef block
+        is instantiated. For classes which are enamldef subclasses, this
+        method is invoked *before* the __init__ method of that class. A
+        subclass may reimplement this method to gain custom control over
+        how the children for its instances are created.
 
         Parameters
         ----------
         description : dict
             The description dictionary for the instance.
 
-        identifiers : dict
-            The dictionary of identifiers to use for the bindings.
+        f_locals : dict
+            The dictionary of local scope identifiers for the current
+            enamldef block being populated.
 
         f_globals : dict
             The dictionary of globals for the scope in which the object
             was declared.
 
         """
+        scopename = description['scopename']
+        if scopename and description['bindings']:
+            setattr(self, scopename, f_locals)
         ident = description['identifier']
         if ident:
-            identifiers[ident] = self
-        bindings = description['bindings']
-        if len(bindings) > 0:
-            self.setup_bindings(bindings, identifiers, f_globals)
-        children = description['children']
-        if len(children) > 0:
-            for child in children:
-                cls = scope_lookup(child['type'], f_globals, child)
-                # Create the child without a parent so that all of the
-                # expressions which provide default values are bound and
-                # all of the subchildren are added before this object
-                # receives a child_added event.
-                instance = cls()
-                instance.populate(child, identifiers, f_globals)
-                instance.set_parent(self)
-
-    def setup_bindings(self, bindings, identifiers, f_globals):
-        """ Setup the expression bindings for the object.
-
-        Parameters
-        ----------
-        bindings : list
-            A list of binding dicts created by the enaml compiler.
-
-        identifiers : dict
-            The identifiers scope to associate with the bindings.
-
-        f_globals : dict
-            The globals dict to associate with the bindings.
-
-        """
-        operators = self.operators
-        for binding in bindings:
-            opname = binding['operator']
-            try:
-                operator = operators[opname]
-            except KeyError:
-                filename = binding['filename']
-                lineno = binding['lineno']
-                block = binding['block']
-                raise OperatorLookupError(opname, filename, lineno, block)
-            operator(self, binding['name'], binding['func'], identifiers)
-
-    def evaluate_expression(self, name):
-        """ Evaluate an expression bound to this declarative object.
-
-        Parameters
-        ----------
-        name : str
-            The name of the declarative property to which the expression
-            is bound.
-
-        Returns
-        -------
-        result : object or null
-            The result of the evaluated expression, or null if there
-            is no expression bound for the given name.
-
-        """
-        # The operators will append all expressions to this list, so
-        # the list is iterated in reverse order to use the expression
-        # which was most recently bound.
-        for expression in reversed(self._expressions):
-            if expression.name == name:
-                return expression.evaluate(self)
-        return null
+            f_locals[ident] = self
+        for child in description['children']:
+            # Create the child without a parent so that all of the
+            # children of the new object are added before this
+            # object gets the child_added event.
+            instance = child['class']()
+            instance._populate(child, f_locals, f_globals)
+            instance.set_parent(self)

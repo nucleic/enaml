@@ -22,3 +22,15 @@ class EnamlDef(AtomMeta):
         """
         return "<enamldef '%s.%s'>" % (cls.__module__, cls.__name__)
 
+    def __call__(cls, parent=None, **kwargs):
+        """ A custom instance creation routine for EnamlDef classes.
+
+        This constructor will populate an instance before calling
+        the __init__ method on the instance.
+
+        """
+        self = cls.__new__(cls)
+        for descr, f_globals in cls.__descriptions__:
+            self._populate(descr, {}, f_globals)
+        self.__init__(parent, **kwargs)
+        return self
