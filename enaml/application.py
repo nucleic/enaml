@@ -5,7 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Bool, Tuple, Dict, Callable, Value, List, null
+from atom.api import (
+    Atom, Bool, Typed, Tuple, Dict, Callable, Value, List, null
+)
 
 from heapq import heappush, heappop
 from itertools import count
@@ -112,11 +114,48 @@ class ScheduledTask(Atom):
         return self._result
 
 
+class ProxyResolver(Atom):
+    """ An object which resolves requests for proxy objects.
+
+    """
+    #: A dictionary of factories functions to use when resolving the
+    #: proxy. The function should take no arguments, and return the
+    #: proxy class when called.
+    factories = Dict()
+
+    def resolve(self, name):
+        """ Resolve the given name to a proxy calls.
+
+        For example, 'Field' should resolve to a class which implements
+        the ProxyField interface.
+
+        Parameters
+        ----------
+        name : str
+            The name of the proxy object to resolve.
+
+        Returns
+        -------
+        result : type or None
+            A class which implements the proxy interface, or None if
+            no class can be found for the given name.
+
+        """
+        factory = self.factories.get(name)
+        if factory is not None:
+            return factory()
+
+
 class Application(Atom):
     """ The application object which manages the top-level communication
     protocol for serving Enaml views.
 
     """
+    #: The proxy resolver to use for the application. This will normally
+    #: be supplied by application subclasses, but can also be supplied
+    #: by the developer to supply custom proxy resolution behavior.
+    resolver = Typed(ProxyResolver)
+
     #: The task heap for application tasks.
     _task_heap = List()
 

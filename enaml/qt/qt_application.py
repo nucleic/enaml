@@ -10,16 +10,10 @@ from PyQt4.QtGui import QApplication
 
 from atom.api import Typed, null
 
-from enaml.application import Application
+from enaml.application import Application, ProxyResolver
 
 from .q_deferred_caller import deferredCall, timedCall
-from .qt_factories import register_default
-from .qt_widget_registry import QtWidgetRegistry
-
-
-# This registers the default Qt factories with the QtWidgetRegistry and
-# allows an application access to the default widget implementations.
-register_default()
+from .qt_factories import QT_FACTORIES
 
 
 class QtApplication(Application):
@@ -37,13 +31,14 @@ class QtApplication(Application):
 
         Parameters
         ----------
-        factories : iterable
+        widget_groups : widget_groups
             An iterable of SessionFactory instances to pass to the
             superclass constructor.
 
         """
         super(QtApplication, self).__init__()
         self._qapp = QApplication.instance() or QApplication([])
+        self.resolver = ProxyResolver(factories=QT_FACTORIES)
 
     #--------------------------------------------------------------------------
     # Abstract API Implementation
@@ -128,9 +123,10 @@ class QtApplication(Application):
             be create for the given declaration object.
 
         """
+        resolver = self.resolver
         for base in type(declaration).mro():
             name = base.__name__
-            factory = QtWidgetRegistry.lookup(name, ['default'])
-            if factory is not None:
-                return factory()(declaration=declaration)
+            cls = resolver.resolve(name)
+            if cls is not None:
+                return cls(declaration=declaration)
         return null
