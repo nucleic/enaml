@@ -5,9 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Enum, set_default
+from atom.api import set_default
 
-from enaml.core.declarative import d_
 from enaml.layout.layout_helpers import align, hbox, vbox
 
 from .constraints_widget import ConstraintMember
@@ -29,9 +28,6 @@ class Form(Container):
     #: The ConstraintVariable giving the midline along which the labels
     #: and widgets are aligned.
     midline = ConstraintMember()
-
-    #: The strength for the form layout constraints.
-    layout_strength = d_(Enum('strong', 'medium', 'weak'))
 
     #: A form hugs its height strongly by default. Forms are typcially
     #: used to display vertical arrangements of widgets, with forms
@@ -60,14 +56,13 @@ class Form(Container):
         else:
             odd_child = None
 
-        layout_strength = self.layout_strength
         constraints = []
 
         # Align the left side of each widget with the midline constraint
         # variable of the form.
         midline = self.midline
         for widget in widgets:
-            cn = (widget.left == midline) | layout_strength
+            cn = (widget.left == midline) | 'strong'
             constraints.append(cn)
 
         # Arrange each label/widget pair horizontally in the form
@@ -82,7 +77,7 @@ class Form(Container):
 
         for label, widget in labels_widgets:
             # FIXME: baselines would be much better.
-            constraints.append(align('v_center', label, widget) | layout_strength)
+            constraints.append(align('v_center', label, widget) | 'strong')
 
         return constraints
 
