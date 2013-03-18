@@ -23,7 +23,7 @@ from .group_box import GroupBox
 from .html import Html
 from .image_view import ImageView
 from .label import Label
-from .list_view import ListView
+#from .list_view import ListView
 from .main_window import MainWindow
 from .mdi_area import MdiArea
 from .mdi_window import MdiWindow
@@ -44,7 +44,7 @@ from .split_item import SplitItem
 from .splitter import Splitter
 from .stack import Stack, Transition
 from .stack_item import StackItem
-from .table_view import TableView
+#from .table_view import TableView
 #from .text_editor import TextEditor
 from .time_selector import TimeSelector
 from .tool_bar import ToolBar
