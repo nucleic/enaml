@@ -107,29 +107,32 @@ class QDualSlider(QSlider):
         painter = QPainter(self)
         style = self.style()
 
-        for i, value in enumerate([self._low, self._high]):
-            opt = QStyleOptionSlider()
-            self.initStyleOption(opt)
+        low, high = self._low, self._high
 
-            # Only draw the groove for the first slider so it doesn't get drawn
-            # on top of the existing ones every time
-            if i == 0:
-                opt.subControls = QStyle.SC_SliderGroove | QStyle.SC_SliderHandle
-            else:
-                opt.subControls = QStyle.SC_SliderHandle
+        # Paint low handle with groove
+        opt = QStyleOptionSlider()
+        self.initStyleOption(opt)
 
-            if self.tickPosition() != self.NoTicks:
-                opt.subControls |= QStyle.SC_SliderTickmarks
+        opt.subControls = QStyle.SC_SliderGroove | QStyle.SC_SliderHandle
 
-            if self._pressed_control and self._active_slider == i:
-                opt.activeSubControls = self._pressed_control
-                opt.state |= QStyle.State_Sunken
-            else:
-                opt.activeSubControls = self._hover_control
+        if self.tickPosition() != self.NoTicks:
+            opt.subControls |= QStyle.SC_SliderTickmarks
 
-            opt.sliderPosition = value
-            opt.sliderValue = value
-            style.drawComplexControl(QStyle.CC_Slider, opt, painter, self)
+        if self._pressed_control:
+            opt.activeSubControls = self._pressed_control
+            opt.state |= QStyle.State_Sunken
+        else:
+            opt.activeSubControls = self._hover_control
+
+        opt.sliderPosition = low
+        opt.sliderValue = low
+        style.drawComplexControl(QStyle.CC_Slider, opt, painter, self)
+
+        # Draw high handle without groove
+        opt.subControls &= ~QStyle.SC_SliderGroove
+        opt.sliderPosition = high
+        opt.sliderPosition = high
+        style.drawComplexControl(QStyle.CC_Slider, opt, painter, self)
 
     def mousePressEvent(self, event):
         """ Mouse press event to process clicking on either handle or
@@ -140,6 +143,7 @@ class QDualSlider(QSlider):
 
         style = self.style()
         button = event.button()
+        pos = event.pos()
 
         # In a normal slider control, when the user clicks on a point in the
         # slider's total range, but not on the slider part of the control the
@@ -153,22 +157,30 @@ class QDualSlider(QSlider):
 
             self._active_slider = -1
 
-            for i, value in enumerate([self._low, self._high]):
-                opt.sliderPosition = value
-                sr = style.subControlRect(style.CC_Slider, opt, style.SC_SliderHandle, self)
-                if sr.contains(event.pos()):
-                    self._active_slider = i
-                    self._pressed_control = style.SC_SliderHandle
+            low, high = self._low, self._high
 
-                    self.triggerAction(self.SliderMove)
-                    self.setRepeatAction(self.SliderNoAction)
-                    self.setSliderDown(True)
-                    self._click_offset = self._pick(event.pos() - sr.topLeft())
-                    break
+            # First check if we are pressing high handle
+            opt.sliderPosition = high
+            high_rect = style.subControlRect(style.CC_Slider, opt, style.SC_SliderHandle, self)
+            click_high = high_rect.contains(pos)
+            # or the low handle
+            opt.sliderPosition = low
+            low_rect = style.subControlRect(style.CC_Slider, opt, style.SC_SliderHandle, self)
+            click_low = low_rect.contains(pos)
+            
+            if click_high or click_low:
+                # Check high first since it overlaps the slow slider
+                self._active_slider = 1 if click_high else 0
+                self._pressed_control = style.SC_SliderHandle
 
-            if self._active_slider < 0:
+                self.triggerAction(self.SliderMove)
+                self.setRepeatAction(self.SliderNoAction)
+                self.setSliderDown(True)
+                sr = (high_rect if click_high else low_rect)
+                self._click_offset = self._pick(pos - sr.topLeft())
+            else:
                 self._pressed_control = QStyle.SC_SliderHandle
-                self._click_offset = self._pixelPosToRangeValue(self._pick(event.pos()), opt)
+                self._click_offset = self._pixelPosToRangeValue(self._pick(pos), opt)
                 self.triggerAction(self.SliderMove)
                 self.setRepeatAction(self.SliderNoAction)
         else:
