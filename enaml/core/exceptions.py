@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-def _format_source_error(filename, lineno, block):
+def _format_source_error(location):
     """ A helper function which generates an error string.
 
     This function handles the work of reading the lines of the file
@@ -19,15 +19,18 @@ def _format_source_error(filename, lineno, block):
 
     Parameters
     ----------
-    filename : str
-        The full path to the offending file.
+    location : dict
+        A dict of location information with the following keys:
 
-    lineno : int
-        The line number of the offending like.
+        'filename'
+            The full string path to the offending file.
 
-    block : str
-        The name of the block scope in which the error occured. In the
-        sample above, the block scope is 'bar'.
+        'lineno'
+            The integer line number of the offending line.
+
+        'block'
+            The string name of the block scope in which the error
+            occured. In the sample above, the block scope is 'bar'.
 
     Returns
     -------
@@ -36,6 +39,9 @@ def _format_source_error(filename, lineno, block):
         file cannot be opened, the source lines will note be included.
 
     """
+    filename = location['filename']
+    lineno = location['lineno']
+    block = location['block']
     text = 'File "%s", line %d, in %s()' % (filename, lineno, block)
     start_lineno = max(0, lineno - 1)
     end_lineno = start_lineno + 2
@@ -70,7 +76,7 @@ class DeclarativeNameError(NameError):
     tree.
 
     """
-    def __init__(self, name, filename, lineno, block):
+    def __init__(self, name, location):
         """ Initialize a DeclarativeNameError.
 
         Parameters
@@ -78,49 +84,68 @@ class DeclarativeNameError(NameError):
         name : str
             The name of global symbol which was not found.
 
-        filename : str
-            The filename where the lookup failed.
-
-        lineno : int
-            The line number of the error.
-
-        block : str
-            The name of the lexical block in which the lookup failed.
+        location : dict
+            The location dict with 'filename', 'lineno', and 'block'
+            keys indicating the source location of the failure.
 
         """
         super(DeclarativeNameError, self).__init__(name)
         self.name = name
-        self.filename = filename
-        self.lineno = lineno
-        self.block = block
+        self.location = location
 
     def __str__(self):
         """ A nicely formatted representaion of the exception.
 
         """
         text = '%s\n\n' % self.name
-        text += _format_source_error(self.filename, self.lineno, self.block)
-        text += "\n\nNameError: global name '%s' is not defined" % self.name
+        text += _format_source_error(self.location)
+        text += "\n\n%s: global name '%s' " % (type(self).__name__, self.name)
+        text += "is not defined"
+        return text
+
+
+class DeclarativeError(Exception):
+    """ A Exception subclass which nicely formats the exception.
+
+    This class is intended for use by the Enaml compiler machinery to
+    indicate general errors when working with declarative types.
+
+    """
+    def __init__(self, message, location):
+        """ Initialize an DeclarativeError.
+
+        Parameters
+        ----------
+        message : str
+            The message to display for the exception.
+
+        location : dict
+            The location dict with 'filename', 'lineno', and 'block'
+            keys indicating the source location of the failure.
+
+        """
+        super(DeclarativeError, self).__init__(message)
+        self.message = message
+        self.location = location
+
+    def __str__(self):
+        """ A nicely formatted representaion of the exception.
+
+        """
+        text = '\n\n'
+        text += _format_source_error(self.location)
+        text += "\n\n%s: %s" % (type(self).__name__, self.message)
         return text
 
 
 class OperatorLookupError(LookupError):
     """ A LookupError subclass which nicely formats the exception.
 
-    This class is intended for use by Declarative and its subclasses to
-    report errors for failed operator lookups when building the object
-    tree.
+    This class is intended for use by Enaml compiler machinery to report
+    failures when looking up operators.
 
     """
-    op_map = {
-        '__operator_Equal__': '=',
-        '__operator_LessLess__': '<<',
-        '__operator_ColonColon__': '::',
-        '__operator_ColonEqual__': ':=',
-        '__operator_GreaterGreater__': '>>',
-    }
-
-    def __init__(self, operator, filename, lineno, block):
+    def __init__(self, operator, location):
         """ Initialize an OperatorLookupError.
 
         Parameters
@@ -128,72 +153,21 @@ class OperatorLookupError(LookupError):
         operator : str
             The name of the operator which was not found.
 
-        filename : str
-            The filename where the lookup failed.
-
-        lineno : int
-            The line number of the error.
-
-        block : str
-            The name of the lexical block in which the lookup failed.
+        location : dict
+            The location dict with 'filename', 'lineno', and 'block'
+            keys indicating the source location of the failure.
 
         """
         super(OperatorLookupError, self).__init__(operator)
         self.operator = operator
-        self.filename = filename
-        self.lineno = lineno
-        self.block = block
-
-    def __str__(self):
-        """ A nicely formatted representaion of the exception.
-
-        """
-        op = self.operator
-        text = '%s\n\n' % op
-        text += _format_source_error(self.filename, self.lineno, self.block)
-        optext = "'%s'" % op
-        if op in self.op_map:
-            optext += " ( %s )" % self.op_map[op]
-        text += "\n\nOperatorLookupError: failed to load operator %s" % optext
-        return text
-
-
-class InvalidOverrideError(TypeError):
-    """ A TypeError subclass which nicely formats the exception.
-
-    This class is intended for use by the Enaml compiler machinery to
-    indicate that overriding the given member is not allowed.
-
-    """
-    def __init__(self, suffix, filename, lineno, block):
-        """ Initialize an InvalidOverrideError.
-
-        Parameters
-        ----------
-        suffix : str
-            The suffix to append to the end of the error message.
-
-        filename : str
-            The filename where the lookup failed.
-
-        lineno : int
-            The line number of the error.
-
-        block : str
-            The name of the lexical block in which the lookup failed.
-
-        """
-        super(InvalidOverrideError, self).__init__(suffix)
-        self.suffix = suffix
-        self.filename = filename
-        self.lineno = lineno
-        self.block = block
+        self.location = location
 
     def __str__(self):
         """ A nicely formatted representaion of the exception.
 
         """
         text = '\n\n'
-        text += _format_source_error(self.filename, self.lineno, self.block)
-        text += "\n\nInvalidOverrideError: cannot override %s" % self.suffix
+        text += _format_source_error(self.location)
+        text += "\n\nOperatorLookupError: "
+        text += "failed to load operator '%s'" % self.operator
         return text

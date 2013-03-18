@@ -10,8 +10,8 @@ import types
 
 from .byteplay import (
     Code, LOAD_FAST, CALL_FUNCTION, LOAD_GLOBAL, STORE_FAST, LOAD_CONST,
-    LOAD_ATTR, RETURN_VALUE, POP_TOP, STORE_NAME, LOAD_NAME, DUP_TOP,
-    DELETE_NAME, DELETE_FAST, SetLineno
+    RETURN_VALUE, POP_TOP, STORE_NAME, LOAD_NAME, DUP_TOP, DELETE_NAME,
+    DELETE_FAST, LIST_APPEND, BUILD_TUPLE, SetLineno
 )
 from .code_tracing import inject_tracing, inject_inversion
 
@@ -75,7 +75,12 @@ from .code_tracing import inject_tracing, inject_inversion
 #     a list of dicts describing the 'attr' and 'event' keywords for
 #     the given enamldef block. These dicts are used by the compiler
 #     helper to generate atom members for the new class.
-COMPILER_VERSION = 9
+# 10 : Class time post processing and decorators - 17 March 2013
+#     This moves a large amount of processing from instantiation time
+#     to class definition time. In particular, operators are now bound
+#     at the class level. This also adds support for decorators on an
+#     enamldef block.
+COMPILER_VERSION = 10
 
 
 # The Enaml compiler translates an Enaml AST into a decription dict
@@ -120,7 +125,7 @@ COMPILER_VERSION = 9
 #           'block': 'FooWindow',
 #           'children': [],
 #           'bindings': [
-#               { 'operator': '__operator_Equal__',
+#               { 'operator': '=',
 #                 'code': <codeobject>,
 #                 'name': 'text',
 #                 'lineno': 4,
@@ -131,7 +136,7 @@ COMPILER_VERSION = 9
 #         },
 #     ],
 #     'bindings': [
-#         { 'operator': '__operator_Equal__',
+#         { 'operator': '=',
 #           'code': <codeobject>,
 #           'name': 'a',
 #           'lineno': 2,
@@ -146,11 +151,19 @@ COMPILER_VERSION = 9
 # Compiler Helpers
 #------------------------------------------------------------------------------
 # Code that will be executed at the top of every enaml module
-STARTUP = ['from enaml.core.compiler_helpers import _make_enamldef_helper_']
+STARTUP = [
+    'from enaml.core.compiler_helpers import _make_enamldef_helper_',
+    'from enaml.core.compiler_helpers import _post_process_enamldefs_',
+    '_enamldef_descriptions_ = []',
+]
 
 
 # Cleanup code that will be included in every compiled enaml module
-CLEANUP = ['del _make_enamldef_helper_']
+CLEANUP = [
+    'del _make_enamldef_helper_',
+    'del _post_process_enamldefs_',
+    'del _enamldef_descriptions_',
+]
 
 
 def update_firstlineno(code, firstlineno):
@@ -371,12 +384,21 @@ def compile_delegate(py_ast, filename):
 
 
 COMPILE_OP_MAP = {
-    '__operator_Equal__': compile_simple,
-    '__operator_ColonColon__': compile_notify,
-    '__operator_LessLess__': compile_subscribe,
-    '__operator_GreaterGreater__': compile_update,
-    '__operator_ColonEqual__': compile_delegate,
+    '=': compile_simple,
+    '::': compile_notify,
+    '<<': compile_subscribe,
+    '>>': compile_update,
+    ':=': compile_delegate,
 }
+
+
+def scope_name_generator():
+    stem = '__locals_%d__'
+    i = 0
+    while True:
+        yield stem % i
+        i += 1
+scope_name_generator = scope_name_generator()
 
 
 #------------------------------------------------------------------------------
@@ -477,6 +499,7 @@ class DeclarationCompiler(_NodeVisitor):
         self.block = node.name
         obj = {
             'enamldef': True,
+            'scopename': '',
             'type': node.name,
             'base': node.base,
             'doc': node.doc,
@@ -487,28 +510,45 @@ class DeclarationCompiler(_NodeVisitor):
             'children': [],
             'bindings': [],
             'attrs': [],
-            'events': [],
         }
         self.stack.append(obj)
         for item in node.body:
             self.visit(item)
 
+        # Pass over the block and check for identifiers.
+        has_idents = False
+        s = [obj]
+        while s:
+            d = s.pop()
+            if d['identifier']:
+                has_idents = True
+                break
+            s.extend(d['children'])
+
+        # If the block has identifiers, create new scope name.
+        if has_idents:
+            scopename = scope_name_generator.next()
+            s = [obj]
+            while s:
+                d = s.pop()
+                d['scopename'] = scopename
+                for b in d['bindings']:
+                    b['scopename'] = scopename
+                s.extend(d['children'])
+
     def visit_AttributeDeclaration(self, node):
         """ Add an attribute declaration to the description.
 
         """
-        obj = self.stack[-1]
         decl = {
             'lineno': node.lineno,
             'block': self.block,
             'filename': self.filename,
             'name': node.name,
             'type': node.type,
+            'is_event': node.is_event,
         }
-        if node.is_event:
-            obj['events'].append(decl)
-        else:
-            obj['attrs'].append(decl)
+        self.stack[-1]['attrs'].append(decl)
         default = node.default
         if default is not None:
             self.visit(node.default)
@@ -534,6 +574,7 @@ class DeclarationCompiler(_NodeVisitor):
             'lineno': node.binding.lineno,
             'filename': self.filename,
             'block': self.block,
+            'scopename': '',
         }
         obj['bindings'].append(binding)
 
@@ -548,6 +589,7 @@ class DeclarationCompiler(_NodeVisitor):
         """
         obj = {
             'enamldef': False,
+            'scopename': '',
             'type': node.name,
             'lineno': node.lineno,
             'identifier': node.identifier,
@@ -555,6 +597,7 @@ class DeclarationCompiler(_NodeVisitor):
             'block': self.block,
             'children': [],
             'bindings': [],
+            'attrs': [],
         }
         self.stack.append(obj)
         for item in node.body:
@@ -598,6 +641,15 @@ class EnamlCompiler(_NodeVisitor):
         compiler = cls(filename)
         compiler.visit(module_ast)
         module_ops.extend(compiler.code_ops)
+
+        module_ops.extend([
+           (LOAD_GLOBAL, '_post_process_enamldefs_'),
+           (LOAD_GLOBAL, '_enamldef_descriptions_'),
+           (LOAD_NAME, 'globals'),
+           (CALL_FUNCTION, 0x0000),
+           (CALL_FUNCTION, 0x0002),
+           (POP_TOP, None),
+        ])
 
         # Generate the cleanup code for the module
         for end in CLEANUP:
@@ -662,6 +714,11 @@ class EnamlCompiler(_NodeVisitor):
         code_ops = self.code_ops
         name = node.name
         description = DeclarationCompiler.compile(node, self.filename)
+        code_ops.append((LOAD_NAME, '_enamldef_descriptions_'))
+        for dec in node.decorators:
+            code = compile(dec, self.filename, mode='eval')
+            bpcode = Code.from_code(code).code
+            code_ops.extend(bpcode[:-1])  # skip the return value op
         code_ops.extend([
             (SetLineno, node.lineno),
             (LOAD_NAME, '_make_enamldef_helper_'),  # Foo = _make_enamldef_helper_(name, base, description, globals)
@@ -671,5 +728,14 @@ class EnamlCompiler(_NodeVisitor):
             (LOAD_NAME, 'globals'),
             (CALL_FUNCTION, 0x0000),
             (CALL_FUNCTION, 0x0004),
+        ])
+        for dec in node.decorators:
+            code_ops.append((CALL_FUNCTION, 0x0001))
+        code_ops.extend([
+            (DUP_TOP, None),
             (STORE_NAME, name),
+            (LOAD_CONST, description),
+            (BUILD_TUPLE, 2),
+            (LIST_APPEND, 1),
+            (POP_TOP, None),
         ])

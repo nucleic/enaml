@@ -9,7 +9,7 @@ from collections import Iterable
 
 from atom.api import Instance, List
 
-from .declarative import scope_lookup, d_
+from .declarative import d_
 from .templated import Templated
 
 
@@ -36,7 +36,7 @@ class Looper(Templated):
 
     #: The list of items created by the conditional. Each item in the
     #: list represents one iteration of the loop and is a list of the
-    #: items generated during that iteration. This should not be
+    #: items generated during that iteration. This list should not be
     #: manipulated directly by user code.
     items = List()
 
@@ -67,13 +67,13 @@ class Looper(Templated):
         process of being destroyed.
 
         """
+        super(Looper, self).destroy()
         parent = self.parent
         if parent is not None and not parent.is_destroyed:
             for iteration in self.items:
                 for item in iteration:
                     if not item.is_destroyed:
                         item.destroy()
-        super(Looper, self).destroy()
         del self.iterable
         del self.items
 
@@ -103,34 +103,31 @@ class Looper(Templated):
 
         if iterable and len(templates) > 0:
             for loop_index, loop_item in enumerate(iterable):
-                # Each template is a 3-tuple of identifiers, globals, and
+                # Each template is a 3-tuple of f_locals, globals, and
                 # list of description dicts. There will only typically be
                 # one template, but more can exist if the looper was
                 # subclassed via enamldef to provided default children.
                 iteration = []
-                for identifiers, f_globals, descriptions in templates:
+                for f_locals, f_globals, descriptions in templates:
                     # Each iteration of the loop gets a new scope which
                     # is the union of the existing scope and the loop
                     # variables. This also allows the loop children to
-                    # add their own independent identifiers. The loop
+                    # add their own independent f_locals. The loop
                     # items are constructed with no parent since they
                     # are parented via `insert_children` later on.
-                    scope = identifiers.copy()
-                    scope['loop_index'] = loop_index
-                    scope['loop_item'] = loop_item
+                    new_scope = f_locals.copy()
+                    new_scope['loop_index'] = loop_index
+                    new_scope['loop_item'] = loop_item
                     for descr in descriptions:
-                        cls = scope_lookup(descr['type'], f_globals, descr)
-                        instance = cls()
-                        instance.populate(descr, scope, f_globals)
+                        instance = descr['class']()
+                        instance._populate(descr, new_scope, f_globals)
                         iteration.append(instance)
                 items.append(iteration)
 
-        old_items = self.items
-        if len(old_items) > 0:
-            for iteration in old_items:
-                for old in iteration:
-                    if not old.is_destroyed:
-                        old.destroy()
+        for iteration in self.items:
+            for old in iteration:
+                if not old.is_destroyed:
+                    old.destroy()
         if len(items) > 0:
             self.parent.insert_children(self, sum(items, []))
         self.items = items

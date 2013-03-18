@@ -29,7 +29,7 @@ Color_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     int32_t b = -1;
     int32_t a = 255;
     static char* kwlist[] = { "red", "green", "blue", "alpha", 0 };
-    if( !PyArg_ParseTupleAndKeywords( args, kwargs, "|llll", kwlist, &r, &g, &b, &a ) )
+    if( !PyArg_ParseTupleAndKeywords( args, kwargs, "|iiii", kwlist, &r, &g, &b, &a ) )
         return 0;
     PyObjectPtr colorptr( PyType_GenericNew( type, args, kwargs ) );
     if( !colorptr )

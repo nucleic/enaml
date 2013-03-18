@@ -33,11 +33,12 @@ class TableView(Control):
     #: one will be created using any given ListItem children.
     item_model = d_(Typed(AbstractItemModel))
 
-    #: A reference to the ProxyListView object.
-    proxy = Typed(ProxyTableView)
-
+    #: A TableView is free to expand in width and height.
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
+
+    #: A reference to the ProxyListView object.
+    proxy = Typed(ProxyTableView)
 
     #--------------------------------------------------------------------------
     # Observers

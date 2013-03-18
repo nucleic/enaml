@@ -77,7 +77,7 @@ class Window(Widget):
 
     #: The initial size of the window. A value of (-1, -1) indicates
     #: to let the toolkit choose the initial size.
-    initial_size = d_(Coerced(Size, Size(-1, -1)))
+    initial_size = d_(Coerced(Size, (-1, -1)))
 
     #: An enum which indicates the modality of the window. The default
     #: value is 'non_modal'.
@@ -95,7 +95,7 @@ class Window(Widget):
 
     #: An event fired when the window is closed. This event is triggered
     #: by the proxy object when the window is closed.
-    closed = Event()
+    closed = d_(Event(), writable=False)
 
     #: Windows are invisible by default.
     visible = set_default(False)

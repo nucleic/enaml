@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from .conditional import Conditional
-from .declarative import Declarative
+from .declarative import Declarative, d_
 from .include import Include
 from .looper import Looper
 from .object import Object
