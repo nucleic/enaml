@@ -56,7 +56,7 @@ class DynamicScope(object):
     order to avoid unnecessary reference cycles.
 
     """
-    def __init__(self, obj, identifiers, overrides, f_globals, listener):
+    def __init__(self, obj, f_locals, overrides, f_globals, listener):
         """ Initialize a DynamicScope.
 
         Parameters
@@ -64,12 +64,12 @@ class DynamicScope(object):
         obj : Declarative
             The Declarative object which owns the executing code.
 
-        identifiers : dict
-            The identifiers available to the executing code.
+        f_locals : dict
+            The locals available to the executing code.
 
         overrides : dict
             A dict of objects which should have higher precedence than
-            the identifiers.
+            the f_locals.
 
         f_globals : dict
             The dict or globals to use for lookup up scope. This dict
@@ -81,7 +81,7 @@ class DynamicScope(object):
 
         """
         self._obj = obj
-        self._identifiers = identifiers
+        self._f_locals = f_locals
         self._overrides = overrides
         self._f_globals = f_globals
         self._listener = listener
@@ -103,7 +103,7 @@ class DynamicScope(object):
         dct = self._overrides
         if name in dct:
             return dct[name]
-        dct = self._identifiers
+        dct = self._f_locals
         if name in dct:
             return dct[name]
         dct = self._f_globals
