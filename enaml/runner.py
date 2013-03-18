@@ -60,8 +60,9 @@ def main():
     if requested in ns:
         from enaml.qt.qt_application import QtApplication
         app = QtApplication()
-        item = ns[requested]()
-        item.show()
+        window = ns[requested]()
+        window.show()
+        window.send_to_front()
         app.start()
     elif 'main' in ns:
         ns['main']()
