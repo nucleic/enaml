@@ -6,6 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import ast
+import sys
 import types
 
 from .byteplay import (
@@ -80,7 +81,10 @@ from .code_tracing import inject_tracing, inject_inversion
 #     to class definition time. In particular, operators are now bound
 #     at the class level. This also adds support for decorators on an
 #     enamldef block.
-COMPILER_VERSION = 10
+# 11 : Fix a bug in code generation for Python 2.6 - 18 March 2013
+#     On Python 2.6 the LIST_APPEND instruction consumes the TOS. This
+#     update adds a check for running on < 2.7 and dups the TOS.
+COMPILER_VERSION = 11
 
 
 # The Enaml compiler translates an Enaml AST into a decription dict
@@ -715,6 +719,9 @@ class EnamlCompiler(_NodeVisitor):
         name = node.name
         description = DeclarationCompiler.compile(node, self.filename)
         code_ops.append((LOAD_NAME, '_enamldef_descriptions_'))
+        # In Python 2.6, LIST_APPEND consumes TOS whereas 2.7 doesn't.
+        if sys.version_info[:2] < (2, 7):
+            code_ops.append((DUP_TOP, None))
         for dec in node.decorators:
             code = compile(dec, self.filename, mode='eval')
             bpcode = Code.from_code(code).code
