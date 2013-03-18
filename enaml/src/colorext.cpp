@@ -49,7 +49,7 @@ Color_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 }
 
 
-static PyObject*
+static void
 Color_dealloc( Color* self )
 {
     Py_CLEAR( self->tkdata );

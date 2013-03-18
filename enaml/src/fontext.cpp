@@ -69,7 +69,7 @@ Font_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 }
 
 
-static PyObject*
+static void
 Font_dealloc( Font* self )
 {
     Py_CLEAR( self->tkdata );
