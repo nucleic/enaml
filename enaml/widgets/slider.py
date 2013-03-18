@@ -109,7 +109,7 @@ class Slider(Control):
 
     #: Whether or not to automatically adjust the 'hug_width' and
     #: 'hug_height' values based on the value of 'orientation'.
-    auto_hug = Bool(True)
+    auto_hug = d_(Bool(True))
 
     #: A reference to the ProxySlider object.
     proxy = Typed(ProxySlider)

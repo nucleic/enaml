@@ -52,7 +52,7 @@ class Page(Widget):
 
     #: An event fired when the user closes the page by clicking on
     #: the tab's close button.
-    closed = Event()
+    closed = d_(Event(), writable=False)
 
     #: A reference to the ProxyPage object.
     proxy = Typed(ProxyPage)

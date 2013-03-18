@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from functools import partial
+
 from atom.api import (
     Bool, List, Int, Unicode, Typed, ForwardTyped, set_default, observe,
     cached_property
@@ -55,6 +57,7 @@ class ComboBox(Control):
     #: A reference to the ProxyComboBox object.
     proxy = Typed(ProxyComboBox)
 
+    @partial(d_, writable=False)
     @cached_property
     def selected_item(self):
         """ A read only cached property which returns the selected item.

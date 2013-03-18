@@ -62,12 +62,12 @@ class AbstractButton(Control):
     #: Fired when the button is pressed then released. The payload will
     #: be the current checked state. This event is triggered by the
     #: proxy object when the button is clicked.
-    clicked = Event(bool)
+    clicked = d_(Event(bool), writable=False)
 
     #: Fired when a checkable button is toggled. The payload will be
     #: the current checked state. This event is triggered by the
     #: proxy object when a togglable button is toggled.
-    toggled = Event(bool)
+    toggled = d_(Event(bool), writable=False)
 
     #: Buttons hug their contents' width weakly by default.
     hug_width = set_default('weak')

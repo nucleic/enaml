@@ -91,7 +91,7 @@ class DockPane(Widget):
 
     #: An event fired when the user closes the pane by clicking on the
     #: dock pane's close button.
-    closed = Event()
+    closed = d_(Event(), writable=False)
 
     #: A reference to the ProxyDockPane object.
     proxy = Typed(ProxyDockPane)
