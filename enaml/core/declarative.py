@@ -90,6 +90,7 @@ class Declarative(Object):
         """ An overridden destructor method for declarative cleanup.
 
         """
+        self.is_initialized = False
         members = self.members()
         for d, f_globals in self.__descriptions__:
             scopename = d['scopename']
