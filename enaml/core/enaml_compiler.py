@@ -6,13 +6,12 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import ast
-import sys
 import types
 
 from .byteplay import (
     Code, LOAD_FAST, CALL_FUNCTION, LOAD_GLOBAL, STORE_FAST, LOAD_CONST,
     RETURN_VALUE, POP_TOP, STORE_NAME, LOAD_NAME, DUP_TOP, DELETE_NAME,
-    DELETE_FAST, LIST_APPEND, BUILD_TUPLE, SetLineno
+    DELETE_FAST, SetLineno
 )
 from .code_tracing import inject_tracing, inject_inversion
 
@@ -84,7 +83,12 @@ from .code_tracing import inject_tracing, inject_inversion
 # 11 : Fix a bug in code generation for Python 2.6 - 18 March 2013
 #     On Python 2.6 the LIST_APPEND instruction consumes the TOS. This
 #     update adds a check for running on < 2.7 and dups the TOS.
-COMPILER_VERSION = 11
+# 12 : Post process an enamldef immediately. - 18 March 2013
+#     This removes the need for the 2.6 check from version 11 since it
+#     does not rely on the LIST_APPEND instruction. It almost means
+#     that widget names must appear before they are used, just like in
+#     normal Python class bodies.
+COMPILER_VERSION = 12
 
 
 # The Enaml compiler translates an Enaml AST into a decription dict
@@ -112,7 +116,7 @@ COMPILER_VERSION = 11
 # support Enaml's runtime introspection facilities.
 #
 # description = {
-#     'enamldef': True,
+#     'node': 'declaration',
 #     'type': 'FooWindow',
 #     'base': 'Window',
 #     'doc': '',
@@ -121,7 +125,7 @@ COMPILER_VERSION = 11
 #     'filename': 'sample.enaml',
 #     'block': 'FooWindow',
 #     'children': [
-#         { 'enamldef': False,
+#         { 'node': 'instantiation',
 #           'type': 'PushButton',
 #           'lineno': 3,
 #           'identifier': 'btn',
@@ -157,16 +161,14 @@ COMPILER_VERSION = 11
 # Code that will be executed at the top of every enaml module
 STARTUP = [
     'from enaml.core.compiler_helpers import _make_enamldef_helper_',
-    'from enaml.core.compiler_helpers import _post_process_enamldefs_',
-    '_enamldef_descriptions_ = []',
+    'from enaml.core.compiler_helpers import _post_process_enamldef_',
 ]
 
 
 # Cleanup code that will be included in every compiled enaml module
 CLEANUP = [
     'del _make_enamldef_helper_',
-    'del _post_process_enamldefs_',
-    'del _enamldef_descriptions_',
+    'del _post_process_enamldef_',
 ]
 
 
@@ -502,7 +504,7 @@ class DeclarationCompiler(_NodeVisitor):
         """
         self.block = node.name
         obj = {
-            'enamldef': True,
+            'node': 'enamldef',
             'scopename': '',
             'type': node.name,
             'base': node.base,
@@ -592,7 +594,7 @@ class DeclarationCompiler(_NodeVisitor):
 
         """
         obj = {
-            'enamldef': False,
+            'node': 'instantiation',
             'scopename': '',
             'type': node.name,
             'lineno': node.lineno,
@@ -645,15 +647,6 @@ class EnamlCompiler(_NodeVisitor):
         compiler = cls(filename)
         compiler.visit(module_ast)
         module_ops.extend(compiler.code_ops)
-
-        module_ops.extend([
-           (LOAD_GLOBAL, '_post_process_enamldefs_'),
-           (LOAD_GLOBAL, '_enamldef_descriptions_'),
-           (LOAD_NAME, 'globals'),
-           (CALL_FUNCTION, 0x0000),
-           (CALL_FUNCTION, 0x0002),
-           (POP_TOP, None),
-        ])
 
         # Generate the cleanup code for the module
         for end in CLEANUP:
@@ -718,10 +711,7 @@ class EnamlCompiler(_NodeVisitor):
         code_ops = self.code_ops
         name = node.name
         description = DeclarationCompiler.compile(node, self.filename)
-        code_ops.append((LOAD_NAME, '_enamldef_descriptions_'))
-        # In Python 2.6, LIST_APPEND consumes TOS whereas 2.7 doesn't.
-        if sys.version_info[:2] < (2, 7):
-            code_ops.append((DUP_TOP, None))
+        code_ops.append((LOAD_NAME, '_post_process_enamldef_'))
         for dec in node.decorators:
             code = compile(dec, self.filename, mode='eval')
             bpcode = Code.from_code(code).code
@@ -742,7 +732,8 @@ class EnamlCompiler(_NodeVisitor):
             (DUP_TOP, None),
             (STORE_NAME, name),
             (LOAD_CONST, description),
-            (BUILD_TUPLE, 2),
-            (LIST_APPEND, 1),
+            (LOAD_NAME, 'globals'),
+            (CALL_FUNCTION, 0x0000),
+            (CALL_FUNCTION, 0x0003),
             (POP_TOP, None),
         ])
