@@ -106,7 +106,7 @@ class QCustomSplitter(QSplitter):
 
 
 class QtSplitter(QtConstraintsWidget, ProxySplitter):
-    """ A Qt implementation of an Enaml Splitter.
+    """ A Qt implementation of an Enaml ProxySplitter.
 
     """
     #: A reference to the widget created by the proxy.
