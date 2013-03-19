@@ -7,6 +7,11 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.label import ProxyLabel
+
+from .wx_constraints_widget import size_hint_guard
 from .wx_control import WxControl
 
 
@@ -21,79 +26,60 @@ ALIGN_MAP = {
 ALIGN_MASK = wx.ALIGN_LEFT | wx.ALIGN_RIGHT | wx.ALIGN_CENTER
 
 
-class WxLabel(WxControl):
-    """ A Wx implementation of an Enaml Label.
+class WxLabel(WxControl, ProxyLabel):
+    """ A Wx implementation of an Enaml ProxyLabel.
 
     """
+     #: A reference to the widget created by the proxy.
+    widget = Typed(wx.StaticText)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying wx.StaticText widget.
+    def create_widget(self):
+        """ Create the underlying label widget.
 
         """
-        return wx.StaticText(parent)
+        self.widget = wx.StaticText(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the label control.
-
-        """
-        super(WxLabel, self).create(tree)
-        self.set_text(tree['text'])
-        self.set_align(tree['align'])
-        self.set_vertical_align(tree['vertical_align'])
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_text(self, content):
-        """ Handle the 'set_text' action from the Enaml widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        widget = self.widget()
-        old_hint = widget.GetBestSize()
-        self.set_text(content['text'])
-        new_hint = widget.GetBestSize()
-        if old_hint != new_hint:
-            self.size_hint_updated()
-
-    def on_action_set_align(self, content):
-        """ Handle the 'set_align' action from the Enaml widget.
-
-        """
-        self.set_align(content['align'])
-        self.widget().Refresh()
-
-    def on_action_set_vertical_align(self, content):
-        """ Handle the 'set_vertical_align' action from the Enaml widget.
-
-        """
-        self.set_vertical_align(content['vertical_align'])
+        super(WxLabel, self).init_widget()
+        d = self.declaration
+        self.set_text(d.text, sh_guard=False)
+        self.set_align(d.align)
+        self.set_vertical_align(d.vertical_align)
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyLabel API
     #--------------------------------------------------------------------------
-    def set_text(self, text):
+    def set_text(self, text, sh_guard=True):
         """ Set the text in the underlying widget.
 
         """
-        self.widget().SetLabel(text)
+        if sh_guard:
+            with size_hint_guard(self):
+                self.widget.SetLabel(text)
+        else:
+            self.widget.SetLabel(text)
 
     def set_align(self, align):
         """ Set the alignment of the text in the underlying widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         style = widget.GetWindowStyle()
         style &= ~ALIGN_MASK
         style |= ALIGN_MAP[align]
         widget.SetWindowStyle(style)
+        widget.Refresh()
 
     def set_vertical_align(self, align):
-        """ Set the vertical alignment of the text in the underlying
-        widget.
+        """ Set the vertical alignment of the text in the widget.
+
+        This is not supported on Wx.
 
         """
-        # Wx does not support vertical alignment.
         pass
-

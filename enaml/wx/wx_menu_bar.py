@@ -7,8 +7,12 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.menu_bar import ProxyMenuBar
+
 from .wx_menu import WxMenu, EVT_MENU_CHANGED
-from .wx_widget import WxWidget
+from .wx_toolkit_object import WxToolkitObject
 
 
 class wxMenuBar(wx.MenuBar):
@@ -180,53 +184,47 @@ class wxMenuBar(wx.MenuBar):
                     self.EnableTop(index, False)
 
 
-class WxMenuBar(WxWidget):
-    """ A Wx implementation of an Enaml MenuBar.
+class WxMenuBar(WxToolkitObject, ProxyMenuBar):
+    """ A Wx implementation of an Enaml ProxyMenuBar.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxMenuBar)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying menu bar widget.
 
         """
-        return wxMenuBar()
+        # Wx behaves better when creating the menu bar without a parent.
+        self.widget = wxMenuBar()
 
     def init_layout(self):
-        """ Initialize the layout for the underlying control.
+        """ Initialize the layout for the menu bar.
 
         """
         super(WxMenuBar, self).init_layout()
-        widget = self.widget()
+        widget = self.widget
         for child in self.children():
             if isinstance(child, WxMenu):
-                widget.AddMenu(child.widget())
+                widget.AddMenu(child.widget)
+
+    def destroy(self):
+        """ A reimplemented destructor.
+
+        This destructor simply drops the reference to the menu bar.
+        Destroying it will cause wx to segfault.
+
+        """
+        del self.widget
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a WxMenuBar.
-
-        """
-        if isinstance(child, WxMenu):
-            self.widget().RemoveMenu(child.widget())
-
-    def child_added(self, child):
-        """ Handle the child added event for a WxMenuBar.
-
-        """
-        if isinstance(child, WxMenu):
-            before = self.find_next_menu(child)
-            self.widget().InsertMenu(before, child.widget())
-
-    #--------------------------------------------------------------------------
-    # Utility Methods
-    #--------------------------------------------------------------------------
     def find_next_menu(self, child):
-        """ Get the wxMenu instance which comes immediately after the
-        menu of the given child.
+        """ Get the wxMenu instance which follows the child.
 
         Parameters
         ----------
@@ -236,33 +234,31 @@ class WxMenuBar(WxWidget):
         Returns
         -------
         result : wxMenu or None
-            The wxMenu which comes immediately after the menu of the
-            given child, or None if no menu follows the child.
+            The wxMenu which comes immediately after the actions of the
+            given child, or None if no actions follow the child.
 
         """
-        index = self.index_of(child)
-        if index != -1:
-            for child in self.children()[index + 1:]:
-                if isinstance(child, WxMenu):
-                    return child.widget()
+        found = False
+        for dchild in self.children():
+            if found:
+                if isinstance(dchild, WxMenu):
+                    return dchild.widget
+            else:
+                found = dchild is child
 
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
-    #--------------------------------------------------------------------------
-    def set_enabled(self, enabled):
-        """ Overridden parent class method.
-
-        This properly sets the enabled state on a menu bar.
+    def child_added(self, child):
+        """ Handle the child added event for a WxMenuBar.
 
         """
-        self.widget().SetEnabled(enabled)
+        super(WxMenuBar, self).child_added(child)
+        if isinstance(child, WxMenu):
+            before = self.find_next_menu(child)
+            self.widget.InsertMenu(before, child.widget)
 
-    def set_visible(self, visible):
-        """ Overrdden parent class method.
-
-        This method is a no-op, since a MenuBar cannot change it's
-        visibility under Wx.
+    def child_removed(self, child):
+        """ Handle the child removed event for a WxMenuBar.
 
         """
-        pass
-
+        super(WxMenuBar, self).child_removed(child)
+        if isinstance(child, WxMenu):
+            self.widget.RemoveMenu(child.widget)

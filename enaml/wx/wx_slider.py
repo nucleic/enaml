@@ -8,6 +8,10 @@
 import wx
 import wx.lib.newevent
 
+from atom.api import Int, Typed
+
+from enaml.widgets.slider import ProxySlider
+
 from .wx_control import WxControl
 
 
@@ -138,95 +142,47 @@ class wxProperSlider(wx.Slider):
         self._tracking = tracking
 
 
-class WxSlider(WxControl):
-    """ A Wx implementation of an Enaml Slider.
+#: A cyclic guard flag
+VALUE_FLAG = 0x1
+
+
+class WxSlider(WxControl, ProxySlider):
+    """ A Wx implementation of an Enaml ProxySlider.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxProperSlider)
+
+    #: Cyclic notification guard flags.
+    _guard = Int(0)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying wxProperSlider widget.
 
         """
-        return wxProperSlider(parent)
+        self.widget = wxProperSlider(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the slider control.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
         # NOTE: The tick interval must be set *after* the tick position
         # or Wx will ignore the tick interval. grrr...
-        super(WxSlider, self).create(tree)
-        # Initialize the value after the minimum and maximum to avoid
-        # the potential for premature internal clipping of the value.
-        self.set_minimum(tree['minimum'])
-        self.set_maximum(tree['maximum'])
-        self.set_value(tree['value'])
-        self.set_orientation(tree['orientation'])
-        self.set_page_step(tree['page_step'])
-        self.set_single_step(tree['single_step'])
-        self.set_tick_position(tree['tick_position'])
-        self.set_tick_interval(tree['tick_interval'])
-        self.set_tracking(tree['tracking'])
-        self.widget().Bind(EVT_SLIDER, self.on_value_changed)
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_value(self, content):
-        """ Handle the 'set_value' action from the Enaml widget.
-
-        """
-        self.set_value(content['value'])
-
-    def on_action_set_maximum(self, content):
-        """ Handle the 'set_maximum' action from the Enaml widget.
-
-        """
-        self.set_maximum(content['maximum'])
-
-    def on_action_set_minimum(self, content):
-        """ Handle the 'set_minimum' action from the Enaml widget.
-
-        """
-        self.set_minimum(content['minimum'])
-
-    def on_action_set_orientation(self, content):
-        """ Handle the 'set_orientation' action from the Enaml widget.
-
-        """
-        self.set_orientation(content['orientation'])
-
-    def on_action_set_page_step(self, content):
-        """ Handle the 'set_page_step' action from the Enaml widget.
-
-        """
-        self.set_page_step(content['page_step'])
-
-    def on_action_set_single_step(self, content):
-        """ Handle the 'set_single_step' action from the Enaml widget.
-
-        """
-        self.set_single_step(content['single_step'])
-
-    def on_action_set_tick_interval(self, content):
-        """ Handle the 'set_tick_interval' action from the Enaml widget.
-
-        """
-        self.set_tick_interval(content['tick_interval'])
-
-    def on_action_set_tick_position(self, content):
-        """ Handle the 'set_tick_position' action from the Enaml widget.
-
-        """
-        self.set_tick_position(content['tick_position'])
-
-    def on_action_set_tracking(self, content):
-        """ Handle the 'set_tracking' action from the Enaml widget.
-
-        """
-        self.set_tracking(content['tracking'])
+        super(WxSlider, self).init_widget()
+        d = self.declaration
+        self.set_minimum(d.minimum)
+        self.set_maximum(d.maximum)
+        self.set_value(d.value)
+        self.set_orientation(d.orientation)
+        self.set_page_step(d.page_step)
+        self.set_single_step(d.single_step)
+        self.set_tick_position(d.tick_position)
+        self.set_tick_interval(d.tick_interval)
+        self.set_tracking(d.tracking)
+        self.widget.Bind(EVT_SLIDER, self.on_value_changed)
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -236,23 +192,32 @@ class WxSlider(WxControl):
         slider value has changed.
 
         """
-        content = {'value': self.widget().GetValue()}
-        self.send_action('value_changed', content)
+        if not self._guard & VALUE_FLAG:
+            self._guard |= VALUE_FLAG
+            try:
+                self.declaration.value = self.widget.GetValue()
+            finally:
+                self._guard &= ~VALUE_FLAG
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxySlider API
     #--------------------------------------------------------------------------
     def set_value(self, value):
         """ Set the value of the underlying widget.
 
         """
-        self.widget().SetValue(value)
+        if not self._guard & VALUE_FLAG:
+            self._guard |= VALUE_FLAG
+            try:
+                self.widget.SetValue(value)
+            finally:
+                self._guard &= ~VALUE_FLAG
 
     def set_maximum(self, maximum):
         """ Set the maximum value of the underlying widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         minimum, _ = widget.GetRange()
         widget.SetRange(minimum, maximum)
 
@@ -260,7 +225,7 @@ class WxSlider(WxControl):
         """ Set the minimum value of the underlying widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         _, maximum = widget.GetRange()
         widget.SetRange(minimum, maximum)
 
@@ -268,7 +233,7 @@ class WxSlider(WxControl):
         """ Set the orientation of the underlying widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         style = widget.GetWindowStyle()
         style &= ~_ORIENTATION_MASK
         style |= _ORIENTATION_MAP[orientation]
@@ -278,25 +243,25 @@ class WxSlider(WxControl):
         """ Set the page step of the underlying widget.
 
         """
-        self.widget().SetPageSize(page_step)
+        self.widget.SetPageSize(page_step)
 
     def set_single_step(self, single_step):
         """ Set the single step of the underlying widget.
 
         """
-        self.widget().SetLineSize(single_step)
+        self.widget.SetLineSize(single_step)
 
     def set_tick_interval(self, interval):
         """ Set the tick interval of the underlying widget.
 
         """
-        self.widget().SetTickFreq(interval)
+        self.widget.SetTickFreq(interval)
 
     def set_tick_position(self, tick_position):
         """ Set the tick position of the underlying widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         style = widget.GetWindowStyle()
         style &= ~_TICK_MASK
         if tick_position != 'no_ticks':
@@ -311,5 +276,4 @@ class WxSlider(WxControl):
         """ Set the tracking of the underlying widget.
 
         """
-        self.widget().SetTracking(tracking)
-
+        self.widget.SetTracking(tracking)

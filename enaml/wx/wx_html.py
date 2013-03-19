@@ -7,6 +7,10 @@
 #------------------------------------------------------------------------------
 import wx.html
 
+from atom.api import Typed
+
+from enaml.widgets.html import ProxyHtml
+
 from .wx_control import WxControl
 
 
@@ -23,41 +27,34 @@ class wxProperHtmlWindow(wx.html.HtmlWindow):
         return self._best_size
 
 
-class WxHtml(WxControl):
-    """ A Wx implementation of the Enaml Html widget.
+class WxHtml(WxControl, ProxyHtml):
+    """ A Wx implementation of the Enaml ProxyHtml widget.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxProperHtmlWindow)
+
     #--------------------------------------------------------------------------
     # Setup Methods
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying html widget.
 
         """
-        return wxProperHtmlWindow(parent)
+        self.widget = wxProperHtmlWindow(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the html control.
-
-        """
-        super(WxHtml, self).create(tree)
-        self.set_source(tree['source'])
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_source(self, content):
-        """ Handle the 'set_source' action from the Enaml widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        self.set_source(content['source'])
+        super(WxHtml, self).init_widget()
+        self.set_source(self.declaration.source)
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyHtml API
     #--------------------------------------------------------------------------
     def set_source(self, source):
         """ Set the source of the html widget
 
         """
-        self.widget().SetPage(source)
-
+        self.widget.SetPage(source)

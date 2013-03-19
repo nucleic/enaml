@@ -74,7 +74,12 @@ class WxToolkitObject(ProxyToolkitObject):
         This destructor will drop the reference to the toolkit widget.
 
         """
-        del self.widget
+        if self.widget:
+            try:
+                self.widget.Destroy()
+            except AttributeError:
+                pass
+            del self.widget
         super(WxToolkitObject, self).destroy()
 
     #--------------------------------------------------------------------------

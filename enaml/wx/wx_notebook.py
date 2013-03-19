@@ -8,6 +8,10 @@
 import weakref
 import wx
 
+from atom.api import Instance
+
+from enaml.widgets.notebook import ProxyNotebook
+
 from .wx_constraints_widget import WxConstraintsWidget
 from .wx_layout_request import EVT_COMMAND_LAYOUT_REQUESTED
 from .wx_page import WxPage
@@ -366,65 +370,79 @@ class wxPreferencesNotebook(wx.Notebook):
         pass
 
 
-class WxNotebook(WxConstraintsWidget):
-    """ A Wx implementation of an Enaml Notebook.
+class WxNotebook(WxConstraintsWidget, ProxyNotebook):
+    """ A Wx implementation of an Enaml ProxyNotebook.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Instance((wxPreferencesNotebook, wxDocumentNotebook))
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying wx notebook widget.
 
         """
-        if tree['tab_style'] == 'preferences':
-            res = wxPreferencesNotebook(parent)
+        if self.declaration.tab_style == 'preferences':
+            w = wxPreferencesNotebook(self.parent_widget())
         else:
             style = aui.AUI_NB_SCROLL_BUTTONS
-            res =  wxDocumentNotebook(parent, agwStyle=style)
-        return res
+            w = wxDocumentNotebook(self.parent_widget(), agwStyle=style)
+        self.widget = w
 
-    def create(self, tree):
+    def init_widget(self):
         """ Create and initialize the notebook control
 
         """
-        super(WxNotebook, self).create(tree)
-        self.set_tab_style(tree['tab_style'])
-        self.set_tab_position(tree['tab_position'])
-        self.set_tabs_closable(tree['tabs_closable'])
-        self.set_tabs_movable(tree['tabs_movable'])
+        super(WxNotebook, self).init_widget()
+        d = self.declaration
+        self.set_tab_style(d.tab_style)
+        self.set_tab_position(d.tab_position)
+        self.set_tabs_closable(d.tabs_closable)
+        self.set_tabs_movable(d.tabs_movable)
 
     def init_layout(self):
         """ Handle the layout initialization for the notebook.
 
         """
         super(WxNotebook, self).init_layout()
-        widget = self.widget()
-        for child in self.children():
-            if isinstance(child, WxPage):
-                widget.AddWxPage(child.widget())
+        widget = self.widget
+        for page in self.pages():
+            widget.AddWxPage(page)
         widget.Bind(EVT_COMMAND_LAYOUT_REQUESTED, self.on_layout_requested)
+
+    #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def pages(self):
+        """ Get the pages defined for the notebook.
+
+        """
+        for p in self.declaration.pages():
+            yield p.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a WxNotebook.
-
-        """
-        if isinstance(child, WxPage):
-            self.widget().RemoveWxPage(child.widget())
-            self.size_hint_updated()
-
     def child_added(self, child):
         """ Handle the child added event for a WxNotebook.
 
         """
+        super(WxNotebook, self).child_added(child)
         if isinstance(child, WxPage):
-            index = self.index_of(child)
-            if index != -1:
-                self.widget().InsertWxPage(index, child.widget())
-                self.size_hint_updated()
+             for index, dchild in enumerate(self.children()):
+                if child is dchild:
+                    self.widget.InsertWxPage(index, child.widget)
+
+    def child_removed(self, child):
+        """ Handle the child removed event for a WxNotebook.
+
+        """
+        super(WxNotebook, self).child_removed(child)
+        if isinstance(child, WxPage):
+            self.widget().RemoveWxPage(child.widget)
+            self.size_hint_updated()
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -436,34 +454,7 @@ class WxNotebook(WxConstraintsWidget):
         self.size_hint_updated()
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_tab_style(self, content):
-        """ Handle the 'set_tab_style' action from the Enaml widget.
-
-        """
-        self.set_tab_style(content['tab_style'])
-
-    def on_action_set_tab_position(self, content):
-        """ Handle the 'set_tab_position' action from the Enaml widget.
-
-        """
-        self.set_tab_position(content['tab_position'])
-
-    def on_action_set_tabs_closable(self, content):
-        """ Handle the 'set_tabs_closable' action from the Enaml widget.
-
-        """
-        self.set_tabs_closable(content['tabs_closable'])
-
-    def on_action_set_tabs_movable(self, content):
-        """ Handle the 'set_tabs_movable' action from the Enaml widget.
-
-        """
-        self.set_tabs_movable(content['tabs_movable'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyNotebook API
     #--------------------------------------------------------------------------
     def set_tab_style(self, style):
         """ Set the tab style for the underlying widget.
@@ -477,7 +468,7 @@ class WxNotebook(WxConstraintsWidget):
 
         """
         # Tab position changes only supported on the document notebook.
-        widget = self.widget()
+        widget = self.widget
         if isinstance(widget, wxDocumentNotebook):
             flags = widget.GetAGWWindowStyleFlag()
             flags &= ~_TAB_POSITION_MASK
@@ -490,7 +481,7 @@ class WxNotebook(WxConstraintsWidget):
 
         """
         # Closable tabs are only supported on the document notebook.
-        widget = self.widget()
+        widget = self.widget
         if isinstance(widget, wxDocumentNotebook):
             flags = widget.GetAGWWindowStyleFlag()
             if closable:
@@ -504,7 +495,7 @@ class WxNotebook(WxConstraintsWidget):
 
         """
         # Movable tabs are only supported on the document notebook.
-        widget = self.widget()
+        widget = self.widget
         if isinstance(widget, wxDocumentNotebook):
             flags = widget.GetAGWWindowStyleFlag()
             if movable:
@@ -512,4 +503,3 @@ class WxNotebook(WxConstraintsWidget):
             else:
                flags &= ~aui.AUI_NB_TAB_MOVE
             widget.SetAGWWindowStyleFlag(flags)
-

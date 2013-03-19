@@ -8,6 +8,10 @@
 import wx
 import wx.lib.newevent
 
+from atom.api import Typed
+
+from enaml.widgets.page import ProxyPage
+
 from .wx_container import WxContainer
 from .wx_widget import WxWidget
 from .wx_single_widget_sizer import wxSingleWidgetSizer
@@ -219,34 +223,40 @@ class wxPage(wx.Panel):
         self._PageIndexOperation(closure)
 
 
-class WxPage(WxWidget):
-    """ A Wx implementation of an Enaml notebook Page.
+class WxPage(WxWidget, ProxyPage):
+    """ A Wx implementation of an Enaml notebook ProxyPage.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxPage)
+
     #--------------------------------------------------------------------------
     # Setup Methods
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying wxPage widget.
 
         """
-        return wxPage(parent)
+        self.widget = wxPage(self.parent_widget())
 
-    def create(self, tree):
+    def init_widget(self):
         """ Create and initialize the page control.
 
         """
-        super(WxPage, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_closable(tree['closable'])
-        self.widget().Bind(EVT_PAGE_CLOSED, self.on_page_closed)
+        super(WxPage, self).init_widget()
+        d = self.declaration
+        self.set_title(d.title)
+        self.set_closable(d.closable)
+        if d.icon:
+            self.set_icon(d.icon)
+        self.widget.Bind(EVT_PAGE_CLOSED, self.on_page_closed)
 
     def init_layout(self):
         """ Initialize the layout of the notebook page.
 
         """
         super(WxPage, self).init_layout()
-        self.widget().SetPageWidget(self.page_widget())
+        self.widget.SetPageWidget(self.page_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -254,35 +264,29 @@ class WxPage(WxWidget):
     def page_widget(self):
         """ Find and return the page widget child for this widget.
 
-        Returns
-        -------
-        result : wxWindow or None
-            The page widget defined for this widget, or None if one is
-            not defined.
-
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, WxContainer):
-                widget = child.widget()
-        return widget
+        p = self.declaration.page_widget()
+        if p is not None:
+            return p.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a WxPage.
-
-        """
-        if isinstance(child, WxContainer):
-            self.widget().SetPageWidget(self.page_widget())
-
     def child_added(self, child):
         """ Handle the child added event for a WxPage.
 
         """
+        super(WxPage, self).child_removed(child)
         if isinstance(child, WxContainer):
-            self.widget().SetPageWidget(self.page_widget())
+            self.widget.SetPageWidget(self.page_widget())
+
+    def child_removed(self, child):
+        """ Handle the child removed event for a WxPage.
+
+        """
+        super(WxPage, self).child_removed(child)
+        if isinstance(child, WxContainer):
+            self.widget.SetPageWidget(self.page_widget())
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -291,65 +295,58 @@ class WxPage(WxWidget):
         """ The event handler for the EVT_PAGE_CLOSED event.
 
         """
-        self.send_action('closed', {})
+        self.declaration._handle_close()
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        self.set_title(content['title'])
-
-    def on_action_set_closable(self, content):
-        """ Handle the 'set_closable' action from the Enaml widget.
-
-        """
-        self.set_closable(content['closable'])
-
-    def on_action_open(self, content):
-        """ Handle the 'open' action from the Enaml widget.
-
-        """
-        self.widget().Open()
-
-    def on_action_close(self, content):
-        """ Handle the 'close' action from the Enaml widget.
-
-        """
-        self.widget().Close()
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyPage API
     #--------------------------------------------------------------------------
     def set_visible(self, visible):
         """ An overridden visibility setter which to opens|closes the
         notebook page.
 
         """
-        widget = self.widget()
         if visible:
-            widget.Open()
+            self.widget.Open()
         else:
-            widget.Close()
+            self.widget.Close()
+
+    def ensure_visible(self):
+        """ An overridden visibility setter which to opens|closes the
+        notebook page.
+
+        """
+        self.set_visible(True)
+
+    def ensure_hidden(self):
+        """ An overridden visibility setter which to opens|closes the
+        notebook page.
+
+        """
+        self.set_visible(False)
 
     def set_enabled(self, enabled):
         """ An overridden enabled setter which sets the tab enabled
         state.
 
         """
-        self.widget().SetEnabled(enabled)
+        self.widget.SetEnabled(enabled)
 
     def set_title(self, title):
         """ Set the title of the tab for this page.
 
         """
-        self.widget().SetTitle(title)
+        self.widget.SetTitle(title)
+
+    def set_icon(self, icon):
+        """ Sets the widget's icon to the provided image.
+
+        This is not supported on Wx.
+
+        """
+        pass
 
     def set_closable(self, closable):
         """ Set whether or not this page is closable.
 
         """
-        self.widget().SetClosable(closable)
-
+        self.widget.SetClosable(closable)

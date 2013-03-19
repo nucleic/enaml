@@ -5,114 +5,129 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from casuarius import ConstraintVariable
+from contextlib import contextmanager
+
+import wx
+
+from atom.api import List, Typed
+
+from enaml.widgets.constraints_widget import ProxyConstraintsWidget
 
 from .wx_widget import WxWidget
 
 
-class LayoutBox(object):
-    """ A class which encapsulates a layout box using casuarius
-    constraint variables.
+@contextmanager
+def size_hint_guard(obj):
+    """ A contenxt manager for guarding the size hint of a widget.
 
-    The constraint variables are created on an as-needed basis, this
-    allows Enaml widgets to define new constraints and build layouts
-    with them, without having to specifically update this client
-    code.
+    This manager will call `size_hint_updated` if the size hint of the
+    widget changes during context execution.
 
-    """
-    def __init__(self, name, owner):
-        """ Initialize a LayoutBox.
-
-        Parameters
-        ----------
-        name : str
-            A name to use in the label for the constraint variables in
-            this layout box.
-
-        owner : str
-            The owner id to use in the label for the constraint variables
-            in this layout box.
-
-        """
-        self._name = name
-        self._owner = owner
-        self._primitives = {}
-
-    def primitive(self, name):
-        """ Returns a primitive casuarius constraint variable for the
-        given name.
-
-        Parameters
-        ----------
-        name : str
-            The name of the constraint variable to return.
-
-        """
-        primitives = self._primitives
-        if name in primitives:
-            res = primitives[name]
-        else:
-            label = '{0}|{1}|{2}'.format(self._name, self._owner, name)
-            res = primitives[name] = ConstraintVariable(label)
-        return res
-
-
-class WxConstraintsWidget(WxWidget):
-    """ A Wx implementation of an Enaml ConstraintsWidget.
+    Parameters
+    ----------
+    obj : QtConstraintsWidget
+        The constraints widget with the size hint of interest.
 
     """
-    #: The hug strengths for the widget's size hint.
-    _hug = ('strong', 'strong')
+    old_hint = obj.widget.GetBestSize()
+    yield
+    new_hint = obj.widget.GetBestSize()
+    if old_hint != new_hint:
+        obj.size_hint_updated()
 
-    #: The resist strengths for the widget's size hint.
-    _resist = ('strong', 'strong')
 
-    #: The list of hard constraints which must be applied to the widget.
-    #: These constraints are computed lazily and only once since they
-    #: are assumed to never change.
-    _hard_cns = []
+class wxLayoutTimer(wx.Timer):
+    """ A custom wx Timer which for collapsing layout requests.
 
+    """
+    def __init__(self, owner):
+        self.owner = owner
+
+    def Release(self):
+        self.owner = None
+
+    def Notify(self):
+        self.owner.on_layout_triggered()
+
+
+class WxConstraintsWidget(WxWidget, ProxyConstraintsWidget):
+    """ A Wx implementation of an Enaml ProxyConstraintsWidget.
+
+    """
     #: The list of size hint constraints to apply to the widget. These
     #: constraints are computed once and then cached. If the size hint
     #: of a widget changes at run time, then `size_hint_updated` should
     #: be called to trigger an appropriate relayout of the widget.
-    _size_hint_cns = []
+    size_hint_cns = List()
 
-    #: The list of constraint dictionaries defined by the user on
-    #: the server side Enaml widget.
-    _user_cns = []
+    #: A timer used to collapse relayout requests. The timer is created
+    #: on an as needed basis and destroyed when it is no longer needed.
+    layout_timer = Typed(wxLayoutTimer)
 
-    #--------------------------------------------------------------------------
-    # Setup Methods
-    #--------------------------------------------------------------------------
-    def create(self, tree):
-        """ Create and initialize the control.
+    def _default_size_hint_cns(self):
+        """ Creates the list of size hint constraints for this widget.
 
-        """
-        super(WxConstraintsWidget, self).create(tree)
-        layout = tree['layout']
-        self.layout_box = LayoutBox(type(self).__name__, self.object_id())
-        self._hug = layout['hug']
-        self._resist = layout['resist']
-        self._user_cns = layout['constraints']
+        This method uses the provided size hint of the widget and the
+        policies for 'hug' and 'resist' to generate constraints which
+        respect the size hinting of the widget.
 
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_relayout(self, content):
-        """ Handle the 'relayout' action from the Enaml widget.
+        If the size hint of the underlying widget is not valid, then
+        no constraints will be generated.
+
+        Returns
+        -------
+        result : list
+            A list of casuarius LinearConstraint instances.
 
         """
-        # XXX The WxContainer needs to get in on the action to grab the
-        # share_layout flag.
-        self._hug = content['hug']
-        self._resist_clip = content['resist']
-        self._user_cns = content['constraints']
-        self.clear_size_hint_constraints()
+        cns = []
+        hint = self.widget.GetBestSize()
+        if hint.IsFullySpecified():
+            width_hint = hint.width
+            height_hint = hint.height
+            d = self.declaration
+            if width_hint >= 0:
+                if d.hug_width != 'ignore':
+                    cns.append((d.width == width_hint) | d.hug_width)
+                if d.resist_width != 'ignore':
+                    cns.append((d.width >= width_hint) | d.resist_width)
+            if height_hint >= 0:
+                if d.hug_height != 'ignore':
+                    cns.append((d.height == height_hint) | d.hug_height)
+                if d.resist_height != 'ignore':
+                    cns.append((d.height >= height_hint) | d.resist_height)
+        return cns
+
+    #--------------------------------------------------------------------------
+    # ProxyConstraintsWidget API
+    #--------------------------------------------------------------------------
+    def request_relayout(self):
+        """ Request a relayout of the proxy widget.
+
+        This call will be placed on a collapsed timer. The first request
+        will cause updates to be disabled on the widget. The updates will
+        be reenabled after the actual relayout is performed.
+
+        """
+        if not self.layout_timer:
+            self.widget.Freeze()
+            self.layout_timer = wxLayoutTimer(self)
+        self.layout_timer.start(5, oneShot=True)
+
+    def on_layout_triggered(self):
+        """ Handle the timeout even from the layout trigger timer.
+
+        This handler will drop the reference to the timer, invoke the
+        'relayout' method, and reenable the updates on the widget.
+
+        """
+        self.layout_timer.Release()
+        del self.layout_timer
         self.relayout()
+        self.widget.Thaw()
 
     #--------------------------------------------------------------------------
-    # Layout Handling
+    # Public API
     #--------------------------------------------------------------------------
     def relayout(self):
         """ Peform a relayout for this constraints widget.
@@ -124,6 +139,7 @@ class WxConstraintsWidget(WxWidget):
         layout request is dropped.
 
         """
+        self.clear_size_hint_constraints()
         parent = self.parent()
         if isinstance(parent, WxConstraintsWidget):
             parent.relayout()
@@ -172,126 +188,47 @@ class WxConstraintsWidget(WxWidget):
         if isinstance(parent, WxConstraintsWidget):
             parent.clear_constraints(cns)
 
-    def size_hint_constraints(self):
-        """ Creates the list of size hint constraints for this widget.
-
-        This method uses the provided size hint of the widget and the
-        policies for 'hug' and 'resist_clip' to generate casuarius
-        LinearConstraint objects which respect the size hinting of the
-        widget.
-
-        If the size hint of the underlying widget is not valid, then
-        no constraints will be generated.
-
-        Returns
-        -------
-        result : list
-            A list of casuarius LinearConstraint instances.
-
-        """
-        cns = self._size_hint_cns
-        if not cns:
-            cns = self._size_hint_cns = []
-            push = cns.append
-            hint = self.widget().GetBestSize()
-            if hint.IsFullySpecified():
-                width_hint = hint.width
-                height_hint = hint.height
-                primitive = self.layout_box.primitive
-                width = primitive('width')
-                height = primitive('height')
-                hug_width, hug_height = self._hug
-                resist_width, resist_height = self._resist
-                if width_hint >= 0:
-                    if hug_width != 'ignore':
-                        cn = (width == width_hint) | hug_width
-                        push(cn)
-                    if resist_width != 'ignore':
-                        cn = (width >= width_hint) | resist_width
-                        push(cn)
-                if height_hint >= 0:
-                    if hug_height != 'ignore':
-                        cn = (height == height_hint) | hug_height
-                        push(cn)
-                    if resist_height != 'ignore':
-                        cn = (height >= height_hint) | resist_height
-                        push(cn)
-        return cns
-
-    def size_hint_updated(self):
-        """ Notify the layout system that the size hint of this widget
-        has been updated.
-
-        """
-        # Only the ancestors of a widget care about its size hint,
-        # so this method attempts to replace the size hint constraints
-        # for the widget starting with its parent.
-        parent = self.parent()
-        if isinstance(parent, WxConstraintsWidget):
-            old_cns = self._size_hint_cns
-            self._size_hint_cns = []
-            new_cns = self.size_hint_constraints()
-            parent.replace_constraints(old_cns, new_cns)
-        self.update_geometry()
-
     def clear_size_hint_constraints(self):
         """ Clear the size hint constraints from the layout system.
 
         """
-        # Only the ancestors of a widget care about its size hint,
-        # so this method attempts to replace the size hint constraints
-        # for the widget starting with its parent.
+        # Only the ancestors of a widget care about its size hint and
+        # will have added those constraints to a layout, so this method
+        # attempts to replace the size hint constraints for the widget
+        # starting with its parent.
         parent = self.parent()
         if isinstance(parent, WxConstraintsWidget):
-            cns = self._size_hint_cns
-            self._size_hint_cns = []
+            cns = self.size_hint_cns
+            del self.size_hint_cns
             parent.clear_constraints(cns)
 
-    def hard_constraints(self):
-        """ Generate the constraints which must always be applied.
+    def size_hint_updated(self):
+        """ Notify the layout system that the size hint has changed.
 
-        These constraints are generated once the first time this method
-        is called. The results are then cached and returned immediately
-        on future calls.
-
-        Returns
-        -------
-        result : list
-            A list of casuarius LinearConstraint instance.
+        This method should be called when the size hint of the widget has
+        changed and the layout should be refreshed to reflect the new
+        state of the widget.
 
         """
-        cns = self._hard_cns
-        if not cns:
-            primitive = self.layout_box.primitive
-            left = primitive('left')
-            top = primitive('top')
-            width = primitive('width')
-            height = primitive('height')
-            cns = [left >= 0, top >= 0, width >= 0, height >= 0]
-            self._hard_cns = cns
-        return cns
-
-    def user_constraints(self):
-        """ Get the list of user constraints defined for this widget.
-
-        The default implementation returns the list of constraint
-        information sent by the server.
-
-        Returns
-        -------
-        result : list
-            The list of dictionaries which represent the user defined
-            linear constraints.
-
-        """
-        return self._user_cns
+        # Only the ancestors of a widget care about its size hint and
+        # will have added those constraints to a layout, so this method
+        # attempts to replace the size hint constraints for the widget
+        # starting with its parent.
+        parent = self.parent()
+        if isinstance(parent, WxConstraintsWidget):
+            old_cns = self.size_hint_cns
+            del self.size_hint_cns
+            new_cns = self.size_hint_cns
+            parent.replace_constraints(old_cns, new_cns)
+        self.update_geometry()
 
     def geometry_updater(self):
-        """ A method which can be called to create a function which
-        will update the layout geometry of the underlying widget.
+        """ Create a layout function for the widget.
 
-        The parameter and return values below describe the function
-        that is returned by calling this method.
+        This method will create a function which will update the
+        layout geometry of the underlying widget. The parameter and
+        return values below describe the function that is returned by
+        calling this method.
 
         Parameters
         ----------
@@ -315,23 +252,27 @@ class WxConstraintsWidget(WxWidget):
 
         """
         # The return function is a hyper optimized (for Python) closure
-        # that will is called on every resize to update the geometry of
-        # the widget. This is explicitly not idiomatic Python code. It
-        # exists purely for the sake of efficiency and was justified
-        # with profiling.
-        primitive = self.layout_box.primitive
-        x = primitive('left')
-        y = primitive('top')
-        width = primitive('width')
-        height = primitive('height')
-        setdims = self.widget().SetDimensions
+        # that will be called on every resize to update the geometry of
+        # the widget. According to cProfile, executing the body of this
+        # closure is 2x faster than the call to QWidgetItem.setGeometry.
+        # The previous version of this method, `update_layout_geometry`,
+        # was 5x slower. This is explicitly not idiomatic Python code.
+        # It exists purely for the sake of efficiency, justified with
+        # profiling.
+        d = self.declaration
+        x = d.left
+        y = d.top
+        width = d.width
+        height = d.height
+        setdims = self.widget.SetDimensions
+
         def update_geometry(dx, dy):
             nx = x.value
             ny = y.value
             setdims(nx - dx, ny - dy, width.value, height.value)
             return nx, ny
+
         # Store a reference to self on the updater, so that the layout
         # container can know the object on which the updater operates.
         update_geometry.item = self
         return update_geometry
-

@@ -8,6 +8,10 @@
 import wx
 import wx.lib.newevent
 
+from atom.api import Int, Typed
+
+from enaml.widgets.dock_pane import ProxyDockPane
+
 from .wx_container import WxContainer
 from .wx_single_widget_sizer import wxSingleWidgetSizer
 from .wx_upstream import aui
@@ -519,44 +523,55 @@ class wxDockPane(wx.Panel):
             self._PaneInfoOperation(closure)
 
 
-class WxDockPane(WxWidget):
-    """ A Wx implementation of an Enaml DockPane.
+# cyclic notification guard flags
+FLOATED_GUARD = 0x1
+
+
+class WxDockPane(WxWidget, ProxyDockPane):
+    """ A Wx implementation of an Enaml ProxyDockPane.
 
     """
+    #: A reference tot he widget created by the proxy.
+    widget = Typed(wxDockPane)
+
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying wxDockPane widget.
+    def create_widget(self):
+        """ Create the wxDockPane widget.
 
         """
-        return wxDockPane(parent)
+        self.widget = wxDockPane(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the dock pane control.
+    def init_widget(self):
+        """ Initialize the dock pane control.
 
         """
-        super(WxDockPane, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_title_bar_visible(tree['title_bar_visible'])
-        self.set_title_bar_orientation(tree['title_bar_orientation'])
-        self.set_closable(tree['closable'])
-        self.set_movable(tree['movable'])
-        self.set_floatable(tree['floatable'])
-        self.set_floating(tree['floating'])
-        self.set_dock_area(tree['dock_area'])
-        self.set_allowed_dock_areas(tree['allowed_dock_areas'])
-        widget = self.widget()
-        widget.Bind(EVT_DOCK_PANE_FLOATED, self.on_dock_pane_floated)
-        widget.Bind(EVT_DOCK_PANE_DOCKED, self.on_dock_pane_docked)
-        widget.Bind(EVT_DOCK_PANE_CLOSED, self.on_dock_pane_closed)
+        super(WxDockPane, self).init_widget()
+        d = self.declaration
+        self.set_title(d.title)
+        self.set_title_bar_visible(d.title_bar_visible)
+        self.set_title_bar_orientation(d.title_bar_orientation)
+        self.set_closable(d.closable)
+        self.set_movable(d.movable)
+        self.set_floatable(d.floatable)
+        self.set_floating(d.floating)
+        self.set_dock_area(d.dock_area)
+        self.set_allowed_dock_areas(d.allowed_dock_areas)
+        widget = self.widget
+        widget.Bind(EVT_DOCK_PANE_FLOATED, self.on_floated)
+        widget.Bind(EVT_DOCK_PANE_DOCKED, self.on_docked)
+        widget.Bind(EVT_DOCK_PANE_CLOSED, self.on_closed)
 
     def init_layout(self):
         """ Handle the layout initialization for the dock pane.
 
         """
         super(WxDockPane, self).init_layout()
-        self.widget().SetDockWidget(self.dock_widget())
+        self.widget.SetDockWidget(self.dock_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -571,185 +586,144 @@ class WxDockPane(WxWidget):
             not defined.
 
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, WxContainer):
-                widget = child.widget()
-        return widget
+        d = self.declaration.dock_widget()
+        if d is not None:
+            return d.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a WxDockPane.
-
-        """
-        if isinstance(child, WxContainer):
-            self.widget().SetDockWidget(self.dock_widget())
-
     def child_added(self, child):
         """ Handle the child added event for a WxDockPane.
 
         """
+        super(WxDockPane, self).child_added(child)
         if isinstance(child, WxContainer):
-            self.widget().SetDockWidget(self.dock_widget())
+            self.widget.SetDockWidget(self.dock_widget())
+
+    def child_removed(self, child):
+        """ Handle the child removed event for a WxDockPane.
+
+        """
+        super(WxDockPane, self).child_removed(child)
+        if isinstance(child, WxContainer):
+            self.widget.SetDockWidget(self.dock_widget())
 
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
-    def on_dock_pane_closed(self, event):
+    def on_closed(self, event):
         """ The event handler for the EVT_DOCK_PANE_CLOSED event.
 
         """
-        self.send_action('closed', {})
+        # The closed signal is only emitted when the widget is closed
+        # by the user, so there is no need for a loopback guard.
+        self.declaration.visible = False
+        self.declaration.closed()
 
-    def on_dock_pane_floated(self, event):
+    def on_floated(self, event):
         """ The event handler for the EVT_DOCK_PANE_FLOATED event.
 
         """
-        self.send_action('floated', {})
+        if not self._guard & FLOATED_GUARD:
+            self._guard |= FLOATED_GUARD
+            try:
+                self.declaration.floating = True
+            finally:
+                self._guard &= ~FLOATED_GUARD
 
-    def on_dock_pane_docked(self, event):
+    def on_docked(self, event):
         """ The event handler for the EVT_DOCK_PANE_AREA event.
 
         """
-        area = self.widget().GetDockArea()
-        content = {'dock_area': _DOCK_AREA_INV_MAP[area]}
-        self.send_action('docked', content)
+        area = self.widget.GetDockArea()
+        if not self._guard & FLOATED_GUARD:
+            self._guard |= FLOATED_GUARD
+            try:
+                self.declaration.floating = False
+                self.declaration.dock_area = _DOCK_AREA_INV_MAP[area]
+            finally:
+                self._guard &= ~FLOATED_GUARD
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        self.set_title(content['title'])
-
-    def on_action_set_title_bar_visible(self, content):
-        """ Handle the 'set_title_bar_visible' action from the Enaml
-        widget.
-
-        """
-        self.set_title_bar_visible(content['title_bar_visible'])
-
-    def on_action_set_title_bar_orientation(self, content):
-        """ Handle the 'set_title_bar_orientation' action from the
-        Enaml widget.
-
-        """
-        self.set_title_bar_orientation(content['title_bar_orientation'])
-
-    def on_action_set_closable(self, content):
-        """ Handle the 'set_closable' action from the Enaml widget.
-
-        """
-        self.set_closable(content['closable'])
-
-    def on_action_set_movable(self, content):
-        """ Handle the 'set_movable' action from the Enaml widget.
-
-        """
-        self.set_movable(content['movable'])
-
-    def on_action_set_floatable(self, content):
-        """ Handle the 'set_floatable' action from the Enaml widget.
-
-        """
-        self.set_floatable(content['floatable'])
-
-    def on_action_set_floating(self, content):
-        """ Handle the 'set_floating' action from the Enaml widget.
-
-        """
-        self.set_floating(content['floating'])
-
-    def on_action_set_dock_area(self, content):
-        """ Handle the 'set_dock_area' action from the Enaml widget.
-
-        """
-        self.set_dock_area(content['dock_area'])
-
-    def on_action_set_allowed_dock_areas(self, content):
-        """ Handle the 'set_allowed_dock_areas' action from the Enaml
-        widget.
-
-        """
-        self.set_allowed_dock_areas(content['allowed_dock_areas'])
-
-    def on_action_open(self, content):
-        """ Handle the 'open' action from the Enaml widget.
-
-        """
-        self.widget().Open()
-
-    def on_action_close(self, content):
-        """ Handle the 'close' action from the Enaml widget.
-
-        """
-        self.widget().Close()
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyDockPane API
     #--------------------------------------------------------------------------
     def set_visible(self, visible):
         """ An overridden visibility setter which to opens|closes the
         dock pane.
 
         """
-        widget = self.widget()
         if visible:
-            widget.Open()
+            self.widget.Open()
         else:
-            widget.Close()
+            self.widget.Close()
+
+    def ensure_visible(self):
+        """ An overridden visibility setter which to opens|closes the
+        dock pane.
+
+        """
+        self.set_visible(True)
+
+    def ensure_hidden(self):
+        """ An overridden visibility setter which to opens|closes the
+        dock pane.
+
+        """
+        self.set_visible(False)
 
     def set_title(self, title):
         """ Set the title on the underlying widget.
 
         """
-        self.widget().SetTitle(title)
+        self.widget.SetTitle(title)
 
     def set_title_bar_visible(self, visible):
         """ Set the title bar visibility of the underlying widget.
 
         """
-        self.widget().SetTitleBarVisible(visible)
+        self.widget.SetTitleBarVisible(visible)
 
     def set_title_bar_orientation(self, orientation):
         """ Set the title bar orientation of the underyling widget.
 
         """
-        self.widget().SetTitleBarOrientation(_ORIENTATION_MAP[orientation])
+        self.widget.SetTitleBarOrientation(_ORIENTATION_MAP[orientation])
 
     def set_closable(self, closable):
         """ Set the closable state on the underlying widget.
 
         """
-        self.widget().SetClosable(closable)
+        self.widget.SetClosable(closable)
 
     def set_movable(self, movable):
         """ Set the movable state on the underlying widget.
 
         """
-        self.widget().SetMovable(movable)
+        self.widget.SetMovable(movable)
 
     def set_floatable(self, floatable):
         """ Set the floatable state on the underlying widget.
 
         """
-        self.widget().SetFloatable(floatable)
+        self.widget.SetFloatable(floatable)
 
     def set_floating(self, floating):
         """ Set the floating staet on the underlying widget.
 
         """
-        self.widget().SetFloating(floating)
+        if not self._guard & FLOATED_GUARD:
+            self._guard |= FLOATED_GUARD
+            try:
+                self.widget.SetFloating(floating)
+            finally:
+                self._guard &= ~FLOATED_GUARD
 
     def set_dock_area(self, dock_area):
         """ Set the dock area on the underyling widget.
 
         """
-        self.widget().SetDockArea(_DOCK_AREA_MAP[dock_area])
+        self.widget.SetDockArea(_DOCK_AREA_MAP[dock_area])
 
     def set_allowed_dock_areas(self, dock_areas):
         """ Set the allowed dock areas on the underlying widget.
@@ -758,5 +732,4 @@ class WxDockPane(WxWidget):
         wx_areas = 0
         for area in dock_areas:
             wx_areas |= _ALLOWED_AREAS_MAP[area]
-        self.widget().SetAllowedDockAreas(wx_areas)
-
+        self.widget.SetAllowedDockAreas(wx_areas)
