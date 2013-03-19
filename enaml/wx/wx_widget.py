@@ -7,72 +7,53 @@
 #------------------------------------------------------------------------------
 import wx
 
-from enaml.colors import parse_color
+from atom.api import Typed
+
+from enaml.widgets.widget import ProxyWidget
 
 from .wx_layout_request import wxEvtLayoutRequested
-from .wx_object import WxObject
+from .wx_resource_helpers import get_cached_wxcolor, get_cached_wxfont
+from .wx_toolkit_object import WxToolkitObject
 
 
-def wx_parse_color(color):
-    """ Convert a color string into a wxColour.
-
-    Parameters
-    ----------
-    color : string
-        A CSS3 color string to convert to a wxColour.
-
-    Returns
-    -------
-    result : wxColour
-        The wxColour for the given color string
+class WxWidget(WxToolkitObject, ProxyWidget):
+    """ A Wx implementation of an Enaml ProxyWidget.
 
     """
-    rgba = parse_color(color)
-    if rgba is None:
-        wx_color = wx.NullColour
-    else:
-        r, g, b, a = rgba
-        i = int
-        wx_color = wx.Colour(i(r * 255), i(g * 255), i(b * 255), i(a * 255))
-    return wx_color
-
-
-class WxWidget(WxObject):
-    """ A Wx implementation of an Enaml WidgetComponent.
-
-    """
-    #: An attribute which indicates whether or not the background
-    #: color of the widget has been changed.
-    _bgcolor_changed = False
-
-    #: An attribute which indicates whether or not the foreground
-    #: color of the widget has been changed.
-    _fgcolor_changed = False
+    #: A reference to the toolkit widget created by the proxy.
+    widget = Typed(wx.Window)
 
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the underlying wx.Panel widget.
+    def create_widget(self):
+        """ Creates the underlying wx.Window widget.
 
         """
-        return wx.Panel(parent)
+        self.widget = wx.Window(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the widget control.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        super(WxWidget, self).create(tree)
-        self.set_minimum_size(tree['minimum_size'])
-        self.set_maximum_size(tree['maximum_size'])
-        self.set_bgcolor(tree['bgcolor'])
-        self.set_fgcolor(tree['fgcolor'])
-        self.set_font(tree['font'])
-        self.set_enabled(tree['enabled'])
-        self.set_visible(tree['visible'])
-        self.set_show_focus_rect(tree['show_focus_rect'])
-        self.set_tool_tip(tree['tool_tip'])
-        self.set_status_tip(tree['status_tip'])
+        super(WxWidget, self).init_widget()
+        d = self.declaration
+        if d.background:
+            self.set_background(d.background)
+        if d.foreground:
+            self.set_foreground(d.foreground)
+        if d.font:
+            self.set_font(d.font)
+        if -1 not in d.minimum_size:
+            self.set_minimum_size(d.minimum_size)
+        if -1 not in d.maximum_size:
+            self.set_maximum_size(d.maximum_size)
+        if d.tool_tip:
+            self.set_tool_tip(d.tool_tip)
+        if d.status_tip:
+            self.set_status_tip(d.status_tip)
+        self.set_enabled(d.enabled)
+        self.set_visible(d.visible)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -85,7 +66,7 @@ class WxWidget(WxObject):
         post a wxEvtLayoutRequested event to the parent of this widget.
 
         """
-        widget = self.widget()
+        widget = self.widget
         if widget:
             parent = widget.GetParent()
             if parent:
@@ -93,166 +74,67 @@ class WxWidget(WxObject):
                 wx.PostEvent(parent, event)
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_enabled(self, content):
-        """ Handle the 'set_enabled' action from the Enaml widget.
-
-        """
-        self.set_enabled(content['enabled'])
-
-    def on_action_set_visible(self, content):
-        """ Handle the 'set_visible' action from the Enaml widget.
-
-        """
-        self.set_visible(content['visible'])
-
-    def on_action_set_bgcolor(self, content):
-        """ Handle the 'set_bgcolor' action from the Enaml widget.
-
-        """
-        self.set_bgcolor(content['bgcolor'])
-
-    def on_action_set_fgcolor(self, content):
-        """ Handle the 'set_fgcolor' action from the Enaml widget.
-
-        """
-        self.set_fgcolor(content['fgcolor'])
-
-    def on_action_set_font(self, content):
-        """ Handle the 'set_font' action from the Enaml widget.
-
-        """
-        self.set_font(content['font'])
-
-    def on_action_set_minimum_size(self, content):
-        """ Handle the 'set_minimum_size' action from the Enaml widget.
-
-        """
-        self.set_minimum_size(content['minimum_size'])
-
-    def on_action_set_maximum_size(self, content):
-        """ Handle the 'set_maximum_size' action from the Enaml widget.
-
-        """
-        self.set_maximum_size(content['maximum_size'])
-
-    def on_action_set_show_focus_rect(self, content):
-        """ Handle the 'set_show_focus_rect' action from the Enaml
-        widget.
-
-        """
-        self.set_show_focus_rect(content['show_focus_rect'])
-
-    def on_action_set_tool_tip(self, content):
-        """ Handle the 'set_tool_tip' action from the Enaml widget.
-
-        """
-        self.set_tool_tip(content['tool_tip'])
-
-    def on_action_set_status_tip(self, content):
-        """ Handle the 'set_status_tip' action from the Enaml widget.
-
-        """
-        self.set_status_tip(content['status_tip'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyWidget API
     #--------------------------------------------------------------------------
     def set_minimum_size(self, min_size):
         """ Sets the minimum size on the underlying widget.
 
-        Parameters
-        ----------
-        min_size : (int, int)
-            The minimum size allowable for the widget. A value of
-            (-1, -1) indicates the default min size.
-
         """
-        self.widget().SetMinSize(wx.Size(*min_size))
+        self.widget.SetMinSize(wx.Size(*min_size))
 
     def set_maximum_size(self, max_size):
         """ Sets the maximum size on the underlying widget.
 
-        Parameters
-        ----------
-        max_size : (int, int)
-            The minimum size allowable for the widget. A value of
-            (-1, -1) indicates the default max size.
-
         """
-        self.widget().SetMaxSize(wx.Size(*max_size))
+        self.widget.SetMaxSize(wx.Size(*max_size))
 
     def set_enabled(self, enabled):
         """ Set the enabled state on the underlying widget.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether or not the widget is enabled.
-
         """
-        self.widget().Enable(enabled)
+        self.widget.Enable(enabled)
 
     def set_visible(self, visible):
         """ Set the visibility state on the underlying widget.
 
-        Parameters
-        ----------
-        visible : bool
-            Whether or not the widget is visible.
-
         """
-        self.widget().Show(visible)
+        self.widget.Show(visible)
 
-    def set_bgcolor(self, bgcolor):
+    def set_background(self, background):
         """ Set the background color on the underlying widget.
 
-        Parameters
-        ----------
-        bgcolor : str
-            The background color of the widget as a CSS color string.
-
         """
-        if bgcolor or self._bgcolor_changed:
-            wx_color = wx_parse_color(bgcolor)
-            widget = self.widget()
-            widget.SetBackgroundColour(wx_color)
-            widget.Refresh()
-            self._bgcolor_changed = True
+        if background is None:
+            wxcolor = wx.NullColour
+        else:
+            wxcolor = get_cached_wxcolor(background)
+        widget = self.widget
+        widget.SetBackgroundColour(wxcolor)
+        widget.Refresh()
 
-    def set_fgcolor(self, fgcolor):
+    def set_foreground(self, foreground):
         """ Set the foreground color on the underlying widget.
 
-        Parameters
-        ----------
-        fgcolor : str
-            The foreground color of the widget as a CSS color string.
-
         """
-        if fgcolor or self._fgcolor_changed:
-            wx_color = wx_parse_color(fgcolor)
-            widget = self.widget()
-            widget.SetForegroundColour(wx_color)
-            widget.Refresh()
-            self._fgcolor_changed = True
+        if foreground is None:
+            wxcolor = wx.NullColour
+        else:
+            wxcolor = get_cached_wxcolor(foreground)
+        widget = self.widget
+        widget.SetForegroundColour(wxcolor)
+        widget.Refresh()
 
     def set_font(self, font):
         """ Set the font on the underlying widget.
 
-        Parameters
-        ----------
-        font : str
-            The font for the widget as a CSS font string.
-
         """
-        pass
+        wxfont = get_cached_wxfont(font)
+        widget = self.widget
+        widget.SetFont(wxfont)
+        widget.Refresh()
 
     def set_show_focus_rect(self, show):
-        """ Sets whether or not to show the focus rectangle around
-        the widget.
-
-        This is currently not supported on Wx.
+        """ This is not supported on Wx.
 
         """
         pass
@@ -261,12 +143,10 @@ class WxWidget(WxObject):
         """ Set the tool tip of for this widget.
 
         """
-        self.widget().SetToolTipString(tool_tip)
+        self.widget.SetToolTipString(tool_tip)
 
     def set_status_tip(self, status_tip):
-        """ Set the status tip of for this widget.
+        """ This is not supported on Wx.
 
         """
-        # Status tips are not currently supported on Wx
         pass
-

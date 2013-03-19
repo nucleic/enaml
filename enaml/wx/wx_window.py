@@ -7,6 +7,10 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.window import ProxyWindow
+
 from .wx_action import wxAction
 from .wx_container import WxContainer
 from .wx_layout_request import EVT_COMMAND_LAYOUT_REQUESTED
@@ -75,7 +79,7 @@ class wxCustomWindow(wx.Frame):
         """
         sizer = self.GetSizer()
         min_w, min_h = self.ClientToWindowSize(sizer.CalcMin())
-        max_w, max_h= self.ClientToWindowSize(sizer.CalcMax())
+        max_w, max_h = self.ClientToWindowSize(sizer.CalcMax())
         self.SetSizeHints(min_w, min_h, max_w, max_h)
         cur_w, cur_h = self.GetSize()
         new_w = min(max_w, max(min_w, cur_w))
@@ -109,35 +113,44 @@ class wxCustomWindow(wx.Frame):
         self.UpdateClientSizeHints()
 
 
-class WxWindow(WxWidget):
-    """ A Wx implementation of an Enaml Window.
+class WxWindow(WxWidget, ProxyWindow):
+    """ A Wx implementation of an Enaml ProxyWindow.
 
     """
+    #: A reference tot he toolkit widget created by the proxy.
+    widget = Typed(wxCustomWindow)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying wx.Frame widget.
+    def create_widget(self):
+        """ Create the underlying wxCustomWindow widget.
 
         """
-        return wxCustomWindow(parent)
+        self.widget = wxCustomWindow(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the window control.
+    def init_widget(self):
+        """ Initialize the window control.
 
         """
-        super(WxWindow, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_initial_size(tree['initial_size'])
-        self.set_modality(tree['modality'])
-        self.widget().Bind(wx.EVT_CLOSE, self.on_close)
+        super(WxWindow, self).init_widget()
+        d = self.declaration
+        if d.title:
+            self.set_title(d.title)
+        if -1 not in d.initial_size:
+            self.set_initial_size(d.initial_size)
+        if d.modality != 'non_modal':
+            self.set_modality(d.modality)
+        if d.icon:
+            self.set_icon(d.icon)
+        self.widget.Bind(wx.EVT_CLOSE, self.on_close)
 
     def init_layout(self):
         """ Perform layout initialization for the control.
 
         """
         super(WxWindow, self).init_layout()
-        widget = self.widget()
+        widget = self.widget
         widget.SetCentralWidget(self.central_widget())
         widget.Bind(EVT_COMMAND_LAYOUT_REQUESTED, self.on_layout_requested)
 
@@ -149,16 +162,14 @@ class WxWindow(WxWidget):
 
         Returns
         -------
-        result : wxWindos or None
+        result : wxWindow or None
             The central widget defined for this widget, or None if one
             is not defined.
 
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, WxContainer):
-                widget = child.widget()
-        return widget
+        d = self.declaration.central_widget()
+        if d is not None:
+            return d.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -168,14 +179,14 @@ class WxWindow(WxWidget):
 
         """
         if isinstance(child, WxContainer):
-            self.widget().SetCentralWidget(self.central_widget())
+            self.widget.SetCentralWidget(self.central_widget())
 
     def child_added(self, child):
         """ Handle the child added event for a QtWindow.
 
         """
         if isinstance(child, WxContainer):
-            self.widget().SetCentralWidget(self.central_widget())
+            self.widget.SetCentralWidget(self.central_widget())
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -187,119 +198,79 @@ class WxWindow(WxWidget):
         event.Skip()
         # Make sure the frame is not modal when closing, or no other
         # windows will be unblocked.
-        self.widget().MakeModal(False)
-        self.send_action('closed', {})
+        self.widget.MakeModal(False)
+        self.declaration._handle_close()
 
     def on_layout_requested(self, event):
         """ Handle the layout request event from the central widget.
 
         """
         # wx likes to send events after the widget is destroyed.
-        widget = self.widget()
-        if widget is not None:
-            widget.UpdateClientSizeHints()
+        if self.widget:
+            self.widget.UpdateClientSizeHints()
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_close(self, content):
-        """ Handle the 'close' action from the Enaml widget.
-
-        """
-        self.close()
-
-    def on_action_maximize(self, content):
-        """ Handle the 'maximize' action from the Enaml widget.
-
-        """
-        self.maximize()
-
-    def on_action_minimize(self, content):
-        """ Handle the 'minimize' action from the Enaml widget.
-
-        """
-        self.minimize()
-
-    def on_action_restore(self, content):
-        """ Handle the 'restore' action from the Enaml widget.
-
-        """
-        self.restore()
-
-    def on_action_set_icon_source(self, content):
-        """ Handle the 'set_icon_source' action from the Enaml widget.
-
-        """
-        pass
-
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        self.set_title(content['title'])
-
-    def on_action_set_modality(self, content):
-        """ Handle the 'set_modality' action from the Enaml widget.
-
-        """
-        self.set_modality(content['modality'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyWindow API
     #--------------------------------------------------------------------------
     def close(self):
         """ Close the window
 
         """
-        self.widget().Close()
+        self.widget.Close()
 
     def maximize(self):
         """ Maximize the window.
 
         """
-        self.widget().Maximize(True)
+        self.widget.Maximize(True)
 
     def minimize(self):
         """ Minimize the window.
 
         """
-        self.widget().Iconize(True)
+        self.widget.Iconize(True)
 
     def restore(self):
         """ Restore the window after a minimize or maximize.
 
         """
-        self.widget().Maximize(False)
+        self.widget.maximize(False)
+
+    def send_to_front(self):
+        """ Move the window to the top of the Z order.
+
+        """
+        self.widget.Raise()
+
+    def send_to_back(self):
+        """ Move the window to the bottom of the Z order.
+
+        """
+        self.widget.Lower()
+
+    def set_icon(self, icon):
+        """ This is not supported on Wx.
+
+        """
+        pass
 
     def set_title(self, title):
         """ Set the title of the window.
 
         """
-        self.widget().SetTitle(title)
+        self.widget.SetTitle(title)
 
     def set_initial_size(self, size):
         """ Set the initial size of the window.
 
         """
-        self.widget().SetSize(wx.Size(*size))
+        self.widget.SetSize(wx.Size(*size))
 
     def set_modality(self, modality):
         """ Set the modality of the window.
 
         """
         if modality == 'non_modal':
-            self.widget().MakeModal(False)
+            self.widget.MakeModal(False)
         else:
-            self.widget().MakeModal(True)
-
-    def set_visible(self, visible):
-        """ Set the visibility on the window.
-
-        This is an overridden parent class method to set the visibility
-        at a later time, so that layout can be initialized before the
-        window is displayed.
-
-        """
-        # XXX this could be done better.
-        wx.CallAfter(super(WxWindow, self).set_visible, visible)
-
+            self.widget.MakeModal(True)
