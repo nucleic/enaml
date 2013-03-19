@@ -71,9 +71,8 @@ class QtToolkitObject(ProxyToolkitObject):
     def destroy(self):
         """ A reimplemented destructor.
 
-        This will destroy the toolkit object provided that the parent
-        declaration is no already destroyed. This is so that only the
-        top-most toolkit object is destroyed, saving time.
+        This destructor will clear the reference to the toolkit widget
+        and set its parent to None.
 
         """
         if self.widget is not null:
@@ -105,11 +104,10 @@ class QtToolkitObject(ProxyToolkitObject):
             None if there is no such parent.
 
         """
-        d = self.parent()
-        if d is not None:
-            w = d.widget
-            if w is not null:
-                return w
+        parent = self.parent()
+        if parent is not None:
+            if parent.widget is not null:
+                return parent.widget
 
     def child_widgets(self):
         """ Get the child toolkit widgets for this object.
@@ -121,6 +119,5 @@ class QtToolkitObject(ProxyToolkitObject):
 
         """
         for child in self.children():
-            w = child.widget
-            if w is not null:
-                yield w
+            if child.widget is not null:
+                return child.widget

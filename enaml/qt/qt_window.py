@@ -5,15 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed
-
 from PyQt4.QtCore import Qt, QSize, pyqtSignal
 from PyQt4.QtGui import QFrame, QLayout, QIcon
+
+from atom.api import Typed
 
 from enaml.widgets.window import ProxyWindow
 
 from .q_resource_helpers import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
+from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
 
@@ -252,6 +253,25 @@ class QtWindow(QtWidget, ProxyWindow):
 
         """
         self.declaration._handle_close()
+
+    #--------------------------------------------------------------------------
+    # Child Events
+    #--------------------------------------------------------------------------
+    def child_added(self, child):
+        """ Handle the child added event for a QtWindow.
+
+        """
+        super(QtWindow, self).child_added(child)
+        if isinstance(child, QtContainer):
+            self.widget.setCentralWidget(self.central_widget())
+
+    def child_removed(self, child):
+        """ Handle the child added event for a QtWindow.
+
+        """
+        super(QtWindow, self).child_removed(child)
+        if isinstance(child, QtContainer):
+            self.widget.setCentralWidget(self.central_widget())
 
     #--------------------------------------------------------------------------
     # ProxyWindow API
