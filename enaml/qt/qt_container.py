@@ -64,7 +64,7 @@ class QContainer(QFrame):
 
 
 class QtContainer(QtConstraintsWidget, ProxyContainer):
-    """ A Qt implementation of an Enaml Container.
+    """ A Qt implementation of an Enaml ProxyContainer.
 
     """
     #: A reference to the toolkit widget created by the proxy.

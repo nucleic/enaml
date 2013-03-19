@@ -15,7 +15,7 @@ from .qt_control import QtControl
 
 
 class QtHtml(QtControl, ProxyHtml):
-    """ A Qt implementation of an Enaml HTML widget.
+    """ A Qt implementation of an Enaml ProxyHtml widget.
 
     """
     #: A reference to the widget created by the proxy.
