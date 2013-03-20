@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from contextlib import contextmanager
+
 from atom.api import DefaultValue
 
 from .dynamic_scope import DynamicScope, Nonlocals
@@ -556,6 +558,27 @@ DEFAULT_OPERATORS = {
 }
 
 
+#: The internal stack of operators pushed by the operator context.
+__operator_stack = []
+
+
+@contextmanager
+def operator_context(ops):
+    """ Push operators onto the stack for the duration of the context.
+
+    Parameters
+    ----------
+    ops : dict
+        The dictionary of operators to push onto the stack.
+
+    """
+    __operator_stack.append(ops)
+    print __operator_stack
+    yield
+    __operator_stack.pop()
+    print __operator_stack
+
+
 def __get_default_operators():
     """ Set the default operators.
 
@@ -573,3 +596,19 @@ def __set_default_operators(ops):
     """
     global DEFAULT_OPERATORS
     DEFAULT_OPERATORS = ops
+
+
+def __get_operators():
+    """ An internal routine used to get the operators for a given class.
+
+    Operators resolution is performed in the following order:
+
+        - The operators on the top of the operators stack.
+        - The default operators via __get_default_operators()
+
+    This function may disappear at any time.
+
+    """
+    if __operator_stack:
+        return __operator_stack[-1]
+    return __get_default_operators()

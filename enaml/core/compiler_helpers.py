@@ -14,7 +14,7 @@ from .enaml_def import EnamlDef
 from .exceptions import (
     DeclarativeNameError, DeclarativeError, OperatorLookupError,
 )
-from .operators import DEFAULT_OPERATORS
+from .operators import __get_operators
 
 
 def _post_process_enamldef_(klass, descr, f_globals):
@@ -49,10 +49,7 @@ def _post_process_enamldef_(klass, descr, f_globals):
     # decorator or by setting the attribute before the module has
     # been fully imported.
     descr['class'] = klass
-    if not hasattr(klass, '__operators__'):
-        operators = klass.__operators__ = DEFAULT_OPERATORS
-    else:
-        operators = klass.__operators__
+    operators = __get_operators()
 
     # Pass over the child descriptions and resolve the classes. Child
     # types with user attrs or bound expressions are subclassed.
