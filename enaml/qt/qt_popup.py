@@ -38,8 +38,6 @@ class QtPopup(QtWidget, ProxyPopup):
         """
         super(QtPopup, self).init_widget()
         d = self.declaration
-        if -1 not in d.initial_size:
-            self.set_initial_size(d.initial_size)
         if d.anchor:
             self.set_anchor(d.anchor)
         if d.arrow:
@@ -85,6 +83,16 @@ class QtPopup(QtWidget, ProxyPopup):
     #--------------------------------------------------------------------------
     # ProxyPopup API
     #--------------------------------------------------------------------------
+    def setup_window(self):
+        """ Setup widget window hierarchy.
+
+        This method is called by the declaration the first time the
+        window is shown.
+
+        """
+        self.init_top_down_pass()
+        self.init_bottom_up_pass()
+
     def close(self):
         """ Close the window
 
@@ -115,11 +123,3 @@ class QtPopup(QtWidget, ProxyPopup):
 
         """
         self.widget.setRelativePos(relative_pos)
-
-    def set_initial_size(self, size):
-        """ Set the initial size of the window.
-
-        """
-        if -1 in size:
-            return
-        self.widget.resize(QSize(*size))
