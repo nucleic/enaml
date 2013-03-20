@@ -291,11 +291,19 @@ class OpSubscribe(OperatorBase):
         )
         result = call_func(func, (tracer,), {}, scope)
 
-        # Invalidate the old observer and create a new observer which
-        # is subscribed to the traced dependencies in the expression.
+        # Unsubscribe the old observer from the current change set.
+        # The objects in the change set will not usually change, but
+        # they may in some cases. So, the old notifier is also set to
+        # invalid so the next time that particular change fires, the
+        # object will be removed.
         observers = self.observers
         if owner in observers:
-            observers[owner].owner = None
+            old = observers.pop(owner)
+            for obj, name in tracer.traced_items:
+                obj.unobserve(name, old)
+            old.owner = None
+
+        # Create a new observer to bind to the current change set.
         observer = SubscriptionObserver(owner, self.binding['name'])
         observers[owner] = observer
         for obj, name in tracer.traced_items:
@@ -341,6 +349,8 @@ if os.environ.get('ENAML_TRAITS_SUPPORT'):
             observers = self.observers
             if owner in observers:
                 atom_ob, traits_ob = observers.pop(owner)
+                for obj, name in tracer.traced_items:
+                    obj.unobserve(name, atom_ob)
                 atom_ob.owner = None
                 traits_ob.owner = None
             atom_ob = SubscriptionObserver(owner, self.binding['name'])
@@ -544,3 +554,22 @@ DEFAULT_OPERATORS = {
     '<<': op_subscribe,
     ':=': op_delegate,
 }
+
+
+def __get_default_operators():
+    """ Set the default operators.
+
+    This function is for internal use only and may disappear at any time.
+
+    """
+    return DEFAULT_OPERATORS
+
+
+def __set_default_operators(ops):
+    """ Set the default operators.
+
+    This function is for internal use only and may disappear at any time.
+
+    """
+    global DEFAULT_OPERATORS
+    DEFAULT_OPERATORS = ops
