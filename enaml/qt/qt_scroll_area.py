@@ -202,7 +202,7 @@ class QtScrollArea(QtConstraintsWidget, ProxyScrollArea):
         pass
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyScrollArea API
     #--------------------------------------------------------------------------
     def set_horizontal_policy(self, policy):
         """ Set the horizontal scrollbar policy of the widget.

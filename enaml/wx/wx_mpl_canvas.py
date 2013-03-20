@@ -123,4 +123,3 @@ class WxMPLCanvas(WxControl):
 
         sizer.Layout()
         widget.Thaw()
-

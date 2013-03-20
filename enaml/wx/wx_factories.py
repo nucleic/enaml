@@ -165,36 +165,34 @@ def window_factory():
     return WxWindow
 
 
-def register_default():
-    from .wx_widget_registry import WxWidgetRegistry
-    reg = WxWidgetRegistry.register
-    register = lambda name, factory: reg(name, factory, 'default')
-    register('Action', action_factory)
-    register('ActionGroup', action_group_factory)
-    register('Calendar', calendar_factory)
-    register('CheckBox', check_box_factory)
-    register('ComboBox', combo_box_factory)
-    register('Container', container_factory)
-    register('DateSelector', date_selector_factory)
-    register('DockPane', dock_pane_factory)
-    register('Field', field_factory)
-    register('Form', form_factory)
-    register('GroupBox', group_box_factory)
-    register('Html', html_factory)
-    register('Label', label_factory)
-    register('MainWindow', main_window_factory)
-    register('Menu', menu_factory)
-    register('MenuBar', menu_bar_factory)
-    register('MPLCanvas', mpl_canvas_factory)
-    register('Notebook', notebook_factory)
-    register('Page', page_factory)
-    register('PushButton', push_button_factory)
-    register('ProgressBar', progress_bar_factory)
-    register('RadioButton', radio_button_factory)
-    register('ScrollArea', scroll_area_factory)
-    register('Slider', slider_factory)
-    register('SpinBox', spin_box_factory)
-    register('SplitItem', split_item_factory)
-    register('Splitter', splitter_factory)
-    register('ToolBar', tool_bar_factory)
-    register('Window', window_factory)
+WX_FACTORIES = {
+    'Action': action_factory,
+    'ActionGroup': action_group_factory,
+    'Calendar': calendar_factory,
+    'CheckBox': check_box_factory,
+    'ComboBox': combo_box_factory,
+    'Container': container_factory,
+    'DateSelector': date_selector_factory,
+    'DockPane': dock_pane_factory,
+    'Field': field_factory,
+    'Form': form_factory,
+    'GroupBox': group_box_factory,
+    'Html': html_factory,
+    'Label': label_factory,
+    'MainWindow': main_window_factory,
+    'Menu': menu_factory,
+    'MenuBar': menu_bar_factory,
+    'MPLCanvas': mpl_canvas_factory,
+    'Notebook': notebook_factory,
+    'Page': page_factory,
+    'PushButton': push_button_factory,
+    'ProgressBar': progress_bar_factory,
+    'RadioButton': radio_button_factory,
+    'ScrollArea': scroll_area_factory,
+    'Slider': slider_factory,
+    'SpinBox': spin_box_factory,
+    'SplitItem': split_item_factory,
+    'Splitter': splitter_factory,
+    'ToolBar': tool_bar_factory,
+    'Window': window_factory,
+}

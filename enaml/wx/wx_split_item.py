@@ -7,6 +7,10 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed, null
+
+from enaml.widgets.split_item import ProxySplitItem
+
 from .wx_single_widget_sizer import wxSingleWidgetSizer
 from .wx_container import WxContainer
 from .wx_widget import WxWidget
@@ -76,33 +80,37 @@ class wxSplitItem(wx.Panel):
         self._stretch = stretch
 
 
-class WxSplitItem(WxWidget):
-    """ A Wx implementation of an Enaml SplitItem.
+class WxSplitItem(WxWidget, ProxySplitItem):
+    """ A Wx implementation of an Enaml ProxySplitItem.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxSplitItem)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying QStackItem widget.
 
         """
-        return wxSplitItem(parent)
+        self.widget = wxSplitItem(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underyling widget.
+    def init_widget(self):
+        """ Initialize the underyling widget.
 
         """
-        super(WxSplitItem, self).create(tree)
-        self.set_stretch(tree['stretch'])
-        self.set_collapsible(tree['collapsible'])
+        super(WxSplitItem, self).init_widget()
+        d = self.declaration
+        self.set_stretch(d.stretch)
+        self.set_collapsible(d.collapsible)
 
     def init_layout(self):
         """ Initialize the layout for the underyling widget.
 
         """
         super(WxSplitItem, self).init_layout()
-        self.widget().SetSplitWidget(self.split_widget())
+        self.widget.SetSplitWidget(self.split_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -117,57 +125,42 @@ class WxSplitItem(WxWidget):
             not defined.
 
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, WxContainer):
-                widget = child.widget()
-        return widget
+        d = self.declaration.split_widget()
+        if d is not None:
+            return d.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
+    def child_added(self, child):
+        """ Handle the child added event for a WxSplitItem.
+
+        """
+        super(WxSplitItem, self).child_added(child)
+        if isinstance(child, WxContainer):
+            self.widget.SetSplitWidget(self.split_widget())
+
     def child_removed(self, child):
         """ Handle the child removed event for a WxSplitItem.
 
         """
+        super(WxSplitItem, self).child_removed(child)
         if isinstance(child, WxContainer):
-            self.widget().SetSplitWidget(self.split_widget())
-
-    def child_added(self, child):
-        """ Handle the child added event for a QtSplitItem.
-
-        """
-        if isinstance(child, WxContainer):
-            self.widget().SetSplitWidget(self.split_widget())
+            self.widget.SetSplitWidget(self.split_widget())
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_stretch(self, content):
-        """ Handle the 'set_stretch' action from the Enaml widget.
-
-        """
-        self.set_stretch(content['stretch'])
-
-    def on_action_set_collapsible(self, content):
-        """ Handle the 'set_collapsible' action from the Enaml widget.
-
-        """
-        self.set_collapsible(content['collapsible'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxySplitItem API
     #--------------------------------------------------------------------------
     def set_stretch(self, stretch):
         """ Set the stretch factor for the underlying widget.
 
         """
-        self.widget().SetStretch(stretch)
+        self.widget.SetStretch(stretch)
 
     def set_collapsible(self, collapsible):
         """ Set the collapsible flag for the underlying widget.
 
-        """
-        # Not supported on Wx
-        pass
+        This is not supported on wx.
 
+        """
+        pass

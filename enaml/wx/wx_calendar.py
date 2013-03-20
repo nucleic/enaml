@@ -7,73 +7,85 @@
 #------------------------------------------------------------------------------
 from wx.calendar import CalendarCtrl, EVT_CALENDAR
 
-from .wx_bounded_date import WxBoundedDate
+from atom.api import Typed
+
+from enaml.widgets.calendar import ProxyCalendar
+
+from .wx_bounded_date import (
+    WxBoundedDate, CHANGED_GUARD, as_wx_date, as_py_date
+)
 
 
-class WxCalendar(WxBoundedDate):
-    """ A Wx implementation of an Enaml Calendar.
+class WxCalendar(WxBoundedDate, ProxyCalendar):
+    """ A Wx implementation of an Enaml ProxyCalendar.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(CalendarCtrl)
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the wx.calendar.CalendarCtrl widget.
+    def create_widget(self):
+        """ Create the calender widget.
 
         """
-        return CalendarCtrl(parent)
+        self.widget = CalendarCtrl(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the the calendar widget.
+    def init_widget(self):
+        """ Initialize the widget.
 
         """
-        super(WxCalendar, self).create(tree)
-        self.widget().Bind(EVT_CALENDAR, self.on_date_changed)
+        super(WxCalendar, self).init_widget()
+        self.widget.Bind(EVT_CALENDAR, self.on_date_changed)
 
     #--------------------------------------------------------------------------
-    # Abstract Method Implementations
+    # Abstract Method Implementation
     #--------------------------------------------------------------------------
     def get_date(self):
         """ Return the current date in the control.
 
         Returns
         -------
-        result : wxDateTime
-            The current control date as a wxDateTime object.
+        result : date
+            The current control date as a Python date object.
 
         """
-        return self.widget().GetDate()
+        return as_py_date(self.widget.GetDate())
+
+    def set_minimum(self, date):
+        """ Set the widget's minimum date.
+
+        Parameters
+        ----------
+        date : date
+            The date object to use for setting the minimum date.
+
+        """
+        self.widget.SetLowerDateLimit(as_wx_date(date))
+
+    def set_maximum(self, date):
+        """ Set the widget's maximum date.
+
+        Parameters
+        ----------
+        date : date
+            The date object to use for setting the maximum date.
+
+        """
+        self.widget.SetUpperDateLimit(as_wx_date(date))
 
     def set_date(self, date):
         """ Set the widget's current date.
 
         Parameters
         ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the date.
+        date : date
+            The date object to use for setting the date.
 
         """
-        self.widget().SetDate(date)
-
-    def set_max_date(self, date):
-        """ Set the widget's maximum date.
-
-        Parameters
-        ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the maximum date.
-
-        """
-        self.widget().SetUpperDateLimit(date)
-
-    def set_min_date(self, date):
-        """ Set the widget's minimum date.
-
-        Parameters
-        ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the minimum date.
-
-        """
-        self.widget().SetLowerDateLimit(date)
-
+        self._guard |= CHANGED_GUARD
+        try:
+            self.widget.SetDate(as_wx_date(date))
+        finally:
+            self._guard &= ~CHANGED_GUARD

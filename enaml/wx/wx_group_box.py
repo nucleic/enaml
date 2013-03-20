@@ -7,6 +7,10 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.group_box import ProxyGroupBox
+
 from .wx_container import WxContainer, wxContainer
 
 
@@ -198,27 +202,31 @@ class wxGroupBox(wxContainer):
             raise ValueError('Invalid title alignment %s' % align)
 
 
-class WxGroupBox(WxContainer):
-    """ A Wx implementation of an Enaml GroupBox.
+class WxGroupBox(WxContainer, ProxyGroupBox):
+    """ A Wx implementation of an Enaml ProxyGroupBox.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxGroupBox)
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the underlying custom wxGroupBox control.
+    def create_widget(self):
+        """ Creates the underlying QGroupBox control.
 
         """
-        return wxGroupBox(parent)
+        self.widget = wxGroupBox(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the group box control.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        super(WxGroupBox, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_flat(tree['flat'])
-        self.set_title_align(tree['title_align'])
+        super(WxGroupBox, self).init_widget()
+        d = self.declaration
+        self.set_title(d.title, cm_update=False)
+        self.set_flat(d.flat)
+        self.set_title_align(d.title_align)
 
     #--------------------------------------------------------------------------
     # Layout Handling
@@ -227,53 +235,34 @@ class WxGroupBox(WxContainer):
         """ Get the current contents margins for the group box.
 
         """
-        return self.widget().GetContentsMargins()
+        return self.widget.GetContentsMargins()
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # ProxyGroupBox API
     #--------------------------------------------------------------------------
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        widget = self.widget()
-        old_margins = widget.GetContentsMargins()
-        self.set_title(content['title'])
-        new_margins = widget.GetContentsMargins()
-        if old_margins != new_margins:
-            self.refresh_contents_constraints()
-
-    def on_action_set_title_align(self, content):
-        """ Handle the 'set_title_align' action from the Enaml widget.
-
-        """
-        self.set_title_align(content['title_align'])
-
-    def on_action_set_flat(self, content):
-        """ Handle the 'set_flat' action from the Enaml widget.
-
-        """
-        self.set_flat(content['flat'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update methods
-    #--------------------------------------------------------------------------
-    def set_title(self, title):
+    def set_title(self, title, cm_update=True):
         """ Update the title of the group box.
 
         """
-        self.widget().SetTitle(title)
+        if not cm_update:
+            self.widget.SetTitle(title)
+            return
+        widget = self.widget
+        old_margins = widget.GetContentsMargins()
+        widget.SetTitle(title)
+        new_margins = widget.GetContentsMargins()
+        if old_margins != new_margins:
+            self.contents_margins_updated()
 
     def set_flat(self, flat):
         """ Updates the flattened appearance of the group box.
 
         """
-        self.widget().SetFlat(flat)
+        self.widget.SetFlat(flat)
 
     def set_title_align(self, align):
         """ Updates the alignment of the title of the group box.
 
         """
         wx_align = WX_ALIGNMENTS[align]
-        self.widget().SetAlignment(wx_align)
-
+        self.widget.SetAlignment(wx_align)

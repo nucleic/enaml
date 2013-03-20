@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import wx
 
-from enaml.colorext import FontStyle
+from enaml.fontext import FontStyle
 
 
 FONT_STYLE = {
@@ -200,7 +200,7 @@ def wxFont_from_Font(font):
     else:
         wxweight = wx.FONTWEIGHT_NORMAL
     wxfamily = wx.FONTFAMILY_DEFAULT
-    wxfont = wx.Font(font.poinsize, wxfamily, wxstyle, wxweight)
+    wxfont = wx.Font(font.pointsize, wxfamily, wxstyle, wxweight)
     wxfont.SetFaceName(font.family)
     return wxfont
 

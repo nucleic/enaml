@@ -7,6 +7,10 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.main_window import ProxyMainWindow
+
 from .wx_action import wxAction
 from .wx_container import WxContainer
 from .wx_dock_pane import WxDockPane
@@ -335,97 +339,103 @@ class wxMainWindow(wx.Frame):
                 manager.Update()
 
 
-class WxMainWindow(WxWindow):
-    """ A Wx implementation of an Enaml MainWindow.
+class WxMainWindow(WxWindow, ProxyMainWindow):
+    """ A Wx implementation of an Enaml ProxyMainWindow.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxMainWindow)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying wx.Frame widget and dock manager.
+    def create_widget(self):
+        """ Create the underlying widget wxMainWindow widget.
 
         """
-        return wxMainWindow(parent)
+        self.widget = wxMainWindow(self.parent_widget())
 
     def init_layout(self):
-        """ Perform the layout initialization for the main window.
+        """ Initialize the layout for the underlying widget.
 
         """
         # The superclass' init_layout() method is explicitly not called
         # since the layout initialization for Window is not appropriate
-        # for MainWindow
-        main_window = self.widget()
-        components = self.components()
-        main_window.BeginBatch()
-        main_window.SetMenuBar(components['menu_bar'])
-        main_window.SetCentralWidget(components['central_widget'])
-        for dpane in components['dock_panes']:
-            main_window.AddDockPane(dpane)
-        for tbar in components['tool_bars']:
-            main_window.AddToolBar(tbar)
-        main_window.EndBatch()
+        # for MainWindow.
+        widget = self.widget
+        widget.BeginBatch()
+        widget.SetMenuBar(self.menu_bar())
+        widget.SetCentralWidget(self.central_widget())
+        for d in self.dock_panes():
+            widget.AddDockPane(d)
+        for d in self.tool_bars():
+            widget.AddToolBar(d)
+        widget.EndBatch()
+
+    def destroy(self):
+        """ A reimplemented destructor.
+
+        This will free any reference to the menu bar before destroying
+        the underlying window. Wx segfaults otherwise.
+
+        """
+        self.widget.SetMenuBar(None)
+        super(WxMainWindow, self).destroy()
 
     #--------------------------------------------------------------------------
     # Utility Methods
     #--------------------------------------------------------------------------
-    def components(self):
-        """ Get a dictionary of the main window components.
-
-        Returns
-        -------
-        result : dict
-            A dicionary of main window components categorized by their
-            function.
+    def menu_bar(self):
+        """ Get the QMenuBar widget defined for the main window.
 
         """
-        d = {
-            'central_widget': None, 'menu_bar': None,
-            'tool_bars': [], 'dock_panes': [],
-        }
-        for child in self.children():
-            if isinstance(child, WxDockPane):
-                d['dock_panes'].append(child.widget())
-            elif isinstance(child, WxToolBar):
-                d['tool_bars'].append(child.widget())
-            elif isinstance(child, WxMenuBar):
-                d['menu_bar'] = child.widget()
-            elif isinstance(child, WxContainer):
-                d['central_widget'] = child.widget()
-        return d
+        d = self.declaration.menu_bar()
+        if d is not None:
+            return d.proxy.widget or None
+
+    def dock_panes(self):
+        """ Get the QDockWidget widgets defined for the main window.
+
+        """
+        for d in self.declaration.dock_panes():
+            yield d.proxy.widget or None
+
+    def tool_bars(self):
+        """ Get the QToolBar widgets defined for the main window.
+
+        """
+        for d in self.declaration.tool_bars():
+            yield d.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a WxMainWindow.
-
-        """
-        main_window = self.widget()
-        if isinstance(child, WxDockPane):
-            main_window.RemoveDockPane(child.widget())
-        elif isinstance(child, WxToolBar):
-            main_window.RemoveToolBar(child.widget())
-        elif isinstance(child, WxContainer):
-            components = self.components()
-            main_window.SetCentralWidget(components['central_widget'])
-        elif isinstance(child, WxMenuBar):
-            components = self.components()
-            main_window.SetMenuBar(components['menu_bar'])
-
     def child_added(self, child):
         """ Handle the child added event for a WxMainWindow.
 
         """
-        main_window = self.widget()
         if isinstance(child, WxMenuBar):
-            components = self.components()
-            main_window.SetMenuBar(components['menu_bar'])
+            self.widget.SetMenuBar(self.menu_bar())
         elif isinstance(child, WxContainer):
-            components = self.components()
-            main_window.SetCentralWidget(components['central_widget'])
+            self.widget.SetCentralWidget(self.central_widget())
         elif isinstance(child, WxDockPane):
-            main_window.AddDockPane(child.widget())
+            self.widget.AddDockPane(child.widget)
         elif isinstance(child, WxToolBar):
-            main_window.AddToolBar(child.widget())
+            self.widget.AddToolBar(child.widget)
+        else:
+            super(WxMainWindow, self).child_added(child)
 
+    def child_removed(self, child):
+        """ Handle the child removed event for a WxMainWindow.
+
+        """
+        if isinstance(child, WxDockPane):
+            self.widget.RemoveDockPane(child.widget)
+        elif isinstance(child, WxToolBar):
+            self.widget.RemoveToolBar(child.widget)
+        elif isinstance(child, WxContainer):
+            self.widget.SetCentralWidget(self.central_widget())
+        elif isinstance(child, WxMenuBar):
+            self.widget.SetMenuBar(self.menu_bar())
+        else:
+            super(WxMainWindow, self).child_removed(child)

@@ -8,7 +8,11 @@
 import wx
 from wx.lib.splitter import MultiSplitterWindow
 
-from .wx_constraints_widget import WxConstraintsWidget
+from atom.api import Typed
+
+from enaml.widgets.splitter import ProxySplitter
+
+from .wx_constraints_widget import WxConstraintsWidget, size_hint_guard
 from .wx_split_item import WxSplitItem
 
 
@@ -174,94 +178,97 @@ class wxSplitter(MultiSplitterWindow):
         super(wxSplitter, self)._OnSize(event)
 
 
-class WxSplitter(WxConstraintsWidget):
-    """ A Wx implementation of an Enaml Splitter.
+class WxSplitter(WxConstraintsWidget, ProxySplitter):
+    """ A Wx implementation of an Enaml ProxySplitter.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxSplitter)
+
     #--------------------------------------------------------------------------
     # Setup methods
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Creates the underlying wxSplitter widget.
 
         """
-        return wxSplitter(parent)
+        self.widget = wxSplitter(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the splitter control.
+    def init_widget(self):
+        """ Initialize the underlying control.
+
         """
-        super(WxSplitter, self).create(tree)
-        self.set_orientation(tree['orientation'])
-        self.set_live_drag(tree['live_drag'])
+        super(WxSplitter, self).init_widget()
+        d = self.declaration
+        self.set_orientation(d.orientation, sh_guard=False)
+        self.set_live_drag(d.live_drag)
 
     def init_layout(self):
         """ Handle the layout initialization for the splitter.
 
         """
         super(WxSplitter, self).init_layout()
-        widget = self.widget()
-        for child in self.children():
-            if isinstance(child, WxSplitItem):
-                widget.AppendWindow(child.widget())
+        widget = self.widget
+        for item in self.split_items():
+            widget.AppendWindow(item)
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a WxSplitter.
-
-        """
-        if isinstance(child, WxSplitItem):
-            widget = child.widget()
-            self.widget().DetachWindow(widget)
-            widget.Hide()
-            self.size_hint_updated()
-
     def child_added(self, child):
         """ Handle the child added event for a WxSplitter.
 
         """
+        super(WxSplitter, self).child_added(child)
         if isinstance(child, WxSplitItem):
-            index = self.index_of(child)
-            if index != -1:
-                self.widget().InsertWindow(index, child.widget())
-                self.size_hint_updated()
+            for index, dchild in enumerate(self.children()):
+                if child is dchild:
+                    self.widget.InsertWindow(index, child.widget)
+                    self.size_hint_updated()
 
-    #--------------------------------------------------------------------------
-    # Message Handler Methods
-    #--------------------------------------------------------------------------
-    def on_action_set_orientation(self, content):
-        """ Handle the 'set_orientation' action from the Enaml widget.
+    def child_removed(self, child):
+        """ Handle the child removed event for a WxSplitter.
 
         """
-        self.set_orientation(content['orientation'])
-        self.size_hint_updated()
+        super(WxSplitter, self).child_removed(child)
+        if isinstance(child, WxSplitItem):
+            widget = child.widget
+            self.widget.DetachWindow(widget)
+            widget.Hide()
+            self.size_hint_updated()
 
-    def on_action_set_live_drag(self, content):
-        """ Handle the 'set_live_drag' action from the Enaml widget.
+    #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def split_items(self):
+        """ Get the split items defined for the widget.
 
         """
-        self.set_live_drag(content['live_drag'])
+        for d in self.declaration.split_items():
+            yield d.proxy.widget or None
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxySplitter API
     #--------------------------------------------------------------------------
-    def set_orientation(self, orientation):
+    def set_orientation(self, orientation, sh_guard=True):
         """ Update the orientation of the splitter.
 
         """
         wx_orientation = _ORIENTATION_MAP[orientation]
-        widget = self.widget()
-        widget.SetOrientation(wx_orientation)
-        widget.SizeWindows()
+        widget = self.widget
+        if sh_guard:
+            with size_hint_guard(self):
+                widget.SetOrientation(wx_orientation)
+                widget.SizeWindows()
+        else:
+            widget.SetOrientation(wx_orientation)
+            widget.SizeWindows()
 
     def set_live_drag(self, live_drag):
         """ Updates the drag state of the splitter.
 
         """
-        widget = self.widget()
         if live_drag:
-            widget.WindowStyle |= wx.SP_LIVE_UPDATE
+            self.widget.WindowStyle |= wx.SP_LIVE_UPDATE
         else:
-            widget.WindowStyle &= ~wx.SP_LIVE_UPDATE
-
+            self.widget.WindowStyle &= ~wx.SP_LIVE_UPDATE

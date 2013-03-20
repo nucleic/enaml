@@ -7,83 +7,16 @@
 #------------------------------------------------------------------------------
 from collections import deque
 
-from casuarius import weak
-from enaml.layout.layout_manager import LayoutManager
-
 import wx
 
-from .wx_constraints_widget import WxConstraintsWidget, LayoutBox
+from atom.api import Bool, List, Callable, Value, Typed
 
+from casuarius import weak
 
-def _convert_cn_info(info, owners):
-    """ Converts the lhs or rhs of a linear constraint info dict into
-    its corresponding casuarius object.
+from enaml.layout.layout_manager import LayoutManager
+from enaml.widgets.container import ProxyContainer
 
-    """
-    cn_type = info['type']
-    if cn_type == 'linear_expression':
-        const = info['constant']
-        terms = info['terms']
-        convert = _convert_cn_info
-        res = sum(convert(t, owners) for t in terms) + const
-    elif cn_type == 'term':
-        coeff = info['coeff']
-        var = info['var']
-        res = coeff * _convert_cn_info(var, owners)
-    elif cn_type == 'linear_symbolic':
-        sym_name = info['name']
-        owner_id = info['owner']
-        owner = owners.get(owner_id, None)
-        if owner is None:
-            owner = owners[owner_id] = LayoutBox('_virtual', owner_id)
-        res = owner.primitive(sym_name)
-    else:
-        msg = 'Unhandled constraint info type `%s`' % cn_type
-        raise ValueError(msg)
-    return res
-
-
-def as_linear_constraint(info, owners):
-    """ Converts a constraint info dict into a casuarius linear
-    constraint.
-
-    For constraints specified in the info dict which do not have a
-    corresponding owner (e.g. those created by box helpers) a
-    constraint variable will be synthesized.
-
-    Parameters
-    ----------
-    info : dict
-        A dictionary sent from an Enaml widget which specifies the
-        information for a linear constraint.
-
-    owners : dict
-        A mapping from constraint id to an owner object which holds
-        the actual casuarius constraint variables as attributes.
-
-    Returns
-    -------
-    result : LinearConstraint
-        A casuarius linear constraint for the given dict.
-
-    """
-    if info['type'] != 'linear_constraint':
-        msg = 'The info dict does not specify a linear constraint.'
-        raise ValueError(msg)
-    convert = _convert_cn_info
-    lhs = convert(info['lhs'], owners)
-    rhs = convert(info['rhs'], owners)
-    op = info['op']
-    if op == '==':
-        cn = lhs == rhs
-    elif op == '<=':
-        cn = lhs <= rhs
-    elif op == '>=':
-        cn = lhs >= rhs
-    else:
-        msg = 'Unhandled constraint operator `%s`' % op
-        raise ValueError(msg)
-    return cn | info['strength'] | info['weight']
+from .wx_constraints_widget import WxConstraintsWidget, size_hint_guard
 
 
 class wxContainer(wx.PyPanel):
@@ -117,106 +50,126 @@ class wxContainer(wx.PyPanel):
         self._best_size = size
 
 
-class WxContainer(WxConstraintsWidget):
-    """ A Wx implementation of an Enaml Container.
+class WxContainer(WxConstraintsWidget, ProxyContainer):
+    """ A Wx implementation of an Enaml ProxyContainer.
 
     """
-    #: Whether or not this container should share its layout with a
-    #: parent container.
-    _share_layout = False
+    #: A reference to the toolkit widget created by the proxy.
+    widget = Typed(wxContainer)
 
-    #: The padding to use when constraining the layout.
-    _padding = (10, 10, 10, 10)
+    #: A list of the contents constraints for the widget.
+    contents_cns = List()
 
     #: Whether or not this container owns its layout. A container which
     #: does not own its layout is not responsible for laying out its
     #: children on a resize event, and will proxy the call to its owner.
-    _owns_layout = True
+    _owns_layout = Bool(True)
 
     #: The object which has taken ownership of the layout for this
     #: container, if any.
-    _layout_owner = None
+    _layout_owner = Value()
 
     #: The LayoutManager instance to use for solving the layout system
     #: for this container.
-    _layout_manager = None
+    _layout_manager = Value()
 
     #: The function to use for refreshing the layout on a resize event.
-    _refresh = lambda *args, **kwargs: None
+    _refresh = Callable(lambda *args, **kwargs: None)
 
     #: The table of offsets to use during a layout pass.
-    _offset_table = []
+    _offset_table = List()
 
     #: The table of (index, updater) pairs to use during a layout pass.
-    _layout_table = []
-
-    #: A dict mapping constraint owner id to associated LayoutBox
-    _cn_owners = {}
-
-    #: A list of the current contents constraints for the widget.
-    _contents_cns = []
+    _layout_table = List()
 
     #: Whether or not the current container is shown. This is toggled
     #: by the EVT_SHOW handler.
-    _is_shown = True
+    _is_shown = Bool(True)
 
-    #--------------------------------------------------------------------------
-    # Setup Methods
-    #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the underlying wxContainer widget.
+    def _default_contents_cns(self):
+        """ Create the contents constraints for the container.
+
+        The contents contraints are generated by combining the user
+        padding with the margins returned by 'contents_margins' method.
+
+        Returns
+        -------
+        result : list
+            The list of casuarius constraints for the content.
 
         """
-        return wxContainer(parent)
+        d = self.declaration
+        margins = self.contents_margins()
+        top, right, bottom, left = map(sum, zip(d.padding, margins))
+        cns = [
+            d.contents_top == (d.top + top),
+            d.contents_left == (d.left + left),
+            d.contents_right == (d.left + d.width - right),
+            d.contents_bottom == (d.top + d.height - bottom),
+        ]
+        return cns
 
-    def create(self, tree):
-        """ Create and initialize the container.
+    #--------------------------------------------------------------------------
+    # Initialization API
+    #--------------------------------------------------------------------------
+    def create_widget(self):
+        """ Creates the QContainer widget.
 
         """
-        super(WxContainer, self).create(tree)
-        layout = tree['layout']
-        self._share_layout = layout['share_layout']
-        self._padding = layout['padding']
-        widget = self.widget()
-        widget.Bind(wx.EVT_SIZE, self.on_resize)
-        widget.Bind(wx.EVT_SHOW, self.on_show)
+        self.widget = wxContainer(self.parent_widget())
+
+    def init_widget(self):
+        """ Initialize the widget.
+
+        """
+        super(WxContainer, self).init_widget()
+        widget = self.widget
+        widget.Bind(wx.EVT_SIZE, self.on_resized)
+        widget.Bind(wx.EVT_SHOW, self.on_shown)
 
     def init_layout(self):
-        """ Initializes the layout for the container.
+        """ Initialize the layout of the widget.
 
         """
         super(WxContainer, self).init_layout()
+        self.init_cns_layout()
+
+    def init_cns_layout(self):
+        """ Initialize the constraints layout.
+
+        """
         # Layout ownership can only be transferred *after* this init
         # layout method is called, since layout occurs bottom up. So,
-        # we only initialize a layout manager if we are not going to
-        # transfer ownership at some point.
+        # we only initialize a layout manager if ownership is unlikely
+        # to be transferred.
         if not self.will_transfer():
             offset_table, layout_table = self._build_layout_table()
             cns = self._generate_constraints(layout_table)
-            # Initializing the layout manager can fail if the objective
-            # function is unbounded. We let that failure occur so it can
-            # be logged. Nothing is stored until it succeeds.
             manager = LayoutManager()
             manager.initialize(cns)
             self._offset_table = offset_table
             self._layout_table = layout_table
             self._layout_manager = manager
             self._refresh = self._build_refresher(manager)
-            self.refresh_sizes()
+            self._update_sizes()
 
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
-    def on_resize(self, event):
-        """ The event handler for the EVT_SIZE event.
+    def on_resized(self, event):
+        """ Update the position of the widgets in the layout.
 
-        This handler triggers a layout pass when the container widget
-        is resized.
+        This makes a layout pass over the descendents if this widget
+        owns the responsibility for their layout.
 
         """
-        self.refresh()
+        # The _refresh function is generated on every relayout and has
+        # already taken into account whether or not the container owns
+        # the layout.
+        if self._is_shown:
+            self._refresh()
 
-    def on_show(self, event):
+    def on_shown(self, event):
         """ The event handler for the EVT_SHOW event.
 
         This handler toggles the value of the _is_shown flag.
@@ -231,56 +184,33 @@ class WxContainer(WxConstraintsWidget):
         # toolkit event, we just use it as a hint.
         self._is_shown = shown = event.GetShow()
         if shown:
-            self.refresh()
+            self._refresh()
 
-    #------------------------- -------------------------------------------------
-    # Layout Handling
+    #--------------------------------------------------------------------------
+    # Public Layout Handling
     #--------------------------------------------------------------------------
     def relayout(self):
-        """ Rebuilds the constraints layout for this widget if it owns
-        the responsibility for laying out its descendents.
+        """ Rebuild the constraints layout for the widget.
+
+        If this object does not own the layout, the call is proxied to
+        the layout owner.
 
         """
         if self._owns_layout:
-            widget = self.widget()
+            widget = self.widget
             old_hint = widget.GetBestSize()
-            self.init_layout()
-            self.refresh()
+            self.init_cns_layout()
+            if self._is_shown:
+                self._refresh()
             new_hint = widget.GetBestSize()
             # If the size hint constraints are empty, it indicates that
             # they were previously cleared. In this case, the layout
             # system must be notified to rebuild its constraints, even
             # if the numeric size hint hasn't changed.
-            if old_hint != new_hint or not self._size_hint_cns:
+            if old_hint != new_hint or not self.size_hint_cns:
                 self.size_hint_updated()
         else:
             self._layout_owner.relayout()
-
-    def refresh(self):
-        """ Makes a layout pass over the descendents if this widget owns
-        the responsibility for their layout.
-
-        If the widget is not visible on the screen, the refresh will be
-        skipped.
-
-        """
-        # The _refresh function is generated on every relayout and has
-        # already taken into account whether or not the container owns
-        # the layout.
-        if self._is_shown:
-            self._refresh()
-
-    def refresh_sizes(self):
-        """ Refresh the min/max/best sizes for the underlying widget.
-
-        This method is normally called automatically at the proper
-        times. It should not normally need to be called by user code.
-
-        """
-        widget = self.widget()
-        widget.SetBestSize(self.compute_best_size())
-        widget.SetMinSize(self.compute_min_size())
-        widget.SetMaxSize(self.compute_max_size())
 
     def replace_constraints(self, old_cns, new_cns):
         """ Replace constraints in the given layout.
@@ -303,14 +233,11 @@ class WxContainer(WxConstraintsWidget):
         if self._owns_layout:
             manager = self._layout_manager
             if manager is not None:
-                widget = self.widget()
-                old_hint = widget.GetBestSize()
-                manager.replace_constraints(old_cns, new_cns)
-                self.refresh_sizes()
-                self.refresh()
-                new_hint = widget.GetBestSize()
-                if old_hint != new_hint:
-                    self.size_hint_updated()
+                with size_hint_guard(self):
+                    manager.replace_constraints(old_cns, new_cns)
+                    self._update_sizes()
+                    if self._is_shown:
+                        self._refresh()
         else:
             self._layout_owner.replace_constraints(old_cns, new_cns)
 
@@ -331,27 +258,6 @@ class WxContainer(WxConstraintsWidget):
         else:
             self._layout_owner.clear_constraints(cns)
 
-    def layout(self):
-        """ The callback invoked by the layout manager when there are
-        new layout values available.
-
-        This iterates over the layout table and calls the geometry
-        updater functions.
-
-        """
-        # We explicitly don't use enumerate() to generate the running
-        # index because this method is on the code path of the resize
-        # event and hence called *often*. The entire code path for a
-        # resize event is micro optimized and justified with profiling.
-        offset_table = self._offset_table
-        layout_table = self._layout_table
-        running_index = 1
-        for offset_index, updater in layout_table:
-            dx, dy = offset_table[offset_index]
-            new_offset = updater(dx, dy)
-            offset_table[running_index] = new_offset
-            running_index += 1
-
     def contents_margins(self):
         """ Get the contents margins for the container.
 
@@ -371,56 +277,51 @@ class WxContainer(WxConstraintsWidget):
         return (0, 0, 0, 0)
 
     def contents_margins_updated(self):
-        """ Notify the layout system that the contents margins of this
-        widget have been updated.
+        """ Notify the system that the contents margins have changed.
 
         """
-        old_cns = self._contents_cns
-        self._contents_cns = []
-        new_cns = self.contents_constraints()
+        old_cns = self.contents_cns
+        del self.contents_cns
+        new_cns = self.contents_cns
         self.replace_constraints(old_cns, new_cns)
 
-    def contents_constraints(self):
-        """ Create the contents constraints for the container.
+    #--------------------------------------------------------------------------
+    # Private Layout Handling
+    #--------------------------------------------------------------------------
+    def _layout(self):
+        """ The layout callback invoked by the layout manager.
 
-        The contents contraints are generated by combining the user
-        padding with the margins returned by 'contents_margins' method.
-
-        Returns
-        -------
-        result : list
-            The list of casuarius constraints for the content.
+        This iterates over the layout table and calls the geometry
+        updater functions.
 
         """
-        cns = self._contents_cns
-        if not cns:
-            padding = self._padding
-            margins = self.contents_margins()
-            tval, rval, bval, lval = map(sum, zip(padding, margins))
-            primitive = self.layout_box.primitive
-            top = primitive('top')
-            left = primitive('left')
-            width = primitive('width')
-            height = primitive('height')
-            contents_top = primitive('contents_top')
-            contents_left = primitive('contents_left')
-            contents_right = primitive('contents_right')
-            contents_bottom = primitive('contents_bottom')
-            cns = [
-                contents_top == (top + tval),
-                contents_left == (left + lval),
-                contents_right == (left + width - rval),
-                contents_bottom == (top + height - bval),
-            ]
-            self._contents_cns = cns
-        return cns
+        # We explicitly don't use enumerate() to generate the running
+        # index because this method is on the code path of the resize
+        # event and hence called *often*. The entire code path for a
+        # resize event is micro optimized and justified with profiling.
+        offset_table = self._offset_table
+        layout_table = self._layout_table
+        running_index = 1
+        for offset_index, updater in layout_table:
+            dx, dy = offset_table[offset_index]
+            new_offset = updater(dx, dy)
+            offset_table[running_index] = new_offset
+            running_index += 1
 
-    #--------------------------------------------------------------------------
-    # Constraints Computation
-    #--------------------------------------------------------------------------
+    def _update_sizes(self):
+        """ Update the min/max/best sizes for the underlying widget.
+
+        This method is called automatically at the proper times. It
+        should not normally need to be called by user code.
+
+        """
+        widget = self.widget
+        widget.SetBestSize(self.compute_best_size())
+        widget.SetMinSize(self.compute_min_size())
+        widget.SetMaxSize(self.compute_max_size())
+
     def _build_refresher(self, manager):
-        """ A private method which will build a function which, when
-        called, will refresh the layout for the container.
+        """ Build the refresh function for the container.
 
         Parameters
         ----------
@@ -434,18 +335,15 @@ class WxContainer(WxConstraintsWidget):
         # Python code. It exists purely for the sake of efficiency,
         # justified with profiling.
         mgr_layout = manager.layout
-        layout = self.layout
-        primitive = self.layout_box.primitive
-        width_var = primitive('width')
-        height_var = primitive('height')
-        size = self._widget.GetSizeTuple
-        def refresher():
-            mgr_layout(layout, width_var, height_var, size())
-        return refresher
+        d = self.declaration
+        layout = self._layout
+        width_var = d.width
+        height_var = d.height
+        size = self.widget.GetSizeTuple
+        return lambda: mgr_layout(layout, width_var, height_var, size())
 
     def _build_layout_table(self):
-        """ A private method which will build the layout table for
-        this container.
+        """ Build the layout table for this container.
 
         A layout table is a pair of flat lists which hold the required
         objects for laying out the child widgets of this container.
@@ -531,50 +429,29 @@ class WxContainer(WxConstraintsWidget):
             the layout manager.
 
         """
-        # The mapping of constraint owners and the list of constraint
-        # info dictionaries provided by the Enaml widgets.
-        box = self.layout_box
-        cn_owners = {self.object_id(): box}
-        cn_dicts = list(self.user_constraints())
-        cn_dicts_extend = cn_dicts.extend
-
         # The list of raw casuarius constraints which will be returned
         # from this method to be added to the casuarius solver.
-        raw_cns = self.hard_constraints() + self.contents_constraints()
-        raw_cns_extend = raw_cns.extend
+        cns = self.contents_cns[:]
+        cns.extend(self.declaration._hard_constraints())
+        cns.extend(self.declaration._collect_constraints())
 
         # The first element in a layout table item is its offset index
         # which is not relevant to constraints generation.
-        isinst = isinstance
-        WxContainer_ = WxContainer
         for _, updater in layout_table:
             child = updater.item
-            cn_owners[child.object_id()] = child.layout_box
-            raw_cns_extend(child.hard_constraints())
-            if isinst(child, WxContainer_):
+            d = child.declaration
+            cns.extend(d._hard_constraints())
+            if isinstance(child, WxContainer):
                 if child.transfer_layout_ownership(self):
-                    cn_dicts_extend(child.user_constraints())
-                    raw_cns_extend(child.contents_constraints())
+                    cns.extend(d._collect_constraints())
+                    cns.extend(child.contents_cns)
                 else:
-                    raw_cns_extend(child.size_hint_constraints())
+                    cns.extend(child.size_hint_cns)
             else:
-                raw_cns_extend(child.size_hint_constraints())
-                cn_dicts_extend(child.user_constraints())
+                cns.extend(d._collect_constraints())
+                cns.extend(child.size_hint_cns)
 
-        # Convert the list of Enaml constraints info dicts to actual
-        # casuarius LinearConstraint objects for the solver.
-        add_cn = raw_cns.append
-        as_cn = as_linear_constraint
-        for info in cn_dicts:
-            add_cn(as_cn(info, cn_owners))
-
-        # We keep a strong reference to the constraint owners dict,
-        # since it may include instances of LayoutBox which were
-        # created on-the-fly and hold constraint variables which
-        # should not be deleted.
-        self._cn_owners = cn_owners
-
-        return raw_cns
+        return cns
 
     #--------------------------------------------------------------------------
     # Auxiliary Methods
@@ -601,15 +478,14 @@ class WxContainer(WxConstraintsWidget):
             True if the transfer was allowed, False otherwise.
 
         """
-        if not self._share_layout:
+        if not self.declaration.share_layout:
             return False
         self._owns_layout = False
         self._layout_owner = owner
-        self._layout_manager = None
-        self._refresh = owner.refresh
-        self._offset_table = []
-        self._layout_table = []
-        self._cn_owners = {}
+        del self._layout_manager
+        del self._refresh
+        del self._offset_table
+        del self._layout_table
         return True
 
     def will_transfer(self):
@@ -622,34 +498,36 @@ class WxContainer(WxConstraintsWidget):
         can override the behavior if necessary.
 
         """
-        if self._share_layout:
-            if isinstance(self.parent(), WxContainer):
-                return True
-        return False
+        d = self.declaration
+        return d.share_layout and isinstance(self.parent(), WxContainer)
 
     def compute_min_size(self):
         """ Calculates the minimum size of the container which would
         allow all constraints to be satisfied.
 
-        If this container does not own its layout then it will return
-        an invalid wxSize.
+        If the container's resist properties have a strength less than
+        'medium', the returned size will be zero. If the container does
+        not own its layout, the returned size will be invalid.
 
         Returns
         -------
         result : wxSize
-            A (potentially) invalid wxSize which is the minimum size
+            A (potentially invalid) wxSize which is the minimum size
             required to satisfy all constraints.
 
         """
+        d = self.declaration
+        shrink = ('ignore', 'weak')
+        if d.resist_width in shrink and d.resist_height in shrink:
+            return wx.Size(0, 0)
         if self._owns_layout and self._layout_manager is not None:
-            primitive = self.layout_box.primitive
-            width = primitive('width')
-            height = primitive('height')
-            w, h = self._layout_manager.get_min_size(width, height)
-            res = wx.Size(w, h)
-        else:
-            res = wx.Size(-1, -1)
-        return res
+            w, h = self._layout_manager.get_min_size(d.width, d.height)
+            if d.resist_width in shrink:
+                w = 0
+            if d.resist_height in shrink:
+                h = 0
+            return wx.Size(w, h)
+        return wx.Size(-1, -1)
 
     def compute_best_size(self):
         """ Calculates the best size of the container.
@@ -658,48 +536,47 @@ class WxContainer(WxConstraintsWidget):
         size of the layout using a strength which is much weaker than a
         normal resize. This takes into account the size of any widgets
         which have their resist clip property set to 'weak' while still
-        allowing the window to be resized smaller by the user. If this
-        container does not own its layout then it will return an
-        invalid QSize.
+        allowing the window to be resized smaller by the user. If the
+        container does not own its layout, the returned size will be
+        invalid.
 
         Returns
         -------
         result : wxSize
-            A (potentially) invalid wxSize which is the minimum size
-            required to satisfy all constraints.
+            A (potentially invalid) wxSize which is the best size that
+            will satisfy all constraints.
 
         """
         if self._owns_layout and self._layout_manager is not None:
-            primitive = self.layout_box.primitive
-            width = primitive('width')
-            height = primitive('height')
-            w, h = self._layout_manager.get_min_size(width, height, weak)
-            res = wx.Size(w, h)
-        else:
-            res = wx.Size(-1, -1)
-        return res
+            d = self.declaration
+            w, h = self._layout_manager.get_min_size(d.width, d.height, weak)
+            return wx.Size(w, h)
+        return wx.Size(-1, -1)
 
     def compute_max_size(self):
         """ Calculates the maximum size of the container which would
         allow all constraints to be satisfied.
 
-        If this container does not own its layout then it will return
-        an invalid wxSize.
+        If the container's hug properties have a strength less than
+        'medium', or if the container does not own its layout, the
+        returned size will be invalid.
 
         Returns
         -------
         result : wxSize
-            A (potentially) invalid wxSize which is the maximum size
+            A (potentially invalid) wxSize which is the maximum size
             allowable while still satisfying all constraints.
 
         """
+        d = self.declaration
+        expanding = ('ignore', 'weak')
+        if d.hug_width in expanding and d.hug_height in expanding:
+            return wx.Size(-1, -1)
         if self._owns_layout and self._layout_manager is not None:
-            primitive = self.layout_box.primitive
-            width = primitive('width')
-            height = primitive('height')
-            w, h = self._layout_manager.get_max_size(width, height)
-            res = wx.Size(w, h)
-        else:
-            res = wx.Size(-1, -1)
-        return res
-
+            w, h = self._layout_manager.get_max_size(d.width, d.height)
+            if w < 0 or d.hug_width in expanding:
+                w = -1
+            if h < 0 or d.hug_height in expanding:
+                h = -1
+            return wx.Size(w, h)
+        return wx.Size(-1, -1)

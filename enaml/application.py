@@ -280,8 +280,14 @@ class Application(Atom):
         """
         raise NotImplementedError
 
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
     def create_proxy(self, declaration):
         """ Create the proxy object for the given declaration.
+
+        This can be reimplemented by Application subclasses if more
+        control is needed.
 
         Parameters
         ----------
@@ -295,11 +301,14 @@ class Application(Atom):
             be create for the given declaration object.
 
         """
-        raise NotImplementedError
+        resolver = self.resolver
+        for base in type(declaration).mro():
+            name = base.__name__
+            cls = resolver.resolve(name)
+            if cls is not None:
+                return cls(declaration=declaration)
+        return null
 
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
     def schedule(self, callback, args=None, kwargs=None, priority=0):
         """ Schedule a callable to be executed on the event loop thread.
 

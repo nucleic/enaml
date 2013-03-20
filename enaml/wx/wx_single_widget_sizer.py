@@ -66,4 +66,3 @@ class wxSingleWidgetSizer(wx.PySizer):
         widget = self._widget
         if widget:
             widget.SetSize(self.GetSize())
-

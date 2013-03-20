@@ -8,9 +8,13 @@
 import wx
 import wx.lib.newevent
 
+from atom.api import Typed
+
+from enaml.widgets.menu import ProxyMenu
+
 from .wx_action import WxAction, EVT_ACTION_CHANGED
 from .wx_action_group import WxActionGroup
-from .wx_widget import WxWidget
+from .wx_toolkit_object import WxToolkitObject
 
 
 #: An event emitted when the menu state changes.
@@ -577,171 +581,129 @@ class wxMenu(wx.Menu):
             remove(action)
 
 
-class WxMenu(WxWidget):
-    """ A Wx implementation of an Enaml Menu.
+class WxMenu(WxToolkitObject, ProxyMenu):
+    """ A Wx implementation of an Enaml ProxyMenu.
 
     """
+        #: A reference to the widget created by the proxy.
+    widget = Typed(wxMenu)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying wx menu widget.
+    def create_widget(self):
+        """ Create the underlying menu widget.
 
         """
-        widget = wxMenu(parent)
-        widget.BeginBatch()
-        return widget
+        self.widget = wxMenu(self.parent_widget())
+        self.widget.BeginBatch()
 
-    def create(self, tree):
-        """ Create and initialize the underlying control.
+    def init_widget(self):
+        """ Initialize the widget.
 
         """
-        super(WxMenu, self).create(tree)
-        self.set_title(tree['title'])
-        self.set_context_menu(tree['context_menu'])
-        self.widget().EndBatch(emit=False)
+        super(WxMenu, self).init_widget()
+        d = self.declaration
+        self.set_title(d.title)
+        self.set_enabled(d.enabled)
+        self.set_visible(d.visible)
+        self.set_context_menu(d.context_menu)
+        self.widget.EndBatch(emit=False)
 
     def init_layout(self):
-        """ Initialize the layout for the underlying control.
+        """ Initialize the layout of the widget.
 
         """
         super(WxMenu, self).init_layout()
-        widget = self.widget()
+        widget = self.widget
         for child in self.children():
             if isinstance(child, WxMenu):
-                widget.AddMenu(child.widget())
+                widget.AddMenu(child.widget)
             elif isinstance(child, WxAction):
-                widget.AddAction(child.widget())
+                widget.AddAction(child.widget)
             elif isinstance(child, WxActionGroup):
                 widget.AddActions(child.actions())
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """  Handle the child removed event for a WxMenu.
+    def find_next_action(self, child):
+        """ Get the wxAction instance which follows the child.
+
+        Parameters
+        ----------
+        child : WxToolkitObject
+            The child of interest.
+
+        Returns
+        -------
+        result : wxAction or None
+            The wxAction which comes immediately after the actions of the
+            given child, or None if no actions follow the child.
 
         """
-        if isinstance(child, WxMenu):
-            self.widget().RemoveMenu(child.widget())
-        elif isinstance(child, WxAction):
-            self.widget().RemoveAction(child.widget())
-        elif isinstance(child, WxActionGroup):
-            self.widget().RemoveActions(child.actions())
+        found = False
+        for dchild in self.children():
+            if found:
+                if isinstance(dchild, (WxMenu, WxAction)):
+                    return dchild.widget
+                if isinstance(dchild, WxActionGroup):
+                    acts = dchild.actions()
+                    if len(acts) > 0:
+                        return acts[0]
+            else:
+                found = dchild is child
 
     def child_added(self, child):
         """ Handle the child added event for a WxMenu.
 
         """
-        before = self.find_next_action(child)
+        super(WxMenu, self).child_added(child)
         if isinstance(child, WxMenu):
-            self.widget().InsertMenu(before, child.widget())
+            before = self.find_next_action(child)
+            self.widget.InsertMenu(before, child.widget)
         elif isinstance(child, WxAction):
-            self.widget().InsertAction(before, child.widget())
+            before = self.find_next_action(child)
+            self.widget.InsertAction(before, child.widget)
         elif isinstance(child, WxActionGroup):
-            self.widget().InsertActions(before, child.actions())
+            before = self.find_next_action(child)
+            self.widget.InsertActions(before, child.actions())
 
-    #--------------------------------------------------------------------------
-    # Utility Methods
-    #--------------------------------------------------------------------------
-    def find_next_action(self, child):
-        """ Get the wxAction or wxMenu instance which comes immediately
-        after the actions of the given child.
-
-        Parameters
-        ----------
-        child : WxMenu, WxActionGroup, or WxAction
-            The child of interest.
-
-        Returns
-        -------
-        result : wxAction, wxMenu, or None
-            The wxAction or wxMenu which comes immediately after the
-            actions of the given child, or None if no actions follow
-            the child.
+    def child_removed(self, child):
+        """  Handle the child removed event for a WxMenu.
 
         """
-        index = self.index_of(child)
-        if index != -1:
-            for child in self.children()[index + 1:]:
-                target = None
-                if isinstance(child, (WxMenu, WxAction)):
-                    target = child.widget()
-                elif isinstance(child, WxActionGroup):
-                    acts = child.actions()
-                    target = acts[0] if acts else None
-                if target is not None:
-                    return target
+        super(WxMenu, self).child_removed(child)
+        if isinstance(child, WxMenu):
+            self.widget.RemoveMenu(child.widget)
+        elif isinstance(child, WxAction):
+            self.widget.RemoveAction(child.widget)
+        elif isinstance(child, WxActionGroup):
+            self.widget.RemoveActions(child.actions())
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_title(self, content):
-        """ Handle the 'set_title' action from the Enaml widget.
-
-        """
-        self.set_title(content['title'])
-
-    def on_action_set_context_menu(self, content):
-        """ Handle the 'set_context_menu' action from the Enaml widget.
-
-        """
-        self.set_context_menu(content['context_menu'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyMenu API
     #--------------------------------------------------------------------------
     def set_title(self, title):
         """ Set the title of the underlyling control.
 
         """
-        self.widget().SetTitle(title)
-
-    def set_enabled(self, enabled):
-        """ Overridden parent class method.
-
-        This properly sets the enabled state on a menu using the custom
-        wxMenu api.
-
-        """
-        self.widget().SetEnabled(enabled)
+        self.widget.SetTitle(title)
 
     def set_visible(self, visible):
-        """ Overrdden parent class method.
-
-        This properly sets the visible state on a menu using the custom
-        wxMenu api.
+        """ Set the visibility on the underlying widget.
 
         """
-        self.widget().SetVisible(visible)
+        self.widget.SetVisible(visible)
+
+    def set_enabled(self, enabled):
+        """ Set the enabled state of the widget.
+
+        """
+        self.widget.SetEnabled(enabled)
 
     def set_context_menu(self, context):
         """ Set whether or not the menu is a context menu.
 
         """
-        self.widget().SetContextMenu(context)
-
-    def set_minimum_size(self, min_size):
-        """ Overridden parent class method.
-
-        Menus do not have a minimum size, so this method is a no-op.
-
-        """
-        pass
-
-    def set_maximum_size(self, max_size):
-        """ Overridden parent class method.
-
-        Menus do not have a maximum size, so this method is a no-op.
-
-        """
-        pass
-
-    def set_tool_tip(self, tool_tip):
-        """ Overridden parent class method.
-
-        Menus do not have a tool tip, so this method is a no-op.
-
-        """
-        pass
-
+        self.widget.SetContextMenu(context)

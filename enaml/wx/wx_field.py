@@ -7,7 +7,9 @@
 #------------------------------------------------------------------------------
 import wx
 
-from enaml.validation.client_validators import null_validator, make_validator
+from atom.api import Int, Typed
+
+from enaml.widgets.field import ProxyField
 
 from .wx_control import WxControl
 
@@ -132,63 +134,59 @@ class wxLineEdit(wx.TextCtrl):
         super(wxLineEdit, self).SetForegroundColour(wxColor)
 
 
-class WxField(WxControl):
-    """ A Wx implementation of an Enaml Field.
+# Guard flags
+TEXT_GUARD = 0x1
+ERROR_FLAG = 0x2
+
+
+class WxField(WxControl, ProxyField):
+    """ A Wx implementation of an Enaml ProxyField.
 
     """
-    #: The client side validator function for the field.
-    _validator = null_validator
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxLineEdit)
 
-    #: The validator message for the validator.
-    _validator_message = ''
-
-    #: The list of submit triggers for when to submit a text change.
-    _submit_triggers = []
-
-    #: The last text value submitted to or sent from the server.
-    _last_value = None
-
-    #: A flag indicating whether the current field is invalid.
-    _is_error_state = False
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
 
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the underlying wxLineEdit.
+    def create_widget(self):
+        """ Creates the underlying wxLineEdit widget.
 
         """
         # We have to do a bit of initialization in the create method
         # since wx requires the style of certain things to be set at
         # the point of instantiation
+        d = self.declaration
         style = wx.TE_PROCESS_ENTER
-        if tree['read_only']:
+        if d.read_only:
             style |= wx.TE_READONLY
         else:
             style &= ~wx.TE_READONLY
-        echo_mode = tree['echo_mode']
-        if echo_mode == 'normal':
+        if d.echo_mode == 'normal':
             style &= ~wx.TE_PASSWORD
         else:
             style |= wx.TE_PASSWORD
-        read_only = tree['read_only']
-        if read_only:
-            style |= wx.TE_READONLY
-        else:
-            style &= ~wx.TE_READONLY
-        return wxLineEdit(parent, style=style)
+        self.widget = wxLineEdit(self.parent_widget(), style=style)
 
-    def create(self, tree):
-        """ Create and initialize the wx field control.
+    def init_widget(self):
+        """ Create and initialize the underlying widget.
 
         """
-        super(WxField, self).create(tree)
-        self.set_text(tree['text'])
-        self.set_validator(tree['validator'])
-        self.set_submit_triggers(tree['submit_triggers'])
-        self.set_placeholder(tree['placeholder'])
-        self.set_max_length(tree['max_length'])
-        widget = self.widget()
+        super(WxField, self).init_widget()
+        d = self.declaration
+        if d.text:
+            self.set_text(d.text)
+        if d.mask:
+            self.set_mask(d.mask)
+        if d.placeholder:
+            self.set_placeholder(d.placeholder)
+        self.set_echo_mode(d.echo_mode)
+        self.set_max_length(d.max_length)
+        self.set_read_only(d.read_only)
+        widget = self.widget
         widget.Bind(wx.EVT_KILL_FOCUS, self.on_lost_focus)
         widget.Bind(wx.EVT_TEXT_ENTER, self.on_return_pressed)
         widget.Bind(wx.EVT_TEXT, self.on_text_edited)
@@ -196,41 +194,36 @@ class WxField(WxControl):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _submit_text(self, text):
-        """ Submit the given text as an update to the server widget.
-
-        Parameters
-        ----------
-        text : unicode
-            The unicode text to send to the server widget.
+    def _validate_and_apply(self):
+        """ Validate and apply the text in the control.
 
         """
-        content = {'text': text}
-        self.send_action('submit_text', content)
+        d = self.declaration
+        text = self.widget.GetValue()
+        if d.validator and not d.validator.validate(text):
+            text = d.validator.fixup(text)
+            if not d.validator.validate(text):
+                return
+        self._clear_error_state()
+        d.text = text
 
-    def _validate_and_submit(self):
-        """ Validate the current text in the control, and submit it to
-        the server widget if it's valid.
+    def _set_error_state(self):
+        """ Set the error state of the widget.
 
         """
-        text = self.widget().GetValue()
-        if text != self._last_value:
-            if self._validator(text):
-                self._clear_error_style()
-                self._submit_text(text)
-                self._last_value = text
-            else:
-                self._set_error_style()
-
-    def _set_error_style(self):
         # A temporary hack until styles are implemented
-        self._is_error_state = True
-        # XXX attempting to change the field style here is futile
+        if not self._guard & ERROR_FLAG:
+            self._guard |= ERROR_FLAG
+            # XXX attempting to change the field style here is futile
 
-    def _clear_error_style(self):
+    def _clear_error_state(self):
+        """ Clear the error state of the widget.
+
+        """
         # A temporary hack until styles are implemented
-        self._is_error_state = False
-        # XXX attempting to change the field style here is futile
+        if self._guard & ERROR_FLAG:
+            self._guard &= ~ERROR_FLAG
+            # XXX attempting to change the field style here is futile
 
     #--------------------------------------------------------------------------
     # Event Handling
@@ -240,8 +233,12 @@ class WxField(WxControl):
 
         """
         event.Skip()
-        if 'lost_focus' in self._submit_triggers:
-            self._validate_and_submit()
+        if 'lost_focus' in self.declaration.submit_triggers:
+            self._guard |= TEXT_GUARD
+            try:
+                self._validate_and_apply()
+            finally:
+                self._guard &= ~TEXT_GUARD
 
     def on_return_pressed(self, event):
         """ The event handler for EVT_TEXT_ENTER event.
@@ -249,111 +246,51 @@ class WxField(WxControl):
         """
         # don't skip or Wx triggers the system beep, grrrrrrr.....
         #event.Skip()
-        if 'return_pressed' in self._submit_triggers:
-            self._validate_and_submit()
+        if 'return_pressed' in self.declaration.submit_triggers:
+            self._guard |= TEXT_GUARD
+            try:
+                self._validate_and_apply()
+            finally:
+                self._guard &= ~TEXT_GUARD
 
     def on_text_edited(self, event):
-        # Temporary kludge until styles are fully implemented
-        event.Skip()
-        widget = self.widget()
-        if self._validator(widget.GetValue()):
-            if self._is_error_state:
-                self._clear_error_style()
-                widget.SetToolTip(wx.ToolTip(''))
+        # Temporary kludge until error style is fully implemented
+        d = self.declaration
+        if d.validator and not d.validator.validate(self.widget.GetValue()):
+            self._set_error_state()
+            self.widget.SetToolTip(wx.ToolTip(d.validator.message))
         else:
-            if not self._is_error_state:
-                self._set_error_style()
-                widget.SetToolTip(wx.ToolTip(self._validator_message))
+            self._clear_error_state()
+            self.widget.SetToolTip(wx.ToolTip(''))
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_text(self, content):
-        """ Handle the 'set_text' action from the Enaml widget.
-
-        """
-        self.set_text(content['text'])
-
-    def on_action_set_validator(self, content):
-        """ Handle the 'set_validator' action from the Enaml widget.
-
-        """
-        self.set_validator(content['validator'])
-
-    def on_action_set_submit_triggers(self, content):
-        """ Handle the 'set_submit_triggers' action from the Enaml
-        widget.
-
-        """
-        self.set_submit_triggers(content['sumbit_triggers'])
-
-    def on_action_set_placeholder(self, content):
-        """ Hanlde the 'set_placeholder' action from the Enaml widget.
-
-        """
-        self.set_placeholder(content['placeholder'])
-
-    def on_action_set_echo_mode(self, content):
-        """ Handle the 'set_echo_mode' action from the Enaml widget.
-
-        """
-        self.set_echo_mode(content['echo_mode'])
-
-    def on_action_set_max_length(self, content):
-        """ Handle the 'set_max_length' action from the Enaml widget.
-
-        """
-        self.set_max_length(content['max_length'])
-
-    def on_action_set_read_only(self, content):
-        """ Handle the 'set_read_only' action from the Enaml widget.
-
-        """
-        self.set_read_only(content['read_only'])
-
-    def on_action_invalid_text(self, content):
-        """ Handle the 'invalid_text' action from the Enaml widget.
-
-        """
-        if self.widget().GetValue() == content['text']:
-            self._set_error_style()
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyField API
     #--------------------------------------------------------------------------
     def set_text(self, text):
         """ Updates the text control with the given unicode text.
 
         """
-        self.widget().ChangeValue(text)
-        self._last_value = text
-        self._clear_error_style()
+        if not self._guard & TEXT_GUARD:
+            self.widget.ChangeValue(text)
+            self._clear_error_state()
 
-    def set_validator(self, validator):
-        """ Sets the validator for the control.
+    def set_mask(self, mask):
+        """ Set the make for the widget.
 
-        """
-        if validator is None:
-            self._validator = null_validator
-            self._validator_message = ''
-        else:
-            self._validator = make_validator(validator)
-            self._validator_message = validator.get('message', '')
-
-    def set_submit_triggers(self, triggers):
-        """ Set the submit triggers for the underlying widget.
+        This is not supported in Wx.
 
         """
-        self._submit_triggers = triggers
+        pass
 
     def set_placeholder(self, placeholder):
         """ Sets the placeholder text in the widget.
 
         """
-        self.widget().SetPlaceHolderText(placeholder)
+        self.widget.SetPlaceHolderText(placeholder)
 
     def set_echo_mode(self, echo_mode):
         """ Sets the echo mode of the wiget.
+
         """
         # Wx cannot change the echo mode dynamically. It requires
         # creating a brand-new control, so we just ignore the change.
@@ -367,7 +304,7 @@ class WxField(WxControl):
         """
         if (max_length <= 0) or (max_length > 32767):
             max_length = 32767
-        self.widget().SetMaxLength(max_length)
+        self.widget.SetMaxLength(max_length)
 
     def set_read_only(self, read_only):
         """ Sets the read only state of the widget.
@@ -377,3 +314,8 @@ class WxField(WxControl):
         # creating a brand-new control, so we just ignore the change.
         pass
 
+    def field_text(self):
+        """ Get the text stored in the widget.
+
+        """
+        return self.widget.GetValue()

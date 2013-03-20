@@ -655,15 +655,14 @@ class GridHelper(BoxHelper):
         # some default limits
         row_vars = []
         col_vars = []
-        cn_id = self.constraints_id
         for idx in xrange(num_rows + 1):
             name = 'row' + str(idx)
-            var = ConstraintVariable(name, cn_id)
+            var = ConstraintVariable(name)
             row_vars.append(var)
             constraints.append(var >= 0)
         for idx in xrange(num_cols + 1):
             name = 'col' + str(idx)
-            var = ConstraintVariable(name, cn_id)
+            var = ConstraintVariable(name)
             col_vars.append(var)
             constraints.append(var >= 0)
 
@@ -734,7 +733,7 @@ class GridHelper(BoxHelper):
             for cell in cells:
                 if cell.start_col == cell.end_col:
                     col_map[cell.start_col].append(cell.item)
-            for items in row_map.itervalues():
+            for items in col_map.itervalues():
                 if len(items) > 1:
                     helpers.append(AlignmentHelper(self.col_align, *items))
 

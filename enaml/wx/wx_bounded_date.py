@@ -7,71 +7,65 @@
 #------------------------------------------------------------------------------
 import datetime
 
-from dateutil import parser as isoparser
 import wx
+
+from atom.api import Int
+
+from enaml.widgets.bounded_date import ProxyBoundedDate
 
 from .wx_control import WxControl
 
 
-def as_wx_date(iso_date):
+def as_wx_date(py_date):
     """ Convert an iso date string to a wxDateTime.
 
     """
-    # wx doesn't have iso date parsing until version 2.9
-    py_date = isoparser.parse(iso_date)
     day = py_date.day
     month = py_date.month - 1  # wx peculiarity!
     year = py_date.year
     return wx.DateTimeFromDMY(day, month, year)
 
 
-def as_iso_date(wx_date):
+def as_py_date(wx_date):
     """ Convert a QDate object into and iso date string.
 
     """
     day = wx_date.GetDay()
     month = wx_date.GetMonth() + 1  # wx peculiarity!
     year = wx_date.GetYear()
-    return datetime.date(year, month, day).isoformat()
+    return datetime.date(year, month, day)
 
 
-class WxBoundedDate(WxControl):
+# cyclic notification guard flags
+CHANGED_GUARD = 0x1
+
+
+class WxBoundedDate(WxControl, ProxyBoundedDate):
     """ A base class for use with Wx widgets implementing behavior
     for subclasses of BoundedDate.
 
     """
-     #--------------------------------------------------------------------------
-    # Setup Methods
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
+
     #--------------------------------------------------------------------------
-    def create(self, tree):
+    # Initialization API
+    #--------------------------------------------------------------------------
+    def create_widget(self):
+        """ Implement in a subclass to create the date widget.
+
+        """
+        raise NotImplementedError
+
+    def init_widget(self):
         """ Create and initialize the bounded date widget.
 
         """
-        super(WxBoundedDate, self).create(tree)
-        self.set_min_date(as_wx_date(tree['minimum']))
-        self.set_max_date(as_wx_date(tree['maximum']))
-        self.set_date(as_wx_date(tree['date']))
-
-    #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_date(self, content):
-        """ Handle the 'set_date' action from the Enaml widget.
-
-        """
-        self.set_date(as_wx_date(content['date']))
-
-    def on_action_set_minimum(self, content):
-        """ Hanlde the 'set_minimum' action from the Enaml widget.
-
-        """
-        self.set_min_date(as_wx_date(content['minimum']))
-
-    def on_action_set_maximum(self, content):
-        """ Handle the 'set_maximum' action from the Enaml widget.
-
-        """
-        self.set_max_date(as_wx_date(content['maximum']))
+        super(WxBoundedDate, self).init_widget()
+        d = self.declaration
+        self.set_minimum(d.minimum)
+        self.set_maximum(d.maximum)
+        self.set_date(d.date)
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -84,20 +78,41 @@ class WxBoundedDate(WxControl):
         widget the 'date_changed' action.
 
         """
-        wx_date = self.get_date()
-        content = {'date': as_iso_date(wx_date)}
-        self.send_action('date_changed', content)
+        if not self._guard & CHANGED_GUARD:
+            self.declaration.date = self.get_date()
 
     #--------------------------------------------------------------------------
-    # Abstract Methods
+    # Abstract Methods and ProxyBoundedDate API
     #--------------------------------------------------------------------------
     def get_date(self):
         """ Return the current date in the control.
 
         Returns
         -------
-        result : wxDateTime
-            The current control date as a wxDateTime object.
+        result : date
+            The current control date as a date object.
+
+        """
+        raise NotImplementedError
+
+    def set_minimum(self, date):
+        """ Set the widget's minimum date.
+
+        Parameters
+        ----------
+        date : date
+            The date object to use for setting the minimum date.
+
+        """
+        raise NotImplementedError
+
+    def set_maximum(self, date):
+        """ Set the widget's maximum date.
+
+        Parameters
+        ----------
+        date : date
+            The date object to use for setting the maximum date.
 
         """
         raise NotImplementedError
@@ -107,31 +122,8 @@ class WxBoundedDate(WxControl):
 
         Parameters
         ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the date.
+        date : date
+            The date object to use for setting the date.
 
         """
         raise NotImplementedError
-
-    def set_max_date(self, date):
-        """ Set the widget's maximum date.
-
-        Parameters
-        ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the maximum date.
-
-        """
-        raise NotImplementedError
-
-    def set_min_date(self, date):
-        """ Set the widget's minimum date.
-
-        Parameters
-        ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the minimum date.
-
-        """
-        raise NotImplementedError
-

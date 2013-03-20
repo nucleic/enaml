@@ -150,3 +150,15 @@ class WxWidget(WxToolkitObject, ProxyWidget):
 
         """
         pass
+
+    def ensure_visible(self):
+        """ Ensure the widget is visible.
+
+        """
+        self.widget.Show(True)
+
+    def ensure_hidden(self):
+        """ Ensure the widget is hidden.
+
+        """
+        self.widget.Show(False)
