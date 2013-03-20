@@ -33,6 +33,7 @@ from .mpl_canvas import MPLCanvas
 from .multiline_field import MultilineField
 from .notebook import Notebook
 from .page import Page
+from .popup import Popup
 from .progress_bar import ProgressBar
 from .push_button import PushButton
 from .radio_button import RadioButton
