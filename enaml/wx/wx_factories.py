@@ -55,11 +55,6 @@ def field_factory():
     return WxField
 
 
-def form_factory():
-    from .wx_form import WxForm
-    return WxForm
-
-
 def group_box_factory():
     from .wx_group_box import WxGroupBox
     return WxGroupBox
@@ -175,7 +170,6 @@ WX_FACTORIES = {
     'DateSelector': date_selector_factory,
     'DockPane': dock_pane_factory,
     'Field': field_factory,
-    'Form': form_factory,
     'GroupBox': group_box_factory,
     'Html': html_factory,
     'Label': label_factory,
