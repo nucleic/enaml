@@ -44,13 +44,13 @@ ext_modules = [
 
 setup(
     name='enaml',
-    version='0.6.9',
+    version='0.7.0',
     author='The Nucleic Development Team',
     author_email='sccolbert@gmail.com',
     url='https://github.com/nucleic/enaml',
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.md').read(),
-    requires=['atom', 'PySide', 'ply', 'casuarius'],
+    requires=['atom', 'PyQt', 'ply', 'casuarius'],
     install_requires=['distribute'],
     packages=find_packages(),
     package_data={'enaml.stdlib': ['*.enaml']},

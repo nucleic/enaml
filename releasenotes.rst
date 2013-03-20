@@ -1,6 +1,13 @@
 Enaml Release Notes
 ===================
 
+0.7.0 - 03/20/2013
+------------------
+- First release under new nucleic org.
+- Rewrite of entire framework to sit on top of Atom instead of Traits.
+- Vastly improved backend architecture.
+- Improved compile-time operator binding.
+
 0.6.8 - 02/14/2013
 ------------------
 - Added ability to change the Z order of a window and a flag to make it stay on top. d6f618101f_
