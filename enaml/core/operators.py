@@ -293,17 +293,10 @@ class OpSubscribe(OperatorBase):
         )
         result = call_func(func, (tracer,), {}, scope)
 
-        # Unsubscribe the old observer from the current change set.
-        # The objects in the change set will not usually change, but
-        # they may in some cases. So, the old notifier is also set to
-        # invalid so the next time that particular change fires, the
-        # object will be removed.
+        # Invalidate the old notifier so that it gets cleaned up.
         observers = self.observers
         if owner in observers:
-            old = observers.pop(owner)
-            for obj, name in tracer.traced_items:
-                obj.unobserve(name, old)
-            old.owner = None
+            observers[owner].owner = None
 
         # Create a new observer to bind to the current change set.
         observer = SubscriptionObserver(owner, self.binding['name'])
@@ -350,9 +343,7 @@ if os.environ.get('ENAML_TRAITS_SUPPORT'):
             result = call_func(func, (tracer,), {}, scope)
             observers = self.observers
             if owner in observers:
-                atom_ob, traits_ob = observers.pop(owner)
-                for obj, name in tracer.traced_items:
-                    obj.unobserve(name, atom_ob)
+                atom_ob, traits_ob = observers[owner]
                 atom_ob.owner = None
                 traits_ob.owner = None
             atom_ob = SubscriptionObserver(owner, self.binding['name'])
