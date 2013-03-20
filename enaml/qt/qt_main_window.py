@@ -19,6 +19,7 @@ from .qt_container import QtContainer
 from .qt_dock_pane import QtDockPane
 from .qt_menu_bar import QtMenuBar
 from .qt_tool_bar import QtToolBar
+from .qt_status_bar import QtStatusBar
 from .qt_window import QtWindow
 
 
@@ -121,6 +122,7 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         # for MainWindow.
         widget = self.widget
         widget.setMenuBar(self.menu_bar())
+        widget.setStatusBar(self.status_bar())
         widget.setCentralWidget(self.central_widget())
         for d in self.dock_panes():
             widget.addDockWidget(d.dockArea(), d)
@@ -143,6 +145,14 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
 
         """
         d = self.declaration.menu_bar()
+        if d is not None:
+            return d.proxy.widget or None
+
+    def status_bar(self):
+        """ Get the QMenuBar widget defined for the main window.
+
+        """
+        d = self.declaration.status_bar()
         if d is not None:
             return d.proxy.widget or None
 
@@ -169,6 +179,8 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         """
         if isinstance(child, QtMenuBar):
             self.widget.setMenuBar(self.menu_bar())
+        elif isinstance(child, QtStatusBar):
+            self.widget.setStatusBar(self.status_bar())
         elif isinstance(child, QtContainer):
             self.widget.setCentralWidget(self.central_widget())
         elif isinstance(child, QtDockPane):
@@ -208,5 +220,7 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
             self.widget.setCentralWidget(self.central_widget())
         elif isinstance(child, QtMenuBar):
             self.widget.setMenuBar(self.menu_bar())
+        elif isinstance(child, QtStatusBar):
+            self.widget.setStatusBar(self.status_bar())
         else:
             super(QtMainWindow, self).child_removed(child)

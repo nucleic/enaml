@@ -1,0 +1,45 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Enthought, Inc.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `StatusBar` widget.
+
+This example demonstrates the use of the `StatusBar` widget, which must be
+used in conjunction with a `MainWindow`
+
+"""
+from enaml.layout.api import vbox
+from enaml.core.api import Include
+from enaml.widgets.api import (
+    MainWindow, StatusBar, PermanentStatusWidgets, TransientStatusWidgets,
+    Container, Html, PushButton, Label,
+)
+
+
+enamldef MyStatusBar(StatusBar): status:
+    grip_enabled = True
+    PermanentStatusWidgets:
+        PushButton:
+            text = 'Add Label'
+            clicked ::
+                num = len(inc.objects)
+                inc.objects.append(Label(text='Label %d'%num))
+        PushButton:
+            text = 'Remove Label'
+            clicked ::
+                inc.objects.pop()
+        PushButton:
+            text = 'Show message'
+            clicked ::
+                status.show_message('This is a transient message', timeout=750)
+    TransientStatusWidgets:
+        Include: inc:
+            pass
+
+enamldef Main(MainWindow):
+    initial_size = (600, 200)
+    MyStatusBar:
+        pass
+    Container:
+        Html: html:
+            source = '<h1><center>Hello World!</center></h1>'
