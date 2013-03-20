@@ -304,6 +304,55 @@ class OpSubscribe(OperatorBase):
         return result
 
 
+# backwards compatibility traits support
+import os
+if os.environ.get('ENAML_TRAITS_SUPPORT'):
+
+    from .traits_tracer import TraitsTracer
+
+    class TraitsObserver(SubscriptionObserver):
+        __slots__ = '__weakref__'
+        def handler(self):
+            owner = self.owner
+            if owner is not None:
+                name = self.name
+                setattr(owner, name, owner._run_eval_operator(name))
+
+    class OpSubscribe(OpSubscribe):
+        __slots__ = ()
+        def __init__(self, binding):
+            OperatorBase.__init__(self, binding)
+            self.observers = {}
+        def release(self, owner):
+            obs = self.observers.pop(owner, None)
+            if obs is not None:
+                atom_ob, traits_ob = obs
+                atom_ob.owner = None
+                traits_ob.owner = None
+        def eval(self, owner):
+            tracer = TraitsTracer()
+            overrides = {'nonlocals': Nonlocals(owner, tracer), 'self': owner}
+            f_locals = self.get_locals(owner)
+            func = self.binding['func']
+            scope = DynamicScope(
+                owner, f_locals, overrides, func.func_globals, tracer
+            )
+            result = call_func(func, (tracer,), {}, scope)
+            observers = self.observers
+            if owner in observers:
+                atom_ob, traits_ob = observers.pop(owner)
+                atom_ob.owner = None
+                traits_ob.owner = None
+            atom_ob = SubscriptionObserver(owner, self.binding['name'])
+            traits_ob = TraitsObserver(owner, self.binding['name'])
+            observers[owner] = (atom_ob, traits_ob)
+            for obj, name in tracer.traced_items:
+                obj.observe(name, atom_ob)
+            for obj, name in tracer.traced_traits:
+                obj.on_trait_change(traits_ob.handler, name)
+            return result
+
+
 class OpDelegate(OpSubscribe):
     """ An operator class which implements the `:=` operator semantics.
 
