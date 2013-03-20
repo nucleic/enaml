@@ -160,6 +160,11 @@ def page_factory():
     return QtPage
 
 
+def popup_factory():
+    from .qt_popup import QtPopup
+    return QtPopup
+
+
 def push_button_factory():
     from .qt_push_button import QtPushButton
     return QtPushButton
@@ -287,6 +292,7 @@ QT_FACTORIES = {
     'MultilineField': multiline_field_factory,
     'Notebook': notebook_factory,
     'Page': page_factory,
+    'Popup': popup_factory,
     'PushButton': push_button_factory,
     'ProgressBar': progress_bar_factory,
     'RadioButton': radio_button_factory,
