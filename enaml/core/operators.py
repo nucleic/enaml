@@ -90,6 +90,61 @@ class OpSimple(OperatorBase):
         return call_func(func, (), {}, scope)
 
 
+class DeprecatedNotificationEvent(object):
+    """ A backwards compatibility object.
+
+    This object implements the magic 'event' scope object on the rhs
+    of a '::' operator. That object is deprecated and this object will
+    raise a deprecation warning when it is used.
+
+    """
+    # TODO: Remove this class in Enaml version 0.8.0
+    __slots__ = ('_change', '_binding')
+
+    _warning_registry = {}
+
+    def __init__(self, change, binding):
+        self._change = change
+        self._binding = binding
+
+    def _raise_warning(self):
+        msg = "The 'event' scope object will be removed in Enaml "
+        msg += "version 0.8.0. Use the 'change' scope object instead."
+        binding = self._binding
+        filename = binding['filename']
+        lineno = binding['lineno']
+        reg = self._warning_registry
+        import warnings
+        warnings.warn_explicit(msg, FutureWarning, filename, lineno, '', reg)
+
+    @property
+    def obj(self):
+        self._raise_warning()
+        return self._change['object']
+
+    @property
+    def name(self):
+        self._raise_warning()
+        return self._change['name']
+
+    @property
+    def old(self):
+        self._raise_warning()
+        change = self._change
+        if change['type'] == 'event':
+            from atom.catom import null
+            return null
+        return change['oldvalue']
+
+    @property
+    def new(self):
+        self._raise_warning()
+        change = self._change
+        if change['type'] == 'event':
+            return change['value']
+        return change['newvalue']
+
+
 class OpNotify(OperatorBase):
     """ An operator class which implements the `::` operator semantics.
 
@@ -111,6 +166,8 @@ class OpNotify(OperatorBase):
         owner = change['object']
         nonlocals = Nonlocals(owner, None)
         overrides = {'change': change, 'nonlocals': nonlocals, 'self': owner}
+        # TODO remove 'event' in Enaml version 0.8.0
+        overrides['event'] = DeprecatedNotificationEvent(change, self.binding)
         f_locals = self.get_locals(owner)
         func = self.binding['func']
         scope = DynamicScope(
@@ -277,6 +334,23 @@ class OpDelegate(OpSubscribe):
         call_func(func, (inverter, change['newvalue']), {}, scope)
 
 
+# TODO remove this in Enaml 0.8.0
+_warn_color_registry = {}
+def _warn_color_binding(name, binding):
+    msg = "The '%s' attribute has been removed. Use '%s' instead. "
+    msg += "Compatibility will be removed in Enaml version 0.8.0."
+    d = {
+        'fgcolor': ('fgcolor', 'foreground'),
+        'bgcolor': ('bgcolor', 'background')
+    }
+    msg = msg % d[name]
+    filename = binding['filename']
+    lineno = binding['lineno']
+    reg = _warn_color_registry
+    import warnings
+    warnings.warn_explicit(msg, FutureWarning, filename, lineno, '', reg)
+
+
 def assert_d_member(klass, binding, readable, writable):
     """ Assert binding points to a valid declarative member.
 
@@ -308,6 +382,18 @@ def assert_d_member(klass, binding, readable, writable):
     members = klass.members()
     name = binding['name']
     m = members.get(name)
+
+    # TODO remove this backwards compatibility mod in Enaml 0.8.0
+    if m is None:
+        if name == 'fgcolor' and 'foreground' in members:
+            _warn_color_binding(name, binding)
+            name = binding['name'] = 'foreground'
+            m = members.get(name)
+        elif name == 'bgcolor' and 'background' in members:
+            _warn_color_binding(name, binding)
+            name = binding['name'] = 'background'
+            m = members.get(name)
+
     if m is None or m.metadata is None or not m.metadata.get('d_member'):
         message = "'%s' is not a declarative member" % name
         raise DeclarativeError(message, binding)

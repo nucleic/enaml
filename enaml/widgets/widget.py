@@ -59,6 +59,26 @@ class ProxyWidget(ProxyToolkitObject):
         raise NotImplementedError
 
 
+# TODO remove in Enaml version 0.8.0
+def _warn_prop(name, newname):
+    msg = "The '%s' attribute has been removed. Use the '%s' attribute"
+    msg += "instead. Compatibilty will be removed in Enaml version 0.8.0"
+    msg = msg % (name, newname)
+    def _warn():
+        import warnings
+        warnings.warn(msg, FutureWarning, stacklevel=3)
+    def getter(self):
+        _warn()
+        return getattr(self, newname)
+    def setter(self, value):
+        _warn()
+        setattr(self, newname, value)
+    def deleter(self):
+        _warn()
+        delattr(self, newname)
+    return property(getter, setter, deleter)
+
+
 class Widget(ToolkitObject):
     """ The base class of visible widgets in Enaml.
 
@@ -71,9 +91,13 @@ class Widget(ToolkitObject):
 
     #: The background color of the widget.
     background = d_(ColorMember())
+    # TODO remove in Enaml version 0.8.0
+    bgcolor = _warn_prop('bgcolor', 'background')
 
     #: The foreground color of the widget.
     foreground = d_(ColorMember())
+    # TODO remove in Enaml version 0.8.0
+    fgcolor = _warn_prop('fgcolor', 'foreground')
 
     #: The font used for the widget.
     font = d_(FontMember())
