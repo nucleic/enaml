@@ -392,13 +392,25 @@ def p_enaml_module_item3(p):
     p[0] = declaration
 
 
+# TODO get rid of old identifiers in Enaml version 0.8.0
+#
+# Remove the following functions:
+#   p_identifier
+#   p_declaration_body[3-6]
+#   p_instantiation_body[2-3]
+#   _warn_ident
+#
+# Update the following:
+#   p_declaration to accept 2-tuples instead of 3-tuples
+#   p_instantiation to accept items instead of 2-tuples
+
 #------------------------------------------------------------------------------
 # Declaration
 #------------------------------------------------------------------------------
 def p_declaration1(p):
     ''' declaration : ENAMLDEF NAME LPAR NAME RPAR COLON declaration_body '''
-    doc, items = p[7]
-    p[0] = enaml_ast.Declaration(p[2], p[4], None, doc, items, p.lineno(1))
+    doc, idn, items = p[7]
+    p[0] = enaml_ast.Declaration(p[2], p[4], idn, doc, items, p.lineno(1))
 
 
 def p_declaration2(p):
@@ -408,7 +420,10 @@ def p_declaration2(p):
 
 def p_declaration3(p):
     ''' declaration : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON declaration_body '''
-    doc, items = p[9]
+    doc, idn, items = p[9]
+    if idn is not None:
+        msg = 'multiple identifiers declared'
+        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
     p[0] = enaml_ast.Declaration(p[2], p[4], p[7], doc, items, p.lineno(1))
 
 
@@ -421,14 +436,61 @@ def p_declaration_body1(p):
     ''' declaration_body : NEWLINE INDENT declaration_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
-    p[0] = ('', items)
+    # TODO only a 2-tuple required after removing old identifiers
+    p[0] = ('', None, items)
 
 
 def p_declaration_body2(p):
     ''' declaration_body : NEWLINE INDENT STRING NEWLINE declaration_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[5])
-    p[0] = (p[3], items)
+    # TODO only a 2-tuple required after removing old identifiers
+    p[0] = (p[3], None, items)
+
+
+def p_identifier(p):
+    ''' identifier : NAME COLON NAME NEWLINE '''
+    lhs = p[1]
+    if lhs != 'id':
+        msg = "'id' required. Got '%s' instead." % lhs
+        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
+    p[0] = p[3]
+
+
+_warn_reg = {}
+def _warn_ident(filename, lineno):
+    msg = "The 'id' tag is deprecated and will be removed in Enaml version "
+    msg += "0.8.0. Use the 'Foo: name: ...' construct instead."
+    import warnings
+    warnings.warn_explicit(msg, FutureWarning, filename, lineno, '', _warn_reg)
+
+
+def p_declaration_body3(p):
+    ''' declaration_body : NEWLINE INDENT identifier DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(2))
+    p[0] = ('', p[3], [])
+
+
+def p_declaration_body4(p):
+    ''' declaration_body : NEWLINE INDENT identifier declaration_body_items DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(2))
+    # Filter out any pass statements
+    items = filter(None, p[4])
+    p[0] = ('', p[3], items)
+
+
+def p_declaration_body5(p):
+    ''' declaration_body : NEWLINE INDENT STRING NEWLINE identifier DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
+    p[0] = (p[3], p[5], [])
+
+
+def p_declaration_body6(p):
+    ''' declaration_body : NEWLINE INDENT STRING NEWLINE identifier declaration_body_items DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
+    # Filter out any pass statements
+    items = filter(None, p[6])
+    p[0] = (p[3], p[5], items)
 
 
 def p_declaration_body_items1(p):
@@ -495,7 +557,8 @@ def p_attribute_declaration4(p):
 #------------------------------------------------------------------------------
 def p_instantiation1(p):
     ''' instantiation : NAME COLON instantiation_body '''
-    p[0] = enaml_ast.Instantiation(p[1], None, p[3], p.lineno(1))
+    idn, items = p[3]
+    p[0] = enaml_ast.Instantiation(p[1], idn, items, p.lineno(1))
 
 
 def p_instantiation2(p):
@@ -515,7 +578,11 @@ def p_instantiation4(p):
 
 def p_instantiation5(p):
     ''' instantiation : NAME COLON NAME COLON instantiation_body '''
-    p[0] = enaml_ast.Instantiation(p[1], p[3], p[5], p.lineno(1))
+    idn, items = p[5]
+    if idn is not None:
+        msg = 'multiple identifiers declared'
+        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
+    p[0] = enaml_ast.Instantiation(p[1], p[3], items, p.lineno(1))
 
 
 def p_instantiation6(p):
@@ -537,7 +604,21 @@ def p_instantiation_body(p):
     ''' instantiation_body : NEWLINE INDENT instantiation_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
-    p[0] = items
+    p[0] = (None, items)
+
+
+def p_instantiation_body2(p):
+    ''' instantiation_body : NEWLINE INDENT identifier DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(2))
+    p[0] = (p[3], [])
+
+
+def p_instantiation_body3(p):
+    ''' instantiation_body : NEWLINE INDENT identifier instantiation_body_items DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(2))
+    # Filter out any pass statements
+    items = filter(None, p[4])
+    p[0] = (p[3], items)
 
 
 def p_instantiation_body_items1(p):
