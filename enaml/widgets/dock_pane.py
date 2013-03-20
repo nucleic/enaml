@@ -118,3 +118,18 @@ class DockPane(Widget):
         """
         # The superclass handler implementation is sufficient.
         super(DockPane, self)._update_proxy(change)
+
+    # TODO remove these in enaml version 0.8.0
+    def open(self):
+        msg = "The 'open()' method will be removed in Enaml version "
+        msg += "0.8.0. Use 'show()' instead."
+        import warnings
+        warnings.warn(msg, FutureWarning, stacklevel=2)
+        self.show()
+
+    def close(self):
+        msg = "The 'close()' method will be removed in Enaml version "
+        msg += "0.8.0. Use 'hide()' instead."
+        import warnings
+        warnings.warn(msg, FutureWarning, stacklevel=2)
+        self.hide()
