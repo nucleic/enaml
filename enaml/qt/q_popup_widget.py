@@ -10,7 +10,7 @@ anchoring it to an underlying widget. Useful for transient dialogs.
 import sys
 from PyQt4.QtCore import (
     Qt, QSize, QPropertyAnimation, QTimer, QPoint, QMargins,
-    pyqtSignal
+    QEvent, pyqtSignal
 )
 from PyQt4.QtGui import (
     QWidget, QGridLayout, QLayout, QPainter, QPainterPath
@@ -51,7 +51,11 @@ class QPopupWidget(QWidget):
         self.setRelativePos((0.5, 0.5))
         self.setArrowSize(20)
         self.setRadius(10)
-
+ 
+        # track parent window movement
+        self._target = target = parent.window()
+        target.installEventFilter(self)
+ 
     def centralWidget(self):
         """ Returns the central widget for the popup.
 
@@ -231,7 +235,16 @@ class QPopupWidget(QWidget):
 
         """
         super(QPopupWidget, self).closeEvent(event)
+        self._target.removeEventFilter(self)
         self.closed.emit()
+
+    def eventFilter(self, obj, event):
+        """ Track parent window move events
+
+        """
+        if event.type() == QEvent.Move:
+            self.move(self.pos() + event.pos() - event.oldPos())
+        return False
 
     def _rebuild(self):
         """ Rebuild the path used to draw the outline of the popup
@@ -266,6 +279,7 @@ class QPopupWidget(QWidget):
         self._path = _generate_popup_path(self.rect(),
                                         self._radius, self._radius,
                                         self._arrow, anchor_type)
+        self.update()
 
 
 def _generate_popup_path(rect, xRadius, yRadius, arrowSize, anchor):

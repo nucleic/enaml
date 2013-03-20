@@ -1,0 +1,67 @@
+
+
+
+from enaml.widgets.api import (
+    Window, Container, Popup, Form, Label, PushButton,
+    ComboBox, Slider,
+)
+
+def convert_pos(pos_str):
+    if 'top' in pos_str:
+        y = 0.
+    elif 'bottom' in pos_str:
+        y = 1.0
+    else:
+        y = 0.5
+    if 'left' in pos_str:
+        x = 0.
+    elif 'right' in pos_str:
+        x = 1.
+    else:
+        x = 0.5
+    return (x, y)
+
+enamldef TestPopup(Popup): popup:
+    Container:
+        Form:
+            Label:
+                text = 'Anchor position'
+            ComboBox:
+                items = ['Bottom', 'Left', 'Right', 'Top']
+                index = 0
+                index :: popup.anchor = items[index].lower()
+            Label:
+                text = 'Corner radius'
+            Slider:
+                minimum = 2
+                maximum = 40
+                tick_interval = 1
+                value := popup.radius
+            Label:
+                text = 'Arrow size'
+            Slider:
+                minimum = 0
+                maximum = 30
+                tick_interval = 1
+                value := popup.arrow
+            Label:
+                text = 'Anchor to Parent'
+            ComboBox:
+                items = ["Top Left", "Top Center", "Top Right", "Center", "Bottom Left", "Bottom Center", "Bottom Right"]
+                index = 3
+                index ::
+                    pos = items[index].lower()
+                    popup.relative_pos = convert_pos(pos)
+            PushButton:
+                text = 'Close'
+                clicked :: popup.close()
+
+
+enamldef Main(Window):
+    Container:
+        PushButton: btn:
+            text = "Popup"
+            clicked ::
+                popup = TestPopup(btn)
+                popup.show()
+

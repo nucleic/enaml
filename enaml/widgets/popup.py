@@ -15,6 +15,7 @@ from enaml.core.declarative import d_
 from enaml.layout.geometry import Size
 
 from .container import Container
+from .toolkit_object import ToolkitObject
 from .widget import Widget, ProxyWidget
 
 
@@ -24,6 +25,9 @@ class ProxyPopup(ProxyWidget):
     """
     #: A reference to the Popup declaration.
     declaration = ForwardTyped(lambda: Popup)
+
+    def setup_window(self):
+        raise NotImplementedError
 
     def set_anchor(self, anchor):
         raise NotImplementedError
@@ -44,10 +48,6 @@ class Popup(Widget):
     """ A Popup component
 
     """
-
-    #: The initial size of the window. A value of (-1, -1) indicates
-    #: to let the toolkit choose the initial size.
-    initial_size = d_(Coerced(Size, Size(-1, -1)))
 
     #: An enum which indicates the which side of the parent will be used
     #: as the anchor point. The default value is 'bottom'
@@ -103,8 +103,12 @@ class Popup(Widget):
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
-            self.activate_proxy()
+            self.proxy.setup_window()
+            for node in self.traverse():
+                if isinstance(node, ToolkitObject):
+                    node.proxy_is_active = True
         super(Popup, self).show()
+
 
     #--------------------------------------------------------------------------
     # Observers
