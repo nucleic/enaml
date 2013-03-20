@@ -10,8 +10,7 @@ import types
 
 from .byteplay import (
     Code, LOAD_FAST, CALL_FUNCTION, LOAD_GLOBAL, STORE_FAST, LOAD_CONST,
-    RETURN_VALUE, POP_TOP, STORE_NAME, LOAD_NAME, DUP_TOP, DELETE_NAME,
-    DELETE_FAST, SetLineno
+    RETURN_VALUE, STORE_NAME, LOAD_NAME, DELETE_NAME, DELETE_FAST, SetLineno
 )
 from .code_tracing import inject_tracing, inject_inversion
 
@@ -88,7 +87,9 @@ from .code_tracing import inject_tracing, inject_inversion
 #     does not rely on the LIST_APPEND instruction. It almost means
 #     that widget names must appear before they are used, just like in
 #     normal Python class bodies.
-COMPILER_VERSION = 12
+# 13 : Move the post processing of enamldefs to before running the
+#     decorators. This means a decorator gets a complete class.
+COMPILER_VERSION = 13
 
 
 # The Enaml compiler translates an Enaml AST into a decription dict
@@ -159,17 +160,11 @@ COMPILER_VERSION = 12
 # Compiler Helpers
 #------------------------------------------------------------------------------
 # Code that will be executed at the top of every enaml module
-STARTUP = [
-    'from enaml.core.compiler_helpers import _make_enamldef_helper_',
-    'from enaml.core.compiler_helpers import _post_process_enamldef_',
-]
+STARTUP = ['from enaml.core.compiler_helpers import _make_enamldef_helper_']
 
 
 # Cleanup code that will be included in every compiled enaml module
-CLEANUP = [
-    'del _make_enamldef_helper_',
-    'del _post_process_enamldef_',
-]
+CLEANUP = ['del _make_enamldef_helper_']
 
 
 def update_firstlineno(code, firstlineno):
@@ -711,7 +706,6 @@ class EnamlCompiler(_NodeVisitor):
         code_ops = self.code_ops
         name = node.name
         description = DeclarationCompiler.compile(node, self.filename)
-        code_ops.append((LOAD_NAME, '_post_process_enamldef_'))
         for dec in node.decorators:
             code = compile(dec, self.filename, mode='eval')
             bpcode = Code.from_code(code).code
@@ -728,12 +722,4 @@ class EnamlCompiler(_NodeVisitor):
         ])
         for dec in node.decorators:
             code_ops.append((CALL_FUNCTION, 0x0001))
-        code_ops.extend([
-            (DUP_TOP, None),
-            (STORE_NAME, name),
-            (LOAD_CONST, description),
-            (LOAD_NAME, 'globals'),
-            (CALL_FUNCTION, 0x0000),
-            (CALL_FUNCTION, 0x0003),
-            (POP_TOP, None),
-        ])
+        code_ops.append((STORE_NAME, name))

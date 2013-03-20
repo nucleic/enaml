@@ -17,7 +17,7 @@ from .exceptions import (
 from .operators import __get_operators
 
 
-def _post_process_enamldef_(klass, descr, f_globals):
+def _post_process_enamldef(klass, descr, f_globals):
     """ A helper function which post processes an enamldef class.
 
     The post processing phase is responsible for adding member storage
@@ -25,9 +25,6 @@ def _post_process_enamldef_(klass, descr, f_globals):
     adding the user defined attributes and events, making the functions
     for the expression code objects, and calling the operators to bind
     the expressions.
-
-    This helper is called by the compiler after the metaclass has made
-    the new class and immediately after any class decorators have run.
 
     Parameters
     ----------
@@ -204,4 +201,8 @@ def _make_enamldef_helper_(name, base, description, f_globals):
         dct[scopename] = Value()
     decl_cls = EnamlDef(name, (base,), dct)
     decl_cls.__descriptions__ += ((description, f_globals),)
+
+    # Run the post-processing phase for the class
+    _post_process_enamldef(decl_cls, description, f_globals)
+
     return decl_cls
