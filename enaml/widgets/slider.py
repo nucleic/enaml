@@ -127,17 +127,6 @@ class Slider(Control):
         super(Slider, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
-    # Update Handlers
-    #--------------------------------------------------------------------------
-    def on_action_value_changed(self, content):
-        """ Handle the 'value_changed' action from the client widget.
-
-        The content will contain the 'value' of the slider.
-
-        """
-        self.set_guarded(value=content['value'])
-
-    #--------------------------------------------------------------------------
     # DefaultValue Handlers
     #--------------------------------------------------------------------------
     def _default_hug_width(self):
