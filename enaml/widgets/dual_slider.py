@@ -44,17 +44,15 @@ class ProxyDualSlider(ProxyControl):
     def set_orientation(self, orientation):
         raise NotImplementedError
 
-    def set_tracking(self, tracking):
-        raise NotImplementedError
+    # def set_tracking(self, tracking):
+    #     raise NotImplementedError
 
 
 class DualSlider(Control):
-    """ A simple dual slider widget that can be used to select a range
-    within a larger range of integral values.
+    """ A simple dual slider widget.
 
-    A `SliderTransform` can be used to transform the integer range
-    of the slider into another data space. For more details, see
-    `enaml.stdlib.slider_transform`.
+    A dual slider can be used to select a range within a larger range
+    of integral values.
 
     """
     #: The minimum slider value. If the minimum value is changed such
@@ -67,15 +65,15 @@ class DualSlider(Control):
     #: value, then those values will be adjusted. The default is 100.
     maximum = d_(Int(100))
 
-    #: The low position value of the DualSlider. The value will be clipped to
-    #: always fall between the minimum and maximum and be smaller than
-    #: the high value
+    #: The low position value of the DualSlider. The value will be
+    #: clipped to always fall between the minimum and maximum and be
+    #: smaller than the high value.
     low_value = d_(Int())
 
-     #: The high position value of the DualSlider. The value will be
-    #: clipped to always fall between the minimum and maximum
-    #: and be larger than the low_value
-    high_value = d_(Int()) 
+    #: The high position value of the DualSlider. The value will be
+    #: clipped to always fall between the minimum and maximum and be
+    #: larger than the low value.
+    high_value = d_(Int())
 
     #: A TickPosition enum value indicating how to display the tick
     #: marks. Note that the orientation takes precedence over the tick
@@ -84,20 +82,20 @@ class DualSlider(Control):
     #: is 'bottom'.
     tick_position = d_(TickPosition('bottom'))
 
-    #: The interval to place between slider tick marks in units of
-    #: value (as opposed to pixels). The minimum value is 0, which
-    #: indicates that the choice is left up to the client.
+    #: The interval to place between slider tick marks in value units
+    #: (as opposed to pixels). The minimum value is 0, which indicates
+    #: that the choice is left up to the client.
     tick_interval = d_(Range(low=0))
 
-    #: The orientation of the slider. The default orientation is
-    #: horizontal. When the orientation is flipped the tick positions
-    #: (if set) also adapt to reflect the changes  (e.g. the LEFT
-    #: becomes TOP when the orientation becomes horizontal).
+    #: The orientation of the slider. The default is 'horizontal'. When
+    #: the orientation is flipped the tick positions (if set) also adapt
+    #: to reflect the changes  (e.g. the LEFT becomes TOP when the
+    #: orientation becomes horizontal).
     orientation = d_(Enum('horizontal', 'vertical'))
 
     #: If True, the value is updated while sliding. Otherwise, it is
     #: only updated when the slider is released. Defaults to True.
-    tracking = d_(Bool(True))
+    #tracking = d_(Bool(True))
 
     #: Whether or not to automatically adjust the 'hug_width' and
     #: 'hug_height' values based on the value of 'orientation'.
@@ -109,33 +107,14 @@ class DualSlider(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('minimum', 'maximum', 'low_value', 'high_value',
-        'tick_position', 'tick_interval', 'orientation', 'tracking'))
+    @observe(('minimum', 'maximum', 'low_value', 'high_value', 'tick_position',
+        'tick_interval', 'orientation', 'tracking'))
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
         """
         # The superclass handler implementation is sufficient.
         super(DualSlider, self)._update_proxy(change)
-
-    #--------------------------------------------------------------------------
-    # Update Handlers
-    #--------------------------------------------------------------------------
-    def on_action_low_value_changed(self, content):
-        """ Handle the 'low_value_changed' action from the client widget.
-
-        The content will contain the 'low_value' of the slider.
-
-        """
-        self.set_guarded(low_value=content['low_value'])
-
-    def on_action_high_value_changed(self, content):
-        """ Handle the 'high_value_changed' action from the client widget.
-
-        The content will contain the 'high_value' of the slider.
-
-        """
-        self.set_guarded(high_value=content['high_value'])
 
     #--------------------------------------------------------------------------
     # DefaultValue Handlers
@@ -180,7 +159,7 @@ class DualSlider(Control):
     # PostSetAttr Handlers
     #--------------------------------------------------------------------------
     def _post_setattr_orientation(self, old, new):
-        """ Post setattr the orientation for the tool bar.
+        """ Post setattr the orientation for the slider.
 
         If auto hug is enabled, the hug values will be updated.
 
@@ -202,10 +181,10 @@ class DualSlider(Control):
         """
         if new > self.maximum:
             self.maximum = new
-        if new > self.low_value:
-            self.low_value = new
         if new > self.high_value:
             self.high_value = new
+        if new > self.low_value:
+            self.low_value = new
 
     def _post_setattr_maximum(self, old, new):
         """ Post setattr the maximum value for the slider.
@@ -216,10 +195,10 @@ class DualSlider(Control):
         """
         if new < self.minimum:
             self.minimum = new
-        if new < self.high_value:
-            self.high_value = new
         if new < self.low_value:
             self.low_value = new
+        if new < self.high_value:
+            self.high_value = new
 
     #--------------------------------------------------------------------------
     # Post Validation Handlers

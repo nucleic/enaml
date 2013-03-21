@@ -256,7 +256,7 @@ QT_FACTORIES = {
     'DateSelector': date_selector_factory,
     'DatetimeSelector': datetime_selector_factory,
     'DockPane': dock_pane_factory,
-    'DualSlider', dual_slider_factory,
+    'DualSlider': dual_slider_factory,
     'Field': field_factory,
     'FileDialog': file_dialog_factory,
     'FlowArea': flow_area_factory,
