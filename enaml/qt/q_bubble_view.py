@@ -137,11 +137,12 @@ class QBubbleView(QWidget):
         Parameters
         ----------
         radius : Int
-            The radius of the popup corners (in pixels). Must be greater than 2.
+            The radius of the popup corners (in pixels). 
+            Must be greater than or equal to 2.
 
         """
-        if radius <= 2:
-            raise Exception("Radius must be greater than 2")
+        if radius < 2:
+            raise Exception("Radius must be greater than or equal to 2")
         self._radius = radius
         if self.isVisible(): self._rebuild()
 
