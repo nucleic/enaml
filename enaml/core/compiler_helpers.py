@@ -113,9 +113,9 @@ def _post_process_enamldef(klass, descr, f_globals):
             else:
                 attrtype = object
             if attr['is_event']:
-                newmember = d_(Event(attrtype), writable=False)
+                newmember = d_(Event(attrtype), writable=False, final=False)
             else:
-                newmember = d_(Instance(attrtype))
+                newmember = d_(Instance(attrtype), final=False)
             if attrname in members:
                 m = members[attrname]
                 newmember.set_index(m.index)
