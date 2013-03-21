@@ -336,7 +336,7 @@ def p_enaml1(p):
 def p_enaml2(p):
     ''' enaml : NEWLINE ENDMARKER
               | ENDMARKER '''
-    p[0] = enaml_ast.Module([], -1)
+    p[0] = enaml_ast.Module()
 
 
 def p_enaml_module(p):
@@ -376,12 +376,12 @@ def p_enaml_module_item1(p):
 
 
 def p_enaml_module_item2(p):
-    ''' enaml_module_item : declaration '''
+    ''' enaml_module_item : enamldef '''
     p[0] = p[1]
 
 
 def p_enaml_module_item3(p):
-    ''' enaml_module_item : decorators declaration '''
+    ''' enaml_module_item : decorators enamldef '''
     declaration = p[2]
     decorators = []
     for decnode in p[1]:
@@ -392,6 +392,111 @@ def p_enaml_module_item3(p):
     p[0] = declaration
 
 
+#------------------------------------------------------------------------------
+# Declaration
+#------------------------------------------------------------------------------
+def p_enamldef1(p):
+    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_body '''
+    doc, idn, items = p[7]
+    p[0] = enaml_ast.Declaration(p[2], p[4], idn, doc, items, p.lineno(1))
+
+
+def p_enamldef2(p):
+    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON PASS NEWLINE '''
+    p[0] = enaml_ast.Declaration(p[2], p[4], None, '', [], p.lineno(1))
+
+
+def p_enamldef3(p):
+    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_body '''
+    doc, idn, items = p[9]
+    if idn is not None:
+        msg = 'multiple identifiers declared'
+        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
+    p[0] = enaml_ast.Declaration(p[2], p[4], p[7], doc, items, p.lineno(1))
+
+
+def p_enamldef4(p):
+    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON PASS NEWLINE '''
+    p[0] = enaml_ast.Declaration(p[2], p[4], p[7], '', [], p.lineno(1))
+
+
+def p_enamldef_body1(p):
+    ''' enamldef_body : NEWLINE INDENT enamldef_body_items DEDENT '''
+    # Filter out any pass statements
+    items = filter(None, p[3])
+    # TODO only a 2-tuple required after removing old identifiers
+    p[0] = ('', None, items)
+
+
+def p_enamldef_body2(p):
+    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE enamldef_body_items DEDENT '''
+    # Filter out any pass statements
+    items = filter(None, p[5])
+    # TODO only a 2-tuple required after removing old identifiers
+    p[0] = (p[3], None, items)
+
+
+def p_enamldef_body3(p):
+    ''' enamldef_body : NEWLINE INDENT identifier DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(2))
+    p[0] = ('', p[3], [])
+
+
+def p_enamldef_body4(p):
+    ''' enamldef_body : NEWLINE INDENT identifier enamldef_body_items DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(2))
+    # Filter out any pass statements
+    items = filter(None, p[4])
+    p[0] = ('', p[3], items)
+
+
+def p_enamldef_body5(p):
+    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE identifier DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
+    p[0] = (p[3], p[5], [])
+
+
+def p_enamldef_body6(p):
+    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE identifier enamldef_body_items DEDENT '''
+    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
+    # Filter out any pass statements
+    items = filter(None, p[6])
+    p[0] = (p[3], p[5], items)
+
+
+def p_enamldef_body_items1(p):
+    ''' enamldef_body_items : enamldef_body_item '''
+    p[0] = [p[1]]
+
+
+def p_enamldef_body_items2(p):
+    ''' enamldef_body_items : enamldef_body_items enamldef_body_item '''
+    p[0] = p[1] + [p[2]]
+
+
+def p_enamldef_body_item1(p):
+    ''' enamldef_body_item : state_def '''
+    p[0] = p[1]
+
+
+def p_enamldef_body_item2(p):
+    ''' enamldef_body_item : binding '''
+    p[0] = p[1]
+
+
+def p_enamldef_body_item3(p):
+    ''' enamldef_body_item : child_def '''
+    p[0] = p[1]
+
+
+def p_enamldef_body_item4(p):
+    ''' enamldef_body_item : PASS NEWLINE '''
+    p[0] = None
+
+
+#------------------------------------------------------------------------------
+# Identifier
+#------------------------------------------------------------------------------
 # TODO get rid of old identifiers in Enaml version 0.8.0
 #
 # Remove the following functions:
@@ -403,50 +508,6 @@ def p_enaml_module_item3(p):
 # Update the following:
 #   p_declaration to accept 2-tuples instead of 3-tuples
 #   p_instantiation to accept items instead of 2-tuples
-
-#------------------------------------------------------------------------------
-# Declaration
-#------------------------------------------------------------------------------
-def p_declaration1(p):
-    ''' declaration : ENAMLDEF NAME LPAR NAME RPAR COLON declaration_body '''
-    doc, idn, items = p[7]
-    p[0] = enaml_ast.Declaration(p[2], p[4], idn, doc, items, p.lineno(1))
-
-
-def p_declaration2(p):
-    ''' declaration : ENAMLDEF NAME LPAR NAME RPAR COLON PASS NEWLINE '''
-    p[0] = enaml_ast.Declaration(p[2], p[4], None, '', [], p.lineno(1))
-
-
-def p_declaration3(p):
-    ''' declaration : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON declaration_body '''
-    doc, idn, items = p[9]
-    if idn is not None:
-        msg = 'multiple identifiers declared'
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    p[0] = enaml_ast.Declaration(p[2], p[4], p[7], doc, items, p.lineno(1))
-
-
-def p_declaration4(p):
-    ''' declaration : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON PASS NEWLINE '''
-    p[0] = enaml_ast.Declaration(p[2], p[4], p[7], '', [], p.lineno(1))
-
-
-def p_declaration_body1(p):
-    ''' declaration_body : NEWLINE INDENT declaration_body_items DEDENT '''
-    # Filter out any pass statements
-    items = filter(None, p[3])
-    # TODO only a 2-tuple required after removing old identifiers
-    p[0] = ('', None, items)
-
-
-def p_declaration_body2(p):
-    ''' declaration_body : NEWLINE INDENT STRING NEWLINE declaration_body_items DEDENT '''
-    # Filter out any pass statements
-    items = filter(None, p[5])
-    # TODO only a 2-tuple required after removing old identifiers
-    p[0] = (p[3], None, items)
-
 
 def p_identifier(p):
     ''' identifier : NAME COLON NAME NEWLINE '''
@@ -465,87 +526,29 @@ def _warn_ident(filename, lineno):
     warnings.warn_explicit(msg, FutureWarning, filename, lineno, '', _warn_reg)
 
 
-def p_declaration_body3(p):
-    ''' declaration_body : NEWLINE INDENT identifier DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    p[0] = ('', p[3], [])
-
-
-def p_declaration_body4(p):
-    ''' declaration_body : NEWLINE INDENT identifier declaration_body_items DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    # Filter out any pass statements
-    items = filter(None, p[4])
-    p[0] = ('', p[3], items)
-
-
-def p_declaration_body5(p):
-    ''' declaration_body : NEWLINE INDENT STRING NEWLINE identifier DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
-    p[0] = (p[3], p[5], [])
-
-
-def p_declaration_body6(p):
-    ''' declaration_body : NEWLINE INDENT STRING NEWLINE identifier declaration_body_items DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
-    # Filter out any pass statements
-    items = filter(None, p[6])
-    p[0] = (p[3], p[5], items)
-
-
-def p_declaration_body_items1(p):
-    ''' declaration_body_items : declaration_body_item '''
-    p[0] = [p[1]]
-
-
-def p_declaration_body_items2(p):
-    ''' declaration_body_items : declaration_body_items declaration_body_item '''
-    p[0] = p[1] + [p[2]]
-
-
-def p_declaration_body_item1(p):
-    ''' declaration_body_item : attribute_declaration '''
-    p[0] = p[1]
-
-
-def p_declaration_body_item2(p):
-    ''' declaration_body_item : attribute_binding '''
-    p[0] = p[1]
-
-
-def p_declaration_body_item3(p):
-    ''' declaration_body_item : instantiation '''
-    p[0] = p[1]
-
-
-def p_declaration_body_item4(p):
-    ''' declaration_body_item : PASS NEWLINE '''
-    p[0] = None
-
-
 #------------------------------------------------------------------------------
-# Attribute Declaration
+# StateDef
 #------------------------------------------------------------------------------
-def p_attribute_declaration1(p):
-    ''' attribute_declaration : NAME NAME NEWLINE '''
+def p_state_def1(p):
+    ''' state_def : NAME NAME NEWLINE '''
     p[0] = build_attr_declaration(p[1], p[2], None, None, p.lineno(1), p)
 
 
-def p_attribute_declaration2(p):
-    ''' attribute_declaration : NAME NAME COLON NAME NEWLINE '''
+def p_state_def2(p):
+    ''' state_def : NAME NAME COLON NAME NEWLINE '''
     p[0] = build_attr_declaration(p[1], p[2], p[4], None, p.lineno(1), p)
 
 
-def p_attribute_declaration3(p):
-    ''' attribute_declaration : NAME NAME binding '''
+def p_state_def3(p):
+    ''' state_def : NAME NAME binding '''
     lineno = p.lineno(1)
     name = p[2]
     binding = enaml_ast.AttributeBinding(name, p[3], lineno)
     p[0] = build_attr_declaration(p[1], name, None, binding, lineno, p)
 
 
-def p_attribute_declaration4(p):
-    ''' attribute_declaration : NAME NAME COLON NAME binding '''
+def p_state_def4(p):
+    ''' state_def : NAME NAME COLON NAME binding '''
     lineno = p.lineno(1)
     name = p[2]
     binding = enaml_ast.AttributeBinding(name, p[5], lineno)
@@ -553,31 +556,31 @@ def p_attribute_declaration4(p):
 
 
 #------------------------------------------------------------------------------
-# Instantiation
+# ChildDef
 #------------------------------------------------------------------------------
-def p_instantiation1(p):
-    ''' instantiation : NAME COLON instantiation_body '''
+def p_child_def1(p):
+    ''' child_def : NAME COLON child_def_body '''
     idn, items = p[3]
     p[0] = enaml_ast.Instantiation(p[1], idn, items, p.lineno(1))
 
 
-def p_instantiation2(p):
-    ''' instantiation : NAME COLON attribute_binding '''
+def p_child_def2(p):
+    ''' child_def : NAME COLON binding '''
     p[0] = enaml_ast.Instantiation(p[1], None, [p[3]], p.lineno(1))
 
 
-def p_instantiation3(p):
-    ''' instantiation : NAME COLON attribute_declaration '''
+def p_child_def3(p):
+    ''' child_def : NAME COLON state_def '''
     p[0] = enaml_ast.Instantiation(p[1], None, [p[3]], p.lineno(1))
 
 
-def p_instantiation4(p):
-    ''' instantiation : NAME COLON PASS NEWLINE '''
+def p_child_def4(p):
+    ''' child_def : NAME COLON PASS NEWLINE '''
     p[0] = enaml_ast.Instantiation(p[1], None, [], p.lineno(1))
 
 
-def p_instantiation5(p):
-    ''' instantiation : NAME COLON NAME COLON instantiation_body '''
+def p_child_def5(p):
+    ''' child_def : NAME COLON NAME COLON child_def_body '''
     idn, items = p[5]
     if idn is not None:
         msg = 'multiple identifiers declared'
@@ -585,115 +588,119 @@ def p_instantiation5(p):
     p[0] = enaml_ast.Instantiation(p[1], p[3], items, p.lineno(1))
 
 
-def p_instantiation6(p):
-    ''' instantiation : NAME COLON NAME COLON attribute_binding '''
+def p_child_def6(p):
+    ''' child_def : NAME COLON NAME COLON binding '''
     p[0] = enaml_ast.Instantiation(p[1], p[3], [p[5]], p.lineno(1))
 
 
-def p_instantiation7(p):
-    ''' instantiation : NAME COLON NAME COLON attribute_declaration '''
+def p_child_def7(p):
+    ''' child_def : NAME COLON NAME COLON state_def '''
     p[0] = enaml_ast.Instantiation(p[1], p[3], [p[5]], p.lineno(1))
 
 
-def p_instantiation8(p):
-    ''' instantiation : NAME COLON NAME COLON PASS NEWLINE '''
+def p_child_def8(p):
+    ''' child_def : NAME COLON NAME COLON PASS NEWLINE '''
     p[0] = enaml_ast.Instantiation(p[1], p[3], [], p.lineno(1))
 
 
-def p_instantiation_body(p):
-    ''' instantiation_body : NEWLINE INDENT instantiation_body_items DEDENT '''
+def p_child_def_body(p):
+    ''' child_def_body : NEWLINE INDENT child_def_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
     p[0] = (None, items)
 
 
-def p_instantiation_body2(p):
-    ''' instantiation_body : NEWLINE INDENT identifier DEDENT '''
+def p_child_def_body2(p):
+    ''' child_def_body : NEWLINE INDENT identifier DEDENT '''
     _warn_ident(p.lexer.filename, p.lineno(2))
     p[0] = (p[3], [])
 
 
-def p_instantiation_body3(p):
-    ''' instantiation_body : NEWLINE INDENT identifier instantiation_body_items DEDENT '''
+def p_child_def_body3(p):
+    ''' child_def_body : NEWLINE INDENT identifier child_def_body_items DEDENT '''
     _warn_ident(p.lexer.filename, p.lineno(2))
     # Filter out any pass statements
     items = filter(None, p[4])
     p[0] = (p[3], items)
 
 
-def p_instantiation_body_items1(p):
-    ''' instantiation_body_items : instantiation_body_item '''
+def p_child_def_body_items1(p):
+    ''' child_def_body_items : child_def_body_item '''
     p[0] = [p[1]]
 
 
-def p_instantiation_body_items2(p):
-    ''' instantiation_body_items : instantiation_body_items instantiation_body_item '''
+def p_child_def_body_items2(p):
+    ''' child_def_body_items : child_def_body_items child_def_body_item '''
     p[0] = p[1] + [p[2]]
 
 
-def p_instantiation_body_item1(p):
-    ''' instantiation_body_item : instantiation '''
+def p_child_def_body_item1(p):
+    ''' child_def_body_item : child_def '''
     p[0] = p[1]
 
 
-def p_instantiation_body_item2(p):
-    ''' instantiation_body_item : attribute_binding '''
+def p_child_def_body_item2(p):
+    ''' child_def_body_item : binding '''
     p[0] = p[1]
 
 
-def p_instantiation_body_item3(p):
-    ''' instantiation_body_item : attribute_declaration '''
+def p_child_def_body_item3(p):
+    ''' child_def_body_item : state_def '''
     p[0] = p[1]
 
 
-def p_instantiation_body_item4(p):
-    ''' instantiation_body_item : PASS NEWLINE '''
+def p_child_def_body_item4(p):
+    ''' child_def_body_item : PASS NEWLINE '''
     p[0] = None
 
 
 #------------------------------------------------------------------------------
-# Attribute Binding
+# Binding
 #------------------------------------------------------------------------------
-def p_attribute_binding(p):
-    ''' attribute_binding : NAME binding '''
-    p[0] = enaml_ast.AttributeBinding(p[1], p[2], p.lineno(1))
-
-
 def p_binding1(p):
-    ''' binding : EQUAL test NEWLINE
-                | LEFTSHIFT test NEWLINE '''
+    ''' binding : NAME EQUAL test NEWLINE
+                | NAME LEFTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
-    expr = ast.Expression(body=p[2])
+    expr = ast.Expression(body=p[3])
     expr.lineno = lineno
     ast.fix_missing_locations(expr)
-    expr_node = enaml_ast.Python(expr, lineno)
-    p[0] = enaml_ast.BoundExpression(p[1], expr_node, lineno)
+    python = enaml_ast.Python(ast=expr, lineno=lineno)
+    binding = enaml_ast.Binding(
+        name=p[1], operator=p[2], value=python, lineno=lineno
+    )
+    p[0] = binding
 
 
 def p_binding2(p):
-    ''' binding : COLONEQUAL test NEWLINE
-                | RIGHTSHIFT test NEWLINE '''
+    ''' binding : NAME COLONEQUAL test NEWLINE
+                | NAME RIGHTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
-    validate_invertable(p[2], lineno, p)
-    expr = ast.Expression(body=p[2])
+    validate_invertable(p[3], lineno, p)
+    expr = ast.Expression(body=p[3])
     expr.lineno = lineno
     ast.fix_missing_locations(expr)
-    expr_node = enaml_ast.Python(expr, lineno)
-    p[0] = enaml_ast.BoundExpression(p[1], expr_node, lineno)
+    python = enaml_ast.Python(ast=expr, lineno=lineno)
+    binding = enaml_ast.Binding(
+        name=p[1], operator=p[2], value=python, lineno=lineno
+    )
+    p[0] = binding
 
 
 def p_binding3(p):
-    ''' binding : DOUBLECOLON suite '''
+    ''' binding : NAME DOUBLECOLON suite '''
     lineno = p.lineno(1)
     mod = ast.Module()
-    mod.body = p[2]
+    mod.body = p[3]
     for item in ast.walk(mod):
         if type(item) in notification_disallowed:
             msg = '%s not allowed in a notification block'
             msg = msg % notification_disallowed[type(item)]
             syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
-    expr_node = enaml_ast.Python(mod, lineno)
-    p[0] = enaml_ast.BoundExpression(p[1], expr_node, lineno)
+    python = enaml_ast.Python(ast=mod, lineno=lineno)
+    binding = enaml_ast.Binding(
+        name=p[1], operator=p[2], value=python, lineno=lineno
+    )
+    p[0] = binding
 
 
 #------------------------------------------------------------------------------

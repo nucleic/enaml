@@ -5,169 +5,236 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-class ASTNode(object):
-    """ The base Enaml AST node.
+import ast
+import types
 
-    Attributes
-    ----------
-    lineno : int
-        The line number in the source code that created this node.
+from atom.api import Atom, Int, List, Str, Typed
+
+
+def from_dict(dct):
+    """ Convert a previously serialized node dict into an ASTNode.
 
     """
-    def __init__(self, lineno):
-        self.lineno = lineno
+    nodetype = dct['nodetype']
+    kind = globals()[nodetype]
+    return kind.from_dict(dct)
 
-    def __repr__(self):
-        return self.__class__.__name__
 
-    def __str__(self):
-        return repr(self)
+class ASTNode(Atom):
+    """ The base class for Enaml ast nodes.
+
+    """
+    #: The name of the .enaml file which generated the node.
+    filename = Str()
+
+    #: The line number in the .enaml file which generated the node.
+    lineno = Int(-1)
+
+    @classmethod
+    def from_dict(cls, dct):
+        self = cls()
+        self.filename = dct['filename']
+        self.lineno = dct['lineno']
+        return self
+
+    def as_dict(self):
+        dct = {}
+        dct['nodetype'] = type(self).__name__
+        dct['filename'] = self.filename
+        dct['lineno'] = self.lineno
+        return dct
 
 
 class Module(ASTNode):
-    """ An AST node representing an Enaml module.
-
-    Attributes
-    ----------
-    doc : str
-        The module's documentation string.
-
-    body : list
-        A list of ast nodes comprising the body of the module.
+    """ An ASTNode representing an Enaml module.
 
     """
-    def __init__(self, body, lineno):
-        super(Module, self).__init__(lineno)
-        self.body = body
+    #: The docstring for the module, if given.
+    docstring = Str()
+
+    #: The list of ast nodes for the body of the module. This will be
+    #: composed of Python and EnamlDef nodes.
+    body = List()
+
+    @classmethod
+    def from_dict(cls, dct):
+        self = super(Module, cls).from_dict(dct)
+        self.docstring = dct['docstring']
+        self.body = [from_dict(node) for node in dct['body']]
+        return self
+
+    def as_dict(self):
+        dct = super(Module, self).as_dict()
+        dct['docstring'] = self.docstring
+        dct['body'] = [node.as_dict() for node in self.body]
+        return dct
 
 
 class Python(ASTNode):
-    """ An AST node representing a chunk of pure Python code.
-
-    Attributes
-    ----------
-    py_ast : ast.AST
-        A Python ast node.
+    """ An ASTNode representing a chunk of pure Python code.
 
     """
-    def __init__(self, py_ast, lineno):
-        super(Python, self).__init__(lineno)
-        self.py_ast = py_ast
+    #: The python ast node for the given python code.
+    ast = Typed(ast.AST)
+
+    #: The code object representing the compiled ast.
+    code = Typed(types.CodeType)
+
+    @classmethod
+    def from_dict(cls, dct):
+        self = super(Python, cls).from_dict(dct)
+        self.ast = None  # XXX deserialize the Python AST
+        self.code = dct['code']
+        return self
+
+    def as_dict(self):
+        dct = super(Python, self).as_dict()
+        dct['ast'] = None  # XXX serialize the Python AST
+        dct['code'] = self.code
+        return dct
 
 
-class Declaration(ASTNode):
-    """ An AST node representing an Enaml declaration.
-
-    Attributes
-    ----------
-    name : str
-        The name of the declaration.
-
-    base : str
-        The name of the base type.
-
-    identifier : str
-        The local identifier to use for instances of the declaration.
-
-    doc : str
-        The documentation string for the declaration.
-
-    body : list
-        A list of AST nodes that comprise the body of the declaration.
+class EnamlDef(ASTNode):
+    """ An ASTNode representing an enamldef block.
 
     """
-    def __init__(self, name, base, identifier, doc, body, lineno):
-        super(Declaration, self).__init__(lineno)
-        self.name = name
-        self.base = base
-        self.identifier = identifier
-        self.doc = doc
-        self.body = body
-        self.decorators = []
+    #: The type name given to the enamldef.
+    typename = Str()
+
+    #: The name of the base class which is being inherited.
+    base = Str()
+
+    #: The identifier given to the enamldef.
+    identifier = Str()
+
+    #: The docstring for the enamldef.
+    docstring = Str()
+
+    #: The list of decorator for the enamldef. This will be composed of
+    #: Python nodes.
+    decorators = List()
+
+    #: The list of body nodes for the enamldef. This will be composed
+    #: of StateDef, Binding, and ChildDef nodes.
+    body = List()
+
+    @classmethod
+    def from_dict(cls, dct):
+        self = super(EnamlDef, cls).from_dict(dct)
+        self.typename = dct['typename']
+        self.base = dct['base']
+        self.identifier = dct['identifier']
+        self.docstring = dct['docstring']
+        self.decorators = [from_dict(node) for node in dct['decorators']]
+        self.body = [from_dict(node) for node in dct['body']]
+        return self
+
+    def as_dict(self):
+        dct = super(EnamlDef, self).as_dict()
+        dct['typename'] = self.typename
+        dct['base'] = self.base
+        dct['identifier'] = self.identifier
+        dct['docstring'] = self.docstring
+        dct['decorators'] = [node.as_dict() for node in self.decorators]
+        dct['body'] = [node.as_dict() for node in self.body]
+        return dct
 
 
-class Instantiation(ASTNode):
-    """ An AST node representing a declaration instantiation.
-
-    Attributes
-    ----------
-    name : str
-        The name of declaration being instantiated.
-
-    identifier : str
-        The local identifier to use for the new instance.
-
-    body : list
-        A list of AST nodes which comprise the instantiation body.
-
-    """
-    def __init__(self, name, identifier, body, lineno):
-        super(Instantiation, self).__init__(lineno)
-        self.name = name
-        self.identifier = identifier
-        self.body = body
-
-
-class AttributeDeclaration(ASTNode):
-    """ An AST node which represents an attribute declaration.
-
-    Attributes
-    ----------
-    name : str
-        The name of the attribute being declared.
-
-    type : str
-        A string representing the type of the attribute, or None if no
-        type was given. If None the attribute can be of any type.
-
-    default : AttributeBinding or None
-        The default binding of the attribute, or None if no default
-        is provided.
-
-    is_event : boolean
-        Whether or not this declaration represents an event.
-        i.e. was declared with 'event' instead of 'attr'.
+class ChildDef(ASTNode):
+    """ An ASTNode representing a child definition.
 
     """
-    def __init__(self, name, type, default, is_event, lineno):
-        super(AttributeDeclaration, self).__init__(lineno)
-        self.name = name
-        self.type = type
-        self.default = default
-        self.is_event = is_event
+    #: The type name of the child to create.
+    typename = Str()
+
+    #: The identifier given to the child.
+    identifier = Str()
+
+    #: The list of body nodes for the child definition. This will be
+    #: composed of StateDef, Binding, and ChildDef nodes.
+    body = List()
+
+    @classmethod
+    def from_dict(cls, dct):
+        self = super(ChildDef, cls).from_dict(dct)
+        self.typename = dct['typename']
+        self.identifier = dct['identifier']
+        self.body = [from_dict(node) for node in dct['body']]
+        return self
+
+    def as_dict(self):
+        dct = super(ChildDef, self).as_dict()
+        dct['typename'] = self.typename
+        dct['identifier'] = self.identifier
+        dct['body'] = [b.as_dict() for b in self.body]
+        return dct
 
 
-class AttributeBinding(ASTNode):
-    """ An AST node which represents an expression attribute binding.
-
-    Attributes
-    ----------
-    name : str
-        The name of the attribute being bound.
-
-    binding : BoundExpression
-        The BoundExpression ast node which represents the binding.
-
-    """
-    def __init__(self, name, binding, lineno):
-        super(AttributeBinding, self).__init__(lineno)
-        self.name = name
-        self.binding = binding
-
-
-class BoundExpression(ASTNode):
-    """ An ast node which represents a bound expression.
-
-    Attributes
-    ----------
-    op : str
-        The name of the operator that will perform the binding.
-
-    expr : Python
-        A Python ast node that reprents the bound expression.
+class Binding(ASTNode):
+    """ An AST node which represents a code binding.
 
     """
-    def __init__(self, op, expr, lineno):
-        super(BoundExpression, self).__init__(lineno)
-        self.op = op
-        self.expr = expr
+    #: The name of the attribute being bound.
+    name = Str()
+
+    #: The operator used to bind the code.
+    operator = Str()
+
+    #: The python ast node for the bound python code.
+    value = Typed(Python)
+
+    @classmethod
+    def from_dict(cls, dct):
+        self = super(Binding, cls).from_dict(dct)
+        self.name = dct['name']
+        self.operator = dct['operator']
+        self.value = from_dict(dct['value'])
+
+    def as_dict(self):
+        dct = super(Binding, self).as_dict()
+        dct['name'] = self.name
+        dct['operator'] = self.operator
+        dct['value'] = self.value.as_dict()
+        return dct
+
+
+class StateDef(ASTNode):
+    """ A base class for 'attr' and 'event' definitions.
+
+    """
+    #: The name of the attribute or event being defined.
+    name = Str()
+
+    #: The typename of the allowed attribute or event values.
+    typename = Str()
+
+    #: The default binding node for the attribute or event.
+    binding = Typed(Binding)
+
+    @classmethod
+    def from_dict(cls, dct):
+        self = super(StateDef, cls).from_dict(dct)
+        self.name = dct['name']
+        self.typename = dct['typename']
+        self.binding = from_dict(dct['binding'])
+
+    def as_dict(self):
+        dct = super(Binding, self).as_dict()
+        dct['name'] = self.name
+        dct['typename'] = self.typename
+        dct['binding'] = self.binding.as_dict()
+        return dct
+
+
+class AttrDef(StateDef):
+    """ An AST node which represents an 'attr' definition.
+
+    """
+    pass
+
+
+class EventDef(StateDef):
+    """ An AST node which represents an 'event' definition.
+
+    """
+    pass
