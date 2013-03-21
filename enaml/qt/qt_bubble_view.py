@@ -10,14 +10,14 @@ from atom.api import Typed
 from PyQt4.QtCore import Qt, QSize, pyqtSignal
 from PyQt4.QtGui import QFrame, QLayout
 
-from enaml.widgets.popup import ProxyPopup
+from enaml.widgets.bubble_view import ProxyBubbleView
 
-from .q_popup_widget import QPopupWidget
+from .q_popup_widget import QPopupWidget 
 from .qt_widget import QtWidget
 
 
-class QtPopup(QtWidget, ProxyPopup):
-    """ A Qt implementation of an Enaml ProxyPopup.
+class QtBubbleView(QtWidget, ProxyBubbleView):
+    """ A Qt implementation of an Enaml ProxyBubbleView.
 
     """
     #: A reference to the toolkit widget created by the proxy.
@@ -27,7 +27,7 @@ class QtPopup(QtWidget, ProxyPopup):
     # Initialization API
     #--------------------------------------------------------------------------
     def create_widget(self):
-        """ Create the QPopup widget.
+        """ Create the QBubbleView widget.
 
         """
         self.widget = QPopupWidget(self.parent_widget())
@@ -36,7 +36,7 @@ class QtPopup(QtWidget, ProxyPopup):
         """ Initialize the widget.
 
         """
-        super(QtPopup, self).init_widget()
+        super(QtBubbleView, self).init_widget()
         d = self.declaration
         if d.anchor:
             self.set_anchor(d.anchor)
@@ -52,7 +52,7 @@ class QtPopup(QtWidget, ProxyPopup):
         """ Initialize the widget layout.
 
         """
-        super(QtPopup, self).init_layout()
+        super(QtBubbleView, self).init_layout()
         self.widget.setCentralWidget(self.central_widget())
 
     #--------------------------------------------------------------------------
@@ -81,7 +81,7 @@ class QtPopup(QtWidget, ProxyPopup):
         self.declaration._handle_close()
 
     #--------------------------------------------------------------------------
-    # ProxyPopup API
+    # ProxyBubbleView API
     #--------------------------------------------------------------------------
     def setup_window(self):
         """ Setup widget window hierarchy.
@@ -106,7 +106,7 @@ class QtPopup(QtWidget, ProxyPopup):
         self.widget.setAnchor(anchor)
 
     def set_radius(self, radius):
-        """ Set the size of the popup corner radii
+        """ Set the size of the QBubbleView corner radii
 
         """
         self.widget.setRadius(radius)
@@ -118,7 +118,7 @@ class QtPopup(QtWidget, ProxyPopup):
         self.widget.setArrowSize(arrow)
 
     def set_relative_pos(self, relative_pos):
-        """ Set the relative position of anchor with respect to the popup's
+        """ Set the relative position of anchor with respect to the QBubbleView's
         bounds
 
         """

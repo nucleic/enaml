@@ -19,12 +19,12 @@ from .toolkit_object import ToolkitObject
 from .widget import Widget, ProxyWidget
 
 
-class ProxyPopup(ProxyWidget):
-    """ The abstract definition of a proxy Popup object.
+class ProxyBubbleView(ProxyWidget):
+    """ The abstract definition of a proxy BubbleView object.
 
     """
-    #: A reference to the Popup declaration.
-    declaration = ForwardTyped(lambda: Popup)
+    #: A reference to the BubbleView declaration.
+    declaration = ForwardTyped(lambda: BubbleView)
 
     def setup_window(self):
         raise NotImplementedError
@@ -44,8 +44,8 @@ class ProxyPopup(ProxyWidget):
     def close(self):
         raise NotImplementedError
 
-class Popup(Widget):
-    """ A Popup component
+class BubbleView(Widget):
+    """ A BubbleView component
 
     """
 
@@ -53,31 +53,31 @@ class Popup(Widget):
     #: as the anchor point. The default value is 'bottom'
     anchor = d_(Enum('bottom', 'left', 'right', 'top'))
 
-    #: The size in pixels of the x and y radii of the Popup's rounded
+    #: The size in pixels of the x and y radii of the BubbleView's rounded
     #: corners
     radius = d_(Int(10))
 
-    #: The size of the Popup's anchoring arrow
+    #: The size of the BubbleView's anchoring arrow
     arrow = d_(Int(20))
 
-    #: The relative of the anchor relative to the Popup's bounds
+    #: The relative of the anchor relative to the BubbleView's bounds
     relative_pos = d_(Tuple(float, (0.5, 0.5)))
 
-    #: An event fired when the popup is closed. This event is triggered
-    #: by the proxy object when the popup is closed.
+    #: An event fired when the BubbleView is closed. This event is triggered
+    #: by the proxy object when the BubbleView is closed.
     closed = Event()
 
-    #: Popups are invisible by default.
+    #: BubbleViews are invisible by default.
     visible = set_default(False)
 
-    #: A reference to the ProxyPopup object.
-    proxy = Typed(ProxyPopup)
+    #: A reference to the ProxyBubbleView object.
+    proxy = Typed(ProxyBubbleView)
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
     def central_widget(self):
-        """ Get the central widget defined on the popup.
+        """ Get the central widget defined on the BubbleView.
 
         The last `Container` child of the window is the central widget.
 
@@ -94,10 +94,10 @@ class Popup(Widget):
             self.proxy.close()
 
     def show(self):
-        """ Show the popup.
+        """ Show the BubbleView.
 
         This is a reimplemented parent class method which will init
-        and build the popup hierarchy if needed.
+        and build the BubbleView hierarchy if needed.
 
         """
         if not self.is_initialized:
@@ -107,7 +107,7 @@ class Popup(Widget):
             for node in self.traverse():
                 if isinstance(node, ToolkitObject):
                     node.proxy_is_active = True
-        super(Popup, self).show()
+        super(BubbleView, self).show()
 
 
     #--------------------------------------------------------------------------
@@ -115,11 +115,11 @@ class Popup(Widget):
     #--------------------------------------------------------------------------
     @observe(('anchor', 'radius', 'arrow', 'relative_pos'))
     def _update_proxy(self, change):
-        """ Update the ProxyPopup when the Popup data changes.
+        """ Update the ProxyBubbleView when the BubbleView data changes.
 
         """
         # The superclass handler implementation is sufficient.
-        super(Popup, self)._update_proxy(change)
+        super(BubbleView, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
     # Private API

@@ -2,7 +2,7 @@
 
 
 from enaml.widgets.api import (
-    Window, Container, Popup, Form, Label, PushButton,
+    Window, Container, BubbleView, Form, Label, PushButton,
     ComboBox, Slider,
 )
 
@@ -21,7 +21,7 @@ def convert_pos(pos_str):
         x = 0.5
     return (x, y)
 
-enamldef TestPopup(Popup): popup:
+enamldef MyBubbleView(BubbleView): bubble:
     Container:
         Form:
             Label:
@@ -29,21 +29,21 @@ enamldef TestPopup(Popup): popup:
             ComboBox:
                 items = ['Bottom', 'Left', 'Right', 'Top']
                 index = 0
-                index :: popup.anchor = items[index].lower()
+                index :: bubble.anchor = items[index].lower()
             Label:
                 text = 'Corner radius'
             Slider:
                 minimum = 2
                 maximum = 40
                 tick_interval = 1
-                value := popup.radius
+                value := bubble.radius
             Label:
                 text = 'Arrow size'
             Slider:
                 minimum = 0
                 maximum = 30
                 tick_interval = 1
-                value := popup.arrow
+                value := bubble.arrow
             Label:
                 text = 'Anchor to Parent'
             ComboBox:
@@ -51,17 +51,17 @@ enamldef TestPopup(Popup): popup:
                 index = 3
                 index ::
                     pos = items[index].lower()
-                    popup.relative_pos = convert_pos(pos)
+                    bubble.relative_pos = convert_pos(pos)
             PushButton:
                 text = 'Close'
-                clicked :: popup.close()
+                clicked :: bubble.close()
 
 
 enamldef Main(Window):
     Container:
         PushButton: btn:
-            text = "Popup"
+            text = "Show Bubble View"
             clicked ::
-                popup = TestPopup(btn)
-                popup.show()
+                bubble = MyBubbleView(btn)
+                bubble.show()
 
