@@ -7,7 +7,6 @@
 anchoring it to an underlying widget. Useful for transient dialogs.
 """
 
-import sys
 from PyQt4.QtCore import (
     Qt, QSize, QPropertyAnimation, QTimer, QPoint, QMargins,
     QEvent, pyqtSignal
@@ -30,18 +29,12 @@ class QBubbleView(QWidget):
         self._central_widget = None
 
         # Set up the window flags to get a non-bordered window
-        if sys.platform == "win32":
-            self.setWindowFlags(Qt.ToolTip |
-                                Qt.FramelessWindowHint)
-        else:
-            self.setWindowFlags(Qt.Popup |
-                                Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.ToolTip |
+                            Qt.FramelessWindowHint)
 
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self._fade_time = 50
 
         layout = QSingleWidgetLayout()
-        #layout.setSizeConstraint(QLayout.SetFixedSize)
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         layout.setContentsMargins(10,10,10,10)
         self.setLayout(layout)
@@ -51,10 +44,14 @@ class QBubbleView(QWidget):
         self.setRelativePos((0.5, 0.5))
         self.setArrowSize(20)
         self.setRadius(10)
+
+        # Show/Hide animation
+        self._fade_time = 100
+        self.__anim = anim = QPropertyAnimation(self, "windowOpacity", self)
+        anim.setDuration(self._fade_time)
  
         # track parent window movement
-        self._target = target = parent.window()
-        target.installEventFilter(self)
+        parent.window().installEventFilter(self)
  
     def centralWidget(self):
         """ Returns the central widget for the popup.
@@ -183,23 +180,21 @@ class QBubbleView(QWidget):
         """ Fade the popup in
 
         """
-        self.__a = a = QPropertyAnimation(self, "windowOpacity", self)
-        a.setDuration(self._fade_time)
-        a.setStartValue(0)
-        a.setEndValue(1)
-        a.start()
+        anim = self.__anim
+        anim.setStartValue(0)
+        anim.setEndValue(1)
+        anim.start()
         super(QBubbleView, self).show()
 
-    def hide(self):
+    def close(self):
         """ Fade the popup out
 
         """
-        self.__a = a = QPropertyAnimation(self, "windowOpacity", self)
-        a.setDuration(self._fade_time)
-        a.setStartValue(1)
-        a.setEndValue(0)
-        a.start()
-        QTimer.singleShot(self._fade_time, super(QBubbleView,self).hide)
+        anim = self.__anim
+        anim.setStartValue(1)
+        anim.setEndValue(0)
+        anim.start()
+        anim.finished.connect(super(QBubbleView, self).close)
 
     def setMinimumSize(self, width, height):
         """ Override the minimum size to account for the extra
@@ -235,7 +230,6 @@ class QBubbleView(QWidget):
 
         """
         super(QBubbleView, self).closeEvent(event)
-        self._target.removeEventFilter(self)
         self.closed.emit()
 
     def eventFilter(self, obj, event):
