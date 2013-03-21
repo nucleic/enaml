@@ -42,7 +42,6 @@ class QBubbleView(QWidget):
 
         layout = QSingleWidgetLayout()
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        layout.setContentsMargins(10,10,10,10)
         self.setLayout(layout)
 
         # Default anchoring and configuration options
