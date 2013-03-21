@@ -19,14 +19,14 @@ from PyQt4.QtGui import (
 from .q_single_widget_layout import QSingleWidgetLayout
 
 
-# Implementation of Popup widget
-class QPopupWidget(QWidget):
+# Implementation of BubbleView widget
+class QBubbleView(QWidget):
 
     #: A signal emitted when the popup is closed
     closed = pyqtSignal()
 
     def __init__(self, parent):
-        super(QPopupWidget, self).__init__(parent)
+        super(QBubbleView, self).__init__(parent)
         self._central_widget = None
 
         # Set up the window flags to get a non-bordered window
@@ -188,7 +188,7 @@ class QPopupWidget(QWidget):
         a.setStartValue(0)
         a.setEndValue(1)
         a.start()
-        super(QPopupWidget, self).show()
+        super(QBubbleView, self).show()
 
     def hide(self):
         """ Fade the popup out
@@ -199,7 +199,7 @@ class QPopupWidget(QWidget):
         a.setStartValue(1)
         a.setEndValue(0)
         a.start()
-        QTimer.singleShot(self._fade_time, super(QPopupWidget,self).hide)
+        QTimer.singleShot(self._fade_time, super(QBubbleView,self).hide)
 
     def setMinimumSize(self, width, height):
         """ Override the minimum size to account for the extra
@@ -209,7 +209,7 @@ class QPopupWidget(QWidget):
         m =  self.contentsMargins()
         width += m.right() + m.left()
         height += m.top() + m.bottom()
-        super(QPopupWidget, self).setMinimumSize(width, height)
+        super(QBubbleView, self).setMinimumSize(width, height)
 
     def paintEvent(self, event):
         """ Draw the popup, rendering the rounded path using the palette's
@@ -225,7 +225,7 @@ class QPopupWidget(QWidget):
 
     def resizeEvent(self, event):
         self._rebuild()
-        super(QPopupWidget, self).resizeEvent(event)
+        super(QBubbleView, self).resizeEvent(event)
 
     def closeEvent(self, event):
         """ Handle the QCloseEvent from the window system.
@@ -234,7 +234,7 @@ class QPopupWidget(QWidget):
         the window and then emits the 'closed' signal.
 
         """
-        super(QPopupWidget, self).closeEvent(event)
+        super(QBubbleView, self).closeEvent(event)
         self._target.removeEventFilter(self)
         self.closed.emit()
 
