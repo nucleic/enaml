@@ -12,7 +12,7 @@ from PyQt4.QtGui import QFrame, QLayout
 
 from enaml.widgets.bubble_view import ProxyBubbleView
 
-from .q_popup_widget import QPopupWidget 
+from .q_bubble_view import QBubbleView 
 from .qt_widget import QtWidget
 
 
@@ -21,7 +21,7 @@ class QtBubbleView(QtWidget, ProxyBubbleView):
 
     """
     #: A reference to the toolkit widget created by the proxy.
-    widget = Typed(QPopupWidget)
+    widget = Typed(QBubbleView)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -30,7 +30,7 @@ class QtBubbleView(QtWidget, ProxyBubbleView):
         """ Create the QBubbleView widget.
 
         """
-        self.widget = QPopupWidget(self.parent_widget())
+        self.widget = QBubbleView(self.parent_widget())
 
     def init_widget(self):
         """ Initialize the widget.
