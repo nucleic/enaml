@@ -51,13 +51,9 @@ class QBubbleView(QWidget):
         self.setArrowSize(20)
         self.setRadius(10)
 
-        # Show/Hide animation
-        self._fade_time = 100
-        self.__anim = anim = QPropertyAnimation(self, "windowOpacity", self)
-        anim.setDuration(self._fade_time)
- 
         # track parent window movement
         parent.window().installEventFilter(self)
+        parent.destroyed.connect(self.deleteLater)
  
     def centralWidget(self):
         """ Returns the central widget for the popup.
@@ -183,26 +179,6 @@ class QBubbleView(QWidget):
 
         """
         return self._relative_pos
-
-    def show(self):
-        """ Fade the popup in
-
-        """
-        anim = self.__anim
-        anim.setStartValue(0)
-        anim.setEndValue(1)
-        anim.start()
-        super(QBubbleView, self).show()
-
-    def close(self):
-        """ Fade the popup out
-
-        """
-        anim = self.__anim
-        anim.setStartValue(1)
-        anim.setEndValue(0)
-        anim.start()
-        anim.finished.connect(super(QBubbleView, self).close)
 
     def setMinimumSize(self, width, height):
         """ Override the minimum size to account for the extra
