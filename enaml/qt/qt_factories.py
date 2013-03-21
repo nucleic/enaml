@@ -55,6 +55,11 @@ def dock_pane_factory():
     return QtDockPane
 
 
+def dual_slider_factory():
+    from .qt_dual_slider import QtDualSlider
+    return QtDualSlider
+
+
 def field_factory():
     from .qt_field import QtField
     return QtField
@@ -251,6 +256,7 @@ QT_FACTORIES = {
     'DateSelector': date_selector_factory,
     'DatetimeSelector': datetime_selector_factory,
     'DockPane': dock_pane_factory,
+    'DualSlider', dual_slider_factory,
     'Field': field_factory,
     'FileDialog': file_dialog_factory,
     'FlowArea': flow_area_factory,
