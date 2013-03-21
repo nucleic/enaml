@@ -24,6 +24,12 @@ class QBubbleView(QWidget):
     #: A signal emitted when the popup is closed
     closed = pyqtSignal()
 
+    #: Enum to specify BubbleView orientation
+    AnchorTop = 0
+    AnchorBottom = 1
+    AnchorLeft = 2
+    AnchorRight = 3
+
     def __init__(self, parent):
         super(QBubbleView, self).__init__(parent)
         self._central_widget = None
@@ -40,7 +46,7 @@ class QBubbleView(QWidget):
         self.setLayout(layout)
 
         # Default anchoring and configuration options
-        self.setAnchor('bottom')
+        self.setAnchor(QBubbleView.AnchorBottom)
         self.setRelativePos((0.5, 0.5))
         self.setArrowSize(20)
         self.setRadius(10)
@@ -82,12 +88,13 @@ class QBubbleView(QWidget):
 
         Parameters
         ----------
-        anchor : String
-            Can be one of 'left', 'right', 'top', 'bottom'
+        anchor : int
+            Can be one of AnchorLeft, AnchorRight, AnchorTop, AnchorBottom
 
         """
-        if anchor not in set(['left', 'right', 'top', 'bottom']):
-            raise Exception("anchor must be one of 'left', 'right', 'top', 'bottom'")
+        if anchor not in set((QBubbleView.AnchorLeft, QBubbleView.AnchorRight, 
+                              QBubbleView.AnchorTop, QBubbleView.AnchorBottom)):
+            raise Exception("anchor must be one of AnchorLeft, AnchorRight, AnchorTop, AnchorBottom")
         self._anchor_type = anchor
         if self.isVisible(): self._rebuild()
 
@@ -96,8 +103,9 @@ class QBubbleView(QWidget):
 
         Returns
         -------
-        result : String
-            A string specifying the position relative to the parent widget
+        result : int
+            An enum specifying the position relative to the parent widget. One of 
+            AnchorLeft, AnchorRight, AnchorTop, AnchorBottom
 
         """
         return self._anchor_type
@@ -255,13 +263,13 @@ class QBubbleView(QWidget):
         size = self.size()
         margins = QMargins()
         anchor_type = self._anchor_type
-        if anchor_type == 'right':
+        if anchor_type == QBubbleView.AnchorRight:
             adj = QPoint(0, size.height()/2)
             margins.setLeft(h)
-        elif anchor_type == 'bottom':
+        elif anchor_type == QBubbleView.AnchorBottom:
             adj = QPoint(size.width()/2, 0)
             margins.setTop(h)
-        elif anchor_type == 'left':
+        elif anchor_type == QBubbleView.AnchorLeft:
             adj = QPoint(size.width(), size.height()/2)
             margins.setRight(h)
         else:
@@ -301,11 +309,11 @@ def _generate_popup_path(rect, xRadius, yRadius, arrowSize, anchor):
     awidth, aheight = arrowSize.width(), arrowSize.height()
     draw_arrow = (awidth > 0 and aheight > 0)
 
-    if anchor == 'right':
+    if anchor == QBubbleView.AnchorRight:
         rect.adjust(aheight,0, 0, 0)
-    elif anchor == 'left':
+    elif anchor == QBubbleView.AnchorLeft:
         rect.adjust(0,0,-aheight, 0)
-    elif anchor == 'bottom':
+    elif anchor == QBubbleView.AnchorBottom:
         rect.adjust(0,aheight,0, 0)
     else:
         rect.adjust(0,0,0,-aheight)
@@ -335,28 +343,28 @@ def _generate_popup_path(rect, xRadius, yRadius, arrowSize, anchor):
     path.arcMoveTo(x, y, rxx2, ryy2, 180)
     path.arcTo(x, y, rxx2, ryy2, 180, -90)
 
-    if anchor == 'bottom' and draw_arrow:
+    if anchor == QBubbleView.AnchorBottom and draw_arrow:
         path.lineTo(center.x() - awidth, y)
         path.lineTo(center.x(), y - aheight)
         path.lineTo(center.x() + awidth, y)
 
     path.arcTo(x+w-rxx2, y, rxx2, ryy2, 90, -90)
 
-    if anchor == 'left' and draw_arrow:
+    if anchor == QBubbleView.AnchorLeft and draw_arrow:
         path.lineTo(x + w, center.y() - awidth)
         path.lineTo(x + w + aheight, center.y())
         path.lineTo(x + w, center.y() + awidth)
 
     path.arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 0, -90)
 
-    if anchor == 'top' and draw_arrow:
+    if anchor == QBubbleView.AnchorTop and draw_arrow:
         path.lineTo(center.x() + awidth, y + h)
         path.lineTo(center.x(), y + h + aheight)
         path.lineTo(center.x() - awidth, y + h)
 
     path.arcTo(x, y+h-ryy2, rxx2, ryy2, 270, -90)
 
-    if anchor == 'right' and draw_arrow:
+    if anchor == QBubbleView.AnchorRight and draw_arrow:
         path.lineTo(x, center.y() + awidth)
         path.lineTo(x - aheight, center.y())
         path.lineTo(x,  center.y() - awidth)

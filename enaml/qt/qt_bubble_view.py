@@ -16,6 +16,14 @@ from .q_bubble_view import QBubbleView
 from .qt_widget import QtWidget
 
 
+ANCHOR = {
+    'left': QBubbleView.AnchorLeft,
+    'right': QBubbleView.AnchorRight,
+    'top': QBubbleView.AnchorTop,
+    'bottom': QBubbleView.AnchorBottom,
+}
+
+
 class QtBubbleView(QtWidget, ProxyBubbleView):
     """ A Qt implementation of an Enaml ProxyBubbleView.
 
@@ -103,7 +111,7 @@ class QtBubbleView(QtWidget, ProxyBubbleView):
         """ Set the size of the anchor
 
         """
-        self.widget.setAnchor(anchor)
+        self.widget.setAnchor(ANCHOR[anchor])
 
     def set_radius(self, radius):
         """ Set the size of the QBubbleView corner radii
