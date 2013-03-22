@@ -8,7 +8,7 @@
 from atom.api import AtomMeta
 
 
-class EnamlDef(AtomMeta):
+class EnamlDefMeta(AtomMeta):
     """ The type of an enamldef.
 
     This is a metaclass used to create types for the 'enamldef' keyword.
