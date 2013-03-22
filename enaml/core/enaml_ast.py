@@ -56,7 +56,7 @@ class EnamlDef(ASTNode):
     decorators = List()
 
     #: The list of body nodes for the enamldef. This will be composed
-    #: of StateDef, Binding, and ChildDef nodes.
+    #: of StorageDef, Binding, and ChildDef nodes.
     body = List()
 
 
@@ -71,7 +71,7 @@ class ChildDef(ASTNode):
     identifier = Str()
 
     #: The list of body nodes for the child definition. This will be
-    #: composed of StateDef, Binding, and ChildDef nodes.
+    #: composed of StorageDef, Binding, and ChildDef nodes.
     body = List()
 
 
@@ -97,19 +97,19 @@ class Binding(ASTNode):
     expr = Typed(OperatorExpr)
 
 
-class StateDef(ASTNode):
-    """ An AST node for 'attr' and 'event' declarations.
+class StorageDef(ASTNode):
+    """ An AST node for storage definitions.
 
     """
-    #: The kind of the state definition.
+    #: The kind of the storage definition.
     kind = Enum('attr', 'event')
 
-    #: The name of the state object being defined.
+    #: The name of the storage object being defined.
     name = Str()
 
-    #: The typename of the allowed values for the state object.
+    #: The typename of the allowed values for the storage object.
     typename = Str()
 
-    #: The default expression bound to the state object. This may
-    #: be null if the state object has no default expr binding.
+    #: The default expression bound to the storage object. This may
+    #: be null if the storage object has no default expr binding.
     expr = Typed(OperatorExpr)

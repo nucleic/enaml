@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-def _format_source_error(location):
+def _format_source_error(filename, context, lineno):
     """ A helper function which generates an error string.
 
     This function handles the work of reading the lines of the file
@@ -19,18 +19,15 @@ def _format_source_error(location):
 
     Parameters
     ----------
-    location : dict
-        A dict of location information with the following keys:
+    filename : str
+        The name of the offending file.
 
-        'filename'
-            The full string path to the offending file.
+    context : str
+        The string name of the context scope in which the error
+        occured. In the sample above, the context is 'bar'.
 
-        'lineno'
-            The integer line number of the offending line.
-
-        'block'
-            The string name of the block scope in which the error
-            occured. In the sample above, the block scope is 'bar'.
+    lineno : int
+        The integer line number of the offending line.
 
     Returns
     -------
@@ -39,10 +36,7 @@ def _format_source_error(location):
         file cannot be opened, the source lines will note be included.
 
     """
-    filename = location['filename']
-    lineno = location['lineno']
-    block = location['block']
-    text = 'File "%s", line %d, in %s()' % (filename, lineno, block)
+    text = 'File "%s", line %d, in %s()' % (filename, lineno, context)
     start_lineno = max(0, lineno - 1)
     end_lineno = start_lineno + 2
     lines = []
@@ -76,7 +70,7 @@ class DeclarativeNameError(NameError):
     tree.
 
     """
-    def __init__(self, name, location):
+    def __init__(self, name, filename, context, lineno):
         """ Initialize a DeclarativeNameError.
 
         Parameters
@@ -84,21 +78,28 @@ class DeclarativeNameError(NameError):
         name : str
             The name of global symbol which was not found.
 
-        location : dict
-            The location dict with 'filename', 'lineno', and 'block'
-            keys indicating the source location of the failure.
+        filename : str
+            The name of the file where the error occurred.
+
+        context : str
+            The context name where the error occured.
+
+        lineno : int
+            The line number where the error occurred.
 
         """
         super(DeclarativeNameError, self).__init__(name)
         self.name = name
-        self.location = location
+        self.filename = filename
+        self.context = context
+        self.lineno = lineno
 
     def __str__(self):
         """ A nicely formatted representaion of the exception.
 
         """
         text = '%s\n\n' % self.name
-        text += _format_source_error(self.location)
+        text += _format_source_error(self.filename, self.context, self.lineno)
         text += "\n\n%s: global name '%s' " % (type(self).__name__, self.name)
         text += "is not defined"
         return text
@@ -111,29 +112,36 @@ class DeclarativeError(Exception):
     indicate general errors when working with declarative types.
 
     """
-    def __init__(self, message, location):
-        """ Initialize an DeclarativeError.
+    def __init__(self, message, filename, context, lineno):
+        """ Initialize a DeclarativeError.
 
         Parameters
         ----------
         message : str
-            The message to display for the exception.
+            The message to associate with the error.
 
-        location : dict
-            The location dict with 'filename', 'lineno', and 'block'
-            keys indicating the source location of the failure.
+        filename : str
+            The name of the file where the error occurred.
+
+        context : str
+            The context name where the error occured.
+
+        lineno : int
+            The line number where the error occurred.
 
         """
         super(DeclarativeError, self).__init__(message)
         self.message = message
-        self.location = location
+        self.filename = filename
+        self.context = context
+        self.lineno = lineno
 
     def __str__(self):
         """ A nicely formatted representaion of the exception.
 
         """
         text = '\n\n'
-        text += _format_source_error(self.location)
+        text += _format_source_error(self.filename, self.context, self.lineno)
         text += "\n\n%s: %s" % (type(self).__name__, self.message)
         return text
 
@@ -145,7 +153,7 @@ class OperatorLookupError(LookupError):
     failures when looking up operators.
 
     """
-    def __init__(self, operator, location):
+    def __init__(self, operator, filename, context, lineno):
         """ Initialize an OperatorLookupError.
 
         Parameters
@@ -153,21 +161,28 @@ class OperatorLookupError(LookupError):
         operator : str
             The name of the operator which was not found.
 
-        location : dict
-            The location dict with 'filename', 'lineno', and 'block'
-            keys indicating the source location of the failure.
+        filename : str
+            The name of the file where the error occurred.
+
+        context : str
+            The context name where the error occured.
+
+        lineno : int
+            The line number where the error occurred.
 
         """
         super(OperatorLookupError, self).__init__(operator)
         self.operator = operator
-        self.location = location
+        self.filename = filename
+        self.context = context
+        self.lineno = lineno
 
     def __str__(self):
         """ A nicely formatted representaion of the exception.
 
         """
         text = '\n\n'
-        text += _format_source_error(self.location)
+        text += _format_source_error(self.filename, self.context, self.lineno)
         text += "\n\nOperatorLookupError: "
         text += "failed to load operator '%s'" % self.operator
         return text

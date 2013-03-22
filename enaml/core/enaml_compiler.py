@@ -411,7 +411,7 @@ class EnamlDefCompiler(_NodeVisitor):
             'base': node.base,
             'identifier': node.identifier,
             'docstring': node.docstring,
-            'state_defs': [],
+            'storage_defs': [],
             'bindings': [],
             'child_defs': [],
         }
@@ -419,44 +419,34 @@ class EnamlDefCompiler(_NodeVisitor):
         for item in node.body:
             self.visit(item)
 
-    def visit_StateDef(self, node):
-        state_def = {
+    def visit_StorageDef(self, node):
+        storage_def = {
             'lineno': node.lineno,
             'kind': node.kind,
             'name': node.name,
             'typename': node.typename,
         }
-        self.stack[-1]['state_defs'].append(state_def)
+        self.stack[-1]['storage_defs'].append(storage_def)
         if node.expr:
-            pyast = node.expr.ast
-            operator = node.expr.operator
-            opcompiler = COMPILE_OP_MAP[operator]
-            code = opcompiler(pyast, self.filename)
-            binding = {
-                'lineno': node.lineno,
-                'name': node.name,
-                'operator': operator,
-                'code': code,
-            }
-            self.stack[-1]['bindings'].append(binding)
+            self.visit_Binding(node)
 
     def visit_Binding(self, node):
-        pyast = node.expr.ast
-        operator = node.expr.operator
-        opcompiler = COMPILE_OP_MAP[operator]
+        opexpr = node.expr
+        pyast = opexpr.value.ast
+        opcompiler = COMPILE_OP_MAP[opexpr.operator]
         code = opcompiler(pyast, self.filename)
         binding = {
             'lineno': node.lineno,
             'name': node.name,
-            'operator': operator,
+            'operator': opexpr.operator,
         }
         if isinstance(code, tuple):
-            code, aux_code = code
+            code, auxcode = code
             binding['code'] = code
-            binding['aux_code'] = aux_code
+            binding['auxcode'] = auxcode
         else:
             binding['code'] = code
-            binding['aux_code'] = None
+            binding['auxcode'] = None
         self.stack[-1]['bindings'].append(binding)
 
     def visit_ChildDef(self, node):
@@ -465,7 +455,7 @@ class EnamlDefCompiler(_NodeVisitor):
             'typename': node.typename,
             'identifier': node.identifier,
             'filename': self.filename,
-            'state_defs': [],
+            'storage_defs': [],
             'bindings': [],
             'child_defs': [],
         }

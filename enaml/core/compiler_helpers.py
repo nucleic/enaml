@@ -10,7 +10,7 @@ from types import FunctionType
 from atom.api import Instance, Value, Event
 
 from .declarative import Declarative, d_
-from .enaml_def import EnamlDef
+from .enaml_def import EnamlDefMeta
 from .exceptions import (
     DeclarativeNameError, DeclarativeError, OperatorLookupError,
 )
@@ -185,9 +185,19 @@ def _make_enamldef_helper_(dct, f_globals):
         A new enamldef subclass of the given base class.
 
     """
-    from . import construct_tree as ctree
-    root = ctree.EnamlDef()
-    root.filename = dct['filename']
+    from .construct import EnamlDefConstruct
+    from .resolver import Resolver
+    root = EnamlDefConstruct.from_dict(dct)
+    #try:
+    Resolver.resolve(root, f_globals)
+    #except Exception as e:
+        # this squashes most of the traceback which is not relevant
+        # for the user. This handler should be moved into the compiled
+        # bytecode so that no internal code shows up in the traceback.
+    #    raise e
+    cls = root.typeclass
+    cls.__construct__ = root
+    return cls
 
     # if not isinstance(base, type) or not issubclass(base, Declarative):
     #     msg = "can't derive enamldef from '%s'"

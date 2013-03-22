@@ -483,7 +483,7 @@ def p_enamldef_body_items2(p):
 
 
 def p_enamldef_body_item1(p):
-    ''' enamldef_body_item : state_def '''
+    ''' enamldef_body_item : storage_def '''
     p[0] = p[1]
 
 
@@ -526,51 +526,51 @@ def _warn_ident(filename, lineno):
 
 
 #------------------------------------------------------------------------------
-# StateDef
+# StorageDef
 #------------------------------------------------------------------------------
-def p_state_def1(p):
-    ''' state_def : NAME NAME NEWLINE '''
+def p_storage_def1(p):
+    ''' storage_def : NAME NAME NEWLINE '''
     kind = p[1]
     if kind not in ('attr', 'event'):
         msg = "expected keyword 'attr' or 'event', got '%s' instead." % kind
         syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    p[0] = enaml_ast.StateDef(kind=kind, name=p[2], lineno=p.lineno(1))
+    p[0] = enaml_ast.StorageDef(kind=kind, name=p[2], lineno=p.lineno(1))
 
 
-def p_state_def2(p):
-    ''' state_def : NAME NAME COLON NAME NEWLINE '''
+def p_storage_def2(p):
+    ''' storage_def : NAME NAME COLON NAME NEWLINE '''
     kind = p[1]
     if kind not in ('attr', 'event'):
         msg = "expected keyword 'attr' or 'event', got '%s' instead." % kind
         syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    state_def = enaml_ast.StateDef(
+    storage_def = enaml_ast.StorageDef(
         kind=kind, name=p[2], typename=p[4], lineno=p.lineno(1)
     )
-    p[0] = state_def
+    p[0] = storage_def
 
 
-def p_state_def3(p):
-    ''' state_def : NAME NAME operator_expr '''
+def p_storage_def3(p):
+    ''' storage_def : NAME NAME operator_expr '''
     kind = p[1]
     if kind not in ('attr', 'event'):
         msg = "expected keyword 'attr' or 'event', got '%s' instead." % kind
         syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    state_def = enaml_ast.StateDef(
+    storage_def = enaml_ast.StorageDef(
         kind=kind, name=p[2], expr=p[3], lineno=p.lineno(1)
     )
-    p[0] = state_def
+    p[0] = storage_def
 
 
-def p_state_def4(p):
-    ''' state_def : NAME NAME COLON NAME operator_expr '''
+def p_storage_def4(p):
+    ''' storage_def : NAME NAME COLON NAME operator_expr '''
     kind = p[1]
     if kind not in ('attr', 'event'):
         msg = "expected keyword 'attr' or 'event', got '%s' instead." % kind
         syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    state_def = enaml_ast.StateDef(
+    storage_def = enaml_ast.StorageDef(
         kind=kind, name=p[2], typename=p[4], expr=p[5], lineno=p.lineno(1)
     )
-    p[0] = state_def
+    p[0] = storage_def
 
 
 #------------------------------------------------------------------------------
@@ -587,7 +587,7 @@ def p_child_def1(p):
 
 def p_child_def2(p):
     ''' child_def : NAME COLON binding
-                  | NAME COLON state_def '''
+                  | NAME COLON storage_def '''
     p[0] = enaml_ast.ChildDef(typename=p[1], body=[p[3]], lineno=p.lineno(1))
 
 
@@ -610,7 +610,7 @@ def p_child_def4(p):
 
 def p_child_def5(p):
     ''' child_def : NAME COLON NAME COLON binding
-                  | NAME COLON NAME COLON state_def '''
+                  | NAME COLON NAME COLON storage_def '''
     child_def = enaml_ast.ChildDef(
         typename=p[1], identifier=p[3], body=[p[5]], lineno=p.lineno(1)
     )
@@ -667,7 +667,7 @@ def p_child_def_body_item2(p):
 
 
 def p_child_def_body_item3(p):
-    ''' child_def_body_item : state_def '''
+    ''' child_def_body_item : storage_def '''
     p[0] = p[1]
 
 

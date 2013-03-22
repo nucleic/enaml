@@ -204,7 +204,7 @@ class Declarative(Object):
             for op in oplist:
                 op.notify(change)
 
-    def _populate(self, description, f_locals, f_globals):
+    def _populate(self, construct, f_locals):
         """ Populate this declarative instance from a description.
 
         This is called by the EnamlDef metaclass when an enamldef block
@@ -227,16 +227,15 @@ class Declarative(Object):
             was declared.
 
         """
-        scopename = description['scopename']
-        if scopename and description['bindings']:
-            setattr(self, scopename, f_locals)
-        ident = description['identifier']
-        if ident:
-            f_locals[ident] = self
-        for child in description['children']:
+        if construct.scope_member:
+            print 'set slot', self, f_locals
+            construct.scope_member.set_slot(self, f_locals)
+        if construct.identifier:
+            f_locals[construct.identifier] = self
+        for child in construct.child_defs:
             # Create the child without a parent so that all of the
             # children of the new object are added before this
             # object gets the child_added event.
-            instance = child['class']()
-            instance._populate(child, f_locals, f_globals)
+            instance = child.typeclass()
+            instance._populate(child, f_locals)
             instance.set_parent(self)

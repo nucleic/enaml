@@ -30,7 +30,15 @@ class EnamlDefMeta(AtomMeta):
 
         """
         self = cls.__new__(cls)
-        for descr, f_globals in cls.__descriptions__:
-            self._populate(descr, {}, f_globals)
+        c = getattr(cls, '__construct__', None)
+        if c is not None:
+            self._populate(c, {})
+            #for child in c.child_defs:
+            #    print 'creating', child.typeclass
+            #    instance = child.typeclass()
+            #    instance.set_parent(self)
+
+        #for descr, f_globals in cls.__descriptions__:
+        #    self._populate(descr, {}, f_globals)
         self.__init__(parent, **kwargs)
         return self
