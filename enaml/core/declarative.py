@@ -91,11 +91,6 @@ class Declarative(Object):
 
         """
         self.is_initialized = False
-        members = self.members()
-        for d, f_globals in self.__descriptions__:
-            scopename = d['scopename']
-            if scopename in members:
-                delattr(self, scopename)
         for op in type(self).__eval_operators__.itervalues():
             op.release(self)
         for oplist in type(self).__notify_operators__.itervalues():
@@ -118,10 +113,10 @@ class Declarative(Object):
     #--------------------------------------------------------------------------
     # Private Framework API
     #--------------------------------------------------------------------------
-    #: Class level storage for declarative description dictionaries.
-    #: This is populated by the compiler when the class is created.
-    #: It should not be modified by user code.
-    __descriptions__ = ()
+    #: Class level storage for the construct nodes. This is populated by
+    #: the compiler when the enamldef class is created. It should not be
+    #: modified by user code.
+    __constructs__ = ()
 
     #: Class level storage for eval operators. This dict is populated
     #: by the Enaml compiler when the operators are invoked at class
@@ -204,10 +199,10 @@ class Declarative(Object):
             for op in oplist:
                 op.notify(change)
 
-    def _populate(self, construct, f_locals):
-        """ Populate this declarative instance from a description.
+    def _construct(self, node, f_locals):
+        """ Construct this declarative instance from a construct node.
 
-        This is called by the EnamlDef metaclass when an enamldef block
+        This is called by the enamldef metaclass when an enamldef block
         is instantiated. For classes which are enamldef subclasses, this
         method is invoked *before* the __init__ method of that class. A
         subclass may reimplement this method to gain custom control over
@@ -215,27 +210,24 @@ class Declarative(Object):
 
         Parameters
         ----------
-        description : dict
-            The description dictionary for the instance.
+        node : ConstructNode
+            The construct node which represents the definition of
+            this declarative instance. This node will be one of two
+            types: EnamlDefConstruct or ChildDefConstruct
 
         f_locals : dict
             The dictionary of local scope identifiers for the current
-            enamldef block being populated.
-
-        f_globals : dict
-            The dictionary of globals for the scope in which the object
-            was declared.
+            enamldef block being constructed.
 
         """
-        if construct.scope_member:
-            print 'set slot', self, f_locals
-            construct.scope_member.set_slot(self, f_locals)
-        if construct.identifier:
-            f_locals[construct.identifier] = self
-        for child in construct.child_defs:
-            # Create the child without a parent so that all of the
-            # children of the new object are added before this
-            # object gets the child_added event.
-            instance = child.typeclass()
-            instance._populate(child, f_locals)
-            instance.set_parent(self)
+        # The children of this object are created without a parent so
+        # that the entire subtree is constructed before this object
+        # ever receives a child_added event.
+        if node.scope_member:
+            node.scope_member.set_slot(self, f_locals)
+        if node.identifier:
+            f_locals[node.identifier] = self
+        for child_node in node.child_defs:
+            child = child_node.typeclass()
+            child._construct(child_node, f_locals)
+            child.set_parent(self)
