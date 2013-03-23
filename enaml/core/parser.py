@@ -248,47 +248,6 @@ def validate_invertable(node, lineno, p):
         syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
 
 
-def build_attr_declaration(kw, name, attr_type, default, lineno, p):
-    """ Builds an ast node for an attr or event declaration.
-
-    Parameters
-    ----------
-    kw : string
-        The keyword used in the declaration. A syntax error is raised if
-        this is not 'attr' or 'event'.
-
-    name : string
-        The name of the attribute or event being declared.
-
-    attr_type : str or None
-        The type being declared, or None if not using a type.
-
-    default : AttributeBinding or None
-        The default attribute binding or None if not supply the default.
-
-    lineno : int
-        The line number of the declaration.
-
-    p : Yacc Production
-        The Ply object passed to the parser rule. This is used to
-        extract the filename for syntax error reporting.
-
-    Returns
-    -------
-    result : AttributeDeclaration
-        The Enaml AttributeDeclaration ast node.
-
-    """
-    if kw not in ('attr', 'event'):
-        msg = "expected keyword 'attr' or 'event', got '%s' instead." % kw
-        syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
-    is_event = kw == 'event'
-    res = enaml_ast.AttributeDeclaration(
-        name, attr_type, default, is_event, lineno,
-    )
-    return res
-
-
 class CommaSeparatedList(object):
     """ A parsing helper to delineate a comma separated list.
 
@@ -383,7 +342,7 @@ def p_enaml_module_item2(p):
     for decnode in p[1]:
         expr = ast.Expression()
         expr.body = decnode
-        python = enaml_ast.Python(ast=expr, lineno=expr.lineno)
+        python = enaml_ast.Python(ast=expr, lineno=decnode.lineno)
         decorators.append(python)
     enamldef.decorators = decorators
     p[0] = enamldef
