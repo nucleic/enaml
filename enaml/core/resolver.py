@@ -11,21 +11,11 @@ from types import FunctionType
 from atom.api import Value, Event, Instance
 
 from .declarative import Declarative, d_
-from .enaml_def import EnamlDefMeta
+from .enamldef_meta import EnamlDefMeta
 from .exceptions import (
     DeclarativeNameError, DeclarativeError, OperatorLookupError
 )
 from .operators import __get_operators as get_operators
-
-
-class ScopeMember(Value):
-    """ A Value member subclass for storing local scope.
-
-    This empty subclass allows the program to distinguish a hidden
-    scope member from a normally accessible value member.
-
-    """
-    __slots__ = ()
 
 
 class Resolver(object):
@@ -67,6 +57,7 @@ class Resolver(object):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    #: A generator expression which yields unique scope names.
     _scopenames = ('__locals_%d__' % i for i in itertools.count())
 
     def __init__(self, node, f_globals):
@@ -198,7 +189,7 @@ class Resolver(object):
                 if node.bindings:
                     klass = node.typeclass
                     members = klass.members()
-                    storage = ScopeMember()
+                    storage = Value()
                     storage.set_name(scopename)
                     storage.set_index(len(members))
                     members[scopename] = storage
@@ -238,6 +229,7 @@ class Resolver(object):
                     new.copy_static_observers(m)
                 else:
                     new.set_index(len(members))
+                new.set_name(storage.name)
                 members[storage.name] = new
                 setattr(klass, storage.name, new)
             stack.extend(node.child_defs)
@@ -252,5 +244,4 @@ class Resolver(object):
             klass = node.typeclass
             for binding in node.bindings:
                 binding.operator_func(klass, binding)
-                print 'binding', klass, binding.name
             stack.extend(node.child_defs)
