@@ -44,16 +44,16 @@ class OperatorBase(object):
         """
         scope_member = self.binding.parent.scope_member
         if scope_member:
-            return scope_member.get_slot(owner)
+            return scope_member.get_slot(owner) or {}
         return {}
 
     def release(self, owner):
         """ Release any resources held for the given owner.
 
         This method is called by a declarative object when it is being
-        destroyed. It provides an opportunity for the operator to clean
-        up any owner-specific state it may be holding. By default, this
-        method is a no-op.
+        destroyed. It releases the strong reference the owner may have
+        to the local scope. Subclasses should reimplement this method
+        if more control is needed.
 
         Parameters
         ----------
@@ -61,7 +61,9 @@ class OperatorBase(object):
             The declarative object being destroyed.
 
         """
-        pass
+        scope_member = self.binding.parent.scope_member
+        if scope_member:
+            scope_member.set_slot(owner, None)
 
 
 class OpSimple(OperatorBase):
@@ -275,6 +277,7 @@ class OpSubscribe(OperatorBase):
         """ Release the resources held for the given owner.
 
         """
+        super(OpSubscribe, self).release(owner)
         observer = self.observers.pop(owner, None)
         if observer is not None:
             observer.owner = None
@@ -313,24 +316,31 @@ if os.environ.get('ENAML_TRAITS_SUPPORT'):
     from .traits_tracer import TraitsTracer
 
     class TraitsObserver(SubscriptionObserver):
+
         __slots__ = '__weakref__'
+
         def handler(self):
             owner = self.owner
             if owner is not None:
                 name = self.name
                 setattr(owner, name, owner._run_eval_operator(name))
 
-    class OpSubscribe(OpSubscribe):
-        __slots__ = ()
+    class OpSubscribe(OperatorBase):
+
+        __slots__ = 'observers'
+
         def __init__(self, binding):
-            OperatorBase.__init__(self, binding)
+            super(OpSubscribe, self).__init__(binding)
             self.observers = {}
+
         def release(self, owner):
+            super(OpSubscribe, self).release(owner)
             obs = self.observers.pop(owner, None)
             if obs is not None:
                 atom_ob, traits_ob = obs
                 atom_ob.owner = None
                 traits_ob.owner = None
+
         def eval(self, owner):
             tracer = TraitsTracer()
             overrides = {'nonlocals': Nonlocals(owner, tracer), 'self': owner}
@@ -575,10 +585,8 @@ def operator_context(ops):
 
     """
     __operator_stack.append(ops)
-    print __operator_stack
     yield
     __operator_stack.pop()
-    print __operator_stack
 
 
 def __get_default_operators():
