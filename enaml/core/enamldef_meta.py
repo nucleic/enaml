@@ -9,11 +9,7 @@ from atom.api import AtomMeta
 
 
 class EnamlDefMeta(AtomMeta):
-    """ The type of an enamldef.
-
-    This is a metaclass used to create types for the 'enamldef' keyword.
-    The metaclass serves primarily to distinguish between types created
-    by 'enamldef' and those created by traditional subclassing.
+    """ The metaclass which creates types for the 'enamldef' keyword.
 
     """
     def __repr__(cls):
@@ -25,20 +21,9 @@ class EnamlDefMeta(AtomMeta):
     def __call__(cls, parent=None, **kwargs):
         """ A custom instance creation routine for EnamlDef classes.
 
-        This constructor will populate an instance before calling
-        the __init__ method on the instance.
-
         """
         self = cls.__new__(cls)
-        c = getattr(cls, '__construct__', None)
-        if c is not None:
-            self._populate(c, {})
-            #for child in c.child_defs:
-            #    print 'creating', child.typeclass
-            #    instance = child.typeclass()
-            #    instance.set_parent(self)
-
-        #for descr, f_globals in cls.__descriptions__:
-        #    self._populate(descr, {}, f_globals)
+        for node in cls.__constructs__:
+            self._construct(node, {})
         self.__init__(parent, **kwargs)
         return self
