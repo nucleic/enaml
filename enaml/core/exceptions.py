@@ -5,6 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+
+
+# TODO Expose hooks for source code open for db-based source systems
 def _format_source_error(filename, context, lineno):
     """ A helper function which generates an error string.
 
@@ -62,7 +65,14 @@ def _format_source_error(filename, context, lineno):
     return text
 
 
-class DeclarativeNameError(NameError):
+class DeclarativeException(Exception):
+    """ A Sentinel exception type for declarative exceptions.
+
+    """
+    pass
+
+
+class DeclarativeNameError(NameError, DeclarativeException):
     """ A NameError subclass which nicely formats the exception.
 
     This class is intended for used by Declarative and its subclasses to
@@ -105,7 +115,7 @@ class DeclarativeNameError(NameError):
         return text
 
 
-class DeclarativeError(Exception):
+class DeclarativeError(DeclarativeException):
     """ A Exception subclass which nicely formats the exception.
 
     This class is intended for use by the Enaml compiler machinery to
@@ -146,7 +156,7 @@ class DeclarativeError(Exception):
         return text
 
 
-class OperatorLookupError(LookupError):
+class OperatorLookupError(LookupError, DeclarativeException):
     """ A LookupError subclass which nicely formats the exception.
 
     This class is intended for use by Enaml compiler machinery to report
