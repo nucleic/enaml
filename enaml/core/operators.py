@@ -333,7 +333,7 @@ if os.environ.get('ENAML_TRAITS_SUPPORT'):
 
         def __init__(self, binding):
             super(OpSubscribe, self).__init__(binding)
-            self.observers = {}
+            self.observers = sortedmap()
 
         def release(self, owner):
             super(OpSubscribe, self).release(owner)
