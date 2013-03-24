@@ -64,7 +64,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         if d.status_tip:
             self.set_status_tip(d.status_tip)
         self.set_enabled(d.enabled)
-        self.set_visible(d.visible)
+        if not d.visible:
+            self.set_visible(d.visible)
 
     #--------------------------------------------------------------------------
     # ProxyWidget API
