@@ -160,6 +160,11 @@ def page_factory():
     return QtPage
 
 
+def permanent_status_widgets_factory():
+    from .qt_permanent_status_widgets import QtPermanentStatusWidgets
+    return QtPermanentStatusWidgets
+
+
 def push_button_factory():
     from .qt_push_button import QtPushButton
     return QtPushButton
@@ -215,6 +220,11 @@ def stack_item_factory():
     return QtStackItem
 
 
+def status_bar_factory():
+    from .qt_status_bar import QtStatusBar
+    return QtStatusBar
+
+
 def table_view_factory():
     from .qt_table_view import QtTableView
     return QtTableView
@@ -233,6 +243,11 @@ def time_selector_factory():
 def tool_bar_factory():
     from .qt_tool_bar import QtToolBar
     return QtToolBar
+
+
+def transient_status_widgets_factory():
+    from .qt_transient_status_widgets import QtTransientStatusWidgets
+    return QtTransientStatusWidgets
 
 
 def web_view_factory():
@@ -277,6 +292,7 @@ QT_FACTORIES = {
     'MultilineField': multiline_field_factory,
     'Notebook': notebook_factory,
     'Page': page_factory,
+    'PermanentStatusWidgets': permanent_status_widgets_factory,
     'PushButton': push_button_factory,
     'ProgressBar': progress_bar_factory,
     'RadioButton': radio_button_factory,
@@ -288,9 +304,11 @@ QT_FACTORIES = {
     'Splitter': splitter_factory,
     'Stack': stack_factory,
     'StackItem': stack_item_factory,
+    'StatusBar': status_bar_factory,
     'TableView': table_view_factory,
     'TimeSelector': time_selector_factory,
     'ToolBar': tool_bar_factory,
+    'TransientStatusWidgets': transient_status_widgets_factory,
     'WebView': web_view_factory,
     'Window': window_factory,
 }
