@@ -86,6 +86,9 @@ class DynamicScope(object):
         self._f_globals = f_globals
         self._listener = listener
 
+    #: A sentinel used for testing for missing dict items.
+    _sentinel = object()
+
     def __getitem__(self, name):
         """ Lookup and return an item from the scope.
 
@@ -100,18 +103,19 @@ class DynamicScope(object):
             The named item is not contained in the scope.
 
         """
-        dct = self._overrides
-        if name in dct:
-            return dct[name]
-        dct = self._f_locals
-        if name in dct:
-            return dct[name]
-        dct = self._f_globals
-        if name in dct:
-            return dct[name]
-        dct = dct['__builtins__']
-        if name in dct:
-            return dct[name]
+        s = self._sentinel
+        v = self._overrides.get(name, s)
+        if v is not s:
+            return v
+        v = self._f_locals.get(name, s)
+        if v is not s:
+            return v
+        v = self._f_globals.get(name, s)
+        if v is not s:
+            return v
+        v = self._f_globals['__builtins__'].get(name, s)
+        if v is not s:
+            return v
         parent = self._obj
         while parent is not None:
             try:

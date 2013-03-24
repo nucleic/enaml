@@ -156,8 +156,9 @@ class ToolkitObject(Declarative):
         """
         super(ToolkitObject, self).destroy()
         self.proxy_is_active = False
-        self.proxy.destroy()
-        del self.proxy
+        if self.proxy:
+            self.proxy.destroy()
+            del self.proxy
 
     def child_added(self, child):
         """ A reimplemented child added event handler.
