@@ -2607,11 +2607,34 @@ def p_arglist5(p):
     p[0] = Arguments(kwargs=p[2])
 
 
+def _validate_arglist_list(items, lexer):
+    kwnames = set()
+    saw_kw = False
+    for item in items:
+        if isinstance(item, ast.keyword):
+            saw_kw = True
+            if item.arg in kwnames:
+                msg = 'keyword argument repeated'
+                tok = FakeToken(lexer, item.lineno)
+                syntax_error(msg, tok)
+            kwnames.add(item.arg)
+        elif saw_kw:
+            msg = 'non-keyword arg after keyword arg'
+            tok = FakeToken(lexer, item.lineno)
+            syntax_error(msg, tok)
+
+
 def p_arglist6(p):
     ''' arglist : arglist_list argument '''
     args = []
     kws = []
-    for arg in (p[1] + [p[2]]):
+    arglist = p[1]
+    arg = p[2]
+    # TODO get the proper linenumber for the argument
+    arg.lineno = arglist[-1].lineno
+    items = arglist + [arg]
+    _validate_arglist_list(items, p.lexer.lexer)
+    for arg in items:
         if isinstance(arg, ast.keyword):
             kws.append(arg)
         else:
@@ -2623,7 +2646,12 @@ def p_arglist7(p):
     ''' arglist : arglist_list argument COMMA '''
     args = []
     kws = []
-    for arg in (p[1] + [p[2]]):
+    arglist = p[1]
+    arg = p[2]
+    arg.lineno = p.lineno(3)
+    items = arglist + [arg]
+    _validate_arglist_list(items, p.lexer.lexer)
+    for arg in items:
         if isinstance(arg, ast.keyword):
             kws.append(arg)
         else:
@@ -2635,7 +2663,9 @@ def p_arglist8(p):
     ''' arglist : arglist_list STAR test '''
     args = []
     kws = []
-    for arg in p[1]:
+    items = p[1]
+    _validate_arglist_list(items, p.lexer.lexer)
+    for arg in items:
         if isinstance(arg, ast.keyword):
             kws.append(arg)
         else:
@@ -2647,7 +2677,9 @@ def p_arglist9(p):
     ''' arglist : arglist_list STAR test COMMA DOUBLESTAR test '''
     args = []
     kws = []
-    for arg in p[1]:
+    items = p[1]
+    _validate_arglist_list(items, p.lexer.lexer)
+    for arg in items:
         if isinstance(arg, ast.keyword):
             kws.append(arg)
         else:
@@ -2659,7 +2691,9 @@ def p_arglist10(p):
     ''' arglist : arglist_list DOUBLESTAR test '''
     args = []
     kws = []
-    for arg in p[1]:
+    items = p[1]
+    _validate_arglist_list(items, p.lexer.lexer)
+    for arg in items:
         if isinstance(arg, ast.keyword):
             kws.append(arg)
         else:
@@ -2691,34 +2725,50 @@ def p_arglist12(p):
 
 def p_arglist13(p):
     ''' arglist : STAR test COMMA arglist_list argument '''
+    kwnames = set()
     keywords = p[4] + [p[5]]
     for kw in keywords:
         if not isinstance(kw, ast.keyword):
             msg = 'only named arguments may follow *expression'
             tok = FakeToken(p.lexer.lexer, p.lineno(1))
             syntax_error(msg, tok)
+        if kw.arg in kwnames:
+            msg = 'keyword argument repeated'
+            tok = FakeToken(p.lexer.lexer, kw.lineno)
+            syntax_error(msg, tok)
+        kwnames.add(kw.arg)
     p[0] = Arguments(keywords=keywords, starargs=p[2])
 
 
 def p_arglist14(p):
     ''' arglist : STAR test COMMA arglist_list argument COMMA DOUBLESTAR test '''
+    kwnames = set()
     keywords = p[4] + [p[5]]
     for kw in keywords:
         if not isinstance(kw, ast.keyword):
             msg = 'only named arguments may follow *expression'
             tok = FakeToken(p.lexer.lexer, p.lineno(1))
             syntax_error(msg, tok)
+        if kw.arg in kwnames:
+            msg = 'keyword argument repeated'
+            tok = FakeToken(p.lexer.lexer, kw.lineno)
+            syntax_error(msg, tok)
+        kwnames.add(kw.arg)
     p[0] = Arguments(keywords=keywords, starargs=p[2], kwargs=p[8])
 
 
 def p_arglist_list1(p):
     ''' arglist_list : argument COMMA '''
-    p[0] = [p[1]]
+    arg = p[1]
+    arg.lineno = p.lineno(2)
+    p[0] = [arg]
 
 
 def p_arglist_list2(p):
     ''' arglist_list : arglist_list argument COMMA '''
-    p[0] = p[1] + [p[2]]
+    arg = p[2]
+    arg.lineno = p.lineno(3)
+    p[0] = p[1] + [arg]
 
 
 def p_argument1(p):
@@ -2736,9 +2786,12 @@ def p_argument2(p):
 def p_argument3(p):
     ''' argument : test EQUAL test '''
     arg = p[1]
-    assert isinstance(arg, ast.Name), 'Keyword arg must be a Name.'
+    if not isinstance(arg, ast.Name):
+        msg = 'Keyword arg must be a Name.'
+        tok = FakeToken(p.lexer.lexer, p.lineno(2))
+        syntax_error(msg, tok)
     value = p[3]
-    p[0] = ast.keyword(arg=arg.id, value=value)
+    p[0] = ast.keyword(arg=arg.id, value=value, lineno=p.lineno(2))
 
 
 def p_list_for1(p):
