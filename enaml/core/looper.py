@@ -9,12 +9,22 @@ from collections import Iterable
 
 from atom.api import Instance, List
 
-from .declarative import d_
-from .templated import Templated
+from .declarative import Declarative, d_
 
 
-class Looper(Templated):
-    """ A templated object that repeats its templates over an iterable.
+def populate_looper(looper, node, f_locals):
+    """ The populate function for the Looper class.
+
+    """
+    if node.scope_member:
+        node.scope_member.set_slot(looper, f_locals)
+    if node.identifier:
+        f_locals[node.identifier] = looper
+    looper._cdata.append((node, f_locals))
+
+
+class Looper(Declarative):
+    """ A declarative object that repeats its children over an iterable.
 
     The children of a `Looper` are used as a template when creating new
     objects for each item in the given `iterable`. Each iteration of the
@@ -39,6 +49,19 @@ class Looper(Templated):
     #: items generated during that iteration. This list should not be
     #: manipulated directly by user code.
     items = List()
+
+    #: Private data storage for the looper.
+    _cdata = List()
+
+    @classmethod
+    def populator_func(cls):
+        """ Get the populator function for the Looper class.
+
+        This returns a populator function which intercepts the creation
+        of the child items and defers it until the initialization pass.
+
+        """
+        return populate_looper
 
     #--------------------------------------------------------------------------
     # Lifetime API
@@ -76,6 +99,7 @@ class Looper(Templated):
                         item.destroy()
         del self.iterable
         del self.items
+        del self._cdata
 
     #--------------------------------------------------------------------------
     # Private API
@@ -99,29 +123,19 @@ class Looper(Templated):
         """
         items = []
         iterable = self.iterable
-        templates = self._templates
+        cdata = self._cdata
 
-        if iterable and len(templates) > 0:
+        if iterable and len(cdata) > 0:
             for loop_index, loop_item in enumerate(iterable):
-                # Each template is a 3-tuple of f_locals, globals, and
-                # list of description dicts. There will only typically be
-                # one template, but more can exist if the looper was
-                # subclassed via enamldef to provided default children.
                 iteration = []
-                for f_locals, f_globals, descriptions in templates:
-                    # Each iteration of the loop gets a new scope which
-                    # is the union of the existing scope and the loop
-                    # variables. This also allows the loop children to
-                    # add their own independent f_locals. The loop
-                    # items are constructed with no parent since they
-                    # are parented via `insert_children` later on.
-                    new_scope = f_locals.copy()
-                    new_scope['loop_index'] = loop_index
-                    new_scope['loop_item'] = loop_item
-                    for descr in descriptions:
-                        instance = descr['class']()
-                        instance._populate(descr, new_scope, f_globals)
-                        iteration.append(instance)
+                for node, f_locals in cdata:
+                    new_locals = f_locals.copy()
+                    new_locals['loop_index'] = loop_index
+                    new_locals['loop_item'] = loop_item
+                    for child_node in node.child_defs:
+                        child = child_node.typeclass()
+                        child_node.populate(child, child_node, new_locals)
+                        iteration.append(child)
                 items.append(iteration)
 
         for iteration in self.items:
