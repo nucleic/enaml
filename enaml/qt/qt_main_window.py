@@ -18,6 +18,7 @@ from .q_deferred_caller import deferredCall
 from .qt_container import QtContainer
 from .qt_dock_pane import QtDockPane
 from .qt_menu_bar import QtMenuBar
+from .qt_status_bar import QtStatusBar
 from .qt_tool_bar import QtToolBar
 from .qt_window import QtWindow
 
@@ -122,6 +123,7 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         widget = self.widget
         widget.setMenuBar(self.menu_bar())
         widget.setCentralWidget(self.central_widget())
+        widget.setStatusBar(self.status_bar())
         for d in self.dock_panes():
             widget.addDockWidget(d.dockArea(), d)
         for d in self.tool_bars():
@@ -153,6 +155,14 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         for d in self.declaration.dock_panes():
             yield d.proxy.widget or None
 
+    def status_bar(self):
+        """ Get the status bar widget defined for the main window.
+
+        """
+        d = self.declaration.status_bar()
+        if d is not None:
+            return d.proxy.widget or None
+
     def tool_bars(self):
         """ Get the QToolBar widgets defined for the main window.
 
@@ -174,6 +184,9 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         elif isinstance(child, QtDockPane):
             dock_widget = child.widget
             self.widget.addDockWidget(dock_widget.dockArea(), dock_widget)
+        elif isinstance(child, QtStatusBar):
+            # FIXME Qt will delete the old status bar
+            self.widget.setStatusBar(self.status_bar())
         elif isinstance(child, QtToolBar):
             # There are two hacks involved in adding a tool bar. The
             # first is the same hack that is perfomed in the layout
@@ -208,5 +221,8 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
             self.widget.setCentralWidget(self.central_widget())
         elif isinstance(child, QtMenuBar):
             self.widget.setMenuBar(self.menu_bar())
+        elif isinstance(child, QtStatusBar):
+            # FIXME Qt will delete the old status bar
+            self.widget.setStatusBar(self.status_bar())
         else:
             super(QtMainWindow, self).child_removed(child)

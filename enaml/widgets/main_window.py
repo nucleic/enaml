@@ -9,6 +9,7 @@ from atom.api import Typed, ForwardTyped
 
 from .dock_pane import DockPane
 from .menu_bar import MenuBar
+from .status_bar import StatusBar
 from .tool_bar import ToolBar
 from .window import Window, ProxyWindow
 
@@ -51,6 +52,17 @@ class MainWindow(Window):
 
         """
         return [c for c in self.children if isinstance(c, DockPane)]
+
+    def status_bar(self):
+        """ Get the status bar defined as a child on the window.
+
+        The last StatuBar declared as a child is used as the official
+        status bar of the window.
+
+        """
+        for child in reversed(self.children):
+            if isinstance(child, StatusBar):
+                return child
 
     def tool_bars(self):
         """ Get the tool bars defined as children on the window.
