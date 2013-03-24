@@ -108,6 +108,10 @@ class EnamlDefConstruct(ConstructNode):
     #: This is updated during the resolution passes over the tree.
     scope_member = Typed(Member)
 
+    #: The callable to invoke to populate an instance for the node.
+    #: This is updated during the resolution passes over the tree.
+    populate = Callable()
+
     @classmethod
     def from_dict(cls, dct):
         self = super(EnamlDefConstruct, cls).from_dict(dct)
@@ -220,6 +224,10 @@ class ChildDefConstruct(ConstructNode):
     #: The member to use for accessing the local scope of an instance.
     #: This is updated during the resolution passes over the tree.
     scope_member = Typed(Member)
+
+    #: The callable to invoke to populate an instance for the node.
+    #: This is updated during the resolution passes over the tree.
+    populate = Callable()
 
     @classmethod
     def from_dict(cls, dct):

@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Str, Event, null
 
+from .declarative_meta import DeclarativeMeta
 from .object import Object, flag_generator, flag_property
 
 
@@ -55,17 +56,19 @@ class Declarative(Object):
     visual representation; that functionality is added by subclasses.
 
     """
+    __metaclass__ = DeclarativeMeta
+
     #: Export the 'name' attribute as a declarative member.
     name = d_(Str())
-
-    #: A property which gets and sets the initialized flag. This should
-    #: not be manipulated directly by user code.
-    is_initialized = flag_property(INITIALIZED_FLAG)
 
     #: An event fired when an object is initialized. It is triggered
     #: once during the object lifetime, at the end of the initialize
     #: method.
     initialized = d_(Event(), writable=False)
+
+    #: A property which gets and sets the initialized flag. This should
+    #: not be manipulated directly by user code.
+    is_initialized = flag_property(INITIALIZED_FLAG)
 
     def initialize(self):
         """ Initialize this object all of its children recursively.
@@ -113,52 +116,6 @@ class Declarative(Object):
     #--------------------------------------------------------------------------
     # Private Framework API
     #--------------------------------------------------------------------------
-    #: Class level storage for the construct nodes. This is populated by
-    #: the compiler when the enamldef class is created. It should not be
-    #: modified by user code.
-    __constructs__ = ()
-
-    #: Class level storage for eval operators. This dict is populated
-    #: by the Enaml compiler when the operators are invoked at class
-    # creation time. It should not be modified by user code.
-    __eval_operators__ = {}
-
-    #: Class level storage for notify operators. This dict is populated
-    #: by the Enaml compiler when the operators are invoked at class
-    # creation time. It should not be modified by user code.
-    __notify_operators__ = {}
-
-    @classmethod
-    def _eval_operators(cls):
-        """ Get the eval operators for this class.
-
-        This classmethod will ensure the dict returned is owned by
-        the class. The returned value should not be modified by user
-        code.
-
-        """
-        if '__eval_operators__' in cls.__dict__:
-            return cls.__eval_operators__
-        exprs = cls.__eval_operators__ = cls.__eval_operators__.copy()
-        return exprs
-
-    @classmethod
-    def _notify_operators(cls):
-        """ Get the notify operators for this class.
-
-        This classmethod will ensure the dict returned is owned by
-        the class. The returned value should not be modified by user
-        code.
-
-        """
-        if '__notify_operators__' in cls.__dict__:
-            return cls.__notify_operators__
-        ops = {}
-        for key, oplist in cls.__notify_operators__.iteritems():
-            ops[key] = oplist[:]
-        cls.__notify_operators__ = ops
-        return ops
-
     def _run_eval_operator(self, name):
         """ Run the eval operator attached to the given name.
 
@@ -198,36 +155,3 @@ class Declarative(Object):
         if oplist is not None:
             for op in oplist:
                 op.notify(change)
-
-    def _construct(self, node, f_locals):
-        """ Construct this declarative instance from a construct node.
-
-        This is called by the enamldef metaclass when an enamldef block
-        is instantiated. For classes which are enamldef subclasses, this
-        method is invoked *before* the __init__ method of that class. A
-        subclass may reimplement this method to gain custom control over
-        how the children for its instances are created.
-
-        Parameters
-        ----------
-        node : ConstructNode
-            The construct node which represents the definition of
-            this declarative instance. This node will be one of two
-            types: EnamlDefConstruct or ChildDefConstruct
-
-        f_locals : dict
-            The dictionary of local scope identifiers for the current
-            enamldef block being constructed.
-
-        """
-        # The children of this object are created without a parent so
-        # that the entire subtree is constructed before this object
-        # ever receives a child_added event.
-        if node.scope_member:
-            node.scope_member.set_slot(self, f_locals)
-        if node.identifier:
-            f_locals[node.identifier] = self
-        for child_node in node.child_defs:
-            child = child_node.typeclass()
-            child._construct(child_node, f_locals)
-            child.set_parent(self)

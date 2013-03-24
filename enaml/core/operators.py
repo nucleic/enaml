@@ -8,6 +8,7 @@
 from contextlib import contextmanager
 
 from atom.api import DefaultValue
+from atom.datastructures.api import sortedmap
 
 from .dynamic_scope import DynamicScope, Nonlocals
 from .exceptions import DeclarativeError
@@ -271,7 +272,7 @@ class OpSubscribe(OperatorBase):
 
         """
         super(OpSubscribe, self).__init__(binding)
-        self.observers = {}
+        self.observers = sortedmap()
 
     def release(self, owner):
         """ Release the resources held for the given owner.
@@ -297,8 +298,9 @@ class OpSubscribe(OperatorBase):
 
         # Invalidate the old notifier so that it gets cleaned up.
         observers = self.observers
-        if owner in observers:
-            observers[owner].owner = None
+        old = observers.get(owner)
+        if old is not None:
+            old.owner = None
 
         # Create a new observer to bind to the current change set.
         observer = SubscriptionObserver(owner, self.binding.name)
@@ -351,8 +353,9 @@ if os.environ.get('ENAML_TRAITS_SUPPORT'):
             )
             result = call_func(func, (tracer,), {}, scope)
             observers = self.observers
-            if owner in observers:
-                atom_ob, traits_ob = observers[owner]
+            old = observers.get(owner)
+            if old is not None:
+                atom_ob, traits_ob = old
                 atom_ob.owner = None
                 traits_ob.owner = None
             atom_ob = SubscriptionObserver(owner, self.binding.name)
@@ -494,7 +497,7 @@ def bind_read_operator(klass, binding, operator):
 
     """
     member = assert_d_member(klass, binding, True, False)
-    klass._notify_operators().setdefault(binding.name, []).append(operator)
+    klass.notify_operators().setdefault(binding.name, []).append(operator)
     member.add_static_observer('_run_notify_operator')
 
 
@@ -515,7 +518,7 @@ def bind_write_operator(klass, binding, operator):
     """
     member = assert_d_member(klass, binding, False, True)
     name = binding.name
-    klass._eval_operators()[name] = operator
+    klass.eval_operators()[name] = operator
     mode = (DefaultValue.ObjectMethod_Name, '_run_eval_operator')
     if member.default_value_mode != mode:
         clone = member.clone()

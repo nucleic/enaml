@@ -5,10 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import AtomMeta
+from atom.datastructures.api import sortedmap
+
+from .declarative_meta import DeclarativeMeta
 
 
-class EnamlDefMeta(AtomMeta):
+class EnamlDefMeta(DeclarativeMeta):
     """ The metaclass which creates types for the 'enamldef' keyword.
 
     """
@@ -24,6 +26,6 @@ class EnamlDefMeta(AtomMeta):
         """
         self = cls.__new__(cls)
         for node in cls.__constructs__:
-            self._construct(node, {})
+            node.populate(self, node, sortedmap())
         self.__init__(parent, **kwargs)
         return self
