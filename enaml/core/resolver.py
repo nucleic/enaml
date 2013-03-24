@@ -147,6 +147,7 @@ class Resolver(object):
         dct['__doc__'] = node.docstring
         typeclass = EnamlDefMeta(node.typename, (node.baseclass,), dct)
         node.typeclass = typeclass
+        node.populate = typeclass.populator_func()
         for child in node.child_defs:
             self._create_child_classes(child)
 
@@ -159,6 +160,7 @@ class Resolver(object):
             dct['__module__'] = self._f_globals.get('__name__', '')
             base = node.typeclass
             node.typeclass = type(base)(node.typename, (base,), dct)
+        node.populate = node.typeclass.populator_func()
         for child in node.child_defs:
             self._create_child_classes(child)
 
@@ -166,37 +168,22 @@ class Resolver(object):
     # Locals Storage Creation
     #--------------------------------------------------------------------------
     def _create_local_storage(self):
-        # Make a pass to determine if storage is actually needed. If
-        # no identifiers are used for the block, no storage needs to
-        # be allocated.
-        has_locals = False
+        # Only classes which have operator bindings need local storage.
+        scopename = self._scopenames.next()
         stack = [self._root]
         while stack:
             node = stack.pop()
-            if node.identifier:
-                has_locals = True
-                break
+            if node.bindings:
+                klass = node.typeclass
+                members = klass.members()
+                storage = Value()
+                storage.set_name(scopename)
+                storage.set_index(len(members))
+                members[scopename] = storage
+                node.scope_member = storage
+                # The member is not added to the class so that it
+                # remains hidden from the user and object namespace
             stack.extend(node.child_defs)
-
-        # If local scope is being used, add storage space to the classes
-        # which have expression bindings. These classes will have already
-        # been subclassed, so adding new members requires no checking.
-        if has_locals:
-            scopename = self._scopenames.next()
-            stack = [self._root]
-            while stack:
-                node = stack.pop()
-                if node.bindings:
-                    klass = node.typeclass
-                    members = klass.members()
-                    storage = Value()
-                    storage.set_name(scopename)
-                    storage.set_index(len(members))
-                    members[scopename] = storage
-                    node.scope_member = storage
-                    # The member is not added to the class so that it
-                    # remains hidden from the user and object namespace
-                stack.extend(node.child_defs)
 
     #--------------------------------------------------------------------------
     # User Storage Creation
