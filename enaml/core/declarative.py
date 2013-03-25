@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Str, Event, null
+from atom.api import Str, Event
 
 from .declarative_meta import DeclarativeMeta
 from .object import Object, flag_generator, flag_property
@@ -129,15 +129,15 @@ class Declarative(Object):
 
         Returns
         -------
-        result : object or null
-            The result of the evaluated operator, or null if there
-            is no eval operator bound for the given name.
+        result : object or NotImplemented
+            The result of the evaluated operator, or NotImplemented if
+            there is no eval operator bound for the given name.
 
         """
         op = type(self).__eval_operators__.get(name)
         if op is not None:
             return op.eval(self)
-        return null
+        return NotImplemented
 
     def _run_notify_operator(self, change):
         """ Invoke a bound notify operator for the given change.

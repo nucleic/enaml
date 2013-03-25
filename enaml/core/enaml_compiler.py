@@ -432,7 +432,7 @@ class EnamlDefCompiler(_NodeVisitor):
             'typename': node.typename,
         }
         self.stack[-1]['storage_defs'].append(storage_def)
-        if node.expr:
+        if node.expr is not None:
             self.visit_Binding(node)
 
     def visit_Binding(self, node):

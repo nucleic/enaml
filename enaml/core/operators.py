@@ -136,8 +136,7 @@ class DeprecatedNotificationEvent(object):
         self._raise_warning()
         change = self._change
         if change['type'] == 'event':
-            from atom.catom import null
-            return null
+            return None
         return change['oldvalue']
 
     @property

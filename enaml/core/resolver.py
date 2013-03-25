@@ -117,7 +117,7 @@ class Resolver(object):
         node.operator_func = operator_func
         f_globals = self._f_globals
         node.func = FunctionType(node.code, f_globals, node.name)
-        if node.auxcode:
+        if node.auxcode is not None:
             node.auxfunc = FunctionType(node.auxcode, f_globals, node.name)
 
     def _resolve_child_globals(self, node):

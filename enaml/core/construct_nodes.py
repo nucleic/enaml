@@ -174,7 +174,7 @@ class BindingConstruct(ConstructNode):
     #: The python code object to use for the binding.
     code = Typed(CodeType)
 
-    #: The auxiliary code object for the binding. This may be null.
+    #: The auxiliary code object for the binding. This may be None.
     auxcode = Typed(CodeType)
 
     #: The function object created for 'code'.
@@ -193,8 +193,7 @@ class BindingConstruct(ConstructNode):
         self.name = dct['name']
         self.operator = dct['operator']
         self.code = dct['code']
-        if dct['auxcode']:
-            self.auxcode = dct['auxcode']
+        self.auxcode = dct['auxcode']
         return self
 
 

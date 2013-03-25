@@ -111,5 +111,5 @@ class StorageDef(ASTNode):
     typename = Str()
 
     #: The default expression bound to the storage object. This may
-    #: be null if the storage object has no default expr binding.
+    #: be None if the storage object has no default expr binding.
     expr = Typed(OperatorExpr)
