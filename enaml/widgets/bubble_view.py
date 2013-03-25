@@ -103,10 +103,7 @@ class BubbleView(Widget):
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
-            self.proxy.setup_window()
-            for node in self.traverse():
-                if isinstance(node, ToolkitObject):
-                    node.proxy_is_active = True
+            self.activate_proxy()
         super(BubbleView, self).show()
 
 
