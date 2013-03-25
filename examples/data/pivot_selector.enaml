@@ -8,10 +8,12 @@
 from enaml.layout.api import align, vbox, hbox, spacer
 from enaml.stdlib.fields import IntField
 from enaml.widgets.api import (
-    Window, Container, Label, DualSlider
+    Window, Container, Label
 )
 
 from enaml.stdlib.data.pivot_selector import PivotSelector
+from enaml.stdlib.data.histogram_slider import HistogramSlider
+
 
 enamldef Main(Window):
     Container:
@@ -27,12 +29,12 @@ enamldef Main(Window):
             text << str(dual_slider.minimum)
         Label: max_lbl:
             text << str(dual_slider.maximum)
-        DualSlider: dual_slider:
+        HistogramSlider: dual_slider:
             tick_interval = 10
             minimum = 1
             maximum = 100
+            histogram = [0.1, 0.05, 0.0, 0.05, 0.8]
         Label: sel_label:
             text << sel.selected_item
         PivotSelector: sel:
             items = ['Industry', 'Sector', 'Company']
-
