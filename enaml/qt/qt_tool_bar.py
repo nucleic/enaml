@@ -10,7 +10,7 @@ import sys
 from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QToolBar, QMainWindow
 
-from atom.api import Int, Typed, null
+from atom.api import Int, Typed
 
 from enaml.widgets.tool_bar import ProxyToolBar
 
@@ -254,7 +254,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """
         super(QtToolBar, self).child_removed(child)
         if isinstance(child, QtAction):
-            if child.widget is not null:
+            if child.widget is not None:
                 self.widget.removeAction(child.widget)
         elif isinstance(child, QtActionGroup):
             self.widget.removeActions(child.actions())

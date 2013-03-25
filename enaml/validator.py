@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import re
 
-from atom.api import Atom, Bool, Typed, Enum, Str, Unicode, null
+from atom.api import Atom, Bool, Typed, Enum, Str, Unicode
 
 
 class Validator(Atom):
@@ -66,11 +66,11 @@ class IntValidator(Validator):
     specified range in a specified base.
 
     """
-    #: The minimum value allowed for the int, inclusive, or null if
+    #: The minimum value allowed for the int, inclusive, or None if
     #: there is no lower bound.
     minimum = Typed(int)
 
-    #: The maximum value allowed for the int, inclusive, or null if
+    #: The maximum value allowed for the int, inclusive, or None if
     #: there is no upper bound.
     maximum = Typed(int)
 
@@ -96,10 +96,10 @@ class IntValidator(Validator):
         except ValueError:
             return False
         minimum = self.minimum
-        if minimum is not null and value < minimum:
+        if minimum is not None and value < minimum:
             return False
         maximum = self.maximum
-        if maximum is not null and value > maximum:
+        if maximum is not None and value > maximum:
             return False
         return True
 
@@ -111,11 +111,11 @@ class FloatValidator(Validator):
     number within a specified range.
 
     """
-    #: The minimum value allowed for the float, inclusive, or null if
+    #: The minimum value allowed for the float, inclusive, or None if
     #: there is no lower bound.
     minimum = Typed(float)
 
-    #: The maximum value allowed for the float, inclusive, or null if
+    #: The maximum value allowed for the float, inclusive, or None if
     #: there is no upper bound.
     maximum = Typed(float)
 
@@ -141,10 +141,10 @@ class FloatValidator(Validator):
         except ValueError:
             return False
         minimum = self.minimum
-        if minimum is not null and value < minimum:
+        if minimum is not None and value < minimum:
             return False
         maximum = self.maximum
-        if maximum is not null and value > maximum:
+        if maximum is not None and value > maximum:
             return False
         if not self.allow_exponent and 'e' in text.lower():
             return False

@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import wx
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.split_item import ProxySplitItem
 

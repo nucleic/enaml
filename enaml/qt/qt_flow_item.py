@@ -257,7 +257,7 @@ class QtFlowItem(QtWidget, ProxyFlowItem):
         """
         d = self.declaration.flow_widget()
         if d is not None:
-            return d.proxy.widget or None
+            return d.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events

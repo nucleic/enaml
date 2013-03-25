@@ -41,7 +41,7 @@ class QtStatusItem(QtToolkitObject, ProxyStatusItem):
         """
         d = self.declaration.status_widget()
         if d is not None:
-            return d.proxy.widget or None
+            return d.proxy.widget
 
     def is_permanent(self):
         """ Get whether this status item should be permanent.

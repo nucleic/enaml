@@ -147,7 +147,7 @@ class QtScrollArea(QtConstraintsWidget, ProxyScrollArea):
         """
         w = self.declaration.scroll_widget()
         if w is not None:
-            return w.proxy.widget or None
+            return w.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events

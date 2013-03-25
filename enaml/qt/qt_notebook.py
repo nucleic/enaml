@@ -312,7 +312,9 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
 
         """
         for p in self.declaration.pages():
-            yield p.proxy.widget or None
+            w = p.proxy.widget
+            if w is not None:
+                yield w
 
     #--------------------------------------------------------------------------
     # Child Events

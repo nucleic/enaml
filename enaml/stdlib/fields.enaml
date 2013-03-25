@@ -13,12 +13,9 @@ This is a library of Enaml components deriving from the builtin Field.
 from enaml.widgets.api import Field
 from enaml.validator import RegexValidator, IntValidator, FloatValidator
 
-from atom.api import null
-
 
 enamldef RegexField(Field):
-    """ A Field that only accepts values validated by a given regular
-    expression.
+    """ A Field that accepts text validated by a regular expression.
 
     """
     attr regex : str
@@ -34,9 +31,11 @@ _int_converters = {
 
 
 enamldef IntField(Field):
-    """ A field that only accept integer inputs. """
-    attr minimum = null
-    attr maximum = null
+    """ A field that only accept integer inputs.
+
+    """
+    attr minimum = None
+    attr maximum = None
     attr base = 10
     attr value : int = 0
     attr converter << _int_converters.get(base, unicode)
@@ -46,9 +45,11 @@ enamldef IntField(Field):
 
 
 enamldef FloatField(Field):
-    """ A Field that only accept floating point values. """
-    attr minimum = null
-    attr maximum = null
+    """ A Field that only accept floating point values.
+
+    """
+    attr minimum = None
+    attr maximum = None
     attr allow_exponent : bool = True
     attr value : float = 0.0
     attr converter = unicode

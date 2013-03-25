@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtGui import QFrame
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.stack_item import ProxyStackItem
 
@@ -90,9 +90,7 @@ class QtStackItem(QtWidget, ProxyStackItem):
         """
         d = self.declaration.stack_widget()
         if d is not None:
-            w = d.proxy.widget
-            if w is not null:
-                return w
+            return d.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events

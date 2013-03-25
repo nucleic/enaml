@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import wx
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.tool_bar import ProxyToolBar
 
@@ -393,7 +393,7 @@ class WxToolBar(WxConstraintsWidget, ProxyToolBar):
         """
         super(WxToolBar, self).child_removed(child)
         if isinstance(child, WxAction):
-            if child.widget is not null:
+            if child.widget is not None:
                 self.widget.RemoveAction(child.widget)
         elif isinstance(child, WxActionGroup):
             self.widget.RemoveActions(child.actions())

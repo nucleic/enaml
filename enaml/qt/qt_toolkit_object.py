@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import QObject
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 
@@ -75,7 +75,7 @@ class QtToolkitObject(ProxyToolkitObject):
         and set its parent to None.
 
         """
-        if self.widget is not null:
+        if self.widget is not None:
             self.widget.setParent(None)
             del self.widget
         super(QtToolkitObject, self).destroy()
@@ -88,7 +88,7 @@ class QtToolkitObject(ProxyToolkitObject):
 
         """
         super(QtToolkitObject, self).child_removed(child)
-        if child.widget is not null:
+        if child.widget is not None:
             child.widget.setParent(None)
 
     #--------------------------------------------------------------------------
@@ -106,8 +106,9 @@ class QtToolkitObject(ProxyToolkitObject):
         """
         parent = self.parent()
         if parent is not None:
-            if parent.widget is not null:
-                return parent.widget
+            w = parent.widget
+            if w is not None:
+                yield w
 
     def child_widgets(self):
         """ Get the child toolkit widgets for this object.
@@ -119,5 +120,6 @@ class QtToolkitObject(ProxyToolkitObject):
 
         """
         for child in self.children():
-            if child.widget is not null:
-                return child.widget
+            w = child.widget
+            if w is not None:
+                yield w

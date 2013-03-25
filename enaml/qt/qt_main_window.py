@@ -10,7 +10,7 @@ import sys
 from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QMainWindow
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.main_window import ProxyMainWindow
 
@@ -146,14 +146,16 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         """
         d = self.declaration.menu_bar()
         if d is not None:
-            return d.proxy.widget or None
+            return d.proxy.widget
 
     def dock_panes(self):
         """ Get the QDockWidget widgets defined for the main window.
 
         """
         for d in self.declaration.dock_panes():
-            yield d.proxy.widget or None
+            w = d.proxy.widget
+            if w is not None:
+                yield w
 
     def status_bar(self):
         """ Get the status bar widget defined for the main window.
@@ -161,14 +163,16 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         """
         d = self.declaration.status_bar()
         if d is not None:
-            return d.proxy.widget or None
+            return d.proxy.widget
 
     def tool_bars(self):
         """ Get the QToolBar widgets defined for the main window.
 
         """
         for d in self.declaration.tool_bars():
-            yield d.proxy.widget or None
+            w = d.proxy.widget
+            if w is not None:
+                yield w
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -213,9 +217,9 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         """ Handle the child removed event for a QtMainWindow.
 
         """
-        if isinstance(child, QtDockPane) and child.widget is not null:
+        if isinstance(child, QtDockPane) and child.widget is not None:
             self.widget.removeDockWidget(child.widget)
-        elif isinstance(child, QtToolBar) and child.widget is not null:
+        elif isinstance(child, QtToolBar) and child.widget is not None:
             self.widget.removeToolBar(child.widget)
         elif isinstance(child, QtContainer):
             self.widget.setCentralWidget(self.central_widget())

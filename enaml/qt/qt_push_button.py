@@ -52,7 +52,7 @@ class QtPushButton(QtAbstractButton, ProxyPushButton):
         """
         m = self.declaration.menu()
         if m is not None:
-            return m.proxy.widget or None
+            return m.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events

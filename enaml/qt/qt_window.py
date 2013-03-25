@@ -244,7 +244,7 @@ class QtWindow(QtWidget, ProxyWindow):
         """
         d = self.declaration.central_widget()
         if d is not None:
-            return d.proxy.widget or None
+            return d.proxy.widget
 
     def on_closed(self):
         """ The signal handler for the 'closed' signal.

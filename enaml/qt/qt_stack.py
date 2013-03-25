@@ -8,7 +8,7 @@
 from PyQt4.QtCore import QTimer, QEvent, pyqtSignal
 from PyQt4.QtGui import QStackedWidget, QPixmap
 
-from atom.api import Int, Typed, null
+from atom.api import Int, Typed
 
 from enaml.widgets.stack import ProxyStack
 
@@ -271,7 +271,7 @@ class QtStack(QtConstraintsWidget, ProxyStack):
         """
         for d in self.declaration.stack_items():
             w = d.proxy.widget
-            if w is not null:
+            if w is not None:
                 yield w
 
     #--------------------------------------------------------------------------

@@ -326,7 +326,7 @@ class QtPage(QtWidget, ProxyPage):
         """
         p = self.declaration.page_widget()
         if p is not None:
-            return p.proxy.widget or None
+            return p.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events

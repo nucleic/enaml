@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import wx
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.action_group import ProxyActionGroup
 
@@ -320,7 +320,7 @@ class WxActionGroup(WxToolkitObject, ProxyActionGroup):
 
         """
         super(WxActionGroup, self).child_removed(child)
-        if isinstance(child, WxAction) and child.widget is not null:
+        if isinstance(child, WxAction) and child.widget is not None:
             self.widget.RemoveAction(child.widget)
             parent = self.parent()
             if parent is not None:

@@ -5,9 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import (
-    Atom, Bool, Typed, Tuple, Dict, Callable, Value, List, null
-)
+from atom.api import Atom, Bool, Typed, Tuple, Dict, Callable, Value, List
 
 from heapq import heappush, heappop
 from itertools import count
@@ -28,7 +26,7 @@ class ScheduledTask(Atom):
     _kwargs = Dict()
 
     #: The result of invoking the callback.
-    _result = Value(null)
+    _result = Value()
 
     #: Whether or not the task is still valid.
     _valid = Bool(True)
@@ -296,8 +294,8 @@ class Application(Atom):
 
         Returns
         -------
-        result : ProxyToolkitObject or null
-            An appropriate toolkit proxy object, or null if one cannot
+        result : ProxyToolkitObject or None
+            An appropriate toolkit proxy object, or None if one cannot
             be create for the given declaration object.
 
         """
@@ -307,7 +305,6 @@ class Application(Atom):
             cls = resolver.resolve(name)
             if cls is not None:
                 return cls(declaration=declaration)
-        return null
 
     def schedule(self, callback, args=None, kwargs=None, priority=0):
         """ Schedule a callable to be executed on the event loop thread.
