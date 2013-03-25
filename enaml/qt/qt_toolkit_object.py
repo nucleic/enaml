@@ -106,9 +106,7 @@ class QtToolkitObject(ProxyToolkitObject):
         """
         parent = self.parent()
         if parent is not None:
-            w = parent.widget
-            if w is not None:
-                yield w
+            return parent.widget
 
     def child_widgets(self):
         """ Get the child toolkit widgets for this object.
