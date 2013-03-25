@@ -197,7 +197,7 @@ class Nonlocals(object):
         """ A pretty representation of the NonlocalScope.
 
         """
-        return 'Nonlocals[%s]' % self._obj
+        return 'Nonlocals[%s]' % self._nls_obj
 
     def __call__(self, level=0):
         """ Get a new nonlocals object for the given offset.
