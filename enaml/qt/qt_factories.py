@@ -260,6 +260,11 @@ def window_factory():
     return QtWindow
 
 
+def pivot_selector_factory():
+    from .data.qt_pivot_selector import QtPivotSelector
+    return QtPivotSelector
+
+
 QT_FACTORIES = {
     'Action': action_factory,
     'ActionGroup': action_group_factory,
@@ -293,6 +298,7 @@ QT_FACTORIES = {
     'MultilineField': multiline_field_factory,
     'Notebook': notebook_factory,
     'Page': page_factory,
+    'PivotSelector': pivot_selector_factory,
     'PushButton': push_button_factory,
     'ProgressBar': progress_bar_factory,
     'RadioButton': radio_button_factory,
