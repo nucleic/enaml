@@ -7,12 +7,9 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed
 
-from PyQt4.QtCore import Qt, QSize, pyqtSignal
-from PyQt4.QtGui import QFrame, QLayout
-
 from enaml.widgets.bubble_view import ProxyBubbleView
 
-from .q_bubble_view import QBubbleView 
+from .q_bubble_view import QBubbleView
 from .qt_widget import QtWidget
 
 
@@ -46,14 +43,10 @@ class QtBubbleView(QtWidget, ProxyBubbleView):
         """
         super(QtBubbleView, self).init_widget()
         d = self.declaration
-        if d.anchor:
-            self.set_anchor(d.anchor)
-        if d.arrow:
-            self.set_arrow(d.arrow)
-        if d.radius:
-            self.set_radius(d.radius)
-        if d.relative_pos:
-            self.set_relative_pos(d.relative_pos)
+        self.set_anchor(d.anchor)
+        self.set_arrow(d.arrow)
+        self.set_radius(d.radius)
+        self.set_relative_pos(d.relative_pos)
         self.widget.closed.connect(self.on_closed)
 
     def init_layout(self):
@@ -91,16 +84,6 @@ class QtBubbleView(QtWidget, ProxyBubbleView):
     #--------------------------------------------------------------------------
     # ProxyBubbleView API
     #--------------------------------------------------------------------------
-    def setup_window(self):
-        """ Setup widget window hierarchy.
-
-        This method is called by the declaration the first time the
-        window is shown.
-
-        """
-        self.init_top_down_pass()
-        self.init_bottom_up_pass()
-
     def close(self):
         """ Close the window
 

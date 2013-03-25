@@ -6,16 +6,14 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Enum, Event, Coerced, Int, Tuple, Typed, ForwardTyped, observe,
+    Enum, Event, Int, Tuple, Typed, ForwardTyped, observe,
     set_default,
 )
 
 from enaml.application import deferred_call
 from enaml.core.declarative import d_
-from enaml.layout.geometry import Size
 
 from .container import Container
-from .toolkit_object import ToolkitObject
 from .widget import Widget, ProxyWidget
 
 
@@ -44,11 +42,14 @@ class ProxyBubbleView(ProxyWidget):
     def close(self):
         raise NotImplementedError
 
+
 class BubbleView(Widget):
-    """ A BubbleView component
+    """ A BubbleView popup widget.
 
+    This widget implements a popup style with rounded corners and an
+    arrow anchoring it to an underlying widget. Useful for transient
+    dialogs.
     """
-
     #: An enum which indicates the which side of the parent will be used
     #: as the anchor point. The default value is 'bottom'
     anchor = d_(Enum('bottom', 'left', 'right', 'top'))
@@ -60,11 +61,11 @@ class BubbleView(Widget):
     #: The size of the BubbleView's anchoring arrow
     arrow = d_(Int(20))
 
-    #: The relative of the anchor relative to the BubbleView's bounds
+    #: The position of the anchor relative to the BubbleView parent widget's
+    #: bounds
     relative_pos = d_(Tuple(float, (0.5, 0.5)))
 
-    #: An event fired when the BubbleView is closed. This event is triggered
-    #: by the proxy object when the BubbleView is closed.
+    #: An event fired when the BubbleView is closed.
     closed = Event()
 
     #: BubbleViews are invisible by default.
@@ -105,7 +106,6 @@ class BubbleView(Widget):
         if not self.proxy_is_active:
             self.activate_proxy()
         super(BubbleView, self).show()
-
 
     #--------------------------------------------------------------------------
     # Observers

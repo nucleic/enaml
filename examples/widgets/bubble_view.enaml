@@ -5,12 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" Example of fully dynamic BubbleView
-"""
+""" This is an example of a fully dynamic BubbleView widget.
 
+The contents of the bubble view contain widgets that adjust the various
+settings exposed by the BubbleView.
+
+"""
 from enaml.widgets.api import (
-    Window, Container, BubbleView, Form, Label, PushButton,
-    ComboBox, Slider, Field
+    Window, Container, BubbleView, Form, Label, PushButton, ComboBox, Slider, 
+    Field
 )
 
 from enaml.core.api import Include
