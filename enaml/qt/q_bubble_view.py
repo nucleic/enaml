@@ -5,12 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import (
-    Qt, QSize, QPoint, QMargins, QEvent, pyqtSignal
-)
-from PyQt4.QtGui import (
-    QWidget, QLayout, QPainter, QPainterPath
-)
+from PyQt4.QtCore import Qt, QSize, QPoint, QMargins, QEvent, pyqtSignal
+from PyQt4.QtGui import QWidget, QLayout, QPainter, QPainterPath
 
 from .q_single_widget_layout import QSingleWidgetLayout
 
@@ -23,7 +19,6 @@ class QBubbleView(QWidget):
     dialogs.
 
     """
-
     #: A signal emitted when the popup is closed
     closed = pyqtSignal()
 

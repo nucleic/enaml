@@ -6,8 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Enum, Event, Int, Tuple, Typed, ForwardTyped, observe,
-    set_default,
+    Enum, Event, Int, Tuple, Typed, ForwardTyped, observe, set_default,
 )
 
 from enaml.application import deferred_call
@@ -49,6 +48,7 @@ class BubbleView(Widget):
     This widget implements a popup style with rounded corners and an
     arrow anchoring it to an underlying widget. Useful for transient
     dialogs.
+
     """
     #: An enum which indicates the which side of the parent will be used
     #: as the anchor point. The default value is 'bottom'
@@ -66,7 +66,7 @@ class BubbleView(Widget):
     relative_pos = d_(Tuple(float, (0.5, 0.5)))
 
     #: An event fired when the BubbleView is closed.
-    closed = Event()
+    closed = d_(Event(), writable=False)
 
     #: BubbleViews are invisible by default.
     visible = set_default(False)
