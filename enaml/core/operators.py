@@ -135,17 +135,22 @@ class DeprecatedNotificationEvent(object):
     def old(self):
         self._raise_warning()
         change = self._change
-        if change['type'] == 'event':
-            return None
-        return change['oldvalue']
+        ctype = change['type']
+        if ctype == 'update' or ctype == 'property':
+            return change['oldvalue']
 
     @property
     def new(self):
         self._raise_warning()
         change = self._change
-        if change['type'] == 'event':
-            return change['value']
-        return change['newvalue']
+        ctype = change['type']
+        if ctype == 'create' or ctype == 'event':
+            value = change['value']
+        elif ctype == 'update' or ctype == 'property':
+            value = change['newvalue']
+        else:
+            value = None
+        return value
 
 
 class OpNotify(OperatorBase):
@@ -206,11 +211,11 @@ class OpUpdate(OperatorBase):
         scope = DynamicScope(
             owner, f_locals, overrides, func.func_globals, None
         )
-        if change['type'] == 'event':
-            value = change['value']
-        else:
-            value = change['newvalue']
-        call_func(func, (inverter, value), {}, scope)
+        ctype = change['type']
+        if ctype == 'update' or ctype == 'property':
+            call_func(func, (inverter, change['newvalue']), {}, scope)
+        elif ctype == 'create' or ctype == 'event':
+            call_func(func, (inverter, change['value']), {}, scope)
 
 
 class SubscriptionObserver(object):
@@ -394,7 +399,11 @@ class OpDelegate(OpSubscribe):
         scope = DynamicScope(
             owner, f_locals, overrides, func.func_globals, None
         )
-        call_func(func, (inverter, change['newvalue']), {}, scope)
+        ctype = change['type']
+        if ctype == 'update' or ctype == 'property':
+            call_func(func, (inverter, change['newvalue']), {}, scope)
+        elif ctype == 'create':
+            call_func(func, (inverter, change['value']), {}, scope)
 
 
 # TODO remove this in Enaml 0.8.0
