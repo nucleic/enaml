@@ -64,7 +64,13 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         if d.status_tip:
             self.set_status_tip(d.status_tip)
         self.set_enabled(d.enabled)
-        if not d.visible:
+        # Don't make toplevel widgets visible during init or they will
+        # flicker onto the screen. This applies particularly for things
+        # like status bar widgets which are created with no parent and
+        # then reparented by the status bar. Real top-level widgets must
+        # be explicitly shown by calling their .show() method after they
+        # are created.
+        if self.widget.parent() or not d.visible:
             self.set_visible(d.visible)
 
     #--------------------------------------------------------------------------
