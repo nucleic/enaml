@@ -12,7 +12,7 @@ from PyQt4.QtGui import (
     QSplitter, QSplitterHandle, QVBoxLayout, QFrame, QApplication
 )
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.splitter import ProxySplitter
 
@@ -106,7 +106,7 @@ class QCustomSplitter(QSplitter):
 
 
 class QtSplitter(QtConstraintsWidget, ProxySplitter):
-    """ A Qt implementation of an Enaml Splitter.
+    """ A Qt implementation of an Enaml ProxySplitter.
 
     """
     #: A reference to the widget created by the proxy.
@@ -183,7 +183,7 @@ class QtSplitter(QtConstraintsWidget, ProxySplitter):
         """
         for d in self.declaration.split_items():
             w = d.proxy.widget
-            if w is not null:
+            if w is not None:
                 yield w
 
     #--------------------------------------------------------------------------

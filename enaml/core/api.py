@@ -10,4 +10,3 @@ from .declarative import Declarative, d_
 from .include import Include
 from .looper import Looper
 from .object import Object
-from .templated import Templated

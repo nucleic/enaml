@@ -8,7 +8,7 @@
 from PyQt4.QtCore import QThread
 from PyQt4.QtGui import QApplication
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.application import Application, ProxyResolver
 
@@ -28,12 +28,6 @@ class QtApplication(Application):
 
     def __init__(self):
         """ Initialize a QtApplication.
-
-        Parameters
-        ----------
-        widget_groups : widget_groups
-            An iterable of SessionFactory instances to pass to the
-            superclass constructor.
 
         """
         super(QtApplication, self).__init__()
@@ -107,26 +101,3 @@ class QtApplication(Application):
 
         """
         return QThread.currentThread() == self._qapp.thread()
-
-    def create_proxy(self, declaration):
-        """ Create the proxy object for the given declaration.
-
-        Parameters
-        ----------
-        declaration : ToolkitObject
-            The object for which a toolkit proxy should be created.
-
-        Returns
-        -------
-        result : ProxyToolkitObject or null
-            An appropriate toolkit proxy object, or null if one cannot
-            be create for the given declaration object.
-
-        """
-        resolver = self.resolver
-        for base in type(declaration).mro():
-            name = base.__name__
-            cls = resolver.resolve(name)
-            if cls is not None:
-                return cls(declaration=declaration)
-        return null

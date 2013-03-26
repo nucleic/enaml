@@ -10,7 +10,11 @@ from weakref import WeakKeyDictionary
 import wx
 import wx.lib.newevent
 
-from .wx_abstract_button import WxAbstractButton
+from atom.api import Typed
+
+from enaml.widgets.radio_button import ProxyRadioButton
+
+from .wx_abstract_button import WxAbstractButton, CHECKED_GUARD
 
 
 #: A radio button event that is emited when the button is clicked.
@@ -145,29 +149,32 @@ class wxProperRadioButton(wx.RadioButton):
         super(wxProperRadioButton, self).Destroy()
 
 
-class WxRadioButton(WxAbstractButton):
-    """ A Wx implementation of an Enaml RadioButton.
+class WxRadioButton(WxAbstractButton, ProxyRadioButton):
+    """ A Wx implementation of an Enaml ProxyRadioButton.
 
     WxRadioButton uses a custom wx.RadioButton control. Radio buttons
     with the same parent will be mutually exclusive. For independent
     groups, place them in their own parent component.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxProperRadioButton)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Creates the underlying custom wx.RadioButton control.
 
         """
-        return wxProperRadioButton(parent)
+        self.widget = wxProperRadioButton(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the radio button control.
+    def init_widget(self):
+        """ Initialize the radio button control.
 
         """
-        super(WxRadioButton, self).create(tree)
-        widget = self.widget()
+        super(WxRadioButton, self).init_widget()
+        widget = self.widget
         widget.Bind(EVT_RADIO_CLICKED, self.on_clicked)
         widget.Bind(EVT_RADIO_TOGGLED, self.on_toggled)
 
@@ -177,19 +184,23 @@ class WxRadioButton(WxAbstractButton):
     def set_checkable(self, checkable):
         """ Sets whether or not the widget is checkable.
 
+        This is not supported in Wx.
+
         """
-        # wx doesn't support changing the checkability of a radio button
         pass
 
     def get_checked(self):
         """ Returns the checked state of the widget.
 
         """
-        return self.widget().GetValue()
+        return self.widget.GetValue()
 
     def set_checked(self, checked):
         """ Sets the widget's checked state with the provided value.
 
         """
-        self.widget().SetValue(checked)
-
+        self._guard |= CHECKED_GUARD
+        try:
+            self.widget.SetValue(checked)
+        finally:
+            self._guard &= ~CHECKED_GUARD

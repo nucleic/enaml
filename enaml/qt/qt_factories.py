@@ -55,6 +55,11 @@ def dock_pane_factory():
     return QtDockPane
 
 
+def dual_slider_factory():
+    from .qt_dual_slider import QtDualSlider
+    return QtDualSlider
+
+
 def field_factory():
     from .qt_field import QtField
     return QtField
@@ -210,6 +215,16 @@ def stack_item_factory():
     return QtStackItem
 
 
+def status_bar_factory():
+    from .qt_status_bar import QtStatusBar
+    return QtStatusBar
+
+
+def status_item_factory():
+    from .qt_status_item import QtStatusItem
+    return QtStatusItem
+
+
 def table_view_factory():
     from .qt_table_view import QtTableView
     return QtTableView
@@ -251,6 +266,7 @@ QT_FACTORIES = {
     'DateSelector': date_selector_factory,
     'DatetimeSelector': datetime_selector_factory,
     'DockPane': dock_pane_factory,
+    'DualSlider': dual_slider_factory,
     'Field': field_factory,
     'FileDialog': file_dialog_factory,
     'FlowArea': flow_area_factory,
@@ -282,6 +298,8 @@ QT_FACTORIES = {
     'Splitter': splitter_factory,
     'Stack': stack_factory,
     'StackItem': stack_item_factory,
+    'StatusBar': status_bar_factory,
+    'StatusItem': status_item_factory,
     'TableView': table_view_factory,
     'TimeSelector': time_selector_factory,
     'ToolBar': tool_bar_factory,

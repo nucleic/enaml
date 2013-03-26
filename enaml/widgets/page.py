@@ -68,24 +68,6 @@ class Page(Widget):
             if isinstance(child, Container):
                 return child
 
-    def open(self):
-        """ Open the page in the Notebook.
-
-        Calling this method will also set the page visibility to True.
-        This method is deprectated, use 'show()' instead.
-
-        """
-        self.show()
-
-    def close(self):
-        """ Close the page in the Notebook.
-
-        Calling this method will set the page visibility to False.
-        This method is deprectated, use 'hide()' instead.
-
-        """
-        self.hide()
-
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
@@ -106,3 +88,18 @@ class Page(Widget):
         """
         self.visible = False
         self.closed()
+
+    # TODO remove these in enaml version 0.8.0
+    def open(self):
+        msg = "The 'open()' method will be removed in Enaml version "
+        msg += "0.8.0. Use 'show()' instead."
+        import warnings
+        warnings.warn(msg, FutureWarning, stacklevel=2)
+        self.show()
+
+    def close(self):
+        msg = "The 'close()' method will be removed in Enaml version "
+        msg += "0.8.0. Use 'hide()' instead."
+        import warnings
+        warnings.warn(msg, FutureWarning, stacklevel=2)
+        self.hide()

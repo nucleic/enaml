@@ -5,14 +5,14 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.widgets.control import ProxyControl
+
 from .wx_constraints_widget import WxConstraintsWidget
 
 
-class WxControl(WxConstraintsWidget):
+class WxControl(WxConstraintsWidget, ProxyControl):
     """ A Wx implementation of an Enaml Control.
 
     """
-    # Currently, the WxConstraintsWidget superclass is a sufficient
-    # implementation.
+    # The WxConstraintsWidget superclass is a sufficient implementation.
     pass
-

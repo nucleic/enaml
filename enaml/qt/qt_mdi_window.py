@@ -67,7 +67,7 @@ class QtMdiWindow(QtWidget, ProxyMdiWindow):
         """
         w = self.declaration.mdi_widget()
         if w:
-            return w.proxy.widget or None
+            return w.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events

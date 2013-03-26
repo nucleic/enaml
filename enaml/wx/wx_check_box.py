@@ -8,7 +8,11 @@
 import wx
 import wx.lib.newevent
 
-from .wx_abstract_button import WxAbstractButton
+from atom.api import Typed
+
+from enaml.widgets.check_box import ProxyCheckBox
+
+from .wx_abstract_button import WxAbstractButton, CHECKED_GUARD
 
 
 #: A check box event emitted when the button is clicked.
@@ -81,25 +85,28 @@ class wxProperCheckBox(wx.CheckBox):
             wx.PostEvent(self, event)
 
 
-class WxCheckBox(WxAbstractButton):
-    """ A Wx implementation of an Enaml CheckBox.
+class WxCheckBox(WxAbstractButton, ProxyCheckBox):
+    """ A Wx implementation of an Enaml ProxyCheckBox.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxProperCheckBox)
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the underlying wxProperCheckBox.
+    def create_widget(self):
+        """ Create the underlying check box widget.
 
         """
-        return wxProperCheckBox(parent)
+        self.widget = wxProperCheckBox(self.parent_widget())
 
-    def create(self, tree):
+    def init_widget(self):
         """ Create and initialize the check box control.
 
         """
-        super(WxCheckBox, self).create(tree)
-        widget = self.widget()
+        super(WxCheckBox, self).init_widget()
+        widget = self.widget
         widget.Bind(EVT_CHECKBOX_CLICKED, self.on_clicked)
         widget.Bind(EVT_CHECKBOX_TOGGLED, self.on_toggled)
 
@@ -109,19 +116,23 @@ class WxCheckBox(WxAbstractButton):
     def set_checkable(self, checkable):
         """ Sets whether or not the widget is checkable.
 
+        This is not supported in Wx.
+
         """
-        # wx doesn't support changing the checkability of a check box
         pass
 
     def get_checked(self):
         """ Returns the checked state of the widget.
 
         """
-        return self.widget().GetValue()
+        return self.widget.GetValue()
 
     def set_checked(self, checked):
         """ Sets the widget's checked state with the provided value.
 
         """
-        self.widget().SetValue(checked)
-
+        self._guard |= CHECKED_GUARD
+        try:
+            self.widget.SetValue(checked)
+        finally:
+            self._guard &= ~CHECKED_GUARD

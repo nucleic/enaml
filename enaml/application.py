@@ -5,9 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import (
-    Atom, Bool, Typed, Tuple, Dict, Callable, Value, List, null
-)
+from atom.api import Atom, Bool, Typed, Tuple, Dict, Callable, Value, List
 
 from heapq import heappush, heappop
 from itertools import count
@@ -28,7 +26,7 @@ class ScheduledTask(Atom):
     _kwargs = Dict()
 
     #: The result of invoking the callback.
-    _result = Value(null)
+    _result = Value()
 
     #: Whether or not the task is still valid.
     _valid = Bool(True)
@@ -280,8 +278,14 @@ class Application(Atom):
         """
         raise NotImplementedError
 
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
     def create_proxy(self, declaration):
         """ Create the proxy object for the given declaration.
+
+        This can be reimplemented by Application subclasses if more
+        control is needed.
 
         Parameters
         ----------
@@ -290,16 +294,18 @@ class Application(Atom):
 
         Returns
         -------
-        result : ProxyToolkitObject or null
-            An appropriate toolkit proxy object, or null if one cannot
+        result : ProxyToolkitObject or None
+            An appropriate toolkit proxy object, or None if one cannot
             be create for the given declaration object.
 
         """
-        raise NotImplementedError
+        resolver = self.resolver
+        for base in type(declaration).mro():
+            name = base.__name__
+            cls = resolver.resolve(name)
+            if cls is not None:
+                return cls(declaration=declaration)
 
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
     def schedule(self, callback, args=None, kwargs=None, priority=0):
         """ Schedule a callable to be executed on the event loop thread.
 

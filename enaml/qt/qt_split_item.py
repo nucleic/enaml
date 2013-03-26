@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtGui import QFrame, QSplitter, QLayout
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.split_item import ProxySplitItem
 
@@ -156,9 +156,7 @@ class QtSplitItem(QtWidget, ProxySplitItem):
         """
         d = self.declaration.split_widget()
         if d is not None:
-            w = d.proxy.widget
-            if w is not null:
-                return w
+            return d.proxy.widget
 
     #--------------------------------------------------------------------------
     # Child Events

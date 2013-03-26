@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from collections import Iterable
 
-from enaml.widgets.include import Include
+from enaml.core.api import Include
 
 
 def _mappedview_helper(model, typemap, kwargs, modelkey):
@@ -58,4 +58,3 @@ enamldef MappedView(Include):
     attr kwargs: dict = {}
     attr modelkey: str = 'model'
     objects << _mappedview_helper(model, typemap, kwargs, modelkey)
-

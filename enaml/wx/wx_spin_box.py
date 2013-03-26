@@ -8,6 +8,10 @@
 import wx
 import wx.lib.newevent
 
+from atom.api import Int, Typed
+
+from enaml.widgets.spin_box import ProxySpinBox
+
 from .wx_control import WxControl
 
 
@@ -428,34 +432,45 @@ class wxProperSpinBox(wx.SpinCtrl):
         return text
 
 
-class WxSpinBox(WxControl):
-    """ A Wx implementation of an Enaml SpinBox.
+#: Cyclic guard flag
+VALUE_FLAG = 0x1
+
+
+class WxSpinBox(WxControl, ProxySpinBox):
+    """ A Wx implementation of an Enaml ProxySpinBox.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxProperSpinBox)
+
+    #: Cyclic guard flags
+    _guard = Int(0)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying wxProperSpinBox widget.
 
         """
-        return wxProperSpinBox(parent)
+        self.widget = wxProperSpinBox(self.parent_widget())
 
-    def create(self, tree):
+    def init_widget(self, ):
         """ Create and initialize the slider control.
 
         """
-        super(WxSpinBox, self).create(tree)
-        self.set_maximum(tree['maximum'])
-        self.set_minimum(tree['minimum'])
-        self.set_value(tree['value'])
-        self.set_prefix(tree['prefix'])
-        self.set_suffix(tree['suffix'])
-        self.set_special_value_text(tree['special_value_text'])
-        self.set_single_step(tree['single_step'])
-        self.set_read_only(tree['read_only'])
-        self.set_wrapping(tree['wrapping'])
-        self.widget().Bind(EVT_SPIN_BOX, self.on_value_changed)
+        super(WxSpinBox, self).init_widget()
+        d = self.declaration
+        self.set_maximum(d.maximum)
+        self.set_minimum(d.minimum)
+        self.set_value(d.value)
+        self.set_prefix(d.prefix)
+        self.set_suffix(d.suffix)
+        self.set_special_value_text(d.special_value_text)
+        self.set_single_step(d.single_step)
+        self.set_read_only(d.read_only)
+        self.set_wrapping(d.wrapping)
+        self.widget.Bind(EVT_SPIN_BOX, self.on_value_changed)
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -464,124 +479,72 @@ class WxSpinBox(WxControl):
         """ The event handler for the 'EVT_SPIN_BOX' event.
 
         """
-        content = {'value': self.widget().GetValue()}
-        self.send_action('value_changed', content)
+        if not self._guard & VALUE_FLAG:
+            self._guard |= VALUE_FLAG
+            try:
+                self.declaration.value = self.widget.GetValue()
+            finally:
+                self._guard &= ~VALUE_FLAG
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_maximum(self, content):
-        """ Handler for the 'set_maximum' action from the Enaml widget.
-
-        """
-        self.set_maximum(content['maximum'])
-
-    def on_action_set_minimum(self, content):
-        """ Handler for the 'set_minimum' action from the Enaml widget.
-
-        """
-        self.set_minimum(content['minimum'])
-
-    def on_action_set_value(self, content):
-        """ Handler for the 'set_value' action from the Enaml widget.
-
-        """
-        self.set_value(content['value'])
-
-    def on_action_set_prefix(self, content):
-        """ Handler for the 'set_prefix' action from the Enaml widget.
-
-        """
-        self.set_prefix(content['prefix'])
-
-    def on_action_set_suffix(self, content):
-        """ Handler for the 'set_suffix' action from the Enaml widget.
-
-        """
-        self.set_suffix(content['suffix'])
-
-    def on_action_set_special_value_text(self, content):
-        """ Handler for the 'set_special_value_text' action from the
-        Enaml widget.
-
-        """
-        self.set_special_value_text(content['special_value_text'])
-
-    def on_action_set_single_step(self, content):
-        """ Handler for the 'set_single_step' action from the Enaml
-        widget.
-
-        """
-        self.set_single_step(content['single_step'])
-
-    def on_action_set_read_only(self, content):
-        """ Handler for the 'set_read_only' action from the Enaml
-        widget.
-
-        """
-        self.set_read_only(content['read_only'])
-
-    def on_action_set_wrapping(self, content):
-        """ Handler for the 'set_wrapping' action from the Enaml
-        widget.
-
-        """
-        self.set_wrapping(content['wrapping'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxySpinBox API
     #--------------------------------------------------------------------------
     def set_maximum(self, maximum):
         """ Set the widget's maximum value.
 
         """
-        self.widget().SetHigh(maximum)
+        self.widget.SetHigh(maximum)
 
     def set_minimum(self, minimum):
         """ Set the widget's minimum value.
 
         """
-        self.widget().SetLow(minimum)
+        self.widget.SetLow(minimum)
 
     def set_value(self, value):
         """ Set the spin box's value.
 
         """
-        self.widget().SetValue(value)
+        if not self._guard & VALUE_FLAG:
+            self._guard |= VALUE_FLAG
+            try:
+                self.widget.SetValue(value)
+            finally:
+                self._guard &= ~VALUE_FLAG
+
 
     def set_prefix(self, prefix):
         """ Set the prefix for the spin box.
 
         """
-        self.widget().SetPrefix(prefix)
+        self.widget.SetPrefix(prefix)
 
     def set_suffix(self, suffix):
         """ Set the suffix for the spin box.
 
         """
-        self.widget().SetSuffix(suffix)
+        self.widget.SetSuffix(suffix)
 
     def set_special_value_text(self, text):
         """ Set the special value text for the spin box.
 
         """
-        self.widget().SetSpecialValueText(text)
+        self.widget.SetSpecialValueText(text)
 
     def set_single_step(self, step):
         """ Set the widget's single step value.
 
         """
-        self.widget().SetStep(step)
+        self.widget.SetStep(step)
 
     def set_read_only(self, read_only):
         """ Set the widget's read only flag.
 
         """
-        self.widget().SetReadOnly(read_only)
+        self.widget.SetReadOnly(read_only)
 
     def set_wrapping(self, wrapping):
         """ Set the widget's wrapping flag.
 
         """
-        self.widget().SetWrap(wrapping)
-
+        self.widget.SetWrap(wrapping)

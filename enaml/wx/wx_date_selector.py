@@ -7,94 +7,101 @@
 #------------------------------------------------------------------------------
 import wx
 
-from .wx_bounded_date import WxBoundedDate
+from atom.api import Typed
+
+from enaml.widgets.date_selector import ProxyDateSelector
+
+from .wx_bounded_date import (
+    WxBoundedDate, CHANGED_GUARD, as_wx_date, as_py_date
+)
 
 
-class WxDateSelector(WxBoundedDate):
-    """ A Wx implementation of an Enaml DateSelector.
+class WxDateSelector(WxBoundedDate, ProxyDateSelector):
+    """ A Wx implementation of an Enaml ProxyDateSelector.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wx.DatePickerCtrl)
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the underlying wx.DatePickerCtrl.
+    def create_widget(self):
+        """ Create the wx.DatePickerCtrl widget.
 
         """
-        return wx.DatePickerCtrl(parent)
+        self.widget = wx.DatePickerCtrl(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the date selector control.
-
-        """
-        super(WxDateSelector, self).create(tree)
-        self.set_date_format(tree['date_format'])
-        self.widget().Bind(wx.EVT_DATE_CHANGED, self.on_date_changed)
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_date_format(self, content):
-        """ Handle the 'set_date_format' action from the Enaml widget.
+    def init_widget(self):
+        """ Initialize the widget.
 
         """
-        self.set_date_format(content['date_format'])
+        super(WxDateSelector, self).init_widget()
+        d = self.declaration
+        self.set_date_format(d.date_format)
+        self.set_calendar_popup(d.calendar_popup)
+        self.widget.Bind(wx.EVT_DATE_CHANGED, self.on_date_changed)
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # Abstract API Implementation
     #--------------------------------------------------------------------------
     def get_date(self):
         """ Return the current date in the control.
 
         Returns
         -------
-        result : wxDateTime
-            The current control date as a wxDateTime object.
+        result : date
+            The current control date as a date object.
 
         """
-        return self.widget().GetValue()
+        return as_py_date(self.widget.GetValue())
+
+    def set_minimum(self, date):
+        """ Set the widget's minimum date.
+
+        Parameters
+        ----------
+        date : date
+            The date object to use for setting the minimum date.
+
+        """
+        widget = self.widget
+        widget.SetRange(as_wx_date(date), widget.GetUpperLimit())
+
+
+    def set_maximum(self, date):
+        """ Set the widget's maximum date.
+
+        Parameters
+        ----------
+        date : date
+            The date object to use for setting the maximum date.
+
+        """
+        widget = self.widget
+        widget.SetRange(widget.GetLowerLimit(), as_wx_date(date))
 
     def set_date(self, date):
         """ Set the widget's current date.
 
         Parameters
         ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the date.
+        date : date
+            The date object to use for setting the date.
 
         """
-        self.widget().SetValue(date)
+        self._guard |= CHANGED_GUARD
+        try:
+            self.widget.SetValue(as_wx_date(date))
+        finally:
+            self._guard &= ~CHANGED_GUARD
 
-    def set_max_date(self, date):
-        """ Set the widget's maximum date.
-
-        Parameters
-        ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the maximum date.
-
-        """
-        widget = self.widget()
-        widget.SetRange(widget.GetLowerLimit(), date)
-
-    def set_min_date(self, date):
-        """ Set the widget's minimum date.
-
-        Parameters
-        ----------
-        date : wxDateTime
-            The wxDateTime object to use for setting the minimum date.
-
-        """
-        widget = self.widget()
-        widget.SetRange(date, widget.GetUpperLimit())
-
-    def set_date_format(self, date_format):
+    def set_date_format(self, format):
         """ Set the widget's date format.
 
         Parameters
         ----------
-        date_format : str
+        format : str
             A Python time formatting string.
 
         .. note:: Changing the format on wx is not supported.
@@ -103,3 +110,8 @@ class WxDateSelector(WxBoundedDate):
         """
         pass
 
+    def set_calendar_popup(self, popup):
+        """ This is not supported on Wx.
+
+        """
+        pass

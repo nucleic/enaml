@@ -7,6 +7,10 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.tool_bar import ProxyToolBar
+
 from .wx_action import WxAction, EVT_ACTION_CHANGED
 from .wx_action_group import WxActionGroup
 from .wx_constraints_widget import WxConstraintsWidget
@@ -291,154 +295,112 @@ class wxToolBar(wx.ToolBar):
             remove(action)
 
 
-class WxToolBar(WxConstraintsWidget):
+class WxToolBar(WxConstraintsWidget, ProxyToolBar):
     """ A Wx implementation of an Enaml ToolBar.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxToolBar)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying tool bar widget.
+    def create_widget(self):
+        """ Create the QCustomToolBar widget.
 
         """
         # The orientation of a tool bar can only be set at creation time.
         # Wx does not support changing it dynamically. It is only set if
         # the tool bar is a child of something other than a wx.Frame.
         # The style must include TB_FLAT or separators won't be drawn.
+        d = self.declaration
+        parent = self.parent_widget()
         style =  wx.TB_FLAT | wx.TB_TEXT | wx.NO_BORDER
         if not isinstance(parent, wx.Frame):
-            style |= _ORIENTATION_MAP[tree['orientation']]
+            style |= _ORIENTATION_MAP[d.orientation]
         else:
             style |= wx.HORIZONTAL
 
-        tbar = wxToolBar(parent, style=style)
+        self.widget = wxToolBar(parent, style=style)
 
         # Setting the tool bar to double buffered avoids a ton of
         # flickering on Windows during resize events.
-        tbar.SetDoubleBuffered(True)
+        self.widget.SetDoubleBuffered(True)
 
         # For now, we set the bitmap size to 0 since we don't yet
         # support icons or images.
-        tbar.SetToolBitmapSize(wx.Size(0, 0))
-
-        return tbar
-
-    def create(self, tree):
-        """ Create and initialize the underlying tool bar control.
-
-        """
-        super(WxToolBar, self).create(tree)
-        self.set_orientation(tree['orientation'])
-        self.set_movable(tree['movable'])
-        self.set_floatable(tree['floatable'])
-        self.set_floating(tree['floating'])
-        self.set_dock_area(tree['dock_area'])
-        self.set_allowed_dock_areas(tree['allowed_dock_areas'])
+        self.widget.SetToolBitmapSize(wx.Size(0, 0))
 
     def init_layout(self):
         """ Initialize the layout for the toolbar.
 
         """
         super(WxToolBar, self).init_layout()
-        widget = self.widget()
+        widget = self.widget
         for child in self.children():
             if isinstance(child, WxAction):
-                widget.AddAction(child.widget(), False)
+                widget.AddAction(child.widget, False)
             elif isinstance(child, WxActionGroup):
-                widget.AddActions(child.actions(), False)
+                widget.AddActions(child.actions, False)
         widget.Realize()
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """  Handle the child removed event for a WxToolBar.
+    def find_next_action(self, child):
+        """ Locate the wxAction object which logically follows the child.
+
+        Parameters
+        ----------
+        child : WxToolkitObject
+            The child object of interest.
+
+        Returns
+        -------
+        result : wxAction or None
+            The wxAction which logically follows the position of the
+            child in the list of children. None will be returned if
+            a relevant wxAction is not found.
 
         """
-        if isinstance(child, WxAction):
-            self.widget().RemoveAction(child.widget())
-        elif isinstance(child, WxActionGroup):
-            self.widget().RemoveActions(child.actions())
+        found = False
+        for dchild in self.children():
+            if found:
+                if isinstance(dchild, WxAction):
+                    return dchild.widget
+                if isinstance(dchild, WxActionGroup):
+                    acts = dchild.actions()
+                    if len(acts) > 0:
+                        return acts[0]
+            else:
+                found = dchild is child
 
     def child_added(self, child):
         """ Handle the child added event for a WxToolBar.
 
         """
-        before = self.find_next_action(child)
+        super(WxToolBar, self).child_added(child)
         if isinstance(child, WxAction):
-            self.widget().InsertAction(before, child.widget())
+            before = self.find_next_action(child)
+            self.widget.InsertAction(before, child.widget)
         elif isinstance(child, WxActionGroup):
-            self.widget().InsertActions(before, child.actions())
+            before = self.find_next_action(child)
+            self.widget.InsertActions(before, child.actions())
+
+    def child_removed(self, child):
+        """  Handle the child removed event for a WxToolBar.
+
+        """
+        super(WxToolBar, self).child_removed(child)
+        if isinstance(child, WxAction):
+            if child.widget is not None:
+                self.widget.RemoveAction(child.widget)
+        elif isinstance(child, WxActionGroup):
+            self.widget.RemoveActions(child.actions())
 
     #--------------------------------------------------------------------------
-    # Utility Methods
+    # ProxyToolBar API
     #--------------------------------------------------------------------------
-    def find_next_action(self, child):
-        """ Get the wxAction instance which comes immediately after the
-        actions of the given child.
-
-        Parameters
-        ----------
-        child : WxActionGroup, or WxAction
-            The child of interest.
-
-        Returns
-        -------
-        result : wxAction or None
-            The wxAction which comes immediately after the actions of the
-            given child, or None if no actions follow the child.
-
-        """
-        index = self.index_of(child)
-        if index != -1:
-            for child in self.children()[index + 1:]:
-                target = None
-                if isinstance(child, WxAction):
-                    target = child.widget()
-                elif isinstance(child, WxActionGroup):
-                    acts = child.actions()
-                    target = acts[0] if acts else None
-                if target is not None:
-                    return target
-
-    #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_movable(self, content):
-        """ Handle the 'set_movable' action from the Enaml widget.
-
-        """
-        self.set_movable(content['movable'])
-
-    def on_action_set_floatable(self, content):
-        """ Handle the 'set_floatable' action from the Enaml widget.
-
-        """
-        self.set_floatable(content['floatable'])
-
-    def on_action_set_floating(self, content):
-        """ Handle the 'set_floating' action from the Enaml widget.
-
-        """
-        self.set_floating(content['floating'])
-
-    def on_action_set_dock_area(self, content):
-        """ Handle the 'set_dock_area' action from the Enaml widget.
-
-        """
-        self.set_dock_area(content['dock_area'])
-
-    def on_action_set_allowed_dock_areas(self, content):
-        """ Handle the 'set_allowed_dock_areas' action from the Enaml
-        widget.
-
-        """
-        self.set_allowed_dock_areas(content['allowed_dock_areas'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
-    #--------------------------------------------------------------------------\
     def set_visible(self, visible):
         """ Overridden parent class visibility setter which properly
         handles the visibility of the tool bar.
@@ -493,4 +455,3 @@ class WxToolBar(WxConstraintsWidget):
         # The standard wx toolbar doesn't support docking. The Aui
         # toolbar sucks, don't use it.
         pass
-

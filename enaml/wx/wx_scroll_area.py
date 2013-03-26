@@ -7,6 +7,10 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.scroll_area import ProxyScrollArea
+
 from .wx_constraints_widget import WxConstraintsWidget
 from .wx_container import WxContainer
 from .wx_single_widget_sizer import wxSingleWidgetSizer
@@ -116,38 +120,36 @@ class wxScrollArea(wx.ScrolledWindow):
         self.GetSizer().Add(widget)
 
 
-class WxScrollArea(WxConstraintsWidget):
+class WxScrollArea(WxConstraintsWidget, ProxyScrollArea):
     """ A Wx implementation of an Enaml ScrollArea.
 
     """
-    #: Storage for the horizontal scroll policy
-    _h_scroll = 'as_needed'
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxScrollArea)
 
-    #: Storage for the vertical scroll policy
-    _v_scroll = 'as_needed'
-
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying wxScrolledWindow widget.
 
         """
         style = wx.HSCROLL | wx.VSCROLL | wx.BORDER_SIMPLE
-        return wxScrollArea(parent, style=style)
+        self.widget = wxScrollArea(self.parent_widget(), style=style)
 
-    def create(self, tree):
-        """ Create and initialize the scroll area widget.
+    def init_widget(self):
+        """ Initialize the underlying widget.
 
         """
-        super(WxScrollArea, self).create(tree)
-        self.set_horizontal_policy(tree['horizontal_policy'])
-        self.set_vertical_policy(tree['vertical_policy'])
-        self.set_widget_resizable(tree['widget_resizable'])
+        super(WxScrollArea, self).init_widget()
+        d = self.declaration
+        self.set_horizontal_policy(d.horizontal_policy)
+        self.set_vertical_policy(d.vertical_policy)
+        self.set_widget_resizable(d.widget_resizable)
 
     def init_layout(self):
         """ Handle the layout initialization for the scroll area.
 
         """
         super(WxScrollArea, self).init_layout()
-        self.widget().SetScrollWidget(self.scroll_widget())
+        self.widget.SetScrollWidget(self.scroll_widget())
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -155,35 +157,29 @@ class WxScrollArea(WxConstraintsWidget):
     def scroll_widget(self):
         """ Find and return the scroll widget child for this widget.
 
-        Returns
-        -------
-        result : wxWindow or None
-            The scroll widget defined for this widget, or None if one is
-            not defined.
-
         """
-        widget = None
-        for child in self.children():
-            if isinstance(child, WxContainer):
-                widget = child.widget()
-        return widget
+        w = self.declaration.scroll_widget()
+        if w is not None:
+            return w.proxy.widget or None
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a WxScrollArea.
-
-        """
-        if isinstance(child, WxContainer):
-            self.widget().SetScrollWidget(self.scroll_widget())
-
     def child_added(self, child):
         """ Handle the child added event for a WxScrollArea.
 
         """
+        super(WxScrollArea, self).child_added(child)
         if isinstance(child, WxContainer):
-            self.widget().SetScrollWidget(self.scroll_widget())
+            self.widget.SetScrollWidget(self.scroll_widget())
+
+    def child_removed(self, child):
+        """ Handle the child removed event for a WxScrollArea.
+
+        """
+        super(WxScrollArea, self).child_removed(child)
+        if isinstance(child, WxContainer):
+            self.widget.SetScrollWidget(self.scroll_widget())
 
     #--------------------------------------------------------------------------
     # Overrides
@@ -207,54 +203,28 @@ class WxScrollArea(WxConstraintsWidget):
         pass
 
     #--------------------------------------------------------------------------
-    # Message Handlers
-    #--------------------------------------------------------------------------
-    def on_action_set_horizontal_policy(self, content):
-        """ Handle the 'set_horizontal_policy' action from the Enaml
-        widget.
-
-        """
-        self.set_horizontal_policy(content['horizontal_policy'])
-
-    def on_action_set_vertical_policy(self, content):
-        """ Handle the 'set_vertical_policy' action from the Enaml
-        widget.
-
-        """
-        self.set_vertical_policy(content['vertical_policy'])
-
-    def on_action_set_widget_resizable(self, content):
-        """ Handle the 'set_widget_resizable' action from the Enaml
-        widget.
-
-        """
-        self.set_widget_resizable(content['widget_resizable'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyScrollArea API
     #--------------------------------------------------------------------------
     def set_horizontal_policy(self, policy):
         """ Set the horizontal scrollbar policy of the widget.
 
         """
-        self._h_scroll = policy
         horiz = SCROLLBAR_MAP[policy]
-        vert = SCROLLBAR_MAP[self._v_scroll]
-        self.widget().SetScrollRate(horiz, vert)
+        vert = SCROLLBAR_MAP[self.declaration.vertical_policy]
+        self.widget.SetScrollRate(horiz, vert)
 
     def set_vertical_policy(self, policy):
         """ Set the vertical scrollbar policy of the widget.
 
         """
-        self._v_scroll = policy
-        horiz = SCROLLBAR_MAP[self._h_scroll]
+        horiz = SCROLLBAR_MAP[self.declaration.horizontal_policy]
         vert = SCROLLBAR_MAP[policy]
-        self.widget().SetScrollRate(horiz, vert)
+        self.widget.SetScrollRate(horiz, vert)
 
     def set_widget_resizable(self, resizable):
         """ Set whether or not the scroll widget is resizable.
 
-        """
-        # Not currently implemented on Wx
-        pass
+        This is not supported on Wx.
 
+        """
+        pass

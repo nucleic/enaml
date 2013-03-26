@@ -10,7 +10,7 @@ import sys
 from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QMainWindow
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.main_window import ProxyMainWindow
 
@@ -18,6 +18,7 @@ from .q_deferred_caller import deferredCall
 from .qt_container import QtContainer
 from .qt_dock_pane import QtDockPane
 from .qt_menu_bar import QtMenuBar
+from .qt_status_bar import QtStatusBar
 from .qt_tool_bar import QtToolBar
 from .qt_window import QtWindow
 
@@ -122,6 +123,7 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         widget = self.widget
         widget.setMenuBar(self.menu_bar())
         widget.setCentralWidget(self.central_widget())
+        widget.setStatusBar(self.status_bar())
         for d in self.dock_panes():
             widget.addDockWidget(d.dockArea(), d)
         for d in self.tool_bars():
@@ -144,21 +146,33 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         """
         d = self.declaration.menu_bar()
         if d is not None:
-            return d.proxy.widget or None
+            return d.proxy.widget
 
     def dock_panes(self):
         """ Get the QDockWidget widgets defined for the main window.
 
         """
         for d in self.declaration.dock_panes():
-            yield d.proxy.widget or None
+            w = d.proxy.widget
+            if w is not None:
+                yield w
+
+    def status_bar(self):
+        """ Get the status bar widget defined for the main window.
+
+        """
+        d = self.declaration.status_bar()
+        if d is not None:
+            return d.proxy.widget
 
     def tool_bars(self):
         """ Get the QToolBar widgets defined for the main window.
 
         """
         for d in self.declaration.tool_bars():
-            yield d.proxy.widget or None
+            w = d.proxy.widget
+            if w is not None:
+                yield w
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -174,6 +188,9 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         elif isinstance(child, QtDockPane):
             dock_widget = child.widget
             self.widget.addDockWidget(dock_widget.dockArea(), dock_widget)
+        elif isinstance(child, QtStatusBar):
+            # FIXME Qt will delete the old status bar
+            self.widget.setStatusBar(self.status_bar())
         elif isinstance(child, QtToolBar):
             # There are two hacks involved in adding a tool bar. The
             # first is the same hack that is perfomed in the layout
@@ -200,13 +217,16 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         """ Handle the child removed event for a QtMainWindow.
 
         """
-        if isinstance(child, QtDockPane) and child.widget is not null:
+        if isinstance(child, QtDockPane) and child.widget is not None:
             self.widget.removeDockWidget(child.widget)
-        elif isinstance(child, QtToolBar) and child.widget is not null:
+        elif isinstance(child, QtToolBar) and child.widget is not None:
             self.widget.removeToolBar(child.widget)
         elif isinstance(child, QtContainer):
             self.widget.setCentralWidget(self.central_widget())
         elif isinstance(child, QtMenuBar):
             self.widget.setMenuBar(self.menu_bar())
+        elif isinstance(child, QtStatusBar):
+            # FIXME Qt will delete the old status bar
+            self.widget.setStatusBar(self.status_bar())
         else:
             super(QtMainWindow, self).child_removed(child)

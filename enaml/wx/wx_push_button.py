@@ -7,28 +7,35 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.push_button import ProxyPushButton
+
 from .wx_abstract_button import WxAbstractButton
 
 
-class WxPushButton(WxAbstractButton):
-    """ A Wx implementation of the Enaml PushButton.
+class WxPushButton(WxAbstractButton, ProxyPushButton):
+    """ A Wx implementation of the Enaml ProxyPushButton.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wx.Button)
+
     #--------------------------------------------------------------------------
-    # Setup methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Creates the underlying wx.Button control.
+    def create_widget(self):
+        """ Create the underlying wxButton widget.
 
         """
-        return wx.Button(parent)
+        self.widget = wx.Button(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the PushButton control.
+    def init_widget(self):
+        """ Handle layout initialization for the push button.
 
         """
-        super(WxPushButton, self).create(tree)
-        self.widget().Bind(wx.EVT_BUTTON, self.on_clicked)
+        super(WxPushButton, self).init_widget()
+        self.widget.Bind(wx.EVT_BUTTON, self.on_clicked)
 
     #--------------------------------------------------------------------------
     # Abstract API Implementation
@@ -36,10 +43,9 @@ class WxPushButton(WxAbstractButton):
     def set_checkable(self, checkable):
         """ Sets whether or not the widget is checkable.
 
+        This is not supported on Wx.
+
         """
-        # XXX ignore this for now, wx has a completely separate control
-        # wx.ToggleButton for handling this, that we'll need to swap
-        # out dynamically.
         pass
 
     def get_checked(self):
@@ -53,4 +59,3 @@ class WxPushButton(WxAbstractButton):
 
         """
         pass
-

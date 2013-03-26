@@ -305,14 +305,16 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         widget.layoutRequested.connect(self.on_layout_requested)
 
     #--------------------------------------------------------------------------
-    # Utility Method
+    # Utility Methods
     #--------------------------------------------------------------------------
     def pages(self):
         """ Get the pages defined for the notebook.
 
         """
         for p in self.declaration.pages():
-            yield p.proxy.widget or None
+            w = p.proxy.widget
+            if w is not None:
+                yield w
 
     #--------------------------------------------------------------------------
     # Child Events

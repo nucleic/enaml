@@ -7,45 +7,46 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Int, Typed
+
+from enaml.widgets.combo_box import ProxyComboBox
+
 from .wx_control import WxControl
 
 
-class WxComboBox(WxControl):
-    """ A Wx implementation of an Enaml ComboBox.
+# cyclic notification guard flags
+INDEX_GUARD = 0x1
+
+
+class WxComboBox(WxControl, ProxyComboBox):
+    """ A Wx implementation of an Enaml ProxyComboBox.
 
     """
-    #--------------------------------------------------------------------------
-    # Setup Methods
-    #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
-        """ Create the underlying wx.ComboBox widget.
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wx.ComboBox)
 
-        """
-        return wx.ComboBox(parent, style=wx.CB_READONLY)
-
-    def create(self, tree):
-        """ Create and initialize the combo box control.
-
-        """
-        super(WxComboBox, self).create(tree)
-        self.set_items(tree['items'])
-        self.set_index(tree['index'])
-        self.widget().Bind(wx.EVT_COMBOBOX, self.on_index_changed)
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
 
     #--------------------------------------------------------------------------
-    # Message Handlers
+    # Initialization API
     #--------------------------------------------------------------------------
-    def on_action_set_index(self, content):
-        """ Handle the 'set_index' action from the Enaml widget.
+    def create_widget(self):
+        """ Create the QComboBox widget.
 
         """
-        self.set_index(content['index'])
+        self.widget = wx.ComboBox(self.parent_widget(), style=wx.CB_READONLY)
 
-    def on_action_set_items(self, content):
-        """ Handle the 'set_items' action from the Enaml widget.
+    def init_widget(self):
+        """ Create and initialize the underlying widget.
 
         """
-        self.set_items(content['items'])
+        super(WxComboBox, self).init_widget()
+        d = self.declaration
+        self.set_items(d.items)
+        self.set_index(d.index)
+        self.set_editable(d.editable)
+        self.widget.Bind(wx.EVT_COMBOBOX, self.on_index_changed)
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -54,17 +55,17 @@ class WxComboBox(WxControl):
         """ The signal handler for the index changed signal.
 
         """
-        content = {'index': self.widget().GetCurrentSelection()}
-        self.send_action('index_changed', content)
+        if not self._guard & INDEX_GUARD:
+            self.declaration.index = self.widget.GetCurrentSelection()
 
     #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyComboBox API
     #--------------------------------------------------------------------------
     def set_items(self, items):
         """ Set the items of the ComboBox.
 
         """
-        widget = self.widget()
+        widget = self.widget
         sel = widget.GetCurrentSelection()
         widget.SetItems(items)
         widget.SetSelection(sel)
@@ -73,5 +74,16 @@ class WxComboBox(WxControl):
         """ Set the current index of the ComboBox
 
         """
-        self.widget().SetSelection(index)
+        self._guard |= INDEX_GUARD
+        try:
+            self.widget.SetSelection(index)
+        finally:
+            self._guard &= ~INDEX_GUARD
 
+    def set_editable(self, editable):
+        """ Set whether the combo box is editable.
+
+        This is not supported on wx.
+
+        """
+        pass

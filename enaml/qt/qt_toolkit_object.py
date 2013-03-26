@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import QObject
 
-from atom.api import Typed, null
+from atom.api import Typed
 
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 
@@ -71,12 +71,11 @@ class QtToolkitObject(ProxyToolkitObject):
     def destroy(self):
         """ A reimplemented destructor.
 
-        This will destroy the toolkit object provided that the parent
-        declaration is no already destroyed. This is so that only the
-        top-most toolkit object is destroyed, saving time.
+        This destructor will clear the reference to the toolkit widget
+        and set its parent to None.
 
         """
-        if self.widget is not null:
+        if self.widget is not None:
             self.widget.setParent(None)
             del self.widget
         super(QtToolkitObject, self).destroy()
@@ -89,7 +88,7 @@ class QtToolkitObject(ProxyToolkitObject):
 
         """
         super(QtToolkitObject, self).child_removed(child)
-        if child.widget is not null:
+        if child.widget is not None:
             child.widget.setParent(None)
 
     #--------------------------------------------------------------------------
@@ -105,11 +104,9 @@ class QtToolkitObject(ProxyToolkitObject):
             None if there is no such parent.
 
         """
-        d = self.parent()
-        if d is not None:
-            w = d.widget
-            if w is not null:
-                return w
+        parent = self.parent()
+        if parent is not None:
+            return parent.widget
 
     def child_widgets(self):
         """ Get the child toolkit widgets for this object.
@@ -122,5 +119,5 @@ class QtToolkitObject(ProxyToolkitObject):
         """
         for child in self.children():
             w = child.widget
-            if w is not null:
+            if w is not None:
                 yield w

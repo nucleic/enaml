@@ -7,8 +7,12 @@
 #------------------------------------------------------------------------------
 import wx
 
+from atom.api import Typed
+
+from enaml.widgets.action_group import ProxyActionGroup
+
 from .wx_action import WxAction, EVT_ACTION_CHANGED
-from .wx_object import WxObject
+from .wx_toolkit_object import WxToolkitObject
 
 
 class wxActionGroup(wx.EvtHandler):
@@ -231,65 +235,96 @@ class wxActionGroup(wx.EvtHandler):
                 action._SetGroupVisible(visible)
 
 
-class WxActionGroup(WxObject):
-    """ A Wx implementation of an Enaml ActionGroup.
+class WxActionGroup(WxToolkitObject, ProxyActionGroup):
+    """ A Wx implementation of an Enaml ProxyActionGroup.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxActionGroup)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying action group widget.
 
         """
-        return wxActionGroup(parent)
+        self.widget = wxActionGroup(self.parent_widget())
 
-    def create(self, tree):
-        """ Create and initialize the underlying control.
+    def init_widget(self):
+        """ Initialize the control.
 
         """
-        super(WxActionGroup, self).create(tree)
-        self.set_exclusive(tree['exclusive'])
-        self.set_enabled(tree['enabled'])
-        self.set_visible(tree['visible'])
+        super(WxActionGroup, self).init_widget()
+        d = self.declaration
+        self.set_exclusive(d.exclusive)
+        self.set_enabled(d.enabled)
+        self.set_visible(d.visible)
 
     def init_layout(self):
-        """ Initialize the layout for the underlying control.
+        """ Initialize the layout for the control.
 
         """
         super(WxActionGroup, self).init_layout()
-        widget = self.widget()
-        for child in self.children():
-            if isinstance(child, WxAction):
-                widget.AddAction(child.widget())
+        widget = self.widget
+        for action in self.actions():
+            widget.addAction(action)
 
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-    def child_removed(self, child):
-        """ Handle the child removed event for a WxActionGroup.
+    def find_next_action(self, child):
+        """ Locate the wxAction object which logically follows the child.
+
+        If the given child is last in the list of children, then the
+        parent object will be invoked to find the wxAction which follows
+        this action group.
+
+        Parameters
+        ----------
+        child : QtToolkitObject
+            The child object of interest.
+
+        Returns
+        -------
+        result : wxAction or None
+            The wxAction which logically follows the position of the
+            child in the list of children. None will be returned if
+            a relevant QAction is not found.
 
         """
-        if isinstance(child, WxAction):
-            action = child.widget()
-            self.widget().RemoveAction(action)
-            parent = self.parent()
-            if parent is not None:
-                parent.widget().RemoveAction(action)
+        found = False
+        for dchild in self.children():
+            if found and isinstance(dchild, WxAction):
+                return dchild.widget
+            else:
+                found = child is dchild
+        parent = self.parent()
+        if parent is not None:
+            return parent.find_next_action(self)
 
     def child_added(self, child):
         """ Handle the child added event for a WxActionGroup.
 
         """
-        # The easiest way to handle the insert is to tell the parent to
-        # insert all the current actions. It will work out the proper
-        # ordering automatically.
+        super(WxActionGroup, self).child_added(child)
         if isinstance(child, WxAction):
-            self.widget().AddAction(child.widget())
+            self.widget.AddAction(child.widget)
             parent = self.parent()
             if parent is not None:
-                before = parent.find_next_action(self)
-                parent.widget().InsertActions(before, self.actions())
+                before = self.find_next_action(child)
+                parent.widget.InsertAction(before, child.widget)
+
+    def child_removed(self, child):
+        """ Handle the child removed event for a WxActionGroup.
+
+        """
+        super(WxActionGroup, self).child_removed(child)
+        if isinstance(child, WxAction) and child.widget is not None:
+            self.widget.RemoveAction(child.widget)
+            parent = self.parent()
+            if parent is not None:
+                parent.widget.RemoveAction(child.widget)
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -310,44 +345,22 @@ class WxActionGroup(WxObject):
         return [c.widget() for c in self.children() if isinst(c, WxAction)]
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_exclusive(self, content):
-        """ Handle the 'set_exclusive' action from the Enaml widget.
-
-        """
-        self.set_exclusive(content['exclusive'])
-
-    def on_action_set_enabled(self, content):
-        """ Handle the 'set_enabled' action from the Enaml widget.
-
-        """
-        self.set_enabled(content['enabled'])
-
-    def on_action_set_visible(self, content):
-        """ Handle the 'set_visible' action from the Enaml widget.
-
-        """
-        self.set_visible(content['visible'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyActionGroup API
     #--------------------------------------------------------------------------
     def set_exclusive(self, exclusive):
         """ Set the exclusive state of the underlying control.
 
         """
-        self.widget().SetExclusive(exclusive)
+        self.widget.SetExclusive(exclusive)
 
     def set_enabled(self, enabled):
         """ Set the enabled state of the underlying control.
 
         """
-        self.widget().SetEnabled(enabled)
+        self.widget.SetEnabled(enabled)
 
     def set_visible(self, visible):
         """ Set the visible state of the underlying control.
 
         """
-        self.widget().SetVisible(visible)
-
+        self.widget.SetVisible(visible)

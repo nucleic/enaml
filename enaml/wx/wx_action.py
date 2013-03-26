@@ -10,7 +10,11 @@ from weakref import WeakValueDictionary
 import wx
 import wx.lib.newevent
 
-from .wx_object import WxObject
+from atom.api import Int, Typed
+
+from enaml.widgets.action import ProxyAction
+
+from .wx_toolkit_object import WxToolkitObject
 
 
 #: An event emitted when a wxAction has been triggered by the user. The
@@ -393,34 +397,50 @@ class wxAction(wx.EvtHandler):
             self._EmitChanged()
 
 
-class WxAction(WxObject):
-    """ A Wx implementation of an Enaml Action.
+# cyclic notification guard flags
+CHECKED_GUARD = 0x1
+
+
+class WxAction(WxToolkitObject, ProxyAction):
+    """ A Wx implementation of an Enaml ProxyAction.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(wxAction)
+
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
+
     #--------------------------------------------------------------------------
-    # Setup Methods
+    # Initialization API
     #--------------------------------------------------------------------------
-    def create_widget(self, parent, tree):
+    def create_widget(self):
         """ Create the underlying wxAction object.
 
         """
-        return wxAction(parent)
+        self.widget = wxAction(self.parent_widget())
 
-    def create(self, tree):
+    def init_widget(self):
         """ Create and initialize the underlying control.
 
         """
-        super(WxAction, self).create(tree)
-        widget = self.widget()
+        super(WxAction, self).init_widget()
+        d = self.declaration
+        widget = self.widget
         widget.BeginBatch()
-        self.set_text(tree['text'])
-        self.set_tool_tip(tree['tool_tip'])
-        self.set_status_tip(tree['status_tip'])
-        self.set_checkable(tree['checkable'])
-        self.set_checked(tree['checked'])
-        self.set_enabled(tree['enabled'])
-        self.set_visible(tree['visible'])
-        self.set_separator(tree['separator'])
+        if d.text:
+            self.set_text(d.text)
+        if d.tool_tip:
+            self.set_tool_tip(d.tool_tip)
+        if d.status_tip:
+            self.set_status_tip(d.status_tip)
+        if d.icon:
+            self.set_icon(d.icon)
+        self.set_checkable(d.checkable)
+        self.set_checked(d.checked)
+        self.set_enabled(d.enabled)
+        self.set_visible(d.visible)
+        self.set_separator(d.separator)
         widget.EndBatch(emit=False)
         widget.Bind(EVT_ACTION_TRIGGERED, self.on_triggered)
         widget.Bind(EVT_ACTION_TOGGLED, self.on_toggled)
@@ -432,115 +452,79 @@ class WxAction(WxObject):
         """ The event handler for the EVT_ACTION_TRIGGERED event.
 
         """
-        content = {'checked': event.IsChecked}
-        self.send_action('triggered', content)
+        if not self._guard & CHECKED_GUARD:
+            checked = event.IsChecked
+            self.declaration.checked = checked
+            self.declaration.triggered(checked)
 
     def on_toggled(self, event):
         """ The event handler for the EVT_ACTION_TOGGLED event.
 
         """
-        content = {'checked': event.IsChecked}
-        self.send_action('toggled', content)
+        if not self._guard & CHECKED_GUARD:
+            checked = event.IsChecked
+            self.declaration.checked = checked
+            self.declaration.toggled(checked)
 
     #--------------------------------------------------------------------------
-    # Message Handling
-    #--------------------------------------------------------------------------
-    def on_action_set_text(self, content):
-        """ Handle the 'set_text' action from the Enaml widget.
-
-        """
-        self.set_text(content['text'])
-
-    def on_action_set_tool_tip(self, content):
-        """ Handle the 'set_tool_tip' action from the Enaml widget.
-
-        """
-        self.set_tool_tip(content['tool_tip'])
-
-    def on_action_set_status_tip(self, content):
-        """ Handle the 'set_status_tip' action from the Enaml widget.
-
-        """
-        self.set_status_tip(content['status_tip'])
-
-    def on_action_set_checkable(self, content):
-        """ Handle the 'set_checkable' action from the Enaml widget.
-
-        """
-        self.set_checkable(content['checkable'])
-
-    def on_action_set_checked(self, content):
-        """ Handle the 'set_checked' action from the Enaml widget.
-
-        """
-        self.set_checked(content['checked'])
-
-    def on_action_set_enabled(self, content):
-        """ Handle the 'set_enabled' action from the Enaml widget.
-
-        """
-        self.set_enabled(content['enabled'])
-
-    def on_action_set_visible(self, content):
-        """ Handle the 'set_visible' action from the Enaml widget.
-
-        """
-        self.set_visible(content['visible'])
-
-    def on_action_set_separator(self, content):
-        """ Handle the 'set_separator' action from the Enaml widget.
-
-        """
-        self.set_separator(content['separator'])
-
-    #--------------------------------------------------------------------------
-    # Widget Update Methods
+    # ProxyAction API
     #--------------------------------------------------------------------------
     def set_text(self, text):
         """ Set the text on the underlying control.
 
         """
-        self.widget().SetText(text)
+        self.widget.SetText(text)
 
     def set_tool_tip(self, tool_tip):
         """ Set the tool tip on the underlying control.
 
         """
-        self.widget().SetToolTip(tool_tip)
+        self.widget.SetToolTip(tool_tip)
 
     def set_status_tip(self, status_tip):
         """ Set the status tip on the underyling control.
 
         """
-        self.widget().SetStatusTip(status_tip)
+        self.widget.SetStatusTip(status_tip)
+
+    def set_icon(self, icon):
+        """ Set the icon for the action.
+
+        This is not supported on Wx.
+
+        """
+        pass
 
     def set_checkable(self, checkable):
         """ Set the checkable state on the underlying control.
 
         """
-        self.widget().SetCheckable(checkable)
+        self.widget.SetCheckable(checkable)
 
     def set_checked(self, checked):
         """ Set the checked state on the underlying control.
 
         """
-        self.widget().SetChecked(checked)
+        self._guard |= CHECKED_GUARD
+        try:
+            self.widget.SetChecked(checked)
+        finally:
+            self._guard &= ~CHECKED_GUARD
 
     def set_enabled(self, enabled):
         """ Set the enabled state on the underlying control.
 
         """
-        self.widget().SetEnabled(enabled)
+        self.widget.SetEnabled(enabled)
 
     def set_visible(self, visible):
         """ Set the visible state on the underlying control.
 
         """
-        self.widget().SetVisible(visible)
+        self.widget.SetVisible(visible)
 
     def set_separator(self, separator):
         """ Set the separator state on the underlying control.
 
         """
-        self.widget().SetSeparator(separator)
-
+        self.widget.SetSeparator(separator)

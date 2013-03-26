@@ -83,4 +83,3 @@ def TimedCall(ms, callback, *args, **kwargs):
     if c is None:
         c = _caller = wxDeferredCaller()
     c.TimedCall(ms, callback, *args, **kwargs)
-
