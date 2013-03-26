@@ -1,0 +1,84 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" This is an example of a fully dynamic BubbleView widget.
+
+The contents of the bubble view contain widgets that adjust the various
+settings exposed by the BubbleView.
+
+"""
+from enaml.widgets.api import (
+    Window, Container, BubbleView, Form, Label, PushButton, ComboBox, Slider, 
+    Field
+)
+
+from enaml.core.api import Include
+
+
+relative_pos = {'top': 0., 'bottom': 1., 'left': 0., 'right': 1.}
+
+
+def convert_pos(pos):
+    y = relative_pos.get(pos[0], 0.5)
+    if len(pos) > 1:
+        x = relative_pos.get(pos[1], 0.5)
+    else:
+        x = 0.5
+    return (x, y)
+
+
+enamldef MyBubbleView(BubbleView): bubble:
+    Container:
+        Form:
+            Label:
+                text = 'Anchor position'
+            ComboBox:
+                items = ['Bottom', 'Left', 'Right', 'Top']
+                index = 0
+                index :: bubble.anchor = items[index].lower()
+            Label:
+                text = 'Corner radius'
+            Slider:
+                minimum = 2
+                maximum = 40
+                tick_interval = 1
+                value := bubble.radius
+            Label:
+                text = 'Arrow size'
+            Slider:
+                minimum = 0
+                maximum = 30
+                tick_interval = 1
+                value := bubble.arrow
+            Label:
+                text = 'Anchor to Parent'
+            ComboBox:
+                items = ["Top Left", "Top Center", "Top Right", "Center", 
+                         "Bottom Left", "Bottom Center", "Bottom Right"]
+                index = 3
+                index ::
+                    pos = items[index].lower().split()
+                    bubble.relative_pos = convert_pos(pos)
+            Include: inc:
+                pass
+            PushButton:
+                text = 'Add new row'
+                clicked ::
+                    inc.objects.extend((Label(text='Label'),Field()))
+            PushButton:
+                text = 'Close'
+                clicked :: bubble.close()
+
+
+enamldef Main(Window):
+    Container:
+        PushButton: btn:
+            text = "Show Bubble View"
+            clicked ::
+                bubble = MyBubbleView(btn)
+                bubble.show()
+
