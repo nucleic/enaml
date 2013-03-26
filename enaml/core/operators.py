@@ -506,7 +506,11 @@ def bind_read_operator(klass, binding, operator):
     """
     member = assert_d_member(klass, binding, True, False)
     klass.notify_operators().setdefault(binding.name, []).append(operator)
-    member.add_static_observer('_run_notify_operator')
+    if not member.has_observer('_run_notify_operator'):
+        clone = member.clone()
+        clone.add_static_observer('_run_notify_operator')
+        klass.members()[binding.name] = clone
+        setattr(klass, binding.name, clone)
 
 
 def bind_write_operator(klass, binding, operator):
@@ -525,14 +529,13 @@ def bind_write_operator(klass, binding, operator):
 
     """
     member = assert_d_member(klass, binding, False, True)
-    name = binding.name
-    klass.eval_operators()[name] = operator
+    klass.eval_operators()[binding.name] = operator
     mode = (DefaultValue.ObjectMethod_Name, '_run_eval_operator')
     if member.default_value_mode != mode:
         clone = member.clone()
         clone.set_default_value_mode(*mode)
-        klass.members()[name] = clone
-        setattr(klass, name, clone)
+        klass.members()[binding.name] = clone
+        setattr(klass, binding.name, clone)
 
 
 def op_simple(klass, binding):
