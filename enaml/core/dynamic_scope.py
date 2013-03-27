@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from abc import ABCMeta, abstractmethod
-
+import os
 
 #------------------------------------------------------------------------------
 # Abstract Scope Listener
@@ -320,3 +320,122 @@ class Nonlocals(object):
         else:
             res = False
         return res
+
+
+# Debug hooks for nonlocals tracing
+if os.environ.get('ENAML_DEBUG_DYNAMIC_SCOPE'):
+
+    class DebugScopeTracer(object):
+
+        def try_get(self, obj, name):
+            pass
+
+        def try_fail_get(self, obj, name, exc):
+            pass
+
+        def success_get(self, obj, name, val):
+            pass
+
+        def fail_get(self, first, last, name):
+            pass
+
+        def try_set(self, obj, name, val):
+            pass
+
+        def try_fail_set(self, obj, name, val, exc):
+            pass
+
+        def success_set(self, obj, name, val):
+            pass
+
+        def fail_set(self, first, last, name, val):
+            pass
+
+    __debug_tracer = DebugScopeTracer()
+
+    def set_debug_scope_tracer(tracer):
+        assert isinstance(tracer, DebugScopeTracer)
+        global __debug_tracer
+        __debug_tracer = tracer
+
+    def get_debug_scope_tracer():
+        return __debug_tracer
+
+
+    class DebugDynamicScope(DynamicScope):
+
+        def __getitem__(self, name):
+
+            s = self._sentinel
+            v = self._overrides.get(name, s)
+            if v is not s:
+                return v
+            v = self._f_locals.get(name, s)
+            if v is not s:
+                return v
+            v = self._f_globals.get(name, s)
+            if v is not s:
+                return v
+            v = self._f_globals['__builtins__'].get(name, s)
+            if v is not s:
+                return v
+            tracer = get_debug_scope_tracer()
+            parent = last = self._obj
+            while parent is not None:
+                try:
+                    tracer.try_get(parent, name)
+                    value = getattr(parent, name)
+                except AttributeError as e:
+                    tracer.try_fail_get(parent, name, e)
+                    last = parent
+                    parent = parent.parent
+                else:
+                    tracer.success_get(parent, name, value)
+                    listener = self._listener
+                    if listener is not None:
+                        listener.dynamic_load(parent, name, value)
+                    return value
+            tracer.fail_get(self._obj, last, name)
+            raise KeyError(name)
+
+    DynamicScope = DebugDynamicScope
+
+    class DebugNonlocals(Nonlocals):
+
+        def __getitem__(self, name):
+            tracer = get_debug_scope_tracer()
+            parent = last = self._nls_obj
+            while parent is not None:
+                try:
+                    tracer.try_get(parent, name)
+                    value = getattr(parent, name)
+                except AttributeError as e:
+                    tracer.try_fail_get(parent, name, e)
+                    last = parent
+                    parent = parent.parent
+                else:
+                    tracer.success_get(parent, name, value)
+                    listener = self._nls_listener
+                    if listener is not None:
+                        listener.dynamic_load(parent, name, value)
+                    return value
+            tracer.fail_get(self._nls_obj, last, name)
+            raise KeyError(name)
+
+        def __setitem__(self, name, value):
+            tracer = get_debug_scope_tracer()
+            parent = last = self._nls_obj
+            while parent is not None:
+                try:
+                    tracer.try_set(parent, name, value)
+                    setattr(parent, name, value)
+                    tracer.success_set(parent, name, value)
+                    return
+                except AttributeError as e:
+                    tracer.try_fail_set(parent, name, value, e)
+                    last = parent
+                    parent = parent.parent
+            tracer.fail_set(self._nls_obj, last, name, value)
+            raise KeyError(name)
+
+    Nonlocals = DebugNonlocals
