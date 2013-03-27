@@ -7,8 +7,10 @@
 #------------------------------------------------------------------------------
 from collections import Iterable
 
-from atom.api import Instance, List
+from atom.api import Instance, List, Typed
+from atom.datastructures.api import sortedmap
 
+from .conditional import Conditional
 from .declarative import Declarative, d_
 
 
@@ -35,8 +37,9 @@ class Looper(Declarative):
 
     All items created by the looper will be added as children of the
     parent of the `Looper`. The `Looper` keeps ownership of all items
-    it creates. When the iterable for the looper is changed, the old
-    items will be destroyed.
+    it creates. When the iterable for the looper is changed, the looper
+    will only create and destroy children for the items in the iterable
+    which have changed.
 
     Creating a `Looper` without a parent is a programming error.
 
@@ -49,6 +52,11 @@ class Looper(Declarative):
     #: items generated during that iteration. This list should not be
     #: manipulated directly by user code.
     items = List()
+
+    #: Private data storage which maps the user iterable data to the
+    #: list of items created for that iteration. This allows the looper
+    #: to only create and destroy the items which have changed.
+    _idata = Typed(sortedmap, ())
 
     #: Private data storage for the looper.
     _cdata = List()
@@ -90,15 +98,18 @@ class Looper(Declarative):
         process of being destroyed.
 
         """
+        parent = self.parent
+        destroy_items = parent is not None and not parent.is_destroyed
         super(Looper, self).destroy()
         parent = self.parent
-        if parent is not None and not parent.is_destroyed:
+        if destroy_items:
             for iteration in self.items:
                 for item in iteration:
                     if not item.is_destroyed:
                         item.destroy()
         del self.iterable
         del self.items
+        del self._idata
         del self._cdata
 
     #--------------------------------------------------------------------------
@@ -121,13 +132,24 @@ class Looper(Declarative):
         the new items.
 
         """
-        items = []
+        old_items = self.items[:]
+        old_idata = self._idata
         iterable = self.iterable
         cdata = self._cdata
+        new_idata = sortedmap()
+        new_items = []
 
         if iterable and len(cdata) > 0:
             for loop_index, loop_item in enumerate(iterable):
+                iteration = old_idata.get(loop_item)
+                if iteration is not None:
+                    new_idata[loop_item] = iteration
+                    new_items.append(iteration)
+                    old_items.remove(iteration)
+                    continue
                 iteration = []
+                new_idata[loop_item] = iteration
+                new_items.append(iteration)
                 for node, f_locals in cdata:
                     new_locals = f_locals.copy()
                     new_locals['loop_index'] = loop_index
@@ -136,12 +158,38 @@ class Looper(Declarative):
                         child = child_node.typeclass()
                         child_node.populate(child, child_node, new_locals)
                         iteration.append(child)
-                items.append(iteration)
 
-        for iteration in self.items:
+        for iteration in old_items:
             for old in iteration:
                 if not old.is_destroyed:
                     old.destroy()
-        if len(items) > 0:
-            self.parent.insert_children(self, sum(items, []))
-        self.items = items
+        if len(new_items) > 0:
+            expanded = []
+            _recursive_expand(sum(new_items, []), expanded)
+            self.parent.insert_children(self, expanded)
+        self.items = new_items
+        self._idata = new_idata
+
+
+def _recursive_expand(items, expanded):
+    """ Recursively expand the list of items created by the looper.
+
+    This allows the final list to be inserted into the parent and
+    maintain the proper ordering of children.
+
+    Parameters
+    ----------
+    items : list
+        The list of items to expand. This should be composed of
+        Looper, Conditional, and other Object instances.
+
+    expanded : list
+        The output list. This list will be modified in-place.
+
+    """
+    for item in items:
+        if isinstance(item, Conditional):
+            _recursive_expand(item.items[:], expanded)
+        elif isinstance(item, Looper):
+            _recursive_expand(sum(item.items, []), expanded)
+        expanded.append(item)

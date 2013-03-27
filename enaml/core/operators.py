@@ -134,23 +134,12 @@ class DeprecatedNotificationEvent(object):
     @property
     def old(self):
         self._raise_warning()
-        change = self._change
-        ctype = change['type']
-        if ctype == 'update' or ctype == 'property':
-            return change['oldvalue']
+        return self._change.get('oldvalue')
 
     @property
     def new(self):
         self._raise_warning()
-        change = self._change
-        ctype = change['type']
-        if ctype == 'create' or ctype == 'event':
-            value = change['value']
-        elif ctype == 'update' or ctype == 'property':
-            value = change['newvalue']
-        else:
-            value = None
-        return value
+        return self._change.get('value')
 
 
 class OpNotify(OperatorBase):
@@ -211,11 +200,7 @@ class OpUpdate(OperatorBase):
         scope = DynamicScope(
             owner, f_locals, overrides, func.func_globals, None
         )
-        ctype = change['type']
-        if ctype == 'update' or ctype == 'property':
-            call_func(func, (inverter, change['newvalue']), {}, scope)
-        elif ctype == 'create' or ctype == 'event':
-            call_func(func, (inverter, change['value']), {}, scope)
+        call_func(func, (inverter, change.get('value')), {}, scope)
 
 
 class SubscriptionObserver(object):
@@ -399,11 +384,7 @@ class OpDelegate(OpSubscribe):
         scope = DynamicScope(
             owner, f_locals, overrides, func.func_globals, None
         )
-        ctype = change['type']
-        if ctype == 'update' or ctype == 'property':
-            call_func(func, (inverter, change['newvalue']), {}, scope)
-        elif ctype == 'create':
-            call_func(func, (inverter, change['value']), {}, scope)
+        call_func(func, (inverter, change.get('value')), {}, scope)
 
 
 # TODO remove this in Enaml 0.8.0
@@ -506,7 +487,11 @@ def bind_read_operator(klass, binding, operator):
     """
     member = assert_d_member(klass, binding, True, False)
     klass.notify_operators().setdefault(binding.name, []).append(operator)
-    member.add_static_observer('_run_notify_operator')
+    if not member.has_observer('_run_notify_operator'):
+        clone = member.clone()
+        clone.add_static_observer('_run_notify_operator')
+        klass.members()[binding.name] = clone
+        setattr(klass, binding.name, clone)
 
 
 def bind_write_operator(klass, binding, operator):
@@ -525,14 +510,13 @@ def bind_write_operator(klass, binding, operator):
 
     """
     member = assert_d_member(klass, binding, False, True)
-    name = binding.name
-    klass.eval_operators()[name] = operator
+    klass.eval_operators()[binding.name] = operator
     mode = (DefaultValue.ObjectMethod_Name, '_run_eval_operator')
     if member.default_value_mode != mode:
         clone = member.clone()
         clone.set_default_value_mode(*mode)
-        klass.members()[name] = clone
-        setattr(klass, name, clone)
+        klass.members()[binding.name] = clone
+        setattr(klass, binding.name, clone)
 
 
 def op_simple(klass, binding):

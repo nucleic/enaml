@@ -233,4 +233,4 @@ class ToolkitObject(Declarative):
         if self.proxy_is_active and change['type'] == 'update':
             handler = getattr(self.proxy, 'set_' + change['name'], None)
             if handler is not None:
-                handler(change['newvalue'])
+                handler(change['value'])

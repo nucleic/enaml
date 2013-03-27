@@ -75,9 +75,10 @@ class Conditional(Declarative):
         the items and parent are not already destroyed.
 
         """
-        super(Conditional, self).destroy()
         parent = self.parent
-        if parent is not None and not parent.is_destroyed:
+        destroy_items = parent is not None and not parent.is_destroyed
+        super(Conditional, self).destroy()
+        if destroy_items:
             for item in self.items:
                 if not item.is_destroyed:
                     item.destroy()
