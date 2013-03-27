@@ -53,7 +53,7 @@ class Include(Declarative):
         if self.is_initialized:
             if change['type'] == 'update':
                 oldvalue = change['oldvalue']
-                newvalue = change['newvalue']
+                newvalue = change['value']
                 newset = set(newvalue)
                 if self.destroy_old:
                     for obj in oldvalue:
