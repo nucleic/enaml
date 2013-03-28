@@ -295,10 +295,11 @@ class OpSubscribe(OperatorBase):
             old_observer.owner = None
 
         # Create a new observer to bind to the current change set.
-        observer = SubscriptionObserver(owner, self.binding.name)
-        storage[self] = observer
-        for obj, name in tracer.traced_items:
-            obj.observe(name, observer)
+        if tracer.traced_items:
+            observer = SubscriptionObserver(owner, self.binding.name)
+            storage[self] = observer
+            for obj, name in tracer.traced_items:
+                obj.observe(name, observer)
 
         return result
 
