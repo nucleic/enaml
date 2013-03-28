@@ -55,15 +55,15 @@ class QtToolkitObject(ProxyToolkitObject):
     #--------------------------------------------------------------------------
     # ProxyToolkitObject API
     #--------------------------------------------------------------------------
-    def init_top_down(self):
-        """ Initialize the proxy tree for the top-down pass.
+    def activate_top_down(self):
+        """ Activate the proxy for the top-down pass.
 
         """
         self.create_widget()
         self.init_widget()
 
-    def init_bottom_up(self):
-        """ Initialize the proxy tree for the bottom-up pass.
+    def activate_bottom_up(self):
+        """ Activate the proxy tree for the bottom-up pass.
 
         """
         self.init_layout()
