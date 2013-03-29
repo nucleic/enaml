@@ -160,16 +160,16 @@ class Container(ConstraintsWidget):
         super(Container, self)._layout_invalidated(change)
 
     #--------------------------------------------------------------------------
-    # Constraints Generation
+    # Layout Constraints
     #--------------------------------------------------------------------------
-    def _get_default_constraints(self):
-        """ The default constraints for a Container.
+    def layout_constraints(self):
+        """ The constraints generation for a Container.
 
-        This method supplies default vbox constraint to the children of
-        the container if other constraints are not given.
+        This method supplies default vbox constraints to the children of
+        the container unless the user has given explicit 'constraints'.
 
         """
-        cns = super(Container, self)._get_default_constraints()
-        ws = (c for c in self.children if isinstance(c, ConstraintsWidget))
-        cns.append(vbox(*ws))
+        cns = self.constraints[:]
+        if not cns:
+            cns.append(vbox(*self.widgets()))
         return cns

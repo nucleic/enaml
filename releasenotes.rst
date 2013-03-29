@@ -1,6 +1,11 @@
 Enaml Release Notes
 ===================
 
+0.7.1 - 03/28/2013
+------------------
+- Updated compiler infrastructure to produce more extensible parse trees.
+- Various bug fixes.
+
 0.7.0 - 03/20/2013
 ------------------
 - First release under new nucleic org.

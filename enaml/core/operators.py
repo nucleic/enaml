@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from atom.api import DefaultValue
+from atom.api import DefaultValue, Typed
 from atom.datastructures.api import sortedmap
 
 from .dynamic_scope import DynamicScope, Nonlocals
@@ -254,21 +254,24 @@ class OpSubscribe(OperatorBase):
     """ An operator class which implements the `<<` operator semantics.
 
     """
-    __slots__ = 'observers'
+    __slots__ = ()
 
-    def __init__(self, binding):
-        """ Initialize a subscription operator.
+    def get_storage(self, owner):
+        """ Get the operator storage for the owner.
 
         """
-        super(OpSubscribe, self).__init__(binding)
-        self.observers = sortedmap()
+        member = owner.get_member('__op_storage__')
+        if member is None:
+            raise RuntimeError('no operator storage')
+        return member.do_getattr(owner)
 
     def release(self, owner):
         """ Release the resources held for the given owner.
 
         """
         super(OpSubscribe, self).release(owner)
-        observer = self.observers.pop(owner, None)
+        storage = self.get_storage(owner)
+        observer = storage.pop(self, None)
         if observer is not None:
             observer.owner = None
 
@@ -285,76 +288,20 @@ class OpSubscribe(OperatorBase):
         )
         result = call_func(func, (tracer,), {}, scope)
 
-        # Invalidate the old notifier so that it gets cleaned up.
-        observers = self.observers
-        old = observers.get(owner)
-        if old is not None:
-            old.owner = None
+        # Invalidate the old observer so that it gets cleaned up.
+        storage = self.get_storage(owner)
+        old_observer = storage.get(self)
+        if old_observer is not None:
+            old_observer.owner = None
 
         # Create a new observer to bind to the current change set.
-        observer = SubscriptionObserver(owner, self.binding.name)
-        observers[owner] = observer
-        for obj, name in tracer.traced_items:
-            obj.observe(name, observer)
+        if tracer.traced_items:
+            observer = SubscriptionObserver(owner, self.binding.name)
+            storage[self] = observer
+            for obj, name in tracer.traced_items:
+                obj.observe(name, observer)
 
         return result
-
-
-# backwards compatibility traits support
-import os
-if os.environ.get('ENAML_TRAITS_SUPPORT'):
-
-    from .traits_tracer import TraitsTracer
-
-    class TraitsObserver(SubscriptionObserver):
-
-        __slots__ = '__weakref__'
-
-        def handler(self):
-            owner = self.owner
-            if owner is not None:
-                name = self.name
-                setattr(owner, name, owner._run_eval_operator(name))
-
-    class OpSubscribe(OperatorBase):
-
-        __slots__ = 'observers'
-
-        def __init__(self, binding):
-            super(OpSubscribe, self).__init__(binding)
-            self.observers = sortedmap()
-
-        def release(self, owner):
-            super(OpSubscribe, self).release(owner)
-            obs = self.observers.pop(owner, None)
-            if obs is not None:
-                atom_ob, traits_ob = obs
-                atom_ob.owner = None
-                traits_ob.owner = None
-
-        def eval(self, owner):
-            tracer = TraitsTracer()
-            overrides = {'nonlocals': Nonlocals(owner, tracer), 'self': owner}
-            f_locals = self.get_locals(owner)
-            func = self.binding.func
-            scope = DynamicScope(
-                owner, f_locals, overrides, func.func_globals, tracer
-            )
-            result = call_func(func, (tracer,), {}, scope)
-            observers = self.observers
-            old = observers.get(owner)
-            if old is not None:
-                atom_ob, traits_ob = old
-                atom_ob.owner = None
-                traits_ob.owner = None
-            atom_ob = SubscriptionObserver(owner, self.binding.name)
-            traits_ob = TraitsObserver(owner, self.binding.name)
-            observers[owner] = (atom_ob, traits_ob)
-            for obj, name in tracer.traced_items:
-                obj.observe(name, atom_ob)
-            for obj, name in tracer.traced_traits:
-                obj.on_trait_change(traits_ob.handler, name)
-            return result
 
 
 class OpDelegate(OpSubscribe):
@@ -519,6 +466,22 @@ def bind_write_operator(klass, binding, operator):
         setattr(klass, binding.name, clone)
 
 
+def add_operator_storage(klass):
+    """ Add a member to the class named '__op_storage__'.
+
+    This member will be added as needed, and can be used to store
+    instance specific data needed by the operators. The value of the
+    storage will be a sortedmap.
+
+    """
+    members = klass.members()
+    if '__op_storage__' not in members:
+        m = Typed(sortedmap, ())
+        m.set_name('__op_storage__')
+        m.set_index(len(members))
+        members['__op_storage__'] = m
+
+
 def op_simple(klass, binding):
     """ The default Enaml operator function for the `=` operator.
 
@@ -545,6 +508,7 @@ def op_subscribe(klass, binding):
 
     """
     bind_write_operator(klass, binding, OpSubscribe(binding))
+    add_operator_storage(klass)
 
 
 def op_delegate(klass, binding):
@@ -554,6 +518,7 @@ def op_delegate(klass, binding):
     operator = OpDelegate(binding)
     bind_read_operator(klass, binding, operator)
     bind_write_operator(klass, binding, operator)
+    add_operator_storage(klass)
 
 
 DEFAULT_OPERATORS = {

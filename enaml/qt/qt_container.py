@@ -14,6 +14,7 @@ from atom.api import Bool, List, Callable, Value, Typed
 
 from casuarius import weak
 
+from enaml.layout.layout_helpers import expand_constraints
 from enaml.layout.layout_manager import LayoutManager
 from enaml.widgets.container import ProxyContainer
 
@@ -61,6 +62,15 @@ class QContainer(QFrame):
 
         """
         return self.minimumSize()
+
+
+def hard_constraints(d):
+    """ Generate hard constraints for an item.
+
+    These constraints will always be included for an item in a layout.
+
+    """
+    return [d.left >= 0, d.top >= 0, d.width >= 0, d.height >= 0]
 
 
 class QtContainer(QtConstraintsWidget, ProxyContainer):
@@ -421,23 +431,24 @@ class QtContainer(QtConstraintsWidget, ProxyContainer):
         # The list of raw casuarius constraints which will be returned
         # from this method to be added to the casuarius solver.
         cns = self.contents_cns[:]
-        cns.extend(self.declaration._hard_constraints())
-        cns.extend(self.declaration._collect_constraints())
+        d = self.declaration
+        cns.extend(hard_constraints(d))
+        cns.extend(expand_constraints(d, d.layout_constraints()))
 
         # The first element in a layout table item is its offset index
         # which is not relevant to constraints generation.
         for _, updater in layout_table:
             child = updater.item
             d = child.declaration
-            cns.extend(d._hard_constraints())
+            cns.extend(hard_constraints(d))
             if isinstance(child, QtContainer):
                 if child.transfer_layout_ownership(self):
-                    cns.extend(d._collect_constraints())
+                    cns.extend(expand_constraints(d, d.layout_constraints()))
                     cns.extend(child.contents_cns)
                 else:
                     cns.extend(child.size_hint_cns)
             else:
-                cns.extend(d._collect_constraints())
+                cns.extend(expand_constraints(d, d.layout_constraints()))
                 cns.extend(child.size_hint_cns)
 
         return cns
