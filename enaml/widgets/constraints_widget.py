@@ -187,58 +187,16 @@ class ConstraintsWidget(Widget):
         if switch:
             return self
 
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _collect_constraints(self):
-        """ The constraints to use for the component.
+    def layout_constraints(self):
+        """ Get the constraints to use for this component's layout.
 
-        This will return the expanded list of constraints to use for
-        the component. It will not include the hard constraints.
-
-        """
-        cns = self.constraints
-        if not cns:
-            cns = self._get_default_constraints()
-        cns += self._component_constraints()
-        return list(expand_constraints(self, cns))
-
-    def _hard_constraints(self):
-        """ The constraints required for the component.
-
-        These are constraints that must apply to the internal layout
-        computations of a component as well as that of containers which
-        may parent this component. By default, all components will have
-        their 'left', 'right', 'width', and 'height' symbols constrained
-        to >= 0. Subclasses which need to add more constraints should
-        reimplement this method.
+        This method may be overridden by subclasses as needed to create
+        custom constraints. It will be called when the relayout request
+        has been made by the layout engine. The default implementation
+        will return the list of 'constraints' defined by the user.
 
         """
-        cns = [
-            self.left >= 0, self.top >= 0,
-            self.width >= 0, self.height >= 0,
-        ]
-        return cns
-
-    def _component_constraints(self):
-        """ The required constraints for a particular component.
-
-        These are constraints which should be applied on top of any user
-        constraints and hard constraints. The default implementation
-        returns an empty list.
-
-        """
-        return []
-
-    def _get_default_constraints(self):
-        """ The constraints to include if the user has none defined.
-
-        These are constraints to include if the user has not specified
-        their own in the 'constraints' list. The default implementation
-        returns an empty list.
-
-        """
-        return []
+        return self.constraints
 
 
 ABConstrainable.register(ConstraintsWidget)
