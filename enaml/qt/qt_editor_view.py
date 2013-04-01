@@ -5,12 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from collections import defaultdict
-
 from PyQt4.QtCore import Qt, QTimer, QAbstractTableModel
 from PyQt4.QtGui import QTableView
 
-from enaml.modelview.editor_view import ProxyEditorView
+from enaml.widgets.item import ItemModel
+from enaml.widgets.model_editor import ProxyEditorView
 
 from .q_resource_helpers import (
     get_cached_qcolor, get_cached_qfont, get_cached_qicon
@@ -45,83 +44,14 @@ class QEditorModel(QAbstractTableModel):
 
     def __init__(self):
         super(QEditorModel, self).__init__()
-        self._names = []
-        self._items = []
-        self._editors = []
-        self._row_count = 0
-        self._column_count = 0
-        self._change_set = ChangeSet()
-        self._change_timer = QTimer()
-        self._change_timer.setSingleShot(True)
-        self._change_timer.timeout.connect(self._on_change_timer)
-
-    #--------------------------------------------------------------------------
-    # Editor Interface
-    #--------------------------------------------------------------------------
-    def editor_changed(self, item):
-        index = item._tk_index
-        if index is None or self._items[index] is not item:
-            try:
-                index = self._items.index(item)
-            except ValueError:
-                return
-            item._tk_index = index
-        row, column = divmod(index, self._column_count)
-        self._change_set.update(row, column)
-        self._change_timer.start()
-
-    def _on_change_timer(self):
-        change_set = self._change_set
-        change_set.emit(self)
-        change_set.reset()
+        self._model = ItemModel()
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def addEditor(self, editor):
-        self._editors.append(editor)
-        editor._tk_model = self
-
-    def doLayout(self):
+    def setItemModel(self, model):
         self.beginResetModel()
-        # Make a first pass over the editors to collect the layout names.
-        groupnames = []
-        groupmap = defaultdict(lambda: (list(), set()))
-        for editor in self._editors:
-            for group in editor.groups():
-                if group.name not in groupmap:
-                    groupnames.append(group.name)
-                gnames, snames = groupmap[group.name]
-                for item in group.items():
-                    if item.name not in snames:
-                        snames.add(item.name)
-                        gnames.append(item.name)
-
-        # Collect the names into a flat list.
-        names = self._names = []
-        for groupname in groupnames:
-            names.extend(groupmap[groupname][0])
-
-        # Make a second pass over the editors to collect the data.
-        items = self._items = []
-        for editor in self._editors:
-            editormap = {}
-            for group in editor.groups():
-                editoritems = editormap.setdefault(group.name, {})
-                for item in group.items():
-                    editoritems[item.name] = item
-            for groupname in groupnames:
-                if groupname in editormap:
-                    egroup = editormap[groupname]
-                    for iname in groupmap[groupname][0]:
-                        item = egroup.get(iname)
-                        item._tk_index = len(items)
-                        items.append(item)
-                else:
-                    items.extend([None] * len(groupmap[groupname][0]))
-
-        self._row_count = len(self._editors)
-        self._column_count = len(self._names)
+        self._model = model
         self.endResetModel()
 
     #--------------------------------------------------------------------------
@@ -130,26 +60,32 @@ class QEditorModel(QAbstractTableModel):
     def rowCount(self, parent):
         if parent.isValid():
             return 0
-        return self._row_count
+        return self._model.row_count()
 
     def columnCount(self, parent):
         if parent.isValid():
             return 0
-        return self._column_count
+        return self._model.column_count()
 
     def flags(self, index):
-        item = self._items[index.row() * self._column_count + index.column()]
+        item = self._model.item(index.row(), index.column())
         if item is not None:
-            style = item.style
-            if style is not None:
-                return Qt.ItemFlags(style.flags)
+            return Qt.ItemFlags(item.item_flags)
         return Qt.ItemFlags(0)
 
+    def headerData(self, section, orientation, role):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                item = self._model.column_header_item(section)
+                if item is not None:
+                    return item.value
+            return section
+
     def data(self, index, role):
-        item = self._items[index.row() * self._column_count + index.column()]
+        item = self._model.item(index.row(), index.column())
         if item is not None:
             if role == Qt.DisplayRole:
-                return item.data
+                return item.value
             if role == Qt.CheckStateRole:
                 return item.check_state
             if role == Qt.BackgroundRole:
@@ -197,11 +133,11 @@ class QEditorModel(QAbstractTableModel):
                 if style is not None:
                     return style.text_alignment
             if role == Qt.ToolTipRole:
-                return item.tool_tip()
+                return item.tool_tip
             if role == Qt.StatusTipRole:
-                return item.status_tip()
+                return item.status_tip
             if role == Qt.EditRole:
-                return item.data
+                return item.value
 
 
 class QtEditorView(QtControl, ProxyEditorView):
@@ -213,14 +149,10 @@ class QtEditorView(QtControl, ProxyEditorView):
 
     def init_widget(self):
         super(QtEditorView, self).init_widget()
-        d = self.declaration
-        qmodel = self.widget.model()
-        models = d.models
-        factory = d.editor_factory
-        for model in models:
-            qmodel.addEditor(factory(model))
+        self.widget.model().setItemModel(self.declaration.item_model)
 
-    def init_layout(self):
-        super(QtEditorView, self).init_widget()
-        self.widget.model().doLayout()
-
+    #--------------------------------------------------------------------------
+    # ProxyEditorView API
+    #--------------------------------------------------------------------------
+    def set_item_model(self, model):
+        pass
