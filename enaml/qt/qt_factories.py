@@ -110,6 +110,11 @@ def label_factory():
     return QtLabel
 
 
+def list_control_factory():
+    from .qt_list_control import QtListControl
+    return QtListControl
+
+
 def main_window_factory():
     from .qt_main_window import QtMainWindow
     return QtMainWindow
@@ -272,6 +277,7 @@ QT_FACTORIES = {
     'Image': image_factory,
     'ImageView': image_view_factory,
     'Label': label_factory,
+    'ListControl': list_control_factory,
     'MainWindow': main_window_factory,
     'MdiArea': mdi_area_factory,
     'MdiWindow': mdi_window_factory,

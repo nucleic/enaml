@@ -26,6 +26,7 @@ from .html import Html
 from .image_view import ImageView
 from .item import ItemFlag, CheckState, TextAlignment, Style, Item, ItemModel
 from .label import Label
+from .list_control import ListControl
 from .main_window import MainWindow
 from .mdi_area import MdiArea
 from .mdi_window import MdiWindow

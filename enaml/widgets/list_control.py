@@ -10,18 +10,18 @@ from atom.api import (
 )
 
 from enaml.core.declarative import d_
-from enaml.itemmodels.abstractitemmodel import AbstractItemModel
 from enaml.layout.geometry import Size
 
 from .control import Control, ProxyControl
+from .item import ItemModel
 
 
-class ProxyListView(ProxyControl):
-    """ The abstract definition of a proxy ListView object.
+class ProxyListControl(ProxyControl):
+    """ The abstract definition of a proxy ListControl object.
 
     """
-    #: A reference to the ListView declaration.
-    declaration = ForwardTyped(lambda: ListView)
+    #: A reference to the ListControl declaration.
+    declaration = ForwardTyped(lambda: ListControl)
 
     def set_item_model(self, model):
         raise NotImplementedError
@@ -63,15 +63,15 @@ class ProxyListView(ProxyControl):
         raise NotImplementedError
 
 
-class ListView(Control):
-    """ A control for displaying a list of data.
+class ListControl(Control):
+    """ A control for displaying a list of Item instances.
 
     """
-    #: The data model to use for the list. If not explicitly given,
-    #: one will be created using any given ListItem children.
-    item_model = d_(Typed(AbstractItemModel))
+    #: The item model to use for the list. If not explicitly given,
+    #: one will be created using any given Item children.
+    item_model = d_(Typed(ItemModel))
 
-    #: The column index to use for pulling data from the model.
+    #: The column index to use for pulling items from the model.
     model_column = d_(Int(0))
 
     #: The viewing mode of the list control. The 'list' mode arranges
@@ -126,13 +126,13 @@ class ListView(Control):
     hug_width = set_default('weak')
     hug_height = set_default('weak')
 
-    #: A reference to the ProxyListView object.
-    proxy = Typed(ProxyListView)
+    #: A reference to the ProxyListControl object.
+    proxy = Typed(ProxyListControl)
 
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('item_model', 'model_colum', 'view_mode', 'resize_mode',
+    @observe(('item_model', 'model_column', 'view_mode', 'resize_mode',
         'flow_mode', 'item_wrap', 'word_wrap', 'item_spacing', 'icon_size',
         'layout_mode', 'uniform_item_sizes', 'batch_size'))
     def _update_proxy(self, change):
@@ -140,7 +140,7 @@ class ListView(Control):
 
         """
         # The superclass handler implementation is sufficient.
-        super(ListView, self)._update_proxy(change)
+        super(ListControl, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
     # Public API

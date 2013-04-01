@@ -8,6 +8,8 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QTableView
 
+from atom.api import Typed
+
 from enaml.widgets.view_table import ProxyViewTable
 
 from .q_item_model_wrapper import QItemModelWrapper
@@ -18,12 +20,17 @@ class QtViewTable(QtControl, ProxyViewTable):
     """ A Qt implementation of an Enaml ProxyTable.
 
     """
+    #: A reference to the widget created by the proxy.
+    widget = Typed(QTableView)
+
+    #--------------------------------------------------------------------------
+    # Initialization API
+    #--------------------------------------------------------------------------
     def create_widget(self):
         """ Create the underlying QTableView widget.
 
         """
         self.widget = QTableView(self.parent_widget())
-        self.widget.setModel(QItemModelWrapper())
         self.widget.setAttribute(Qt.WA_StaticContents, True)
 
     def init_widget(self):
@@ -36,13 +43,16 @@ class QtViewTable(QtControl, ProxyViewTable):
         self.set_orientation(d.orientation)
 
     #--------------------------------------------------------------------------
-    # ProxyTable API
+    # ProxyViewTable API
     #--------------------------------------------------------------------------
     def set_table_model(self, model):
         """ Set the table model for the underlying control.
 
         """
-        self.widget.model().setItemModel(model)
+        if model is None:
+            self.widget.setModel(None)
+        else:
+            self.widget.setModel(QItemModelWrapper(model))
 
     def set_orientation(self, orientation):
         """ Set the orientation for the widget.
