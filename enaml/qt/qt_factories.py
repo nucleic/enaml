@@ -65,11 +65,6 @@ def dual_slider_factory():
     return QtDualSlider
 
 
-def editor_view_factory():
-    from .qt_editor_view import QtEditorView
-    return QtEditorView
-
-
 def field_factory():
     from .qt_field import QtField
     return QtField
@@ -113,16 +108,6 @@ def image_view_factory():
 def label_factory():
     from .qt_label import QtLabel
     return QtLabel
-
-
-def list_view_factory():
-    from .qt_list_view import QtListView
-    return QtListView
-
-
-def list_item_factory():
-    from .qt_list_item import QtListItem
-    return QtListItem
 
 
 def main_window_factory():
@@ -235,11 +220,6 @@ def status_item_factory():
     return QtStatusItem
 
 
-def table_view_factory():
-    from .qt_table_view import QtTableView
-    return QtTableView
-
-
 #def text_editor_factory():
 #    from .qt_text_editor import QtTextEditor
 #    return QtTextEditor
@@ -253,6 +233,11 @@ def time_selector_factory():
 def tool_bar_factory():
     from .qt_tool_bar import QtToolBar
     return QtToolBar
+
+
+def view_table_factory():
+    from .qt_view_table import QtViewTable
+    return QtViewTable
 
 
 def web_view_factory():
@@ -278,7 +263,6 @@ QT_FACTORIES = {
     'DatetimeSelector': datetime_selector_factory,
     'DockPane': dock_pane_factory,
     'DualSlider': dual_slider_factory,
-    'EditorView': editor_view_factory,
     'Field': field_factory,
     'FileDialog': file_dialog_factory,
     'FlowArea': flow_area_factory,
@@ -288,8 +272,6 @@ QT_FACTORIES = {
     'Image': image_factory,
     'ImageView': image_view_factory,
     'Label': label_factory,
-    'ListView': list_view_factory,
-    'ListItem': list_item_factory,
     'MainWindow': main_window_factory,
     'MdiArea': mdi_area_factory,
     'MdiWindow': mdi_window_factory,
@@ -312,9 +294,9 @@ QT_FACTORIES = {
     'StackItem': stack_item_factory,
     'StatusBar': status_bar_factory,
     'StatusItem': status_item_factory,
-    'TableView': table_view_factory,
     'TimeSelector': time_selector_factory,
     'ToolBar': tool_bar_factory,
+    'ViewTable': view_table_factory,
     'WebView': web_view_factory,
     'Window': window_factory,
 }
