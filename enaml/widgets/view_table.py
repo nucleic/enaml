@@ -292,10 +292,12 @@ class ViewTable(Control):
         headers = []
         for header in self.headers():
             headers.extend(header.resolve(views))
+        table_model = self.table_model
         for index, view in enumerate(views):
             view.resolve(headers)
             view.index = index
-        self.table_model.update(headers, views, self.orientation)
+            view.table_model = table_model
+        table_model.update(headers, views, self.orientation)
 
     #--------------------------------------------------------------------------
     # Public API
