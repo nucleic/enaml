@@ -110,14 +110,9 @@ def label_factory():
     return QtLabel
 
 
-def list_view_factory():
-    from .qt_list_view import QtListView
-    return QtListView
-
-
-def list_item_factory():
-    from .qt_list_item import QtListItem
-    return QtListItem
+def list_control_factory():
+    from .qt_list_control import QtListControl
+    return QtListControl
 
 
 def main_window_factory():
@@ -230,11 +225,6 @@ def status_item_factory():
     return QtStatusItem
 
 
-def table_view_factory():
-    from .qt_table_view import QtTableView
-    return QtTableView
-
-
 #def text_editor_factory():
 #    from .qt_text_editor import QtTextEditor
 #    return QtTextEditor
@@ -248,6 +238,11 @@ def time_selector_factory():
 def tool_bar_factory():
     from .qt_tool_bar import QtToolBar
     return QtToolBar
+
+
+def view_table_factory():
+    from .qt_view_table import QtViewTable
+    return QtViewTable
 
 
 def web_view_factory():
@@ -282,8 +277,7 @@ QT_FACTORIES = {
     'Image': image_factory,
     'ImageView': image_view_factory,
     'Label': label_factory,
-    'ListView': list_view_factory,
-    'ListItem': list_item_factory,
+    'ListControl': list_control_factory,
     'MainWindow': main_window_factory,
     'MdiArea': mdi_area_factory,
     'MdiWindow': mdi_window_factory,
@@ -306,9 +300,9 @@ QT_FACTORIES = {
     'StackItem': stack_item_factory,
     'StatusBar': status_bar_factory,
     'StatusItem': status_item_factory,
-    'TableView': table_view_factory,
     'TimeSelector': time_selector_factory,
     'ToolBar': tool_bar_factory,
+    'ViewTable': view_table_factory,
     'WebView': web_view_factory,
     'Window': window_factory,
 }
