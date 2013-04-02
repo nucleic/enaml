@@ -44,7 +44,7 @@ ext_modules = [
 
 setup(
     name='enaml',
-    version='0.7.1',
+    version='0.7.2',
     author='The Nucleic Development Team',
     author_email='sccolbert@gmail.com',
     url='https://github.com/nucleic/enaml',

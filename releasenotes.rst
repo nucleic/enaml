@@ -1,6 +1,16 @@
 Enaml Release Notes
 ===================
 
+0.7.2 - 04/02/2013
+------------------
+- Added first real cut at a model-viewer grid-based control. de0d8e35ae_
+- Fix a bug in size hinting during complex relayouts. 963cee88d0_
+- Added hooks for proxy-specific customization. 3e045dfb18_
+
+.. _de0d8e35ae: https://github.com/nucleic/enaml/commit/de0d8e35aee42d5eda63ad0bef0b8eb0adf299f5
+.. _963cee88d0: https://github.com/nucleic/enaml/commit/963cee88d09e2e0ff0c9c4d41b2ac2e8ee6f4ab6
+.. _3e045dfb18: https://github.com/nucleic/enaml/commit/3e045dfb18ee74000106c7559626449102930010
+
 0.7.1 - 03/28/2013
 ------------------
 - Updated compiler infrastructure to produce more extensible parse trees.
