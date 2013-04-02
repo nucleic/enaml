@@ -305,6 +305,11 @@ class Application(Atom):
             cls = resolver.resolve(name)
             if cls is not None:
                 return cls(declaration=declaration)
+        msg = "could not resolve a toolkit implementation for the '%s' "
+        msg += "component when running under a '%s'"
+        d_name = type(declaration).__name__
+        a_name = type(self).__name__
+        raise TypeError(msg % (d_name, a_name))
 
     def schedule(self, callback, args=None, kwargs=None, priority=0):
         """ Schedule a callable to be executed on the event loop thread.
