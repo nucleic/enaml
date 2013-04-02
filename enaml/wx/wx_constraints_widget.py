@@ -41,6 +41,7 @@ class wxLayoutTimer(wx.Timer):
 
     """
     def __init__(self, owner):
+        super(wxLayoutTimer, self).__init__()
         self.owner = owner
 
     def Release(self):
@@ -112,7 +113,7 @@ class WxConstraintsWidget(WxWidget, ProxyConstraintsWidget):
         if not self.layout_timer:
             self.widget.Freeze()
             self.layout_timer = wxLayoutTimer(self)
-        self.layout_timer.start(5, oneShot=True)
+        self.layout_timer.Start(1, oneShot=True)
 
     def on_layout_triggered(self):
         """ Handle the timeout even from the layout trigger timer.
@@ -139,7 +140,6 @@ class WxConstraintsWidget(WxWidget, ProxyConstraintsWidget):
         layout request is dropped.
 
         """
-        self.clear_size_hint_constraints()
         parent = self.parent()
         if isinstance(parent, WxConstraintsWidget):
             parent.relayout()
@@ -167,40 +167,6 @@ class WxConstraintsWidget(WxWidget, ProxyConstraintsWidget):
         parent = self.parent()
         if isinstance(parent, WxConstraintsWidget):
             parent.replace_constraints(old_cns, new_cns)
-
-    def clear_constraints(self, cns):
-        """ Clear the given constraints from the current layout system.
-
-        The default behavior of this method is to proxy the call up the
-        tree of ancestors until it is either handled by a subclass which
-        has reimplemented this method (see WxContainer), or the ancestor
-        is not an instance of WxConstraintsWidget, at which point the
-        request is dropped. This method will *not* trigger a relayout.
-
-        Parameters
-        ----------
-        cns : list
-            The list of casuarius constraints to remove from the
-            current layout system.
-
-        """
-        parent = self.parent()
-        if isinstance(parent, WxConstraintsWidget):
-            parent.clear_constraints(cns)
-
-    def clear_size_hint_constraints(self):
-        """ Clear the size hint constraints from the layout system.
-
-        """
-        # Only the ancestors of a widget care about its size hint and
-        # will have added those constraints to a layout, so this method
-        # attempts to replace the size hint constraints for the widget
-        # starting with its parent.
-        parent = self.parent()
-        if isinstance(parent, WxConstraintsWidget):
-            cns = self.size_hint_cns
-            del self.size_hint_cns
-            parent.clear_constraints(cns)
 
     def size_hint_updated(self):
         """ Notify the layout system that the size hint has changed.

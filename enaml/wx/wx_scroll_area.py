@@ -193,15 +193,6 @@ class WxScrollArea(WxConstraintsWidget, ProxyScrollArea):
         """
         pass
 
-    def clear_constraints(self, cns):
-        """ A reimplemented WxConstraintsWidget layout method.
-
-        Constraints layout may not cross the boundary of a ScrollArea,
-        so this method is no-op which stops the layout propagation.
-
-        """
-        pass
-
     #--------------------------------------------------------------------------
     # ProxyScrollArea API
     #--------------------------------------------------------------------------
