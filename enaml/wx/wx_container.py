@@ -207,18 +207,10 @@ class WxContainer(WxConstraintsWidget, ProxyContainer):
 
         """
         if self._owns_layout:
-            widget = self.widget
-            old_hint = widget.GetBestSize()
-            self.init_cns_layout()
-            if self._is_shown:
-                self._refresh()
-            new_hint = widget.GetBestSize()
-            # If the size hint constraints are empty, it indicates that
-            # they were previously cleared. In this case, the layout
-            # system must be notified to rebuild its constraints, even
-            # if the numeric size hint hasn't changed.
-            if old_hint != new_hint or not self.size_hint_cns:
-                self.size_hint_updated()
+            with size_hint_guard(self):
+                self.init_cns_layout()
+                if self._is_shown:
+                    self._refresh()
         else:
             self._layout_owner.relayout()
 
@@ -250,23 +242,6 @@ class WxContainer(WxConstraintsWidget, ProxyContainer):
                         self._refresh()
         else:
             self._layout_owner.replace_constraints(old_cns, new_cns)
-
-    def clear_constraints(self, cns):
-        """ Clear the given constraints from the current layout.
-
-        Parameters
-        ----------
-        cns : list
-            The list of casuarius constraints to remove from the
-            current layout system.
-
-        """
-        if self._owns_layout:
-            manager = self._layout_manager
-            if manager is not None:
-                manager.replace_constraints(cns, [])
-        else:
-            self._layout_owner.clear_constraints(cns)
 
     def contents_margins(self):
         """ Get the contents margins for the container.
@@ -447,9 +422,13 @@ class WxContainer(WxConstraintsWidget, ProxyContainer):
         cns.extend(expand_constraints(d, d.layout_constraints()))
 
         # The first element in a layout table item is its offset index
-        # which is not relevant to constraints generation.
+        # which is not relevant to constraints generation. The child
+        # size hint constraints are refreshed unconditionally. This
+        # accounts for the potential changes in the size hint of a
+        # widget between relayouts.
         for _, updater in layout_table:
             child = updater.item
+            del child.size_hint_cns
             d = child.declaration
             cns.extend(hard_constraints(d))
             if isinstance(child, WxContainer):
