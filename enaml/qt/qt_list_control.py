@@ -10,7 +10,7 @@ from PyQt4.QtGui import QListView
 
 from atom.api import Typed
 
-from enaml.widgets.list_view import ProxyListView
+from enaml.widgets.list_control import ProxyListControl
 
 from .q_item_model_wrapper import QItemModelWrapper
 from .qt_control import QtControl
@@ -40,8 +40,8 @@ LAYOUT_MODES = {
 }
 
 
-class QtListView(QtControl, ProxyListView):
-    """ A Qt implementation of an Enaml ProxyListView.
+class QtListControl(QtControl, ProxyListControl):
+    """ A Qt implementation of an Enaml ProxyListControl.
 
     """
     #: A reference to the widget created by the proxy.
@@ -60,7 +60,7 @@ class QtListView(QtControl, ProxyListView):
         """ Create and initialize the underlying control.
 
         """
-        super(QtListView, self).init_widget()
+        super(QtListControl, self).init_widget()
         d = self.declaration
         self.set_item_model(d.item_model)
         self.set_model_column(d.model_column)
@@ -78,44 +78,44 @@ class QtListView(QtControl, ProxyListView):
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
-    def on_item_changed(self, item):
-        """ The signal handler for the `itemChanged` signal.
+    # def on_item_changed(self, item):
+    #     """ The signal handler for the `itemChanged` signal.
 
-        This handler forwards the call to the item that was changed.
+    #     This handler forwards the call to the item that was changed.
 
-        """
-        owner = getattr(item, 'item_owner', None)
-        if owner is not None:
-            owner.on_changed()
+    #     """
+    #     owner = getattr(item, 'item_owner', None)
+    #     if owner is not None:
+    #         owner.on_changed()
 
-    def on_item_clicked(self, item):
-        """ The signal handler for the `itemClicked` signal.
+    # def on_item_clicked(self, item):
+    #     """ The signal handler for the `itemClicked` signal.
 
-        This handler forwards the call to the item that was clicked.
+    #     This handler forwards the call to the item that was clicked.
 
-        """
-        owner = getattr(item, 'item_owner', None)
-        if owner is not None:
-            owner.on_clicked()
+    #     """
+    #     owner = getattr(item, 'item_owner', None)
+    #     if owner is not None:
+    #         owner.on_clicked()
 
-    def on_item_double_clicked(self, item):
-        """ The signal handler for the `itemDoubleClicked` signal.
+    # def on_item_double_clicked(self, item):
+    #     """ The signal handler for the `itemDoubleClicked` signal.
 
-        This handler forwards the call to the item that was clicked.
+    #     This handler forwards the call to the item that was clicked.
 
-        """
-        owner = getattr(item, 'item_owner', None)
-        if owner is not None:
-            owner.on_double_clicked()
+    #     """
+    #     owner = getattr(item, 'item_owner', None)
+    #     if owner is not None:
+    #         owner.on_double_clicked()
 
     #--------------------------------------------------------------------------
-    # ProxyListView API
+    # ProxyListControl API
     #--------------------------------------------------------------------------
     def set_item_model(self, model):
         """ Set the item model for the widget.
 
         """
-        if not model:
+        if model is None:
             self.widget.setModel(None)
         else:
             self.widget.setModel(QItemModelWrapper(model))
