@@ -35,6 +35,7 @@ from .menu_bar import MenuBar
 from .mpl_canvas import MPLCanvas
 from .multiline_field import MultilineField
 from .notebook import Notebook
+from .object_combo import ObjectCombo
 from .page import Page
 from .progress_bar import ProgressBar
 from .push_button import PushButton

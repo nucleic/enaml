@@ -155,6 +155,11 @@ def notebook_factory():
     return QtNotebook
 
 
+def object_combo_factory():
+    from .qt_object_combo import QtObjectCombo
+    return QtObjectCombo
+
+
 def page_factory():
     from .qt_page import QtPage
     return QtPage
@@ -263,7 +268,6 @@ QT_FACTORIES = {
     'CheckBox': check_box_factory,
     'ComboBox': combo_box_factory,
     'Container': container_factory,
-    'Control': control_factory,
     'DateSelector': date_selector_factory,
     'DatetimeSelector': datetime_selector_factory,
     'DockPane': dock_pane_factory,
@@ -286,6 +290,7 @@ QT_FACTORIES = {
     'MPLCanvas': mpl_canvas_factory,
     'MultilineField': multiline_field_factory,
     'Notebook': notebook_factory,
+    'ObjectCombo': object_combo_factory,
     'Page': page_factory,
     'PushButton': push_button_factory,
     'ProgressBar': progress_bar_factory,
