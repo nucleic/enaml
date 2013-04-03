@@ -624,6 +624,16 @@ class WxMenu(WxToolkitObject, ProxyMenu):
             elif isinstance(child, WxActionGroup):
                 widget.AddActions(child.actions())
 
+    def destroy(self):
+        """ A reimplemented destructor.
+
+        This destructor simply drops the reference to the menu and the
+        enaml declaration. Destroying it will cause wx to segfault.
+
+        """
+        del self.widget
+        del self.declaration
+
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------

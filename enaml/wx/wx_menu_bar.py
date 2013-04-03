@@ -214,11 +214,15 @@ class WxMenuBar(WxToolkitObject, ProxyMenuBar):
     def destroy(self):
         """ A reimplemented destructor.
 
-        This destructor simply drops the reference to the menu bar.
+        This destructor simply drops the reference to the menu bar and
+        the enaml declaration and clears the menus in the menu bar.
         Destroying it will cause wx to segfault.
 
         """
+        if self.widget:
+            self.widget.SetMenus([])
         del self.widget
+        del self.declaration
 
     #--------------------------------------------------------------------------
     # Child Events
