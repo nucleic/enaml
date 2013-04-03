@@ -1,6 +1,16 @@
 Enaml Release Notes
 ===================
 
+0.7.3 - 04/03/2013
+------------------
+- Added support for adding/removing models in a ViewTable. 5bc1809340_
+- Added an ObjectCombo control which is a more flexible combo box. 51f3a3c6d3_
+- Emit useful error messages when a backend does not implement a control. b264b3b927_
+
+.. _5bc1809340: https://github.com/nucleic/enaml/commit/5bc1809340543aa7184a96cd7a1da3daa37c19dd
+.. _51f3a3c6d3: https://github.com/nucleic/enaml/commit/51f3a3c6d3e6fe8c076a8baa26c33ada895beb18
+.. _b264b3b927: https://github.com/nucleic/enaml/commit/b264b3b927b979fb83766e82656f70d0023c6a48
+
 0.7.2 - 04/02/2013
 ------------------
 - Added first real cut at a model-viewer grid-based control. de0d8e35ae_
