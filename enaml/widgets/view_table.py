@@ -262,20 +262,6 @@ class ViewTable(Control):
     proxy = Typed(ProxyViewTable)
 
     #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _observe_orientation(self, change):
-        """ An orientation observer.
-
-        This observer will update the orientation of the table model
-        and then dispatch to the proxy updater.
-
-        """
-        if self.is_initialized:
-            self.table_model.update(orientation=self.orientation)
-            self._update_proxy(change)
-
-    #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
     def initialize(self):
@@ -283,6 +269,28 @@ class ViewTable(Control):
 
         """
         super(ViewTable, self).initialize()
+        self.rebuild_table()
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def headers(self):
+        """ Get the TableHeaders defined as children of the table.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields the child TableHeaders.
+
+        """
+        for child in self.children:
+            if isinstance(child, ViewTableHeaders):
+                yield child
+
+    def rebuild_table(self):
+        """ Rebuild the underlying table model from scratch.
+
+        """
         factory = self.factory
         views = []
         for model in self.models:
@@ -300,17 +308,54 @@ class ViewTable(Control):
         table_model.update(headers, views, self.orientation)
 
     #--------------------------------------------------------------------------
-    # Public API
+    # Observers
     #--------------------------------------------------------------------------
-    def headers(self):
-        """ Get the TableHeaders defined as children of the table.
+    def _observe_orientation(self, change):
+        """ Handle a change to the table orientation.
 
-        Returns
-        -------
-        result : generator
-            A generator which yields the child TableHeaders.
+        This observer will update the orientation of the table model
+        and then dispatch to the proxy updater.
 
         """
-        for child in self.children:
-            if isinstance(child, ViewTableHeaders):
-                yield child
+        if self.is_initialized:
+            self.table_model.update(orientation=self.orientation)
+            self._update_proxy(change)
+
+    def _observe_factory(self, change):
+        """ Handle and change to the view factory function.
+
+        This handler will rebuild the table model from scratch.
+
+        """
+        if self.is_initialized:
+            self.rebuild_table()
+
+    def _observe_models(self, change):
+        """ Handle a change to the models list.
+
+        This handler will attempt to only rebuild the portion of the
+        table which has changed and will not create new views for the
+        models which already exist in the table.
+
+        """
+        model_map = {}
+        table_model = self.table_model
+        for view in table_model.views:
+            model_map[view.model] = view
+
+        index = 0
+        views = []
+        factory = self.factory
+        headers = table_model.headers
+        for model in self.models:
+            view = model_map.get(model)
+            if view is None:
+                view = factory(model)
+                view.initialize()
+                view.resolve(headers)
+                view.table_model = table_model
+            view.index = index
+            views.append(view)
+            index += 1
+
+        table_model.update(views=views)
