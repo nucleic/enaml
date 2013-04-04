@@ -1,6 +1,16 @@
 Enaml Release Notes
 ===================
 
+0.7.4 - 04/04/2013
+------------------
+- Add border support for Container on the Qt backend. 505662d5f1_
+- Workaround a logic bug in Wx's handling of modal windows. 56a1e00112_
+- Workaround a Wx segfault during window destruction. a8525788c9_
+
+.. _505662d5f1: https://github.com/nucleic/enaml/commit/505662d5f1ad0bdf50a4439873a252c2367dc418
+.. _56a1e00112: https://github.com/nucleic/enaml/commit/56a1e001127f12ea971b11343e58711466af1895
+.. _a8525788c9: https://github.com/nucleic/enaml/commit/a8525788c9a8ccf50c657fefc85db66d0a78abf9
+
 0.7.3 - 04/03/2013
 ------------------
 - Added support for adding/removing models in a ViewTable. 5bc1809340_
