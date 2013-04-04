@@ -139,8 +139,6 @@ class WxWindow(WxWidget, ProxyWindow):
             self.set_title(d.title)
         if -1 not in d.initial_size:
             self.set_initial_size(d.initial_size)
-        if d.modality != 'non_modal':
-            self.set_modality(d.modality)
         if d.icon:
             self.set_icon(d.icon)
         self.widget.Bind(wx.EVT_CLOSE, self.on_close)
@@ -274,3 +272,35 @@ class WxWindow(WxWidget, ProxyWindow):
             self.widget.MakeModal(False)
         else:
             self.widget.MakeModal(True)
+
+    #--------------------------------------------------------------------------
+    # Overrides
+    #--------------------------------------------------------------------------
+    def set_visible(self, visible):
+        """ Set the visibility state on the underlying widget.
+
+        This override sets the modality to false when hiding the window
+        and enabled it when showing the window (if requested).
+
+        """
+        modality = self.declaration.modality
+        self.widget.MakeModal(visible and modality != 'non_modal')
+        self.widget.Show(visible)
+
+    def ensure_visible(self):
+        """ Ensure the widget is visible.
+
+        This override forwards to the 'set_visible' method so that the
+        window modality is handled properly.
+
+        """
+        self.set_visible(True)
+
+    def ensure_hidden(self):
+        """ Ensure the widget is hidden.
+
+        This override forwards to the 'set_visible' method so that the
+        window modality is handled properly.
+
+        """
+        self.set_visible(False)
