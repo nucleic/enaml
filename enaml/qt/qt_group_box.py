@@ -138,3 +138,15 @@ class QtGroupBox(QtContainer, ProxyGroupBox):
         """
         qt_align = QT_ALIGNMENTS[align]
         self.widget.setAlignment(qt_align)
+
+    #--------------------------------------------------------------------------
+    # Overrides
+    #--------------------------------------------------------------------------
+    def set_border(self, border):
+        """ An overridden parent class method.
+
+        Borders are not supported on a group box, so this method is a
+        no-op.
+
+        """
+        pass

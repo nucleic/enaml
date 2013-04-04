@@ -197,6 +197,17 @@ class WxContainer(WxConstraintsWidget, ProxyContainer):
             self._refresh()
 
     #--------------------------------------------------------------------------
+    # ProxyContainer API
+    #--------------------------------------------------------------------------
+    def set_border(self, border):
+        """ Set the border for the widget.
+
+        This is not supported on Wx.
+
+        """
+        pass
+
+    #--------------------------------------------------------------------------
     # Public Layout Handling
     #--------------------------------------------------------------------------
     def relayout(self):
