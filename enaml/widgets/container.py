@@ -6,7 +6,8 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Constant, Coerced, ForwardTyped, Typed, observe, set_default
+    Atom, Bool, Constant, Coerced, Enum, Range, ForwardTyped, Typed, observe,
+    set_default
 )
 
 from enaml.core.declarative import d_
@@ -18,12 +19,35 @@ from .constraints_widget import (
 )
 
 
+class Border(Atom):
+    """ A class for defining a border on a Container.
+
+    Border instances should be treated as read-only once created.
+
+    """
+    #: The style of the border.
+    style = Enum('box', 'panel', 'styled_panel')
+
+    #: The showdow style applied to the border.
+    line_style = Enum('plain', 'sunken', 'raised')
+
+    #: The thickness of the outer border line.
+    line_width = Range(low=0, value=1)
+
+    #: The thickness of the inner border line. This only has an effect
+    #: for the 'sunken' and 'raised' line styles.
+    midline_width = Range(low=0, value=0)
+
+
 class ProxyContainer(ProxyConstraintsWidget):
     """ The abstract definition of a proxy Container object.
 
     """
     #: A reference to the Container declaration.
     declaration = ForwardTyped(lambda: Container)
+
+    def set_border(self, border):
+        raise NotImplementedError
 
 
 class Container(ConstraintsWidget):
@@ -43,6 +67,9 @@ class Container(ConstraintsWidget):
     constraints may cross its boundaries.
 
     """
+    #: An optional border to apply around the container.
+    border = d_(Typed(Border))
+
     #: A boolean which indicates whether or not to allow the layout
     #: ownership of this container to be transferred to an ancestor.
     #: This is False by default, which means that every container
@@ -151,6 +178,14 @@ class Container(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
+    @observe('border')
+    def _update_proxy(self, change):
+        """ An observer which updates the proxy when the border changes.
+
+        """
+        # The superclass handler is sufficient
+        super(Container, self)._update_proxy(change)
+
     @observe(('share_layout', 'padding'))
     def _layout_invalidated(self, change):
         """ A private observer which invalidates the layout.

@@ -11,7 +11,7 @@ from .bubble_view import BubbleView
 from .calendar import Calendar
 from .check_box import CheckBox
 from .combo_box import ComboBox
-from .container import Container
+from .container import Container, Border
 from .date_selector import DateSelector
 from .datetime_selector import DatetimeSelector
 from .dock_pane import DockPane

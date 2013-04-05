@@ -21,6 +21,20 @@ from enaml.widgets.container import ProxyContainer
 from .qt_constraints_widget import QtConstraintsWidget, size_hint_guard
 
 
+STYLE = {
+    'box': QFrame.Box,
+    'panel': QFrame.Panel,
+    'styled_panel': QFrame.StyledPanel,
+}
+
+
+LINE_STYLE = {
+    'plain': QFrame.Plain,
+    'sunken': QFrame.Sunken,
+    'raised': QFrame.Raised,
+}
+
+
 class QContainer(QFrame):
     """ A subclass of QFrame which behaves as a container.
 
@@ -142,6 +156,7 @@ class QtContainer(QtConstraintsWidget, ProxyContainer):
 
         """
         super(QtContainer, self).init_widget()
+        self.set_border(self.declaration.border)
         self.widget.resized.connect(self.on_resized)
 
     def init_layout(self):
@@ -184,6 +199,22 @@ class QtContainer(QtConstraintsWidget, ProxyContainer):
         # already taken into account whether or not the container owns
         # the layout.
         self._refresh()
+
+    #--------------------------------------------------------------------------
+    # ProxyContainer API
+    #--------------------------------------------------------------------------
+    def set_border(self, border):
+        """ Set the border for the widget.
+
+        """
+        widget = self.widget
+        if border is None:
+            widget.setFrameShape(QFrame.NoFrame)
+            return
+        widget.setFrameShape(STYLE[border.style])
+        widget.setFrameShadow(LINE_STYLE[border.line_style])
+        widget.setLineWidth(border.line_width)
+        widget.setMidLineWidth(border.midline_width)
 
     #--------------------------------------------------------------------------
     # Public Layout Handling
