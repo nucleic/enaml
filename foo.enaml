@@ -1,0 +1,77 @@
+from enaml.widgets.api import *
+from enaml.layout.api import *
+
+
+enamldef MyArea(DockArea): area:
+    layout = hsplit(
+        vsplit(foo, bar),
+        vsplit(baz, tabbed(cram, blam)),
+        vsplit(spam, hsplit(flam, ham)),
+    )
+    background = 'rgb(41, 56, 85)'
+    DockItem: foo:
+        title = 'foo'
+        Container:
+            PushButton: pass
+            PushButton: pass
+            PushButton: pass
+            PushButton: pass
+            PushButton: pass
+            Html: pass
+    DockItem: bar:
+        title = 'bar'
+        Container:
+            Field: pass
+            Field: pass
+            Field: pass
+            Field: pass
+            Html: pass
+    DockItem: baz:
+        title = 'baz'
+        Container:
+            Slider: pass
+            Slider: pass
+            Slider: pass
+            Slider: pass
+            Slider: pass
+            Html: pass
+    DockItem: ham:
+        title = 'ham'
+        stretch = 0
+        Container:
+            CheckBox: pass
+            CheckBox: pass
+            CheckBox: pass
+            CheckBox: pass
+            CheckBox: pass
+    DockItem: spam:
+        title = 'spam'
+        Container:
+            Html:
+                source = 'hello ' + title
+    DockItem: cram:
+        title = 'cram'
+        Container:
+            Html:
+                source = 'hello ' + title
+    DockItem: blam:
+        title = 'blam'
+        stretch = 3
+        Container:
+            Html:
+                source = 'hello ' + title
+    DockItem: flam:
+        title = 'flam'
+        stretch = 2
+        Container:
+            PushButton:
+                pass
+            Html:
+                source = 'hello ' + title
+
+
+enamldef Main(MainWindow):
+    Container:
+        padding = 0
+        MyArea: pass
+
