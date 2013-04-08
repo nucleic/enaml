@@ -9,9 +9,12 @@ from PyQt4.QtCore import Qt, QObject, QEvent, QSize
 
 from atom.api import Typed
 
-from enaml.widgets.dock_area import ProxyDockArea, docklayout, docksplit, tabbed
+from enaml.widgets.dock_area import (
+    ProxyDockArea, docklayout, docksplit, tabbed
+)
 
-from .q_dock_area import QDockArea, DockItem, DockSplitter, DockTabs
+from .dock_layout import DockLayoutItem, SplitDockLayout, TabbedDockLayout
+from .q_dock_area import QDockArea
 from .qt_constraints_widget import QtConstraintsWidget
 
 
@@ -21,27 +24,25 @@ ORIENT = {
 }
 
 
-def convert_layout(layout, parent=None):
+def convert_layout(layout):
     """ Convert an Enaml docklayout into a Qt DockLayout.
 
     """
     if isinstance(layout, docksplit):
-        qorient = ORIENT[layout.orientation]
-        ql = DockSplitter(parent=parent, orientation=qorient, sizes=layout.sizes[:])
+        qitems = []
         for item in layout.items:
             if isinstance(item, docklayout):
-                ql.items.append(convert_layout(item, ql))
+                qitems.append(convert_layout(item))
             else:
-                qitem = item.proxy.widget
-                ql.items.append(DockItem(parent=ql, item=qitem))
-    elif isinstance(layout, tabbed):
-        ql = DockTabs(parent=parent)
+                qitems.append(DockLayoutItem(item.proxy.widget))
+        orient = ORIENT[layout.orientation]
+        return SplitDockLayout(qitems, orientation=orient)
+    if isinstance(layout, tabbed):
+        qitems = []
         for item in layout.items:
-            qitem = item.proxy.widget
-            ql.items.append(DockItem(parent=ql, item=qitem))
-    else:
-        raise TypeError(type(layout).__name__)
-    return ql
+            qitems.append(DockLayoutItem(item.proxy.widget))
+        return TabbedDockLayout(qitems)
+    raise TypeError(type(layout).__name__)
 
 
 class DockFilter(QObject):
@@ -86,9 +87,14 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         super(QtDockArea, self).init_layout()
         d = self.declaration
         qlayout = convert_layout(d.resolve_layout())
-        self.widget.layout().setDockLayout(qlayout)
+        self.widget.setDockLayout(qlayout)
         self.dock_filter = DockFilter(self)
         self.widget.installEventFilter(self.dock_filter)
+
+    def destroy(self):
+        self.widget.removeEventFilter(self.dock_filter)
+        del self.dock_filter
+        super(QtDockArea, self).destroy()
 
     #--------------------------------------------------------------------------
     # Child Events

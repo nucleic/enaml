@@ -10,14 +10,7 @@ from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QApplication
 
 from atom.api import Atom, Typed, Bool
 
-
-# Avoid a circular import
-QDockArea = None
-def get_QDockArea():
-    global QDockArea
-    if QDockArea is None:
-        from .q_dock_area import QDockArea
-    return QDockArea
+from .q_dock_area import QDockArea
 
 
 class TitlePosition(object):
@@ -199,29 +192,22 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         """
         super(QDockTitleBar, self).paintEvent(event)
-        mgns = self.margins()
-        pos = self.titlePosition()
         painter = QPainter(self)
-        flags = Qt.AlignLeft | Qt.AlignVCenter
-        if pos == TitlePosition.Top or pos == TitlePosition.Bottom:
-            rect = self.rect().adjusted(mgns.left(), 0, -mgns.right(), 0)
-            painter.drawText(rect, flags, self.title())
-        elif pos == TitlePosition.Left:
-            size = self.size()
-            w = size.width()
-            h = size.height()
-            rect = QRect(mgns.left(), 0, h - mgns.right(), w)
+        m = self.margins()
+        w = self.width()
+        h = self.height()
+        pos = self.titlePosition()
+        if pos == TitlePosition.Left:
+            rect = QRect(m.left(), m.top(), h - m.right(), w - m.bottom())
             painter.rotate(-90)
             painter.translate(-h, 0)
-            painter.drawText(rect, flags, self.title())
         elif pos == TitlePosition.Right:
-            size = self.size()
-            w = self.width()
-            h = self.height()
-            rect = QRect(mgns.left(), 0, h - mgns.right(), w)
+            rect = QRect(m.left(), m.top(), h - m.right(), w - m.bottom())
             painter.rotate(90)
             painter.translate(0, -w)
-            painter.drawText(rect, flags, self.title())
+        else:
+            rect = QRect(m.left(), m.top(), w - m.right(), h - m.bottom())
+        painter.drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, self.title())
 
     def sizeHint(self):
         """ Get the size hint for the title bar.
@@ -356,11 +342,11 @@ class QDockItemLayout(QLayout):
         super(QDockItemLayout, self).setGeometry(rect)
         title = self._title_bar
         widget = self._dock_widget
-        has_title = title is not None and not title.isHidden()
-        has_widget = widget is not None and not widget.isHidden()
-        if not has_title and not has_widget:
+        do_title = title is not None and not title.isHidden()
+        do_widget = widget is not None and not widget.isHidden()
+        if not do_title and not do_widget:
             return
-        if not has_title:
+        if not do_title:
             widget.setGeometry(rect)
             return
         title_rect = QRect(rect)
@@ -379,10 +365,8 @@ class QDockItemLayout(QLayout):
         elif pos == TitlePosition.Right:
             widget_rect.setWidth(rect.width() - msh.width())
             title_rect.setLeft(widget_rect.right() + 1)
-        else:
-            raise ValueError('Invalid title bar position: %d' % pos)
         title.setGeometry(title_rect)
-        if has_widget:
+        if do_widget:
             widget.setGeometry(widget_rect)
 
     def sizeHint(self):
@@ -419,7 +403,7 @@ class QDockItemLayout(QLayout):
             A 2-tuple of (min_size, size_hint) for the layout.
 
         """
-        transpose = False
+        vert_title = False
         min_width = min_height = 0
         hint_width = hint_height = 0
         title = self._title_bar
@@ -429,11 +413,11 @@ class QDockItemLayout(QLayout):
             min_width = hint_width = msh.width()
             min_height = hint_height = msh.height()
             p = title.titlePosition()
-            transpose = p == TitlePosition.Left or p == TitlePosition.Right
+            vert_title = p == TitlePosition.Left or p == TitlePosition.Right
         if widget is not None and not widget.isHidden():
             sh = widget.sizeHint()
             msh = widget.minimumSizeHint()
-            if transpose:
+            if vert_title:
                 hint_width += sh.width()
                 min_width += msh.width()
                 hint_height = max(hint_height, sh.height())
@@ -443,7 +427,9 @@ class QDockItemLayout(QLayout):
                 min_height += msh.height()
                 hint_width = max(hint_width, sh.width())
                 min_width = max(min_width, sh.width())
-        return (QSize(min_width, min_height), QSize(hint_width, hint_height))
+        min_size = QSize(min_width, min_height)
+        hint_size = QSize(hint_width, hint_height)
+        return (min_size, hint_size)
 
     #--------------------------------------------------------------------------
     # QLayout Abstract API
@@ -480,6 +466,38 @@ class QDockItem(QFrame):
     """ A QFrame subclass which acts as an item QDockArea.
 
     """
+    class DragState(Atom):
+        """ A framework class for managing a dock item drag.
+
+        This class should not be used directly by user code.
+
+        """
+        #: The original position of the drag press.
+        press_pos = Typed(QPoint)
+
+        #: Whether or not the dock item is being dragged.
+        dragging = Bool(False)
+
+    class DockState(Atom):
+        """ A framework class for managing a dock item's state.
+
+        This class should not be used directly by user code.
+
+        """
+        #: Whether or not the dock item is floating.
+        floating = Bool(False)
+
+        #: Whether or not the dock item can be floated by the user.
+        floatable = Bool(True)
+
+        #: Whether or not the dock item can be moved by the user.
+        movable = Bool(True)
+
+        #: The dock area which owns the item.
+        area = Typed(QDockArea)
+
+        layout = Typed(object)
+
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
 
@@ -495,8 +513,8 @@ class QDockItem(QFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setTitleBarWidget(QDockTitleBar())
-        self._state = None
-        self._floating = False
+        self._dock_state = self.DockState()
+        self._drag_state = None
 
     #--------------------------------------------------------------------------
     # Public API
@@ -580,56 +598,83 @@ class QDockItem(QFrame):
         self.layout().setDockWidget(widget)
         self.updateGeometry()
 
+    def dockArea(self):
+        """ Find the dock area which is the ancestor of this dock item.
+
+        Returns
+        -------
+        result : QDockArea or None
+            The dock area instance which is an ancestor of this item,
+            or None if no such ancestor exists.
+
+        """
+        area = self._dock_state.area
+        if area is not None:
+            return area
+        parent = self.parent()
+        while parent is not None:
+            if isinstance(parent, QDockArea):
+                self._dock_state.area = parent
+                return parent
+            parent = parent.parent()
+
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    class _DragState(Atom):
-        """ A private class for managing the dock item drag state.
+    def _initDrag(self, pos):
+        """ Initialize the drag state for the dock item.
+
+        If the drag state is already inited, this method is a no-op.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The point where the user clicked the mouse, expressed in
+            the local coordinate system.
 
         """
-        #: The original position of the drag press.
-        press_pos = Typed(QPoint)
-
-        #: Whether or not the dock item is being dragged.
-        dragging = Bool(False)
-
-    def _initDrag(self, pos):
-        if self._state is not None:
+        if self._drag_state is not None:
             return
-        state = self._state = self._DragState()
-        # XXX this is probably not needed
-        if False:#not self._floating:
-            bar = self.titleBarWidget()
-            x = bar.width() / 2
-            y = bar.height() / 2
-            state.press_pos = QPoint(x, y)
-        else:
-            state.press_pos = pos
+        state = self._drag_state = self.DragState()
+        state.press_pos = pos
 
-    def _startDrag(self, pos):
-        state = self._state
+    def _startDrag(self):
+        """" Start the drag process for the dock item.
+
+        If the item is already being dragged, this method is a no-op.
+
+        """
+        state = self._drag_state
         if state is None or state.dragging:
             return
-        self.hide()
-        window = self.window()
-        if window is not self:
-            self.setParent(window)
-        self.setWindowTitle(self.title())
-        flags = Qt.Tool | Qt.FramelessWindowHint
-        self.setWindowFlags(flags)
-        self.move(pos)
-        self.show()
-        self._floating = True
+        dock_area = self.dockArea()
+        if dock_area is None:
+            return
+        dock_area.unplug(self)
         state.dragging = True
+        self.grabMouse()
 
     def _endDrag(self):
+        """ End the drag process for the dock item.
+
+        If the item was not being dragged, this method is a no-op.
+
+        """
+        if self._drag_state is None:
+            return
+        self._drag_state = None
         self.releaseMouse()
-        self._state = None
 
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
     def mousePressEvent(self, event):
+        """ Handle the mouse press event for the dock item.
+
+        This handler will initialize the drag state when the left mouse
+        button is pressed within the title bar area.
+
+        """
         event.ignore()
         if event.button() == Qt.LeftButton:
             rect = self.titleBarWidget().rect()
@@ -638,25 +683,40 @@ class QDockItem(QFrame):
                 event.accept()
 
     def mouseMoveEvent(self, event):
+        """ Handle the mouse move event for the dock item.
+
+        This handler will start the drag process when the mouse move
+        reaches the start drag distance for the application.
+
+        """
         event.ignore()
-        state = self._state
+        state = self._drag_state
         if state is None:
             return
-        if not state.dragging:
-            dist = (event.pos() - state.press_pos).manhattanLength()
-            # XXX initial press pos appears to be off
-            if dist > 2 * QApplication.startDragDistance():
-                self._startDrag(event.globalPos() - state.press_pos)
-                self.grabMouse()
-                event.accept()
-                return
         if state.dragging:
             pos = event.globalPos() - state.press_pos
             self.move(pos)
+            area = self.dockArea()
+            if area is not None:
+                area.hover(event.globalPos())
             event.accept()
+        else:
+            dist = (event.pos() - state.press_pos).manhattanLength()
+            if dist > QApplication.startDragDistance():
+                self._startDrag()
+                event.accept()
 
     def mouseReleaseEvent(self, event):
+        """ Hanlde the mouse release event for the dock item.
+
+        This handler will end the drag operation when the left mouse
+        button is released.
+
+        """
         event.ignore()
         if event.button() == Qt.LeftButton:
             self._endDrag()
+            area = self.dockArea()
+            if area is not None:
+                area.endHover(event.globalPos(), self)
             event.accept()

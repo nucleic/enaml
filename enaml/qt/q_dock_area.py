@@ -5,160 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize, pyqtSignal, QEvent
-from PyQt4.QtGui import QFrame, QLayout, QSplitter, QTabWidget
+from PyQt4.QtCore import Qt, QSize, QPoint, QRect
+from PyQt4.QtGui import QFrame, QLayout, QRubberBand
 
-from atom.api import Atom, List, Enum, ForwardTyped, Typed
-
-from .q_dock_item import QDockItem
-
-
-class DockLayout(Atom):
-    """ A base class for the dock layout classes.
-
-    """
-    #: A reference to the parent node for the item.
-    parent = ForwardTyped(lambda: DockLayout)
-
-    def widget(self):
-        """ Get the widget associated with the layout.
-
-        """
-        raise NotImplementedError
-
-    def layout(self):
-        """ Rebuild the widget layout for the layout.
-
-        """
-        raise NotImplementedError
-
-    def parentWidget(self):
-        """ Get the parent widget for the layout.
-
-        """
-        parent = self.parent
-        if parent is not None:
-            return parent.widget()
-
-    def setGeometry(self, rect):
-        """ Set the geometry for the layout.
-
-        """
-        widget = self.widget()
-        if widget is not None:
-            widget.setGeometry(rect)
-
-    def sizeHint(self):
-        """ Compute the size hint for the layout item.
-
-        """
-        widget = self.widget()
-        if widget is not None:
-            return widget.sizeHint()
-        return QSize(0, 0)
-
-    def minimumSize(self):
-        """ Compute the minimum size of the layout item.
-
-        """
-        widget = self.widget()
-        if widget is not None:
-            return widget.minimumSizeHint()
-        return QSize(0, 0)
-
-
-class DockItem(DockLayout):
-    """ A dock layout which manages a single QDockItem.
-
-    """
-    item = Typed(QDockItem)
-
-    def widget(self):
-        """ Get the widget associated with the layout.
-
-        """
-        return self.item
-
-    def layout(self):
-        """ Rebuild the layout for the item.
-
-        """
-        # Nothing to do for a plain dock item.
-        pass
-
-
-class DockSplitter(DockLayout):
-    """ A dock layout which arranges its items in a splitter.
-
-    """
-    #: The orientation of the dock splitter
-    orientation = Enum(Qt.Vertical, Qt.Horizontal)
-
-    #: The list of dock layouts managed by the splitter.
-    items = List(DockLayout)
-
-    sizes = List(int)
-
-    #: The QSplitter widget used to implement the layout.
-    splitter = Typed(QSplitter)
-
-    def widget(self):
-        """ Get the widget associated with the layout.
-
-        """
-        splitter = self.splitter
-        if splitter is None:
-            parent = self.parentWidget()
-            splitter = self.splitter = QSplitter(self.orientation, parent)
-        return splitter
-
-    def layout(self):
-        """ Rebuild the layout for the dock splitter.
-
-        """
-        old = self.splitter
-        if old is not None:
-            old.setParent(None)
-            del self.splitter
-        splitter = self.widget()
-        for item in self.items:
-            item.layout()
-            splitter.addWidget(item.widget())
-
-
-class DockTabs(DockLayout):
-    """ A dock layout which arranges its items in a tabbed container.
-
-    """
-    #: The list of dock items managed by the layout.
-    items = List(DockItem)
-
-    #: The tab widget used to implement the layout.
-    tabs = Typed(QTabWidget)
-
-    def widget(self):
-        """ Create the QSplitter widget for the layout.
-
-        """
-        tabs = self.tabs
-        if tabs is None:
-            parent = self.parentWidget()
-            tabs = self.tabs = QTabWidget(parent)
-            tabs.setDocumentMode(True)
-        return tabs
-
-    def layout(self):
-        """ Rebuild the layout for the dock tabs.
-
-        """
-        old = self.tabs
-        if old is not None:
-            old.setParent(None)
-            del self.tabs
-        tabs = self.widget()
-        for item in self.items:
-            item.widget().titleBarWidget().setVisible(False)
-            tabs.addTab(item.widget(), item.widget().title())
+from .dock_layout import DockLayoutItem, SplitDockLayout, TabbedDockLayout
 
 
 class QDockAreaLayout(QLayout):
@@ -175,22 +25,129 @@ class QDockAreaLayout(QLayout):
 
         """
         super(QDockAreaLayout, self).__init__(parent)
-        self._layout = None
+        self._dock_layout = None
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _unplugRecursive(self, dock_item, parent, layout):
+        """ A private method which unplugs the given dock item.
+
+        """
+        if isinstance(layout, DockLayoutItem):
+            if layout.dock_item is dock_item:
+                if parent is None:
+                    self.setDockLayout(None)
+                else:
+                    parent.removeItem(layout)
+                return True
+            return False
+        for sub_item in layout.items:
+            if self._unplugRecursive(dock_item, layout, sub_item):
+                if len(layout.items) == 0:
+                    if parent is None:
+                        self.setDockLayout(None)
+                    else:
+                        parent.removeItem(layout)
+                return True
+        return False
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
+    def dockLayout(self):
+        """ Get the dock layout for the layout area.
+
+        Returns
+        -------
+        result : DockLayoutBase or None
+            The dock layout for the layout area, or None.
+
+        """
+        return self._dock_layout
+
     def setDockLayout(self, layout):
-        self._layout = layout
-        self._layout.layout()
-        self._layout.widget().setParent(self.parentWidget())
+        """ Set the dock layout for this layout area.
+
+        The old layout will be unparented and hidden, but not destroyed.
+
+        Parameters
+        ----------
+        layout : DockLayoutBase
+            The dock layout node to use for the dock area.
+
+        """
+        old_layout = self._dock_layout
+        if old_layout is not None:
+            dock = old_layout.widget()
+            dock.hide()
+            dock.setParent(None)
+        self._dock_layout = layout
+        if layout is not None:
+            layout.widget().setParent(self.parentWidget())
+
+    def unplug(self, item):
+        """ Unplug a dock item from the layout.
+
+        Parameters
+        ----------
+        item : QDockItem
+            The dock item to unplug from the layout.
+
+        """
+        layout = self._dock_layout
+        if layout is None:
+            return
+        self._unplugRecursive(item, None, layout)
+
+    def plugRect(self, pos):
+        """ Get the plugging rect at the given position.
+
+        This can be useful for displaying a rubber band as potential
+        dock site.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The target point expressed in local coordinates of the
+            dock area.
+
+        Returns
+        -------
+        result : QRect
+            A rect which represents the plug area. The rect will be
+            invalid if the position does not indicate a valid area.
+
+        """
+        widget = self.parentWidget()
+        m = widget.contentsMargins()
+        corner = QPoint(widget.width(), widget.height())
+
+        # Positions within 40 pixels of the boundary are treated with
+        # priority for docking around the edges of the area.
+        if pos.x() < 40 or pos.y() < 40:
+            if pos.x() < pos.y():
+                r = QRect(0, 0, corner.x() / 4, corner.y())
+            else:
+                r = QRect(0, 0, corner.x(), corner.y() / 4)
+            return r.adjusted(m.left(), m.top(), -m.right(), -m.top())
+        delta = corner - pos
+        if delta.x() < 40 or delta.y() < 40:
+            if delta.x() < delta.y():
+                w = corner.x() / 4
+                r = QRect(corner.x() - w, 0, w, corner.y())
+            else:
+                h = corner.y() / 4
+                r = QRect(0, corner.y() - h, corner.x(), h)
+            return r.adjusted(m.left(), m.top(), -m.right(), -m.top())
+        return QRect()
 
     def setGeometry(self, rect):
         """ Sets the geometry of all the items in the layout.
 
         """
         super(QDockAreaLayout, self).setGeometry(rect)
-        layout = self._layout
+        layout = self._dock_layout
         if layout is not None:
             layout.setGeometry(rect)
 
@@ -198,7 +155,7 @@ class QDockAreaLayout(QLayout):
         """ Get the size hint for the layout.
 
         """
-        layout = self._layout
+        layout = self._dock_layout
         if layout is not None:
             return layout.sizeHint()
         return QSize(256, 192)
@@ -207,7 +164,7 @@ class QDockAreaLayout(QLayout):
         """ Get the minimum size of the layout.
 
         """
-        layout = self._layout
+        layout = self._dock_layout
         if layout is not None:
             return layout.minimumSize()
         return QSize(256, 192)
@@ -218,7 +175,7 @@ class QDockAreaLayout(QLayout):
     def addItem(self, item):
         """ A required virtual method implementation.
 
-        This method should not be used. Use `setDockLayoutItem` instead.
+        This method should not be used. Use `setDockLayout` instead.
 
         """
         msg = 'Use `setDockLayoutItem` instead.'
@@ -251,8 +208,11 @@ class QDockArea(QFrame):
         super(QDockArea, self).__init__(parent)
         self.setLayout(QDockAreaLayout())
         self.layout().setSizeConstraint(QLayout.SetMinAndMaxSize)
+        self._band = QRubberBand(QRubberBand.Rectangle, self)
+
         # FIXME temporary VS2010-like stylesheet
-        self.setStyleSheet("""
+        from PyQt4.QtGui import QApplication
+        QApplication.instance().setStyleSheet("""
             QDockArea {
                 padding: 5px;
                 background: rgb(41, 56, 85);
@@ -272,8 +232,109 @@ class QDockArea(QFrame):
                             stop:0.5 rgb(66, 88, 124),
                             stop:1.0 rgb(64, 81, 124));
                 color: rgb(250, 251, 254);
-                border-top-left-radius: 3px;
-                border-top-right-radius: 3px;
+
                 border-top: 1px solid rgb(59, 80, 115);
             }
+            QDockArea QDockTitleBar[p_titlePosition="2"] {
+                border-top-left-radius: 3px;
+                border-top-right-radius: 3px;
+            }
             """)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _showDropSite(self, pos):
+        band = self._band
+        rect = self.layout().plugRect(pos)
+        if rect.isValid():
+            band.setGeometry(rect)
+            if band.isHidden():
+                band.show()
+        else:
+            if band.isVisible():
+                band.hide()
+
+    def _hideDropSite(self):
+        band = self._band
+        if band.isVisible():
+            band.hide()
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def dockLayout(self):
+        """ Get the dock layout for the dock area.
+
+        Returns
+        -------
+        result : DockLayoutBase or None
+            The dock layout for the dock area, or None.
+
+        """
+        return self.layout().dockLayout()
+
+    def setDockLayout(self, layout):
+        """ Set the dock layout for the dock area.
+
+        The old layout will be unparented and hidden, but not destroyed.
+
+        Parameters
+        ----------
+        layout : DockLayoutBase
+            The dock layout node to use for the dock area.
+
+        """
+        self.layout().setDockLayout(layout)
+
+    def hover(self, pos):
+        """ Returns the dock item at the given global position.
+
+        """
+        local = self.mapFromGlobal(pos)
+        if self.rect().contains(self.mapToParent(local)):
+            self._showDropSite(local)
+        else:
+            self._hideDropSite()
+            # leaf = self.childAt(local)
+            # while leaf is not None:
+            #     if isinstance(leaf, QDockItem):
+            #         self._showDropSite(leaf)
+            #         return
+            #     leaf = leaf.parent()
+
+    def endHover(self, pos, item):
+        self._hideDropSite()
+        self._tryPlug(pos, item)
+
+    def _tryPlug(self, pos, item):
+        local = self.mapFromGlobal(pos)
+        if local.x() > 0 and local.x() < 40:
+            item.setWindowFlags(Qt.Widget)
+            dock_layout = self.layout().dockLayout()
+            dock_layout.insertItem(0, item._dock_state.layout)
+            item._dock_state.floating = False
+
+    def unplug(self, item):
+        """ Unplug a dock item from the dock area.
+
+        This method is called by the framework when a QDockItem should
+        be unplugged from the dock area. It should not typically be
+        called directly by user code.
+
+        Parameters
+        ----------
+        item : QDockItem
+            The item to unplug from the dock area.
+
+        """
+        state = item._dock_state
+        if state.floating:
+            return
+        item.hide()
+        self.layout().unplug(item)
+        item.setParent(self)
+        flags = Qt.Tool | Qt.FramelessWindowHint
+        item.setWindowFlags(flags)
+        item.show()
+        state.floating = True
