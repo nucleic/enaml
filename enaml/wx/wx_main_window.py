@@ -400,7 +400,7 @@ class WxMainWindow(WxWindow, ProxyMainWindow):
         for d in self.declaration.dock_panes():
             w = d.proxy.widget
             if w:
-                yield d
+                yield w
 
     def tool_bars(self):
         """ Get the QToolBar widgets defined for the main window.
@@ -409,7 +409,7 @@ class WxMainWindow(WxWindow, ProxyMainWindow):
         for d in self.declaration.tool_bars():
             w = d.proxy.widget
             if w:
-                yield d
+                yield w
 
     #--------------------------------------------------------------------------
     # Child Events

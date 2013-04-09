@@ -1,6 +1,12 @@
 Enaml Release Notes
 ===================
 
+0.7.5 - 04/09/2013
+------------------
+- Fix a bug in the Wx main window implementation. 39f6baee49_
+
+.. _39f6baee49: https://github.com/nucleic/enaml/commit/39f6baee49ddb601f8fde5b222fadf4053075a73
+
 0.7.4 - 04/04/2013
 ------------------
 - Add border support for Container on the Qt backend. 505662d5f1_
