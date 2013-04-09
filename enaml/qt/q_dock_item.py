@@ -698,7 +698,7 @@ class QDockItem(QFrame):
             self.move(pos)
             area = self.dockArea()
             if area is not None:
-                area.hover(event.globalPos())
+                area.hover(self, event.globalPos(), event.modifiers())
             event.accept()
         else:
             dist = (event.pos() - state.press_pos).manhattanLength()
@@ -718,5 +718,5 @@ class QDockItem(QFrame):
             self._endDrag()
             area = self.dockArea()
             if area is not None:
-                area.endHover(event.globalPos(), self)
+                area.endHover(self, event.globalPos(), event.modifiers())
             event.accept()

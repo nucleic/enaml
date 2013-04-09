@@ -49,6 +49,13 @@ class QDockAreaLayout(QLayout):
                         self.setDockLayout(None)
                     else:
                         parent.removeItem(layout)
+                elif len(layout.items) == 1 and parent is not None:
+                    item = layout.items[0]
+                    layout.releaseItem(item)
+                    index = parent.items.index(layout)
+                    #print 'trashing', layout
+                    parent.removeItem(layout)
+                    parent.insertItem(index, item)
                 return True
         return False
 
@@ -98,9 +105,11 @@ class QDockAreaLayout(QLayout):
         layout = self._dock_layout
         if layout is None:
             return
+        self.parentWidget().setUpdatesEnabled(False)
         self._unplugRecursive(item, None, layout)
+        self.parentWidget().setUpdatesEnabled(True)
 
-    def plugRect(self, pos):
+    def plugRect(self, item, pos):
         """ Get the plugging rect at the given position.
 
         This can be useful for displaying a rubber band as potential
@@ -123,23 +132,75 @@ class QDockAreaLayout(QLayout):
         m = widget.contentsMargins()
         corner = QPoint(widget.width(), widget.height())
 
+        if self._dock_layout is None:
+            r = QRect(0, 0, widget.width(), widget.height())
+            return r.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
+
         # Positions within 40 pixels of the boundary are treated with
         # priority for docking around the edges of the area.
-        if pos.x() < 40 or pos.y() < 40:
+        if pos.x() < 20 or pos.y() < 20:
             if pos.x() < pos.y():
-                r = QRect(0, 0, corner.x() / 4, corner.y())
+                height = widget.height() - m.top() - m.bottom()
+                rect = QRect(m.left(), m.top(), 40, height)
             else:
-                r = QRect(0, 0, corner.x(), corner.y() / 4)
-            return r.adjusted(m.left(), m.top(), -m.right(), -m.top())
+                width = widget.width() - m.left() - m.right()
+                rect = QRect(m.left(), m.top(), width, 40)
+            return rect
         delta = corner - pos
-        if delta.x() < 40 or delta.y() < 40:
+        if delta.x() < 20 or delta.y() < 20:
             if delta.x() < delta.y():
-                w = corner.x() / 4
-                r = QRect(corner.x() - w, 0, w, corner.y())
+                r = QRect(corner.x() - 40, 0, 40, corner.y())
             else:
-                h = corner.y() / 4
-                r = QRect(0, corner.y() - h, corner.x(), h)
+                r = QRect(0, corner.y() - 40, corner.x(), 40)
             return r.adjusted(m.left(), m.top(), -m.right(), -m.top())
+
+        # Find the dock item or splitter handle that is being hovered.
+        target = None
+        leaf = widget.childAt(pos)
+        from .q_dock_item import QDockItem
+        from PyQt4.QtGui import QSplitterHandle
+        while leaf is not None:
+            if isinstance(leaf, (QDockItem, QSplitterHandle)):
+                target = leaf
+                break
+            leaf = leaf.parent()
+
+        if isinstance(target, QSplitterHandle):
+            o = target.mapTo(widget, QPoint(0, 0))
+            if target.orientation() == Qt.Horizontal:
+                return QRect(o.x() - 20, o.y(), target.width() + 40, target.height())
+            return QRect(o.x(), o.y() - 20, target.width(), target.height() + 40)
+
+        if isinstance(target, QDockItem):
+            p = target._dock_state.layout.parent
+            if isinstance(p, TabbedDockLayout):
+                target = p.widget()
+            origin = target.mapTo(widget, QPoint(0, 0))
+            h_frac = (pos.y() - origin.y()) / float(target.height())
+            w_frac = (pos.x() - origin.x()) / float(target.width())
+            h_frac2 = 1.0 - h_frac
+            w_frac2 = 1.0 - w_frac
+            quads = [(w_frac, 0), (h_frac, 1), (w_frac2, 2), (h_frac2, 3)]
+            quads.sort()
+            qf, q = quads[0]
+            if qf < 0.3:
+                if q == 0 and qf * target.width() > 5:
+                    w = 0.3 * target.width()
+                    r = QRect(origin.x(), origin.y(), w, target.height())
+                elif q == 1 and qf * target.height() > 5:
+                    h = 0.3 * target.height()
+                    r = QRect(origin.x(), origin.y(), target.width(), h)
+                elif q == 2 and qf * target.width() > 5:
+                    w = 0.3 * target.width()
+                    r = QRect(origin.x() + target.width() - w, origin.y(), w, target.height())
+                elif q == 3 and qf * target.height() > 5:
+                    h = 0.3 * target.height()
+                    r = QRect(origin.x(), origin.y() + target.height() - h, target.width(), h)
+                else:
+                    r = QRect()
+                return r
+            return QRect(origin.x(), origin.y(), target.width(), target.height())
+
         return QRect()
 
     def setGeometry(self, rect):
@@ -244,9 +305,9 @@ class QDockArea(QFrame):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _showDropSite(self, pos):
+    def _showDropSite(self, item, pos):
         band = self._band
-        rect = self.layout().plugRect(pos)
+        rect = self.layout().plugRect(item, pos)
         if rect.isValid():
             band.setGeometry(rect)
             if band.isHidden():
@@ -287,25 +348,22 @@ class QDockArea(QFrame):
         """
         self.layout().setDockLayout(layout)
 
-    def hover(self, pos):
+    def hover(self, item, pos, modifiers):
         """ Returns the dock item at the given global position.
 
         """
+        if modifiers & Qt.ShiftModifier:
+            self._hideDropSite()
+            return
         local = self.mapFromGlobal(pos)
         if self.rect().contains(self.mapToParent(local)):
-            self._showDropSite(local)
+            self._showDropSite(item, local)
         else:
             self._hideDropSite()
-            # leaf = self.childAt(local)
-            # while leaf is not None:
-            #     if isinstance(leaf, QDockItem):
-            #         self._showDropSite(leaf)
-            #         return
-            #     leaf = leaf.parent()
 
-    def endHover(self, pos, item):
+    def endHover(self, item, pos, modifiers):
         self._hideDropSite()
-        self._tryPlug(pos, item)
+        #self._tryPlug(pos, item)
 
     def _tryPlug(self, pos, item):
         local = self.mapFromGlobal(pos)

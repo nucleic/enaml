@@ -195,6 +195,11 @@ class SplitDockLayout(DockLayoutBase):
         widget.hide()
         widget.setParent(None)
 
+    def releaseItem(self, item):
+        assert item in self.items, 'item does not exist in the layout'
+        item.parent = None
+        self.items.remove(item)
+
 
 class QDockTabBar(QTabBar):
     """ A custom QTabBar that manages safetly undocking a tab.
@@ -397,4 +402,11 @@ class TabbedDockLayout(DockLayoutBase):
         self.items.remove(item)
         widget = item.widget()
         widget.hide()
+        widget.titleBarWidget().setVisible(True)
         widget.setParent(None)
+
+    def releaseItem(self, item):
+        assert item in self.items, 'item does not exist in the layout'
+        item.parent = None
+        self.items.remove(item)
+        item.widget().titleBarWidget().setVisible(True)
