@@ -353,7 +353,7 @@ def render_box(painter):
 
 
 app = QApplication([])
-image = QImage(QSize(121, 121), QImage.Format_ARGB32_Premultiplied)
+image = QImage(QSize(111, 111), QImage.Format_ARGB32_Premultiplied)
 image.fill(0)
 painter = QPainter(image)
 #render_box(painter)
