@@ -109,7 +109,7 @@ class QDockAreaLayout(QLayout):
         self._unplugRecursive(item, None, layout)
         self.parentWidget().setUpdatesEnabled(True)
 
-    def plugRect(self, item, pos):
+    def pluggingRect(self, item, pos):
         """ Get the plugging rect at the given position.
 
         This can be useful for displaying a rubber band as potential
@@ -128,31 +128,43 @@ class QDockAreaLayout(QLayout):
             invalid if the position does not indicate a valid area.
 
         """
-        widget = self.parentWidget()
-        m = widget.contentsMargins()
-        corner = QPoint(widget.width(), widget.height())
+        dock_layout = self._dock_layout
+        dock_area = self.parentWidget()
+        area_width = dock_area.width()
+        area_height = dock_area.height()
+        margins = dock_area.contentsMargins()
 
-        if self._dock_layout is None:
-            r = QRect(0, 0, widget.width(), widget.height())
-            return r.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
+        # If there is nothing in the layout. The plugging rect is the
+        # entire dock area.
+        if dock_layout is None:
+            rect = QRect(0, 0, area_width, area_height).adjusted(
+                margins.left(), margins.top(),
+                -margins.right(), -margins.bottom()
+            )
+            return rect
+
+
 
         # Positions within 40 pixels of the boundary are treated with
         # priority for docking around the edges of the area.
+        pw = 0.3 * widget.width()
+        ph = 0.3 * widget.height()
+
         if pos.x() < 20 or pos.y() < 20:
             if pos.x() < pos.y():
                 height = widget.height() - m.top() - m.bottom()
-                rect = QRect(m.left(), m.top(), 40, height)
+                rect = QRect(m.left(), m.top(), pw, height)
             else:
                 width = widget.width() - m.left() - m.right()
-                rect = QRect(m.left(), m.top(), width, 40)
+                rect = QRect(m.left(), m.top(), width, ph)
             return rect
         delta = corner - pos
         if delta.x() < 20 or delta.y() < 20:
             if delta.x() < delta.y():
-                r = QRect(corner.x() - 40, 0, 40, corner.y())
+                r = QRect(corner.x() - pw + m.left(), m.top(), pw, corner.y())
             else:
-                r = QRect(0, corner.y() - 40, corner.x(), 40)
-            return r.adjusted(m.left(), m.top(), -m.right(), -m.top())
+                r = QRect(0, corner.y() - ph, corner.x(), ph)
+            return r.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
 
         # Find the dock item or splitter handle that is being hovered.
         target = None
@@ -300,6 +312,9 @@ class QDockArea(QFrame):
                 border-top-left-radius: 3px;
                 border-top-right-radius: 3px;
             }
+            QSplitterHandle {
+                background: rgb(41, 56, 85);
+            }
             """)
 
     #--------------------------------------------------------------------------
@@ -307,7 +322,7 @@ class QDockArea(QFrame):
     #--------------------------------------------------------------------------
     def _showDropSite(self, item, pos):
         band = self._band
-        rect = self.layout().plugRect(item, pos)
+        rect = self.layout().pluggingRect(item, pos)
         if rect.isValid():
             band.setGeometry(rect)
             if band.isHidden():
