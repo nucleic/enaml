@@ -5,12 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize, QPoint, QRect
-from PyQt4.QtGui import QFrame, QLayout, QRubberBand, QPixmap, QWidget, QSplitterHandle
+from PyQt4.QtCore import Qt, QSize, QPoint, QRect, QTimer
+from PyQt4.QtGui import (
+    QFrame, QLayout, QRubberBand, QPixmap, QWidget, QSplitter, QSplitterHandle
+)
 
-from .dock_layout import DockLayoutItem, SplitDockLayout, TabbedDockLayout
+from atom.api import Atom, Int, Typed
 
-from .q_dock_guides import QDockGuides
+from .dock_layout import DockLayoutItem, DockLayoutBase
+
+from .q_guide_rose import QGuideRose
 
 
 class QDockAreaLayout(QLayout):
@@ -133,92 +137,30 @@ class QDockAreaLayout(QLayout):
             invalid if the position does not indicate a valid area.
 
         """
-        # dock_layout = self._dock_layout
-        # dock_area = self.parentWidget()
-        # area_width = dock_area.width()
-        # area_height = dock_area.height()
-        # margins = dock_area.contentsMargins()
 
-        # # If there is nothing in the layout. The plugging rect is the
-        # # entire dock area.
-        # if dock_layout is None:
-        #     rect = QRect(0, 0, area_width, area_height).adjusted(
-        #         margins.left(), margins.top(),
-        #         -margins.right(), -margins.bottom()
-        #     )
-        #     return rect
+    def dockHitTest(self, pos):
+        """ Return the relevant widget under the point.
 
+        """
+        widget = self.parentWidget()
+        if widget is None:
+            return None
+        layout = self._dock_layout
+        if layout is None:
+            return None
 
+        # Hit test splitter handles
+        splitters = widget.findChildren(QSplitter, 'dock_layout_splitter')
+        for sp in splitters:
+            pt = sp.mapFrom(widget, pos)
+            for index in xrange(1, sp.count()):
+                handle = sp.handle(index)
+                rect = handle.rect().adjusted(-20, -20, 20, 20)
+                if rect.contains(handle.mapFrom(sp, pt)):
+                    return handle
 
-        # # Positions within 40 pixels of the boundary are treated with
-        # # priority for docking around the edges of the area.
-        # pw = 0.3 * widget.width()
-        # ph = 0.3 * widget.height()
-
-        # if pos.x() < 20 or pos.y() < 20:
-        #     if pos.x() < pos.y():
-        #         height = widget.height() - m.top() - m.bottom()
-        #         rect = QRect(m.left(), m.top(), pw, height)
-        #     else:
-        #         width = widget.width() - m.left() - m.right()
-        #         rect = QRect(m.left(), m.top(), width, ph)
-        #     return rect
-        # delta = corner - pos
-        # if delta.x() < 20 or delta.y() < 20:
-        #     if delta.x() < delta.y():
-        #         r = QRect(corner.x() - pw + m.left(), m.top(), pw, corner.y())
-        #     else:
-        #         r = QRect(0, corner.y() - ph, corner.x(), ph)
-        #     return r.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
-
-        # # Find the dock item or splitter handle that is being hovered.
-        # target = None
-        # leaf = widget.childAt(pos)
-        # from .q_dock_item import QDockItem
-        # from PyQt4.QtGui import QSplitterHandle
-        # while leaf is not None:
-        #     if isinstance(leaf, (QDockItem, QSplitterHandle)):
-        #         target = leaf
-        #         break
-        #     leaf = leaf.parent()
-
-        # if isinstance(target, QSplitterHandle):
-        #     o = target.mapTo(widget, QPoint(0, 0))
-        #     if target.orientation() == Qt.Horizontal:
-        #         return QRect(o.x() - 20, o.y(), target.width() + 40, target.height())
-        #     return QRect(o.x(), o.y() - 20, target.width(), target.height() + 40)
-
-        # if isinstance(target, QDockItem):
-        #     p = target._dock_state.layout.parent
-        #     if isinstance(p, TabbedDockLayout):
-        #         target = p.widget()
-        #     origin = target.mapTo(widget, QPoint(0, 0))
-        #     h_frac = (pos.y() - origin.y()) / float(target.height())
-        #     w_frac = (pos.x() - origin.x()) / float(target.width())
-        #     h_frac2 = 1.0 - h_frac
-        #     w_frac2 = 1.0 - w_frac
-        #     quads = [(w_frac, 0), (h_frac, 1), (w_frac2, 2), (h_frac2, 3)]
-        #     quads.sort()
-        #     qf, q = quads[0]
-        #     if qf < 0.3:
-        #         if q == 0 and qf * target.width() > 5:
-        #             w = 0.3 * target.width()
-        #             r = QRect(origin.x(), origin.y(), w, target.height())
-        #         elif q == 1 and qf * target.height() > 5:
-        #             h = 0.3 * target.height()
-        #             r = QRect(origin.x(), origin.y(), target.width(), h)
-        #         elif q == 2 and qf * target.width() > 5:
-        #             w = 0.3 * target.width()
-        #             r = QRect(origin.x() + target.width() - w, origin.y(), w, target.height())
-        #         elif q == 3 and qf * target.height() > 5:
-        #             h = 0.3 * target.height()
-        #             r = QRect(origin.x(), origin.y() + target.height() - h, target.width(), h)
-        #         else:
-        #             r = QRect()
-        #         return r
-        #     return QRect(origin.x(), origin.y(), target.width(), target.height())
-
-        # return QRect()
+        # Hit test dock items
+        return layout.hitTest(pos)
 
     def setGeometry(self, rect):
         """ Sets the geometry of all the items in the layout.
@@ -285,14 +227,272 @@ class QDockAreaLayout(QLayout):
         return None
 
 
+class RoseManager(Atom):
+    """ An object which assists in managing a QGuideRose.
+
+    """
+    #: The rose object being managed; created on-demand.
+    _rose = Typed(QGuideRose, ())
+
+    #: The target mode to apply to the rose on timeout.
+    _target_mode = Int(QGuideRose.Mode.NoMode)
+
+    #: The timer for changing the state of the rose.
+    _timer = Typed(QTimer)
+
+    #--------------------------------------------------------------------------
+    # Default Value Methods
+    #--------------------------------------------------------------------------
+    def _default__timer(self):
+        """ Create the timer for this rose manager.
+
+        """
+        timer = QTimer()
+        timer.setSingleShot(True)
+        timer.timeout.connect(self._on_timer)
+        return timer
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def _on_timer(self):
+        """ Handle the timeout event for the internal timer.
+
+        """
+        self._rose.setMode(self._target_mode)
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def show(self, owner):
+        """ Ensure the rose is visible and sized on the screen.
+
+        Parameters
+        ----------
+        owner : QWidget
+            The widget over which the rose should be shown.
+
+        """
+        if self._rose.isHidden():
+            g = owner.mapToGlobal(QPoint(0, 0))
+            self._rose.setGeometry(QRect(g, owner.size()))
+            self._rose.show()
+
+    def hide(self):
+        """ Ensure the rose is hidden from the screen.
+
+        """
+        if not self._rose.isHidden():
+            self._rose.hide()
+
+    def hitTest(self, pos):
+        """ Hit test the rose.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The mouse position to hit test.
+
+        Returns
+        -------
+        result : QGuideRose.Guide
+            The enum value for the hit guide.
+
+        """
+        return self._rose.hitTest(pos)
+
+    def hover(self, pos):
+        """ Peform a hover event on the rose.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The mouse position to hit test.
+
+        Returns
+        -------
+        result : QGuideRose.Guide
+            The enum value for the hit guide.
+
+        """
+        return self._rose.hover(pos)
+
+    def update(self, pos, mode):
+        """ Update the rose with a new center position and mode.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The center position to apply to the rose.
+
+        mode : QGuideRose.Mode
+            The mode to apply to the rose.
+
+        """
+        if mode == QGuideRose.Mode.NoMode:
+            self._timer.stop()
+            self._rose.setMode(mode)
+        elif mode != self._rose.mode():
+            self._rose.setMode(QGuideRose.Mode.NoMode)
+            self._target_mode = mode
+            self._timer.start(30)
+        self._rose.setCenter(pos)
+
+
+class BandManager(Atom):
+
+    #: The rose object being managed; created on-demand.
+    _band = Typed(QRubberBand, (QRubberBand.Rectangle,))
+
+    #: The target mode to apply to the rose on timeout.
+    _target_geo = Typed(QRect, factory=lambda: QRect())
+
+    #: The timer for changing the state of the rose.
+    _timer = Typed(QTimer)
+
+    #--------------------------------------------------------------------------
+    # Default Value Methods
+    #--------------------------------------------------------------------------
+    def _default__timer(self):
+        """ Create the timer for this rose manager.
+
+        """
+        timer = QTimer()
+        timer.setSingleShot(True)
+        timer.timeout.connect(self._on_timer)
+        return timer
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def _on_timer(self):
+        """ Handle the timeout event for the internal timer.
+
+        """
+        if self._target_geo.isValid():
+            self._band.setGeometry(self._target_geo)
+            self._band.show()
+        else:
+            self._band.hide()
+
+    def show(self):
+        """ Ensure the rose is visible and sized on the screen.
+
+        Parameters
+        ----------
+        owner : QWidget
+            The widget over which the rose should be shown.
+
+        """
+        if self._band.isHidden():
+            self._band.setGeometry(self._target_geo)
+            self._band.show()
+
+    def hide(self):
+        """ Ensure the rose is hidden from the screen.
+
+        """
+        self._timer.stop()
+        if not self._band.isHidden():
+            self._band.hide()
+
+    def update(self, guide_hit, dock_hit, owner):
+        """ Update the geometry of the rect.
+
+        """
+        Guide = QGuideRose.Guide
+        if guide_hit == Guide.NoGuide:
+            r = QRect()
+            if self._target_geo != r:
+                self._target_geo = QRect()
+                self._timer.start(50)
+            return
+
+        # Border hits
+        m = owner.contentsMargins()
+        if guide_hit == Guide.BorderNorth:
+            p = QPoint(m.left(), m.top())
+            h = 60 #owner.height() / 3
+            s = QSize(owner.width() - m.left() - m.right(), h)
+        elif guide_hit == Guide.BorderEast:
+            w = 60 #owner.width() / 3
+            p = QPoint(owner.width() - w - m.right(), m.top())
+            s = QSize(w, owner.height() - m.top() - m.bottom())
+        elif guide_hit == Guide.BorderSouth:
+            h = 60 #owner.height() / 3
+            p = QPoint(m.left(), owner.height() - h - m.bottom())
+            s = QSize(owner.width() - m.left() - m.right(), h)
+        elif guide_hit == Guide.BorderWest:
+            p = QPoint(m.left(), m.top())
+            w = 60 # owner.width() / 3
+            s = QSize(w, owner.height() - m.top() - m.bottom())
+
+        # Compass Hits
+        elif guide_hit == Guide.CompassNorth:
+            w = dock_hit.widget()
+            p = w.mapTo(owner, QPoint(0, 0))
+            s = w.size()
+            s.setHeight(s.height() / 3)
+        elif guide_hit == Guide.CompassEast:
+            w = dock_hit.widget()
+            p = w.mapTo(owner, QPoint(0, 0))
+            s = w.size()
+            d = s.width() / 3
+            r = s.width() - d
+            s.setWidth(d)
+            p.setX(p.x() + r)
+        elif guide_hit == Guide.CompassSouth:
+            w = dock_hit.widget()
+            p = w.mapTo(owner, QPoint(0, 0))
+            s = w.size()
+            d = s.height() / 3
+            r = s.height() - d
+            s.setHeight(d)
+            p.setY(p.y() + r)
+        elif guide_hit == Guide.CompassWest:
+            w = dock_hit.widget()
+            p = w.mapTo(owner, QPoint(0, 0))
+            s = w.size()
+            s.setWidth(s.width() / 3)
+        elif guide_hit == Guide.CompassCenter:
+            w = dock_hit.widget()
+            p = w.mapTo(owner, QPoint(0, 0))
+            s = w.size()
+
+        # Splitter
+        elif guide_hit == Guide.SplitHorizontal:
+            p = dock_hit.mapTo(owner, QPoint(0, 0))
+            wo, r = divmod(60 - dock_hit.width(), 2)
+            wo += r
+            p.setX(p.x() - wo)
+            s = QSize(2 * wo + dock_hit.width(), dock_hit.height())
+        elif guide_hit == Guide.SplitVertical:
+            p = dock_hit.mapTo(owner, QPoint(0, 0))
+            ho, r = divmod(60 - dock_hit.height(), 2)
+            ho += r
+            p.setY(p.y() - ho)
+            s = QSize(dock_hit.width(), 2 * ho + dock_hit.height())
+
+        # Default no-op
+        else:
+            s = QSize()
+            p = QPoint()
+
+        p = owner.mapToGlobal(p)
+        geo = QRect(p, s)
+        if geo != self._target_geo:
+            self._target_geo = geo
+            self._timer.start(50)
+
+
 class QDockArea(QFrame):
 
     def __init__(self, parent=None):
         super(QDockArea, self).__init__(parent)
         self.setLayout(QDockAreaLayout())
         self.layout().setSizeConstraint(QLayout.SetMinAndMaxSize)
-        self._band = QRubberBand(QRubberBand.Rectangle)
-        self._dock_guides = QDockGuides()
+        self._band = BandManager()
+        self._rose = RoseManager()
 
         # FIXME temporary VS2010-like stylesheet
         from PyQt4.QtGui import QApplication
@@ -332,53 +532,35 @@ class QDockArea(QFrame):
     # Private API
     #--------------------------------------------------------------------------
     def _showDropSite(self, item, pos):
-        guides = self._dock_guides
-        needshow = guides.isHidden()
-        if needshow:
-            gpos = self.mapToGlobal(QPoint(0, 0))
-            guides.setGeometry(QRect(gpos, self.size()))
-
-        target = None
-        handle = None
-        leaf = self.childAt(pos)
-        from .q_dock_item import QDockItem
-        while leaf is not None:
-            if isinstance(leaf, QDockItem):
-                target = leaf
-                break
-            elif isinstance(leaf, QSplitterHandle):
-                handle = leaf
-                break
-            leaf = leaf.parent()
-        if target is not None:
+        rose = self._rose
+        Mode = QGuideRose.Mode
+        dock_hit = self.layout().dockHitTest(pos)
+        if isinstance(dock_hit, DockLayoutBase):
+            target = dock_hit.widget()
             cpos = target.mapTo(self, QPoint(0, 0))
             cpos += QPoint(target.width() / 2, target.height() / 2)
-            guides.setGuideCenter(cpos)
-        if handle is not None:
-            p = handle.mapToGlobal(QPoint(0, 0))
-            s = handle.size()
-            if handle.orientation() == Qt.Horizontal:
-                p -= QPoint(20, 0)
-                s += QSize(40, 0)
+            rose.update(cpos, Mode.Compass)
+        elif isinstance(dock_hit, QSplitterHandle):
+            if dock_hit.orientation() == Qt.Horizontal:
+                mode = Mode.SplitHorizontal
             else:
-                p -= QPoint(0, 20)
-                s += QSize(0, 40)
-            self._band.setGeometry(QRect(p, s))
-            self._band.show()
+                mode = Mode.SplitVertical
+            cpos = dock_hit.mapTo(self, QPoint(0, 0))
+            cpos += QPoint(dock_hit.width() / 2, dock_hit.height() / 2)
+            rose.update(cpos, mode)
+        else:
+            rose.update(QPoint(), Mode.NoMode)
 
-        if needshow:
-            guides.show()
-
-        guides.hover(pos)
+        # Make sure the rose is shown and hit test for the guide. Show
+        # the rubber band for the appropriate guide hit.
+        rose.show(self)
+        guide_hit = rose.hover(pos)
+        self._band.update(guide_hit, dock_hit, self)
+        rose._rose.raise_()
 
     def _hideDropSite(self):
-        guides = self._dock_guides
-        if not guides.isHidden():
-            guides.hide()
-            guides.setGuideCenter(QPoint())
-        #band = self._band
-        #if band.isVisible():
-        #    band.hide()
+        self._rose.hide()
+        self._band.hide()
 
     #--------------------------------------------------------------------------
     # Public API
@@ -450,5 +632,5 @@ class QDockArea(QFrame):
         item.setParent(self)
         flags = Qt.Window | Qt.FramelessWindowHint
         item.setWindowFlags(flags)
-        item.show()
+        #item.show()
         state.floating = True

@@ -86,6 +86,10 @@ class DockLayoutItem(DockLayoutBase):
         """
         return self.dock_item
 
+    def hitTest(self, pos):
+        if self.dock_item.geometry().contains(pos):
+            return self
+
 
 class SplitDockLayout(DockLayoutBase):
     """ A dock layout which arranges its items in a splitter.
@@ -115,6 +119,7 @@ class SplitDockLayout(DockLayoutBase):
         """
         super(SplitDockLayout, self).__init__(items=items, **kwargs)
         splitter = self.splitter = QSplitter(self.orientation)
+        splitter.setObjectName('dock_layout_splitter')
         for item in items:
             item.parent = self
             splitter.addWidget(item.widget())
@@ -124,6 +129,14 @@ class SplitDockLayout(DockLayoutBase):
 
         """
         return self.splitter
+
+    def hitTest(self, pos):
+        if self.splitter.geometry().contains(pos):
+            pt = self.splitter.mapFromParent(pos)
+            for item in self.items:
+                t = item.hitTest(pt)
+                if t is not None:
+                    return t
 
     def sizes(self):
         """ Get the list of sizes of the splitter items.
@@ -248,7 +261,7 @@ class QDockTabBar(QTabBar):
         state = self._drag_state = self.DragState()
         state.press_pos = pos
 
-    def _startDrag(self):
+    def _startDrag(self, pos):
         """" Start the drag process for the dock item.
 
         This method unplugs the dock item from the layout and transfers
@@ -268,6 +281,8 @@ class QDockTabBar(QTabBar):
         i_state = dock_item.DragState(press_pos=state.press_pos, dragging=True)
         dock_item._drag_state = i_state
         dock_item.grabMouse()
+        dock_item.move(pos - state.press_pos)
+        dock_item.show()
         self._drag_state = None
 
     #--------------------------------------------------------------------------
@@ -299,7 +314,7 @@ class QDockTabBar(QTabBar):
         else:
             dist = (event.pos() - state.press_pos).manhattanLength()
             if dist > QApplication.startDragDistance():
-                self._startDrag()
+                self._startDrag(event.globalPos())
 
 
 class TabbedDockLayout(DockLayoutBase):
@@ -326,6 +341,7 @@ class TabbedDockLayout(DockLayoutBase):
         """
         super(TabbedDockLayout, self).__init__(items=items, **kwargs)
         tab_widget = self.tab_widget = QTabWidget()
+        tab_widget.setObjectName('dock_layout_tab_widget')
         tab_widget.setTabBar(QDockTabBar())
         for item in items:
             item.parent = self
@@ -354,6 +370,10 @@ class TabbedDockLayout(DockLayoutBase):
 
         """
         return self.tab_widget
+
+    def hitTest(self, pos):
+        if self.tab_widget.geometry().contains(pos):
+            return self
 
     def addItem(self, item):
         """ Add an item to the tabbed layout.

@@ -34,6 +34,10 @@ class GuidePad(object):
 
     SplitBottom = 8
 
+    SplitHorizontal = 9
+
+    SplitVertical = 10
+
     @staticmethod
     def makePath(size):
         path = QPainterPath()
@@ -207,7 +211,6 @@ class GuidePad(object):
             height = rect.height() - 8
             painter.drawRect(QRect(4, 4, width, height))
             painter.fillRect(QRect(5, 5, width - 1, 3), color)
-
             w = width / 2
             h = height - 4
             painter.fillRect(QRect(5, 8, w - 1, h), fill_brush)
@@ -224,13 +227,37 @@ class GuidePad(object):
             w = width / 2
             h = height - 4
             painter.fillRect(QRect(5 + w, 8, w - 1, h), fill_brush)
-
             pen = QPen(color, 0, Qt.DotLine)
             pen.setDashPattern([1, 1])
             pen.setDashOffset(1)
             painter.setPen(pen)
             painter.drawLine(5 + w, 8, 5 + w, 8 + h)
-
+        elif position == self.SplitHorizontal:
+            width = rect.width() - 8
+            height = rect.height() - 8
+            painter.drawRect(QRect(4, 4, width, height))
+            painter.fillRect(QRect(5, 5, width - 1, 3), color)
+            w = width / 4
+            h = height - 4
+            painter.fillRect(QRect(6 + w, 8, 2 * w - 1, h), fill_brush)
+            pen = QPen(color, 0, Qt.DotLine)
+            pen.setDashPattern([1, 1])
+            pen.setDashOffset(1)
+            painter.setPen(pen)
+            painter.drawLine(6 + w, 8, 6 + w, 8 + h)
+            painter.drawLine(4 + 3 * w, 8, 4 + 3 * w, 8 + h)
+        elif position == self.SplitVertical:
+            width = rect.width() - 8
+            height = rect.height() - 8
+            painter.drawRect(QRect(4, 4, width, height))
+            painter.fillRect(QRect(5, 5, width - 1, 3), color)
+            h = height / 4
+            painter.fillRect(QRect(5, 8 + h, width - 1, 2 * h - 2), fill_brush)
+            pen = QPen(color, 0, Qt.DotLine)
+            pen.setDashPattern([1, 1])
+            painter.setPen(pen)
+            painter.drawLine(5, 8 + h, 4 + width, 8 + h)
+            painter.drawLine(5, 10 + 2 * h, 4 + width, 10 + 2 * h)
         # Draw the indicator
         painter.restore()
 
@@ -340,6 +367,29 @@ def render_cross(painter):
     painter.drawPath(path)
 
 
+def render_north_cross(painter):
+    path = QPainterPath()
+    path.moveTo(35.0, 0)
+    path.lineTo(75.0, 0)
+    path.lineTo(75.0, 25.0)
+    path.lineTo(85.0, 35.0)
+    path.lineTo(110.0, 35.0)
+    path.lineTo(110.0, 75.0)
+    path.lineTo(85.0, 75.0)
+    path.lineTo(75.0, 85.0)
+    path.lineTo(75.0, 110.0)
+    path.lineTo(35.0, 110.0)
+    path.lineTo(35.0, 85.0)
+    path.lineTo(25.0, 75.0)
+    path.lineTo(0.0, 75.0)
+    path.lineTo(0.0, 35.0)
+    path.lineTo(25.0, 35.0)
+    path.lineTo(35.0, 25.0)
+    path.lineTo(35.0, 0.0)
+    painter.fillPath(path, QColor(0xFF, 0xFF, 0xFF, 0x99))
+    painter.setPen(QPen(QColor(0x77, 0x77, 0x77), 1.0))
+    painter.drawPath(path)
+
 def render_box(painter):
     path = QPainterPath()
     path.moveTo(0.0, 0.0)
@@ -353,10 +403,12 @@ def render_box(painter):
 
 
 app = QApplication([])
-image = QImage(QSize(111, 111), QImage.Format_ARGB32_Premultiplied)
+image = QImage(QSize(31, 31), QImage.Format_ARGB32_Premultiplied)
 image.fill(0)
 painter = QPainter(image)
 #render_box(painter)
-render_cross(painter)
+#render_cross(painter)
+pad = GuidePad(QRect(0, 0, 30, 30), GuidePad.SplitVertical)
+pad.paint(painter)
 painter.end()
-#image.save()
+image.save('C:/Users/i341972/Desktop/git_repos/nucleic/enaml/enaml/qt/dockguides/split_vertical.png')

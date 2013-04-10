@@ -99,6 +99,9 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         self._title = u''
         self._title_position = TitlePosition.Top
         self._margins = QMargins(5, 2, 5, 2)
+        font = self.font()
+        font.setPointSize(10)
+        self.setFont(font)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -638,7 +641,7 @@ class QDockItem(QFrame):
         state = self._drag_state = self.DragState()
         state.press_pos = pos
 
-    def _startDrag(self):
+    def _startDrag(self, pos):
         """" Start the drag process for the dock item.
 
         If the item is already being dragged, this method is a no-op.
@@ -651,8 +654,10 @@ class QDockItem(QFrame):
         if dock_area is None:
             return
         dock_area.unplug(self)
+        self.move(pos - state.press_pos)
         state.dragging = True
         self.grabMouse()
+        self.show()
 
     def _endDrag(self):
         """ End the drag process for the dock item.
@@ -703,7 +708,7 @@ class QDockItem(QFrame):
         else:
             dist = (event.pos() - state.press_pos).manhattanLength()
             if dist > QApplication.startDragDistance():
-                self._startDrag()
+                self._startDrag(event.globalPos())
                 event.accept()
 
     def mouseReleaseEvent(self, event):
