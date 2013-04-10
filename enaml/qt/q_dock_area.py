@@ -6,9 +6,11 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QSize, QPoint, QRect
-from PyQt4.QtGui import QFrame, QLayout, QRubberBand
+from PyQt4.QtGui import QFrame, QLayout, QRubberBand, QPixmap, QWidget, QSplitterHandle
 
 from .dock_layout import DockLayoutItem, SplitDockLayout, TabbedDockLayout
+
+from .q_dock_guides import QDockGuides
 
 
 class QDockAreaLayout(QLayout):
@@ -26,6 +28,7 @@ class QDockAreaLayout(QLayout):
         """
         super(QDockAreaLayout, self).__init__(parent)
         self._dock_layout = None
+        self._dock_guides = None
 
     #--------------------------------------------------------------------------
     # Private API
@@ -92,6 +95,8 @@ class QDockAreaLayout(QLayout):
         self._dock_layout = layout
         if layout is not None:
             layout.widget().setParent(self.parentWidget())
+            if self._dock_guides:
+                self._dock_guides.raise_()
 
     def unplug(self, item):
         """ Unplug a dock item from the layout.
@@ -128,92 +133,92 @@ class QDockAreaLayout(QLayout):
             invalid if the position does not indicate a valid area.
 
         """
-        dock_layout = self._dock_layout
-        dock_area = self.parentWidget()
-        area_width = dock_area.width()
-        area_height = dock_area.height()
-        margins = dock_area.contentsMargins()
+        # dock_layout = self._dock_layout
+        # dock_area = self.parentWidget()
+        # area_width = dock_area.width()
+        # area_height = dock_area.height()
+        # margins = dock_area.contentsMargins()
 
-        # If there is nothing in the layout. The plugging rect is the
-        # entire dock area.
-        if dock_layout is None:
-            rect = QRect(0, 0, area_width, area_height).adjusted(
-                margins.left(), margins.top(),
-                -margins.right(), -margins.bottom()
-            )
-            return rect
+        # # If there is nothing in the layout. The plugging rect is the
+        # # entire dock area.
+        # if dock_layout is None:
+        #     rect = QRect(0, 0, area_width, area_height).adjusted(
+        #         margins.left(), margins.top(),
+        #         -margins.right(), -margins.bottom()
+        #     )
+        #     return rect
 
 
 
-        # Positions within 40 pixels of the boundary are treated with
-        # priority for docking around the edges of the area.
-        pw = 0.3 * widget.width()
-        ph = 0.3 * widget.height()
+        # # Positions within 40 pixels of the boundary are treated with
+        # # priority for docking around the edges of the area.
+        # pw = 0.3 * widget.width()
+        # ph = 0.3 * widget.height()
 
-        if pos.x() < 20 or pos.y() < 20:
-            if pos.x() < pos.y():
-                height = widget.height() - m.top() - m.bottom()
-                rect = QRect(m.left(), m.top(), pw, height)
-            else:
-                width = widget.width() - m.left() - m.right()
-                rect = QRect(m.left(), m.top(), width, ph)
-            return rect
-        delta = corner - pos
-        if delta.x() < 20 or delta.y() < 20:
-            if delta.x() < delta.y():
-                r = QRect(corner.x() - pw + m.left(), m.top(), pw, corner.y())
-            else:
-                r = QRect(0, corner.y() - ph, corner.x(), ph)
-            return r.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
+        # if pos.x() < 20 or pos.y() < 20:
+        #     if pos.x() < pos.y():
+        #         height = widget.height() - m.top() - m.bottom()
+        #         rect = QRect(m.left(), m.top(), pw, height)
+        #     else:
+        #         width = widget.width() - m.left() - m.right()
+        #         rect = QRect(m.left(), m.top(), width, ph)
+        #     return rect
+        # delta = corner - pos
+        # if delta.x() < 20 or delta.y() < 20:
+        #     if delta.x() < delta.y():
+        #         r = QRect(corner.x() - pw + m.left(), m.top(), pw, corner.y())
+        #     else:
+        #         r = QRect(0, corner.y() - ph, corner.x(), ph)
+        #     return r.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
 
-        # Find the dock item or splitter handle that is being hovered.
-        target = None
-        leaf = widget.childAt(pos)
-        from .q_dock_item import QDockItem
-        from PyQt4.QtGui import QSplitterHandle
-        while leaf is not None:
-            if isinstance(leaf, (QDockItem, QSplitterHandle)):
-                target = leaf
-                break
-            leaf = leaf.parent()
+        # # Find the dock item or splitter handle that is being hovered.
+        # target = None
+        # leaf = widget.childAt(pos)
+        # from .q_dock_item import QDockItem
+        # from PyQt4.QtGui import QSplitterHandle
+        # while leaf is not None:
+        #     if isinstance(leaf, (QDockItem, QSplitterHandle)):
+        #         target = leaf
+        #         break
+        #     leaf = leaf.parent()
 
-        if isinstance(target, QSplitterHandle):
-            o = target.mapTo(widget, QPoint(0, 0))
-            if target.orientation() == Qt.Horizontal:
-                return QRect(o.x() - 20, o.y(), target.width() + 40, target.height())
-            return QRect(o.x(), o.y() - 20, target.width(), target.height() + 40)
+        # if isinstance(target, QSplitterHandle):
+        #     o = target.mapTo(widget, QPoint(0, 0))
+        #     if target.orientation() == Qt.Horizontal:
+        #         return QRect(o.x() - 20, o.y(), target.width() + 40, target.height())
+        #     return QRect(o.x(), o.y() - 20, target.width(), target.height() + 40)
 
-        if isinstance(target, QDockItem):
-            p = target._dock_state.layout.parent
-            if isinstance(p, TabbedDockLayout):
-                target = p.widget()
-            origin = target.mapTo(widget, QPoint(0, 0))
-            h_frac = (pos.y() - origin.y()) / float(target.height())
-            w_frac = (pos.x() - origin.x()) / float(target.width())
-            h_frac2 = 1.0 - h_frac
-            w_frac2 = 1.0 - w_frac
-            quads = [(w_frac, 0), (h_frac, 1), (w_frac2, 2), (h_frac2, 3)]
-            quads.sort()
-            qf, q = quads[0]
-            if qf < 0.3:
-                if q == 0 and qf * target.width() > 5:
-                    w = 0.3 * target.width()
-                    r = QRect(origin.x(), origin.y(), w, target.height())
-                elif q == 1 and qf * target.height() > 5:
-                    h = 0.3 * target.height()
-                    r = QRect(origin.x(), origin.y(), target.width(), h)
-                elif q == 2 and qf * target.width() > 5:
-                    w = 0.3 * target.width()
-                    r = QRect(origin.x() + target.width() - w, origin.y(), w, target.height())
-                elif q == 3 and qf * target.height() > 5:
-                    h = 0.3 * target.height()
-                    r = QRect(origin.x(), origin.y() + target.height() - h, target.width(), h)
-                else:
-                    r = QRect()
-                return r
-            return QRect(origin.x(), origin.y(), target.width(), target.height())
+        # if isinstance(target, QDockItem):
+        #     p = target._dock_state.layout.parent
+        #     if isinstance(p, TabbedDockLayout):
+        #         target = p.widget()
+        #     origin = target.mapTo(widget, QPoint(0, 0))
+        #     h_frac = (pos.y() - origin.y()) / float(target.height())
+        #     w_frac = (pos.x() - origin.x()) / float(target.width())
+        #     h_frac2 = 1.0 - h_frac
+        #     w_frac2 = 1.0 - w_frac
+        #     quads = [(w_frac, 0), (h_frac, 1), (w_frac2, 2), (h_frac2, 3)]
+        #     quads.sort()
+        #     qf, q = quads[0]
+        #     if qf < 0.3:
+        #         if q == 0 and qf * target.width() > 5:
+        #             w = 0.3 * target.width()
+        #             r = QRect(origin.x(), origin.y(), w, target.height())
+        #         elif q == 1 and qf * target.height() > 5:
+        #             h = 0.3 * target.height()
+        #             r = QRect(origin.x(), origin.y(), target.width(), h)
+        #         elif q == 2 and qf * target.width() > 5:
+        #             w = 0.3 * target.width()
+        #             r = QRect(origin.x() + target.width() - w, origin.y(), w, target.height())
+        #         elif q == 3 and qf * target.height() > 5:
+        #             h = 0.3 * target.height()
+        #             r = QRect(origin.x(), origin.y() + target.height() - h, target.width(), h)
+        #         else:
+        #             r = QRect()
+        #         return r
+        #     return QRect(origin.x(), origin.y(), target.width(), target.height())
 
-        return QRect()
+        # return QRect()
 
     def setGeometry(self, rect):
         """ Sets the geometry of all the items in the layout.
@@ -223,6 +228,11 @@ class QDockAreaLayout(QLayout):
         layout = self._dock_layout
         if layout is not None:
             layout.setGeometry(rect)
+        guides = self._dock_guides
+        if guides is not None:
+            p = self.parentWidget().mapToGlobal(QPoint(0, 0))
+            guides.setGeometry(QRect(p, self.parentWidget().size()))
+            #guides.updateMask()
 
     def sizeHint(self):
         """ Get the size hint for the layout.
@@ -281,7 +291,8 @@ class QDockArea(QFrame):
         super(QDockArea, self).__init__(parent)
         self.setLayout(QDockAreaLayout())
         self.layout().setSizeConstraint(QLayout.SetMinAndMaxSize)
-        self._band = QRubberBand(QRubberBand.Rectangle, self)
+        self._band = QRubberBand(QRubberBand.Rectangle)
+        self._dock_guides = QDockGuides()
 
         # FIXME temporary VS2010-like stylesheet
         from PyQt4.QtGui import QApplication
@@ -321,20 +332,53 @@ class QDockArea(QFrame):
     # Private API
     #--------------------------------------------------------------------------
     def _showDropSite(self, item, pos):
-        band = self._band
-        rect = self.layout().pluggingRect(item, pos)
-        if rect.isValid():
-            band.setGeometry(rect)
-            if band.isHidden():
-                band.show()
-        else:
-            if band.isVisible():
-                band.hide()
+        guides = self._dock_guides
+        needshow = guides.isHidden()
+        if needshow:
+            gpos = self.mapToGlobal(QPoint(0, 0))
+            guides.setGeometry(QRect(gpos, self.size()))
+
+        target = None
+        handle = None
+        leaf = self.childAt(pos)
+        from .q_dock_item import QDockItem
+        while leaf is not None:
+            if isinstance(leaf, QDockItem):
+                target = leaf
+                break
+            elif isinstance(leaf, QSplitterHandle):
+                handle = leaf
+                break
+            leaf = leaf.parent()
+        if target is not None:
+            cpos = target.mapTo(self, QPoint(0, 0))
+            cpos += QPoint(target.width() / 2, target.height() / 2)
+            guides.setGuideCenter(cpos)
+        if handle is not None:
+            p = handle.mapToGlobal(QPoint(0, 0))
+            s = handle.size()
+            if handle.orientation() == Qt.Horizontal:
+                p -= QPoint(20, 0)
+                s += QSize(40, 0)
+            else:
+                p -= QPoint(0, 20)
+                s += QSize(0, 40)
+            self._band.setGeometry(QRect(p, s))
+            self._band.show()
+
+        if needshow:
+            guides.show()
+
+        guides.hover(pos)
 
     def _hideDropSite(self):
-        band = self._band
-        if band.isVisible():
-            band.hide()
+        guides = self._dock_guides
+        if not guides.isHidden():
+            guides.hide()
+            guides.setGuideCenter(QPoint())
+        #band = self._band
+        #if band.isVisible():
+        #    band.hide()
 
     #--------------------------------------------------------------------------
     # Public API
@@ -367,9 +411,6 @@ class QDockArea(QFrame):
         """ Returns the dock item at the given global position.
 
         """
-        if modifiers & Qt.ShiftModifier:
-            self._hideDropSite()
-            return
         local = self.mapFromGlobal(pos)
         if self.rect().contains(self.mapToParent(local)):
             self._showDropSite(item, local)
@@ -407,7 +448,7 @@ class QDockArea(QFrame):
         item.hide()
         self.layout().unplug(item)
         item.setParent(self)
-        flags = Qt.Tool | Qt.FramelessWindowHint
+        flags = Qt.Window | Qt.FramelessWindowHint
         item.setWindowFlags(flags)
         item.show()
         state.floating = True
