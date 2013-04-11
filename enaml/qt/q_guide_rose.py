@@ -153,6 +153,9 @@ class QGuideRose(QFrame):
         #: The horizontal split rose will be used.
         SplitHorizontal = 3
 
+        #: Only show a single guide in the center.
+        SingleCenter = 4
+
     class Guide(object):
         """ An enum class for identifying guide locations.
 
@@ -193,8 +196,11 @@ class QGuideRose(QFrame):
         #: The horizontal split guide.
         SplitHorizontal = 11
 
+        #: The single center guide.
+        SingleCenter = 12
+
         #: No relevant guide.
-        NoGuide = 12
+        NoGuide = 13
 
     def __init__(self):
         """ Initialize a QGuideRose.
@@ -232,6 +238,7 @@ class QGuideRose(QFrame):
             make('cross'),              # CompassCross
             make('split_vertical'),     # SplitVertical
             make('split_horizontal'),   # SplitHorizontal
+            make('center'),             # SingleCenter
         ]
         self._boxes = [
             make('box'),                # BorderNorth
@@ -246,6 +253,7 @@ class QGuideRose(QFrame):
             None,                       # CompassCross
             make('box'),                # SplitVertical
             make('box'),                # SplitHorizontal
+            make('box'),                # SingleCenter
         ]
 
     #--------------------------------------------------------------------------
@@ -300,6 +308,10 @@ class QGuideRose(QFrame):
         boxes[Guide.BorderSouth].rect = QRect(cx - 20, h - 50, 41, 41)
         guides[Guide.BorderWest].rect = QRect(15, cy - 15, 31, 31)
         boxes[Guide.BorderWest].rect = QRect(10, cy - 20, 41, 41)
+
+        # Single Center Guide
+        guides[Guide.SingleCenter].rect = QRect(cpx - 15, cpy - 15, 31, 31)
+        boxes[Guide.SingleCenter].rect = QRect(cpx - 20, cpy - 20, 41, 41)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -371,7 +383,7 @@ class QGuideRose(QFrame):
 
         """
         Guide = QGuideRose.Guide
-        hit = self.hitTest(pos)
+        hit = self.hitTest(pos, self._mode)
         last = self._last
         if last != hit:
             if last != Guide.NoGuide:
@@ -380,9 +392,8 @@ class QGuideRose(QFrame):
                 self._guides[hit].opacity = FULL_ALPHA
             self._last = hit
         self.update()
-        return hit
 
-    def hitTest(self, pos):
+    def hitTest(self, pos, mode):
         """ Hit test the rose for a given position.
 
         This method should be invoked by the owner of the rose when
@@ -396,17 +407,22 @@ class QGuideRose(QFrame):
             The position of the mouse hover, expressed local widget
             coordinates.
 
+        mode : QGuideRose.Mode
+            The mode to use for hit testing.
+
         Returns
         -------
         result : QGuideRose.Guide
             The enum value for the guide under the mouse position.
 
         """
-        mode = self._mode
         guides = self._guides
         Mode = QGuideRose.Mode
         Guide = QGuideRose.Guide
-        if mode == Mode.Compass:
+        if mode == Mode.SingleCenter:
+            if guides[Guide.SingleCenter].contains(pos):
+                return Guide.SingleCenter
+        elif mode == Mode.Compass:
             if guides[Guide.CompassNorth].contains(pos):
                 return Guide.CompassNorth
             if guides[Guide.CompassEast].contains(pos):
@@ -462,6 +478,10 @@ class QGuideRose(QFrame):
         mode = self._mode
         guides = self._guides
         boxes = self._boxes
+        if mode == Mode.SingleCenter:
+            boxes[Guide.SingleCenter].paint(painter)
+            guides[Guide.SingleCenter].paint(painter)
+            return
         if mode == Mode.Compass:
             guides[Guide.CompassCross].paint(painter)
             guides[Guide.CompassNorth].paint(painter)

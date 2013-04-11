@@ -13,6 +13,8 @@ class QDockTabBar(QTabBar):
     """ A custom QTabBar that manages safetly undocking a tab.
 
     The user can undock a tab by holding Shift before dragging the tab.
+    This tab bar assumes that its parent is a QTabWidget and that the
+    tabs in the tab widget are QDockItem instances.
 
     """
     def __init__(self, parent=None):
@@ -67,13 +69,7 @@ class QDockTabBar(QTabBar):
             return
         dock_item = self.parent().widget(self.currentIndex())
         dock_item.titleBarWidget().setVisible(True)
-        dock_area = dock_item.dockArea()
-        dock_area.unplug(dock_item)
-        state = dock_item.DragState(press_pos=press_pos, dragging=True)
-        dock_item._drag_state = state
-        dock_item.move(pos - state.press_pos)
-        dock_item.show()
-        dock_item.grabMouse()
+        dock_item.unplug(pos, press_pos)
         self._press_pos = None
 
     #--------------------------------------------------------------------------

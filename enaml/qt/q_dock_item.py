@@ -499,8 +499,6 @@ class QDockItem(QFrame):
         #: The dock area which owns the item.
         area = ForwardTyped(QDockArea)
 
-        layout = Typed(object)
-
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
 
@@ -623,6 +621,44 @@ class QDockItem(QFrame):
             parent = parent.parent()
 
     #--------------------------------------------------------------------------
+    # Framework API
+    #--------------------------------------------------------------------------
+    def unplug(self, pos, press_pos):
+        """" Unplug the dock item from the dock area.
+
+        This method is called by the docking framework and should not
+        be called directly by user code.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The global mouse coordinates.
+
+        press_pos : QPoint
+            The point of original mouse press, expressed in local
+            coordinates.
+
+        """
+        # synthesize a drag state when called from outside the widget's
+        # own mouse events. i.e. unpluggin from a tab bar.
+        if self._drag_state is None:
+            state = self.DragState(press_pos=press_pos, dragging=True)
+            self._drag_state = state
+        dock_state = self._dock_state
+        if dock_state.floating:
+            return
+        dock_area = self.dockArea()
+        if dock_area is None:
+            return
+        dock_state.floating = True
+        dock_area.unplug(self)
+        self.setParent(dock_area)
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        self.move(pos - press_pos)
+        self.show()
+        self.grabMouse()
+
+    #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
     def _initDrag(self, pos):
@@ -647,18 +683,17 @@ class QDockItem(QFrame):
 
         If the item is already being dragged, this method is a no-op.
 
+        Parameters
+        ----------
+        pos : QPoint
+            The global mouse coordinates.
+
         """
-        state = self._drag_state
-        if state is None or state.dragging:
+        drag_state = self._drag_state
+        if drag_state is None or drag_state.dragging:
             return
-        dock_area = self.dockArea()
-        if dock_area is None:
-            return
-        dock_area.unplug(self)
-        self.move(pos - state.press_pos)
-        state.dragging = True
-        self.show()
-        self.grabMouse()
+        drag_state.dragging = True
+        self.unplug(pos, drag_state.press_pos)
 
     def _endDrag(self):
         """ End the drag process for the dock item.
@@ -704,7 +739,7 @@ class QDockItem(QFrame):
             self.move(pos)
             area = self.dockArea()
             if area is not None:
-                area.hover(self, event.globalPos(), event.modifiers())
+                area.hover(self, event.globalPos())
             event.accept()
         else:
             dist = (event.pos() - state.press_pos).manhattanLength()
@@ -724,5 +759,7 @@ class QDockItem(QFrame):
             self._endDrag()
             area = self.dockArea()
             if area is not None:
-                area.endHover(self, event.globalPos(), event.modifiers())
+                area.endHover(self, event.globalPos())
+                if area.plug(self, event.globalPos()):
+                    self._dock_state.floating = False
             event.accept()
