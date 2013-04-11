@@ -4,12 +4,13 @@ from enaml.layout.api import *
 
 enamldef MyArea(DockArea): area:
     layout = hsplit(
-        vsplit(foo, bar),
-        vsplit(baz, tabbed(cram, blam)),
-        vsplit(spam, hsplit(flam, ham)),
+        vsplit('foo', 'bar'),
+        vsplit('baz', tabbed('cram', 'blam')),
+        vsplit('spam', hsplit('flam', 'ham')),
     )
     background = 'rgb(41, 56, 85)'
-    DockItem: foo:
+    DockItem:
+        name = 'foo'
         title = 'foo'
         Container:
             PushButton: pass
@@ -18,7 +19,8 @@ enamldef MyArea(DockArea): area:
             PushButton: pass
             PushButton: pass
             Html: pass
-    DockItem: bar:
+    DockItem:
+        name = 'bar'
         title = 'bar'
         Container:
             Field: pass
@@ -26,7 +28,8 @@ enamldef MyArea(DockArea): area:
             Field: pass
             Field: pass
             Html: pass
-    DockItem: baz:
+    DockItem:
+        name = 'baz'
         title = 'baz'
         Container:
             Slider: pass
@@ -35,7 +38,8 @@ enamldef MyArea(DockArea): area:
             Slider: pass
             Slider: pass
             Html: pass
-    DockItem: ham:
+    DockItem:
+        name = 'ham'
         title = 'ham'
         stretch = 0
         Container:
@@ -44,23 +48,27 @@ enamldef MyArea(DockArea): area:
             CheckBox: pass
             CheckBox: pass
             CheckBox: pass
-    DockItem: spam:
+    DockItem:
+        name = 'spam'
         title = 'spam'
         Container:
             Html:
                 source = 'hello ' + title
-    DockItem: cram:
+    DockItem:
+        name = 'cram'
         title = 'cram'
         Container:
             Html:
                 source = 'hello ' + title
-    DockItem: blam:
+    DockItem:
+        name = 'blam'
         title = 'blam'
         stretch = 3
         Container:
             Html:
                 source = 'hello ' + title
-    DockItem: flam:
+    DockItem:
+        name = 'flam'
         title = 'flam'
         stretch = 2
         Container:

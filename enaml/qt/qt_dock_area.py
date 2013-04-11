@@ -5,44 +5,14 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QObject, QEvent, QSize
+from PyQt4.QtCore import QObject, QEvent, QSize
 
 from atom.api import Typed
 
-from enaml.widgets.dock_area import (
-    ProxyDockArea, docklayout, docksplit, tabbed
-)
+from enaml.widgets.dock_area import ProxyDockArea
 
-from .dock_layout import DockLayoutItem, SplitDockLayout, TabbedDockLayout
 from .q_dock_area import QDockArea
 from .qt_constraints_widget import QtConstraintsWidget
-
-
-ORIENT = {
-    'horizontal': Qt.Horizontal,
-    'vertical': Qt.Vertical,
-}
-
-
-def convert_layout(layout):
-    """ Convert an Enaml docklayout into a Qt DockLayout.
-
-    """
-    if isinstance(layout, docksplit):
-        qitems = []
-        for item in layout.items:
-            if isinstance(item, docklayout):
-                qitems.append(convert_layout(item))
-            else:
-                qitems.append(DockLayoutItem(item.proxy.widget))
-        orient = ORIENT[layout.orientation]
-        return SplitDockLayout(qitems, orientation=orient)
-    if isinstance(layout, tabbed):
-        qitems = []
-        for item in layout.items:
-            qitems.append(DockLayoutItem(item.proxy.widget))
-        return TabbedDockLayout(qitems)
-    raise TypeError(type(layout).__name__)
 
 
 class DockFilter(QObject):
@@ -86,8 +56,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         super(QtDockArea, self).init_layout()
         d = self.declaration
-        qlayout = convert_layout(d.resolve_layout())
-        self.widget.setDockLayout(qlayout)
+        self.widget.setDockLayout(d.layout)
         self.dock_filter = DockFilter(self)
         self.widget.installEventFilter(self.dock_filter)
 

@@ -7,14 +7,36 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QSize, QPoint, QRect, QTimer
 from PyQt4.QtGui import (
-    QFrame, QLayout, QRubberBand, QPixmap, QWidget, QSplitter, QSplitterHandle
+    QFrame, QLayout, QRubberBand, QSplitter, QSplitterHandle, QTabWidget
 )
 
 from atom.api import Atom, Int, Typed
 
-from .dock_layout import DockLayoutItem, DockLayoutBase
+from enaml.widgets.dock_layout import DockLayoutItem, SplitLayout, TabbedLayout
 
+from .q_dock_item import QDockItem
+from .q_dock_tabbar import QDockTabBar
 from .q_guide_rose import QGuideRose
+
+
+TAB_POSITIONS = {
+    'top': QTabWidget.North,
+    'bottom': QTabWidget.South,
+    'left': QTabWidget.West,
+    'right': QTabWidget.East,
+}
+
+
+DOCUMENT_MODES = {
+    'document': True,
+    'preferences': False,
+}
+
+
+ORIENTATION = {
+    'horizontal': Qt.Horizontal,
+    'vertical': Qt.Vertical,
+}
 
 
 class QDockAreaLayout(QLayout):
@@ -31,76 +53,99 @@ class QDockAreaLayout(QLayout):
 
         """
         super(QDockAreaLayout, self).__init__(parent)
-        self._dock_layout = None
-        self._dock_guides = None
+        self._root = None
+        self._splitters = []
+        self._items = set()
+        self._tabs = []
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _unplugRecursive(self, dock_item, parent, layout):
-        """ A private method which unplugs the given dock item.
+    def _buildLayoutRecursive(self, state):
+        dock_items = self._items
+        widget = self.parentWidget()
 
-        """
-        if isinstance(layout, DockLayoutItem):
-            if layout.dock_item is dock_item:
-                if parent is None:
-                    self.setDockLayout(None)
+        if isinstance(state, TabbedLayout):
+            found = []
+            for item in state.items:
+                child = widget.findChild(QDockItem, item.name)
+                if child is not None and child not in dock_items:
+                    found.append(child)
+                    dock_items.add(child)
+            if len(found) == 0:
+                return None
+            if len(found) == 1:
+                return found[0]
+            tw = QTabWidget()
+            self._tabs.append(tw)
+            tw.setTabBar(QDockTabBar())
+            tw.setMovable(state.tabs_movable)
+            tw.setDocumentMode(DOCUMENT_MODES[state.tab_style])
+            tw.setTabPosition(TAB_POSITIONS[state.tab_position])
+            for child in found:
+                child.titleBarWidget().hide()
+                tw.addTab(child, child.title())
+            return tw
+
+        if isinstance(state, SplitLayout):
+            found = []
+            for item in state.items:
+                if isinstance(item, DockLayoutItem):
+                    child = widget.findChild(QDockItem, item.name)
+                    if child is not None and child not in dock_items:
+                        found.append(child)
+                        dock_items.add(child)
                 else:
-                    parent.removeItem(layout)
-                return True
-            return False
-        for sub_item in layout.items:
-            if self._unplugRecursive(dock_item, layout, sub_item):
-                if len(layout.items) == 0:
-                    if parent is None:
-                        self.setDockLayout(None)
-                    else:
-                        parent.removeItem(layout)
-                elif len(layout.items) == 1 and parent is not None:
-                    item = layout.items[0]
-                    layout.releaseItem(item)
-                    index = parent.items.index(layout)
-                    #print 'trashing', layout
-                    parent.removeItem(layout)
-                    parent.insertItem(index, item)
-                return True
-        return False
+                    child = self._buildLayoutRecursive(item)
+                    if child is not None:
+                        found.append(child)
+            if len(found) == 0:
+                return None
+            if len(found) == 1:
+                return found[0]
+            sp = QSplitter()
+            self._splitters.append(sp)
+            sp.setOrientation(ORIENTATION[state.orientation])
+            for child in found:
+                sp.addWidget(child)
+            return sp
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def dockLayout(self):
-        """ Get the dock layout for the layout area.
+    def dockState(self):
+        """ Get the current layout state for the layout.
 
         Returns
         -------
-        result : DockLayoutBase or None
-            The dock layout for the layout area, or None.
+        result : DockLayout or None
+            An Enaml DockLayout object for the current layout state, or
+            None if the area has no docked items.
 
         """
-        return self._dock_layout
+        return None
 
-    def setDockLayout(self, layout):
-        """ Set the dock layout for this layout area.
-
-        The old layout will be unparented and hidden, but not destroyed.
+    def setDockState(self, state):
+        """ Set the layout state for the layout.
 
         Parameters
         ----------
-        layout : DockLayoutBase
-            The dock layout node to use for the dock area.
+        state : DockLayout
+            The DockLayout state object which describes the layout to
+            be assembled.
 
         """
-        old_layout = self._dock_layout
-        if old_layout is not None:
-            dock = old_layout.widget()
-            dock.hide()
-            dock.setParent(None)
-        self._dock_layout = layout
-        if layout is not None:
-            layout.widget().setParent(self.parentWidget())
-            if self._dock_guides:
-                self._dock_guides.raise_()
+        root = self._root
+        if root is not None:
+            root.hide()
+            root.set_parent(None)
+        newroot = self._buildLayoutRecursive(state)
+        if newroot is not None:
+            newroot.setParent(self.parentWidget())
+            if not self.parentWidget().isHidden():
+                newroot.show()
+        print newroot
+        self._root = newroot
 
     def unplug(self, item):
         """ Unplug a dock item from the layout.
@@ -111,47 +156,72 @@ class QDockAreaLayout(QLayout):
             The dock item to unplug from the layout.
 
         """
-        layout = self._dock_layout
-        if layout is None:
-            return
-        self.parentWidget().setUpdatesEnabled(False)
-        self._unplugRecursive(item, None, layout)
-        self.parentWidget().setUpdatesEnabled(True)
+        parent = item.parentWidget()
+        item.setParent(None)
+        while True:
+            if parent is None:
+                self._root = None
+                return
+            if isinstance(parent, (QSplitter, QTabWidget)):
+                count = parent.count()
+                if count > 1:
+                    return
+                temp = parent.parent()
+                if count == 0:
+                    if temp is None:
+                        self._root = None
+                    parent.setParent(None)
+                else:
+                    child = parent.widget(0)
+                    if temp is None:
+                        child.setParent(None)
+                        self._root = None
+                    elif temp is self.parentWidget():
+                        child.setParent(self.parentWidget())
+                        child.show()
+                        self._root = child
+                        parent.setParent(None)
+                    else:
+                        index = temp.indexOf(parent)
+                        parent.setParent(None)
+                        temp.insertWidget(index, child)
+                parent = temp
+            else:
+                break
+        # layout = self._dock_layout
+        # if layout is None:
+        #     return
+        # self.parentWidget().setUpdatesEnabled(False)
+        # self._unplugRecursive(item, None, layout)
+        # self.parentWidget().setUpdatesEnabled(True)
 
-    def pluggingRect(self, item, pos):
-        """ Get the plugging rect at the given position.
-
-        This can be useful for displaying a rubber band as potential
-        dock site.
+    def hitTest(self, pos):
+        """ Hit test the layout for a relevant widget under a point.
 
         Parameters
         ----------
         pos : QPoint
-            The target point expressed in local coordinates of the
-            dock area.
+            The point of interest, expressed in coordinates of the
+            parent widget.
 
         Returns
         -------
-        result : QRect
-            A rect which represents the plug area. The rect will be
-            invalid if the position does not indicate a valid area.
-
-        """
-
-    def dockHitTest(self, pos):
-        """ Return the relevant widget under the point.
+        result : QWidget or None
+            A widget which is relevant for docking purposes, or None
+            if no such widget was found under the point.
 
         """
         widget = self.parentWidget()
         if widget is None:
-            return None
-        layout = self._dock_layout
-        if layout is None:
-            return None
+            return
+        root = self._root
+        if root is None:
+            return
 
-        # Hit test splitter handles
-        splitters = widget.findChildren(QSplitter, 'dock_layout_splitter')
-        for sp in splitters:
+        # Splitter handles have priority. Their active area is smaller
+        # and overlaps that of other widgets. Giving dock items priority
+        # would make it very difficult to hit a splitter reliably.
+        for sp in self._splitters:
             pt = sp.mapFrom(widget, pos)
             for index in xrange(1, sp.count()):
                 handle = sp.handle(index)
@@ -159,39 +229,45 @@ class QDockAreaLayout(QLayout):
                 if rect.contains(handle.mapFrom(sp, pt)):
                     return handle
 
-        # Hit test dock items
-        return layout.hitTest(pos)
+        # Check for tab widgets next. A tab widget holds a dock item,
+        # but should have priority over the dock items.
+        for tb in self._tabs:
+            pt = tb.mapFrom(widget, pos)
+            if tb.rect().contains(pt):
+                return tb
+
+        # Check for QDockItems last. The are the most common case, but
+        # also have the least precedence compared to the other cases.
+        for it in self._items:
+            pt = it.mapFrom(widget, pos)
+            if it.rect().contains(pt):
+                return it
 
     def setGeometry(self, rect):
         """ Sets the geometry of all the items in the layout.
 
         """
         super(QDockAreaLayout, self).setGeometry(rect)
-        layout = self._dock_layout
-        if layout is not None:
-            layout.setGeometry(rect)
-        guides = self._dock_guides
-        if guides is not None:
-            p = self.parentWidget().mapToGlobal(QPoint(0, 0))
-            guides.setGeometry(QRect(p, self.parentWidget().size()))
-            #guides.updateMask()
+        root = self._root
+        if root is not None:
+            root.setGeometry(rect)
 
     def sizeHint(self):
         """ Get the size hint for the layout.
 
         """
-        layout = self._dock_layout
-        if layout is not None:
-            return layout.sizeHint()
+        root = self._root
+        if root is not None:
+            return root.sizeHint()
         return QSize(256, 192)
 
     def minimumSize(self):
         """ Get the minimum size of the layout.
 
         """
-        layout = self._dock_layout
-        if layout is not None:
-            return layout.minimumSize()
+        root = self._root
+        if root is not None:
+            return root.minimumSizeHint()
         return QSize(256, 192)
 
     #--------------------------------------------------------------------------
@@ -412,19 +488,19 @@ class BandManager(Atom):
         m = owner.contentsMargins()
         if guide_hit == Guide.BorderNorth:
             p = QPoint(m.left(), m.top())
-            h = 60 #owner.height() / 3
+            h = 60  # owner.height() / 3
             s = QSize(owner.width() - m.left() - m.right(), h)
         elif guide_hit == Guide.BorderEast:
-            w = 60 #owner.width() / 3
+            w = 60  # owner.width() / 3
             p = QPoint(owner.width() - w - m.right(), m.top())
             s = QSize(w, owner.height() - m.top() - m.bottom())
         elif guide_hit == Guide.BorderSouth:
-            h = 60 #owner.height() / 3
+            h = 60  # owner.height() / 3
             p = QPoint(m.left(), owner.height() - h - m.bottom())
             s = QSize(owner.width() - m.left() - m.right(), h)
         elif guide_hit == Guide.BorderWest:
             p = QPoint(m.left(), m.top())
-            w = 60 # owner.width() / 3
+            w = 60  # owner.width() / 3
             s = QSize(w, owner.height() - m.top() - m.bottom())
 
         # Compass Hits
@@ -534,29 +610,29 @@ class QDockArea(QFrame):
     def _showDropSite(self, item, pos):
         rose = self._rose
         Mode = QGuideRose.Mode
-        dock_hit = self.layout().dockHitTest(pos)
-        if isinstance(dock_hit, DockLayoutBase):
-            target = dock_hit.widget()
-            cpos = target.mapTo(self, QPoint(0, 0))
-            cpos += QPoint(target.width() / 2, target.height() / 2)
-            rose.update(cpos, Mode.Compass)
-        elif isinstance(dock_hit, QSplitterHandle):
-            if dock_hit.orientation() == Qt.Horizontal:
-                mode = Mode.SplitHorizontal
-            else:
-                mode = Mode.SplitVertical
-            cpos = dock_hit.mapTo(self, QPoint(0, 0))
-            cpos += QPoint(dock_hit.width() / 2, dock_hit.height() / 2)
-            rose.update(cpos, mode)
-        else:
-            rose.update(QPoint(), Mode.NoMode)
+        # dock_hit = self.layout().dockHitTest(pos)
+        # if isinstance(dock_hit, DockLayoutBase):
+        #     target = dock_hit.widget()
+        #     cpos = target.mapTo(self, QPoint(0, 0))
+        #     cpos += QPoint(target.width() / 2, target.height() / 2)
+        #     rose.update(cpos, Mode.Compass)
+        # elif isinstance(dock_hit, QSplitterHandle):
+        #     if dock_hit.orientation() == Qt.Horizontal:
+        #         mode = Mode.SplitHorizontal
+        #     else:
+        #         mode = Mode.SplitVertical
+        #     cpos = dock_hit.mapTo(self, QPoint(0, 0))
+        #     cpos += QPoint(dock_hit.width() / 2, dock_hit.height() / 2)
+        #     rose.update(cpos, mode)
+        # else:
+        #     rose.update(QPoint(), Mode.NoMode)
 
-        # Make sure the rose is shown and hit test for the guide. Show
-        # the rubber band for the appropriate guide hit.
-        rose.show(self)
-        guide_hit = rose.hover(pos)
-        self._band.update(guide_hit, dock_hit, self)
-        rose._rose.raise_()
+        # # Make sure the rose is shown and hit test for the guide. Show
+        # # the rubber band for the appropriate guide hit.
+        # rose.show(self)
+        # guide_hit = rose.hover(pos)
+        # self._band.update(guide_hit, dock_hit, self)
+        # rose._rose.raise_()
 
     def _hideDropSite(self):
         self._rose.hide()
@@ -574,7 +650,7 @@ class QDockArea(QFrame):
             The dock layout for the dock area, or None.
 
         """
-        return self.layout().dockLayout()
+        return self.layout().dockState()
 
     def setDockLayout(self, layout):
         """ Set the dock layout for the dock area.
@@ -587,7 +663,7 @@ class QDockArea(QFrame):
             The dock layout node to use for the dock area.
 
         """
-        self.layout().setDockLayout(layout)
+        self.layout().setDockState(layout)
 
     def hover(self, item, pos, modifiers):
         """ Returns the dock item at the given global position.
@@ -632,5 +708,4 @@ class QDockArea(QFrame):
         item.setParent(self)
         flags = Qt.Window | Qt.FramelessWindowHint
         item.setWindowFlags(flags)
-        #item.show()
         state.floating = True

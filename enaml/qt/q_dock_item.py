@@ -8,9 +8,12 @@
 from PyQt4.QtCore import Qt, QRect, QPoint, QSize, QMargins, pyqtProperty
 from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QApplication
 
-from atom.api import Atom, Typed, Bool
+from atom.api import Atom, Typed, ForwardTyped, Bool
 
-from .q_dock_area import QDockArea
+
+def QDockArea():
+    from .q_dock_area import QDockArea
+    return QDockArea
 
 
 class TitlePosition(object):
@@ -99,9 +102,6 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         self._title = u''
         self._title_position = TitlePosition.Top
         self._margins = QMargins(5, 2, 5, 2)
-        font = self.font()
-        font.setPointSize(10)
-        self.setFont(font)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -497,7 +497,7 @@ class QDockItem(QFrame):
         movable = Bool(True)
 
         #: The dock area which owns the item.
-        area = Typed(QDockArea)
+        area = ForwardTyped(QDockArea)
 
         layout = Typed(object)
 
@@ -615,8 +615,9 @@ class QDockItem(QFrame):
         if area is not None:
             return area
         parent = self.parent()
+        target = QDockArea()
         while parent is not None:
-            if isinstance(parent, QDockArea):
+            if isinstance(parent, target):
                 self._dock_state.area = parent
                 return parent
             parent = parent.parent()
@@ -656,8 +657,8 @@ class QDockItem(QFrame):
         dock_area.unplug(self)
         self.move(pos - state.press_pos)
         state.dragging = True
-        self.grabMouse()
         self.show()
+        self.grabMouse()
 
     def _endDrag(self):
         """ End the drag process for the dock item.
