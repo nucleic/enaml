@@ -550,7 +550,6 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setTitle(title)
-        self.updateGeometry()
 
     def titleBarWidget(self):
         """ Get the title bar widget for the dock item.
@@ -606,7 +605,6 @@ class QDockItem(QFrame):
 
         """
         self.layout().setDockWidget(widget)
-        self.updateGeometry()
 
     def dockArea(self):
         """ Find the dock area which is the ancestor of this dock item.
@@ -648,17 +646,17 @@ class QDockItem(QFrame):
             coordinates.
 
         """
-        # synthesize a drag state when called from outside the widget's
-        # own mouse events. i.e. unpluggin from a tab bar.
-        if self._drag_state is None:
-            state = self.DragState(press_pos=press_pos, dragging=True)
-            self._drag_state = state
         dock_state = self._dock_state
         if dock_state.floating:
             return
         dock_area = self.dockArea()
         if dock_area is None:
             return
+        # synthesize a drag state when called from outside the widget's
+        # own mouse events. i.e. unplugging from a tab bar.
+        if self._drag_state is None:
+            state = self.DragState(press_pos=press_pos, dragging=True)
+            self._drag_state = state
         dock_state.floating = True
         dock_area.unplug(self)
         self.setParent(dock_area)
