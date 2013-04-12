@@ -16,18 +16,24 @@ from .qt_constraints_widget import QtConstraintsWidget
 
 
 class DockFilter(QObject):
+    """ A simple event filter used by the QtDockArea.
 
+    This event filter listens for LayoutRequest events on the dock
+    area widget, and will send a size_hint_updated notification to
+    the constraints system when the dock area size hint changes.
+
+    """
     def __init__(self, owner):
         super(DockFilter, self).__init__()
-        self.owner = owner
-        self.sh = QSize()
+        self._owner = owner
+        self._size_hint = QSize()
 
     def eventFilter(self, obj, event):
-        owner = self.owner
+        owner = self._owner
         if owner is not None and event.type() == QEvent.LayoutRequest:
             hint = obj.sizeHint()
-            if hint != self.sh:
-                self.sh = hint
+            if hint != self._size_hint:
+                self._size_hint = hint
                 owner.size_hint_updated()
         return False
 
@@ -39,6 +45,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
     #: A reference to the widget created by the proxy.
     widget = Typed(QDockArea)
 
+    #: The event filter which listens for layout requests.
     dock_filter = Typed(DockFilter)
 
     #--------------------------------------------------------------------------
