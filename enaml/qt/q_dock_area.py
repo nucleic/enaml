@@ -7,7 +7,8 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QSize, QPoint, QRect, QTimer
 from PyQt4.QtGui import (
-    QFrame, QLayout, QRubberBand, QSplitter, QSplitterHandle, QTabWidget
+    QFrame, QLayout, QRubberBand, QSplitter, QSplitterHandle, QStackedWidget,
+    QTabWidget
 )
 
 from atom.api import Atom, Int, Typed, ForwardTyped
@@ -63,15 +64,53 @@ class QDockAreaLayout(QLayout):
         """
         super(QDockAreaLayout, self).__init__(parent)
         self._tab_widgets = set()
-        self._containers = set()
         self._splitters = set()
         self._items = set()
-        self._parents = {}
         self._root = None
+        self._plug_handlers = [
+            '_plug_border_north',
+            '_plug_border_east',
+            '_plug_border_south',
+            '_plug_border_west',
+            '_plug_compass_north',
+            '_plug_compass_east',
+            '_plug_compass_south',
+            '_plug_compass_west',
+            '_plug_compass_center',
+            None,                       # CompassCross
+            '_plug_split_vertical',
+            '_plug_split_horizontal',
+            '_plug_single_center',
+            None,                       # NoGuide
+        ]
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    def _createSplitter(self, orientation):
+        """ Create a QSplitter for the given orientation.
+
+        This method will add the splitter to the tracked set.
+
+        """
+        splitter = QSplitter(orientation)
+        self._splitters.add(splitter)
+        return splitter
+
+    def _createTabWidget(self, doc_mode=None, movable=None, tab_pos=None):
+        """ Create a tab widget for the layout.
+
+        This method will add the tab widget to the tracked set.
+
+        """
+        tab_widget = QTabWidget()
+        tab_widget.setTabBar(QDockTabBar())
+        tab_widget.setDocumentMode(doc_mode)
+        tab_widget.setMovable(movable)
+        tab_widget.setTabPosition(tab_pos)
+        self._tab_widgets.add(tab_widget)
+        return tab_widget
+
     def _resolveItems(self, items):
         """ Resolve a list of dock layout items.
 
@@ -86,14 +125,14 @@ class QDockAreaLayout(QLayout):
 
         """
         resolved = []
-        these = self._items
+        dock_items = self._items
         widget = self.parentWidget()
         for item in items:
             if isinstance(item, DockLayoutItem):
                 child = widget.findChild(QDockItem, item.name)
-                if child is not None and child not in these:
+                if child is not None and child not in dock_items:
                     resolved.append(child)
-                    these.add(child)
+                    dock_items.add(child)
             elif isinstance(item, (SplitLayout, TabbedLayout)):
                 child = self._buildLayout(item)
                 if child is not None:
@@ -119,41 +158,24 @@ class QDockAreaLayout(QLayout):
             or None if the configuration resulted in an empty layout.
 
         """
-        parents = self._parents
-        if isinstance(layout, SplitLayout):
+        if isinstance(layout, (SplitLayout, TabbedLayout)):
             items = self._resolveItems(layout.items)
             n = len(items)
-            if n == 0:
-                return None
-            if n == 1:
-                return items[0]
-            sp = QSplitter()
-            sp.setOrientation(ORIENTATION[layout.orientation])
-            for child in items:
-                sp.addWidget(child)
-                parents[child] = sp
-            self._containers.add(sp)
-            self._splitters.add(sp)
-            return sp
-        if isinstance(layout, TabbedLayout):
-            items = self._resolveItems(layout.items)
-            n = len(items)
-            if n == 0:
-                return None
-            if n == 1:
-                return items[0]
-            tw = QTabWidget()
-            tw.setTabBar(QDockTabBar())
-            tw.setMovable(layout.tabs_movable)
-            tw.setDocumentMode(DOCUMENT_MODES[layout.tab_style])
-            tw.setTabPosition(TAB_POSITIONS[layout.tab_position])
-            for child in items:
-                child.titleBarWidget().hide()
-                tw.addTab(child, child.title())
-                parents[child] = tw
-            self._containers.add(tw)
-            self._tab_widgets.add(tw)
-            return tw
+            if n <= 1:
+                return None if n == 0 else items[0]
+            if isinstance(layout, SplitLayout):
+                widget = self._createSplitter(ORIENTATION[layout.orientation])
+                for child in items:
+                    widget.addWidget(child)
+            else:
+                doc_mode = DOCUMENT_MODES[layout.tab_style]
+                movable = layout.tabs_movable
+                tab_pos = TAB_POSITIONS[layout.tab_position]
+                widget = self._createTabWidget(doc_mode, movable, tab_pos)
+                for child in items:
+                    child.titleBarWidget().hide()
+                    widget.addTab(child, child.title())
+            return widget
         if isinstance(layout, DockLayoutItem):
             child = self.parentWidget().findChild(QDockItem, layout.name)
             if child is not None:
@@ -176,79 +198,304 @@ class QDockAreaLayout(QLayout):
         """
         if isinstance(item, QDockItem):
             return DockLayoutItem(item.objectName())
-        if isinstance(item, QSplitter):
-            children = []
+        if isinstance(item, (QSplitter, QTabWidget)):
+            kids = []
             for index in item.count():
                 child = self._snapLayout(item.widget(index))
                 if child is not None:
-                    children.append(child)
-            orient = ORIENTATION_INV[item.orientation()]
-            return SplitLayout(*children, orientation=orient)
-        if isinstance(item, QTabWidget):
-            children = []
-            for index in item.count():
-                child = self._snapLayout(item.widget(index))
-                if child is not None:
-                    children.append(child)
-            mode = DOCUMENT_MODES_INV[item.documentMode()]
-            pos = TAB_POSITIONS_INV[item.tabPosition()]
-            return TabbedLayout(*children, tab_style=mode, tab_position=pos)
+                    kids.append(child)
+            if isinstance(item, QSplitter):
+                orient = ORIENTATION_INV[item.orientation()]
+                res = SplitLayout(*kids, orientation=orient)
+            else:
+                mode = DOCUMENT_MODES_INV[item.documentMode()]
+                pos = TAB_POSITIONS_INV[item.tabPosition()]
+                res = TabbedLayout(*kids, tab_style=mode, tab_position=pos)
+            return res
 
     def _cleanupContainer(self, container):
         """ Cleanup the layout container.
 
-        If the given container is empty it will be removed. If it has
-        a single item, the item will be reparented and the container
-        will be removed. This operation is performed recursively.
+        Cleanup the container such that it is removed from the layout
+        if it contains one item or less. This operation is recursive
+        and traverses up the widget hierarchy.
 
         Parameters
         ----------
-        container : QSplitter or QTabWidget
-            The layout container to cleanup.
+        container : QSplitter, QStackWidget, or QTabWidget
+            The layout container to cleanup. A QStackWidget is valid
+            because it will be the *actual* parent of a QDockItem
+            when added to a QTabWidget.
 
         """
+        if isinstance(container, QStackedWidget):
+            container = container.parent()
         count = container.count()
-        if count == 0:
-            # If there are no more items in the container, the container
-            # removed from the layout. If the container has no logical
-            # parent, that means there is nothing left in the dock area.
-            # Otherwise the parent container needs to be recursively
-            # cleaned to account for its new state.
-            self._containers.remove(container)
+        if count <= 1:
             self._splitters.discard(container)
             self._tab_widgets.discard(container)
-            parent = self._parents.pop(container, None)
-            container.setParent(None)
-            if parent is None:
-                self._root = None
-            else:
-                self._cleaupContainer(parent)
-        elif count == 1:
-            # If there is only a single item in the container, it is
-            # removed an reparented to the container's parent. This is
-            # either another container, or the dock area widget. There
-            # no need to recursively clean the parent since its overall
-            # count does not change.
-            self._containers.remove(container)
-            self._splitters.discard(container)
-            self._tab_widgets.discard(container)
-            child = container.widget(0)
-            parent = self._parents.pop(container, None)
-            if parent is None:
-                child.setParent(self.parentWidget())
-                if not self.parentWidget().isHidden():
-                    child.show()
-                self._parents[child] = None
-                self._root = child
-            else:
-                # Unparent the container first so that the size of
-                # the parent container remains relatively unchanged.
-                index = parent.indexOf(container)
+            parent = container.parent()
+            if count == 0:
+                container.hide()
                 container.setParent(None)
-                parent.insertWidget(index, child)
-                self._parents[child] = parent
-            if isinstance(container, QTabWidget):
-               child.titleBarWidget().show()
+                if container is self._root:
+                    self._root = None
+                else:
+                    self._cleanupContainer(parent)
+            else:
+                child = container.widget(0)
+                if container is self._root:
+                    self._root = child
+                    container.hide()
+                    container.setParent(None)
+                    child.setParent(self.parentWidget())
+                    if not self.parentWidget().isHidden():
+                        child.show()
+                else:
+                    index = parent.indexOf(container)
+                    container.hide()
+                    container.setParent(None)
+                    parent.insertWidget(index, child)
+                if isinstance(container, QTabWidget):
+                    child.titleBarWidget().show()
+
+    #--------------------------------------------------------------------------
+    # Plug Handlers
+    #--------------------------------------------------------------------------
+    # FIXME these plug handlers can use some refactoring
+    def _prep_item_plug(self, item, title_vis):
+        self._items.add(item)
+        item.hide()
+        item.setWindowFlags(Qt.Widget)
+        item.titleBarWidget().setVisible(title_vis)
+
+    def _plug_border_north(self, item, pos):
+        root = self._root
+        if root is None:
+            return False
+        self._prep_item_plug(item, True)
+        if isinstance(root, QSplitter) and root.orientation() == Qt.Vertical:
+            root.insertWidget(0, item)
+        else:
+            sp = self._createSplitter(Qt.Vertical)
+            sp.addWidget(item)
+            sp.addWidget(self._root)
+            self._root = sp
+            sp.setParent(self.parentWidget())
+            sp.show()
+        item.show()
+        return True
+
+    def _plug_border_east(self, item, pos):
+        root = self._root
+        if root is None:
+            return False
+        self._prep_item_plug(item, True)
+        if isinstance(root, QSplitter) and root.orientation() == Qt.Horizontal:
+            root.addWidget(item)
+        else:
+            sp = self._createSplitter(Qt.Horizontal)
+            sp.addWidget(self._root)
+            sp.addWidget(item)
+            self._root = sp
+            sp.setParent(self.parentWidget())
+            sp.show()
+        item.show()
+        return True
+
+    def _plug_border_south(self, item, pos):
+        root = self._root
+        if root is None:
+            return False
+        self._prep_item_plug(item, True)
+        if isinstance(root, QSplitter) and root.orientation() == Qt.Vertical:
+            root.addWidget(item)
+        else:
+            sp = self._createSplitter(Qt.Vertical)
+            sp.addWidget(self._root)
+            sp.addWidget(item)
+            self._root = sp
+            sp.setParent(self.parentWidget())
+            sp.show()
+        item.show()
+        return True
+
+    def _plug_border_west(self, item, pos):
+        root = self._root
+        if root is None:
+            return False
+        self._prep_item_plug(item, True)
+        if isinstance(root, QSplitter) and root.orientation() == Qt.Horizontal:
+            root.insertWidget(0, item)
+        else:
+            sp = self._createSplitter(Qt.Horizontal)
+            sp.addWidget(item)
+            sp.addWidget(self._root)
+            self._root = sp
+            sp.setParent(self.parentWidget())
+            sp.show()
+        item.show()
+        return True
+
+    def _plug_compass_north(self, item, pos):
+        hovered = self.hitTest(pos)
+        if not isinstance(hovered, (QTabWidget, QDockItem)):
+            return False
+        self._prep_item_plug(item, True)
+        if hovered is self._root:
+            sp = self._createSplitter(Qt.Vertical)
+            sp.addWidget(item)
+            sp.addWidget(self._root)
+            self._root = sp
+            sp.setParent(self.parentWidget())
+            sp.show()
+        else:
+            parent = hovered.parent()  # must be a splitter
+            index = parent.indexOf(hovered)
+            if parent.orientation() == Qt.Vertical:
+                parent.insertWidget(index, item)
+            else:
+                sp = self._createSplitter(Qt.Vertical)
+                sp.addWidget(item)
+                sp.addWidget(hovered)
+                parent.insertWidget(index, sp)
+                sp.show()
+        item.show()
+        return True
+
+    def _plug_compass_east(self, item, pos):
+        hovered = self.hitTest(pos)
+        if not isinstance(hovered, (QTabWidget, QDockItem)):
+            return False
+        self._prep_item_plug(item, True)
+        if hovered is self._root:
+            sp = self._createSplitter(Qt.Horizontal)
+            sp.addWidget(self._root)
+            sp.addWidget(item)
+            self._root = sp
+            sp.setParent(self.parentWidget())
+            sp.show()
+        else:
+            parent = hovered.parent()  # must be a splitter
+            index = parent.indexOf(hovered)
+            if parent.orientation() == Qt.Horizontal:
+                parent.insertWidget(index + 1, item)
+            else:
+                sp = self._createSplitter(Qt.Horizontal)
+                sp.addWidget(hovered)
+                sp.addWidget(item)
+                parent.insertWidget(index, sp)
+                sp.show()
+        item.show()
+        return True
+
+    def _plug_compass_south(self, item, pos):
+        hovered = self.hitTest(pos)
+        if not isinstance(hovered, (QTabWidget, QDockItem)):
+            return False
+        self._prep_item_plug(item, True)
+        if hovered is self._root:
+            sp = self._createSplitter(Qt.Vertical)
+            sp.addWidget(self._root)
+            sp.addWidget(item)
+            self._root = sp
+            sp.setParent(self.parentWidget())
+            sp.show()
+        else:
+            parent = hovered.parent()  # must be a splitter
+            index = parent.indexOf(hovered)
+            if parent.orientation() == Qt.Vertical:
+                parent.insertWidget(index + 1, item)
+            else:
+                sp = self._createSplitter(Qt.Vertical)
+                sp.addWidget(hovered)
+                sp.addWidget(item)
+                parent.insertWidget(index, sp)
+                sp.show()
+        item.show()
+        return True
+
+    def _plug_compass_west(self, item, pos):
+        hovered = self.hitTest(pos)
+        if not isinstance(hovered, (QTabWidget, QDockItem)):
+            return False
+        self._prep_item_plug(item, True)
+        if hovered is self._root:
+            sp = self._createSplitter(Qt.Horizontal)
+            sp.addWidget(item)
+            sp.addWidget(self._root)
+            self._root = sp
+            sp.setParent(self.parentWidget())
+            sp.show()
+        else:
+            parent = hovered.parent()  # must be a splitter
+            index = parent.indexOf(hovered)
+            if parent.orientation() == Qt.Horizontal:
+                parent.insertWidget(index, item)
+            else:
+                sp = self._createSplitter(Qt.Horizontal)
+                sp.addWidget(item)
+                sp.addWidget(hovered)
+                parent.insertWidget(index, sp)
+                sp.show()
+        item.show()
+        return True
+
+    def _plug_compass_center(self, item, pos):
+        hovered = self.hitTest(pos)
+        if not isinstance(hovered, (QTabWidget, QDockItem)):
+            return False
+        self._prep_item_plug(item, False)
+        if isinstance(hovered, QTabWidget):
+            hovered.addTab(item, item.title())
+            hovered.setCurrentIndex(hovered.count() - 1)
+        else:
+            if hovered is not self._root:
+                parent = hovered.parent()
+                index = parent.indexOf(hovered)
+            hovered.titleBarWidget().setVisible(False)
+            tw = self._createTabWidget(True, True, QTabWidget.North)
+            tw.addTab(hovered, hovered.title())
+            tw.addTab(item, item.title())
+            tw.setCurrentIndex(tw.count() - 1)
+            if hovered is self._root:
+                self._root = tw
+                tw.setParent(self.parentWidget())
+            else:
+                parent.insertWidget(index, tw)
+            tw.show()
+        item.show()
+        return True
+
+    def _plug_splitter(self, item, pos, orient):
+        hovered = self.hitTest(pos)
+        if not isinstance(hovered, QSplitterHandle):
+            return False
+        if hovered.orientation() != orient:
+            return False
+        self._prep_item_plug(item, True)
+        splitter = hovered.parent()
+        for index in xrange(1, splitter.count()):
+            if splitter.handle(index) is hovered:
+                splitter.insertWidget(index, item)
+                break
+        item.show()
+        return True
+
+    def _plug_split_vertical(self, item, pos):
+        return self._plug_splitter(item, pos, Qt.Vertical)
+
+    def _plug_split_horizontal(self, item, pos):
+        return self._plug_splitter(item, pos, Qt.Horizontal)
+
+    def _plug_single_center(self, item, pos):
+        if self._root is not None:
+            return False
+        self._root = item
+        self._prep_item_plug(item, True)
+        item.setParent(self.parentWidget())
+        item.show()
+        return True
 
     #--------------------------------------------------------------------------
     # Public API
@@ -293,9 +540,9 @@ class QDockAreaLayout(QLayout):
         if root is not None:
             root.hide()
             root.setParent(None)
-        self._containers.clear()
+        self._tab_widgets.clear()
+        self._splitters.clear()
         self._items.clear()
-        self._parents.clear()
         newroot = self._buildLayout(layout)
         if newroot is not None:
             parent = self.parentWidget()
@@ -316,7 +563,7 @@ class QDockAreaLayout(QLayout):
             The position at which to plug the item.
 
         mode : QGuideRose.Guide
-            The guide which determines how the item is plugged.
+            The guide which determines how the item should be plugged.
 
         Returns
         -------
@@ -326,104 +573,13 @@ class QDockAreaLayout(QLayout):
         """
         if item in self._items:
             return False
-        Guide = QGuideRose.Guide
-        if guide == Guide.NoGuide:
+        handler_name = self._plug_handlers[guide]
+        if handler_name is None:
             return False
-
-        if guide == Guide.SingleCenter:
-            if self._root is not None:
-                return False
-            self._root = item
-            self._items.add(item)
-            self._parents[item] = None
-            item.hide()
-            item.setWindowFlags(Qt.Widget)
-            item.setParent(self.parentWidget())
-            self.invalidate()
-            item.show()
-            return True
-
-        if guide == Guide.CompassCenter:
-            widget = self.hitTest(pos)
-
-            if isinstance(widget, QTabWidget):
-                self._items.add(item)
-                self._parents[item] = widget
-                item.hide()
-                item.titleBarWidget().hide()
-                item.setWindowFlags(Qt.Widget)
-                widget.addTab(item, item.title())
-                widget.setCurrentIndex(widget.count() - 1)
-                item.show()
-                return True
-
-            if isinstance(widget, QDockItem):
-                parent = self._parents.get(widget)
-                if parent is None:
-                    return False
-
-                tw = QTabWidget()
-                tw.setTabBar(QDockTabBar())
-                tw.setDocumentMode(True)
-                tw.setMovable(True)
-
-                self._items.add(item)
-                self._parents[widget] = tw
-                self._parents[item] = tw
-                self._parents[tw] = parent
-                self._containers.add(tw)
-                self._tab_widgets.add(tw)
-
-                item.hide()
-                item.setWindowFlags(Qt.Widget)
-                item.titleBarWidget().hide()
-                widget.hide()
-                index = parent.indexOf(widget)
-                widget.titleBarWidget().hide()
-
-                tw.addTab(widget, widget.title())
-                tw.addTab(item, item.title())
-                tw.setCurrentIndex(1)
-
-                parent.insertWidget(index, tw)
-                widget.show()
-                item.show()
-                tw.show()
-                return True
-
-        if guide == Guide.CompassWest:
-            widget = self.hitTest(pos)
-
-            if isinstance(widget, QDockItem):
-                parent = self._parents.get(widget)
-                if not isinstance(parent, QSplitter):
-                    return False
-                self._items.add(item)
-                item.hide()
-                item.setWindowFlags(Qt.Widget)
-                if parent.orientation() == Qt.Horizontal:
-                    index = parent.indexOf(widget)
-                    parent.insertWidget(index, item)
-                    self._parents[item] = parent
-                else:
-                    sp = QSplitter()
-                    sp.setOrientation(Qt.Horizontal)
-                    index = parent.indexOf(widget)
-                    self._containers.add(sp)
-                    self._splitters.add(sp)
-                    self._parents[widget] = sp
-                    self._parents[item] = sp
-                    self._parents[sp] = parent
-                    widget.setParent(None)
-                    sp.addWidget(item)
-                    sp.addWidget(widget)
-                    parent.insertWidget(index, sp)
-                    widget.show()
-                    sp.show()
-                item.show()
-                return True
-
-        return False
+        handler = getattr(self, handler_name, None)
+        if handler is None:
+            return False
+        return handler(item, pos)
 
     def unplug(self, item):
         """ Unplug a dock item from the layout.
@@ -435,13 +591,16 @@ class QDockAreaLayout(QLayout):
 
         """
         if item in self._items:
-            parent = self._parents.pop(item, None)
+            item.hide()
             self._items.remove(item)
-            item.setParent(None)
-            if parent is None:
+            if item is self._root:
                 self._root = None
+                item.setParent(None)
             else:
-                self._cleanupContainer(parent)
+                parent = item.parent()
+                if parent is not None:
+                    item.setParent(None)
+                    self._cleanupContainer(parent)
 
     def hitTest(self, pos):
         """ Hit test the layout for a relevant widget under a point.
@@ -471,14 +630,14 @@ class QDockAreaLayout(QLayout):
         # would make it very difficult to hit a splitter reliably.
         for sp in self._splitters:
             pt = sp.mapFrom(widget, pos)
-            for index in xrange(1, sp.count()):
+            for index in xrange(1, sp.count()):  # handle 0 is always hidden
                 handle = sp.handle(index)
                 rect = handle.rect().adjusted(-20, -20, 20, 20)
                 if rect.contains(handle.mapFrom(sp, pt)):
                     return handle
 
-        # Check for tab widgets next. A tab widget holds a dock item,
-        # but should have priority over the dock items.
+        # Check for tab widgets next. A tab widget holds dock items,
+        # but should have priority over the dock items themselves.
         for tb in self._tab_widgets:
             pt = tb.mapFrom(widget, pos)
             if tb.rect().contains(pt):
@@ -527,7 +686,7 @@ class QDockAreaLayout(QLayout):
         This method should not be used. Use `setDockLayout` instead.
 
         """
-        msg = 'Use `setDockLayoutItem` instead.'
+        msg = 'Use `setDockLayoutLayout` instead.'
         raise NotImplementedError(msg)
 
     def count(self):
@@ -587,7 +746,7 @@ class DockOverlays(Atom):
     _band_timer = Typed(QTimer)
 
     def __init__(self, owner):
-        """ Initialize a DockOverlays.
+        """ Initialize a DockOverlays instance.
 
         Parameters
         ----------
@@ -601,7 +760,7 @@ class DockOverlays(Atom):
     # Default Value Methods
     #--------------------------------------------------------------------------
     def _default__rose_timer(self):
-        """ Create the timer for the rose state changes.
+        """ Create the default timer for the rose state changes.
 
         """
         timer = QTimer()
@@ -610,7 +769,7 @@ class DockOverlays(Atom):
         return timer
 
     def _default__band_timer(self):
-        """ Create the timer for the band state changes.
+        """ Create the default timer for the band state changes.
 
         """
         timer = QTimer()
@@ -636,6 +795,8 @@ class DockOverlays(Atom):
     def _on_band_timer(self):
         """ Handle the timeout event for the internal band timer.
 
+        This handler updates the position of the rubber band.
+
         """
         self._refresh_band()
 
@@ -643,7 +804,7 @@ class DockOverlays(Atom):
     # Private API
     #--------------------------------------------------------------------------
     def _refresh_band(self):
-        """ Refresh the state of the rubber band.
+        """ Refresh the geometry and visible state of the rubber band.
 
         """
         band = self._band
@@ -752,6 +913,26 @@ class DockOverlays(Atom):
         self._rose.hide()
         self._band.hide()
 
+    def hit_test_rose(self, pos):
+        """ Hit test the guide rose for the given position.
+
+        The hit test is performed using the current rose mode.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The position to hit test, expressed in the coordinate
+            system of the owner dock area.
+
+        Returns
+        -------
+        result : QGuideRose.Guide
+            The guide enum which lies under the given point.
+
+        """
+        rose = self._rose
+        return rose.hitTest(pos, rose.mode())
+
     def hover(self, pos):
         """ Update the overlays based on the mouse hover position.
 
@@ -767,8 +948,7 @@ class DockOverlays(Atom):
         Mode = QGuideRose.Mode
 
         # Special case the hover when the dock area has no docked items.
-        # In this case, the special single center guide mode is used. It
-        # is a special case because no hit testing is necessary.
+        # No hit testing is necessary when using the single center mode.
         if not owner.layout().hasItems():
             self._hover_pos = pos
             center = QPoint(owner.width() / 2, owner.height() / 2)
@@ -812,8 +992,9 @@ class DockOverlays(Atom):
 
         # Update the state of the rose. If it is to be hidden, it is
         # done so immediately. If the target mode is different from
-        # the current mode, the rose is hidden and the change update
+        # the current mode, the rose is hidden and the state change
         # is collapsed on a timer.
+        self._hover_pos = pos
         self._target_rose_mode = target_mode
         if target_mode == Mode.NoMode:
             self._rose_timer.stop()
@@ -823,7 +1004,7 @@ class DockOverlays(Atom):
             self._rose_timer.start(30)
         rose.setCenter(center)
 
-        # Hit test the rose target update the target geometry for the
+        # Hit test the rose and update the target geometry for the
         # rubber band if the target guide has changed.
         update_band = False
         guide = rose.hitTest(pos, target_mode)
@@ -833,8 +1014,8 @@ class DockOverlays(Atom):
             update_band = True
 
         # If the rose is currently visible, pass it the hover event so
-        # that is can trigger a repaint of the guides if needed. Queue
-        # an update for the band geometry. This prevents the band from
+        # that it can trigger a repaint of the guides if needed. Queue
+        # an update for the band geometry which prevents the band from
         # flickering when rapidly cycling between guide pads.
         if rose.mode() != Mode.NoMode:
             rose.hover(pos)
@@ -842,7 +1023,6 @@ class DockOverlays(Atom):
                 self._band_timer.start(50)
 
         # Ensure that the rose is shown on the screen.
-        self._hover_pos = pos
         if rose.isHidden():
             origin = owner.mapToGlobal(QPoint(0, 0))
             rose.setGeometry(QRect(origin, owner.size()))
@@ -883,7 +1063,7 @@ class QDockArea(QFrame):
             QDockItem {
                 background: rgb(237, 237, 237);
             }
-            QSplitter > QDockItem {
+            QSplitter > QDockItem, QDockArea > QDockItem {
                 border-top-left-radius: 5px;
                 border-top-right-radius: 5px;
                 border-bottom-left-radius: 2px;
@@ -895,7 +1075,6 @@ class QDockArea(QFrame):
                             stop:0.5 rgb(66, 88, 124),
                             stop:1.0 rgb(64, 81, 124));
                 color: rgb(250, 251, 254);
-
                 border-top: 1px solid rgb(59, 80, 115);
             }
             QDockArea QDockTitleBar[p_titlePosition="2"] {
@@ -984,7 +1163,7 @@ class QDockArea(QFrame):
         Parameters
         ----------
         item : QDockItem
-            The dock item which is being hovered.
+            The dock item which should be plugged into the area.
 
         pos : QPoint
             The global coordinates of the hover position.
@@ -997,10 +1176,8 @@ class QDockArea(QFrame):
         """
         local = self.mapFromGlobal(pos)
         if self.rect().contains(local):
-            layout = self.layout()
-            mode = self._overlays._rose.mode()
-            guide = self._overlays._rose.hitTest(local, mode)
-            return layout.plug(item, local, guide)
+            guide = self._overlays.hit_test_rose(local)
+            return self.layout().plug(item, local, guide)
         return False
 
     def unplug(self, item):
@@ -1016,5 +1193,4 @@ class QDockArea(QFrame):
             The item to unplug from the dock area.
 
         """
-        item.hide()
         self.layout().unplug(item)
