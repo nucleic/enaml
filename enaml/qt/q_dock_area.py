@@ -1208,7 +1208,7 @@ class QDockArea(QFrame):
             QDockItem {
                 background: rgb(237, 237, 237);
             }
-            QSplitter > QDockItem, QDockArea > QDockItem {
+            QSplitter > QDockItem, QDockArea > QDockItem, QDockItemWindow > QDockItem {
                 border-top-left-radius: 5px;
                 border-top-right-radius: 5px;
                 border-bottom-left-radius: 2px;
@@ -1227,6 +1227,9 @@ class QDockArea(QFrame):
                 border-top-right-radius: 3px;
             }
             QSplitterHandle {
+                background: rgb(41, 56, 85);
+            }
+            QDockItemWindow {
                 background: rgb(41, 56, 85);
             }
             """)

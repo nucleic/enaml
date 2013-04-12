@@ -10,6 +10,8 @@ from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QApplication
 
 from atom.api import Atom, Typed, ForwardTyped, Bool
 
+from .q_single_widget_layout import QSingleWidgetLayout
+
 
 def QDockArea():
     from .q_dock_area import QDockArea
@@ -474,22 +476,23 @@ class QDockItemLayout(QLayout):
         return None
 
 
+class DragState(Atom):
+    """ A framework class for managing a dock item drag.
+
+    This class should not be used directly by user code.
+
+    """
+    #: The original position of the drag press.
+    press_pos = Typed(QPoint)
+
+    #: Whether or not the dock item is being dragged.
+    dragging = Bool(False)
+
+
 class QDockItem(QFrame):
     """ A QFrame subclass which acts as an item QDockArea.
 
     """
-    class DragState(Atom):
-        """ A framework class for managing a dock item drag.
-
-        This class should not be used directly by user code.
-
-        """
-        #: The original position of the drag press.
-        press_pos = Typed(QPoint)
-
-        #: Whether or not the dock item is being dragged.
-        dragging = Bool(False)
-
     class DockState(Atom):
         """ A framework class for managing a dock item's state.
 
@@ -507,6 +510,8 @@ class QDockItem(QFrame):
 
         #: The dock area which owns the item.
         area = ForwardTyped(QDockArea)
+
+        window = ForwardTyped(lambda: QDockItemWindow)
 
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
@@ -655,15 +660,21 @@ class QDockItem(QFrame):
         # synthesize a drag state when called from outside the widget's
         # own mouse events. i.e. unplugging from a tab bar.
         if self._drag_state is None:
-            state = self.DragState(press_pos=press_pos, dragging=True)
+            state = DragState(press_pos=press_pos, dragging=True)
             self._drag_state = state
         dock_state.floating = True
         dock_area.unplug(self)
-        self.setParent(dock_area)
-        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-        self.move(pos - press_pos)
-        self.show()
+        window = QDockItemWindow(dock_area)
+        self.setWindowFlags(Qt.Widget)
+        window.setDockItem(self)
+        window.move(pos - press_pos)
+        window.show()
         self.grabMouse()
+        #self.setParent(dock_area)
+        #self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        #self.move(pos - press_pos)
+        #self.show()
+        #self.grabMouse()
 
     #--------------------------------------------------------------------------
     # Private API
@@ -682,7 +693,7 @@ class QDockItem(QFrame):
         """
         if self._drag_state is not None:
             return
-        state = self._drag_state = self.DragState()
+        state = self._drag_state = DragState()
         state.press_pos = pos
 
     def _startDrag(self, pos):
@@ -711,6 +722,138 @@ class QDockItem(QFrame):
         if self._drag_state is None:
             return
         self._drag_state = None
+        #self.releaseMouse()
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def mousePressEvent(self, event):
+        """ Handle the mouse press event for the dock item.
+
+        This handler will initialize the drag state when the left mouse
+        button is pressed within the title bar area.
+
+        """
+        event.ignore()
+        if self._dock_state.floating:
+            return
+        if event.button() == Qt.LeftButton:
+            rect = self.titleBarWidget().rect()
+            if rect.contains(event.pos()):
+                self._initDrag(event.pos())
+                event.accept()
+
+    def mouseMoveEvent(self, event):
+        """ Handle the mouse move event for the dock item.
+
+        This handler will start the drag process when the mouse move
+        reaches the start drag distance for the application.
+
+        """
+        event.ignore()
+        if self._dock_state.floating:
+            return
+        state = self._drag_state
+        if state is None:
+            return
+        # if state.dragging:
+        #     pos = event.globalPos() - state.press_pos
+        #     self.move(pos)
+        #     area = self.dockArea()
+        #     if area is not None:
+        #         area.hover(self, event.globalPos())
+        #     event.accept()
+        if False:
+            pass
+        else:
+            dist = (event.pos() - state.press_pos).manhattanLength()
+            if dist > QApplication.startDragDistance():
+                self._startDrag(event.globalPos())
+                event.accept()
+
+    def mouseReleaseEvent(self, event):
+        """ Hanlde the mouse release event for the dock item.
+
+        This handler will end the drag operation when the left mouse
+        button is released.
+
+        """
+        event.ignore()
+        if event.button() == Qt.LeftButton:
+            self._endDrag()
+            # area = self.dockArea()
+            # if area is not None:
+            #     pos = event.globalPos()
+            #     area.endHover(self, pos)
+            #     if area.plug(self, pos):
+            #         self._dock_state.floating = False
+            event.accept()
+
+
+class QDockItemWindow(QFrame):
+
+    def __init__(self, parent=None):
+        super(QFrame, self).__init__(parent)
+        self.setWindowFlags(Qt.ToolTip | Qt.FramelessWindowHint)
+        layout = QSingleWidgetLayout()
+        layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        layout.setContentsMargins(5, 5, 5, 5)
+        self.setLayout(layout)
+        self._drag_state = None
+
+    def dockItem(self):
+        return self.layout().getWidget()
+
+    def setDockItem(self, item):
+        self.layout().setWidget(item)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _initDrag(self, pos):
+        """ Initialize the drag state for the dock item.
+
+        If the drag state is already inited, this method is a no-op.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The point where the user clicked the mouse, expressed in
+            the local coordinate system.
+
+        """
+        if self._drag_state is not None:
+            return
+        state = self._drag_state = DragState()
+        state.press_pos = pos
+
+    def _startDrag(self, pos):
+        """" Start the drag process for the dock item.
+
+        If the item is already being dragged, this method is a no-op.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The global mouse coordinates.
+
+        """
+        drag_state = self._drag_state
+        if drag_state is None or drag_state.dragging:
+            return
+        drag_state.dragging = True
+        #self.unplug(pos, drag_state.press_pos)
+        self.grabMouse()
+
+    def _endDrag(self):
+        """ End the drag process for the dock item.
+
+        If the item was not being dragged, this method is a no-op.
+
+        """
+        if self._drag_state is None:
+            return
+        self._drag_state = None
         self.releaseMouse()
 
     #--------------------------------------------------------------------------
@@ -725,7 +868,11 @@ class QDockItem(QFrame):
         """
         event.ignore()
         if event.button() == Qt.LeftButton:
-            rect = self.titleBarWidget().rect()
+            item = self.dockItem()
+            if item is None:
+                event.ignore()
+                return
+            rect = item.titleBarWidget().rect()
             if rect.contains(event.pos()):
                 self._initDrag(event.pos())
                 event.accept()
@@ -744,15 +891,12 @@ class QDockItem(QFrame):
         if state.dragging:
             pos = event.globalPos() - state.press_pos
             self.move(pos)
-            area = self.dockArea()
-            if area is not None:
-                area.hover(self, event.globalPos())
-            event.accept()
+            # area = self.dockArea()
+            # if area is not None:
+            #     area.hover(self, event.globalPos())
         else:
-            dist = (event.pos() - state.press_pos).manhattanLength()
-            if dist > QApplication.startDragDistance():
-                self._startDrag(event.globalPos())
-                event.accept()
+            self._startDrag(event.globalPos())
+        event.accept()
 
     def mouseReleaseEvent(self, event):
         """ Hanlde the mouse release event for the dock item.
@@ -764,10 +908,10 @@ class QDockItem(QFrame):
         event.ignore()
         if event.button() == Qt.LeftButton:
             self._endDrag()
-            area = self.dockArea()
-            if area is not None:
-                pos = event.globalPos()
-                area.endHover(self, pos)
-                if area.plug(self, pos):
-                    self._dock_state.floating = False
+            # area = self.dockArea()
+            # if area is not None:
+            #     pos = event.globalPos()
+            #     area.endHover(self, pos)
+            #     if area.plug(self, pos):
+            #         self._dock_state.floating = False
             event.accept()
