@@ -394,6 +394,15 @@ class QDockItemLayout(QLayout):
             self._sh = sh
         return ms
 
+    def maximumSize(self):
+        """ Get the maximum size for the layout.
+
+        """
+        widget = self._dock_widget
+        if widget is not None:
+            return widget.maximumSize()
+        return QSize(16777215, 16777215)
+
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
@@ -759,7 +768,8 @@ class QDockItem(QFrame):
             self._endDrag()
             area = self.dockArea()
             if area is not None:
-                area.endHover(self, event.globalPos())
-                if area.plug(self, event.globalPos()):
+                pos = event.globalPos()
+                area.endHover(self, pos)
+                if area.plug(self, pos):
                     self._dock_state.floating = False
             event.accept()

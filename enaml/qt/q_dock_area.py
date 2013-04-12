@@ -677,6 +677,15 @@ class QDockAreaLayout(QLayout):
             return root.minimumSizeHint()
         return QSize(256, 192)
 
+    def maximumSize(self):
+        """ Get the maximum size for the layout.
+
+        """
+        widget = self._root
+        if widget is not None:
+            return widget.maximumSize()
+        return QSize(16777215, 16777215)
+
     #--------------------------------------------------------------------------
     # QLayout Abstract API
     #--------------------------------------------------------------------------
