@@ -187,7 +187,7 @@ class QGuideRose(QFrame):
         #: The center compass guide.
         CompassCenter = 8
 
-        #: The compase cross guide (internal)
+        #: The compase cross guide (for internal use)
         CompassCross = 9
 
         #: The vertical split guide.
