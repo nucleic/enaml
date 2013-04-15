@@ -16,6 +16,7 @@ from atom.api import Atom, Int, Typed, ForwardTyped
 from enaml.widgets.dock_layout import DockLayoutItem, SplitLayout, TabbedLayout
 
 from .q_dock_item import QDockItem
+from .q_dock_container import QDockContainer
 from .q_dock_tabbar import QDockTabBar
 from .q_guide_rose import QGuideRose
 
@@ -166,7 +167,9 @@ class QDockAreaLayout(QLayout):
             if isinstance(layout, SplitLayout):
                 widget = self._createSplitter(ORIENTATION[layout.orientation])
                 for child in items:
-                    widget.addWidget(child)
+                    cntr = QDockContainer()
+                    cntr.setDockWidget(child)
+                    widget.addWidget(cntr)
             else:
                 doc_mode = DOCUMENT_MODES[layout.tab_style]
                 movable = layout.tabs_movable
@@ -174,7 +177,9 @@ class QDockAreaLayout(QLayout):
                 widget = self._createTabWidget(doc_mode, movable, tab_pos)
                 for child in items:
                     child.titleBarWidget().hide()
-                    widget.addTab(child, child.title())
+                    cntr = QDockContainer()
+                    cntr.setDockWidget(child)
+                    widget.addTab(cntr, child.title())
             return widget
         if isinstance(layout, DockLayoutItem):
             child = self.parentWidget().findChild(QDockItem, layout.name)
@@ -758,433 +763,6 @@ class QDockAreaLayout(QLayout):
         return None
 
 
-class DockOverlays(Atom):
-    """ An object which manages the overlays for a QDockArea.
-
-    This manager handles the state transitions for the overlays. The
-    transitions are performed on a slightly-delayed timer to provide
-    a more fluid user interaction experience.
-
-    """
-    #: The size of the rubber band when docking on the border, in px.
-    BORDER_DOCK_SIZE = 60
-
-    #: The delay to use when triggering the rose timer, in ms.
-    ROSE_DELAY = 30
-
-    #: The delay to use when triggering the band timer, in ms.
-    BAND_DELAY = 50
-
-    #: The target opacity to use when making the band visible.
-    BAND_TARGET_OPACITY = 0.6
-
-    #: The duration of the band visibilty animation, in ms.
-    BAND_VIS_DURATION = 100
-
-    #: the duration of the band geometry animation, in ms.
-    BAND_GEO_DURATION = 100
-
-    #: The dock area owner of the overlays.
-    _owner = ForwardTyped(lambda: QDockArea)
-
-    #: The overlayed guide rose.
-    _rose = Typed(QGuideRose, ())
-
-    #: The overlayed rubber band.
-    _band = Typed(QRubberBand, (QRubberBand.Rectangle,))
-
-    #: The property animator for the rubber band geometry.
-    _geo_animator = Typed(QPropertyAnimation)
-
-    #: The property animator for the rubber band visibility.
-    _vis_animator = Typed(QPropertyAnimation)
-
-    #: The target mode to apply to the rose on timeout.
-    _target_rose_mode = Int(QGuideRose.Mode.NoMode)
-
-    #: The target geometry to apply to rubber band on timeout.
-    _target_band_geo = Typed(QRect, factory=lambda: QRect())
-
-    #: The queued band geo.
-    _queued_band_geo = Typed(QRect)
-
-    #: The value of the last guide which was hit in the rose.
-    _last_guide = Int(-1)
-
-    #: The hover position of the mouse to use for state changes.
-    _hover_pos = Typed(QPoint)
-
-    #: The timer for changing the state of the rose.
-    _rose_timer = Typed(QTimer)
-
-    #: The timer for changing the state of the band.
-    _band_timer = Typed(QTimer)
-
-    def __init__(self, owner):
-        """ Initialize a DockOverlays instance.
-
-        Parameters
-        ----------
-        owner : QDockArea
-            The dock area owner of the overlays.
-
-        """
-        super(DockOverlays, self).__init__(_owner=owner)
-
-    #--------------------------------------------------------------------------
-    # Default Value Methods
-    #--------------------------------------------------------------------------
-    def _default__rose_timer(self):
-        """ Create the default timer for the rose state changes.
-
-        """
-        timer = QTimer()
-        timer.setSingleShot(True)
-        timer.timeout.connect(self._on_rose_timer)
-        return timer
-
-    def _default__band_timer(self):
-        """ Create the default timer for the band state changes.
-
-        """
-        timer = QTimer()
-        timer.setSingleShot(True)
-        timer.timeout.connect(self._on_band_timer)
-        return timer
-
-    def _default__geo_animator(self):
-        """ Create the default property animator for the rubber band.
-
-        """
-        p = QPropertyAnimation(self._band, 'geometry')
-        p.setDuration(self.BAND_GEO_DURATION)
-        return p
-
-    def _default__vis_animator(self):
-        """ Create the default property animator for the rubber band.
-
-        """
-        p = QPropertyAnimation(self._band, 'windowOpacity')
-        p.setDuration(self.BAND_VIS_DURATION)
-        p.finished.connect(self._on_vis_finished)
-        return p
-
-    #--------------------------------------------------------------------------
-    # Timer Handlers
-    #--------------------------------------------------------------------------
-    def _on_rose_timer(self):
-        """ Handle the timeout event for the internal rose timer.
-
-        This handler transitions the rose to its new state and updates
-        the position of the rubber band.
-
-        """
-        rose = self._rose
-        rose.setMode(self._target_rose_mode)
-        rose.hover(self._hover_pos)
-        self._update_band_state()
-
-    def _on_band_timer(self):
-        """ Handle the timeout event for the internal band timer.
-
-        This handler updates the position of the rubber band.
-
-        """
-        self._update_band_state()
-
-    #--------------------------------------------------------------------------
-    # Animation Handlers
-    #--------------------------------------------------------------------------
-    def _on_vis_finished(self):
-        """ Handle the 'finished' signal from the visibility animator.
-
-        This handle will hide the rubber band when its opacity is 0.
-
-        """
-        band = self._band
-        if band.windowOpacity() == 0.0:
-            band.hide()
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _update_band_state(self):
-        """ Refresh the geometry and visible state of the rubber band.
-
-        The state will be updated using animated properties to provide
-        a nice fluid user experience.
-
-        """
-        # A valid geometry indicates that the rubber should be shown on
-        # the screen. An invalid geometry means it should be hidden. If
-        # the validity is changed during animation, the animators are
-        # restarted using the current state as their starting point.
-        band = self._band
-        geo = self._target_band_geo
-        if geo.isValid():
-            # If the band is already hidden, the geometry animation can
-            # be bypassed since the band can be located anywhere. The
-            # rose must be raised because QRubberBand raises itself
-            # when it receives a showEvent.
-            if band.isHidden():
-                band.setGeometry(geo)
-                self._start_vis_animator(self.BAND_TARGET_OPACITY)
-                self._rose.raise_()
-                return
-            self._start_vis_animator(self.BAND_TARGET_OPACITY)
-            self._start_geo_animator(geo)
-        else:
-            self._start_vis_animator(0.0)
-
-    def _start_vis_animator(self, opacity):
-        """ (Re)start the visibility animator.
-
-        Parameters
-        ----------
-        opacity : float
-            The target opacity of the target object.
-
-        """
-        animator = self._vis_animator
-        if animator.state() == animator.Running:
-            animator.stop()
-        target = animator.targetObject()
-        if target.isHidden() and opacity != 0.0:
-            target.setWindowOpacity(0.0)
-            target.show()
-        animator.setStartValue(target.windowOpacity())
-        animator.setEndValue(opacity)
-        animator.start()
-
-    def _start_geo_animator(self, geo):
-        """ (Re)start the visibility animator.
-
-        Parameters
-        ----------
-        geo : QRect
-            The target geometry for the target object.
-
-        """
-        animator = self._geo_animator
-        if animator.state() == animator.Running:
-            animator.stop()
-        target = animator.targetObject()
-        animator.setStartValue(target.geometry())
-        animator.setEndValue(geo)
-        animator.start()
-
-    def _band_geometry(self, guide, widget):
-        """ Compute the rubber band geometry for a guide and a widget.
-
-        Parameters
-        ----------
-        guide : QGuideRose.Guide
-            The guide enum indicating which guide in the rose lies
-            under the current mouse location.
-
-        widget : QWidget
-            The relevant dock widget which lies under the mouse. This
-            will be a splitter handle, a dock item, or a tab widget.
-
-        """
-        border_size = self.BORDER_DOCK_SIZE
-        owner = self._owner
-        Guide = QGuideRose.Guide
-        if guide == Guide.NoGuide:
-            return QRect()
-
-        # border hits
-        m = owner.contentsMargins()
-        if guide == Guide.BorderNorth:
-            p = QPoint(m.left(), m.top())
-            s = QSize(owner.width() - m.left() - m.right(), border_size)
-        elif guide == Guide.BorderEast:
-            p = QPoint(owner.width() - border_size - m.right(), m.top())
-            s = QSize(border_size, owner.height() - m.top() - m.bottom())
-        elif guide == Guide.BorderSouth:
-            p = QPoint(m.left(), owner.height() - border_size - m.bottom())
-            s = QSize(owner.width() - m.left() - m.right(), border_size)
-        elif guide == Guide.BorderWest:
-            p = QPoint(m.left(), m.top())
-            s = QSize(border_size, owner.height() - m.top() - m.bottom())
-
-        # compass hits
-        elif guide == Guide.CompassNorth:
-            p = widget.mapTo(owner, QPoint(0, 0))
-            s = widget.size()
-            s.setHeight(s.height() / 3)
-        elif guide == Guide.CompassEast:
-            p = widget.mapTo(owner, QPoint(0, 0))
-            s = widget.size()
-            d = s.width() / 3
-            r = s.width() - d
-            s.setWidth(d)
-            p.setX(p.x() + r)
-        elif guide == Guide.CompassSouth:
-            p = widget.mapTo(owner, QPoint(0, 0))
-            s = widget.size()
-            d = s.height() / 3
-            r = s.height() - d
-            s.setHeight(d)
-            p.setY(p.y() + r)
-        elif guide == Guide.CompassWest:
-            p = widget.mapTo(owner, QPoint(0, 0))
-            s = widget.size()
-            s.setWidth(s.width() / 3)
-        elif guide == Guide.CompassCenter:
-            p = widget.mapTo(owner, QPoint(0, 0))
-            s = widget.size()
-
-        # splitter handle hits
-        elif guide == Guide.SplitHorizontal:
-            p = widget.mapTo(owner, QPoint(0, 0))
-            wo, r = divmod(border_size - widget.width(), 2)
-            wo += r
-            p.setX(p.x() - wo)
-            s = QSize(2 * wo + widget.width(), widget.height())
-        elif guide == Guide.SplitVertical:
-            p = widget.mapTo(owner, QPoint(0, 0))
-            ho, r = divmod(border_size - widget.height(), 2)
-            ho += r
-            p.setY(p.y() - ho)
-            s = QSize(widget.width(), 2 * ho + widget.height())
-
-        # default no-op
-        else:
-            s = QSize()
-            p = QPoint()
-
-        p = owner.mapToGlobal(p)
-        return QRect(p, s)
-
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
-    def hide(self):
-        """ Hide the overlay widgets from the screen.
-
-        """
-        self._rose_timer.stop()
-        self._band_timer.stop()
-        self._rose.hide()
-        self._band.hide()
-
-    def hit_test_rose(self, pos):
-        """ Hit test the guide rose for the given position.
-
-        The hit test is performed using the current rose mode.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The position to hit test, expressed in the coordinate
-            system of the owner dock area.
-
-        Returns
-        -------
-        result : QGuideRose.Guide
-            The guide enum which lies under the given point.
-
-        """
-        rose = self._rose
-        return rose.hitTest(pos, rose.mode())
-
-    def hover(self, pos):
-        """ Update the overlays based on the mouse hover position.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The hover position, expressed in the coordinate system
-            of the owner dock area.
-
-        """
-        owner = self._owner
-        rose = self._rose
-        Mode = QGuideRose.Mode
-
-        # Special case the hover when the dock area has no docked items.
-        # No hit testing is necessary when using the single center mode.
-        if not owner.layout().hasItems():
-            self._hover_pos = pos
-            center = QPoint(owner.width() / 2, owner.height() / 2)
-            rose.setMode(Mode.SingleCenter)
-            rose.setCenter(center)
-            rose.hover(pos)
-            guide = rose.hitTest(pos, Mode.SingleCenter)
-            origin = owner.mapToGlobal(QPoint(0, 0))
-            if guide != self._last_guide:
-                self._last_guide = guide
-                if guide == QGuideRose.Guide.SingleCenter:
-                    m = owner.contentsMargins()
-                    g = QRect(origin, owner.size())
-                    g = g.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
-                    self._target_band_geo = g
-                else:
-                    self._target_band_geo = QRect()
-                self._band_timer.start(self.BAND_DELAY)
-            if rose.isHidden():
-                rose.setGeometry(QRect(origin, owner.size()))
-                rose.show()
-            return
-
-        # Compute the target mode for the guide rose based on the
-        # widget lying under the hover position.
-        widget = owner.layout().hitTest(pos)
-        if isinstance(widget, (QDockItem, QTabWidget)):
-            center = widget.mapTo(owner, QPoint(0, 0))
-            center += QPoint(widget.width() / 2, widget.height() / 2)
-            target_mode = Mode.Compass
-        elif isinstance(widget, QSplitterHandle):
-            if widget.orientation() == Qt.Horizontal:
-                target_mode = Mode.SplitHorizontal
-            else:
-                target_mode = Mode.SplitVertical
-            center = widget.mapTo(owner, QPoint(0, 0))
-            center += QPoint(widget.width() / 2, widget.height() / 2)
-        else:
-            target_mode = Mode.NoMode
-            center = QPoint()
-
-        # Update the state of the rose. If it is to be hidden, it is
-        # done so immediately. If the target mode is different from
-        # the current mode, the rose is hidden and the state change
-        # is collapsed on a timer.
-        self._hover_pos = pos
-        self._target_rose_mode = target_mode
-        if target_mode == Mode.NoMode:
-            self._rose_timer.stop()
-            rose.setMode(target_mode)
-        elif target_mode != rose.mode():
-            rose.setMode(Mode.NoMode)
-            self._rose_timer.start(self.ROSE_DELAY)
-        rose.setCenter(center)
-
-        # Hit test the rose and update the target geometry for the
-        # rubber band if the target guide has changed.
-        update_band = False
-        guide = rose.hitTest(pos, target_mode)
-        if guide != self._last_guide:
-            self._last_guide = guide
-            self._target_band_geo = self._band_geometry(guide, widget)
-            update_band = True
-
-        # If the rose is currently visible, pass it the hover event so
-        # that it can trigger a repaint of the guides if needed. Queue
-        # an update for the band geometry which prevents the band from
-        # flickering when rapidly cycling between guide pads.
-        if rose.mode() != Mode.NoMode:
-            rose.hover(pos)
-            if update_band:
-                self._band_timer.start(self.BAND_DELAY)
-
-        # Ensure that the rose is shown on the screen.
-        if rose.isHidden():
-            origin = owner.mapToGlobal(QPoint(0, 0))
-            rose.setGeometry(QRect(origin, owner.size()))
-            rose.show()
-
-
 class QDockArea(QFrame):
     """ A custom QFrame which provides an area for docking QDockItems.
 
@@ -1207,10 +785,6 @@ class QDockArea(QFrame):
         super(QDockArea, self).__init__(parent)
         self.setLayout(QDockAreaLayout())
         self.layout().setSizeConstraint(QLayout.SetMinAndMaxSize)
-        self._overlays = DockOverlays(self)
-
-        # The list of floating dock windows owned by the area.
-        self._dock_windows = []
 
         # FIXME temporary VS2010-like stylesheet
         from PyQt4.QtGui import QApplication
@@ -1275,126 +849,96 @@ class QDockArea(QFrame):
         """
         self.layout().setDockLayout(layout)
 
-    def hasItems(self):
-        """ Get whether or not this dock area has dock items.
-
-        Returns
-        -------
-        result : bool
-            True if there are dock items in the dock area, False
-            otherwise.
-
-        """
-        return self.layout().hasItems()
-
-    def itemCount(self):
-        """ Get the number of dock items managed by the area.
-
-        Returns
-        -------
-        result : int
-            The number of dock items in the dock area.
-
-        """
-        return self.layout().itemCount()
-
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
-    def hover(self, item, pos):
-        """ Execute a hover operation for a dock item.
+    # def hover(self, item, pos):
+    #     """ Execute a hover operation for a dock item.
 
-        This method is called by the docking framework as needed. It
-        should not be called by user code.
+    #     This method is called by the docking framework as needed. It
+    #     should not be called by user code.
 
-        Parameters
-        ----------
-        item : QDockItem
-            The dock item which is being hovered.
+    #     Parameters
+    #     ----------
+    #     item : QDockItem
+    #         The dock item which is being hovered.
 
-        pos : QPoint
-            The global coordinates of the hover position.
+    #     pos : QPoint
+    #         The global coordinates of the hover position.
 
-        """
-        local = self.mapFromGlobal(pos)
-        if self.rect().contains(local):
-            self._overlays.hover(local)
-            return True
-        else:
-            self._overlays.hide()
-            return False
+    #     """
+    #     local = self.mapFromGlobal(pos)
+    #     if self.rect().contains(local):
+    #         self._overlays.hover(local)
+    #         return True
+    #     else:
+    #         self._overlays.hide()
+    #         return False
 
-    def endHover(self, item, pos):
-        """ End a hover operation for a dock item.
+    # def endHover(self, item, pos):
+    #     """ End a hover operation for a dock item.
 
-        This method is called by the docking framework as needed. It
-        should not be called by user code.
+    #     This method is called by the docking framework as needed. It
+    #     should not be called by user code.
 
-        Parameters
-        ----------
-        item : QDockItem
-            The dock item which is being hovered.
+    #     Parameters
+    #     ----------
+    #     item : QDockItem
+    #         The dock item which is being hovered.
 
-        pos : QPoint
-            The global coordinates of the hover position.
+    #     pos : QPoint
+    #         The global coordinates of the hover position.
 
-        Returns
-        -------
-        result : bool
-            True if the pos is over a dock guide, False otherwise.
+    #     Returns
+    #     -------
+    #     result : bool
+    #         True if the pos is over a dock guide, False otherwise.
 
-        """
-        self._overlays.hide()
-        local = self.mapFromGlobal(pos)
-        if self.rect().contains(local):
-            guide = self._overlays.hit_test_rose(local)
-            return guide != QGuideRose.Guide.NoGuide
-        return False
+    #     """
+    #     self._overlays.hide()
+    #     local = self.mapFromGlobal(pos)
+    #     if self.rect().contains(local):
+    #         guide = self._overlays.hit_test_rose(local)
+    #         return guide != QGuideRose.Guide.NoGuide
+    #     return False
 
-    def plug(self, item, pos):
-        """ Plug a floating QDockItem back into the layout.
+    # def plug(self, item, pos):
+    #     """ Plug a floating QDockItem back into the layout.
 
-        This method is called by the docking framework as needed. It
-        should not be called by user code.
+    #     This method is called by the docking framework as needed. It
+    #     should not be called by user code.
 
-        Parameters
-        ----------
-        item : QDockItem
-            The dock item which should be plugged into the area.
+    #     Parameters
+    #     ----------
+    #     item : QDockItem
+    #         The dock item which should be plugged into the area.
 
-        pos : QPoint
-            The global coordinates of the hover position.
+    #     pos : QPoint
+    #         The global coordinates of the hover position.
 
-        Returns
-        -------
-        result : bool
-            True if the item was successfully plugged, False otherwise.
+    #     Returns
+    #     -------
+    #     result : bool
+    #         True if the item was successfully plugged, False otherwise.
 
-        """
-        local = self.mapFromGlobal(pos)
-        if self.rect().contains(local):
-            guide = self._overlays.hit_test_rose(local)
-            return self.layout().plug(item, local, guide)
-        return False
+    #     """
+    #     local = self.mapFromGlobal(pos)
+    #     if self.rect().contains(local):
+    #         guide = self._overlays.hit_test_rose(local)
+    #         return self.layout().plug(item, local, guide)
+    #     return False
 
-    def unplug(self, item):
-        """ Unplug a dock item from the dock area.
+    # def unplug(self, item):
+    #     """ Unplug a dock item from the dock area.
 
-        This method is called by the framework when a QDockItem should
-        be unplugged from the dock area. It should not be called by
-        user code.
+    #     This method is called by the framework when a QDockItem should
+    #     be unplugged from the dock area. It should not be called by
+    #     user code.
 
-        Parameters
-        ----------
-        item : QDockItem
-            The item to unplug from the dock area.
+    #     Parameters
+    #     ----------
+    #     item : QDockItem
+    #         The item to unplug from the dock area.
 
-        """
-        self.layout().unplug(item)
-
-    def dockWindows(self):
-        # FIXME cleanup this import
-        from .q_dock_window import QDockWindow
-        f = lambda c: isinstance(c, QDockWindow)
-        return filter(f, self.children())
-
+    #     """
+    #     self.layout().unplug(item)

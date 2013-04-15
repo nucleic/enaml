@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QPoint, QRect, QSize
+from PyQt4.QtCore import Qt, QPoint, QRect, QSize, QEvent
 from PyQt4.QtGui import QApplication
 
 from atom.api import Atom, Bool, Typed, List, Dict
@@ -14,7 +14,7 @@ from enaml.widgets.dock_layout import DockLayoutItem
 
 from .q_dock_area import QDockArea
 from .q_dock_item import QDockItem
-from .q_dock_window import QDockWindow
+from .q_dock_container import QDockContainer
 
 
 class DockItemState(Atom):
@@ -35,9 +35,6 @@ class DockItemState(Atom):
     #: The geometry of the dock item when it was last floated.
     floated_geo = Typed(QRect)
 
-    #: The window in which a floating dock item resides.
-    dock_window = Typed(QDockWindow)
-
     #: The area being hovered by the item.
     hover_area = Typed(QDockArea)
 
@@ -55,6 +52,8 @@ class DockingManager(Atom):
 
     #: A mapping of dock items to item state structures.
     _states = Dict()
+
+    _foo = Typed(object)
 
     def __init__(self, dock_area):
         """ Initialize a DockingManager.
@@ -223,6 +222,7 @@ class DockingManager(Atom):
         # If there is more than one item in the dock window, then the
         # item is free to be undocked as normal.
         if state.dragging:
+            return True
             window = state.dock_window
             if window is not None:
                 if window.dockArea().itemCount() == 1:
@@ -255,33 +255,46 @@ class DockingManager(Atom):
 
         # Setup the floating dock window and store it in the dock state.
         window = QDockWindow(dock_area)
+        window.hide()
+        window.setParent(dock_area)
+        #flags = Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        window.setWindowFlags(Qt.Window)
+
         window._dock_manager = self
-        state.dock_window = window
+        # state.dock_window = window
         self._windows.append(window)
 
-        # OSX likes to change z-order of floating windows on us.
-        # This restores the order :-/
-        for w in self._windows:
-            w.raise_()
+        # # OSX likes to change z-order of floating windows on us.
+        # # This restores the order :-/
+        # for w in self._windows:
+        #     w.raise_()
 
-        # Store the docked size of the item before it's unplugged.
+        # # Store the docked size of the item before it's unplugged.
         state.docked_size = item.size()
-        dock_area.unplug(item)
+        # item.hide()
+        # dock_area.unplug(item)
 
-        # if old_win is not None:
-        #     old_win.updateMargins()
+        # # if old_win is not None:
+        # #     old_win.updateMargins()
 
-        # Reparent the item to the new dock area and setup the layout.
-        win_area = window.dockArea()
-        item.setParent(win_area)
-        win_area.setDockLayout(DockLayoutItem(item.objectName()))
+        # # Reparent the item to the new dock area and setup the layout.
+        # win_area = window.dockArea()
+        # item.setParent(win_area)
+        # win_area.setDockLayout(DockLayoutItem(item.objectName()))
 
         # Set the geometry of the floating window to the docked size
         # of the item. This makes for "clean" tear-out interactions.
-        geo = QRect(event.pos() - state.press_pos, state.docked_size)
+
+        #geo = QRect(event.globalPos() - state.press_pos, state.docked_size)
+        pt = item.mapTo(dock_area, event.pos())
+        geo = QRect(event.globalPos(), state.docked_size)
+
+        print window.testAttribute(Qt.WA_PendingMoveEvent)
         window.setGeometry(geo)
+        print window.testAttribute(Qt.WA_PendingMoveEvent)
+        window.setAttribute(Qt.WA_ShowWithoutActivating)
         window.show()
 
         # Grab the mouse so that move events continue to be sent to
         # the item even though it got reparented.
-        item.grabMouse()
+        #item.grabMouse()
