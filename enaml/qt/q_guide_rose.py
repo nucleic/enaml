@@ -213,11 +213,8 @@ class QGuideRose(QFrame):
         if sys.platform == 'darwin':
             self.setAttribute(Qt.WA_MacNoShadow, True)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-
-        # On Mac, setting the window to a Tool window causes flicker
-        # when it is shown. However, there is no need for it to be a
-        # tool window, and normal windows do not flicker when shown.
-        flags = Qt.Window | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint
+        # Window must be a tool tip to be raised above a QRubberBand on OSX
+        flags = Qt.ToolTip | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint
         self.setWindowFlags(flags)
 
         # Setup the default rose modes and load the guide images.

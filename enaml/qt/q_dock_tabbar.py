@@ -82,10 +82,10 @@ class QDockTabBar(QTabBar):
         dock drag is initiated.
 
         """
-        shift = Qt.ShiftModifier
-        if event.button() == Qt.LeftButton and event.modifiers() & shift:
-            if self.tabAt(event.pos()) != -1:
-                self._initDrag(event.pos())
+        #shift = Qt.ShiftModifier
+        #if event.button() == Qt.LeftButton and event.modifiers() & shift:
+        #    if self.tabAt(event.pos()) != -1:
+        #        self._initDrag(event.pos())
         super(QDockTabBar, self).mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
@@ -95,10 +95,10 @@ class QDockTabBar(QTabBar):
         start drag distances, the item will be undocked.
 
         """
-        press_pos = self._press_pos
-        if press_pos is None:
-            super(QDockTabBar, self).mouseMoveEvent(event)
-        else:
-            dist = (event.pos() - press_pos).manhattanLength()
-            if dist > QApplication.startDragDistance():
-                self._startDrag(event.globalPos())
+        #press_pos = self._press_pos
+        #if press_pos is None:
+        super(QDockTabBar, self).mouseMoveEvent(event)
+        #else:
+        #    dist = (event.pos() - press_pos).manhattanLength()
+        #    if dist > QApplication.startDragDistance():
+        #        self._startDrag(event.globalPos())

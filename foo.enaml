@@ -78,7 +78,10 @@ enamldef MyArea(DockArea): area:
 
 
 enamldef Main(MainWindow):
+    destroy_on_close = False
     Container:
         padding = 0
-        MyArea: pass
+        #constraints = [hbox(v1, v2)]
+        MyArea: v1: pass
+        #MyArea: v2: pass
 

@@ -126,10 +126,10 @@ class QDockAreaLayout(QLayout):
         """
         resolved = []
         dock_items = self._items
-        widget = self.parentWidget()
+        dock_area = self.parentWidget()
         for item in items:
             if isinstance(item, DockLayoutItem):
-                child = widget.findChild(QDockItem, item.name)
+                child = dock_area.findChild(QDockItem, item.name)
                 if child is not None and child not in dock_items:
                     resolved.append(child)
                     dock_items.add(child)
@@ -530,6 +530,17 @@ class QDockAreaLayout(QLayout):
 
         """
         return len(self._items) > 0
+
+    def itemCount(self):
+        """ Get the number of dock items managed by the area.
+
+        Returns
+        -------
+        result : int
+            The number of dock items in the dock area.
+
+        """
+        return len(self._items)
 
     def dockLayout(self):
         """ Get the current layout configuration for the dock area.
@@ -1198,6 +1209,9 @@ class QDockArea(QFrame):
         self.layout().setSizeConstraint(QLayout.SetMinAndMaxSize)
         self._overlays = DockOverlays(self)
 
+        # The list of floating dock windows owned by the area.
+        self._dock_windows = []
+
         # FIXME temporary VS2010-like stylesheet
         from PyQt4.QtGui import QApplication
         QApplication.instance().setStyleSheet("""
@@ -1208,13 +1222,13 @@ class QDockArea(QFrame):
             QDockItem {
                 background: rgb(237, 237, 237);
             }
-            QSplitter > QDockItem, QDockArea > QDockItem, QDockItemWindow > QDockItem {
+            QSplitter > QDockItem, QDockArea > QDockItem {
                 border-top-left-radius: 5px;
                 border-top-right-radius: 5px;
                 border-bottom-left-radius: 2px;
                 border-bottom-right-radius: 2px;
             }
-            QDockTitleBar[p_titlePosition="2"] {
+            QDockItemTitleBar[p_titlePosition="2"] {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                             stop:0 rgb(78, 97, 132),
                             stop:0.5 rgb(66, 88, 124),
@@ -1222,14 +1236,14 @@ class QDockArea(QFrame):
                 color: rgb(250, 251, 254);
                 border-top: 1px solid rgb(59, 80, 115);
             }
-            QDockArea QDockTitleBar[p_titlePosition="2"] {
+            QDockArea QDockItemTitleBar[p_titlePosition="2"] {
                 border-top-left-radius: 3px;
                 border-top-right-radius: 3px;
             }
             QSplitterHandle {
                 background: rgb(41, 56, 85);
             }
-            QDockItemWindow {
+            QDockWindow {
                 background: rgb(41, 56, 85);
             }
             """)
@@ -1261,6 +1275,29 @@ class QDockArea(QFrame):
         """
         self.layout().setDockLayout(layout)
 
+    def hasItems(self):
+        """ Get whether or not this dock area has dock items.
+
+        Returns
+        -------
+        result : bool
+            True if there are dock items in the dock area, False
+            otherwise.
+
+        """
+        return self.layout().hasItems()
+
+    def itemCount(self):
+        """ Get the number of dock items managed by the area.
+
+        Returns
+        -------
+        result : int
+            The number of dock items in the dock area.
+
+        """
+        return self.layout().itemCount()
+
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
@@ -1282,8 +1319,10 @@ class QDockArea(QFrame):
         local = self.mapFromGlobal(pos)
         if self.rect().contains(local):
             self._overlays.hover(local)
+            return True
         else:
             self._overlays.hide()
+            return False
 
     def endHover(self, item, pos):
         """ End a hover operation for a dock item.
@@ -1299,8 +1338,18 @@ class QDockArea(QFrame):
         pos : QPoint
             The global coordinates of the hover position.
 
+        Returns
+        -------
+        result : bool
+            True if the pos is over a dock guide, False otherwise.
+
         """
         self._overlays.hide()
+        local = self.mapFromGlobal(pos)
+        if self.rect().contains(local):
+            guide = self._overlays.hit_test_rose(local)
+            return guide != QGuideRose.Guide.NoGuide
+        return False
 
     def plug(self, item, pos):
         """ Plug a floating QDockItem back into the layout.
@@ -1342,3 +1391,10 @@ class QDockArea(QFrame):
 
         """
         self.layout().unplug(item)
+
+    def dockWindows(self):
+        # FIXME cleanup this import
+        from .q_dock_window import QDockWindow
+        f = lambda c: isinstance(c, QDockWindow)
+        return filter(f, self.children())
+

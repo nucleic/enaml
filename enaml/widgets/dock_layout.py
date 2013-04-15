@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Enum, List, Str, Bool
+from atom.api import Atom, Enum, List, Unicode, Bool
 
 
 class DockLayout(Atom):
@@ -31,7 +31,7 @@ class DockLayoutItem(DockLayout):
 
     """
     #: The name of the item referenced by this dock item.
-    name = Str()
+    name = Unicode()
 
     def __init__(self, name):
         """ Initialize a DockItem.

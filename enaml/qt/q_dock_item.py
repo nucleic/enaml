@@ -5,17 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QRect, QPoint, QSize, QMargins, pyqtProperty
-from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QApplication
-
-from atom.api import Atom, Typed, ForwardTyped, Bool
-
-from .q_single_widget_layout import QSingleWidgetLayout
-
-
-def QDockArea():
-    from .q_dock_area import QDockArea
-    return QDockArea
+from PyQt4.QtCore import Qt, QRect, QSize, QMargins, pyqtProperty
+from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout
 
 
 class TitlePosition(object):
@@ -35,7 +26,7 @@ class TitlePosition(object):
     Bottom = 4
 
 
-class IDockTitleBar(QWidget):
+class IDockItemTitleBar(QWidget):
     """ An interface class for defining a dock title bar.
 
     """
@@ -84,14 +75,14 @@ class IDockTitleBar(QWidget):
         raise NotImplementedError
 
 
-class QDockTitleBar(QFrame, IDockTitleBar):
-    """ A concrete implementation of IDockTitleBar.
+class QDockItemTitleBar(QFrame, IDockItemTitleBar):
+    """ A concrete implementation of IDockItemTitleBar.
 
     This class serves as the default title bar for a QDockItem.
 
     """
     def __init__(self, parent=None):
-        """ Initialize a QDockTitleBar.
+        """ Initialize a QDockItemTitleBar.
 
         Parameters
         ----------
@@ -99,7 +90,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
             The parent of the title bar.
 
         """
-        super(QDockTitleBar, self).__init__(parent)
+        super(QDockItemTitleBar, self).__init__(parent)
         self._sh = QSize()
         self._title = u''
         self._title_position = TitlePosition.Top
@@ -133,7 +124,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         self.updateGeometry()
 
     #--------------------------------------------------------------------------
-    # IDockTitleBar API
+    # IDockItemTitleBar API
     #--------------------------------------------------------------------------
     def title(self):
         """ Get the title string of the title bar.
@@ -196,7 +187,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         This paint handler draws the title bar text and title buttons.
 
         """
-        super(QDockTitleBar, self).paintEvent(event)
+        super(QDockItemTitleBar, self).paintEvent(event)
         painter = QPainter(self)
         m = self.margins()
         w = self.width()
@@ -271,7 +262,7 @@ class QDockItemLayout(QLayout):
 
         Returns
         -------
-        result : IDockTitleBar or None
+        result : IDockItemTitleBar or None
             The title bar widget for the layout, or None if no widget
             is applied.
 
@@ -285,7 +276,7 @@ class QDockItemLayout(QLayout):
 
         Parameters
         ----------
-        title_bar : IDockTitleBar or None
+        title_bar : IDockItemTitleBar or None
             A concrete implementor of the title bar interface, or None.
 
         """
@@ -476,43 +467,10 @@ class QDockItemLayout(QLayout):
         return None
 
 
-class DragState(Atom):
-    """ A framework class for managing a dock item drag.
-
-    This class should not be used directly by user code.
-
-    """
-    #: The original position of the drag press.
-    press_pos = Typed(QPoint)
-
-    #: Whether or not the dock item is being dragged.
-    dragging = Bool(False)
-
-
 class QDockItem(QFrame):
     """ A QFrame subclass which acts as an item QDockArea.
 
     """
-    class DockState(Atom):
-        """ A framework class for managing a dock item's state.
-
-        This class should not be used directly by user code.
-
-        """
-        #: Whether or not the dock item is floating.
-        floating = Bool(False)
-
-        #: Whether or not the dock item can be floated by the user.
-        floatable = Bool(True)
-
-        #: Whether or not the dock item can be moved by the user.
-        movable = Bool(True)
-
-        #: The dock area which owns the item.
-        area = ForwardTyped(QDockArea)
-
-        window = ForwardTyped(lambda: QDockItemWindow)
-
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
 
@@ -527,9 +485,8 @@ class QDockItem(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
-        self.setTitleBarWidget(QDockTitleBar())
-        self._dock_state = self.DockState()
-        self._drag_state = None
+        self.setTitleBarWidget(QDockItemTitleBar())
+        self.dock_manager = None  # set by the framework
 
     #--------------------------------------------------------------------------
     # Public API
@@ -565,14 +522,15 @@ class QDockItem(QFrame):
 
         Returns
         -------
-        result : IDockTitleBar
-            An implementation of IDockTitleBar. This will never be None.
+        result : IDockItemTitleBar
+            An implementation of IDockItemTitleBar. This will never be
+            None.
 
         """
         layout = self.layout()
         bar = layout.titleBarWidget()
         if bar is None:
-            bar = QDockTitleBar()
+            bar = QDockItemTitleBar()
             layout.setTitleBarWidget(bar)
         return bar
 
@@ -581,12 +539,12 @@ class QDockItem(QFrame):
 
         Parameters
         ----------
-        title_bar : IDockTitleBar or None
-            A custom implementation of IDockTitleBar, or None. If None,
-            then the default title bar will be restored.
+        title_bar : IDockItemTitleBar or None
+            A custom implementation of IDockItemTitleBar, or None. If
+            None, then the default title bar will be restored.
 
         """
-        title_bar = title_bar or QDockTitleBar()
+        title_bar = title_bar or QDockItemTitleBar()
         self.layout().setTitleBarWidget(title_bar)
 
     def dockWidget(self):
@@ -611,307 +569,44 @@ class QDockItem(QFrame):
         """
         self.layout().setDockWidget(widget)
 
-    def dockArea(self):
-        """ Find the dock area which is the ancestor of this dock item.
-
-        Returns
-        -------
-        result : QDockArea or None
-            The dock area instance which is an ancestor of this item,
-            or None if no such ancestor exists.
-
-        """
-        area = self._dock_state.area
-        if area is not None:
-            return area
-        parent = self.parent()
-        target = QDockArea()
-        while parent is not None:
-            if isinstance(parent, target):
-                self._dock_state.area = parent
-                return parent
-            parent = parent.parent()
-
-    #--------------------------------------------------------------------------
-    # Framework API
-    #--------------------------------------------------------------------------
-    def unplug(self, pos, press_pos):
-        """" Unplug the dock item from the dock area.
-
-        This method is called by the docking framework and should not
-        be called directly by user code.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The global mouse coordinates.
-
-        press_pos : QPoint
-            The point of original mouse press, expressed in local
-            coordinates.
-
-        """
-        dock_state = self._dock_state
-        if dock_state.floating:
-            return
-        dock_area = self.dockArea()
-        if dock_area is None:
-            return
-        # synthesize a drag state when called from outside the widget's
-        # own mouse events. i.e. unplugging from a tab bar.
-        if self._drag_state is None:
-            state = DragState(press_pos=press_pos, dragging=True)
-            self._drag_state = state
-        dock_state.floating = True
-        dock_area.unplug(self)
-        window = QDockItemWindow(dock_area)
-        self.setWindowFlags(Qt.Widget)
-        window.setDockItem(self)
-        window.move(pos - press_pos)
-        window.show()
-        self.grabMouse()
-        #self.setParent(dock_area)
-        #self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-        #self.move(pos - press_pos)
-        #self.show()
-        #self.grabMouse()
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _initDrag(self, pos):
-        """ Initialize the drag state for the dock item.
-
-        If the drag state is already inited, this method is a no-op.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The point where the user clicked the mouse, expressed in
-            the local coordinate system.
-
-        """
-        if self._drag_state is not None:
-            return
-        state = self._drag_state = DragState()
-        state.press_pos = pos
-
-    def _startDrag(self, pos):
-        """" Start the drag process for the dock item.
-
-        If the item is already being dragged, this method is a no-op.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The global mouse coordinates.
-
-        """
-        drag_state = self._drag_state
-        if drag_state is None or drag_state.dragging:
-            return
-        drag_state.dragging = True
-        self.unplug(pos, drag_state.press_pos)
-
-    def _endDrag(self):
-        """ End the drag process for the dock item.
-
-        If the item was not being dragged, this method is a no-op.
-
-        """
-        if self._drag_state is None:
-            return
-        self._drag_state = None
-        #self.releaseMouse()
-
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the dock item.
 
-        This handler will initialize the drag state when the left mouse
-        button is pressed within the title bar area.
+        This handler forwards the mouse press to the dock manager which
+        handles the event for docking purposes.
 
         """
         event.ignore()
-        if self._dock_state.floating:
-            return
-        if event.button() == Qt.LeftButton:
-            rect = self.titleBarWidget().rect()
-            if rect.contains(event.pos()):
-                self._initDrag(event.pos())
+        mgr = self.dock_manager
+        if mgr is not None:
+            if mgr.mouse_press_event(self, event):
                 event.accept()
 
     def mouseMoveEvent(self, event):
         """ Handle the mouse move event for the dock item.
 
-        This handler will start the drag process when the mouse move
-        reaches the start drag distance for the application.
+        This handler forwards the mouse press to the dock manager which
+        handles the event for docking purposes.
 
         """
         event.ignore()
-        if self._dock_state.floating:
-            return
-        state = self._drag_state
-        if state is None:
-            return
-        # if state.dragging:
-        #     pos = event.globalPos() - state.press_pos
-        #     self.move(pos)
-        #     area = self.dockArea()
-        #     if area is not None:
-        #         area.hover(self, event.globalPos())
-        #     event.accept()
-        if False:
-            pass
-        else:
-            dist = (event.pos() - state.press_pos).manhattanLength()
-            if dist > QApplication.startDragDistance():
-                self._startDrag(event.globalPos())
+        manager = self.dock_manager
+        if manager is not None:
+            if manager.mouse_move_event(self, event):
                 event.accept()
 
     def mouseReleaseEvent(self, event):
-        """ Hanlde the mouse release event for the dock item.
+        """ Handle the mouse release event for the dock item.
 
-        This handler will end the drag operation when the left mouse
-        button is released.
-
-        """
-        event.ignore()
-        if event.button() == Qt.LeftButton:
-            self._endDrag()
-            # area = self.dockArea()
-            # if area is not None:
-            #     pos = event.globalPos()
-            #     area.endHover(self, pos)
-            #     if area.plug(self, pos):
-            #         self._dock_state.floating = False
-            event.accept()
-
-
-class QDockItemWindow(QFrame):
-
-    def __init__(self, parent=None):
-        super(QFrame, self).__init__(parent)
-        self.setWindowFlags(Qt.ToolTip | Qt.FramelessWindowHint)
-        layout = QSingleWidgetLayout()
-        layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        layout.setContentsMargins(5, 5, 5, 5)
-        self.setLayout(layout)
-        self._drag_state = None
-
-    def dockItem(self):
-        return self.layout().getWidget()
-
-    def setDockItem(self, item):
-        self.layout().setWidget(item)
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _initDrag(self, pos):
-        """ Initialize the drag state for the dock item.
-
-        If the drag state is already inited, this method is a no-op.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The point where the user clicked the mouse, expressed in
-            the local coordinate system.
-
-        """
-        if self._drag_state is not None:
-            return
-        state = self._drag_state = DragState()
-        state.press_pos = pos
-
-    def _startDrag(self, pos):
-        """" Start the drag process for the dock item.
-
-        If the item is already being dragged, this method is a no-op.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The global mouse coordinates.
-
-        """
-        drag_state = self._drag_state
-        if drag_state is None or drag_state.dragging:
-            return
-        drag_state.dragging = True
-        #self.unplug(pos, drag_state.press_pos)
-        self.grabMouse()
-
-    def _endDrag(self):
-        """ End the drag process for the dock item.
-
-        If the item was not being dragged, this method is a no-op.
-
-        """
-        if self._drag_state is None:
-            return
-        self._drag_state = None
-        self.releaseMouse()
-
-    #--------------------------------------------------------------------------
-    # Reimplementations
-    #--------------------------------------------------------------------------
-    def mousePressEvent(self, event):
-        """ Handle the mouse press event for the dock item.
-
-        This handler will initialize the drag state when the left mouse
-        button is pressed within the title bar area.
+        This handler forwards the mouse press to the dock manager which
+        handles the event for docking purposes.
 
         """
         event.ignore()
-        if event.button() == Qt.LeftButton:
-            item = self.dockItem()
-            if item is None:
-                event.ignore()
-                return
-            rect = item.titleBarWidget().rect()
-            if rect.contains(event.pos()):
-                self._initDrag(event.pos())
+        manager = self.dock_manager
+        if manager is not None:
+            if manager.mouse_release_event(self, event):
                 event.accept()
-
-    def mouseMoveEvent(self, event):
-        """ Handle the mouse move event for the dock item.
-
-        This handler will start the drag process when the mouse move
-        reaches the start drag distance for the application.
-
-        """
-        event.ignore()
-        state = self._drag_state
-        if state is None:
-            return
-        if state.dragging:
-            pos = event.globalPos() - state.press_pos
-            self.move(pos)
-            # area = self.dockArea()
-            # if area is not None:
-            #     area.hover(self, event.globalPos())
-        else:
-            self._startDrag(event.globalPos())
-        event.accept()
-
-    def mouseReleaseEvent(self, event):
-        """ Hanlde the mouse release event for the dock item.
-
-        This handler will end the drag operation when the left mouse
-        button is released.
-
-        """
-        event.ignore()
-        if event.button() == Qt.LeftButton:
-            self._endDrag()
-            # area = self.dockArea()
-            # if area is not None:
-            #     pos = event.globalPos()
-            #     area.endHover(self, pos)
-            #     if area.plug(self, pos):
-            #         self._dock_state.floating = False
-            event.accept()
