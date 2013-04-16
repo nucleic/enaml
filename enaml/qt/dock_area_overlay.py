@@ -11,97 +11,11 @@ from PyQt4.QtGui import QRubberBand, QSplitterHandle, QTabWidget
 from atom.api import Atom, Int, Float, Typed
 
 from .q_guide_rose import QGuideRose
+from .q_dock_area import QDockArea
 from .q_dock_item import QDockItem
 
 
-def band_geometry(area, widget, guide, border_size):
-    """ Compute the geometry for an overlay rubber band.
-
-    Parameters
-    ----------
-    area : QDockArea
-        The dock area under the mouse.
-
-    widget : QWidget
-        The target widget in the dock area under the mouse.
-
-    guide : QGuideRose.Guide
-        The rose guide under the mouse.
-
-    border_size : int
-        The size to use for the rubber band when in border position.
-
-    """
-    Guide = QGuideRose.Guide
-    if guide == Guide.NoGuide:
-        return QRect()
-
-    # border hits
-    m = area.contentsMargins()
-    if guide == Guide.BorderNorth:
-        p = QPoint(m.left(), m.top())
-        s = QSize(area.width() - m.left() - m.right(), border_size)
-    elif guide == Guide.BorderEast:
-        p = QPoint(area.width() - border_size - m.right(), m.top())
-        s = QSize(border_size, area.height() - m.top() - m.bottom())
-    elif guide == Guide.BorderSouth:
-        p = QPoint(m.left(), area.height() - border_size - m.bottom())
-        s = QSize(area.width() - m.left() - m.right(), border_size)
-    elif guide == Guide.BorderWest:
-        p = QPoint(m.left(), m.top())
-        s = QSize(border_size, area.height() - m.top() - m.bottom())
-
-    # compass hits
-    elif guide == Guide.CompassNorth:
-        p = widget.mapTo(widget, QPoint(0, 0))
-        s = widget.size()
-        s.setHeight(s.height() / 3)
-    elif guide == Guide.CompassEast:
-        p = widget.mapTo(widget, QPoint(0, 0))
-        s = widget.size()
-        d = s.width() / 3
-        r = s.width() - d
-        s.setWidth(d)
-        p.setX(p.x() + r)
-    elif guide == Guide.CompassSouth:
-        p = widget.mapTo(widget, QPoint(0, 0))
-        s = widget.size()
-        d = s.height() / 3
-        r = s.height() - d
-        s.setHeight(d)
-        p.setY(p.y() + r)
-    elif guide == Guide.CompassWest:
-        p = widget.mapTo(widget, QPoint(0, 0))
-        s = widget.size()
-        s.setWidth(s.width() / 3)
-    elif guide == Guide.CompassCenter:
-        p = widget.mapTo(widget, QPoint(0, 0))
-        s = widget.size()
-
-    # splitter handle hits
-    elif guide == Guide.SplitHorizontal:
-        p = widget.mapTo(widget, QPoint(0, 0))
-        wo, r = divmod(border_size - widget.width(), 2)
-        wo += r
-        p.setX(p.x() - wo)
-        s = QSize(2 * wo + widget.width(), widget.height())
-    elif guide == Guide.SplitVertical:
-        p = widget.mapTo(widget, QPoint(0, 0))
-        ho, r = divmod(border_size - widget.height(), 2)
-        ho += r
-        p.setY(p.y() - ho)
-        s = QSize(widget.width(), 2 * ho + widget.height())
-
-    # default no-op
-    else:
-        s = QSize()
-        p = QPoint()
-
-    p = widget.mapToGlobal(p)
-    return QRect(p, s)
-
-
-class DockOverlays(Atom):
+class DockAreaOverlay(Atom):
     """ An object which manages the overlays for a QDockArea.
 
     This manager handles the state transitions for the overlays. The
@@ -126,6 +40,9 @@ class DockOverlays(Atom):
 
     #: the duration of the band geometry animation, in ms.
     band_geo_duration = Int(100)
+
+    #: The dock area which is overlayed by this object.
+    _area = Typed(QDockArea)
 
     #: The overlayed guide rose.
     _rose = Typed(QGuideRose, ())
@@ -159,6 +76,21 @@ class DockOverlays(Atom):
 
     #: The timer for changing the state of the band.
     _band_timer = Typed(QTimer)
+
+    def __init__(self, area, **kwargs):
+        """ Initialize a DockAreaOverlay.
+
+        Parameters
+        ----------
+        area : QDockArea
+            The dock area which this object overlays.
+
+        **kwargs
+            Additional configuration data.
+
+        """
+        super(DockAreaOverlay, self).__init__(**kwargs)
+        self._area = area
 
     #--------------------------------------------------------------------------
     # Default Value Methods
@@ -302,28 +234,99 @@ class DockOverlays(Atom):
         animator.setEndValue(geo)
         animator.start()
 
+    def _band_geometry(self, widget, guide):
+        """ Compute the geometry for an overlay rubber band.
+
+        Parameters
+        ----------
+        widget : QWidget
+            The target widget in the dock area under the mouse.
+
+        guide : QGuideRose.Guide
+            The rose guide under the mouse.
+
+        """
+        Guide = QGuideRose.Guide
+        if guide == Guide.NoGuide:
+            return QRect()
+
+        # border hits
+        area = self._area
+        border_size = self.border_size
+        m = area.contentsMargins()
+        if guide == Guide.BorderNorth:
+            p = QPoint(m.left(), m.top())
+            s = QSize(area.width() - m.left() - m.right(), border_size)
+        elif guide == Guide.BorderEast:
+            p = QPoint(area.width() - border_size - m.right(), m.top())
+            s = QSize(border_size, area.height() - m.top() - m.bottom())
+        elif guide == Guide.BorderSouth:
+            p = QPoint(m.left(), area.height() - border_size - m.bottom())
+            s = QSize(area.width() - m.left() - m.right(), border_size)
+        elif guide == Guide.BorderWest:
+            p = QPoint(m.left(), m.top())
+            s = QSize(border_size, area.height() - m.top() - m.bottom())
+
+        # compass hits
+        elif guide == Guide.CompassNorth:
+            p = widget.mapTo(widget, QPoint(0, 0))
+            s = widget.size()
+            s.setHeight(s.height() / 3)
+        elif guide == Guide.CompassEast:
+            p = widget.mapTo(widget, QPoint(0, 0))
+            s = widget.size()
+            d = s.width() / 3
+            r = s.width() - d
+            s.setWidth(d)
+            p.setX(p.x() + r)
+        elif guide == Guide.CompassSouth:
+            p = widget.mapTo(widget, QPoint(0, 0))
+            s = widget.size()
+            d = s.height() / 3
+            r = s.height() - d
+            s.setHeight(d)
+            p.setY(p.y() + r)
+        elif guide == Guide.CompassWest:
+            p = widget.mapTo(widget, QPoint(0, 0))
+            s = widget.size()
+            s.setWidth(s.width() / 3)
+        elif guide == Guide.CompassCenter:
+            p = widget.mapTo(widget, QPoint(0, 0))
+            s = widget.size()
+
+        # splitter handle hits
+        elif guide == Guide.SplitHorizontal:
+            p = widget.mapTo(widget, QPoint(0, 0))
+            wo, r = divmod(border_size - widget.width(), 2)
+            wo += r
+            p.setX(p.x() - wo)
+            s = QSize(2 * wo + widget.width(), widget.height())
+        elif guide == Guide.SplitVertical:
+            p = widget.mapTo(widget, QPoint(0, 0))
+            ho, r = divmod(border_size - widget.height(), 2)
+            ho += r
+            p.setY(p.y() - ho)
+            s = QSize(widget.width(), 2 * ho + widget.height())
+
+        # default no-op
+        else:
+            s = QSize()
+            p = QPoint()
+
+        p = widget.mapToGlobal(p)
+        return QRect(p, s)
+
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def hide(self):
-        """ Hide the overlay widgets from the screen.
-
-        """
-        self._rose_timer.stop()
-        self._band_timer.stop()
-        self._rose.hide()
-        self._band.hide()
-
-    def hit_test_rose(self, pos):
-        """ Hit test the guide rose for the given position.
-
-        The hit test is performed using the current rose mode.
+    def guide_at(self, pos):
+        """ Get the dock guide for a given position.
 
         Parameters
         ----------
         pos : QPoint
-            The position to hit test, expressed in the coordinate
-            system of the owner dock area.
+            The position of interest, expressed in the coordinates of
+            the overlay.
 
         Returns
         -------
@@ -332,52 +335,62 @@ class DockOverlays(Atom):
 
         """
         rose = self._rose
-        return rose.hitTest(pos, rose.mode())
+        return rose.guideAt(pos, rose.mode())
 
-    def hover(self, area, pos):
-        """ Update the overlays based on the mouse hover position.
+    def hide(self):
+        """ Hide the overlay.
+
+        This method will stop the timers and set the visibility of the
+        guide rose and the rubber band to False.
+
+        """
+        self._rose_timer.stop()
+        self._band_timer.stop()
+        self._rose.hide()
+        self._band.hide()
+
+    def mouseOver(self, pos):
+        """ Update the overlays based on the mouse position.
 
         Parameters
         ----------
-        area : QDockArea
-            The dock area that is being hovered.
-
         pos : QPoint
-            The hover position, expressed in the coordinate system
-            of the owner dock area.
+            The hover position, expressed in the local coordinates of
+            the overlayed dock area.
 
         """
         rose = self._rose
+        area = self._area
         Mode = QGuideRose.Mode
 
-        # Special case the hover when the dock area has no docked items.
-        # No hit testing is necessary when using the single center mode.
-        if not area.layout().hasItems():
+        # Special case the mouseover when the dock area has no docked
+        # items. No hit testing is necessary for that case.
+        if not area.hasItems():
             self._hover_pos = pos
             center = QPoint(area.width() / 2, area.height() / 2)
             rose.setMode(Mode.SingleCenter)
             rose.setCenter(center)
-            rose.hover(pos)
-            guide = rose.hitTest(pos, Mode.SingleCenter)
-            origin = area.mapToGlobal(QPoint(0, 0))
+            rose.mouseOver(pos)
+            guide = rose.guideAt(pos, Mode.SingleCenter)
+            global_origin = area.mapToGlobal(QPoint(0, 0))
             if guide != self._last_guide:
                 self._last_guide = guide
                 if guide == QGuideRose.Guide.SingleCenter:
                     m = area.contentsMargins()
-                    g = QRect(origin, area.size())
+                    g = QRect(global_origin, area.size())
                     g = g.adjusted(m.left(), m.top(), -m.right(), -m.bottom())
                     self._target_band_geo = g
                 else:
                     self._target_band_geo = QRect()
                 self._band_timer.start(self.band_delay)
             if rose.isHidden():
-                rose.setGeometry(QRect(origin, area.size()))
+                rose.setGeometry(QRect(global_origin, area.size()))
                 rose.show()
             return
 
-        # Compute the target mode for the guide rose based on the
-        # area lying under the hover position.
-        widget = area.layout().hitTest(pos)
+        # Compute the target mode for the guide rose based on the dock
+        # widget which lies under the mouse position.
+        widget = area.layoutWidgetAt(pos)
         if isinstance(widget, (QDockItem, QTabWidget)):
             center = widget.mapTo(area, QPoint(0, 0))
             center += QPoint(widget.width() / 2, widget.height() / 2)
@@ -410,11 +423,10 @@ class DockOverlays(Atom):
         # Hit test the rose and update the target geometry for the
         # rubber band if the target guide has changed.
         update_band = False
-        guide = rose.hitTest(pos, target_mode)
+        guide = rose.guideAt(pos, target_mode)
         if guide != self._last_guide:
             self._last_guide = guide
-            border = self.border_size
-            self._target_band_geo = band_geometry(area, widget, guide, border)
+            self._target_band_geo = self._band_geometry(widget, guide)
             update_band = True
 
         # If the rose is currently visible, pass it the hover event so

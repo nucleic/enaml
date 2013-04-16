@@ -364,45 +364,33 @@ class QGuideRose(QFrame):
             self._mode = mode
             self.update()
 
-    def hover(self, pos):
-        """ Update the state of the rose based on a user mouse hover.
-
-        This method should be invoked by the owner of the rose when
-        the rose should update the guide state due to a user mouse
-        hover/move event. If the given position falls over one of the
-        guides, the guide will be highlighted.
+    def mouseOver(self, pos):
+        """ Update the state of the rose based on the mouse position.
 
         Parameters
         ----------
         pos : QPoint
-            The position of the mouse hover, expressed local widget
-            coordinates.
+            The position of the mouse expressed in local coordinates.
 
         """
         Guide = QGuideRose.Guide
-        hit = self.hitTest(pos, self._mode)
+        target = self.guideAt(pos, self._mode)
         last = self._last
-        if last != hit:
+        if last != target:
             if last != Guide.NoGuide:
                 self._guides[last].opacity = LOW_ALPHA
-            if hit != Guide.NoGuide:
-                self._guides[hit].opacity = FULL_ALPHA
-            self._last = hit
+            if target != Guide.NoGuide:
+                self._guides[target].opacity = FULL_ALPHA
+            self._last = target
         self.update()
 
-    def hitTest(self, pos, mode):
-        """ Hit test the rose for a given position.
-
-        This method should be invoked by the owner of the rose when
-        the rose should update the guide state due to a user mouse
-        hover/move event. If the given position falls over one of the
-        guides, the guide will be highlighted.
+    def guideAt(self, pos, mode):
+        """ Get the guide enum for a given position.
 
         Parameters
         ----------
         pos : QPoint
-            The position of the mouse hover, expressed local widget
-            coordinates.
+            The position of interest, expressed local coordinates.
 
         mode : QGuideRose.Mode
             The mode to use for hit testing.

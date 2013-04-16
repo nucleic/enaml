@@ -5,16 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QPoint, QRect, QSize, QEvent
+from PyQt4.QtCore import Qt, QPoint, QRect, QSize, QMargins
 from PyQt4.QtGui import QApplication
 
 from atom.api import Atom, Bool, Typed, List, Dict
 
-from enaml.widgets.dock_layout import DockLayoutItem
-
 from .q_dock_area import QDockArea
 from .q_dock_item import QDockItem
-from .q_dock_container import QDockContainer
 
 
 class DockItemState(Atom):
@@ -25,6 +22,9 @@ class DockItemState(Atom):
     """
     #: The original title bar press position.
     press_pos = Typed(QPoint)
+
+    #: Whether or not the dock item is floating.
+    floating = Bool(False)
 
     #: Whether or not the dock item is being dragged.
     dragging = Bool(False)
@@ -39,7 +39,7 @@ class DockItemState(Atom):
     hover_area = Typed(QDockArea)
 
 
-class DockingManager(Atom):
+class DockManager(Atom):
     """ A class which manages the docking behavior of a dock area.
 
     """
@@ -162,7 +162,9 @@ class DockingManager(Atom):
             if state.press_pos is None:
                 title_bar = item.titleBarWidget()
                 if title_bar.geometry().contains(event.pos()):
-                    state.press_pos = event.pos()
+                    pos = item.mapToParent(event.pos())
+                    pos.setY(pos.y() + 5)
+                    state.press_pos = pos
                     return True
         return False
 
@@ -180,34 +182,6 @@ class DockingManager(Atom):
                     state.hover_area = None
                 return True
 
-        # event.ignore()
-        # if event.button() == Qt.LeftButton:
-        #     state = self.dock_state
-        #     if state.press_pos is not None:
-        #         self.releaseMouse()
-        #         event.accept()
-        #         state.dragging = False
-        #         state.press_pos = None
-                # If releasing over a hover target, dock the item on the
-                # target. If the current window has no more items, hide
-                # it and unparent it, allowing it to be collected.
-                # pos = event.globalPos()
-                # tgt_area, tgt_win = self._end_hover( po
-                # if tgt_area is not None:
-                #     old_win = self.dock_window
-                #     self.dock_window = tgt_win
-                #     pt = owner.mapToGlobal(QPoint(0, 0))
-                #     self.floated_geo = QRect(pt, owner.size())
-                #     self.dock_area.unplug(owner)
-                #     tgt_area.plug(owner, pos)
-                #     if tgt_win is not None:
-                #         tgt_win.updateMargins()
-                #     if not old_win.dockArea().hasItems():
-                #         old_win.hide()
-                #         old_win.setParent(None)
-                #     else:
-                #         old_win.updateMargins()
-
     def mouse_move_event(self, item, event):
         state = self._states.get(item)
         if state is None:
@@ -217,20 +191,22 @@ class DockingManager(Atom):
         if state.press_pos is None:
             return False
 
+        container = item.parent()
+        if container is None:
+            return False
+
         # Dragging the title bar when the item is the only item in a
         # dock window causes the dock window to be moved and hovered.
         # If there is more than one item in the dock window, then the
         # item is free to be undocked as normal.
         if state.dragging:
-            return True
-            window = state.dock_window
-            if window is not None:
-                if window.dockArea().itemCount() == 1:
-                    self._move_item(item, event)
+            if state.floating:
+                container.move(event.globalPos() - state.press_pos)
             return True
 
         # Start dragging if distances exceeds app drag threshold.
-        dist = (event.pos() - state.press_pos).manhattanLength()
+        pos = item.mapToParent(event.pos())
+        dist = (pos - state.press_pos).manhattanLength()
         if dist <= QApplication.startDragDistance():
             return
         state.dragging = True
@@ -238,63 +214,78 @@ class DockingManager(Atom):
         # If item is already in a floating window, nothing more needs
         # to be done; the next call to this method will move the window
         # if it only contains a single dock item.
-        if state.dock_window is not None:
-            # if state.dock_window.dockArea().itemCount() == 1:
-            #     return True
+        if state.floating:
             return True
 
         dock_area = self._find_dock_area(item)
         if dock_area is None:
             return False
 
-        # old_win = state.dock_window
-        # if old_win is not None:
-        #     parent_area = old_win.parent()
-        # else:
-        #     parent_area = dock_area
+        print container.size()
+        container = item.parent()
+        dock_area.layout().unplug(container)
+        container.setFloating(True)
+        flags = Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        container.setParent(dock_area, flags)
+        container.move(event.globalPos())
+        container.show()
+        print container.size()
 
-        # Setup the floating dock window and store it in the dock state.
-        window = QDockWindow(dock_area)
-        window.hide()
-        window.setParent(dock_area)
-        #flags = Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-        window.setWindowFlags(Qt.Window)
-
-        window._dock_manager = self
-        # state.dock_window = window
-        self._windows.append(window)
-
-        # # OSX likes to change z-order of floating windows on us.
-        # # This restores the order :-/
-        # for w in self._windows:
-        #     w.raise_()
-
-        # # Store the docked size of the item before it's unplugged.
-        state.docked_size = item.size()
-        # item.hide()
-        # dock_area.unplug(item)
-
-        # # if old_win is not None:
-        # #     old_win.updateMargins()
-
-        # # Reparent the item to the new dock area and setup the layout.
-        # win_area = window.dockArea()
-        # item.setParent(win_area)
-        # win_area.setDockLayout(DockLayoutItem(item.objectName()))
-
-        # Set the geometry of the floating window to the docked size
-        # of the item. This makes for "clean" tear-out interactions.
-
-        #geo = QRect(event.globalPos() - state.press_pos, state.docked_size)
-        pt = item.mapTo(dock_area, event.pos())
-        geo = QRect(event.globalPos(), state.docked_size)
-
-        print window.testAttribute(Qt.WA_PendingMoveEvent)
-        window.setGeometry(geo)
-        print window.testAttribute(Qt.WA_PendingMoveEvent)
-        window.setAttribute(Qt.WA_ShowWithoutActivating)
-        window.show()
+        state.floating = True
 
         # Grab the mouse so that move events continue to be sent to
         # the item even though it got reparented.
-        #item.grabMouse()
+        item.grabMouse()
+
+    #--------------------------------------------------------------------------
+    # Framework API
+    #--------------------------------------------------------------------------
+    # def hover(self, item, pos):
+    #     """ Execute a hover operation for a dock item.
+
+    #     This method is called by the docking framework as needed. It
+    #     should not be called by user code.
+
+    #     Parameters
+    #     ----------
+    #     item : QDockItem
+    #         The dock item which is being hovered.
+
+    #     pos : QPoint
+    #         The global coordinates of the hover position.
+
+    #     """
+    #     local = self.mapFromGlobal(pos)
+    #     if self.rect().contains(local):
+    #         self._overlays.hover(local)
+    #         return True
+    #     else:
+    #         self._overlays.hide()
+    #         return False
+
+    # def endHover(self, item, pos):
+    #     """ End a hover operation for a dock item.
+
+    #     This method is called by the docking framework as needed. It
+    #     should not be called by user code.
+
+    #     Parameters
+    #     ----------
+    #     item : QDockItem
+    #         The dock item which is being hovered.
+
+    #     pos : QPoint
+    #         The global coordinates of the hover position.
+
+    #     Returns
+    #     -------
+    #     result : bool
+    #         True if the pos is over a dock guide, False otherwise.
+
+    #     """
+    #     self._overlays.hide()
+    #     local = self.mapFromGlobal(pos)
+    #     if self.rect().contains(local):
+    #         guide = self._overlays.hit_test_rose(local)
+    #         return guide != QGuideRose.Guide.NoGuide
+    #     return False

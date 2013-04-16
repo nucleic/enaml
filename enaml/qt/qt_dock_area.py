@@ -11,7 +11,7 @@ from atom.api import Typed
 
 from enaml.widgets.dock_area import ProxyDockArea
 
-from .docking_manager import DockingManager
+from .dock_manager import DockManager
 from .q_dock_area import QDockArea
 from .qt_constraints_widget import QtConstraintsWidget
 
@@ -47,7 +47,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
     widget = Typed(QDockArea)
 
     #: The docking manager which will drive the dock area.
-    manager = Typed(DockingManager)
+    manager = Typed(DockManager)
 
     #: The event filter which listens for layout requests.
     dock_filter = Typed(DockFilter)
@@ -60,7 +60,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         self.widget = QDockArea(self.parent_widget())
-        self.manager = DockingManager(self.widget)
+        self.manager = DockManager(self.widget)
 
     def init_layout(self):
         """ Initialize the layout of the underlying control.

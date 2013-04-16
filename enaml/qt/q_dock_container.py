@@ -204,8 +204,8 @@ class QDockContainer(QFrame):
         #: The position of the mouse press in the title bar.
         title_press_pos = Typed(QPoint)
 
-        #: Whether the container is independent of a larger layout.
-        independent = Bool(False)
+        #: Whether the container is floating as a toplevel window.
+        floating = Bool(False)
 
         #: Whether the mouse is hovering over the resize box.
         in_resize_box = Bool(False)
@@ -235,19 +235,19 @@ class QDockContainer(QFrame):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def independent(self):
-        """ Get whether the container is independent.
+    def floating(self):
+        """ Get whether the container is floating.
 
         Returns
         -------
         result : bool
-            True if the container is independent, False otherwise.
+            True if the container is floating, False otherwise.
 
         """
-        return self._state.independent
+        return self._state.floating
 
-    def setIndependent(self, independent):
-        """ Set whether the container is in independent mode.
+    def setFloating(self, floating):
+        """ Set whether the container is in floating mode.
 
         This flag only affects how the container draws itself. It does
         not change the window hierarchy; that responsibility lies with
@@ -255,16 +255,20 @@ class QDockContainer(QFrame):
 
         Parameters
         ----------
-        independent : bool
-            True if independent mode should be active, False otherwise.
+        floating : bool
+            True if floating mode should be active, False otherwise.
 
         """
         state = self._state
-        state.independent = independent
-        self.setAttribute(Qt.WA_Hover, independent)
-        if not independent and state.has_mask:
-            state.has_mask = False
-            self.unsetMask()
+        state.floating = floating
+        self.setAttribute(Qt.WA_Hover, floating)
+        if floating:
+            self.setContentsMargins(QMargins(5, 5, 5, 5))
+        else:
+            self.setContentsMargins(QMargins(0, 0, 0, 0))
+            if state.has_mask:
+                state.has_mask = False
+                self.unsetMask()
 
     def titleBarVisible(self):
         """ Get whether the title bar is visible.
@@ -282,7 +286,7 @@ class QDockContainer(QFrame):
 
         Parameters
         ----------
-        independent : bool
+        floating : bool
             True if the title bar should be visible, False otherwise.
 
         """
@@ -324,7 +328,7 @@ class QDockContainer(QFrame):
         """ A generic event handler for the dock container.
 
         This handler dispatches hover events which are sent when the
-        container is in independent mode. It also notifies the docking
+        container is in floating mode. It also notifies the docking
         manager when it is activated so that the manager can maintain
         a proper top-level Z-order.
 
@@ -336,23 +340,16 @@ class QDockContainer(QFrame):
             pass
         return super(QDockContainer, self).event(event)
 
-    def keyPressEvent(self, event):
-        state = self._state
-        if event.key() == Qt.Key_Escape and state.independent:
-            self.close()
-        else:
-            super(QDockContainer, self).keyPressEvent(event)
-
     def hoverMoveEvent(self, event):
         """ Handle the hover move event for the container.
 
-        This handler is invoked when the container is in independent
-        mode. It updates the cursor if the mouse is hovered over the
-        resize hit-box in the lower right corner of the widget.
+        This handler is invoked when the container is in floating mode.
+        It updates the cursor if the mouse is hovered over the resize
+        hit-box in the lower right corner of the widget.
 
         """
         state = self._state
-        if state.independent:
+        if state.floating:
             pos = event.pos()
             width = self.width()
             height = self.height()
@@ -368,18 +365,19 @@ class QDockContainer(QFrame):
         """ Handle the mouse press event for the container.
 
         This handler sets up the resize and drag operations when the
-        container is in independent mode.
+        container is in floating mode.
 
         """
         event.ignore()
         state = self._state
-        if state.independent and event.button() == Qt.LeftButton:
+        if state.floating and event.button() == Qt.LeftButton:
             if state.in_resize_box:
                 state.resizing = True
                 event.accept()
             elif state.title_bar_visible:
-                margins = self.layout().contentsMargins()
-                if event.pos().y() < margins.top():
+                margins = self.contentsMargins()
+                l_margins = self.layout().contentsMargins()
+                if event.pos().y() < margins.top() + l_margins.top():
                     state.title_press_pos = event.pos()
                     event.accept()
 
@@ -387,12 +385,12 @@ class QDockContainer(QFrame):
         """ Handle the mouse release event for the container.
 
         This handler finalizes the mouse event when the container is
-        in independent mode.
+        in floating mode.
 
         """
         event.ignore()
         state = self._state
-        if state.independent and event.button() == Qt.LeftButton:
+        if state.floating and event.button() == Qt.LeftButton:
             if state.resizing or state.title_press_pos is not None:
                 state.resizing = False
                 state.title_press_pos = None
@@ -402,12 +400,12 @@ class QDockContainer(QFrame):
         """ Handle the mouse move event for the container.
 
         This handler resizes and moves the container when it is in
-        independent mode.
+        floating mode.
 
         """
         event.ignore()
         state = self._state
-        if state.independent:
+        if state.floating:
             if state.resizing:
                 pos = event.pos()
                 offset = self.RESIZE_OFFSET
@@ -421,11 +419,11 @@ class QDockContainer(QFrame):
         """ Handle the resize event for the container.
 
         This handler updates the mask on the container if it is set
-        to independent mode.
+        to floating mode.
 
         """
         state = self._state
-        if state.independent:
+        if state.floating:
             w = self.width()
             h = self.height()
             region = QRegion(0, 0, w, h)
