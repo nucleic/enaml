@@ -6,7 +6,7 @@ enamldef MyArea(DockArea): area:
     layout = hsplit(
         vsplit('foo', 'bar'),
         vsplit('baz', tabbed('cram', 'blam', tab_position='right')),
-        vsplit('spam', hsplit('flam', 'ham')),
+        vsplit('spam', hsplit('flam', 'ham', 'ham')),
     )
     DockItem:
         name = 'foo'

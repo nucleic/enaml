@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from PyQt4.QtCore import QMargins
 from PyQt4.QtGui import QFrame, QLayout
 
 from .q_dock_area_layout import QDockAreaLayout
@@ -30,8 +31,10 @@ class QDockArea(QFrame):
 
         """
         super(QDockArea, self).__init__(parent)
-        self.setLayout(QDockAreaLayout())
-        self.layout().setSizeConstraint(QLayout.SetMinAndMaxSize)
+        layout = QDockAreaLayout()
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        self.setLayout(layout)
 
         # FIXME temporary VS2010-like stylesheet
         from PyQt4.QtGui import QApplication

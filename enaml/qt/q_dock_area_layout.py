@@ -6,44 +6,12 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QSize
-from PyQt4.QtGui import (
-    QLayout, QSplitter, QSplitterHandle, QStackedWidget, QTabWidget
+from PyQt4.QtGui import QLayout, QSplitter, QSplitterHandle, QTabWidget
+
+from .dock_layout_visitors import (
+    LayoutBuilder, LayoutSaver, LayoutHitTester, LayoutUnplugger
 )
-
-from enaml.widgets.dock_layout import DockLayoutItem, SplitLayout, TabbedLayout
-
-from .q_dock_container import QDockContainer
 from .q_dock_item import QDockItem
-from .q_dock_tabbar import QDockTabBar
-
-
-TAB_POSITIONS = {
-    'top': QTabWidget.North,
-    'bottom': QTabWidget.South,
-    'left': QTabWidget.West,
-    'right': QTabWidget.East,
-}
-
-
-TAB_POSITIONS_INV = dict((v, k) for k, v in TAB_POSITIONS.items())
-
-
-DOCUMENT_MODES = {
-    'document': True,
-    'preferences': False,
-}
-
-
-DOCUMENT_MODES_INV = dict((v, k) for k, v in DOCUMENT_MODES.items())
-
-
-ORIENTATION = {
-    'horizontal': Qt.Horizontal,
-    'vertical': Qt.Vertical,
-}
-
-
-ORIENTATION_INV = dict((v, k) for k, v in ORIENTATION.items())
 
 
 class QDockAreaLayout(QLayout):
@@ -61,9 +29,7 @@ class QDockAreaLayout(QLayout):
         """
         super(QDockAreaLayout, self).__init__(parent)
         self._root = None
-        self._splitters = set()
-        self._containers = set()
-        self._tab_widgets = set()
+        self._hit_tester = None
         self._plug_handlers = [
             '_plug_border_north',
             '_plug_border_east',
@@ -80,189 +46,6 @@ class QDockAreaLayout(QLayout):
             '_plug_single_center',
             None,                       # NoGuide
         ]
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _createContainer(self, item):
-        """ Wrap a dock item in a dock container.
-
-        """
-        container = QDockContainer()
-        container.setDockWidget(item)
-        self._containers.add(container)
-        return container
-
-    def _createSplitter(self, orientation):
-        """ Create a QSplitter for the given orientation.
-
-        This method will add the splitter to the tracked set.
-
-        """
-        splitter = QSplitter(orientation)
-        self._splitters.add(splitter)
-        return splitter
-
-    def _createTabWidget(self, doc_mode=None, movable=None, tab_pos=None):
-        """ Create a tab widget for the layout.
-
-        This method will add the tab widget to the tracked set.
-
-        """
-        tab_widget = QTabWidget()
-        tab_widget.setTabBar(QDockTabBar())
-        tab_widget.setDocumentMode(doc_mode)
-        tab_widget.setMovable(movable)
-        tab_widget.setTabPosition(tab_pos)
-        self._tab_widgets.add(tab_widget)
-        return tab_widget
-
-    def _buildLayoutHelper(self, layout):
-        """ Create the layout widget for the given layout item.
-
-        This an internal method used by the layout to generate the
-        widget layout hierarchy from a DockLayout configuration.
-
-        Parameters
-        ----------
-        layout_item : DockLayout
-            A dock layout description to convert into a widget.
-
-        Returns
-        -------
-        results : QWidget or None
-            A QWidget for the layout item, or None if one could not
-            be created.
-
-        """
-        area = self.parentWidget()
-        if isinstance(layout, DockLayoutItem):
-            child = area.findChild(QDockItem, layout.name)
-            if child is not None and child.parent() not in self._containers:
-                return self._createContainer(child)
-        elif isinstance(layout, (SplitLayout, TabbedLayout)):
-            return self._buildLayout(layout)
-
-    def _buildLayout(self, layout):
-        """ Build the layout widget hierarchy for a configuration.
-
-        This an internal method used by the layout to generate the
-        widget layout hierarchy from a DockLayout configuration.
-
-        Parameters
-        ----------
-        layout : DockLayout
-            The dock layout object to convert into a QWidget for
-            use by the area layout.
-
-        Returns
-        -------
-        result : QWidget or None
-            A QWidget object which implements the layout semantics,
-            or None if the configuration resulted in an empty layout.
-
-        """
-        if isinstance(layout, (SplitLayout, TabbedLayout)):
-            helper = self._buildLayoutHelper
-            children = filter(None, (helper(item) for item in layout.items))
-            n = len(children)
-            if n <= 1:
-                return None if n == 0 else children[0]
-            if isinstance(layout, SplitLayout):
-                widget = self._createSplitter(ORIENTATION[layout.orientation])
-                for child in children:
-                    widget.addWidget(child)
-            else:
-                doc_mode = DOCUMENT_MODES[layout.tab_style]
-                movable = layout.tabs_movable
-                tab_pos = TAB_POSITIONS[layout.tab_position]
-                widget = self._createTabWidget(doc_mode, movable, tab_pos)
-                for child in children:
-                    dock_item = child.dockWidget()
-                    dock_item.titleBarWidget().hide()
-                    widget.addTab(child, dock_item.title())
-            return widget
-        if isinstance(layout, DockLayoutItem):
-            child = self.parentWidget().findChild(QDockItem, layout.name)
-            if child is not None and child.parent() not in self._containers:
-                return self._createContainer(child)
-
-    def _snapLayout(self, item):
-        """ Snap the state of the layout item into a DockLayout object.
-
-        Parameters
-        ----------
-        item : QWidget
-            The widget implementing the layout semantics.
-
-        Returns
-        -------
-        result : DockLayout
-            A dock layout instance appropriate for the type.
-
-        """
-        # if isinstance(item, QDockItem):
-        #     return DockLayoutItem(item.objectName())
-        # if isinstance(item, (QSplitter, QTabWidget)):
-        #     kids = []
-        #     for index in item.count():
-        #         child = self._snapLayout(item.widget(index))
-        #         if child is not None:
-        #             kids.append(child)
-        #     if isinstance(item, QSplitter):
-        #         orient = ORIENTATION_INV[item.orientation()]
-        #         res = SplitLayout(*kids, orientation=orient)
-        #     else:
-        #         mode = DOCUMENT_MODES_INV[item.documentMode()]
-        #         pos = TAB_POSITIONS_INV[item.tabPosition()]
-        #         res = TabbedLayout(*kids, tab_style=mode, tab_position=pos)
-        #     return res
-
-    def _cleanup(self, widget):
-        """ Cleanup the layout widget.
-
-        Cleanup the widget such that it is removed from the layout
-        if it contains one item or less. This operation is recursive
-        and traverses up the widget hierarchy.
-
-        Parameters
-        ----------
-        widget : QSplitter, QStackWidget, or QTabWidget
-            The layout widget to cleanup. A QStackWidget is valid
-            because it will be the *actual* parent of a QDockContainer
-            when added to a QTabWidget.
-
-        """
-        # if isinstance(widget, QStackedWidget):
-        #     widget = widget.parent()
-        # count = widget.count()
-        # if count <= 1:
-        #     self._splitters.discard(widget)
-        #     self._tab_widgets.discard(widget)
-        #     parent = widget.parent()
-        #     if count == 0:
-        #         widget.hide()
-        #         widget.setParent(None)
-        #         if widget is self._root:
-        #             self._root = None
-        #         else:
-        #             self._cleanup(parent)
-        #     else:
-        #         child = widget.widget(0)
-        #         if widget is self._root:
-        #             self._root = child
-        #             widget.hide()
-        #             widget.setParent(None)
-        #             child.setParent(self.parentWidget())
-        #             if not self.parentWidget().isHidden():
-        #                 child.show()
-        #         else:
-        #             index = parent.indexOf(widget)
-        #             widget.hide()
-        #             widget.setParent(None)
-        #             parent.insertWidget(index, child)
-        #         #if isinstance(widget, QTabWidget):
-        #         #    child.titleBarWidget().show()
 
     #--------------------------------------------------------------------------
     # Plug Handlers
@@ -525,28 +308,6 @@ class QDockAreaLayout(QLayout):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def hasItems(self):
-        """ Get whether or not the layout has dock items.
-
-        Returns
-        -------
-        result : bool
-            True if the layout has dock items, False otherwise.
-
-        """
-        return len(self._containers) > 0
-
-    def itemCount(self):
-        """ Get the number of dock items managed by the area.
-
-        Returns
-        -------
-        result : int
-            The number of dock items in the dock area.
-
-        """
-        return len(self._containers)
-
     def dockLayout(self):
         """ Get the current layout configuration for the dock area.
 
@@ -560,7 +321,7 @@ class QDockAreaLayout(QLayout):
         root = self._root
         if root is None:
             return None
-        return self._snapLayout(root)
+        return LayoutSaver.save(root)
 
     def setDockLayout(self, layout):
         """ Set the layout configuration for the dock area.
@@ -576,16 +337,14 @@ class QDockAreaLayout(QLayout):
         if root is not None:
             root.hide()
             root.setParent(None)
-        self._splitters.clear()
-        self._containers.clear()
-        self._tab_widgets.clear()
-        newroot = self._buildLayout(layout)
+        area = self.parentWidget()
+        newroot = LayoutBuilder.build(layout, area)
         if newroot is not None:
-            parent = self.parentWidget()
-            newroot.setParent(parent)
-            if not parent.isHidden():
+            newroot.setParent(area)
+            if not area.isHidden():
                 newroot.show()
         self._root = newroot
+        self._hit_tester = None
 
     def plug(self, item, pos, guide):
         """ Plug a dock item into the layout.
@@ -626,17 +385,22 @@ class QDockAreaLayout(QLayout):
             The dock container to unplug from the layout.
 
         """
-        if container in self._containers:
+        root = self._root
+        if root is None:
+            return
+        if container is root:
             container.hide()
-            self._containers.remove(container)
-            if container is self._root:
-                self._root = None
-                container.setParent(None)
-            else:
-                parent = container.parent()
-                if parent is not None:
-                    container.setParent(None)
-                    #self._cleanup(parent)
+            container.setParent(None)
+            self._root = None
+            self._hit_tester = None
+            return
+        success, replace = LayoutUnplugger.unplug(root, container)
+        if success:
+            self._hit_tester = None
+            if replace is not None:
+                self._root = replace
+                replace.setParent(self.parentWidget())
+                replace.show()
 
     def hitTest(self, pos):
         """ Hit test the layout for a relevant widget under a point.
@@ -644,55 +408,25 @@ class QDockAreaLayout(QLayout):
         Parameters
         ----------
         pos : QPoint
-            The point of interest, expressed in coordinates of the
-            parent widget.
+            The point of interest, expressed in the local coordinate
+            system of the layout parent widget.
 
         Returns
         -------
         result : QWidget or None
             A widget which is relevant for docking purposes, or None
-            if no such widget was found under the point.
+            if no such widget was found under the point. If the hit
+            test is successful, the result will be a QDockContainer,
+            QSplitterHandler, or QTabWidget.
 
         """
-        widget = self.parentWidget()
-        if widget is None:
-            return
-        root = self._root
-        if root is None:
-            return
-
-        # Splitter handles have priority. Their active area is smaller
-        # and overlaps that of other widgets. Giving dock items priority
-        # would make it very difficult to hit a splitter reliably. In
-        # certain configurations, there may be more than one handle in
-        # the hit box. In that case, the one closest to center wins.
-        handles = []
-        for sp in self._splitters:
-            pt = sp.mapFrom(widget, pos)
-            for index in xrange(1, sp.count()):  # handle 0 is always hidden
-                handle = sp.handle(index)
-                rect = handle.rect().adjusted(-20, -20, 20, 20)
-                pt2 = handle.mapFrom(sp, pt)
-                if rect.contains(pt2):
-                    l = (rect.center() - pt2).manhattanLength()
-                    handles.append((l, handle))
-        if len(handles) > 0:
-            handles.sort()
-            return handles[0][1]
-
-        # Check for tab widgets next. A tab widget holds dock items,
-        # but should have priority over the dock items themselves.
-        for tb in self._tab_widgets:
-            pt = tb.mapFrom(widget, pos)
-            if tb.rect().contains(pt):
-                return tb
-
-        # Check for QDockItems last. The are the most common case, but
-        # also have the least precedence compared to the other cases.
-        for it in self._items:
-            pt = it.mapFrom(widget, pos)
-            if it.rect().contains(pt):
-                return it
+        tester = self._hit_tester
+        if tester is None:
+            root = self._root
+            if root is None:
+                return
+            tester = self._hit_tester = LayoutHitTester.from_widget(root)
+        return tester.hit_test(self.parentWidget(), pos)
 
     def setGeometry(self, rect):
         """ Sets the geometry of all the items in the layout.
@@ -701,7 +435,7 @@ class QDockAreaLayout(QLayout):
         super(QDockAreaLayout, self).setGeometry(rect)
         root = self._root
         if root is not None:
-            root.setGeometry(rect)
+            root.setGeometry(self.contentsRect())
 
     def sizeHint(self):
         """ Get the size hint for the layout.
@@ -739,7 +473,7 @@ class QDockAreaLayout(QLayout):
         This method should not be used. Use `setDockLayout` instead.
 
         """
-        msg = 'Use `setDockLayoutLayout` instead.'
+        msg = 'Use `setDockLayout` instead.'
         raise NotImplementedError(msg)
 
     def count(self):

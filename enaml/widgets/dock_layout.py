@@ -26,7 +26,7 @@ class DockLayout(Atom):
         raise NotImplementedError
 
 
-class DockLayoutItem(DockLayout):
+class LayoutItem(DockLayout):
     """ A dock layout class which represents a single named item.
 
     """
@@ -38,12 +38,12 @@ class DockLayoutItem(DockLayout):
 
         Parameters
         ----------
-        name : str
+        name : str or unicode
             The name of the dock item in the UI tree to include
             in this location in the layout.
 
         """
-        super(DockLayoutItem, self).__init__(name=name)
+        self.name = name
 
 
 class SplitLayout(DockLayout):
@@ -72,7 +72,6 @@ class SplitLayout(DockLayout):
 
         """
         super(SplitLayout, self).__init__(**metadata)
-        assert all(isinstance(item, DockLayout) for item in items)
         self.items = list(items)
 
 
@@ -90,7 +89,7 @@ class TabbedLayout(DockLayout):
     tabs_movable = Bool(True)
 
     #: The DockLayoutItem instances to include in the tabbed layout.
-    items = List(DockLayoutItem)
+    items = List(LayoutItem)
 
     def __init__(self, *items, **metadata):
         """ Initialze a TabbedLayout instance.
@@ -105,7 +104,6 @@ class TabbedLayout(DockLayout):
 
         """
         super(TabbedLayout, self).__init__(**metadata)
-        assert all(isinstance(item, DockLayoutItem) for item in items)
         self.items = list(items)
 
 
@@ -125,7 +123,7 @@ def hsplit(*items, **metadata):
     nitems = []
     for item in items:
         if isinstance(item, str):
-            item = DockLayoutItem(item)
+            item = LayoutItem(item)
         nitems.append(item)
     metadata.setdefault('orientation', 'horizontal')
     return SplitLayout(*nitems, **metadata)
@@ -147,7 +145,7 @@ def vsplit(*items, **metadata):
     nitems = []
     for item in items:
         if isinstance(item, str):
-            item = DockLayoutItem(item)
+            item = LayoutItem(item)
         nitems.append(item)
     metadata.setdefault('orientation', 'vertical')
     return SplitLayout(*nitems, **metadata)
@@ -169,6 +167,6 @@ def tabbed(*items, **metadata):
     nitems = []
     for item in items:
         if isinstance(item, str):
-            item = DockLayoutItem(item)
+            item = LayoutItem(item)
         nitems.append(item)
     return TabbedLayout(*nitems, **metadata)
