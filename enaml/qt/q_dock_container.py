@@ -8,7 +8,9 @@
 from PyQt4.QtCore import Qt, QSize, QMargins, QPoint, QEvent
 from PyQt4.QtGui import QFrame, QLayout, QRegion, QWidgetItem
 
-from atom.api import Atom, Typed, Bool
+from atom.api import Atom, Typed, Int, Bool
+
+from .dock_window_resizer import DockWindowResizer
 
 
 class QDockContainerLayout(QLayout):
@@ -28,48 +30,48 @@ class QDockContainerLayout(QLayout):
 
         """
         super(QDockContainerLayout, self).__init__(parent)
-        self.setContentsMargins(QMargins(0, 0, 0, 0))
         self._size_hint = QSize()
         self._min_size = QSize()
         self._max_size = QSize()
         self._widget_item = None
-        self._widget = None
+        self._dock_item = None
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def dockWidget(self):
-        """ Get the dock widget set for the layout.
+    def dockItem(self):
+        """ Get the dock item for the layout.
 
         Returns
         -------
-        result : QWidget
-            The primary dock widget set in the container layout.
+        result : QDockItem
+            The dock item set in the layout.
 
         """
-        return self._widget
+        return self._dock_item
 
-    def setDockWidget(self, widget):
-        """ Set the dock widget for the layout.
+    def setDockItem(self, dock_item):
+        """ Set the dock item for the layout.
 
-        The old widget will be hidden and unparented, but not destroyed.
+        The old dock item will be hidden and unparented, but not
+        destroyed.
 
         Parameters
         ----------
-        widget : QWidget
-            The primary widget to use in the layout.
+        dock_item : QDockItem
+            The primary dock item to use in the layout.
 
         """
-        old_widget = self._widget
-        if old_widget is not None:
-            old_widget.hide()
-            old_widget.setParent(None)
+        old_item = self._dock_item
+        if old_item is not None:
+            old_item.hide()
+            old_item.setParent(None)
         self._widget_item = None
-        self._widget = widget
-        if widget is not None:
-            self._widget_item = QWidgetItem(widget)
-            widget.setParent(self.parentWidget())
-            widget.show()
+        self._dock_item = dock_item
+        if dock_item is not None:
+            self._widget_item = QWidgetItem(dock_item)
+            dock_item.setParent(self.parentWidget())
+            dock_item.show()
         self.invalidate()
 
     #--------------------------------------------------------------------------
@@ -79,9 +81,10 @@ class QDockContainerLayout(QLayout):
         """ Invalidate the cached layout data.
 
         """
-        self._size_hint = QSize()
-        self._min_size = QSize()
-        self._max_size = QSize()
+        size = QSize()
+        self._size_hint = size
+        self._min_size = size
+        self._max_size = size
         super(QDockContainerLayout, self).invalidate()
 
     def setGeometry(self, rect):
@@ -89,9 +92,9 @@ class QDockContainerLayout(QLayout):
 
         """
         super(QDockContainerLayout, self).setGeometry(rect)
-        widget = self._widget
-        if widget is not None:
-            widget.setGeometry(self.contentsRect())
+        dock_item = self._dock_item
+        if dock_item is not None:
+            dock_item.setGeometry(self.contentsRect())
 
     def sizeHint(self):
         """ Get the size hint for the layout.
@@ -100,9 +103,9 @@ class QDockContainerLayout(QLayout):
         hint = self._size_hint
         if hint.isValid():
             return hint
-        widget = self._widget
-        if widget is not None:
-            hint = widget.sizeHint()
+        dock_item = self._dock_item
+        if dock_item is not None:
+            hint = dock_item.sizeHint()
         else:
             hint = QSize(256, 192)
         m = self.contentsMargins()
@@ -118,9 +121,9 @@ class QDockContainerLayout(QLayout):
         size = self._min_size
         if size.isValid():
             return size
-        widget = self._widget
-        if widget is not None:
-            size = widget.minimumSizeHint()
+        dock_item = self._dock_item
+        if dock_item is not None:
+            size = dock_item.minimumSizeHint()
         else:
             size = QSize(256, 192)
         m = self.contentsMargins()
@@ -136,9 +139,9 @@ class QDockContainerLayout(QLayout):
         size = self._max_size
         if size.isValid():
             return size
-        widget = self._widget
-        if widget is not None:
-            size = widget.maximumSize()
+        dock_item = self._dock_item
+        if dock_item is not None:
+            size = dock_item.maximumSize()
         else:
             size = QSize(16777215, 16777215)
         self._max_size = size
@@ -172,49 +175,35 @@ class QDockContainerLayout(QLayout):
         """
         if idx == 0:
             self._widget_item = None
-            if self._widget:
-                self._widget.hide()
-                self._widget.setParent(None)
-                self._widget = None
+            if self._dock_item is not None:
+                self._dock_item.hide()
+                self._dock_item.setParent(None)
+                self._dock_item = None
 
 
 class QDockContainer(QFrame):
-    """ A custom QFrame which hold one or more QDockItem instances.
+    """ A custom QFrame which holds a QDockItem instance.
 
-    The dock manager which manages the container will drive the layout
-    of the container.
+    The dock container provides a level of indirection when tearing
+    dock items out of a dock area. The window flags for the container
+    are controlled by the dock manager driving the dock area.
 
     """
-    #: The size of the resize hit box in the lower-right corner.
-    RESIZER_BOX_SIZE = 10
-
-    #: The height to allocate for the title bar when it's visible.
-    TITLE_BAR_HEIGHT = 15
-
-    #: The offset use for the cursor during resize events.
-    RESIZE_OFFSET = 2
+    #: The size of the extra space for hit testing a resize corner.
+    ResizeCornerExtra = 8
 
     class ContainerState(Atom):
         """ A private class for managing container drag state.
 
         """
-        #: Whether or not the title bar is visible.
-        title_bar_visible = Bool(False)
-
-        #: The position of the mouse press in the title bar.
-        title_press_pos = Typed(QPoint)
-
         #: Whether the container is floating as a toplevel window.
-        floating = Bool(False)
+        is_floating = Bool(False)
 
-        #: Whether the mouse is hovering over the resize box.
-        in_resize_box = Bool(False)
+        #: The resize mode based on the mouse hover position.
+        resize_mode = Int(DockWindowResizer.NoResize)
 
-        #: Whether the container is being actively resized.
-        resizing = Bool(False)
-
-        #: Whether a mask is installed on the container.
-        has_mask = Bool(False)
+        #: The offset point of the cursor during a resize press.
+        resize_offset = Typed(QPoint)
 
     def __init__(self, parent=None):
         """ Initialize a QDockContainer.
@@ -227,15 +216,38 @@ class QDockContainer(QFrame):
         """
         super(QDockContainer, self).__init__(parent)
         layout = QDockContainerLayout()
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
-        self.dock_manager = None  # set by framework
+        self.dock_manager = None  # set by the framework
         self._state = self.ContainerState()
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def floating(self):
+    def dockItem(self):
+        """ Get the dock item installed on the container.
+
+        Returns
+        -------
+        result : QDockItem or None
+            The dock item installed in the container, or None.
+
+        """
+        return self.layout().dockItem()
+
+    def setDockItem(self, dock_item):
+        """ Set the dock item for the container.
+
+        Parameters
+        ----------
+        dock_item : QDockItem
+            The dock item to use in the container.
+
+        """
+        self.layout().setDockItem(dock_item)
+
+    def isFloating(self):
         """ Get whether the container is floating.
 
         Returns
@@ -244,82 +256,29 @@ class QDockContainer(QFrame):
             True if the container is floating, False otherwise.
 
         """
-        return self._state.floating
+        return self._state.is_floating
 
     def setFloating(self, floating):
-        """ Set whether the container is in floating mode.
+        """ Set whether the container is floating.
 
         This flag only affects how the container draws itself. It does
-        not change the window hierarchy; that responsibility lies with
-        the docking manager in use for the container.
+        not change the window flags; that responsibility lies with the
+        dock manager which controls the container.
 
         Parameters
         ----------
         floating : bool
-            True if floating mode should be active, False otherwise.
+            True if the container is floating, False otherwise.
 
         """
         state = self._state
-        state.floating = floating
+        state.is_floating = floating
         self.setAttribute(Qt.WA_Hover, floating)
         if floating:
             self.setContentsMargins(QMargins(5, 5, 5, 5))
         else:
             self.setContentsMargins(QMargins(0, 0, 0, 0))
-            if state.has_mask:
-                state.has_mask = False
-                self.unsetMask()
-
-    def titleBarVisible(self):
-        """ Get whether the title bar is visible.
-
-        Returns
-        -------
-        result : bool
-            True if the title bar area is visible, False otherwise.
-
-        """
-        return self._state.title_bar_visible
-
-    def setTitleBarVisible(self, visible):
-        """ Set whether the title bar is visible for the container.
-
-        Parameters
-        ----------
-        floating : bool
-            True if the title bar should be visible, False otherwise.
-
-        """
-        self._state.title_bar_visible = visible
-        layout = self.layout()
-        if layout is not None:
-            height = self.TITLE_BAR_HEIGHT
-            margins = QMargins(0, height if visible else 0, 0, 0)
-            layout.setContentsMargins(margins)
-
-    def dockWidget(self):
-        """ Get the dock widget installed on the container.
-
-        Returns
-        -------
-        result : QDockItem or None
-            The dock widget installed on the container, or None if
-            no widget is installed.
-
-        """
-        return self.layout().dockWidget()
-
-    def setDockWidget(self, widget):
-        """ Set the dock widget for the container.
-
-        Parameters
-        ----------
-        widget : QWidget or None
-            The primary widget to use in the container, or None to
-            unset the widget.
-
-        """
-        self.layout().setDockWidget(widget)
+            self.unsetMask()
 
     #--------------------------------------------------------------------------
     # Reimplementations
@@ -328,11 +287,13 @@ class QDockContainer(QFrame):
         """ A generic event handler for the dock container.
 
         This handler dispatches hover events which are sent when the
-        container is in floating mode. It also notifies the docking
-        manager when it is activated so that the manager can maintain
-        a proper top-level Z-order.
+        container is floating. It also notifies the dock manager when
+        it is activated so that the manager can maintain a proper
+        top-level Z-order.
 
         """
+        # hover events are only generated if the WA_Hover attribute is
+        # set, and that is only set when the container is floating.
         if event.type() == QEvent.HoverMove:
             self.hoverMoveEvent(event)
             return True
@@ -344,22 +305,23 @@ class QDockContainer(QFrame):
         """ Handle the hover move event for the container.
 
         This handler is invoked when the container is in floating mode.
-        It updates the cursor if the mouse is hovered over the resize
-        hit-box in the lower right corner of the widget.
+        It updates the cursor if the mouse is hovered over one of the
+        containers resize areas.
 
         """
         state = self._state
-        if state.floating:
-            pos = event.pos()
-            width = self.width()
-            height = self.height()
-            box_size = self.RESIZER_BOX_SIZE
-            if pos.x() >= width - box_size and pos.y() >= height - box_size:
-                state.in_resize_box = True
-                self.setCursor(Qt.SizeFDiagCursor)
-            else:
-                state.in_resize_box = False
+        if state.is_floating:
+            dwr = DockWindowResizer
+            # don't change the cursor until the resize is finished.
+            if state.resize_mode != dwr.NoResize:
+                return
+            extra = self.ResizeCornerExtra
+            mode, ignored = dwr.hit_test(self, event.pos(), extra)
+            cursor = dwr.cursor(mode)
+            if cursor is None:
                 self.unsetCursor()
+            else:
+                self.setCursor(cursor)
 
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the container.
@@ -370,16 +332,14 @@ class QDockContainer(QFrame):
         """
         event.ignore()
         state = self._state
-        if state.floating and event.button() == Qt.LeftButton:
-            if state.in_resize_box:
-                state.resizing = True
+        if state.is_floating and event.button() == Qt.LeftButton:
+            dwr = DockWindowResizer
+            extra = self.ResizeCornerExtra
+            mode, offset = dwr.hit_test(self, event.pos(), extra)
+            if mode != dwr.NoResize:
+                state.resize_mode = mode
+                state.resize_offset = offset
                 event.accept()
-            elif state.title_bar_visible:
-                margins = self.contentsMargins()
-                l_margins = self.layout().contentsMargins()
-                if event.pos().y() < margins.top() + l_margins.top():
-                    state.title_press_pos = event.pos()
-                    event.accept()
 
     def mouseReleaseEvent(self, event):
         """ Handle the mouse release event for the container.
@@ -390,11 +350,10 @@ class QDockContainer(QFrame):
         """
         event.ignore()
         state = self._state
-        if state.floating and event.button() == Qt.LeftButton:
-            if state.resizing or state.title_press_pos is not None:
-                state.resizing = False
-                state.title_press_pos = None
-                event.accept()
+        if state.is_floating and event.button() == Qt.LeftButton:
+            state.resize_mode = DockWindowResizer.NoResize
+            state.resize_offset = None
+            event.accept()
 
     def mouseMoveEvent(self, event):
         """ Handle the mouse move event for the container.
@@ -405,14 +364,12 @@ class QDockContainer(QFrame):
         """
         event.ignore()
         state = self._state
-        if state.floating:
-            if state.resizing:
-                pos = event.pos()
-                offset = self.RESIZE_OFFSET
-                self.resize(QSize(pos.x() + offset, pos.y() + offset))
-                event.accept()
-            elif state.title_press_pos is not None:
-                self.move(event.globalPos() - state.title_press_pos)
+        if state.is_floating:
+            dwr = DockWindowResizer
+            if state.resize_mode != dwr.NoResize:
+                mode = state.resize_mode
+                offset = state.resize_offset
+                dwr.resize(self, event.pos(), mode, offset)
                 event.accept()
 
     def resizeEvent(self, event):
@@ -423,7 +380,7 @@ class QDockContainer(QFrame):
 
         """
         state = self._state
-        if state.floating:
+        if state.is_floating:
             w = self.width()
             h = self.height()
             region = QRegion(0, 0, w, h)
@@ -440,18 +397,3 @@ class QDockContainer(QFrame):
             region -= QRegion(w - 1, h - 3, 1, 3)
             region -= QRegion(w - 3, h - 1, 3, 1)
             self.setMask(region)
-            state.has_mask = True
-
-    def paintEvent(self, event):
-        """ Handle the paint event for the container.
-
-        This handler draws the title bar for the container if the
-        title bar is set to visible.
-
-        """
-        super(QDockContainer, self).paintEvent(event)
-        state = self._state
-        if state.title_bar_visible:
-            #top = self.layout().contentsMargins().top()
-            # draw stuff.
-            pass
