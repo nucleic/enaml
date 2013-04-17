@@ -141,20 +141,26 @@ class QGuideRose(QFrame):
         """ An enum class for defining the rose mode.
 
         """
-        #: No rose will be drawn.
+        #: No guides will be active.
         NoMode = 0
 
-        #: The compass rose will be used.
+        #: The compass rose and border guides will be active.
         Compass = 1
 
-        #: The vertical split rose will be used.
+        #: The vertical split and border guides will be active.
         SplitVertical = 2
 
-        #: The horizontal split rose will be used.
+        #: The horizontal split and border guides will be active.
         SplitHorizontal = 3
 
-        #: Only show a single guide in the center.
+        #: Only a single guide in the center will be active.
         SingleCenter = 4
+
+        #: Only the compass rose will be active.
+        CompassOnly = 5
+
+        #: Only show the border guides will be active.
+        BorderOnly = 6
 
     class Guide(object):
         """ An enum class for identifying guide locations.
@@ -407,7 +413,7 @@ class QGuideRose(QFrame):
         if mode == Mode.SingleCenter:
             if guides[Guide.SingleCenter].contains(pos):
                 return Guide.SingleCenter
-        elif mode == Mode.Compass:
+        elif mode == Mode.Compass or mode == Mode.CompassOnly:
             if guides[Guide.CompassNorth].contains(pos):
                 return Guide.CompassNorth
             if guides[Guide.CompassEast].contains(pos):
@@ -418,6 +424,8 @@ class QGuideRose(QFrame):
                 return Guide.CompassWest
             if guides[Guide.CompassCenter].contains(pos):
                 return Guide.CompassCenter
+            if mode == Mode.CompassOnly:
+                return Guide.NoGuide
         elif mode == Mode.SplitHorizontal:
             if guides[Guide.SplitHorizontal].contains(pos):
                 return Guide.SplitHorizontal
@@ -445,6 +453,35 @@ class QGuideRose(QFrame):
         """
         self._layoutGuides()
 
+    def paintCompass(self, painter):
+        """ Paint the compass for the rose.
+
+        """
+        guides = self._guides
+        Guide = QGuideRose.Guide
+        guides[Guide.CompassCross].paint(painter)
+        guides[Guide.CompassNorth].paint(painter)
+        guides[Guide.CompassEast].paint(painter)
+        guides[Guide.CompassSouth].paint(painter)
+        guides[Guide.CompassWest].paint(painter)
+        guides[Guide.CompassCenter].paint(painter)
+
+    def paintBorders(self, painter):
+        """ Paint the border guides for the rose.
+
+        """
+        boxes = self._boxes
+        guides = self._guides
+        Guide = QGuideRose.Guide
+        boxes[Guide.BorderNorth].paint(painter)
+        guides[Guide.BorderNorth].paint(painter)
+        boxes[Guide.BorderEast].paint(painter)
+        guides[Guide.BorderEast].paint(painter)
+        boxes[Guide.BorderSouth].paint(painter)
+        guides[Guide.BorderSouth].paint(painter)
+        boxes[Guide.BorderWest].paint(painter)
+        guides[Guide.BorderWest].paint(painter)
+
     def paintEvent(self, event):
         """ Handle the paint event for the rose.
 
@@ -458,33 +495,26 @@ class QGuideRose(QFrame):
         # huge issue since this paint event is relatively cheap.
         super(QGuideRose, self).paintEvent(event)
         painter = QPainter(self)
+        mode = self._mode
+        boxes = self._boxes
+        guides = self._guides
         Mode = QGuideRose.Mode
         Guide = QGuideRose.Guide
-        mode = self._mode
-        guides = self._guides
-        boxes = self._boxes
         if mode == Mode.SingleCenter:
             boxes[Guide.SingleCenter].paint(painter)
             guides[Guide.SingleCenter].paint(painter)
-            return
-        if mode == Mode.Compass:
-            guides[Guide.CompassCross].paint(painter)
-            guides[Guide.CompassNorth].paint(painter)
-            guides[Guide.CompassEast].paint(painter)
-            guides[Guide.CompassSouth].paint(painter)
-            guides[Guide.CompassWest].paint(painter)
-            guides[Guide.CompassCenter].paint(painter)
+        elif mode == Mode.Compass:
+            self.paintCompass(painter)
+            self.paintBorders(painter)
+        elif mode == Mode.CompassOnly:
+            self.paintCompass(painter)
         elif mode == Mode.SplitHorizontal:
             boxes[Guide.SplitHorizontal].paint(painter)
             guides[Guide.SplitHorizontal].paint(painter)
+            self.paintBorders(painter)
         elif mode == Mode.SplitVertical:
             boxes[Guide.SplitVertical].paint(painter)
             guides[Guide.SplitVertical].paint(painter)
-        boxes[Guide.BorderNorth].paint(painter)
-        guides[Guide.BorderNorth].paint(painter)
-        boxes[Guide.BorderEast].paint(painter)
-        guides[Guide.BorderEast].paint(painter)
-        boxes[Guide.BorderSouth].paint(painter)
-        guides[Guide.BorderSouth].paint(painter)
-        boxes[Guide.BorderWest].paint(painter)
-        guides[Guide.BorderWest].paint(painter)
+            self.paintBorders(painter)
+        elif mode == Mode.BorderOnly:
+            self.paintBorders(painter)
