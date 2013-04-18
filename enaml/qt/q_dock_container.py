@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QSize, QMargins, QPoint, QEvent
-from PyQt4.QtGui import QFrame, QLayout, QRegion, QWidgetItem
+from PyQt4.QtGui import QFrame, QLayout, QRegion
 
 from atom.api import Atom, Typed, Int, Bool
 
@@ -33,7 +33,6 @@ class QDockContainerLayout(QLayout):
         self._size_hint = QSize()
         self._min_size = QSize()
         self._max_size = QSize()
-        self._widget_item = None
         self._dock_item = None
 
     #--------------------------------------------------------------------------
@@ -66,10 +65,8 @@ class QDockContainerLayout(QLayout):
         if old_item is not None:
             old_item.hide()
             old_item.setParent(None)
-        self._widget_item = None
         self._dock_item = dock_item
         if dock_item is not None:
-            self._widget_item = QWidgetItem(dock_item)
             dock_item.setParent(self.parentWidget())
             dock_item.show()
         self.invalidate()
@@ -160,25 +157,19 @@ class QDockContainerLayout(QLayout):
         """ A required virtual method implementation.
 
         """
-        return 1 if self._widget_item is not None else 0
+        return 0
 
     def itemAt(self, idx):
         """ A required virtual method implementation.
 
         """
-        if idx == 0:
-            return self._widget_item
+        return None
 
     def takeAt(self, idx):
         """ A required virtual method implementation.
 
         """
-        if idx == 0:
-            self._widget_item = None
-            if self._dock_item is not None:
-                self._dock_item.hide()
-                self._dock_item.setParent(None)
-                self._dock_item = None
+        return None
 
 
 class QDockContainer(QFrame):
@@ -219,8 +210,8 @@ class QDockContainer(QFrame):
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
-        self.dock_manager = None  # set by the framework
-        self._state = self.ContainerState()
+        self.state = self.ContainerState()
+        self.handler = None  # set by the dock manager
 
     #--------------------------------------------------------------------------
     # Public API
@@ -256,7 +247,7 @@ class QDockContainer(QFrame):
             True if the container is floating, False otherwise.
 
         """
-        return self._state.is_floating
+        return self.state.is_floating
 
     def setFloating(self, floating):
         """ Set whether the container is floating.
@@ -271,7 +262,7 @@ class QDockContainer(QFrame):
             True if the container is floating, False otherwise.
 
         """
-        state = self._state
+        state = self.state
         state.is_floating = floating
         self.setAttribute(Qt.WA_Hover, floating)
         if floating:
@@ -298,7 +289,8 @@ class QDockContainer(QFrame):
             self.hoverMoveEvent(event)
             return True
         if event.type() == QEvent.WindowActivate:
-            pass
+            if self.state.is_floating and self.handler is not None:
+                self.handler.window_activated()
         return super(QDockContainer, self).event(event)
 
     def hoverMoveEvent(self, event):
@@ -309,7 +301,7 @@ class QDockContainer(QFrame):
         containers resize areas.
 
         """
-        state = self._state
+        state = self.state
         if state.is_floating:
             dwr = DockWindowResizer
             # don't change the cursor until the resize is finished.
@@ -331,7 +323,7 @@ class QDockContainer(QFrame):
 
         """
         event.ignore()
-        state = self._state
+        state = self.state
         if state.is_floating and event.button() == Qt.LeftButton:
             dwr = DockWindowResizer
             extra = self.ResizeCornerExtra
@@ -349,7 +341,7 @@ class QDockContainer(QFrame):
 
         """
         event.ignore()
-        state = self._state
+        state = self.state
         if state.is_floating and event.button() == Qt.LeftButton:
             state.resize_mode = DockWindowResizer.NoResize
             state.resize_offset = None
@@ -363,7 +355,7 @@ class QDockContainer(QFrame):
 
         """
         event.ignore()
-        state = self._state
+        state = self.state
         if state.is_floating:
             dwr = DockWindowResizer
             if state.resize_mode != dwr.NoResize:
@@ -379,7 +371,7 @@ class QDockContainer(QFrame):
         to floating mode.
 
         """
-        state = self._state
+        state = self.state
         if state.is_floating:
             w = self.width()
             h = self.height()
