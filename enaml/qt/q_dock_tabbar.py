@@ -39,8 +39,7 @@ class QDockTabBar(QTabBar):
         dock drag is initiated.
 
         """
-        shift = Qt.ShiftModifier
-        if event.button() == Qt.LeftButton and event.modifiers() & shift:
+        if event.button() == Qt.LeftButton:
             if self.tabAt(event.pos()) != -1 and self._press_pos is None:
                 self._press_pos = event.pos()
         super(QDockTabBar, self).mousePressEvent(event)
@@ -54,20 +53,16 @@ class QDockTabBar(QTabBar):
         """
         if self._press_pos is None:
             super(QDockTabBar, self).mouseMoveEvent(event)
+            return
+        if self.isMovable():
+            unplug = not self.rect().contains(event.pos())
         else:
             dist = (event.pos() - self._press_pos).manhattanLength()
-            if dist > QApplication.startDragDistance():
-                container = self.parent().widget(self.currentIndex())
-                container.handler.untab(event.globalPos())
-                self._press_pos = None
-
-    def mouseReleaseEvent(self, event):
-        """ Handle the mouse release event for the tab bar.
-
-        This handler will release the press state of the tabs.
-
-        """
-        if self._press_pos is None:
-            super(QDockTabBar, self).mouseReleaseEvent(event)
-        else:
+            unplug = dist > QApplication.startDragDistance()
+        if unplug:
+            index = self.currentIndex()
+            container = self.parent().widget(index)
+            container.handler.untab(event.globalPos())
             self._press_pos = None
+        else:
+            super(QDockTabBar, self).mouseMoveEvent(event)
