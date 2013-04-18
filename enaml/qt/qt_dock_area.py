@@ -68,14 +68,14 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         super(QtDockArea, self).init_layout()
         d = self.declaration
-        self.widget.setDockLayout(d.layout)
-        self.dock_filter = DockFilter(self)
-        self.widget.installEventFilter(self.dock_filter)
         manager = self.manager
         for item in d.dock_items():
             w = item.proxy.widget
             if w is not None:
                 manager.add_item(w)
+        manager.apply_layout(d.layout)
+        self.dock_filter = DockFilter(self)
+        self.widget.installEventFilter(self.dock_filter)
 
     def destroy(self):
         self.widget.removeEventFilter(self.dock_filter)
