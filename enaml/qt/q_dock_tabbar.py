@@ -30,49 +30,6 @@ class QDockTabBar(QTabBar):
         self._press_pos = None
 
     #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _initDrag(self, pos):
-        """ Initialize the drag state for the tab.
-
-        If the drag state is already inited, this method is a no-op.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The point where the user clicked the mouse, expressed in
-            the local coordinate system.
-
-        """
-        if self._press_pos is not None:
-            return
-        self._press_pos = pos
-
-    def _startDrag(self, pos):
-        """" Start the drag process for the dock item.
-
-        This method unplugs the dock item from the layout and transfers
-        the repsonsibilty of moving the floating frame back to the dock
-        item. After calling this method, no mouseReleaseEvent will be
-        generated since the dock item grabs the mouse. If the item is
-        already being dragged, this method is a no-op.
-
-        Parameters
-        ----------
-        pos : QPoint
-            The mouse location of the drag start, expressed in the
-            global coordinate system.
-
-        """
-        press_pos = self._press_pos
-        if press_pos is None:
-            return
-        dock_item = self.parent().widget(self.currentIndex())
-        dock_item.titleBarWidget().setVisible(True)
-        dock_item.unplug(pos, press_pos)
-        self._press_pos = None
-
-    #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
     def mousePressEvent(self, event):
@@ -82,10 +39,10 @@ class QDockTabBar(QTabBar):
         dock drag is initiated.
 
         """
-        #shift = Qt.ShiftModifier
-        #if event.button() == Qt.LeftButton and event.modifiers() & shift:
-        #    if self.tabAt(event.pos()) != -1:
-        #        self._initDrag(event.pos())
+        shift = Qt.ShiftModifier
+        if event.button() == Qt.LeftButton and event.modifiers() & shift:
+            if self.tabAt(event.pos()) != -1 and self._press_pos is None:
+                self._press_pos = event.pos()
         super(QDockTabBar, self).mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
@@ -95,10 +52,22 @@ class QDockTabBar(QTabBar):
         start drag distances, the item will be undocked.
 
         """
-        #press_pos = self._press_pos
-        #if press_pos is None:
-        super(QDockTabBar, self).mouseMoveEvent(event)
-        #else:
-        #    dist = (event.pos() - press_pos).manhattanLength()
-        #    if dist > QApplication.startDragDistance():
-        #        self._startDrag(event.globalPos())
+        if self._press_pos is None:
+            super(QDockTabBar, self).mouseMoveEvent(event)
+        else:
+            dist = (event.pos() - self._press_pos).manhattanLength()
+            if dist > QApplication.startDragDistance():
+                container = self.parent().widget(self.currentIndex())
+                container.handler.untab(event.globalPos())
+                self._press_pos = None
+
+    def mouseReleaseEvent(self, event):
+        """ Handle the mouse release event for the tab bar.
+
+        This handler will release the press state of the tabs.
+
+        """
+        if self._press_pos is None:
+            super(QDockTabBar, self).mouseReleaseEvent(event)
+        else:
+            self._press_pos = None

@@ -189,4 +189,10 @@ class QDockArea(QFrame):
             QDockContainer {
                 background: rgb(41, 56, 85);
             }
+            QTabWidget QDockItem {
+                border-top-left-radius: 0px;
+                border-top-right-radius: 0px;
+                border-bottom-left-radius: 0px;
+                border-bottom-right-radius: 0px;
+            }
             """)

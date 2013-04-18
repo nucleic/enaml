@@ -58,9 +58,6 @@ class DockOverlay(Atom):
     #: The target geometry to apply to rubber band on timeout.
     _target_band_geo = Typed(QRect, factory=lambda: QRect())
 
-    #: The queued band geo.
-    _queued_band_geo = Typed(QRect)
-
     #: The value of the last guide which was hit in the rose.
     _last_guide = Int(-1)
 
@@ -68,7 +65,7 @@ class DockOverlay(Atom):
     _show_band = Bool(False)
 
     #: The hover position of the mouse to use for state changes.
-    _hover_pos = Typed(QPoint)
+    _hover_pos = Typed(QPoint, factory=lambda: QPoint())
 
     #: The timer for changing the state of the rose.
     _rose_timer = Typed(QTimer)
@@ -290,8 +287,7 @@ class DockOverlay(Atom):
         Parameters
         ----------
         pos : QPoint
-            The position of interest, expressed in the coordinates of
-            the overlay.
+            The position of interest, expressed in global coordinates.
 
         Returns
         -------
@@ -300,6 +296,7 @@ class DockOverlay(Atom):
 
         """
         rose = self._rose
+        pos = rose.mapFromGlobal(pos)
         return rose.guideAt(pos, rose.mode())
 
     def hide(self):

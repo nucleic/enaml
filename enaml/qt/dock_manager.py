@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QPoint, QRect, QSize
-from PyQt4.QtGui import QApplication, QSplitter, QTabWidget
+from PyQt4.QtGui import QApplication, QSplitter, QTabWidget, QSplitterHandle
 
 from atom.api import Atom, Bool, ForwardTyped, Typed, List
 
@@ -14,6 +14,7 @@ from .dock_overlay import DockOverlay
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
 from .q_dock_tabbar import QDockTabBar
+from .q_guide_rose import QGuideRose
 
 
 ORIENTATION = {
@@ -99,8 +100,6 @@ class LayoutBuilder(Atom):
         splitter = QSplitter(ORIENTATION[layout['orientation']])
         for child in children:
             splitter.addWidget(child)
-            # FIXME i don't really like this
-            child.show()
         return splitter
 
     def visit_tabbed(self, layout, area):
@@ -125,8 +124,6 @@ class LayoutBuilder(Atom):
             dock_item = child.dockItem()
             dock_item.titleBarWidget().hide()
             tab_widget.addTab(child, dock_item.title())
-            # FIXME i don't really like this
-            child.show()
         return tab_widget
 
     def visit_item(self, layout, area):
@@ -151,13 +148,13 @@ class LayoutUnplugger(Atom):
 
     """
     @classmethod
-    def unplug(cls, root, container):
+    def unplug(cls, area, container):
         """ Unplug a container from a layout.
 
         Parameters
         ----------
-        root : QWidget
-            The root layout widget.
+        area : QDockArea
+            The dock area in which the container lives.
 
         container : QDockContainer
             The container to remove from the layout.
@@ -170,7 +167,19 @@ class LayoutUnplugger(Atom):
             update as the new root of the layout.
 
         """
-        return cls().visit(root, container)
+        layout = area.layout()
+        root = layout.layoutWidget()
+        if root is container:
+            root.hide()
+            root.setParent(None)
+            layout.setLayoutWidget(None)
+            return True
+        success, replace = cls().visit(root, container)
+        if not success:
+            return False
+        if replace is not None:
+            layout.setLayoutWidget(replace)
+        return True
 
     def visit(self, widget, container):
         """ The main visitor dispatch method.
@@ -243,6 +252,248 @@ class LayoutUnplugger(Atom):
         return False, None
 
 
+class LayoutPlugger(Atom):
+    """ A class used to plug a container into a layout.
+
+    This single public entry point in the 'plug()' classmethod.
+
+    """
+    #: The dock area into which the container is being plugged.
+    area = Typed(QDockArea)
+
+    @classmethod
+    def plug(cls, area, widget, container, guide):
+        """ Plug a container into the layout.
+
+        Parameters
+        ----------
+        area : QDockArea
+            The dock area which owns the layout into which the
+            container is being plugged.
+
+        widget : QWidget
+            The widget under the mouse. This should be one of
+            QSplitterHandle, QTabWidget, or QDockContainer.
+
+        guide : QGuideRose.Guide
+            The guide rose guide which indicates how to perform
+            the plugging.
+
+        Returns
+        -------
+        result : bool
+            True if the plugging was successful, False otherwise.
+
+        """
+        self = cls(area=area)
+        Guide = QGuideRose.Guide
+        if guide == Guide.CompassCenter:
+            res = self.plug_center(widget, container)
+        elif guide == Guide.CompassNorth:
+            res = self.plug_north(widget, container)
+        elif guide == Guide.CompassEast:
+            res = self.plug_east(widget, container)
+        elif guide == Guide.CompassSouth:
+            res = self.plug_south(widget, container)
+        elif guide == Guide.CompassWest:
+            res = self.plug_west(widget, container)
+        elif guide == Guide.BorderNorth:
+            res = self.plug_border_north(container)
+        elif guide == Guide.BorderEast:
+            res = self.plug_border_east(container)
+        elif guide == Guide.BorderSouth:
+            res = self.plug_border_south(container)
+        elif guide == Guide.BorderWest:
+            res = self.plug_border_west(container)
+        elif guide == Guide.SplitHorizontal:
+            res = self.plug_split(widget, container, guide)
+        elif guide == Guide.SplitVertical:
+            res = self.plug_split(widget, container, guide)
+        else:
+            res = False
+        return res
+
+    def prepare(self, container):
+        """ Prepare a container to be plugged into the layout.
+
+        """
+        container.hide()
+        container.setFloating(False)
+        container.setWindowFlags(Qt.Widget)
+
+    #--------------------------------------------------------------------------
+    # Plug Handlers
+    #--------------------------------------------------------------------------
+    def plug_split(self, handle, container, guide):
+        """ Plug the container onto a splitter handle.
+
+        """
+        Guide = QGuideRose.Guide
+        if not isinstance(handle, QSplitterHandle):
+            return False
+        orientation = handle.orientation()
+        if orientation == Qt.Horizontal:
+            if guide != Guide.SplitHorizontal:
+                return False
+        elif guide != Guide.SplitVertical:
+            return False
+        splitter = handle.parent()
+        for index in xrange(1, splitter.count()):
+            if splitter.handle(index) is handle:
+                self.prepare(container)
+                splitter.insertWidget(index, container)
+                container.show()
+                return True
+        return False
+
+    def plug_center(self, widget, container):
+        """ Create a tab widget from the widget and container.
+
+        """
+        if isinstance(widget, QTabWidget):
+            self.prepare(container)
+            dock_item = container.dockItem()
+            dock_item.titleBarWidget().hide()
+            widget.addTab(container, dock_item.title())
+            widget.setCurrentIndex(widget.count() - 1)
+            container.show()
+            return True
+        if not isinstance(widget, QDockContainer):
+            return False
+        layout = self.area.layout()
+        root = layout.layoutWidget()
+        if widget is not root:
+            if not isinstance(widget.parent(), QSplitter):
+                return False
+        tab_widget = QTabWidget()
+        tab_widget.setTabBar(QDockTabBar())
+        tab_widget.setMovable(True)
+        tab_widget.setDocumentMode(True)
+        if widget is root:
+            layout.setLayoutWidget(tab_widget)
+        else:
+            splitter = widget.parent()
+            index = splitter.indexOf(widget)
+            splitter.insertWidget(index, tab_widget)
+        item = widget.dockItem()
+        item.titleBarWidget().hide()
+        tab_widget.addTab(widget, item.title())
+        self.prepare(container)
+        item = container.dockItem()
+        item.titleBarWidget().hide()
+        tab_widget.addTab(container, item.title())
+        tab_widget.setCurrentIndex(1)
+        container.show()
+        return True
+
+    def plug_north(self, widget, container):
+        """ Plug the container to the north of the widget.
+
+        """
+        root = self.area.layout().layoutWidget()
+        if widget is root:
+            return self.split_root(Qt.Vertical, container, False)
+        return self.split_widget(Qt.Vertical, widget, container, False)
+
+    def plug_east(self, widget, container):
+        """ Plug the container to the east of the widget.
+
+        """
+        root = self.area.layout().layoutWidget()
+        if widget is root:
+            return self.split_root(Qt.Horizontal, container, True)
+        return self.split_widget(Qt.Horizontal, widget, container, True)
+
+    def plug_south(self, widget, container):
+        """ Plug the container to the south of the widget.
+
+        """
+        root = self.area.layout().layoutWidget()
+        if widget is root:
+            return self.split_root(Qt.Vertical, container, True)
+        return self.split_widget(Qt.Vertical, widget, container, True)
+
+    def plug_west(self, widget, container):
+        """ Plug the container to the west of the widget.
+
+        """
+        root = self.area.layout().layoutWidget()
+        if widget is root:
+            return self.split_root(Qt.Horizontal, container, False)
+        return self.split_widget(Qt.Horizontal, widget, container, False)
+
+    def plug_border_north(self, container):
+        """ Plug the container to the north border of the area.
+
+        """
+        return self.split_root(Qt.Vertical, container, False)
+
+    def plug_border_east(self, container):
+        """ Plug the container to the east border of the area.
+
+        """
+        return self.split_root(Qt.Horizontal, container, True)
+
+    def plug_border_south(self, container):
+        """ Plug the container to the south border of the area.
+
+        """
+        return self.split_root(Qt.Vertical, container, True)
+
+    def plug_border_west(self, container):
+        """ Plug the container to the west border of the area.
+
+        """
+        return self.split_root(Qt.Horizontal, container, False)
+
+    def split_root(self, orientation, container, append):
+        """ Split the root layout widget according the orientation.
+
+        """
+        layout = self.area.layout()
+        root = layout.layoutWidget()
+        if (not isinstance(root, QSplitter) or
+            root.orientation() != orientation):
+            new = QSplitter(orientation)
+            layout.setLayoutWidget(new)
+            new.addWidget(root)
+            root.show()
+            root = new
+        self.prepare(container)
+        if append:
+            root.addWidget(container)
+        else:
+            root.insertWidget(0, container)
+        container.show()
+        return True
+
+    def split_widget(self, orientation, widget, container, append):
+        """ Split the widget according the orientation.
+
+        """
+        splitter = widget.parent()
+        if not isinstance(splitter, QSplitter):
+            return False
+        index = splitter.indexOf(widget)
+        if splitter.orientation() == orientation:
+            if append:
+                index += 1
+            self.prepare(container)
+            splitter.insertWidget(index, container)
+            container.show()
+            return True
+        new = QSplitter(orientation)
+        new.addWidget(widget)
+        splitter.insertWidget(index, new)
+        self.prepare(container)
+        if append:
+            new.addWidget(container)
+        else:
+            new.insertWidget(0, container)
+        container.show()
+        return True
+
+
 class LayoutWalker(Atom):
 
     area = Typed(QDockArea)
@@ -282,50 +533,90 @@ class LayoutWalker(Atom):
                     stack.append(widget.widget(index))
 
 
-class DockContainerHandler(Atom):
-    """ A framework class for handling a QDockContainer.
+class DockHandler(Atom):
+    """ A base class for defining handler objects for the dock manager.
 
     """
-    class DockContainerState(Atom):
-        """ A framework class for storing a QDockContainer dock state.
-
-        """
-        #: The original title bar press position.
-        press_pos = Typed(QPoint)
-
-        #: Whether or not the dock item is floating.
-        floating = Bool(False)
-
-        #: Whether or not the dock item is being dragged.
-        dragging = Bool(False)
-
-        #: The size of the dock item when it was last docked.
-        docked_size = Typed(QSize)
-
-        #: The geometry of the dock item when it was last floated.
-        floated_geo = Typed(QRect)
-
-    #: The state for the dock container associated with this handler.
-    state = Typed(DockContainerState, ())
-
-    #: The dock container which owns the dock item.
-    dock_container = Typed(QDockContainer)
-
-    #: The dock manager state object which is shared between handlers.
+    #: The dock manager which owns the handler.
     manager = ForwardTyped(lambda: DockManager)
 
-    @staticmethod
-    def unplug(container):
-        """ A staticmethod which unplugs a container from its dock area.
+    def global_geometry(self):
+        """ Get the global geometry of the handler widget.
 
-        This method assumes the provided container is in a state which
-        is suitable for unplugging. If the operation is successful, the
-        container will be hidden and its parent will be None.
+        Returns
+        -------
+        result : QRect
+            The global geometry rect of the handler widget.
+
+        """
+        raise NotImplementedError
+
+    def show_overlay(self, pos):
+        """ Show the dock overlay for the handler.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The global position of the mouse. It is assumed that this
+            lies within the bounds of the handler's primary widget.
+
+        """
+        raise NotImplementedError
+
+    def plug(self, container, pos, guide):
+        """ Plug the container into the layout.
 
         Parameters
         ----------
         container : QDockContainer
-            The container to unplug from its dock area.
+            The dock container to plug into the layout.
+
+        pos : QPoint
+            The global position of the of dock target.
+
+        guide : QGuideRose.Guide
+            The guide which defines how to plug the container.
+
+        Returns
+        -------
+        result : bool
+            True if the item was plugged successfully, False otherwise.
+
+        """
+        raise NotImplementedError
+
+
+class DockContainerHandler(DockHandler):
+    """ A dock handler which manages a QDockContainer.
+
+    """
+    #: The original title bar press position.
+    press_pos = Typed(QPoint)
+
+    #: Whether or not the dock item is floating.
+    floating = Bool(False)
+
+    #: Whether or not the dock item is being dragged.
+    dragging = Bool(False)
+
+    #: The size of the dock item when it was last docked.
+    docked_size = Typed(QSize)
+
+    #: The geometry of the dock item when it was last floated.
+    floated_geo = Typed(QRect)
+
+    #: The dock container which owns the dock item.
+    dock_container = Typed(QDockContainer)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _unplug(self):
+        """ Unplug the container from its dock area.
+
+        This method assumes the provided container is in a state which
+        is suitable for unplugging. If the operation is successful, the
+        container will be hidden and its parent will be None.
 
         Returns
         -------
@@ -334,6 +625,7 @@ class DockContainerHandler(Atom):
 
         """
         dock_area = None
+        container = self.dock_container
         parent = container.parent()
         while parent is not None:
             if isinstance(parent, QDockArea):
@@ -342,23 +634,172 @@ class DockContainerHandler(Atom):
             parent = parent.parent()
         if dock_area is None:
             return False
+        return LayoutUnplugger.unplug(dock_area, container)
 
-        # FIXME special cased root removal
-        layout = dock_area.layout()
-        root = layout.layoutWidget()
-        if root is container:
-            root.hide()
-            root.setParent(None)
-            layout.setLayoutWidget(None)
-            return True
+    def _dock_targets(self):
+        """ Get the potential dock targets for the handler.
 
-        success, replace = LayoutUnplugger.unplug(root, container)
-        if not success:
+        Returns
+        -------
+        result : generator
+            A generator which yields the dock handlers objects which
+            are potential dock targets. They are yielded in Z-order
+            with the top-most target first.
+
+        """
+        manager = self.manager
+        for handler in reversed(manager.toplevel):
+            if handler is not self:
+                yield handler
+        yield manager.primary
+
+    def _dock_drag(self, pos):
+        """ Handle a floating dock container drag.
+
+        This handler will show the dock overlay at the proper location,
+        or hide it if it should not be shown.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The global position of the mouse.
+
+        """
+        for handler in self._dock_targets():
+            if handler.global_geometry().contains(pos):
+                handler.show_overlay(pos)
+                return
+
+    def _end_dock_drag(self, pos):
+        """ End the dock drag operation for the handler.
+
+        This method will hide the dock overlays for the manager and
+        redock the container if it lies over a docking guide.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The global position of the mouse.
+
+        """
+        overlay = self.manager.overlay
+        overlay.hide()
+        guide = overlay.guide_at(pos)
+        if guide != QGuideRose.Guide.NoGuide:
+            for handler in self._dock_targets():
+                if handler.global_geometry().contains(pos):
+                    if handler.plug(self.dock_container, pos, guide):
+                        self.manager.toplevel.remove(self)
+                        self.floating = False
+
+    #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def untab(self, pos):
+        """ Unplug the container from a tab control.
+
+        This method is invoked by the QDockTabBar when the container
+        should be torn out. It synthesizes the appropriate internal
+        state so that the item can continue to be dock dragged.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The global mouse position.
+
+        """
+        if not self._unplug():
             return False
-        if replace is not None:
-            layout.setLayoutWidget(replace)
+        self.dragging = True
+        self.floating = True
+        self.manager.toplevel.append(self)
+        container = self.dock_container
+        container.setFloating(True)
+        dock_item = container.dockItem()
+        title = dock_item.titleBarWidget()
+        margins = container.contentsMargins()
+        x = title.width() / 2 + margins.left()
+        y = title.height() / 2 + margins.top()
+        self.press_pos = QPoint(x, y)
+        flags = Qt.Tool | Qt.FramelessWindowHint
+        container.setParent(self.manager.primary.area, flags)
+        container.move(pos - self.press_pos)
+        container.show()
+        dock_item.grabMouse()
         return True
 
+    #--------------------------------------------------------------------------
+    # DockHandler Interface
+    #--------------------------------------------------------------------------
+    def global_geometry(self):
+        """ Get the global geometry of the handler widget.
+
+        Returns
+        -------
+        result : QRect
+            The global geometry rect of the handler widget.
+
+        """
+        geo = self.dock_container.geometry()
+        if self.floating:
+            return geo
+        pt = self.dock_container.mapToGlobal(QPoint(0, 0))
+        return QRect(pt, geo.size())
+
+    def show_overlay(self, pos):
+        """ Show the dock overlay for this handler.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The global position of the mouse. It is assumed that this
+            lies within the bounds of the handler's primary widget.
+
+        """
+        container = self.dock_container
+        pos = container.mapFromGlobal(pos)
+        self.manager.overlay.mouse_over_widget(container, pos)
+
+    def plug(self, container, pos, guide):
+        """ Plug the container into the layout.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container to plug into the layout.
+
+        pos : QPoint
+            The global position of the of dock target.
+
+        guide : QGuideRose.Guide
+            The guide which defines how to plug the container.
+
+        Returns
+        -------
+        result : bool
+            True if the item was plugged successfully, False otherwise.
+
+        """
+        return False
+
+    #--------------------------------------------------------------------------
+    # QDockContainer Handler Methods
+    #--------------------------------------------------------------------------
+    def window_activated(self):
+        """ Handle the window activated event for the dock container.
+
+        This handler is invoked by the container when it receives a
+        WindowActivate event while floating. It is used to maintain
+        knowledge of the Z-order of floating windows.
+
+        """
+        toplevel = self.manager.toplevel
+        toplevel.remove(self)
+        toplevel.append(self)
+
+    #--------------------------------------------------------------------------
+    # QDockItem Handler Methods
+    #--------------------------------------------------------------------------
     def mouse_press_event(self, event):
         """ Handle a mouse press event for the dock item.
 
@@ -372,15 +813,14 @@ class DockContainerHandler(Atom):
 
         """
         if event.button() == Qt.LeftButton:
-            state = self.state
-            if state.press_pos is None:
+            if self.press_pos is None:
                 container = self.dock_container
                 dock_item = container.dockItem()
                 title_bar = dock_item.titleBarWidget()
                 if not title_bar.isHidden():
                     if title_bar.geometry().contains(event.pos()):
                         pos = dock_item.mapTo(container, event.pos())
-                        state.press_pos = pos
+                        self.press_pos = pos
                         return True
         return False
 
@@ -393,40 +833,41 @@ class DockContainerHandler(Atom):
         # Protect against being called with bad state. This can happen
         # when clicking and dragging a child of the item which doesn't
         # handle the move event.
-        state = self.state
-        if state.press_pos is None:
+        if self.press_pos is None:
             return False
 
         # If the title bar is dragged while the container is floating,
         # the container is moved to the proper location.
+        global_pos = event.globalPos()
         container = self.dock_container
-        if state.dragging:
-            if state.floating:
-                container.move(event.globalPos() - state.press_pos)
-                self.manager.dock_drag(self, event.globalPos())
+        if self.dragging:
+            if self.floating:
+                container.move(global_pos - self.press_pos)
+                self._dock_drag(global_pos)
             return True
 
         dock_item = container.dockItem()
         pos = dock_item.mapTo(container, event.pos())
-        dist = (pos - state.press_pos).manhattanLength()
+        dist = (pos - self.press_pos).manhattanLength()
         if dist <= QApplication.startDragDistance():
             return False
 
         # If the container is already floating, there is nothing to do.
         # The call to this event handler will move the container.
-        state.dragging = True
-        if state.floating:
+        self.dragging = True
+        if self.floating:
             return True
 
-        if not self.unplug(container):
+        if not self._unplug():
             return False
 
-        state.floating = True
+        self.floating = True
+        self.manager.toplevel.append(self)
         container.setFloating(True)
-        state.press_pos += QPoint(0, container.contentsMargins().top())
+        self.press_pos += QPoint(0, container.contentsMargins().top())
         flags = Qt.Tool | Qt.FramelessWindowHint
-        container.setParent(self.manager.primary_area, flags)
-        container.move(event.globalPos() - state.press_pos)
+        container.setParent(self.manager.primary.area, flags)
+        container.move(global_pos - self.press_pos)
         container.show()
         dock_item.grabMouse()
         return True
@@ -443,92 +884,48 @@ class DockContainerHandler(Atom):
 
         """
         if event.button() == Qt.LeftButton:
-            state = self.state
-            if state.press_pos is not None:
+            if self.press_pos is not None:
                 self.dock_container.dockItem().releaseMouse()
-                if state.floating:
-                    self.manager.dock_end_drag(self)
-                state.dragging = False
-                state.press_pos = None
+                if self.floating:
+                    self._end_dock_drag(event.globalPos())
+                self.dragging = False
+                self.press_pos = None
                 return True
         return False
 
 
-class DockManager(Atom):
-    """ A class which manages the docking behavior of a dock area.
+class DockAreaHandler(DockHandler):
+    """ A dock handler which manages a QDockArea.
 
     """
-    #: The primary dock area being managed by the manager.
-    primary_area = Typed(QDockArea)
+    area = Typed(QDockArea)
 
-    #: The list of dock container handlers for the manager.
-    handlers = List()
-
-    #: The set of dock items added to the manager.
-    dock_items = Typed(set, ())
-
-    #: The overlay used when hovering over a dock area.
-    overlay = Typed(DockOverlay, ())
-
-    def __init__(self, dock_area):
-        """ Initialize a DockingManager.
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _hit_test(self, pos):
+        """ Hit test a dock area for a relevant dock target.
 
         Parameters
         ----------
-        dock_area : QDockArea
-            The primary dock area to be managed. Docking will be
-            restricted to this area and to windows spawned by the
-            area.
+        pos : QPoint
+            The point of interest expressed in local area coordinates.
+
+        Returns
+        -------
+        result : QWidget or None
+            The relevant dock target under the position. This will be
+            a QDockContainer, QTabWidget, or QSplitterHandle.
 
         """
-        assert dock_area is not None
-        self.primary_area = dock_area
-
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
-    def release_items(self):
-        pass
-
-    def add_item(self, item):
-        if item in self.dock_items:
-            return
-        self.dock_items.add(item)
-        container = QDockContainer()
-        # FIXME i don't really like this
-        container.hide()
-        container.setObjectName(item.objectName())
-        container.setDockItem(item)
-        container.setParent(self.primary_area)
-        handler = DockContainerHandler()
-        handler.dock_container = container
-        handler.manager = self
-        item.handler = handler
-        self.handlers.append(handler)
-
-    def remove_item(self, item):
-        pass
-
-    def apply_layout(self, layout):
-        """ Apply a layout to the dock area.
-
-        """
-        area = self.primary_area
-        layout_widget = LayoutBuilder.build(layout, area)
-        area.layout().setLayoutWidget(layout_widget)
-
-    #--------------------------------------------------------------------------
-    # Framework API
-    #--------------------------------------------------------------------------
-    def hit_test(self, area, pos):
-        walker = LayoutWalker(area)
-
         # Splitter handles have priority. Their active area is smaller
         # and overlaps that of other widgets. Giving dock containers
         # priority would make it difficult to hit a splitter reliably.
         # In certain configurations, there may be more than one handle
         # in the hit box, in which case the one closest to center wins.
         hits = []
+        area = self.area
+        walker = LayoutWalker(area)
         for handle in walker.splitter_handles():
             pt = handle.mapFrom(area, pos)
             rect = handle.rect().adjusted(-20, -20, 20, 20)
@@ -551,442 +948,149 @@ class DockManager(Atom):
         for dock_container in walker.dock_containers():
             pt = dock_container.mapFrom(area, pos)
             if dock_container.rect().contains(pt):
-                if not dock_container.isHidden():
+                if not dock_container.isHidden():  # hidden tabs
                     return dock_container
 
+    #--------------------------------------------------------------------------
+    # DockHandler Interface
+    #--------------------------------------------------------------------------
+    def global_geometry(self):
+        """ Get the global geometry of the handler widget.
 
-    def _hdrag(self, handler, pos):
-        self.overlay.mouse_over_widget(handler.dock_container, pos)
+        Returns
+        -------
+        result : QRect
+            The global geometry rect of the handler widget.
 
-    def dock_drag(self, handler, pos):
-        for ohandler in self.handlers:
-            if ohandler is handler:
-                continue
-            if ohandler.state.floating:
-                if ohandler.dock_container.geometry().contains(pos):
-                    pos = ohandler.dock_container.mapFromGlobal(pos)
-                    self._hdrag(ohandler, pos)
-                    return
+        """
+        area = self.area
+        pt = area.mapToGlobal(QPoint(0, 0))
+        return QRect(pt, area.size())
 
-        area = self.primary_area
+    def show_overlay(self, pos):
+        """ Show the dock overlay for the handler.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The global position of the mouse. It is assumed that this
+            lies within the bounds of the handler's primary widget.
+
+        """
+        area = self.area
+        manager = self.manager
         pos = area.mapFromGlobal(pos)
         if not area.rect().contains(pos):
-            self.overlay.hide()
+            manager.overlay.hide()
         elif area.layout().layoutWidget() is None:
-            self.overlay.mouse_over_widget(area, pos, empty=True)
+            manager.overlay.mouse_over_widget(area, pos, empty=True)
         else:
-            widget = self.hit_test(area, pos)
+            widget = self._hit_test(pos)
             if widget is not None:
-                self.overlay.mouse_over(area, widget, pos)
+                manager.overlay.mouse_over_area(area, widget, pos)
 
-    def dock_end_drag(self, handler):
-        self.overlay.hide()
+    def plug(self, container, pos, guide):
+        """ Plug the container into the layout.
 
-    # def hover(self, item, pos):
-    #     """ Execute a hover operation for a dock item.
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container to plug into the layout.
 
-    #     This method is called by the docking framework as needed. It
-    #     should not be called by user code.
+        pos : QPoint
+            The global position of the of dock target.
 
-    #     Parameters
-    #     ----------
-    #     item : QDockItem
-    #         The dock item which is being hovered.
+        guide : QGuideRose.Guide
+            The guide which defines how to plug the container.
 
-    #     pos : QPoint
-    #         The global coordinates of the hover position.
+        Returns
+        -------
+        result : bool
+            True if the item was plugged successfully, False otherwise.
 
-    #     """
-    #     local = self.mapFromGlobal(pos)
-    #     if self.rect().contains(local):
-    #         self._overlays.hover(local)
-    #         return True
-    #     else:
-    #         self._overlays.hide()
-    #         return False
-
-    # def endHover(self, item, pos):
-    #     """ End a hover operation for a dock item.
-
-    #     This method is called by the docking framework as needed. It
-    #     should not be called by user code.
-
-    #     Parameters
-    #     ----------
-    #     item : QDockItem
-    #         The dock item which is being hovered.
-
-    #     pos : QPoint
-    #         The global coordinates of the hover position.
-
-    #     Returns
-    #     -------
-    #     result : bool
-    #         True if the pos is over a dock guide, False otherwise.
-
-    #     """
-    #     self._overlays.hide()
-    #     local = self.mapFromGlobal(pos)
-    #     if self.rect().contains(local):
-    #         guide = self._overlays.hit_test_rose(local)
-    #         return guide != QGuideRose.Guide.NoGuide
-    #     return False
+        """
+        area = self.area
+        widget = self._hit_test(area.mapFromGlobal(pos))
+        if widget is None:
+            if guide == QGuideRose.Guide.SingleCenter:
+                layout = area.layout()
+                if layout.layoutWidget() is None:
+                    container.hide()
+                    container.setFloating(False)
+                    container.setWindowFlags(Qt.Widget)
+                    layout.setLayoutWidget(container)
+                    container.show()
+                    return True
+            return False
+        return LayoutPlugger.plug(area, widget, container, guide)
 
 
-    #     self._hit_tester = None
-    #     self._plug_handlers = [
-    #         '_plug_border_north',
-    #         '_plug_border_east',
-    #         '_plug_border_south',
-    #         '_plug_border_west',
-    #         '_plug_compass_north',
-    #         '_plug_compass_east',
-    #         '_plug_compass_south',
-    #         '_plug_compass_west',
-    #         '_plug_compass_center',
-    #         None,                       # CompassCross
-    #         '_plug_split_vertical',
-    #         '_plug_split_horizontal',
-    #         '_plug_single_center',
-    #         None,                       # NoGuide
-    #     ]
+class DockManager(Atom):
+    """ A class which manages the docking behavior of a dock area.
 
-    # #--------------------------------------------------------------------------
-    # # Plug Handlers
-    # #--------------------------------------------------------------------------
-    # # FIXME these plug handlers can use some refactoring
-    # def _prep_item_plug(self, item, title_vis):
-    #     self._items.add(item)
-    #     item.hide()
-    #     item.setWindowFlags(Qt.Widget)
-    #     item.titleBarWidget().setVisible(title_vis)
+    """
+    #: The handler which holds the primary dock area.
+    primary = Typed(DockAreaHandler)
 
-    # def _plug_border_north(self, item, pos):
-    #     root = self._root
-    #     if root is None:
-    #         return False
-    #     self._prep_item_plug(item, True)
-    #     if isinstance(root, QSplitter) and root.orientation() == Qt.Vertical:
-    #         root.insertWidget(0, item)
-    #     else:
-    #         sp = self._createSplitter(Qt.Vertical)
-    #         sp.addWidget(item)
-    #         sp.addWidget(self._root)
-    #         self._root = sp
-    #         sp.setParent(self.parentWidget())
-    #         sp.show()
-    #     item.show()
-    #     return True
+    #: The list of container handlers maintained by the manager.
+    containers = List()
 
-    # def _plug_border_east(self, item, pos):
-    #     root = self._root
-    #     if root is None:
-    #         return False
-    #     self._prep_item_plug(item, True)
-    #     if isinstance(root, QSplitter) and root.orientation() == Qt.Horizontal:
-    #         root.addWidget(item)
-    #     else:
-    #         sp = self._createSplitter(Qt.Horizontal)
-    #         sp.addWidget(self._root)
-    #         sp.addWidget(item)
-    #         self._root = sp
-    #         sp.setParent(self.parentWidget())
-    #         sp.show()
-    #     item.show()
-    #     return True
+    #: The list of handlers which contain top-level windows. This list
+    #: is maintained in proper Z-order with the top-most handler last.
+    toplevel = List()
 
-    # def _plug_border_south(self, item, pos):
-    #     root = self._root
-    #     if root is None:
-    #         return False
-    #     self._prep_item_plug(item, True)
-    #     if isinstance(root, QSplitter) and root.orientation() == Qt.Vertical:
-    #         root.addWidget(item)
-    #     else:
-    #         sp = self._createSplitter(Qt.Vertical)
-    #         sp.addWidget(self._root)
-    #         sp.addWidget(item)
-    #         self._root = sp
-    #         sp.setParent(self.parentWidget())
-    #         sp.show()
-    #     item.show()
-    #     return True
+    #: The set of dock items added to the manager.
+    dock_items = Typed(set, ())
 
-    # def _plug_border_west(self, item, pos):
-    #     root = self._root
-    #     if root is None:
-    #         return False
-    #     self._prep_item_plug(item, True)
-    #     if isinstance(root, QSplitter) and root.orientation() == Qt.Horizontal:
-    #         root.insertWidget(0, item)
-    #     else:
-    #         sp = self._createSplitter(Qt.Horizontal)
-    #         sp.addWidget(item)
-    #         sp.addWidget(self._root)
-    #         self._root = sp
-    #         sp.setParent(self.parentWidget())
-    #         sp.show()
-    #     item.show()
-    #     return True
+    #: The overlay used when hovering over a dock area.
+    overlay = Typed(DockOverlay, ())
 
-    # def _plug_compass_north(self, item, pos):
-    #     hovered = self.hitTest(pos)
-    #     if not isinstance(hovered, (QTabWidget, QDockItem)):
-    #         return False
-    #     if hovered is self._root:
-    #         self._prep_item_plug(item, True)
-    #         sp = self._createSplitter(Qt.Vertical)
-    #         sp.addWidget(item)
-    #         sp.addWidget(self._root)
-    #         self._root = sp
-    #         sp.setParent(self.parentWidget())
-    #         sp.show()
-    #     else:
-    #         # hovered parent should logically be a splitter, but the
-    #         # assumption may break down during very heavy docking.
-    #         parent = hovered.parent()
-    #         if not isinstance(parent, QSplitter):
-    #             return False
-    #         self._prep_item_plug(item, True)
-    #         index = parent.indexOf(hovered)
-    #         if parent.orientation() == Qt.Vertical:
-    #             parent.insertWidget(index, item)
-    #         else:
-    #             sp = self._createSplitter(Qt.Vertical)
-    #             sp.addWidget(item)
-    #             sp.addWidget(hovered)
-    #             parent.insertWidget(index, sp)
-    #             sp.show()
-    #     item.show()
-    #     return True
+    def __init__(self, dock_area):
+        """ Initialize a DockingManager.
 
-    # def _plug_compass_east(self, item, pos):
-    #     hovered = self.hitTest(pos)
-    #     if not isinstance(hovered, (QTabWidget, QDockItem)):
-    #         return False
-    #     if hovered is self._root:
-    #         self._prep_item_plug(item, True)
-    #         sp = self._createSplitter(Qt.Horizontal)
-    #         sp.addWidget(self._root)
-    #         sp.addWidget(item)
-    #         self._root = sp
-    #         sp.setParent(self.parentWidget())
-    #         sp.show()
-    #     else:
-    #         # hovered parent should logically be a splitter, but the
-    #         # assumption may break down during very heavy docking.
-    #         parent = hovered.parent()
-    #         if not isinstance(parent, QSplitter):
-    #             return False
-    #         self._prep_item_plug(item, True)
-    #         index = parent.indexOf(hovered)
-    #         if parent.orientation() == Qt.Horizontal:
-    #             parent.insertWidget(index + 1, item)
-    #         else:
-    #             sp = self._createSplitter(Qt.Horizontal)
-    #             sp.addWidget(hovered)
-    #             sp.addWidget(item)
-    #             parent.insertWidget(index, sp)
-    #             sp.show()
-    #     item.show()
-    #     return True
+        Parameters
+        ----------
+        dock_area : QDockArea
+            The primary dock area to be managed. Docking will be
+            restricted to this area and to windows spawned by the
+            area.
 
-    # def _plug_compass_south(self, item, pos):
-    #     hovered = self.hitTest(pos)
-    #     if not isinstance(hovered, (QTabWidget, QDockItem)):
-    #         return False
-    #     if hovered is self._root:
-    #         self._prep_item_plug(item, True)
-    #         sp = self._createSplitter(Qt.Vertical)
-    #         sp.addWidget(self._root)
-    #         sp.addWidget(item)
-    #         self._root = sp
-    #         sp.setParent(self.parentWidget())
-    #         sp.show()
-    #     else:
-    #         # hovered parent should logically be a splitter, but the
-    #         # assumption may break down during very heavy docking.
-    #         parent = hovered.parent()
-    #         if not isinstance(parent, QSplitter):
-    #             return False
-    #         self._prep_item_plug(item, True)
-    #         index = parent.indexOf(hovered)
-    #         if parent.orientation() == Qt.Vertical:
-    #             parent.insertWidget(index + 1, item)
-    #         else:
-    #             sp = self._createSplitter(Qt.Vertical)
-    #             sp.addWidget(hovered)
-    #             sp.addWidget(item)
-    #             parent.insertWidget(index, sp)
-    #             sp.show()
-    #     item.show()
-    #     return True
+        """
+        assert dock_area is not None
+        self.primary = DockAreaHandler(manager=self, area=dock_area)
 
-    # def _plug_compass_west(self, item, pos):
-    #     hovered = self.hitTest(pos)
-    #     if not isinstance(hovered, (QTabWidget, QDockItem)):
-    #         return False
-    #     if hovered is self._root:
-    #         self._prep_item_plug(item, True)
-    #         sp = self._createSplitter(Qt.Horizontal)
-    #         sp.addWidget(item)
-    #         sp.addWidget(self._root)
-    #         self._root = sp
-    #         sp.setParent(self.parentWidget())
-    #         sp.show()
-    #     else:
-    #         # hovered parent should logically be a splitter, but the
-    #         # assumption may break down during very heavy docking.
-    #         parent = hovered.parent()
-    #         if not isinstance(parent, QSplitter):
-    #             return False
-    #         self._prep_item_plug(item, True)
-    #         index = parent.indexOf(hovered)
-    #         if parent.orientation() == Qt.Horizontal:
-    #             parent.insertWidget(index, item)
-    #         else:
-    #             sp = self._createSplitter(Qt.Horizontal)
-    #             sp.addWidget(item)
-    #             sp.addWidget(hovered)
-    #             parent.insertWidget(index, sp)
-    #             sp.show()
-    #     item.show()
-    #     return True
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def add_item(self, item):
+        """ Add a dock item to the dock manager.
 
-    # def _plug_compass_center(self, item, pos):
-    #     hovered = self.hitTest(pos)
-    #     if not isinstance(hovered, (QTabWidget, QDockItem)):
-    #         return False
-    #     self._prep_item_plug(item, False)
-    #     if isinstance(hovered, QTabWidget):
-    #         hovered.addTab(item, item.title())
-    #         hovered.setCurrentIndex(hovered.count() - 1)
-    #     else:
-    #         if hovered is not self._root:
-    #             parent = hovered.parent()
-    #             index = parent.indexOf(hovered)
-    #         hovered.titleBarWidget().setVisible(False)
-    #         tw = self._createTabWidget(True, True, QTabWidget.North)
-    #         tw.addTab(hovered, hovered.title())
-    #         tw.addTab(item, item.title())
-    #         tw.setCurrentIndex(tw.count() - 1)
-    #         if hovered is self._root:
-    #             self._root = tw
-    #             tw.setParent(self.parentWidget())
-    #         else:
-    #             parent.insertWidget(index, tw)
-    #         tw.show()
-    #     item.show()
-    #     return True
+        If the item has already been added, this is a no-op.
 
-    # def _plug_splitter(self, item, pos, orient):
-    #     hovered = self.hitTest(pos)
-    #     if not isinstance(hovered, QSplitterHandle):
-    #         return False
-    #     if hovered.orientation() != orient:
-    #         return False
-    #     self._prep_item_plug(item, True)
-    #     splitter = hovered.parent()
-    #     for index in xrange(1, splitter.count()):
-    #         if splitter.handle(index) is hovered:
-    #             splitter.insertWidget(index, item)
-    #             break
-    #     item.show()
-    #     return True
+        Parameters
+        ----------
+        items : QDockItem
+            The item to be managed by this dock manager. It will be
+            reparented to a dock container and made available to the
+            the layout.
 
-    # def _plug_split_vertical(self, item, pos):
-    #     return self._plug_splitter(item, pos, Qt.Vertical)
+        """
+        if item in self.dock_items:
+            return
+        self.dock_items.add(item)
+        container = QDockContainer()
+        container.setObjectName(item.objectName())
+        container.setDockItem(item)
+        container.setParent(self.primary.area)
+        handler = DockContainerHandler(manager=self, dock_container=container)
+        item.handler = handler
+        container.handler = handler
+        self.containers.append(handler)
 
-    # def _plug_split_horizontal(self, item, pos):
-    #     return self._plug_splitter(item, pos, Qt.Horizontal)
+    def apply_layout(self, layout):
+        """ Apply a layout to the dock area.
 
-    # def _plug_single_center(self, item, pos):
-    #     if self._root is not None:
-    #         return False
-    #     self._root = item
-    #     self._prep_item_plug(item, True)
-    #     item.setParent(self.parentWidget())
-    #     item.show()
-    #     return True
-
-    # def plug(self, item, pos, guide):
-    #     """ Plug a dock item into the layout.
-
-    #     Parameters
-    #     ----------
-    #     item : QDockItem
-    #         The dock item which is being plugged.
-
-    #     pos : QPoint
-    #         The position at which to plug the item.
-
-    #     mode : QGuideRose.Guide
-    #         The guide which determines how the item should be plugged.
-
-    #     Returns
-    #     -------
-    #     result : bool
-    #         True if the item was successfully plugged, False otherwise.
-
-    #     """
-    #     if item in self._items:
-    #         return False
-    #     handler_name = self._plug_handlers[guide]
-    #     if handler_name is None:
-    #         return False
-    #     handler = getattr(self, handler_name, None)
-    #     if handler is None:
-    #         return False
-    #     return handler(item, pos)
-
-    # def unplug(self, container):
-    #     """ Unplug a dock container from the layout.
-
-    #     Parameters
-    #     ----------
-    #     container : QDockContainer
-    #         The dock container to unplug from the layout.
-
-    #     """
-    #     root = self._root
-    #     if root is None:
-    #         return
-    #     if container is root:
-    #         container.hide()
-    #         container.setParent(None)
-    #         self._root = None
-    #         self._hit_tester = None
-    #         return
-    #     success, replace = LayoutUnplugger.unplug(root, container)
-    #     if success:
-    #         self._hit_tester = None
-    #         if replace is not None:
-    #             self._root = replace
-    #             replace.setParent(self.parentWidget())
-    #             replace.show()
-
-    # def hitTest(self, pos):
-    #     """ Hit test the layout for a relevant widget under a point.
-
-    #     Parameters
-    #     ----------
-    #     pos : QPoint
-    #         The point of interest, expressed in the local coordinate
-    #         system of the layout parent widget.
-
-    #     Returns
-    #     -------
-    #     result : QWidget or None
-    #         A widget which is relevant for docking purposes, or None
-    #         if no such widget was found under the point. If the hit
-    #         test is successful, the result will be a QDockContainer,
-    #         QSplitterHandler, or QTabWidget.
-
-    #     """
-    #     tester = self._hit_tester
-    #     if tester is None:
-    #         root = self._root
-    #         if root is None:
-    #             return
-    #         tester = self._hit_tester = LayoutHitTester.from_widget(root)
-    #     return tester.hit_test(self.parentWidget(), pos)
+        """
+        area = self.primary.area
+        layout_widget = LayoutBuilder.build(layout, area)
+        area.layout().setLayoutWidget(layout_widget)
