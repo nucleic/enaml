@@ -14,9 +14,8 @@ from .combo_box import ComboBox
 from .container import Container, Border
 from .date_selector import DateSelector
 from .datetime_selector import DatetimeSelector
-from .dock_area import DockArea
+from .dock_area import DockArea, hsplit, vsplit, tabbed
 from .dock_item import DockItem
-from .dock_layout import hsplit, vsplit, tabbed
 from .dock_pane import DockPane
 from .dual_slider import DualSlider
 from .field import Field
