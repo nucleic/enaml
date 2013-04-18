@@ -8,7 +8,7 @@
 from PyQt4.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
 from PyQt4.QtGui import QRubberBand, QSplitterHandle, QTabWidget
 
-from atom.api import Atom, Int, Float, Typed
+from atom.api import Atom, Bool, Int, Float, Typed
 
 from .q_guide_rose import QGuideRose
 from .q_dock_container import QDockContainer
@@ -63,6 +63,9 @@ class DockOverlay(Atom):
 
     #: The value of the last guide which was hit in the rose.
     _last_guide = Int(-1)
+
+    #: A flag indicating whether it is safe to show the band.
+    _show_band = Bool(False)
 
     #: The hover position of the mouse to use for state changes.
     _hover_pos = Typed(QPoint)
@@ -124,6 +127,7 @@ class DockOverlay(Atom):
         rose = self._rose
         rose.setMode(self._target_rose_mode)
         rose.mouseOver(self._hover_pos)
+        self._show_band = True
         self._update_band_state()
 
     def _on_band_timer(self):
@@ -163,7 +167,7 @@ class DockOverlay(Atom):
         # restarted using the current state as their starting point.
         band = self._band
         geo = self._target_band_geo
-        if geo.isValid():
+        if geo.isValid() and self._show_band:
             # If the band is already hidden, the geometry animation can
             # be bypassed since the band can be located anywhere. The
             # rose must be raised because QRubberBand raises itself
@@ -340,6 +344,7 @@ class DockOverlay(Atom):
         if rose.mode() != target_mode:
             rose.setMode(Mode.NoMode)
             self._rose_timer.start(self.rose_delay)
+            self._band_timer.start(self.band_delay)
         origin = widget.mapToGlobal(QPoint(0, 0))
         geo = QRect(origin, widget.size())
         dirty = rose.geometry() != geo
@@ -356,7 +361,7 @@ class DockOverlay(Atom):
         rose.mouseOver(pos)
         rose.show()
 
-    def mouse_over(self, area, widget, pos):
+    def mouse_over_area(self, area, widget, pos):
         """ Update the overlays based on the mouse position.
 
         Parameters
@@ -376,65 +381,62 @@ class DockOverlay(Atom):
         rose = self._rose
         Mode = QGuideRose.Mode
         Guide = QGuideRose.Guide
-        origin = area.mapToGlobal(QPoint(0, 0))
-        rose.setGeometry(QRect(origin, area.size()))
 
         # Compute the target mode for the guide rose based on the dock
         # widget which lies under the mouse position.
         if isinstance(widget, (QDockContainer, QTabWidget)):
-            center = widget.mapTo(area, QPoint(0, 0))
-            center += QPoint(widget.width() / 2, widget.height() / 2)
             target_mode = Mode.Compass
-            if area is widget:
-                target_mode = Mode.CompassOnly
         elif isinstance(widget, QSplitterHandle):
             if widget.orientation() == Qt.Horizontal:
                 target_mode = Mode.SplitHorizontal
             else:
                 target_mode = Mode.SplitVertical
+        else:
+            target_mode = Mode.BorderOnly
+
+        # Get the local area coordinates for the center of the widget.
+        if widget is not None:
             center = widget.mapTo(area, QPoint(0, 0))
             center += QPoint(widget.width() / 2, widget.height() / 2)
         else:
-            target_mode = Mode.BorderOnly
-            center = QPoint()
+            center = QPoint(area.width() / 2, area.height() / 2)
 
         # Update the state of the rose. If it is to be hidden, it is
         # done so immediately. If the target mode is different from
-        # the current mode, the rose is hidden and the state change
-        # is collapsed on a timer.
+        # the current mode, the rose is hidden and the state changes
+        # are collapsed on a timer.
         self._hover_pos = pos
+        self._show_band = True
         self._target_rose_mode = target_mode
-        if target_mode == Mode.NoMode:
-            self._rose_timer.stop()
-            rose.setMode(target_mode)
-        elif target_mode != rose.mode():
+        if target_mode != rose.mode():
             rose.setMode(Mode.BorderOnly)
             self._rose_timer.start(self.rose_delay)
-        rose.setCenter(center)
+            self._show_band = False
+
+        # Update the geometry of the rose if needed. This ensures that
+        # the rose does not change geometry while visible.
+        origin = area.mapToGlobal(QPoint(0, 0))
+        geo = QRect(origin, area.size())
+        dirty = rose.geometry() != geo
+        if dirty:
+            rose.hide()
+            rose.setMode(Mode.NoMode)
+            rose.setGeometry(geo)
 
         # Hit test the rose and update the target geometry for the
         # rubber band if the target guide has changed.
-        update_band = False
         guide = rose.guideAt(pos, target_mode)
-        if guide != self._last_guide:
+        if dirty or guide != self._last_guide:
             self._last_guide = guide
             if guide >= Guide.BorderNorth and guide <= Guide.BorderWest:
-                bgeo = self._band_geometry(area, guide)
+                band_geo = self._band_geometry(area, guide)
             else:
-                bgeo = self._band_geometry(widget, guide)
-            self._target_band_geo = bgeo
-            update_band = True
-
-        # If the rose is currently visible, pass it the hover event so
-        # that it can trigger a repaint of the guides if needed. Queue
-        # an update for the band geometry which prevents the band from
-        # flickering when rapidly cycling between guide pads.
-        if rose.mode() != Mode.NoMode:
-            rose.mouseOver(pos)
-            if update_band:
-                self._band_timer.start(self.band_delay)
-
-        # Ensure that the rose and band are shown if hidden.
-        if rose.isHidden():
-            rose.show()
+                band_geo = self._band_geometry(widget, guide)
+            self._target_band_geo = band_geo
             self._band_timer.start(self.band_delay)
+
+        # Set the center point of the rose and make it visible. Issue
+        # a mouseover command so that the guides are highlighted.
+        rose.setCenter(center)
+        rose.mouseOver(pos)
+        rose.show()
