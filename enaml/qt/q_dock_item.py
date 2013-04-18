@@ -486,7 +486,7 @@ class QDockItem(QFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setTitleBarWidget(QDockItemTitleBar())
-        self.dock_manager = None  # set by the framework
+        self.handler = None  # set by the framework
 
     #--------------------------------------------------------------------------
     # Public API
@@ -575,38 +575,38 @@ class QDockItem(QFrame):
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the dock item.
 
-        This handler forwards the mouse press to the dock manager which
+        This handler forwards the mouse press to the dock handler which
         handles the event for docking purposes.
 
         """
         event.ignore()
-        mgr = self.dock_manager
-        if mgr is not None:
-            if mgr.mouse_press_event(self, event):
+        handler = self.handler
+        if handler is not None:
+            if handler.mouse_press_event(event):
                 event.accept()
 
     def mouseMoveEvent(self, event):
         """ Handle the mouse move event for the dock item.
 
-        This handler forwards the mouse press to the dock manager which
+        This handler forwards the mouse press to the dock handler which
         handles the event for docking purposes.
 
         """
         event.ignore()
-        manager = self.dock_manager
-        if manager is not None:
-            if manager.mouse_move_event(self, event):
+        handler = self.handler
+        if handler is not None:
+            if handler.mouse_move_event(event):
                 event.accept()
 
     def mouseReleaseEvent(self, event):
         """ Handle the mouse release event for the dock item.
 
-        This handler forwards the mouse press to the dock manager which
+        This handler forwards the mouse press to the dock handler which
         handles the event for docking purposes.
 
         """
         event.ignore()
-        manager = self.dock_manager
-        if manager is not None:
-            if manager.mouse_release_event(self, event):
+        handler = self.handler
+        if handler is not None:
+            if handler.mouse_release_event(event):
                 event.accept()
