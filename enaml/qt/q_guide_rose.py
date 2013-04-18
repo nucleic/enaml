@@ -193,17 +193,17 @@ class QGuideRose(QFrame):
         #: The center compass guide.
         CompassCenter = 8
 
-        #: The compase cross guide (for internal use)
-        CompassCross = 9
-
         #: The vertical split guide.
-        SplitVertical = 10
+        SplitVertical = 9
 
         #: The horizontal split guide.
-        SplitHorizontal = 11
+        SplitHorizontal = 10
 
         #: The single center guide.
-        SingleCenter = 12
+        SingleCenter = 11
+
+        #: The compass cross. (internal use only)
+        CompassCross = 12
 
         #: No relevant guide.
         NoGuide = 13
@@ -238,7 +238,6 @@ class QGuideRose(QFrame):
             make('bottom'),             # CompassSouth
             make('left'),               # CompassWest
             make('center'),             # CompassCenter
-            make('cross'),              # CompassCross
             make('split_vertical'),     # SplitVertical
             make('split_horizontal'),   # SplitHorizontal
             make('center'),             # SingleCenter
@@ -253,10 +252,10 @@ class QGuideRose(QFrame):
             None,                       # CompassSouth
             None,                       # CompassWest
             None,                       # CompassCenter
-            None,                       # CompassCross
             make('box'),                # SplitVertical
             make('box'),                # SplitHorizontal
             make('box'),                # SingleCenter
+            make('cross'),              # CompassCross
         ]
 
     #--------------------------------------------------------------------------
@@ -282,7 +281,7 @@ class QGuideRose(QFrame):
         guides[Guide.CompassSouth].rect = QRect(cpx - 15, cpy + 20, 31, 31)
         guides[Guide.CompassWest].rect = QRect(cpx - 50, cpy - 15, 31, 31)
         guides[Guide.CompassCenter].rect = QRect(cpx - 15, cpy - 15, 31, 31)
-        guides[Guide.CompassCross].rect = QRect(cpx - 55, cpy - 55, 111, 111)
+        boxes[Guide.CompassCross].rect = QRect(cpx - 55, cpy - 55, 111, 111)
 
         # Splitter Guides
         # FIXME hard-coded image dimensions. This is not so bad because
@@ -383,11 +382,11 @@ class QGuideRose(QFrame):
         target = self.guideAt(pos, self._mode)
         last = self._last
         if last != target:
+            self._last = target
             if last != Guide.NoGuide:
                 self._guides[last].opacity = LOW_ALPHA
             if target != Guide.NoGuide:
                 self._guides[target].opacity = FULL_ALPHA
-            self._last = target
         self.update()
 
     def guideAt(self, pos, mode):
@@ -457,9 +456,10 @@ class QGuideRose(QFrame):
         """ Paint the compass for the rose.
 
         """
+        boxes = self._boxes
         guides = self._guides
         Guide = QGuideRose.Guide
-        guides[Guide.CompassCross].paint(painter)
+        boxes[Guide.CompassCross].paint(painter)
         guides[Guide.CompassNorth].paint(painter)
         guides[Guide.CompassEast].paint(painter)
         guides[Guide.CompassSouth].paint(painter)
@@ -492,7 +492,8 @@ class QGuideRose(QFrame):
         # fruitless endeavor (at least on Windows). There appears to
         # be a subtle bug in the transparent window compositing that
         # randomly clips 1px from the edges of guides. This is not a
-        # huge issue since this paint event is relatively cheap.
+        # huge issue since this paint event only blits images and is
+        # therefore relatively cheap.
         super(QGuideRose, self).paintEvent(event)
         painter = QPainter(self)
         mode = self._mode
