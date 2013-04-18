@@ -486,7 +486,7 @@ class QDockItem(QFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setTitleBarWidget(QDockItemTitleBar())
-        self.handler = None  # set by the framework
+        self.handler = None  # set by the dock manager
 
     #--------------------------------------------------------------------------
     # Public API
