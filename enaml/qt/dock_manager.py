@@ -691,6 +691,7 @@ class DockContainerHandler(DockHandler):
                     if handler.plug(self.dock_container, pos, guide):
                         self.manager.toplevel.remove(self)
                         self.floating = False
+                    return
 
     #--------------------------------------------------------------------------
     # Utility Methods
