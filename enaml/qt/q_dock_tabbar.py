@@ -39,7 +39,8 @@ class QDockTabBar(QTabBar):
         dock drag is initiated.
 
         """
-        if event.button() == Qt.LeftButton:
+        shift = Qt.ShiftModifier
+        if event.button() == Qt.LeftButton and event.modifiers() & shift:
             if self.tabAt(event.pos()) != -1 and self._press_pos is None:
                 self._press_pos = event.pos()
         super(QDockTabBar, self).mousePressEvent(event)
@@ -51,18 +52,25 @@ class QDockTabBar(QTabBar):
         start drag distances, the item will be undocked.
 
         """
-        if self._press_pos is None:
-            super(QDockTabBar, self).mouseMoveEvent(event)
-            return
-        if self.isMovable():
-            unplug = not self.rect().contains(event.pos())
-        else:
+        # Only pass along the event to the superclass if the tab is
+        # not being undocked. Forwarding the event causes the tab bar
+        # animations to start, which can cause painting artifacts on
+        # the remaining tabs after the tab is undocked.
+        if self._press_pos is not None:
             dist = (event.pos() - self._press_pos).manhattanLength()
-            unplug = dist > QApplication.startDragDistance()
-        if unplug:
-            index = self.currentIndex()
-            container = self.parent().widget(index)
-            container.handler.untab(event.globalPos())
-            self._press_pos = None
+            if dist > QApplication.startDragDistance():
+                index = self.currentIndex()
+                container = self.parent().widget(index)
+                container.handler.untab(event.globalPos())
+                self._press_pos = None
         else:
             super(QDockTabBar, self).mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """ Handle the mouse release event for the tab bar.
+
+        This handler resets the internal drag state for the tab bar.
+
+        """
+        super(QDockTabBar, self).mouseReleaseEvent(event)
+        self._press_pos = None
