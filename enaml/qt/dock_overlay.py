@@ -10,7 +10,7 @@ from PyQt4.QtGui import QRubberBand, QSplitterHandle, QTabWidget
 
 from atom.api import Atom, Bool, Int, Float, Typed
 
-from .q_guide_rose import QGuideRose, Guide, GuideMode
+from .q_guide_rose import QGuideRose
 from .q_dock_container import QDockContainer
 
 
@@ -53,7 +53,7 @@ class DockOverlay(Atom):
     _vis_animator = Typed(QPropertyAnimation)
 
     #: The target mode to apply to the rose on timeout.
-    _target_rose_mode = Int(GuideMode.NoMode)
+    _target_rose_mode = Int(QGuideRose.Mode.NoMode)
 
     #: The target geometry to apply to rubber band on timeout.
     _target_band_geo = Typed(QRect, factory=lambda: QRect())
@@ -229,6 +229,7 @@ class DockOverlay(Atom):
             geometry of the band will be fit to the widget.
 
         """
+        Guide = QGuideRose.Guide
         if guide == Guide.NoGuide:
             return QRect()
 
@@ -253,13 +254,15 @@ class DockOverlay(Atom):
             rect.setTop(2 * rect.height() / 3)
         elif guide == Guide.CompassWest:
             rect.setWidth(rect.width() / 3)
-        elif guide == Guide.CompassCenterNorth:
+        elif guide == Guide.CompassCenter:
             pass  # nothing to do
-        elif guide == Guide.CompassCenterEast:
+        elif guide == Guide.CompassExNorth:
             pass  # nothing to do
-        elif guide == Guide.CompassCenterSouth:
+        elif guide == Guide.CompassExEast:
             pass  # nothing to do
-        elif guide == Guide.CompassCenterWest:
+        elif guide == Guide.CompassExSouth:
+            pass  # nothing to do
+        elif guide == Guide.CompassExWest:
             pass  # nothing to do
 
         # splitter handle hits
@@ -273,7 +276,7 @@ class DockOverlay(Atom):
             rect.moveTop(rect.y() - (ho + r))
 
         # single center
-        elif guide == Guide.SingleCenter:
+        elif guide == Guide.AreaCenter:
             pass  # nothing to do
 
         # default no-op
@@ -339,11 +342,12 @@ class DockOverlay(Atom):
             guide rose.
 
         """
+        Mode = QGuideRose.Mode
         rose = self._rose
-        target_mode = GuideMode.SingleCenter if empty else GuideMode.Compass
+        target_mode = Mode.AreaCenter if empty else Mode.CompassEx
         self._target_rose_mode = target_mode
         if rose.mode() != target_mode:
-            rose.setMode(GuideMode.NoMode)
+            rose.setMode(Mode.NoMode)
             self._rose_timer.start(self.rose_delay)
             self._band_timer.start(self.band_delay)
         origin = widget.mapToGlobal(QPoint(0, 0))
@@ -351,7 +355,7 @@ class DockOverlay(Atom):
         dirty = rose.geometry() != geo
         if dirty:
             rose.hide()
-            rose.setMode(GuideMode.NoMode)
+            rose.setMode(Mode.NoMode)
             rose.setGeometry(geo)
         guide = rose.guideAt(pos, target_mode)
         if dirty or guide != self._last_guide:
@@ -379,16 +383,21 @@ class DockOverlay(Atom):
             the overlayed dock area.
 
         """
-        target_mode = GuideMode.Border
+        Mode = QGuideRose.Mode
+        Guide = QGuideRose.Guide
+
         # Compute the target mode for the guide rose based on the dock
         # widget which lies under the mouse position.
-        if isinstance(widget, (QDockContainer, QTabWidget)):
-            target_mode |= GuideMode.Compass
+        target_mode = Mode.Border
+        if isinstance(widget, QDockContainer):
+            target_mode |= Mode.CompassEx
+        elif isinstance(widget, QTabWidget):
+            target_mode |= Mode.Compass
         elif isinstance(widget, QSplitterHandle):
             if widget.orientation() == Qt.Horizontal:
-                target_mode |= GuideMode.SplitHorizontal
+                target_mode |= Mode.SplitHorizontal
             else:
-                target_mode |= GuideMode.SplitVertical
+                target_mode |= Mode.SplitVertical
 
         # Get the local area coordinates for the center of the widget.
         if widget is not None:
@@ -406,7 +415,7 @@ class DockOverlay(Atom):
         self._show_band = True
         self._target_rose_mode = target_mode
         if target_mode != rose.mode():
-            rose.setMode(GuideMode.Border)
+            rose.setMode(Mode.Border)
             self._rose_timer.start(self.rose_delay)
             self._show_band = False
 
@@ -417,7 +426,7 @@ class DockOverlay(Atom):
         dirty = rose.geometry() != geo
         if dirty:
             rose.hide()
-            rose.setMode(GuideMode.NoMode)
+            rose.setMode(Mode.NoMode)
             rose.setGeometry(geo)
 
         # Hit test the rose and update the target geometry for the

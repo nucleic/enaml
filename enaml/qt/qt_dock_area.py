@@ -106,3 +106,12 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         self.size_hint_updated()
+
+    #--------------------------------------------------------------------------
+    # ProxyDockArea API
+    #--------------------------------------------------------------------------
+    def save_layout(self):
+        return self.manager.save_layout()
+
+    def apply_layout(self, layout):
+        self.manager.apply_layout(layout)

@@ -3,10 +3,12 @@ from enaml.layout.api import *
 
 
 enamldef MyArea(DockArea): area:
-    layout = hsplit(
-        vsplit('foo', 'bar'),
-        vsplit('baz', tabbed('cram', 'blam', tab_position='left')),
-        vsplit('spam', hsplit('flam', 'ham', 'ham')),
+    layout = docklayout(
+        hsplit(
+            vsplit('foo', 'bar'),
+            vsplit('baz', tabbed('cram', 'blam', tab_position='left')),
+            vsplit('spam', hsplit('flam', 'ham')),
+        )
     )
     DockItem:
         name = 'foo'
@@ -82,6 +84,13 @@ enamldef Main(MainWindow):
     Container:
         padding = 0
         #constraints = [hbox(v1, v2)]
+        attr stored = {}
+        PushButton:
+            text = 'save'
+            clicked :: parent.stored = v1.save_layout()
+        PushButton:
+            text = 'restore'
+            clicked :: v1.apply_layout(parent.stored)
         MyArea: v1: pass
         #MyArea: v2: pass
 

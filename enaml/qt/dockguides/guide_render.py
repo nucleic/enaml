@@ -4,15 +4,6 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-def timer(f):
-    import time
-    def c(*a):
-        t = time.clock()
-        r = f(*a)
-        print time.clock() - t
-        return r
-    return c
-
 
 class GuidePad(object):
 
@@ -314,20 +305,20 @@ def render_cross_ex(painter):
     path = QPainterPath()
     path.moveTo(49.0, 0)
     path.lineTo(89.0, 0)
-    path.lineTo(89.0, 25.0)
-    path.lineTo(99.0, 35.0)
-    path.lineTo(138.0, 35.0)
-    path.lineTo(138.0, 75.0)
-    path.lineTo(99.0, 75.0)
-    path.lineTo(89.0, 85.0)
-    path.lineTo(89.0, 124.0)
-    path.lineTo(49.0, 124.0)
-    path.lineTo(49.0, 85.0)
-    path.lineTo(39.0, 75.0)
-    path.lineTo(0.0, 75.0)
-    path.lineTo(0.0, 35.0)
-    path.lineTo(39.0, 35.0)
-    path.lineTo(49.0, 25.0)
+    path.lineTo(89.0, 39.0)
+    path.lineTo(99.0, 49.0)
+    path.lineTo(138.0, 49.0)
+    path.lineTo(138.0, 89.0)
+    path.lineTo(99.0, 89.0)
+    path.lineTo(89.0, 99.0)
+    path.lineTo(89.0, 138.0)
+    path.lineTo(49.0, 138.0)
+    path.lineTo(49.0, 99.0)
+    path.lineTo(39.0, 89.0)
+    path.lineTo(0.0, 89.0)
+    path.lineTo(0.0, 49.0)
+    path.lineTo(39.0, 49.0)
+    path.lineTo(49.0, 39.0)
     path.lineTo(49.0, 0.0)
     painter.fillPath(path, QColor(0xFF, 0xFF, 0xFF, 0x99))
     painter.setPen(QPen(QColor(0x77, 0x77, 0x77), 1.0))
@@ -414,18 +405,18 @@ def render_hbar(painter):
 
 
 app = QApplication([])
-image = QImage(QSize(10, 31), QImage.Format_ARGB32_Premultiplied)
+image = QImage(QSize(139, 139), QImage.Format_ARGB32_Premultiplied)
 image.fill(0)
 painter = QPainter(image)
 #render_box(painter)
 #render_cross(painter)
-#render_cross_ex(painter)
-render_vbar(painter)
+render_cross_ex(painter)
+#render_vbar(painter)
 #render_hbar(painter)
 #pad = GuidePad(QRect(0, 0, 30, 30), GuidePad.CenterQuads)
 #pad.paint(painter)
 painter.end()
 
 import os
-path = os.path.join(os.path.dirname(__file__), 'vbar.png')
+path = os.path.join(os.path.dirname(__file__), 'cross_ex_box.png')
 image.save(path)
