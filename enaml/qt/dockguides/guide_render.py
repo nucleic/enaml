@@ -24,7 +24,7 @@ class GuidePad(object):
 
     BottomPosition = 3
 
-    CenterPosition = 4
+    CenterTop = 4
 
     SplitLeft = 5
 
@@ -37,6 +37,12 @@ class GuidePad(object):
     SplitHorizontal = 9
 
     SplitVertical = 10
+
+    CenterLeft = 11
+
+    CenterRight = 12
+
+    CenterBottom = 13
 
     @staticmethod
     def makePath(size):
@@ -179,12 +185,30 @@ class GuidePad(object):
             painter.translate(6, h)
             painter.rotate(-90)
             painter.fillPath(self._tri_path, color)
-        elif position == self.CenterPosition:
+        elif position == self.CenterTop:
             width = rect.width() - 8
             height = rect.height() - 8
             painter.drawRect(QRect(4, 4, width, height))
             painter.fillRect(QRect(5, 5, width - 1, 3), color)
             painter.fillRect(QRect(5, 8, width - 1, height - 4), fill_brush)
+        elif position == self.CenterBottom:
+            width = rect.width() - 8
+            height = rect.height() - 8
+            painter.drawRect(QRect(4, 4, width, height))
+            painter.fillRect(QRect(5, 5 + height - 4, width - 1, 3), color)
+            painter.fillRect(QRect(5, 5, width - 1, height - 4), fill_brush)
+        elif position == self.CenterLeft:
+            width = rect.width() - 8
+            height = rect.height() - 8
+            painter.drawRect(QRect(4, 4, width, height))
+            painter.fillRect(QRect(5, 5, 3, height), color)
+            painter.fillRect(QRect(8, 5, width - 4, height - 1), fill_brush)
+        elif position == self.CenterRight:
+            width = rect.width() - 8
+            height = rect.height() - 8
+            painter.drawRect(QRect(4, 4, width, height))
+            painter.fillRect(QRect(width + 1, 5, 3, height - 1), color)
+            painter.fillRect(QRect(5, 5, width - 4, height - 1), fill_brush)
         elif position == self.SplitTop:
             width = rect.width() - 8
             height = rect.height() - 8
@@ -262,87 +286,6 @@ class GuidePad(object):
         painter.restore()
 
 
-class QDiamondGuide(QFrame):
-
-    def __init__(self, parent=None, pad_size=30):
-        super(QDiamondGuide, self).__init__(parent)
-        self._pad_size = 30
-        self._pads = [GuidePad(QRect()) for _ in xrange(9)]
-        self.setMouseTracking(True)
-
-        pads = self._pads
-        pads[0].setGuidePosition(GuidePad.LeftPosition)
-        pads[1].setGuidePosition(GuidePad.TopPosition)
-        pads[2].setGuidePosition(GuidePad.RightPosition)
-        pads[3].setGuidePosition(GuidePad.BottomPosition)
-        pads[4].setGuidePosition(GuidePad.CenterPosition)
-        pads[5].setGuidePosition(GuidePad.LeftPosition)
-        pads[6].setGuidePosition(GuidePad.TopPosition)
-        pads[7].setGuidePosition(GuidePad.RightPosition)
-        pads[8].setGuidePosition(GuidePad.BottomPosition)
-
-    def hover(self, pos):
-        for pad in self._pads:
-            o = pad.opacity()
-            if pad.contains(pos):
-                if o != 1.0:
-                    pad.setOpacity(1.0)
-                    self.update(pad.rect())
-            elif o != 0.8:
-                pad.setOpacity(0.8)
-                self.update(pad.rect())
-
-    def resizeEvent(self, event):
-        size = self._pad_size
-        cx = self.width() / 2
-        cy = self.height() / 2
-        hs = size / 2
-
-        # left
-        r1 = QRect(cx - hs - 5 - size, cy - hs, size, size)
-
-        # top
-        r2 = QRect(cx - hs, cy - hs - 5 - size, size, size)
-
-        # right
-        r3 = QRect(cx + hs + 5, cy - hs, size, size)
-
-        # bottom
-        r4 = QRect(cx - hs, cy + hs + 5, size, size)
-
-        # center
-        r5 = QRect(cx - hs, cy - hs, size, size)
-
-        # left border
-        r6 = QRect(10, cy - hs, size, size)
-
-        # top border
-        r7 = QRect(cx - hs, 10, size, size)
-
-        # right border
-        r8 = QRect(cx * 2 - 10 - size, cy - hs, size, size)
-
-        # bottom border
-        r9 = QRect(cx - hs, cy * 2 - 10 - size, size, size)
-
-        rects = (r1, r2, r3, r4, r5, r6, r7, r8, r9)
-        for rect, pad in zip(rects, self._pads):
-            pad.setRect(rect)
-
-    def mouseMoveEvent(self, event):
-        self.hover(event.pos())
-
-    @timer
-    def paintEvent(self, event):
-        super(QDiamondGuide, self).paintEvent(event)
-        painter = QPainter(self)
-        rect = event.rect()
-        for pad in self._pads:
-            if pad.intersects(rect):
-                pad.paint(painter)
-
-
-
 def render_cross(painter):
     path = QPainterPath()
     path.moveTo(35.0, 0)
@@ -362,6 +305,30 @@ def render_cross(painter):
     path.lineTo(25.0, 35.0)
     path.lineTo(35.0, 25.0)
     path.lineTo(35.0, 0.0)
+    painter.fillPath(path, QColor(0xFF, 0xFF, 0xFF, 0x99))
+    painter.setPen(QPen(QColor(0x77, 0x77, 0x77), 1.0))
+    painter.drawPath(path)
+
+
+def render_cross_ex(painter):
+    path = QPainterPath()
+    path.moveTo(49.0, 0)
+    path.lineTo(89.0, 0)
+    path.lineTo(89.0, 25.0)
+    path.lineTo(99.0, 35.0)
+    path.lineTo(138.0, 35.0)
+    path.lineTo(138.0, 75.0)
+    path.lineTo(99.0, 75.0)
+    path.lineTo(89.0, 85.0)
+    path.lineTo(89.0, 124.0)
+    path.lineTo(49.0, 124.0)
+    path.lineTo(49.0, 85.0)
+    path.lineTo(39.0, 75.0)
+    path.lineTo(0.0, 75.0)
+    path.lineTo(0.0, 35.0)
+    path.lineTo(39.0, 35.0)
+    path.lineTo(49.0, 25.0)
+    path.lineTo(49.0, 0.0)
     painter.fillPath(path, QColor(0xFF, 0xFF, 0xFF, 0x99))
     painter.setPen(QPen(QColor(0x77, 0x77, 0x77), 1.0))
     painter.drawPath(path)
@@ -390,6 +357,7 @@ def render_north_cross(painter):
     painter.setPen(QPen(QColor(0x77, 0x77, 0x77), 1.0))
     painter.drawPath(path)
 
+
 def render_box(painter):
     path = QPainterPath()
     path.moveTo(0.0, 0.0)
@@ -402,13 +370,62 @@ def render_box(painter):
     painter.drawPath(path)
 
 
+def render_vbar(painter):
+    path = QPainterPath()
+    rect = QRectF(0, 0, 9, 30)
+    path.addRoundedRect(rect, 2.0, 2.0)
+    grad = QLinearGradient(0.0, 0.0, 0.0, 1.0)
+    grad.setCoordinateMode(QGradient.ObjectBoundingMode)
+    grad.setColorAt(0.0, QColor(0xF5, 0xF8, 0xFB))
+    grad.setColorAt(0.33, QColor(0xF0, 0xF3, 0xF6))
+    grad.setColorAt(0.66, QColor(0xE5, 0xE8, 0xEE))
+    grad.setColorAt(1.0, QColor(0xDE, 0xE2, 0xE9))
+    brush = QBrush(grad)
+    pen = QPen(QColor(0x8A, 0x91, 0x9C))
+
+    painter.fillPath(path, brush)
+    painter.setPen(pen)
+    painter.drawPath(path)
+
+    color = QColor(0x44, 0x58, 0x79)
+    painter.fillRect(QRect(4, 4, 2, 23), color)
+
+
+def render_hbar(painter):
+    path = QPainterPath()
+    rect = QRectF(0, 0, 30, 9)
+    path.addRoundedRect(rect, 2.0, 2.0)
+    grad = QLinearGradient(0.0, 0.0, 0.0, 1.0)
+    grad.setCoordinateMode(QGradient.ObjectBoundingMode)
+    grad.setColorAt(0.0, QColor(0xF5, 0xF8, 0xFB))
+    grad.setColorAt(0.33, QColor(0xF0, 0xF3, 0xF6))
+    grad.setColorAt(0.66, QColor(0xE5, 0xE8, 0xEE))
+    grad.setColorAt(1.0, QColor(0xDE, 0xE2, 0xE9))
+    brush = QBrush(grad)
+    pen = QPen(QColor(0x8A, 0x91, 0x9C))
+
+    painter.fillPath(path, brush)
+    painter.setPen(pen)
+    painter.drawPath(path)
+
+    color = QColor(0x44, 0x58, 0x79)
+    painter.setPen(color)
+    painter.fillRect(QRect(4, 4, 23, 2), color)
+
+
 app = QApplication([])
-image = QImage(QSize(31, 31), QImage.Format_ARGB32_Premultiplied)
+image = QImage(QSize(10, 31), QImage.Format_ARGB32_Premultiplied)
 image.fill(0)
 painter = QPainter(image)
 #render_box(painter)
 #render_cross(painter)
-pad = GuidePad(QRect(0, 0, 30, 30), GuidePad.SplitVertical)
-pad.paint(painter)
+#render_cross_ex(painter)
+render_vbar(painter)
+#render_hbar(painter)
+#pad = GuidePad(QRect(0, 0, 30, 30), GuidePad.CenterQuads)
+#pad.paint(painter)
 painter.end()
-image.save('C:/Users/i341972/Desktop/git_repos/nucleic/enaml/enaml/qt/dockguides/split_vertical.png')
+
+import os
+path = os.path.join(os.path.dirname(__file__), 'vbar.png')
+image.save(path)

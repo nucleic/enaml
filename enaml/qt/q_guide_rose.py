@@ -11,17 +11,21 @@ import sys
 from PyQt4.QtCore import Qt, QRect, QPoint
 from PyQt4.QtGui import QFrame, QImage, QPainter
 
-from atom.api import Atom, Float, Typed
+from atom.api import Atom, Float, Typed, Value
 
 
 #: The default alpha value for guide transparency.
 LOW_ALPHA = 0.60
 
+
 #: The default alpha value for no guide transparency.
 FULL_ALPHA = 1.0
 
 
+#: A cache of QImage instances for the loaded guide images.
 _images = {}
+
+
 def load_image(name):
     """ Load the guide image for the given name into a QImage.
 
@@ -30,16 +34,95 @@ def load_image(name):
     a generic image loading routine.
 
     """
-    img = _images.get(name)
-    if img is None:
+    image = _images.get(name)
+    if image is None:
         dirname = os.path.dirname(__file__)
-        img = QImage(os.path.join(dirname, 'dockguides', name + '.png'))
-        _images[name] = img
-    return img
+        image = QImage(os.path.join(dirname, 'dockguides', name + '.png'))
+        _images[name] = image
+    return image
+
+
+class Guide(object):
+    """ An enum class for identifying guide locations.
+
+    """
+    #: No relevant guide.
+    NoGuide = 0
+
+    #: The north border guide.
+    BorderNorth = 1
+
+    #: The east border guide.
+    BorderEast = 2
+
+    #: The south border guide.
+    BorderSouth = 3
+
+    #: The west border guide.
+    BorderWest = 4
+
+    #: The north compass guide.
+    CompassNorth = 5
+
+    #: The east compass guide.
+    CompassEast = 6
+
+    #: The south compass guide.
+    CompassSouth = 7
+
+    #: The west compass guide.
+    CompassWest = 8
+
+    #: The center compass north guide.
+    CompassCenterNorth = 9
+
+    #: The center compass east guide.
+    CompassCenterEast = 10
+
+    #: The center compass south guide.
+    CompassCenterSouth = 11
+
+    #: The center compass west guide.
+    CompassCenterWest = 12
+
+    #: The vertical split guide.
+    SplitVertical = 13
+
+    #: The horizontal split guide.
+    SplitHorizontal = 14
+
+    #: The single center guide.
+    SingleCenter = 15
+
+
+class GuideMode(object):
+    """ An enum class for defining the guide mode for a guide rose.
+
+    These modes can be or'd together to dictate which guides are
+    activated and painted on the screen.
+
+    """
+    #: Nothing will be shown.
+    NoMode = 0x0
+
+    #: Show the border guides.
+    Border = 0x1
+
+    #: Show the central compass.
+    Compass = 0x2
+
+    #: Show the horizontal split guide.
+    SplitHorizontal = 0x4
+
+    #: Show the vertical split guide.
+    SplitVertical = 0x8
+
+    #: Show the single center guide.
+    SingleCenter = 0x10
 
 
 class GuideImage(Atom):
-    """ A class which manages a guide image in a dock rose.
+    """ A class which manages the painting of a guide image.
 
     """
     #: The QImage to use when painting the guide.
@@ -51,16 +134,16 @@ class GuideImage(Atom):
     #: The opacity to use when drawing the image.
     opacity = Float(LOW_ALPHA)
 
-    def pos(self):
-        """ Get the position of the image.
+    def __init__(self, name):
+        """ Initialize a GuideImage.
 
-        Returns
-        -------
-        result : QPoint
-            The point representing the top-left corner of the image.
+        Parameters
+        ----------
+        name : str
+            The name of the image to load for the guide.
 
         """
-        return self.rect.topLeft()
+        self.image = load_image(name)
 
     def contains(self, point):
         """ Test whether the image contains a point.
@@ -77,22 +160,6 @@ class GuideImage(Atom):
 
         """
         return self.rect.contains(point)
-
-    def intersects(self, rect):
-        """ Test whether the image intersects a rectangle.
-
-        Parameters
-        ----------
-        rect : QRect
-            The rect to test for intersection.
-
-        Returns
-        -------
-        result : bool
-            True if the image intersects the rect, False otherwise.
-
-        """
-        return self.rect.intersects(rect)
 
     def paint(self, painter):
         """ Paint the image using the given painter.
@@ -113,8 +180,436 @@ class GuideImage(Atom):
         painter.restore()
 
 
+class BorderGuides(Atom):
+    """ A class which renders the border guides for the guide rose.
+
+    """
+    _guides = Value(factory=lambda: {
+        Guide.BorderNorth: GuideImage('top'),
+        Guide.BorderEast: GuideImage('right'),
+        Guide.BorderSouth: GuideImage('bottom'),
+        Guide.BorderWest: GuideImage('left'),
+    })
+
+    _boxes = Value(factory=lambda: {
+        Guide.BorderNorth: GuideImage('box'),
+        Guide.BorderEast: GuideImage('box'),
+        Guide.BorderSouth: GuideImage('box'),
+        Guide.BorderWest: GuideImage('box'),
+    })
+
+    _last = Value()
+
+    def layout(self, rect):
+        """ Layout the guides for the given rect.
+
+        Parameters
+        ----------
+        rect : QRect
+            The rectangle in which to layout the border guides.
+
+        """
+        boxes = self._boxes
+        guides = self._guides
+        w = rect.width()
+        h = rect.height()
+        cx = rect.left() + w / 2
+        cy = rect.top() + h / 2
+        guides[Guide.BorderNorth].rect = QRect(cx - 15, 15, 31, 31)
+        boxes[Guide.BorderNorth].rect = QRect(cx - 20, 10, 41, 41)
+        guides[Guide.BorderEast].rect = QRect(w - 45, cy - 15, 31, 31)
+        boxes[Guide.BorderEast].rect = QRect(w - 50, cy - 20, 41, 41)
+        guides[Guide.BorderSouth].rect = QRect(cx - 15, h - 45, 31, 31)
+        boxes[Guide.BorderSouth].rect = QRect(cx - 20, h - 50, 41, 41)
+        guides[Guide.BorderWest].rect = QRect(15, cy - 15, 31, 31)
+        boxes[Guide.BorderWest].rect = QRect(10, cy - 20, 41, 41)
+
+    def guide_at(self, pos):
+        """ Get the guide under the given mouse position.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The point of interest, expressed in layout coordinates.
+
+        Returns
+        -------
+        result : Guide
+            The enum value for the guide at the given position.
+
+        """
+        for enum, guide in self._guides.iteritems():
+            if guide.contains(pos):
+                return enum
+        return Guide.NoGuide
+
+    def mouse_over(self, pos):
+        """ Perform a mouse over of the border guides.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The position of interest expressed in layout coordinates.
+
+        """
+        for guide in self._guides.itervalues():
+            if guide.contains(pos):
+                last = self._last
+                if last is not None and last is not guide:
+                    last.opacity = LOW_ALPHA
+                guide.opacity = FULL_ALPHA
+                self._last = guide
+                return
+        if self._last is not None:
+            self._last.opacity = LOW_ALPHA
+
+    def paint(self, painter):
+        """ Paint the border guides.
+
+        Parameters
+        ----------
+        painter : QPainter
+            The painter to use to paint the guides.
+
+        """
+        for box in self._boxes.itervalues():
+            box.paint(painter)
+        for guide in self._guides.itervalues():
+            guide.paint(painter)
+
+
+class CompassGuides(Atom):
+    """ A class which renders the center compass for the guide rose.
+
+    """
+    _outer_guides = Value(factory=lambda: {
+        Guide.CompassNorth: GuideImage('top'),
+        Guide.CompassEast: GuideImage('right'),
+        Guide.CompassSouth: GuideImage('bottom'),
+        Guide.CompassWest: GuideImage('left'),
+    })
+
+    _center_guides = Value(factory=lambda: {
+        Guide.CompassCenterNorth: GuideImage('center_top'),
+        Guide.CompassCenterEast: GuideImage('center_right'),
+        Guide.CompassCenterSouth: GuideImage('center_bottom'),
+        Guide.CompassCenterWest: GuideImage('center_left',)
+    })
+
+    _box = Value(factory=lambda: GuideImage('cross'))
+
+    _center = Value(Guide.CompassCenterNorth)
+
+    _last = Value()
+
+    _pos = Typed(QPoint)
+
+    def iterguides(self):
+        """ Iterate the guides for the compass.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields 2-tuples of (enum, guide) for
+            the relevant guides in the compass.
+
+        """
+        for item in self._outer_guides.iteritems():
+            yield item
+        center = self._center
+        yield (center, self._center_guides[center])
+
+    def layout(self, pos):
+        """ Layout the guides for the given position.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The center point of the compass.
+
+        """
+        self._pos = pos
+        x = pos.x()
+        y = pos.y()
+        outer_guides = self._outer_guides
+        outer_guides[Guide.CompassNorth].rect = QRect(x - 15, y - 50, 31, 31)
+        outer_guides[Guide.CompassEast].rect = QRect(x + 20, y - 15, 31, 31)
+        outer_guides[Guide.CompassSouth].rect = QRect(x - 15, y + 20, 31, 31)
+        outer_guides[Guide.CompassWest].rect = QRect(x - 50, y - 15, 31, 31)
+        rect = QRect(x - 15, y - 15, 31, 31)
+        center_guides = self._center_guides
+        center_guides[Guide.CompassCenterNorth].rect = rect
+        center_guides[Guide.CompassCenterEast].rect = rect
+        center_guides[Guide.CompassCenterSouth].rect = rect
+        center_guides[Guide.CompassCenterWest].rect = rect
+        self._box.rect = QRect(x - 55, y - 55, 111, 111)
+
+    def guide_at(self, pos):
+        """ Get the guide under the given mouse position.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The point of interest, expressed in layout coordinates.
+
+        Returns
+        -------
+        result : Guide
+            The enum value for the guide at the given position.
+
+        """
+        for enum, guide in self.iterguides():
+            if guide.contains(pos):
+                return enum
+        return Guide.NoGuide
+
+    def mouse_over(self, pos):
+        """ Perform a mouse over of the compass guides.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The position of interest expressed in layout coordinates.
+
+        """
+        for ignored, guide in self.iterguides():
+            if guide.contains(pos):
+                last = self._last
+                if last is not None and last is not guide:
+                    last.opacity = LOW_ALPHA
+                guide.opacity = FULL_ALPHA
+                self._last = guide
+                return
+
+        if self._last is not None:
+            self._last.opacity = LOW_ALPHA
+
+    def paint(self, painter):
+        """ Paint the border guides.
+
+        Parameters
+        ----------
+        painter : QPainter
+            The painter to use to paint the guides.
+
+        """
+        self._box.paint(painter)
+        for ignored, guide in self.iterguides():
+            guide.paint(painter)
+
+
+class CompassExGuides(Atom):
+    """ A class which renders the center compass for the guide rose.
+
+    """
+    _outer_guides = Value(factory=lambda: {
+        Guide.CompassNorth: GuideImage('top'),
+        Guide.CompassEast: GuideImage('right'),
+        Guide.CompassSouth: GuideImage('bottom'),
+        Guide.CompassWest: GuideImage('left'),
+    })
+
+    _center_guides = Value(factory=lambda: {
+        Guide.CompassCenterNorth: GuideImage('center_top'),
+        Guide.CompassCenterEast: GuideImage('vbar'),
+        Guide.CompassCenterSouth: GuideImage('hbar'),
+        Guide.CompassCenterWest: GuideImage('vbar')
+    })
+
+    _box = Value(factory=lambda: GuideImage('cross_ex'))
+
+    _last = Value()
+
+    def iterguides(self):
+        """ Iterate the guides for the compass.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields 2-tuples of (enum, guide) for
+            the relevant guides in the compass.
+
+        """
+        for item in self._outer_guides.iteritems():
+            yield item
+        for item in self._center_guides.iteritems():
+            yield item
+
+    def layout(self, pos):
+        """ Layout the guides for the given position.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The center point of the compass.
+
+        """
+        x = pos.x()
+        y = pos.y()
+        outer_guides = self._outer_guides
+        outer_guides[Guide.CompassNorth].rect = QRect(x - 15, y - 50, 31, 31)
+        outer_guides[Guide.CompassEast].rect = QRect(x + 34, y - 15, 31, 31)
+        outer_guides[Guide.CompassSouth].rect = QRect(x - 15, y + 34, 31, 31)
+        outer_guides[Guide.CompassWest].rect = QRect(x - 64, y - 15, 31, 31)
+        cguides = self._center_guides
+        cguides[Guide.CompassCenterNorth].rect = QRect(x - 15, y - 15, 31, 31)
+        cguides[Guide.CompassCenterEast].rect = QRect(x + 20, y - 15, 10, 31)
+        cguides[Guide.CompassCenterSouth].rect = QRect(x - 15, y + 20, 31, 10)
+        cguides[Guide.CompassCenterWest].rect = QRect(x - 29, y - 15, 10, 31)
+        self._box.rect = QRect(x - 69, y - 55, 139, 125)
+
+    def guide_at(self, pos):
+        """ Get the guide under the given mouse position.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The point of interest, expressed in layout coordinates.
+
+        Returns
+        -------
+        result : Guide
+            The enum value for the guide at the given position.
+
+        """
+        for enum, guide in self.iterguides():
+            if guide.contains(pos):
+                return enum
+        return Guide.NoGuide
+
+    def mouse_over(self, pos):
+        """ Perform a mouse over of the compass guides.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The position of interest expressed in layout coordinates.
+
+        """
+        for ignored, guide in self.iterguides():
+            if guide.contains(pos):
+                last = self._last
+                if last is not None and last is not guide:
+                    last.opacity = LOW_ALPHA
+                guide.opacity = FULL_ALPHA
+                self._last = guide
+                return
+
+        if self._last is not None:
+            self._last.opacity = LOW_ALPHA
+
+    def paint(self, painter):
+        """ Paint the border guides.
+
+        Parameters
+        ----------
+        painter : QPainter
+            The painter to use to paint the guides.
+
+        """
+        self._box.paint(painter)
+        for ignored, guide in self.iterguides():
+            guide.paint(painter)
+
+
+class SingleGuide(Atom):
+    """ A class which renders a single guide for the guide rose.
+
+    """
+    # Reimplement in a subclass to hold the guide image.
+    _guide = Value()
+
+    # Reimplement in a subclass to store the guide enum.
+    _enum = Value(Guide.NoGuide)
+
+    _box = Value(factory=lambda: GuideImage('box'))
+
+    def layout(self, pos):
+        """ Layout the guides for the given position.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The center point of the guide.
+
+        """
+        x = pos.x()
+        y = pos.y()
+        self._guide.rect = QRect(x - 15, y - 15, 31, 31)
+        self._box.rect = QRect(x - 20, y - 20, 41, 41)
+
+    def guide_at(self, pos):
+        """ Get the guide under the given mouse position.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The point of interest, expressed in layout coordinates.
+
+        Returns
+        -------
+        result : Guide
+            The enum value for the guide at the given position.
+
+        """
+        if self._guide.contains(pos):
+            return self._enum
+        return Guide.NoGuide
+
+    def mouse_over(self, pos):
+        """ Perform a mouse over of the guide.
+
+        Parameters
+        ----------
+        pos : QPoint
+            The position of interest expressed in layout coordinates.
+
+        """
+        guide = self._guide
+        guide.opacity = FULL_ALPHA if guide.contains(pos) else LOW_ALPHA
+
+    def paint(self, painter):
+        """ Paint the border guide.
+
+        Parameters
+        ----------
+        painter : QPainter
+            The painter to use to paint the guide.
+
+        """
+        self._box.paint(painter)
+        self._guide.paint(painter)
+
+
+class HSplitGuide(SingleGuide):
+    """ A single guide specialization for a horizontal split.
+
+    """
+    _guide = Value(factory=lambda: GuideImage('split_horizontal'))
+
+    _enum = Value(Guide.SplitHorizontal)
+
+
+class VSplitGuide(SingleGuide):
+    """ A single guide specialization for a vertical split.
+
+    """
+    _guide = Value(factory=lambda: GuideImage('split_vertical'))
+
+    _enum = Value(Guide.SplitVertical)
+
+
+class SingleCenterGuide(SingleGuide):
+    """ A single guide specialization for a center guide.
+
+    """
+    _guide = Value(factory=lambda: GuideImage('center_top'))
+
+    _enum = Value(Guide.SingleCenter)
+
+
 class QGuideRose(QFrame):
-    """ A custom QFrame which implements a rose of docking guides.
+    """ A custom QFrame which implements a collection of docking guides.
 
     This widget must always be used as an independent top-level window.
     The dock area which uses the rose should manually set the geometry
@@ -127,93 +622,25 @@ class QGuideRose(QFrame):
 
     - Compass Guides
         These are five guides arranged in a compass. The center of
-        the compass can be adjusted via the 'setRoseCenter' method.
-        The compass guide is (de)activated via 'setRoseMode'.
+        the compass can be adjusted via the 'setCenter' method.
+        The compass guide is (de)activated via 'setMode'.
 
     - Splitter Guides
         These are horizontal and vertical guides which can be used
         to indicate a hover over a splitter handle. The center of
-        the guides can be adjusted via the 'setRoseCenter' method.
-        The splitter guides are (de)activated via 'setRoseMode'.
+        the guides can be adjusted via the 'setCenter' method.
+        The splitter guides are (de)activated via 'setMode'.
+
+    - Single Center Guide
+        A single guide which will be displayed in the center of the
+        of the layout area.
 
     """
-    class Mode(object):
-        """ An enum class for defining the rose mode.
-
-        """
-        #: No guides will be active.
-        NoMode = 0
-
-        #: The compass rose and border guides will be active.
-        Compass = 1
-
-        #: The vertical split and border guides will be active.
-        SplitVertical = 2
-
-        #: The horizontal split and border guides will be active.
-        SplitHorizontal = 3
-
-        #: Only a single guide in the center will be active.
-        SingleCenter = 4
-
-        #: Only the compass rose will be active.
-        CompassOnly = 5
-
-        #: Only show the border guides will be active.
-        BorderOnly = 6
-
-    class Guide(object):
-        """ An enum class for identifying guide locations.
-
-        """
-        #: The north border guide.
-        BorderNorth = 0
-
-        #: The east border guide.
-        BorderEast = 1
-
-        #: The south border guide.
-        BorderSouth = 2
-
-        #: The west border guide.
-        BorderWest = 3
-
-        #: The north compass guide.
-        CompassNorth = 4
-
-        #: The east compass guide.
-        CompassEast = 5
-
-        #: The south compass guide.
-        CompassSouth = 6
-
-        #: The west compass guide.
-        CompassWest = 7
-
-        #: The center compass guide.
-        CompassCenter = 8
-
-        #: The vertical split guide.
-        SplitVertical = 9
-
-        #: The horizontal split guide.
-        SplitHorizontal = 10
-
-        #: The single center guide.
-        SingleCenter = 11
-
-        #: The compass cross. (internal use only)
-        CompassCross = 12
-
-        #: No relevant guide.
-        NoGuide = 13
-
     def __init__(self):
         """ Initialize a QGuideRose.
 
         """
         super(QGuideRose, self).__init__()
-
         # On Mac, setting the translucent background does not cause the
         # frame shadow to be hidden; it must be explicitly hidden.
         if sys.platform == 'darwin':
@@ -223,40 +650,14 @@ class QGuideRose(QFrame):
         flags = Qt.ToolTip | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint
         self.setWindowFlags(flags)
 
-        # Setup the default rose modes and load the guide images.
-        self._center = QPoint()
-        self._mode = QGuideRose.Mode.NoMode
-        self._last = QGuideRose.Guide.NoGuide
-        make = lambda name: GuideImage(image=load_image(name))
-        self._guides = [
-            make('top'),                # BorderNorth
-            make('right'),              # BorderEast
-            make('bottom'),             # BorderSouth
-            make('left'),               # BorderWest
-            make('top'),                # CompassNorth
-            make('right'),              # CompassEast
-            make('bottom'),             # CompassSouth
-            make('left'),               # CompassWest
-            make('center'),             # CompassCenter
-            make('split_vertical'),     # SplitVertical
-            make('split_horizontal'),   # SplitHorizontal
-            make('center'),             # SingleCenter
-        ]
-        self._boxes = [
-            make('box'),                # BorderNorth
-            make('box'),                # BorderEast
-            make('box'),                # BorderSouth
-            make('box'),                # BorderWest
-            None,                       # CompassNorth
-            None,                       # CompassEast
-            None,                       # CompassSouth
-            None,                       # CompassWest
-            None,                       # CompassCenter
-            make('box'),                # SplitVertical
-            make('box'),                # SplitHorizontal
-            make('box'),                # SingleCenter
-            make('cross'),              # CompassCross
-        ]
+        self._mode = GuideMode.NoMode
+        self._center_point = QPoint()
+        self._border_guides = BorderGuides()
+        self._compass_guides = CompassExGuides()
+        #self._compass_guides = CompassGuides()
+        self._hsplit_guide = HSplitGuide()
+        self._vsplit_guide = VSplitGuide()
+        self._single_guide = SingleCenterGuide()
 
     #--------------------------------------------------------------------------
     # Private API
@@ -265,61 +666,17 @@ class QGuideRose(QFrame):
         """ Layout the guides based on the current widget geometry.
 
         """
-        boxes = self._boxes
-        guides = self._guides
-        Guide = QGuideRose.Guide
-
-        # Rose Guide Compass
-        # FIXME hard-coded image dimensions. This is not so bad because
-        # changing the icons will inevitable require a new layout.
-        # Cross Box == 111 x 111
-        # Guide Btn ==  31 x 31
-        cpx = self._center.x()
-        cpy = self._center.y()
-        guides[Guide.CompassNorth].rect = QRect(cpx - 15, cpy - 50, 31, 31)
-        guides[Guide.CompassEast].rect = QRect(cpx + 20, cpy - 15, 31, 31)
-        guides[Guide.CompassSouth].rect = QRect(cpx - 15, cpy + 20, 31, 31)
-        guides[Guide.CompassWest].rect = QRect(cpx - 50, cpy - 15, 31, 31)
-        guides[Guide.CompassCenter].rect = QRect(cpx - 15, cpy - 15, 31, 31)
-        boxes[Guide.CompassCross].rect = QRect(cpx - 55, cpy - 55, 111, 111)
-
-        # Splitter Guides
-        # FIXME hard-coded image dimensions. This is not so bad because
-        # changing the icons will inevitable require a new layout.
-        # Guide Box == 41 x 41
-        # Guide Btn == 31 x 31
-        guides[Guide.SplitHorizontal].rect = QRect(cpx - 15, cpy - 15, 31, 31)
-        boxes[Guide.SplitHorizontal].rect = QRect(cpx - 20, cpy - 20, 41, 41)
-        guides[Guide.SplitVertical].rect = QRect(cpx - 15, cpy - 15, 31, 31)
-        boxes[Guide.SplitVertical].rect = QRect(cpx - 20, cpy - 20, 41, 41)
-
-        # Border Guide Buttons
-        # FIXME hard-coded image dimensions. This is not so bad because
-        # changing custom guides will inevitably require a subclass.
-        # Guide Box == 41 x 41
-        # Guide Btn == 31 x 31
-        w = self.width()
-        h = self.height()
-        cx = w / 2
-        cy = h / 2
-        guides[Guide.BorderNorth].rect = QRect(cx - 15, 15, 31, 31)
-        boxes[Guide.BorderNorth].rect = QRect(cx - 20, 10, 41, 41)
-        guides[Guide.BorderEast].rect = QRect(w - 45, cy - 15, 31, 31)
-        boxes[Guide.BorderEast].rect = QRect(w - 50, cy - 20, 41, 41)
-        guides[Guide.BorderSouth].rect = QRect(cx - 15, h - 45, 31, 31)
-        boxes[Guide.BorderSouth].rect = QRect(cx - 20, h - 50, 41, 41)
-        guides[Guide.BorderWest].rect = QRect(15, cy - 15, 31, 31)
-        boxes[Guide.BorderWest].rect = QRect(10, cy - 20, 41, 41)
-
-        # Single Center Guide
-        guides[Guide.SingleCenter].rect = QRect(cpx - 15, cpy - 15, 31, 31)
-        boxes[Guide.SingleCenter].rect = QRect(cpx - 20, cpy - 20, 41, 41)
+        self._border_guides.layout(self.rect())
+        self._compass_guides.layout(self._center_point)
+        self._hsplit_guide.layout(self._center_point)
+        self._vsplit_guide.layout(self._center_point)
+        self._single_guide.layout(self._center_point)
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def center(self):
-        """ Get the location of the rose center.
+    def centerPoint(self):
+        """ Get the center point of the guide rose.
 
         Returns
         -------
@@ -328,10 +685,10 @@ class QGuideRose(QFrame):
             of the rose with a configurable location.
 
         """
-        return self._center
+        return self._center_point
 
-    def setCenter(self, pos):
-        """ Set the location of the rose center.
+    def setCenterPoint(self, pos):
+        """ Set the center point of the guide rose.
 
         Parameters
         ----------
@@ -340,8 +697,8 @@ class QGuideRose(QFrame):
             of the rose with a configurable location.
 
         """
-        if pos != self._center:
-            self._center = pos
+        if pos != self._center_point:
+            self._center_point = pos
             self._layoutGuides()
             self.update()
 
@@ -350,8 +707,8 @@ class QGuideRose(QFrame):
 
         Returns
         -------
-        result : QGuideRose.Mode
-            The mode used when rendering the center of the guide.
+        result : GuideMode
+            The guide mode applied to the guide rose.
 
         """
         return self._mode
@@ -359,10 +716,10 @@ class QGuideRose(QFrame):
     def setMode(self, mode):
         """ Set the mode of the guide rose.
 
-        Returns
-        -------
-        result : QGuideRose.Mode
-            The mode to use when rendering the center of the guide.
+        Parameters
+        ----------
+        mode : GuideMode
+            An or'd combination of mode flags for the guide rose.
 
         """
         if mode != self._mode:
@@ -370,7 +727,10 @@ class QGuideRose(QFrame):
             self.update()
 
     def mouseOver(self, pos):
-        """ Update the state of the rose based on the mouse position.
+        """ Update the guide pads based on the mouse position.
+
+        This current mode of the guide rose is used to determine which
+        of the guide pads to should be updated.
 
         Parameters
         ----------
@@ -378,27 +738,30 @@ class QGuideRose(QFrame):
             The position of the mouse expressed in local coordinates.
 
         """
-        Guide = QGuideRose.Guide
-        target = self.guideAt(pos, self._mode)
-        last = self._last
-        if last != target:
-            self._last = target
-            if last != Guide.NoGuide:
-                self._guides[last].opacity = LOW_ALPHA
-            if target != Guide.NoGuide:
-                self._guides[target].opacity = FULL_ALPHA
+        mode = self._mode
+        if mode & GuideMode.Border:
+            self._border_guides.mouse_over(pos)
+        if mode & GuideMode.Compass:
+            self._compass_guides.mouse_over(pos)
+        if mode & GuideMode.SplitVertical:
+            self._vsplit_guide.mouse_over(pos)
+        if mode & GuideMode.SplitHorizontal:
+            self._hsplit_guide.mouse_over(pos)
+        if mode & GuideMode.SingleCenter:
+            self._single_guide.mouse_over(pos)
         self.update()
 
-    def guideAt(self, pos, mode):
-        """ Get the guide enum for a given position.
+    def guideAt(self, pos, mode=None):
+        """ Get the guide which lies underneath a given position.
 
         Parameters
         ----------
         pos : QPoint
             The position of interest, expressed local coordinates.
 
-        mode : QGuideRose.Mode
-            The mode to use for hit testing.
+        mode : QGuideRose.Mode, optional
+            The mode to use for hit testing. If not provided, the
+            current mode for the guide rose is used.
 
         Returns
         -------
@@ -406,39 +769,27 @@ class QGuideRose(QFrame):
             The enum value for the guide under the mouse position.
 
         """
-        guides = self._guides
-        Mode = QGuideRose.Mode
-        Guide = QGuideRose.Guide
-        if mode == Mode.SingleCenter:
-            if guides[Guide.SingleCenter].contains(pos):
-                return Guide.SingleCenter
-        elif mode == Mode.Compass or mode == Mode.CompassOnly:
-            if guides[Guide.CompassNorth].contains(pos):
-                return Guide.CompassNorth
-            if guides[Guide.CompassEast].contains(pos):
-                return Guide.CompassEast
-            if guides[Guide.CompassSouth].contains(pos):
-                return Guide.CompassSouth
-            if guides[Guide.CompassWest].contains(pos):
-                return Guide.CompassWest
-            if guides[Guide.CompassCenter].contains(pos):
-                return Guide.CompassCenter
-            if mode == Mode.CompassOnly:
-                return Guide.NoGuide
-        elif mode == Mode.SplitHorizontal:
-            if guides[Guide.SplitHorizontal].contains(pos):
-                return Guide.SplitHorizontal
-        elif mode == Mode.SplitVertical:
-            if guides[Guide.SplitVertical].contains(pos):
-                return Guide.SplitVertical
-        if guides[Guide.BorderNorth].contains(pos):
-            return Guide.BorderNorth
-        if guides[Guide.BorderEast].contains(pos):
-            return Guide.BorderEast
-        if guides[Guide.BorderSouth].contains(pos):
-            return Guide.BorderSouth
-        if guides[Guide.BorderWest].contains(pos):
-            return Guide.BorderWest
+        mode = mode if mode is not None else self._mode
+        if mode & GuideMode.Border:
+            g = self._border_guides.guide_at(pos)
+            if g != Guide.NoGuide:
+                return g
+        if mode & GuideMode.Compass:
+            g = self._compass_guides.guide_at(pos)
+            if g != Guide.NoGuide:
+                return g
+        if mode & GuideMode.SplitHorizontal:
+            g = self._hsplit_guide.guide_at(pos)
+            if g != Guide.NoGuide:
+                return g
+        if mode & GuideMode.SplitVertical:
+            g = self._vsplit_guide.guide_at(pos)
+            if g != Guide.NoGuide:
+                return g
+        if mode & GuideMode.SingleCenter:
+            g = self._single_guide.guide_at(pos)
+            if g != Guide.NoGuide:
+                return g
         return Guide.NoGuide
 
     #--------------------------------------------------------------------------
@@ -447,40 +798,10 @@ class QGuideRose(QFrame):
     def resizeEvent(self, event):
         """ Handle the resize event for the rose.
 
-        This handle will relayout the guides on a resize.
+        This handler will relayout the guides on a resize.
 
         """
         self._layoutGuides()
-
-    def paintCompass(self, painter):
-        """ Paint the compass for the rose.
-
-        """
-        boxes = self._boxes
-        guides = self._guides
-        Guide = QGuideRose.Guide
-        boxes[Guide.CompassCross].paint(painter)
-        guides[Guide.CompassNorth].paint(painter)
-        guides[Guide.CompassEast].paint(painter)
-        guides[Guide.CompassSouth].paint(painter)
-        guides[Guide.CompassWest].paint(painter)
-        guides[Guide.CompassCenter].paint(painter)
-
-    def paintBorders(self, painter):
-        """ Paint the border guides for the rose.
-
-        """
-        boxes = self._boxes
-        guides = self._guides
-        Guide = QGuideRose.Guide
-        boxes[Guide.BorderNorth].paint(painter)
-        guides[Guide.BorderNorth].paint(painter)
-        boxes[Guide.BorderEast].paint(painter)
-        guides[Guide.BorderEast].paint(painter)
-        boxes[Guide.BorderSouth].paint(painter)
-        guides[Guide.BorderSouth].paint(painter)
-        boxes[Guide.BorderWest].paint(painter)
-        guides[Guide.BorderWest].paint(painter)
 
     def paintEvent(self, event):
         """ Handle the paint event for the rose.
@@ -497,25 +818,13 @@ class QGuideRose(QFrame):
         super(QGuideRose, self).paintEvent(event)
         painter = QPainter(self)
         mode = self._mode
-        boxes = self._boxes
-        guides = self._guides
-        Mode = QGuideRose.Mode
-        Guide = QGuideRose.Guide
-        if mode == Mode.SingleCenter:
-            boxes[Guide.SingleCenter].paint(painter)
-            guides[Guide.SingleCenter].paint(painter)
-        elif mode == Mode.Compass:
-            self.paintCompass(painter)
-            self.paintBorders(painter)
-        elif mode == Mode.CompassOnly:
-            self.paintCompass(painter)
-        elif mode == Mode.SplitHorizontal:
-            boxes[Guide.SplitHorizontal].paint(painter)
-            guides[Guide.SplitHorizontal].paint(painter)
-            self.paintBorders(painter)
-        elif mode == Mode.SplitVertical:
-            boxes[Guide.SplitVertical].paint(painter)
-            guides[Guide.SplitVertical].paint(painter)
-            self.paintBorders(painter)
-        elif mode == Mode.BorderOnly:
-            self.paintBorders(painter)
+        if mode & GuideMode.Border:
+            self._border_guides.paint(painter)
+        if mode & GuideMode.Compass:
+            self._compass_guides.paint(painter)
+        if mode & GuideMode.SplitHorizontal:
+            self._hsplit_guide.paint(painter)
+        if mode & GuideMode.SplitVertical:
+            self._vsplit_guide.paint(painter)
+        if mode & GuideMode.SingleCenter:
+            self._single_guide.paint(painter)

@@ -14,7 +14,7 @@ from .dock_overlay import DockOverlay
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
 from .q_dock_tabbar import QDockTabBar
-from .q_guide_rose import QGuideRose
+from .q_guide_rose import QGuideRose, Guide
 
 
 ORIENTATION = {
@@ -224,7 +224,7 @@ class LayoutUnplugger(Atom):
         for index in xrange(widget.count()):
             success, replace = self.visit(widget.widget(index), container)
             if success:
-                assert replace is None # tabs never hold replaceable items
+                assert replace is None  # tabs never hold replaceable items
                 if widget.count() == 1:
                     replace = widget.widget(0)
                     replace.hide()
@@ -287,8 +287,14 @@ class LayoutPlugger(Atom):
         """
         self = cls(area=area)
         Guide = QGuideRose.Guide
-        if guide == Guide.CompassCenter:
-            res = self.plug_center(widget, container)
+        if guide == Guide.CompassCenterNorth:
+            res = self.plug_center(widget, container, QTabWidget.North)
+        elif guide == Guide.CompassCenterEast:
+            res = self.plug_center(widget, container, QTabWidget.East)
+        elif guide == Guide.CompassCenterSouth:
+            res = self.plug_center(widget, container, QTabWidget.South)
+        elif guide == Guide.CompassCenterWest:
+            res = self.plug_center(widget, container, QTabWidget.West)
         elif guide == Guide.CompassNorth:
             res = self.plug_north(widget, container)
         elif guide == Guide.CompassEast:
@@ -346,7 +352,7 @@ class LayoutPlugger(Atom):
                 return True
         return False
 
-    def plug_center(self, widget, container):
+    def plug_center(self, widget, container, tab_pos):
         """ Create a tab widget from the widget and container.
 
         """
@@ -367,6 +373,7 @@ class LayoutPlugger(Atom):
                 return False
         tab_widget = QTabWidget()
         tab_widget.setTabBar(QDockTabBar())
+        tab_widget.setTabPosition(tab_pos)
         tab_widget.setMovable(True)
         tab_widget.setDocumentMode(True)
         if widget is root:
@@ -452,8 +459,8 @@ class LayoutPlugger(Atom):
         """
         layout = self.area.layout()
         root = layout.layoutWidget()
-        if (not isinstance(root, QSplitter) or
-            root.orientation() != orientation):
+        is_splitter = isinstance(root, QSplitter)
+        if not is_splitter or root.orientation() != orientation:
             new = QSplitter(orientation)
             layout.setLayoutWidget(new)
             new.addWidget(root)
@@ -669,6 +676,8 @@ class DockContainerHandler(DockHandler):
             if handler.global_geometry().contains(pos):
                 handler.show_overlay(pos)
                 return
+        else:
+            self.manager.overlay.hide()
 
     def _end_dock_drag(self, pos):
         """ End the dock drag operation for the handler.
@@ -685,7 +694,7 @@ class DockContainerHandler(DockHandler):
         overlay = self.manager.overlay
         overlay.hide()
         guide = overlay.guide_at(pos)
-        if guide != QGuideRose.Guide.NoGuide:
+        if guide != Guide.NoGuide:
             for handler in self._dock_targets():
                 if handler.global_geometry().contains(pos):
                     if handler.plug(self.dock_container, pos, guide):
