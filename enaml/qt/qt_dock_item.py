@@ -9,8 +9,16 @@ from atom.api import Typed
 
 from enaml.widgets.dock_item import ProxyDockItem
 
-from .q_dock_item import QDockItem
+from .q_dock_item import QDockItem, TitlePosition
 from .qt_widget import QtWidget
+
+
+TITLE_POSITION = {
+    'left': TitlePosition.Left,
+    'right': TitlePosition.Right,
+    'top': TitlePosition.Top,
+    'bottom': TitlePosition.Bottom,
+}
 
 
 class QtDockItem(QtWidget, ProxyDockItem):
@@ -38,6 +46,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         self.set_name(d.name)
         self.set_title(d.title)
         self.set_stretch(d.stretch)
+        self.set_title_bar_position(d.title_bar_position)
 
     def init_layout(self):
         """ Initialize the layout for the underyling widget.
@@ -95,3 +104,9 @@ class QtDockItem(QtWidget, ProxyDockItem):
         sp.setHorizontalStretch(stretch)
         sp.setVerticalStretch(stretch)
         self.widget.setSizePolicy(sp)
+
+    def set_title_bar_position(self, position):
+        """ Set the title bar position on the underlying widget.
+
+        """
+        self.widget.setTitlePosition(TITLE_POSITION[position])

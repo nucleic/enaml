@@ -269,6 +269,7 @@ class QDockContainer(QFrame):
             self.setContentsMargins(QMargins(5, 5, 5, 5))
         else:
             self.setContentsMargins(QMargins(0, 0, 0, 0))
+            self.unsetCursor()
             self.clearMask()
 
     #--------------------------------------------------------------------------

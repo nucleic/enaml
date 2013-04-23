@@ -5,8 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from .dock_layout import (
+    dockitem, docktabs, docksplit, hdocksplit, vdocksplit, dockarea, docklayout
+)
 from .layout_helpers import (
     align, hbox, vbox, horizontal, vertical, grid, spacer,
 )
 from .geometry import Box, BoxF, Pos, PosF, Rect, RectF, Size, SizeF
-

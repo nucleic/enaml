@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QRect, QSize, QMargins, pyqtProperty
-from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout
+from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QFont
 
 
 class TitlePosition(object):
@@ -94,34 +94,8 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
         self._sh = QSize()
         self._title = u''
         self._title_position = TitlePosition.Top
-        self._margins = QMargins(5, 2, 5, 2)
-
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
-    def margins(self):
-        """ Get the margins for the title bar.
-
-        Returns
-        -------
-        result : QMargins
-            The margins for the title bar.
-
-        """
-        return self._margins
-
-    def setMargins(self, margins):
-        """ Set the margins for the title bar.
-
-        Parameters
-        ----------
-        margins : QMargins
-            The margins to use for the title bar.
-
-        """
-        self._sh = QSize()
-        self._margins = margins
-        self.updateGeometry()
+        self.setContentsMargins(QMargins(2, 2, 2, 2))
+        self.setFont(QFont('Segoe UI', 9))
 
     #--------------------------------------------------------------------------
     # IDockItemTitleBar API
@@ -157,7 +131,7 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
 
         Returns
         -------
-        result : int
+        result : TitlePosition
             A TitlePosition enum value for the title position.
 
         """
@@ -168,7 +142,7 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
 
         Parameters
         ----------
-        position : int
+        position : TitlePosition
             A TitlePosition enum value for the title position.
 
         """
@@ -187,22 +161,19 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
         This paint handler draws the title bar text and title buttons.
 
         """
+        self.raise_()
         super(QDockItemTitleBar, self).paintEvent(event)
         painter = QPainter(self)
-        m = self.margins()
-        w = self.width()
-        h = self.height()
+        rect = self.contentsRect()
         pos = self.titlePosition()
+        painter.setClipping(False)
         if pos == TitlePosition.Left:
-            rect = QRect(m.left(), m.top(), h - m.right(), w - m.bottom())
             painter.rotate(-90)
-            painter.translate(-h, 0)
+            painter.translate(-rect.height(), 0)
+            rect = QRect(rect.x(), rect.y(), rect.height(), rect.width())
         elif pos == TitlePosition.Right:
-            rect = QRect(m.left(), m.top(), h - m.right(), w - m.bottom())
             painter.rotate(90)
-            painter.translate(0, -w)
-        else:
-            rect = QRect(m.left(), m.top(), w - m.right(), h - m.bottom())
+            painter.translate(0, -rect.width())
         painter.drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, self.title())
 
     def sizeHint(self):
@@ -223,11 +194,11 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
         sh = self._sh
         if sh.isValid():
             return sh
-        mgns = self.margins()
+        m = self.contentsMargins()
         fm = self.fontMetrics()
-        height = fm.height() + mgns.top() + mgns.bottom()
-        width = fm.width(self.title()) + mgns.left() + mgns.right()
-        sh = QSize(width, height)
+        height = fm.height() + m.top() + m.bottom()
+        width = fm.width(self.title()) + m.left() + m.right()
+        sh = QSize(width, max(19, height))
         pos = self.titlePosition()
         if pos == TitlePosition.Left or pos == TitlePosition.Right:
             sh.transpose()
@@ -512,6 +483,30 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setTitle(title)
+
+    def titlePosition(self):
+        """ Get the position of the title bar within the dock item.
+
+        Returns
+        -------
+        result : TitlePosition
+            A TitlePosition enum value for the title position.
+
+        """
+        return self.titleBarWidget().titlePosition()
+
+    def setTitlePosition(self, position):
+        """ Set the position of the title bar within the dock item.
+
+        Parameters
+        ----------
+        position : TitlePosition
+            A TitlePosition enum value for the title position.
+
+        """
+        self.titleBarWidget().setTitlePosition(position)
+
+    p_titlePosition = pyqtProperty(int, titlePosition, setTitlePosition)
 
     def titleBarWidget(self):
         """ Get the title bar widget for the dock item.

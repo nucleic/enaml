@@ -164,30 +164,37 @@ class QDockArea(QFrame):
                 padding: 5px;
                 background: rgb(41, 56, 85);
             }
-            QDockItem {
-                background: rgb(237, 237, 237);
-                border-top-left-radius: 5px;
-                border-top-right-radius: 5px;
-                border-bottom-left-radius: 2px;
-                border-bottom-right-radius: 2px;
-            }
-            QDockItemTitleBar[p_titlePosition="2"] {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 rgb(78, 97, 132),
-                            stop:0.5 rgb(66, 88, 124),
-                            stop:1.0 rgb(64, 81, 124));
-                color: rgb(250, 251, 254);
-                border-top: 1px solid rgb(59, 80, 115);
-            }
-            QDockArea QDockItemTitleBar[p_titlePosition="2"] {
-                border-top-left-radius: 3px;
-                border-top-right-radius: 3px;
-            }
+
             QSplitterHandle {
                 background: rgb(41, 56, 85);
             }
+
             QDockContainer {
                 background: rgb(41, 56, 85);
+            }
+
+            QDockItem {
+                background: rgb(237, 237, 237);
+                border-top-left-radius: 3px;
+                border-top-right-radius: 3px;
+                border-bottom-left-radius: 3px;
+                border-bottom-right-radius: 3px;
+            }
+            QDockItem[p_titlePosition="1"] {  /* left */
+                border-top-left-radius: 5px;
+                border-bottom-left-radius: 5px;
+            }
+            QDockItem[p_titlePosition="2"] {  /* top */
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+            }
+            QDockItem[p_titlePosition="3"] {  /* right */
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+            }
+            QDockItem[p_titlePosition="4"] {  /* bottom */
+                border-bottom-left-radius: 5px;
+                border-bottom-right-radius: 5px;
             }
             QTabWidget QDockItem {
                 border-top-left-radius: 0px;
@@ -195,4 +202,57 @@ class QDockArea(QFrame):
                 border-bottom-left-radius: 0px;
                 border-bottom-right-radius: 0px;
             }
+
+            QDockItemTitleBar {
+                color: rgb(250, 251, 254);
+            }
+            QDockItemTitleBar[p_titlePosition="1"] {  /* left */
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                            stop:0 rgb(78, 97, 132),
+                            stop:0.5 rgb(66, 88, 124),
+                            stop:1.0 rgb(64, 81, 124));
+                border-left: 1px solid rgb(59, 80, 115);
+                border-top-left-radius: 3px;
+                border-bottom-left-radius: 3px;
+            }
+            QDockItemTitleBar[p_titlePosition="2"] {  /* top */
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 rgb(78, 97, 132),
+                            stop:0.5 rgb(66, 88, 124),
+                            stop:1.0 rgb(64, 81, 124));
+                border-top: 1px solid rgb(59, 80, 115);
+                border-top-left-radius: 3px;
+                border-top-right-radius: 3px;
+            }
+
             """)
+
+    def layoutWidget(self):
+        """ Get the widget implementing the layout for the area.
+
+        This method is called by the dock manager which handles the
+        dock area. It should not normally be called by user code.
+
+        Returns
+        -------
+        result : QWidget or None
+            The widget implementing the area, or None if no widget is
+            installed.
+
+        """
+        return self.layout().layoutWidget()
+
+    def setLayoutWidget(self, widget):
+        """ Set the layout widget for the dock area.
+
+        This method is called by the dock manager which handles the
+        dock area. It should not normally be called by user code.
+
+        Parameters
+        ----------
+        widget : QWidget
+            The widget which implements the dock area layout.
+
+        """
+        self.layout().setLayoutWidget(widget)
+

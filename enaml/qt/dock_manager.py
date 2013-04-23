@@ -8,7 +8,11 @@
 from PyQt4.QtCore import Qt, QPoint, QRect, QSize
 from PyQt4.QtGui import QApplication, QSplitter, QTabWidget, QSplitterHandle
 
-from atom.api import Atom, Bool, ForwardTyped, Typed, List
+from atom.api import Atom, Bool, Dict, ForwardTyped, Typed, List
+
+from enaml.layout.dock_layout import (
+    docklayout, dockarea, dockitem, docksplit, docktabs
+)
 
 from .dock_overlay import DockOverlay
 from .q_dock_area import QDockArea
@@ -17,55 +21,52 @@ from .q_dock_tabbar import QDockTabBar
 from .q_guide_rose import QGuideRose
 
 
-ORIENTATION = {
-    'horizontal': Qt.Horizontal,
-    'vertical': Qt.Vertical,
-}
-
-
-ORIENTATION_INV = dict((v, k) for k, v in ORIENTATION.items())
-
-
-DOCUMENT_MODE = {
-    'document': True,
-    'preferences': False,
-}
-
-
-DOCUMENT_MODE_INV = dict((v, k) for k, v in DOCUMENT_MODE.items())
-
-
-TAB_POSITION = {
-    'top': QTabWidget.North,
-    'bottom': QTabWidget.South,
-    'left': QTabWidget.West,
-    'right': QTabWidget.East,
-}
-
-
-TAB_POSITION_INV = dict((v, k) for k, v in TAB_POSITION.items())
-
-
 class LayoutBuilder(Atom):
-    """ A visitor class which builds the layout from a dict.
+    """ A visitor class which builds an area layout from a dict.
 
-    The single public entry point is the 'build()' classmethod.
+    The single public entry point is the 'build()' classmethod. This
+    builder handles building the widget for layout types 'tabbed',
+    'split', and 'item'.
 
     """
+    #: A class mapping of layout orientation to qt orientation.
+    ORIENTATION = {
+        'horizontal': Qt.Horizontal,
+        'vertical': Qt.Vertical,
+    }
+
+    #: A class mapping of layout document mode to qt document mode.
+    DOCUMENT_MODE = {
+        'document': True,
+        'preferences': False,
+    }
+
+    #: A class mapping of layout tab position to qt tab position.
+    TAB_POSITION = {
+        'top': QTabWidget.North,
+        'bottom': QTabWidget.South,
+        'left': QTabWidget.West,
+        'right': QTabWidget.East,
+    }
+
+    #: A mapping from name to dock container.
+    containers = Dict()
+
     #: The set of seen names when building the layout.
     seen_names = Typed(set, ())
 
     @classmethod
-    def build(cls, layout, area):
+    def build(cls, layout, containers):
         """ Build the root layout widget for the layout description.
 
         Parameters
         ----------
-        layout : dict
-            The dictionary representation of the layout.
+        layout : tabs, split, or dockitem.
+            The layout node which describes the widget to be built.
 
-        area : QDockArea
-            The dock area which owns the dock containers.
+        containers : iterable
+            An iterable of QDockContainer instances to use as the
+            available items for the layout.
 
         Returns
         -------
@@ -73,47 +74,55 @@ class LayoutBuilder(Atom):
             A QWidget which implements the dock area.
 
         """
-        return cls().visit(layout, area)
+        self = cls()
+        these = self.containers
+        for container in containers:
+            these[container.objectName()] = container
+        return self.visit(layout)
 
-    def visit(self, layout, area):
+    def visit(self, layout):
         """ The main visitor dispatch method.
 
         This method dispatches to the type-specific handlers.
 
         """
-        name = 'visit_' + layout['type']
-        return getattr(self, name)(layout, area)
+        if isinstance(layout, dockitem):
+            return self.visit_dockitem(layout)
+        if isinstance(layout, docksplit):
+            return self.visit_docksplit(layout)
+        if isinstance(layout, docktabs):
+            return self.visit_docktabs(layout)
+        raise TypeError("unhandled layout type '%s'" % type(layout).__name__)
 
-    def visit_split(self, layout, area):
+    def visit_docksplit(self, layout):
         """ The handler method for a split layout description.
 
         This handler will build and populate a QSplitter which holds
         the items declared in the layout.
 
         """
-        children = (self.visit(child, area) for child in layout['children'])
+        children = (self.visit(child) for child in layout.children)
         children = filter(None, children)
         if len(children) == 0:
             return None
         if len(children) == 1:
             return children[0]
-        splitter = QSplitter(ORIENTATION[layout['orientation']])
+        splitter = QSplitter(self.ORIENTATION[layout.orientation])
         for child in children:
             splitter.addWidget(child)
-            child.show()
-        sizes = layout.get('sizes')
-        if sizes is not None:
+        sizes = layout.sizes
+        if sizes and len(sizes) >= len(children):
             splitter.setSizes(sizes)
         return splitter
 
-    def visit_tabbed(self, layout, area):
+    def visit_docktabs(self, layout):
         """ The handler method for a tabbed layout description.
 
         This handler will build and populate a QTabWidget which holds
         the items declared in the layout.
 
         """
-        children = (self.visit(item, area) for item in layout['children'])
+        children = (self.visit(item) for item in layout.children)
         children = filter(None, children)
         if len(children) == 0:
             return None
@@ -121,35 +130,29 @@ class LayoutBuilder(Atom):
             return children[0]
         tab_widget = QTabWidget()
         tab_widget.setTabBar(QDockTabBar())
-        tab_widget.setDocumentMode(DOCUMENT_MODE[layout['tab_style']])
-        tab_widget.setMovable(layout['tabs_movable'])
-        tab_widget.setTabPosition(TAB_POSITION[layout['tab_position']])
+        tab_widget.setDocumentMode(self.DOCUMENT_MODE[layout.tab_style])
+        tab_widget.setMovable(layout.tabs_movable)
+        tab_widget.setTabPosition(self.TAB_POSITION[layout.tab_position])
         for child in children:
             dock_item = child.dockItem()
             dock_item.titleBarWidget().hide()
             tab_widget.addTab(child, dock_item.title())
-            child.show()
-        index = layout.get('index')
-        if index is not None:
-            tab_widget.setCurrentIndex(index)
+        tab_widget.setCurrentIndex(layout.index)
         return tab_widget
 
-    def visit_item(self, layout, area):
-        """ The handler method for an item layout description.
+    def visit_dockitem(self, layout):
+        """ The handler method for a cockitem layout description.
 
         This handler will find and return the named dock container for
         the item, or None if the container is not found or the name is
         visited more than once.
 
         """
-        name = layout['name']
+        name = layout.name
         if name in self.seen_names:
             return None
         self.seen_names.add(name)
-        container = area.findChild(QDockContainer, name)
-        if container is not None:
-            container.dockItem().titleBarWidget().show()
-        return container
+        return self.containers.get(name)
 
 
 class LayoutSaver(Atom):
@@ -158,24 +161,41 @@ class LayoutSaver(Atom):
     The single public entry point is the 'save()' classmethod.
 
     """
+    #: A class mapping of qt orientation to layout orientation.
+    ORIENTATION = {
+        Qt.Horizontal: 'horizontal',
+        Qt.Vertical: 'vertical',
+    }
+
+    #: A class mapping of qt document mode to layout document mode.
+    DOCUMENT_MODE = {
+        True: 'document',
+        False: 'preferences',
+    }
+
+    #: A class mapping of qt tab position to layout tab position.
+    TAB_POSITION = {
+        QTabWidget.North: 'top',
+        QTabWidget.South: 'bottom',
+        QTabWidget.West: 'left',
+        QTabWidget.East: 'right',
+    }
+
     @classmethod
-    def save(cls, area):
-        """ Save the layout contained in the dock area.
+    def save(cls, widget):
+        """ Save the layout contained in the dock layout widget.
 
         Parameters
         ----------
-        area : QDockArea
-            The dock area which owns the dock layout.
+        widget : QDockContainer, QTabWidget, or QSplitter
+            The primary layout widget for the dock area.
 
         Returns
         -------
-        result : dict
-            A dictionary which describes the layout.
+        result : tabs, split, or dockitem.
+            The relevent dock layout description for the widget.
 
         """
-        widget = area.layout().layoutWidget()
-        if widget is None:
-            return {}
         return cls().visit(widget)
 
     def visit(self, widget):
@@ -184,42 +204,45 @@ class LayoutSaver(Atom):
         This method dispatches to the type-specific handlers.
 
         """
-        name = 'visit_' + type(widget).__name__
-        return getattr(self, name)(widget)
+        if isinstance(widget, QDockContainer):
+            return self.visit_QDockContainer(widget)
+        if isinstance(widget, QTabWidget):
+            return self.visit_QTabWidget(widget)
+        if isinstance(widget, QSplitter):
+            return self.visit_QSplitter(widget)
+        raise TypeError("unhandled layout widget '%s'" % type(widget).__name__)
 
     def visit_QTabWidget(self, widget):
         """ The handler method for a QTabWidget layout widget.
 
         """
-        layout = {'type': 'tabbed'}
-        layout['tabs_movable'] = widget.isMovable()
-        layout['tab_style'] = DOCUMENT_MODE_INV[widget.documentMode()]
-        layout['tab_position'] = TAB_POSITION_INV[widget.tabPosition()]
         children = []
         for index in xrange(widget.count()):
             children.append(self.visit(widget.widget(index)))
-        layout['children'] = children
-        layout['index'] = widget.currentIndex()
+        layout = docktabs(*children)
+        layout.index = widget.currentIndex()
+        layout.tabs_movable = widget.isMovable()
+        layout.tab_style = self.DOCUMENT_MODE[widget.documentMode()]
+        layout.tab_position = self.TAB_POSITION[widget.tabPosition()]
         return layout
 
     def visit_QSplitter(self, widget):
         """ The handler method for a QSplitter layout widget.
 
         """
-        layout = {'type': 'split'}
-        layout['sizes'] = widget.sizes()
-        layout['orientation'] = ORIENTATION_INV[widget.orientation()]
         children = []
         for index in xrange(widget.count()):
             children.append(self.visit(widget.widget(index)))
-        layout['children'] = children
+        layout = docksplit(*children)
+        layout.orientation = self.ORIENTATION[widget.orientation()]
+        layout.sizes = widget.sizes()
         return layout
 
     def visit_QDockContainer(self, widget):
         """ The handler method for a QDockContainer layout widget.
 
         """
-        return {'type': 'item', 'name': widget.objectName()}
+        return dockitem(widget.objectName())
 
 
 class LayoutUnplugger(Atom):
@@ -248,18 +271,17 @@ class LayoutUnplugger(Atom):
             update as the new root of the layout.
 
         """
-        layout = area.layout()
-        root = layout.layoutWidget()
+        root = area.layoutWidget()
         if root is container:
             root.hide()
             root.setParent(None)
-            layout.setLayoutWidget(None)
+            area.setLayoutWidget(None)
             return True
         success, replace = cls().visit(root, container)
         if not success:
             return False
         if replace is not None:
-            layout.setLayoutWidget(replace)
+            area.setLayoutWidget(replace)
         return True
 
     def visit(self, widget, container):
@@ -460,8 +482,7 @@ class LayoutPlugger(Atom):
             return True
         if not isinstance(widget, QDockContainer):
             return False
-        layout = self.area.layout()
-        root = layout.layoutWidget()
+        root = self.area.layoutWidget()
         if widget is not root:
             if not isinstance(widget.parent(), QSplitter):
                 return False
@@ -471,7 +492,7 @@ class LayoutPlugger(Atom):
         tab_widget.setMovable(True)
         tab_widget.setDocumentMode(True)
         if widget is root:
-            layout.setLayoutWidget(tab_widget)
+            self.area.setLayoutWidget(tab_widget)
         else:
             splitter = widget.parent()
             index = splitter.indexOf(widget)
@@ -491,7 +512,7 @@ class LayoutPlugger(Atom):
         """ Plug the container to the north of the widget.
 
         """
-        root = self.area.layout().layoutWidget()
+        root = self.area.layoutWidget()
         if widget is root:
             return self.split_root(Qt.Vertical, container, False)
         return self.split_widget(Qt.Vertical, widget, container, False)
@@ -500,7 +521,7 @@ class LayoutPlugger(Atom):
         """ Plug the container to the east of the widget.
 
         """
-        root = self.area.layout().layoutWidget()
+        root = self.area.layoutWidget()
         if widget is root:
             return self.split_root(Qt.Horizontal, container, True)
         return self.split_widget(Qt.Horizontal, widget, container, True)
@@ -509,7 +530,7 @@ class LayoutPlugger(Atom):
         """ Plug the container to the south of the widget.
 
         """
-        root = self.area.layout().layoutWidget()
+        root = self.area.layoutWidget()
         if widget is root:
             return self.split_root(Qt.Vertical, container, True)
         return self.split_widget(Qt.Vertical, widget, container, True)
@@ -518,7 +539,7 @@ class LayoutPlugger(Atom):
         """ Plug the container to the west of the widget.
 
         """
-        root = self.area.layout().layoutWidget()
+        root = self.area.layoutWidget()
         if widget is root:
             return self.split_root(Qt.Horizontal, container, False)
         return self.split_widget(Qt.Horizontal, widget, container, False)
@@ -551,12 +572,11 @@ class LayoutPlugger(Atom):
         """ Split the root layout widget according the orientation.
 
         """
-        layout = self.area.layout()
-        root = layout.layoutWidget()
+        root = self.area.layoutWidget()
         is_splitter = isinstance(root, QSplitter)
         if not is_splitter or root.orientation() != orientation:
             new = QSplitter(orientation)
-            layout.setLayoutWidget(new)
+            self.area.setLayoutWidget(new)
             new.addWidget(root)
             root.show()
             root = new
@@ -624,7 +644,7 @@ class LayoutWalker(Atom):
             contained within the layout.
 
         """
-        stack = [self.area.layout().layoutWidget()]
+        stack = [self.area.layoutWidget()]
         while stack:
             widget = stack.pop()
             if isinstance(widget, QSplitter):
@@ -643,7 +663,7 @@ class LayoutWalker(Atom):
             within the layout.
 
         """
-        stack = [self.area.layout().layoutWidget()]
+        stack = [self.area.layoutWidget()]
         while stack:
             widget = stack.pop()
             if isinstance(widget, QTabWidget):
@@ -662,7 +682,7 @@ class LayoutWalker(Atom):
             contained within the layout.
 
         """
-        stack = [self.area.layout().layoutWidget()]
+        stack = [self.area.layoutWidget()]
         while stack:
             widget = stack.pop()
             if isinstance(widget, QDockContainer):
@@ -724,6 +744,12 @@ class DockHandler(Atom):
         """
         raise NotImplementedError
 
+    def reset(self):
+        """ Reset the handler to the initial pre-docked state.
+
+        """
+        raise NotImplementedError
+
 
 class DockContainerHandler(DockHandler):
     """ A dock handler which manages a QDockContainer.
@@ -737,6 +763,9 @@ class DockContainerHandler(DockHandler):
 
     #: Whether or not the dock item is being dragged.
     dragging = Bool(False)
+
+    #: Whether the cursor has been grabbed at the application level.
+    grabbed_cursor = Bool(False)
 
     #: The size of the dock item when it was last docked.
     docked_size = Typed(QSize)
@@ -868,7 +897,39 @@ class DockContainerHandler(DockHandler):
         container.move(pos - self.press_pos)
         container.show()
         dock_item.grabMouse()
+
+        # Override the cursor as a workaround for the cursor flashing
+        # between arrow and ibeam when undocking an item with a text
+        # input area which is close to the title bar. This is restored
+        # on the mouse release event.
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
+        self.grabbed_cursor = True
+
         return True
+
+    def float(self, geometry):
+        """ Make the handler a floating window.
+
+        This methdo is invoked by the DockManager to make the container
+        a floating window during layout. The handler should be 'reset()'
+        before this method is called.
+
+        Parameters
+        ----------
+        geometry : QRect
+            Optional initial geometry to apply to the container before
+            it is shown. An invalid QRect is an indication to use the
+            default geometry.
+
+        """
+        self.floating = True
+        self.manager.toplevel.append(self)
+        container= self.dock_container
+        container.setFloating(True)
+        container.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint)
+        if geometry.isValid():
+            container.setGeometry(geometry)
+        container.show()
 
     #--------------------------------------------------------------------------
     # DockHandler Interface
@@ -923,6 +984,22 @@ class DockContainerHandler(DockHandler):
 
         """
         return False
+
+    def reset(self):
+        """ Reset the handler to the initial pre-docked state.
+
+        """
+        self.floating = False
+        self.dragging = False
+        self.press_pos = None
+        manager = self.manager
+        container = self.dock_container
+        container.hide()
+        container.setFloating(False)
+        container.dockItem().titleBarWidget().show()
+        container.setParent(manager.primary.area, Qt.Widget)
+        container.setAttribute(Qt.WA_WState_ExplicitShowHide, False)
+        container.setAttribute(Qt.WA_WState_Hidden, False)
 
     #--------------------------------------------------------------------------
     # QDockContainer Handler Methods
@@ -1012,6 +1089,14 @@ class DockContainerHandler(DockHandler):
         container.move(global_pos - self.press_pos)
         container.show()
         dock_item.grabMouse()
+
+        # Override the cursor as a workaround for the cursor flashing
+        # between arrow and ibeam when undocking an item with a text
+        # input area which is close to the title bar. This is restored
+        # on the mouse release event.
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
+        self.grabbed_cursor = True
+
         return True
 
     def mouse_release_event(self, event):
@@ -1027,6 +1112,9 @@ class DockContainerHandler(DockHandler):
         """
         if event.button() == Qt.LeftButton:
             if self.press_pos is not None:
+                if self.grabbed_cursor:
+                    QApplication.restoreOverrideCursor()
+                    self.grabbed_cursor = False
                 self.dock_container.dockItem().releaseMouse()
                 if self.floating:
                     self._end_dock_drag(event.globalPos())
@@ -1124,7 +1212,7 @@ class DockAreaHandler(DockHandler):
         pos = area.mapFromGlobal(pos)
         if not area.rect().contains(pos):
             manager.overlay.hide()
-        elif area.layout().layoutWidget() is None:
+        elif area.layoutWidget() is None:
             manager.overlay.mouse_over_widget(area, pos, empty=True)
         else:
             widget = self._hit_test(pos)
@@ -1155,16 +1243,51 @@ class DockAreaHandler(DockHandler):
         widget = self._hit_test(area.mapFromGlobal(pos))
         if widget is None:
             if guide == QGuideRose.Guide.AreaCenter:
-                layout = area.layout()
-                if layout.layoutWidget() is None:
+                if area.layoutWidget() is None:
                     container.hide()
                     container.setFloating(False)
                     container.setWindowFlags(Qt.Widget)
-                    layout.setLayoutWidget(container)
+                    area.setLayoutWidget(container)
                     container.show()
                     return True
             return False
         return LayoutPlugger.plug(area, widget, container, guide)
+
+    def reset(self):
+        """ Reset the handler to the initial pre-docked state.
+
+        """
+        self.area.setLayoutWidget(None)
+
+
+def ensure_on_screen(rect):
+    """ Ensure that the given rect is contained on screen.
+
+    If the origin of the rect is not contained within the closest
+    desktop screen, the rect will be moved so that it is fully on the
+    closest screen. If the rect is larger than the closest screen, the
+    origin will never be less than the screen origin.
+
+    Parameters
+    ----------
+    rect : QRect
+        The geometry rect of interest.
+
+    """
+    d = QApplication.desktop()
+    pos = rect.topLeft()
+    drect = d.screenGeometry(pos)
+    if not drect.contains(pos):
+        x = pos.x()
+        if x < drect.x() or x > drect.right():
+            dw = drect.width() - rect.width()
+            x = max(drect.x(), drect.x() + dw)
+        y = pos.y()
+        if x < drect.top() or y > drect.bottom():
+            dh = drect.height() - rect.height()
+            y = max(drect.y(), drect.y() + dh)
+        rect = QRect(x, y, rect.width(), rect.height())
+    return rect
 
 
 class DockManager(Atom):
@@ -1175,7 +1298,7 @@ class DockManager(Atom):
     primary = Typed(DockAreaHandler)
 
     #: The list of container handlers maintained by the manager.
-    containers = List()
+    handlers = List()
 
     #: The list of handlers which contain top-level windows. This list
     #: is maintained in proper Z-order with the top-most handler last.
@@ -1200,6 +1323,27 @@ class DockManager(Atom):
         """
         assert dock_area is not None
         self.primary = DockAreaHandler(manager=self, area=dock_area)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _find_handler(self, name):
+        """ Find the handler for the given dock item name:
+
+        Parameters
+        ----------
+        name : basestring
+            The name of the dock item for which to locate a handler.
+
+        Returns
+        -------
+        result : DockContainerHandler or None
+            The handler for the named item or None.
+
+        """
+        for item in self.dock_items:
+            if item.objectName() == name:
+                return item.handler
 
     #--------------------------------------------------------------------------
     # Public API
@@ -1227,32 +1371,58 @@ class DockManager(Atom):
         handler = DockContainerHandler(manager=self, dock_container=container)
         item.handler = handler
         container.handler = handler
-        self.containers.append(handler)
+        self.handlers.append(handler)
 
     def apply_layout(self, layout):
         """ Apply a layout to the dock area.
 
-        """
-        area = self.primary.area
-        primary = LayoutBuilder.build(layout['primary'], area)
-        area.layout().setLayoutWidget(primary)
+        Parameters
+        ----------
+        layout : docklayout
+            The docklayout to apply to the managed area.
 
-        # FIXME not too happy with this; it doesn't handle floating areas
-        # for f in floated:
-        #     handler = f.handler
-        #     handler.floating = True
-        #     self.toplevel.append(handler)
-        #     container = handler.dock_container
-        #     container.setFloating(True)
-        #     flags = Qt.Tool | Qt.FramelessWindowHint
-        #     container.setParent(self.primary.area, flags)
-        #     container.show()
+        """
+        for handler in self.handlers:
+            handler.reset()
+        self.primary.reset()
+        del self.toplevel
+
+        main_area = None
+        floating_areas = []
+        for layoutarea in layout.children:
+            if layoutarea.floating:
+                floating_areas.append(layoutarea)
+            else:
+                main_area = layoutarea
+
+        if main_area is not None:
+            area = self.primary.area
+            containers = (h.dock_container for h in self.handlers)
+            widget = LayoutBuilder.build(main_area.child, containers)
+            area.setLayoutWidget(widget)
+
+        for f_area in floating_areas:
+            child = f_area.child
+            if isinstance(child, dockitem):
+                handler = self._find_handler(child.name)
+                if handler is not None:
+                    rect = ensure_on_screen(QRect(*f_area.geometry))
+                    handler.float(rect)
 
     def save_layout(self):
         """ Get the dictionary representation of the dock layout.
 
         """
-        layout = {'type': 'docklayout'}
-        layout['primary'] = LayoutSaver.save(self.primary.area)
-        layout['secondary'] = []
-        return layout
+        areas = []
+        widget = self.primary.area.layoutWidget()
+        if widget is not None:
+            areas.append(dockarea(LayoutSaver.save(widget)))
+        for handler in self.toplevel:
+            if isinstance(handler, DockContainerHandler):
+                container = handler.dock_container
+                name = container.objectName()
+                geo = container.geometry()
+                geo = (geo.x(), geo.y(), geo.width(), geo.height())
+                area = dockarea(dockitem(name), geometry=geo, floating=True)
+                areas.append(area)
+        return docklayout(*areas)

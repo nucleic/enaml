@@ -8,7 +8,7 @@
 from collections import deque
 import re
 
-from atom.api import Atom, Str, Value, List, Event
+from atom.api import Atom, Unicode, Value, List, Event
 
 
 def flag_generator():
@@ -54,7 +54,7 @@ class Object(Atom):
     #: in the tree (see . the 'find' method. There is no guarantee of
     #: uniqueness for an object `name`. It is left to the developer to
     #: choose an appropriate name.
-    name = Str()
+    name = Unicode()
 
     #: The read-only property which returns the object parent. This will
     #: be an Object or None. Use 'set_parent()' or pass the parent to

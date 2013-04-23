@@ -5,147 +5,34 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Dict, Typed, ForwardTyped, observe, set_default
+from atom.api import Coerced, Typed, ForwardTyped, observe, set_default
 
 from enaml.core.declarative import d_
+from enaml.layout.dock_layout import (
+    docklayout, dockarea, dockitem, docksplit, docktabs
+)
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .dock_item import DockItem
 
 
-def item(name):
-    """ A function for creating a layout dict for an item.
+def coerce_layout(thing):
+    """ Coerce a variety of objects into a docklayout.
 
     Parameters
     ----------
-    name : basestring
-        The name of the dock item to use at this point in the layout.
+    thing : dict, basetring, dockitem, dockarea, split, or tabs
+        Something that can be coerced into a dock layout.
 
     """
-    return {'type': 'item', 'name': name}
-
-
-def _split(orientation, *children, **metadata):
-    """ A private function for creating a splitter layout dict.
-
-    """
-    layout = {'type': 'split', 'orientation': orientation}
-    kids = []
-    for child in children:
-        if isinstance(child, basestring):
-            child = item(child)
-        kids.append(child)
-    layout['children'] = kids
-    return layout
-
-
-def hsplit(*children, **metadata):
-    """ A function for creating a horizontal splitter layout dict.
-
-    Parameters
-    ----------
-    *children
-        The child items to include in the split layout. Strings will
-        be promoted to items automatically.
-
-    **metadata
-        Additional configuration data for the layout.
-
-    """
-    return _split('horizontal', *children, **metadata)
-
-
-def vsplit(*children, **metadata):
-    """ A function for creating a vertical splitter layout dict.
-
-    Parameters
-    ----------
-    *children
-        The child items to include in the split layout. Strings will
-        be promoted to items automatically.
-
-    **metadata
-        Additional configuration data for the layout.
-
-    """
-    return _split('vertical', *children, **metadata)
-
-
-def tabbed(*children, **metadata):
-    """ A function for creating a tabbed layout dict.
-
-    Parameters
-    ----------
-    *children
-        The child items to include in the tabbed layout. Strings will
-        be promoted to items automatically.
-
-    **metadata
-        Additional configuration data for the layout.
-
-    """
-    style = metadata.get('tab_style', 'document')
-    movable = metadata.get('tabs_movable', True)
-    position = metadata.get('tab_position', 'top')
-    assert style in ('document', 'preferences')
-    assert movable in (True, False)
-    assert position in ('top', 'right', 'bottom', 'left')
-    layout = {'type': 'tabbed'}
-    layout['tab_style'] = style
-    layout['tabs_movable'] = movable
-    layout['tab_position'] = position
-    kids = []
-    for child in children:
-        if isinstance(child, basestring):
-            child = item(child)
-        kids.append(child)
-    layout['children'] = kids
-    return layout
-
-
-def floated(child, **metadata):
-    """ A function to creating a floating dock area.
-
-    Parameters
-    ----------
-    child : dict
-        The dict describing how to layout the floating child item.
-
-    **metadata
-        Additional configuration data for the layout.
-
-    """
-    layout = {'type': 'floated'}
-    if isinstance(child, basestring):
-        child = item(child)
-    layout['child'] = child
-    return layout
-
-
-def docklayout(primary, *secondary):
-    """ A function for creating a dock layout.
-
-    Parameters
-    ----------
-    primary : dict
-        The layout dict for the primary dock area.
-
-    *floated
-        An iterable of dicts for secondary floating areas.
-
-    """
-    assert primary['type'] in ('split', 'tabbed', 'item')
-    layout = {'type': 'docklayout'}
-    valid = []
-    for other in secondary:
-        if other['type'] != 'floated':
-            msg = "Secondary layouts must be 'floated' layouts. Got layout "
-            msg += "of type '%s' instead." % other['type']
-            raise TypeError(msg)
-        valid.append(other)
-    layout['primary'] = primary
-    layout['secondary'] = valid
-    return layout
+    if isinstance(thing, basestring):
+        thing = dockitem(thing)
+    if isinstance(thing, (dockitem, docksplit, docktabs)):
+        return docklayout(dockarea(thing))
+    if isinstance(thing, dockarea):
+        return docklayout(thing)
+    msg = "cannot coerce '%s' to a docklayout"
+    raise TypeError(msg % type(thing).__name__)
 
 
 class ProxyDockArea(ProxyConstraintsWidget):
@@ -168,7 +55,7 @@ class DockArea(ConstraintsWidget):
     """
     #: The layout of dock items for the area. The layout can also be
     #: changed at runtime with the 'apply_layout()' method.
-    layout = d_(Dict())
+    layout = d_(Coerced(docklayout, coercer=coerce_layout))
 
     #: A Stack expands freely in height and width by default
     hug_width = set_default('ignore')
@@ -202,8 +89,8 @@ class DockArea(ConstraintsWidget):
 
         Returns
         -------
-        result : dict
-            The current layout state of the dock area.
+        result : docklayout
+            The current docklayout state of the dock area.
 
         """
         if self.proxy_is_active:
@@ -215,9 +102,10 @@ class DockArea(ConstraintsWidget):
 
         Parameters
         ----------
-        layout : dict
-            The layout description dictionary to apply to the area.
+        layout : docklayout
+            The docklayout to apply to the dock area.
 
         """
+        assert isinstance(layout, docklayout), 'layout must be a docklayout'
         if self.proxy_is_active:
             return self.proxy.apply_layout(layout)

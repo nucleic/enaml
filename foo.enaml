@@ -3,16 +3,15 @@ from enaml.layout.api import *
 
 
 enamldef MyArea(DockArea): area:
-    layout = docklayout(
-        hsplit(
-            vsplit('foo', 'bar'),
-            vsplit('baz', tabbed('cram', 'blam', tab_position='left')),
-            vsplit('spam', hsplit('flam', 'ham')),
-        )
+    layout = hdocksplit(
+        vdocksplit('foo', 'bar'),
+        vdocksplit('baz', docktabs('cram', 'blam', tab_position='left')),
+        vdocksplit('spam', hdocksplit('flam', 'ham')),
     )
     DockItem:
         name = 'foo'
-        title = 'foo'
+        title = 'foo' * 5
+        title_bar_position = 'left'
         Container:
             PushButton: pass
             PushButton: pass
@@ -51,7 +50,7 @@ enamldef MyArea(DockArea): area:
             CheckBox: pass
     DockItem:
         name = 'spam'
-        title = 'spam'
+        title = 'Start Page'
         Container:
             Html:
                 source = 'hello ' + title
@@ -79,18 +78,30 @@ enamldef MyArea(DockArea): area:
                 source = 'hello ' + title
 
 
+def persist(layout):
+    import json
+    with open('foo/Desktop/slayout.json', 'w+') as f:
+        f.write(json.dumps(layout.as_dict()))
+
+
+def load():
+    import json
+    with open('foo/Desktop/slayout.json', 'r') as f:
+        data = json.loads(f.read())
+    return docklayout.from_dict(data)
+
+
 enamldef Main(MainWindow):
     destroy_on_close = False
+    initial_size = (1000, 1000)
     Container:
-        padding = 0
-        #constraints = [hbox(v1, v2)]
-        attr stored = {}
-        PushButton:
-            text = 'save'
-            clicked :: parent.stored = v1.save_layout()
-        PushButton:
-            text = 'restore'
-            clicked :: v1.apply_layout(parent.stored)
-        MyArea: v1: pass
-        #MyArea: v2: pass
-
+        padding = (0, 0, 0, 10)
+        constraints = [hbox(vbox(10, pb1, pb2, spacer), area)]
+        PushButton: pb1:
+            text = 'save layout'
+            clicked :: persist(area.save_layout())
+        PushButton: pb2:
+            text = 'restore layout'
+            clicked :: area.apply_layout(load())
+        MyArea: area:
+            pass

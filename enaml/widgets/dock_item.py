@@ -29,9 +29,6 @@ class ProxyDockItem(ProxyWidget):
     def set_title_bar_position(self, position):
         raise NotImplementedError
 
-    def set_native_window(self, native):
-        raise NotImplementedError
-
     def set_closable(self, closable):
         raise NotImplementedError
 
@@ -54,9 +51,6 @@ class DockItem(Widget):
 
     #: The orientation of the title bar.
     title_bar_position = d_(Enum('top', 'bottom', 'left', 'right'))
-
-    #: Whether to use a native window when the dock item is floating.
-    native_window = d_(Bool(True))
 
     #: Whether dock item is collapsible when docked in a splitter.
     collapsible = d_(Bool(True))
