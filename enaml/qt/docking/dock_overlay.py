@@ -12,6 +12,7 @@ from atom.api import Atom, Bool, Int, Float, Typed
 
 from .q_guide_rose import QGuideRose
 from .q_dock_container import QDockContainer
+from .q_dock_splitter import QDockSplitterHandle
 
 
 class DockOverlay(Atom):

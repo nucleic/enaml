@@ -8,11 +8,19 @@ enamldef MyArea(DockArea): area:
         vdocksplit('baz', docktabs('cram', 'blam', tab_position='left')),
         vdocksplit('spam', hdocksplit('flam', 'ham')),
     )
+    tab_position = 'bottom'
     DockItem:
         name = 'foo'
         title = 'foo' * 5
-        title_bar_position = 'left'
         Container:
+            Splitter:
+                SplitItem:
+                    Container:
+                        PushButton: pass
+                SplitItem:
+                    Container:
+                        PushButton: pass
+            CheckBox: cb: pass
             PushButton: pass
             PushButton: pass
             PushButton: pass
@@ -22,6 +30,7 @@ enamldef MyArea(DockArea): area:
     DockItem:
         name = 'bar'
         title = 'bar'
+        stretch = 0
         Container:
             Field: pass
             Field: pass
@@ -51,6 +60,7 @@ enamldef MyArea(DockArea): area:
     DockItem:
         name = 'spam'
         title = 'Start Page'
+        stretch = 0
         Container:
             Html:
                 source = 'hello ' + title
@@ -78,30 +88,20 @@ enamldef MyArea(DockArea): area:
                 source = 'hello ' + title
 
 
-def persist(layout):
-    import json
-    with open('foo/Desktop/slayout.json', 'w+') as f:
-        f.write(json.dumps(layout.as_dict()))
-
-
-def load():
-    import json
-    with open('foo/Desktop/slayout.json', 'r') as f:
-        data = json.loads(f.read())
-    return docklayout.from_dict(data)
-
-
 enamldef Main(MainWindow):
     destroy_on_close = False
     initial_size = (1000, 1000)
     Container:
         padding = (0, 0, 0, 10)
         constraints = [hbox(vbox(10, pb1, pb2, spacer), area)]
+        attr slayout = None
         PushButton: pb1:
             text = 'save layout'
-            clicked :: persist(area.save_layout())
+            clicked :: parent.slayout = area.save_layout()
         PushButton: pb2:
             text = 'restore layout'
-            clicked :: area.apply_layout(load())
+            clicked ::
+                if parent.slayout is not None:
+                    area.apply_layout(parent.slayout)
         MyArea: area:
             pass

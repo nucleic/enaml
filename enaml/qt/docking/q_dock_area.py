@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import QMargins, QSize
-from PyQt4.QtGui import QFrame, QLayout
+from PyQt4.QtGui import QFrame, QLayout, QTabWidget
 
 
 class QDockAreaLayout(QLayout):
@@ -156,6 +156,7 @@ class QDockArea(QFrame):
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
+        self._tab_position = QTabWidget.North
 
         # FIXME temporary VS2010-like stylesheet
         from PyQt4.QtGui import QApplication
@@ -165,7 +166,7 @@ class QDockArea(QFrame):
                 background: rgb(41, 56, 85);
             }
 
-            QSplitterHandle {
+            QDockSplitterHandle {
                 background: rgb(41, 56, 85);
             }
 
@@ -175,27 +176,12 @@ class QDockArea(QFrame):
 
             QDockItem {
                 background: rgb(237, 237, 237);
-                border-top-left-radius: 3px;
-                border-top-right-radius: 3px;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
                 border-bottom-left-radius: 3px;
                 border-bottom-right-radius: 3px;
             }
-            QDockItem[p_titlePosition="1"] {  /* left */
-                border-top-left-radius: 5px;
-                border-bottom-left-radius: 5px;
-            }
-            QDockItem[p_titlePosition="2"] {  /* top */
-                border-top-left-radius: 5px;
-                border-top-right-radius: 5px;
-            }
-            QDockItem[p_titlePosition="3"] {  /* right */
-                border-top-right-radius: 5px;
-                border-bottom-right-radius: 5px;
-            }
-            QDockItem[p_titlePosition="4"] {  /* bottom */
-                border-bottom-left-radius: 5px;
-                border-bottom-right-radius: 5px;
-            }
+
             QTabWidget QDockItem {
                 border-top-left-radius: 0px;
                 border-top-right-radius: 0px;
@@ -203,19 +189,16 @@ class QDockArea(QFrame):
                 border-bottom-right-radius: 0px;
             }
 
+            QTabWidget[tabPosition="3"]::tab-bar {
+                right: 2px;  /* adjust the unsightly gap */
+            }
+
+            QTabWidget[tabPosition="1"]::tab-bar {
+                bottom: 2px;  /* adjust the unsightly gap */
+            }
+
             QDockItemTitleBar {
                 color: rgb(250, 251, 254);
-            }
-            QDockItemTitleBar[p_titlePosition="1"] {  /* left */
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                            stop:0 rgb(78, 97, 132),
-                            stop:0.5 rgb(66, 88, 124),
-                            stop:1.0 rgb(64, 81, 124));
-                border-left: 1px solid rgb(59, 80, 115);
-                border-top-left-radius: 3px;
-                border-bottom-left-radius: 3px;
-            }
-            QDockItemTitleBar[p_titlePosition="2"] {  /* top */
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                             stop:0 rgb(78, 97, 132),
                             stop:0.5 rgb(66, 88, 124),
@@ -256,3 +239,19 @@ class QDockArea(QFrame):
         """
         self.layout().setLayoutWidget(widget)
 
+    def tabPosition(self):
+        """ Get the default position for newly created tab widgets.
+
+        """
+        return self._tab_position
+
+    def setTabPosition(self, position):
+        """ Set the default position for newly created tab widget.
+
+        Parameters
+        ----------
+        position : QTabWidget.TabPosition
+            The position for the tabs of newly created tab widgets.
+
+        """
+        self._tab_position = position

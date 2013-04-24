@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Enum, Unicode, Bool, Range, Typed, ForwardTyped
+from atom.api import Unicode, Range, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
@@ -23,16 +23,7 @@ class ProxyDockItem(ProxyWidget):
     def set_title(self, title):
         raise NotImplementedError
 
-    def set_title_bar_visible(self, visible):
-        raise NotImplementedError
-
-    def set_title_bar_position(self, position):
-        raise NotImplementedError
-
-    def set_closable(self, closable):
-        raise NotImplementedError
-
-    def set_movable(self, movable):
+    def set_stretch(self, stretch):
         raise NotImplementedError
 
 
@@ -46,16 +37,7 @@ class DockItem(Widget):
     #: The title to use in the title bar.
     title = d_(Unicode())
 
-    #: Whether or not the title bar is visible.
-    title_bar_visible = d_(Bool(True))
-
-    #: The orientation of the title bar.
-    title_bar_position = d_(Enum('top', 'bottom', 'left', 'right'))
-
-    #: Whether dock item is collapsible when docked in a splitter.
-    collapsible = d_(Bool(True))
-
-    #: The stretch factor for the dock item when docked in a splitter.
+    #: The stretch factor for the item when docked in a splitter.
     stretch = d_(Range(low=0, value=1))
 
     #: A reference to the ProxyDockItem object.
@@ -70,3 +52,14 @@ class DockItem(Widget):
         for child in reversed(self.children):
             if isinstance(child, Container):
                 return child
+
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe(('title', 'stretch'))
+    def _update_proxy(self, change):
+        """ Update the proxy when the item state changes.
+
+        """
+        # The superclass implementation is sufficient.
+        super(DockItem, self)._update_proxy(change)

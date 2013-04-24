@@ -78,11 +78,15 @@ class QDockContainerLayout(QLayout):
         """ Invalidate the cached layout data.
 
         """
+        super(QDockContainerLayout, self).invalidate()
         size = QSize()
         self._size_hint = size
         self._min_size = size
         self._max_size = size
-        super(QDockContainerLayout, self).invalidate()
+        dock_item = self._dock_item
+        if dock_item is not None:
+            # Track the size policy of the child dock item
+            self.parentWidget().setSizePolicy(dock_item.sizePolicy())
 
     def setGeometry(self, rect):
         """ Set the geometry for the items in the layout.
@@ -271,6 +275,40 @@ class QDockContainer(QFrame):
             self.setContentsMargins(QMargins(0, 0, 0, 0))
             self.unsetCursor()
             self.clearMask()
+
+    #--------------------------------------------------------------------------
+    # Proxy Methods
+    #--------------------------------------------------------------------------
+    def title(self):
+        """ Get the title for the container.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            return item.title()
+        return u''
+
+    def showTitleBar(self):
+        """ Show the title bar for the container.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            item.titleBarWidget().show()
+
+    def hideTitleBar(self):
+        """ Hide the title bar for the container.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            item.titleBarWidget().hide()
 
     #--------------------------------------------------------------------------
     # Reimplementations

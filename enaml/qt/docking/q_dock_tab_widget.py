@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication, QTabBar
+from PyQt4.QtGui import QApplication, QTabBar, QTabWidget
 
 
 class QDockTabBar(QTabBar):
@@ -74,3 +74,24 @@ class QDockTabBar(QTabBar):
         """
         super(QDockTabBar, self).mouseReleaseEvent(event)
         self._press_pos = None
+
+
+class QDockTabWidget(QTabWidget):
+    """ A custom tab widget for use in the dock area.
+
+    This custom widget ensures that the proper dock tab bar is used. It
+    also allows distinguishing dock tab widgets from standard QTabWidget
+    instances used elsewhere in the application.
+
+    """
+    def __init__(self, parent=None):
+        """ Initialize a QDockTabWidget.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent widget of the tab widget.
+
+        """
+        super(QDockTabWidget, self).__init__(parent)
+        self.setTabBar(QDockTabBar())

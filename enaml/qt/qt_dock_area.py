@@ -6,14 +6,23 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import QObject, QEvent, QSize
+from PyQt4.QtGui import QTabWidget
 
 from atom.api import Typed
 
 from enaml.widgets.dock_area import ProxyDockArea
 
-from .dock_manager import DockManager
-from .q_dock_area import QDockArea
+from .docking.dock_manager import DockManager
+from .docking.q_dock_area import QDockArea
 from .qt_constraints_widget import QtConstraintsWidget
+
+
+TAB_POSITIONS = {
+    'top': QTabWidget.North,
+    'bottom': QTabWidget.South,
+    'left': QTabWidget.West,
+    'right': QTabWidget.East,
+}
 
 
 class DockFilter(QObject):
@@ -61,6 +70,14 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         self.widget = QDockArea(self.parent_widget())
         self.manager = DockManager(self.widget)
+
+    def init_widget(self):
+        """ Initialize the underlying widget.
+
+        """
+        super(QtDockArea, self).init_widget()
+        d = self.declaration
+        self.set_tab_position(d.tab_position)
 
     def init_layout(self):
         """ Initialize the layout of the underlying control.
@@ -110,6 +127,9 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
     #--------------------------------------------------------------------------
     # ProxyDockArea API
     #--------------------------------------------------------------------------
+    def set_tab_position(self, position):
+        self.widget.setTabPosition(TAB_POSITIONS[position])
+
     def save_layout(self):
         return self.manager.save_layout()
 

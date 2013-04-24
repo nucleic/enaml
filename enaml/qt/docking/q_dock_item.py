@@ -5,25 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QRect, QSize, QMargins, pyqtProperty
-from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QFont
-
-
-class TitlePosition(object):
-    """ An enum for describing the position of a dock title bar.
-
-    """
-    #: The title bar is aligned with the left side of the item.
-    Left = 1
-
-    #: The title bar is aligned with the top side of the item.
-    Top = 2
-
-    #: The title bar is aligned with the right side of the item.
-    Right = 3
-
-    #: The title bar is aligned with the bottom side of the item.
-    Bottom = 4
+from PyQt4.QtCore import Qt, QRect, QSize, QMargins
+from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout
 
 
 class IDockItemTitleBar(QWidget):
@@ -52,28 +35,6 @@ class IDockItemTitleBar(QWidget):
         """
         raise NotImplementedError
 
-    def titlePosition(self):
-        """ Get the position of the title bar within the dock item.
-
-        Returns
-        -------
-        result : int
-            A TitlePosition enum value for the title position.
-
-        """
-        raise NotImplementedError
-
-    def setTitlePosition(self, position):
-        """ Set the position of the title bar within the dock item.
-
-        Parameters
-        ----------
-        position : int
-            A TitlePosition enum value for the title position.
-
-        """
-        raise NotImplementedError
-
 
 class QDockItemTitleBar(QFrame, IDockItemTitleBar):
     """ A concrete implementation of IDockItemTitleBar.
@@ -93,9 +54,7 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
         super(QDockItemTitleBar, self).__init__(parent)
         self._sh = QSize()
         self._title = u''
-        self._title_position = TitlePosition.Top
-        self.setContentsMargins(QMargins(2, 2, 2, 2))
-        self.setFont(QFont('Segoe UI', 9))
+        self.setContentsMargins(QMargins(5, 2, 5, 2))
 
     #--------------------------------------------------------------------------
     # IDockItemTitleBar API
@@ -124,34 +83,6 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
         self._title = title
         self.updateGeometry()
 
-    p_title = pyqtProperty(unicode, title, setTitle)
-
-    def titlePosition(self):
-        """ Get the position of the title bar within the dock item.
-
-        Returns
-        -------
-        result : TitlePosition
-            A TitlePosition enum value for the title position.
-
-        """
-        return self._title_position
-
-    def setTitlePosition(self, position):
-        """ Set the position of the title bar within the dock item.
-
-        Parameters
-        ----------
-        position : TitlePosition
-            A TitlePosition enum value for the title position.
-
-        """
-        self._sh = QSize()
-        self._title_position = position
-        self.updateGeometry()
-
-    p_titlePosition = pyqtProperty(int, titlePosition, setTitlePosition)
-
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
@@ -161,19 +92,9 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
         This paint handler draws the title bar text and title buttons.
 
         """
-        self.raise_()
         super(QDockItemTitleBar, self).paintEvent(event)
         painter = QPainter(self)
         rect = self.contentsRect()
-        pos = self.titlePosition()
-        painter.setClipping(False)
-        if pos == TitlePosition.Left:
-            painter.rotate(-90)
-            painter.translate(-rect.height(), 0)
-            rect = QRect(rect.x(), rect.y(), rect.height(), rect.width())
-        elif pos == TitlePosition.Right:
-            painter.rotate(90)
-            painter.translate(0, -rect.width())
         painter.drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, self.title())
 
     def sizeHint(self):
@@ -199,9 +120,6 @@ class QDockItemTitleBar(QFrame, IDockItemTitleBar):
         height = fm.height() + m.top() + m.bottom()
         width = fm.width(self.title()) + m.left() + m.right()
         sh = QSize(width, max(19, height))
-        pos = self.titlePosition()
-        if pos == TitlePosition.Left or pos == TitlePosition.Right:
-            sh.transpose()
         self._sh = sh
         return sh
 
@@ -220,8 +138,9 @@ class QDockItemLayout(QLayout):
 
         """
         super(QDockItemLayout, self).__init__(parent)
-        self._sh = QSize()
-        self._ms = QSize()
+        self._size_hint = QSize()
+        self._min_size = QSize()
+        self._max_size = QSize()
         self._title_bar = None
         self._dock_widget = None
 
@@ -298,8 +217,9 @@ class QDockItemLayout(QLayout):
         """ Invalidate the layout.
 
         """
-        self._sh = QSize()
-        self._ms = QSize()
+        self._size_hint = QSize()
+        self._min_size = QSize()
+        self._max_size = QSize()
         super(QDockItemLayout, self).invalidate()
 
     def setGeometry(self, rect):
@@ -309,103 +229,73 @@ class QDockItemLayout(QLayout):
         super(QDockItemLayout, self).setGeometry(rect)
         title = self._title_bar
         widget = self._dock_widget
-        do_title = title is not None and not title.isHidden()
-        do_widget = widget is not None and not widget.isHidden()
-        if not do_title and not do_widget:
-            return
-        if not do_title:
-            widget.setGeometry(rect)
-            return
         title_rect = QRect(rect)
         widget_rect = QRect(rect)
-        pos = title.titlePosition()
-        msh = title.minimumSizeHint()
-        if pos == TitlePosition.Top:
+        if title is not None and not title.isHidden():
+            msh = title.minimumSizeHint()
             title_rect.setHeight(msh.height())
             widget_rect.setTop(title_rect.bottom() + 1)
-        elif pos == TitlePosition.Bottom:
-            widget_rect.setHeight(rect.height() - msh.height())
-            title_rect.setTop(widget_rect.bottom() + 1)
-        elif pos == TitlePosition.Left:
-            title_rect.setWidth(msh.width())
-            widget_rect.setLeft(title_rect.right() + 1)
-        elif pos == TitlePosition.Right:
-            widget_rect.setWidth(rect.width() - msh.width())
-            title_rect.setLeft(widget_rect.right() + 1)
-        title.setGeometry(title_rect)
-        if do_widget:
+            title.setGeometry(title_rect)
+        if widget is not None and not widget.isHidden():
             widget.setGeometry(widget_rect)
 
     def sizeHint(self):
         """ Get the size hint for the layout.
 
         """
-        sh = self._sh
+        sh = self._size_hint
         if not sh.isValid():
-            ms, sh = self._getSizeHints()
-            self._ms = ms
-            self._sh = sh
+            width = height = 0
+            title = self._title_bar
+            widget = self._dock_widget
+            if title is not None and not title.isHidden():
+                hint = title.sizeHint()
+                width += hint.width()
+                height += hint.height()
+            if widget is not None and not widget.isHidden():
+                hint = widget.sizeHint()
+                width = max(width, hint.width())
+                height += hint.height()
+            sh = self._size_hint = QSize(width, height)
         return sh
 
     def minimumSize(self):
         """ Get the minimum size for the layout.
 
         """
-        ms = self._ms
+        ms = self._min_size
         if not ms.isValid():
-            ms, sh = self._getSizeHints()
-            self._ms = ms
-            self._sh = sh
+            width = height = 0
+            title = self._title_bar
+            widget = self._dock_widget
+            if title is not None and not title.isHidden():
+                hint = title.minimumSizeHint()
+                width += hint.width()
+                height += hint.height()
+            if widget is not None and not widget.isHidden():
+                hint = widget.minimumSizeHint()
+                width = max(width, hint.width())
+                height += hint.height()
+            ms = self._min_size = QSize(width, height)
         return ms
 
     def maximumSize(self):
         """ Get the maximum size for the layout.
 
         """
-        widget = self._dock_widget
-        if widget is not None:
-            return widget.maximumSize()
-        return QSize(16777215, 16777215)
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _getSizeHints(self):
-        """ Compute the size hint and minimum size simultaneously.
-
-        Returns
-        -------
-        result : tuple
-            A 2-tuple of (min_size, size_hint) for the layout.
-
-        """
-        vert_title = False
-        min_width = min_height = 0
-        hint_width = hint_height = 0
-        title = self._title_bar
-        widget = self._dock_widget
-        if title is not None and not title.isHidden():
-            msh = title.minimumSizeHint()
-            min_width = hint_width = msh.width()
-            min_height = hint_height = msh.height()
-            p = title.titlePosition()
-            vert_title = p == TitlePosition.Left or p == TitlePosition.Right
-        if widget is not None and not widget.isHidden():
-            sh = widget.sizeHint()
-            msh = widget.minimumSizeHint()
-            if vert_title:
-                hint_width += sh.width()
-                min_width += msh.width()
-                hint_height = max(hint_height, sh.height())
-                min_height = max(min_height, msh.height())
+        ms = self._max_size
+        if not ms.isValid():
+            widget = self._dock_widget
+            if widget is not None:
+                ms = widget.maximumSize()
+                title = self._title_bar
+                if title is not None and not title.isHidden():
+                    height = ms.height() + title.minimumSizeHint().height()
+                    ms.setHeight(min(16777215, height))
             else:
-                hint_height += sh.height()
-                min_height += msh.height()
-                hint_width = max(hint_width, sh.width())
-                min_width = max(min_width, sh.width())
-        min_size = QSize(min_width, min_height)
-        hint_size = QSize(hint_width, hint_height)
-        return (min_size, hint_size)
+                ms = QSize(16777215, 16777215)
+            self._max_size = ms
+        return ms
 
     #--------------------------------------------------------------------------
     # QLayout Abstract API
@@ -414,7 +304,7 @@ class QDockItemLayout(QLayout):
         """ A required virtual method implementation.
 
         """
-        msg = 'Use `setTitleBar | setDockWidget` instead.'
+        msg = 'Use `setTitleBarWidget | setDockWidget` instead.'
         raise NotImplementedError(msg)
 
     def count(self):
@@ -483,30 +373,6 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setTitle(title)
-
-    def titlePosition(self):
-        """ Get the position of the title bar within the dock item.
-
-        Returns
-        -------
-        result : TitlePosition
-            A TitlePosition enum value for the title position.
-
-        """
-        return self.titleBarWidget().titlePosition()
-
-    def setTitlePosition(self, position):
-        """ Set the position of the title bar within the dock item.
-
-        Parameters
-        ----------
-        position : TitlePosition
-            A TitlePosition enum value for the title position.
-
-        """
-        self.titleBarWidget().setTitlePosition(position)
-
-    p_titlePosition = pyqtProperty(int, titlePosition, setTitlePosition)
 
     def titleBarWidget(self):
         """ Get the title bar widget for the dock item.

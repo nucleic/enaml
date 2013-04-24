@@ -55,12 +55,6 @@ class docktabs(Atom):
     #: The index of the selected tab.
     index = Int(0)
 
-    #: The style of the tab widget.
-    tab_style = Enum('document', 'preferences')
-
-    #: Whether the tabs are movable by the user.
-    tabs_movable = Bool(True)
-
     #: The position of the tabs in the widget.
     tab_position = Enum('top', 'bottom', 'left', 'right')
 
@@ -81,8 +75,6 @@ class docktabs(Atom):
         children = (dockitem.from_dict(d) for d in dct['children'])
         self = cls(*children)
         self.index = dct['index']
-        self.tab_style = dct['tab_style']
-        self.tabs_movable = dct['tabs_movable']
         self.tab_position = dct['tab_position']
         return self
 
@@ -117,8 +109,6 @@ class docktabs(Atom):
         layout = {
             'type': 'docktabs',
             'index': self.index,
-            'tab_style': self.tab_style,
-            'tabs_movable': self.tabs_movable,
             'tab_position': self.tab_position,
             'children': [c.as_dict() for c in self.children],
         }
@@ -288,7 +278,7 @@ class dockarea(Atom):
         if isinstance(child, basestring):
             child = dockitem(child)
         if not isinstance(child, (docksplit, docktabs, dockitem)):
-            msg = "'s' is an invalid type for a area child"
+            msg = "'s' is an invalid type for an area child"
             raise TypeError(msg % type(child).__name__)
         self.child = child
 
