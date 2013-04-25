@@ -717,3 +717,12 @@ class WxMenu(WxToolkitObject, ProxyMenu):
 
         """
         self.widget.SetContextMenu(context)
+
+    def popup(self):
+        """ Popup the menu at the current mouse location.
+
+        """
+        # This is not supported on wx. Wx requires the menu to be
+        # popped up over a specified window. It can't be done using
+        # global coordinates.
+        pass

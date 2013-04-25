@@ -33,6 +33,9 @@ class ProxyMenu(ProxyToolkitObject):
     def set_context_menu(self, context):
         raise NotImplementedError
 
+    def popup(self):
+        raise NotImplementedError
+
 
 class Menu(ToolkitObject):
     """ A widget used as a menu in a MenuBar.
@@ -72,3 +75,16 @@ class Menu(ToolkitObject):
         """
         # The superclass implementation is sufficient.
         super(Menu, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def popup(self):
+        """ Popup the menu over the current mouse location.
+
+        """
+        if not self.is_initialized:
+            self.initialize()
+        if not self.proxy_is_active:
+            self.activate_proxy()
+        self.proxy.popup()
