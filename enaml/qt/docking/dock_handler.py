@@ -59,31 +59,6 @@ class DockHandler(Atom):
         siblings.remove(self)
         siblings.append(self)
 
-    def _unplug(self):
-        """ Unplug the container from its dock area.
-
-        This method assumes the provided container is in a state which
-        is suitable for unplugging. If the operation is successful, the
-        container will be hidden and its parent will be None.
-
-        Returns
-        -------
-        result : bool
-            True if unplugging was a success, False otherwise.
-
-        """
-        dock_area = None
-        container = self.dock_container
-        parent = container.parent()
-        while parent is not None:
-            if isinstance(parent, QDockArea):
-                dock_area = parent
-                break
-            parent = parent.parent()
-        if dock_area is None:
-            return False
-        return unplug_container(dock_area, container)
-
     def _dock_drag(self, pos):
         """ Handle a floating dock container drag.
 
@@ -136,6 +111,31 @@ class DockHandler(Atom):
         container.setAttribute(Qt.WA_WState_ExplicitShowHide, False)
         container.setAttribute(Qt.WA_WState_Hidden, False)
 
+    def unplug(self):
+        """ Unplug the container from its dock area.
+
+        This method assumes the provided container is in a state which
+        is suitable for unplugging. If the operation is successful, the
+        container will be hidden and its parent will be None.
+
+        Returns
+        -------
+        result : bool
+            True if unplugging was a success, False otherwise.
+
+        """
+        dock_area = None
+        container = self.dock_container
+        parent = container.parent()
+        while parent is not None:
+            if isinstance(parent, QDockArea):
+                dock_area = parent
+                break
+            parent = parent.parent()
+        if dock_area is None:
+            return False
+        return unplug_container(dock_area, container)
+
     def untab(self, pos):
         """ Unplug the container from a tab control.
 
@@ -149,7 +149,7 @@ class DockHandler(Atom):
             The global mouse position.
 
         """
-        if not self._unplug():
+        if not self.unplug():
             return False
         self._raise()
         self.dragging = True
@@ -194,7 +194,7 @@ class DockHandler(Atom):
         """
         self._raise()
         self.floating = True
-        container= self.dock_container
+        container = self.dock_container
         container.setFloating(True)
         container.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint)
         if geometry.isValid():
@@ -275,7 +275,7 @@ class DockHandler(Atom):
         if self.floating:
             return True
 
-        if not self._unplug():
+        if not self.unplug():
             return False
 
         self._raise()
