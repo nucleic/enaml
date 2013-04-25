@@ -406,10 +406,10 @@ def render_hbar(painter):
 
 def render_background(painter):
     brush = QBrush(QColor(0x00, 0x00, 0x00, 0x10), Qt.Dense6Pattern)
-    painter.fillRect(QRect(0, 0, 127, 127), brush)
+    painter.fillRect(QRect(0, 0, 129, 129), brush)
     brush = QBrush(QColor(0xFF, 0xFF, 0xFF, 0x10), Qt.Dense6Pattern)
     painter.translate(0, 1)
-    painter.fillRect(QRect(0, 0, 127, 127), brush)
+    painter.fillRect(QRect(0, 0, 129, 129), brush)
 
 
 app = QApplication([])
