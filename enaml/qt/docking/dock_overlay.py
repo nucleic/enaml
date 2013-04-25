@@ -6,13 +6,14 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
-from PyQt4.QtGui import QRubberBand, QSplitterHandle, QTabWidget
+from PyQt4.QtGui import QRubberBand
 
 from atom.api import Atom, Bool, Int, Float, Typed
 
 from .q_guide_rose import QGuideRose
 from .q_dock_container import QDockContainer
 from .q_dock_splitter import QDockSplitterHandle
+from .q_dock_tab_widget import QDockTabWidget
 
 
 class DockOverlay(Atom):
@@ -392,9 +393,9 @@ class DockOverlay(Atom):
         target_mode = Mode.Border
         if isinstance(widget, QDockContainer):
             target_mode |= Mode.CompassEx
-        elif isinstance(widget, QTabWidget):
+        elif isinstance(widget, QDockTabWidget):
             target_mode |= Mode.Compass
-        elif isinstance(widget, QSplitterHandle):
+        elif isinstance(widget, QDockSplitterHandle):
             if widget.orientation() == Qt.Horizontal:
                 target_mode |= Mode.SplitHorizontal
             else:

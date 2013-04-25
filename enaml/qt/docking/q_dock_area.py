@@ -182,18 +182,18 @@ class QDockArea(QFrame):
                 border-bottom-right-radius: 3px;
             }
 
-            QTabWidget QDockItem {
+            QDockTabWidget QDockItem {
                 border-top-left-radius: 0px;
                 border-top-right-radius: 0px;
                 border-bottom-left-radius: 0px;
                 border-bottom-right-radius: 0px;
             }
 
-            QTabWidget[tabPosition="3"]::tab-bar {
+            QDockTabWidget[tabPosition="3"]::tab-bar {
                 right: 2px;  /* adjust the unsightly gap */
             }
 
-            QTabWidget[tabPosition="1"]::tab-bar {
+            QDockTabWidget[tabPosition="1"]::tab-bar {
                 bottom: 2px;  /* adjust the unsightly gap */
             }
 
