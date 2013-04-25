@@ -65,12 +65,14 @@ class QtDockItem(QtWidget, ProxyDockItem):
 
         """
         super(QtDockItem, self).child_added(child)
+        self.widget.setDockWidget(self.dock_widget())
 
     def child_removed(self, child):
         """ Handle the child added event for a QtDockItem.
 
         """
         super(QtDockItem, self).child_removed(child)
+        self.widget.setDockWidget(self.dock_widget())
 
     #--------------------------------------------------------------------------
     # ProxyDockItem API

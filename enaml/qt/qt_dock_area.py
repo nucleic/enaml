@@ -15,6 +15,7 @@ from enaml.widgets.dock_area import ProxyDockArea
 from .docking.dock_manager import DockManager
 from .docking.q_dock_area import QDockArea
 from .qt_constraints_widget import QtConstraintsWidget
+from .qt_dock_item import QtDockItem
 
 
 TAB_POSITIONS = {
@@ -76,29 +77,43 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         super(QtDockArea, self).init_widget()
-        d = self.declaration
-        self.set_tab_position(d.tab_position)
+        self.set_tab_position(self.declaration.tab_position)
 
     def init_layout(self):
         """ Initialize the layout of the underlying control.
 
         """
         super(QtDockArea, self).init_layout()
-        d = self.declaration
         manager = self.manager
-        for item in d.dock_items():
-            w = item.proxy.widget
-            if w is not None:
-                manager.add_item(w)
-        manager.apply_layout(d.layout)
-        self.dock_filter = DockFilter(self)
-        self.widget.installEventFilter(self.dock_filter)
+        for item in self.dock_items():
+            manager.add_item(item)
+        manager.apply_layout(self.declaration.layout)
+        self.dock_filter = dock_filter = DockFilter(self)
+        self.widget.installEventFilter(dock_filter)
 
     def destroy(self):
+        """ A reimplemented destructor.
+
+        This removes the event filter from the dock area and releases
+        the items from the dock manager.
+
+        """
         self.widget.removeEventFilter(self.dock_filter)
         del self.dock_filter
-        self.manager.release_items()
+        self.manager.clear_items()
         super(QtDockArea, self).destroy()
+
+    #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def dock_items(self):
+        """ Get an iterable of QDockItem children for this area.
+
+        """
+        for d in self.declaration.dock_items():
+            w = d.proxy.widget
+            if w is not None:
+                yield w
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -108,30 +123,38 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         super(QtDockArea, self).child_added(child)
+        if isinstance(child, QtDockItem):
+            w = child.widget
+            if w is not None:
+                self.manager.add_item(w)
 
     def child_removed(self, child):
         """ Handle the child removed event for a QtDockArea.
 
         """
         super(QtDockArea, self).child_removed(child)
-
-    #--------------------------------------------------------------------------
-    # Signal Handlers
-    #--------------------------------------------------------------------------
-    def on_layout_requested(self):
-        """ Handle the `layoutRequested` signal from the QtDockArea.
-
-        """
-        self.size_hint_updated()
+        if isinstance(child, QtDockItem):
+            w = child.widget
+            if w is not None:
+                self.manager.remove_item(w)
 
     #--------------------------------------------------------------------------
     # ProxyDockArea API
     #--------------------------------------------------------------------------
     def set_tab_position(self, position):
+        """ Set the default tab position on the underyling widget.
+
+        """
         self.widget.setTabPosition(TAB_POSITIONS[position])
 
     def save_layout(self):
+        """ Save the current layout on the underlying widget.
+
+        """
         return self.manager.save_layout()
 
     def apply_layout(self, layout):
+        """ Apply a new layout to the underlying widget.
+
+        """
         self.manager.apply_layout(layout)
