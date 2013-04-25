@@ -44,7 +44,7 @@ ext_modules = [
 
 setup(
     name='enaml',
-    version='0.7.5',
+    version='0.7.6',
     author='The Nucleic Development Team',
     author_email='sccolbert@gmail.com',
     url='https://github.com/nucleic/enaml',
@@ -53,7 +53,10 @@ setup(
     requires=['atom', 'PyQt', 'ply', 'casuarius'],
     install_requires=['distribute'],
     packages=find_packages(),
-    package_data={'enaml.stdlib': ['*.enaml']},
+    package_data={
+        'enaml.stdlib': ['*.enaml'],
+        'enaml.qt.docking': ['dockguides/*.png', 'dockguides/*.py'],
+    },
     entry_points={'console_scripts': ['enaml-run = enaml.runner:main']},
     ext_modules=ext_modules,
 )

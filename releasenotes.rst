@@ -1,6 +1,14 @@
 Enaml Release Notes
 ===================
 
+0.7.6 - 04/25/2013
+------------------
+- Add an advanced DockArea widget. 3ed122b110_
+- Add popup() functionality to the Menu widget. 5363a56f33_
+
+.. _3ed122b110: https://github.com/nucleic/enaml/commit/3ed122b11050ee72383aa0ef08ca2537ec7eb841
+.. _5363a56f33: https://github.com/nucleic/enaml/commit/5363a56f336e7302d6c2876e0b630794b9f751ae
+
 0.7.5 - 04/09/2013
 ------------------
 - Fix a bug in the Wx main window implementation. 39f6baee49_
