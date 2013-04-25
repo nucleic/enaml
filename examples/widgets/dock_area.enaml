@@ -1,0 +1,114 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" This example demonstrates the use of the advanced DockArea widget.
+
+The DockArea widget provides a canvas into which DockItems can be docked
+and undocked at will. The layout configuration of the area can be saved
+and restored using a form that can be easily serialized to json.
+
+Tabbed dock items can be torn out of the dock area by holding the shift
+key while dragging a tab.
+
+"""
+import json
+
+from enaml.layout.api import (
+    hbox, vbox, spacer, vdocksplit, hdocksplit, docktabs, docklayout
+)
+from enaml.widgets.api import (
+    Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider
+)
+
+
+enamldef MyDockArea(DockArea):
+    layout = hdocksplit(
+        vdocksplit('Item 1', 'Item 3', 'Item 5'),
+        vdocksplit('Item 4', 'Item 2'),
+        docktabs('Item 6', 'Item 7', 'Item 8', 'Item 9'),
+    )
+    DockItem:
+        name = 'Item 1'
+        title = name
+        Container:
+            Field: pass
+            Field: pass
+            Field: pass
+    DockItem:
+        name = 'Item 2'
+        title = name
+        Container:
+            PushButton: text = 'foo'
+            PushButton: text = 'bar'
+            PushButton: text = 'baz'
+    DockItem:
+        name = 'Item 3'
+        title = name
+        Container:
+            Html: source = '<h1><center>Hello World!</center></h1>'
+    DockItem:
+        name = 'Item 4'
+        title = name
+        Container:
+            Html: source = '<h1><center>Hello Enaml!</center></h1>'
+    DockItem:
+        name = 'Item 5'
+        title = name
+        Container:
+            Slider: pass
+            Slider: pass
+            Slider: pass
+    DockItem:
+        name = 'Item 6'
+        title = name
+        Container:
+            Html: source = u'<h1><center>Guten Tag!</center></h1>'
+    DockItem:
+        name = 'Item 7'
+        title = name
+        Container:
+            Field: pass
+            Field: pass
+            Field: pass
+            Field: pass
+    DockItem:
+        name = 'Item 8'
+        title = name
+        Container:
+            PushButton: text = 'spam'
+            PushButton: text = 'ham'
+            PushButton: text = 'green'
+            PushButton: text = 'eggs'
+    DockItem:
+        name = 'Item 9'
+        title = name
+        Container:
+            Html: source = '<h1><center>Bonjour!</center></h1>'
+
+
+enamldef Main(Window):
+    Container:
+        attr stored = None
+        padding = (0, 0, 0, 10)
+        constraints = [
+            hbox(vbox(10, save, restore, spacer), area)
+        ]
+        PushButton: save:
+            text = 'Save Layout'
+            clicked ::
+                layout = area.save_layout()
+                layout_dict = layout.as_dict()
+                parent.stored = json.dumps(layout_dict)  # or write to file
+        PushButton: restore:
+            text = 'Restore Layout'
+            enabled << stored is not None
+            clicked ::
+                layout_dict = json.loads(stored)  # or load from file
+                layout = docklayout.from_dict(layout_dict)
+                area.apply_layout(layout)
+        MyDockArea: area:
+            pass
