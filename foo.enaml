@@ -2,6 +2,26 @@ from enaml.widgets.api import *
 from enaml.layout.api import *
 
 
+def namegen():
+    stem = 'custom_'
+    i = 0
+    while True:
+        yield stem + str(i)
+        i += 1
+namegen = namegen()
+
+
+enamldef FooItem(DockItem): item:
+    title = name
+    name = namegen.next()
+    Container:
+        Field: text = item.name
+        Field: text = item.name
+        Field: text = item.name
+        Field: text = item.name
+        Field: text = item.name
+
+
 enamldef MyArea(DockArea): area:
     layout = hdocksplit(
         vdocksplit('foo', 'bar'),
@@ -93,7 +113,7 @@ enamldef Main(MainWindow):
     initial_size = (1000, 1000)
     Container:
         padding = (0, 0, 0, 10)
-        constraints = [hbox(vbox(10, pb1, pb2, spacer), area)]
+        constraints = [hbox(vbox(10, pb1, pb2, pb3, pb4, spacer), area)]
         attr slayout = None
         PushButton: pb1:
             text = 'save layout'
@@ -103,5 +123,19 @@ enamldef Main(MainWindow):
             clicked ::
                 if parent.slayout is not None:
                     area.apply_layout(parent.slayout)
+        PushButton: pb3:
+            text = 'add item'
+            clicked ::
+                item =  FooItem(area)
+                layout = area.save_layout()
+                main = layout.children[0].child
+                if isinstance(main, docksplit) and main.orientation=='horizontal':
+                    new = hdocksplit(item.name, *main.children)
+                else:
+                    new = hdocksplit(item.name, main)
+                area.apply_layout(docklayout(dockarea(new)))
+        PushButton: pb4:
+            text = 'remove item'
+            clicked :: area.children[-1].destroy()
         MyArea: area:
             pass
