@@ -199,8 +199,8 @@ def hdocksplit(*args, **kwargs):
     """ A convenience function for creating a horizontal docksplit.
 
     """
+    kwargs.setdefault('orientation', 'horizontal')
     split = docksplit(*args, **kwargs)
-    split.orientation = 'horizontal'
     return split
 
 
@@ -208,8 +208,8 @@ def vdocksplit(*args, **kwargs):
     """ A convenience function for creating a vertical docksplit.
 
     """
+    kwargs.setdefault('orientation', 'vertical')
     split = docksplit(*args, **kwargs)
-    split.orientation = 'vertical'
     return split
 
 
