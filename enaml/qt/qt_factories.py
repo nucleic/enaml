@@ -55,6 +55,16 @@ def datetime_selector_factory():
     return QtDatetimeSelector
 
 
+def dock_area_factory():
+    from .qt_dock_area import QtDockArea
+    return QtDockArea
+
+
+def dock_item_factory():
+    from .qt_dock_item import QtDockItem
+    return QtDockItem
+
+
 def dock_pane_factory():
     from .qt_dock_pane import QtDockPane
     return QtDockPane
@@ -270,6 +280,8 @@ QT_FACTORIES = {
     'Container': container_factory,
     'DateSelector': date_selector_factory,
     'DatetimeSelector': datetime_selector_factory,
+    'DockArea': dock_area_factory,
+    'DockItem': dock_item_factory,
     'DockPane': dock_pane_factory,
     'DualSlider': dual_slider_factory,
     'Field': field_factory,
