@@ -1,0 +1,17 @@
+<!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file>dock_images/arrow_east.png</file>
+     <file>dock_images/arrow_north.png</file>
+     <file>dock_images/arrow_south.png</file>
+     <file>dock_images/arrow_west.png</file>
+     <file>dock_images/background.png</file>
+     <file>dock_images/bar_horizontal.png</file>
+     <file>dock_images/bar_vertical.png</file>
+     <file>dock_images/center.png</file>
+     <file>dock_images/cross_box.png</file>
+     <file>dock_images/cross_ex_box.png</file>
+     <file>dock_images/guide_box.png</file>
+     <file>dock_images/split_horizontal.png</file>
+     <file>dock_images/split_vertical.png</file>
+ </qresource>
+ </RCC>

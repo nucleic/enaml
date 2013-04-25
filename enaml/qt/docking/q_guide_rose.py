@@ -5,13 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
 import sys
 
 from PyQt4.QtCore import Qt, QRect, QPoint
 from PyQt4.QtGui import QFrame, QImage, QPainter
 
 from atom.api import Atom, Float, Int, Str, Typed, Value, set_default
+
+# Make sure the resources get registered.
+from . import dock_resources
 
 
 class QGuideRose(QFrame):
@@ -331,8 +333,7 @@ class GuideImage(Atom):
         """
         image = cls._images.get(name)
         if image is None:
-            dirname = os.path.dirname(__file__)
-            image = QImage(os.path.join(dirname, 'dockguides', name + '.png'))
+            image = QImage(':dock_images/%s.png' % name)
             cls._images[name] = image
         return image
 

@@ -5,9 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
 from PyQt4.QtCore import QMargins, QSize
 from PyQt4.QtGui import QFrame, QLayout, QTabWidget
+
+# Make sure the resources get registered.
+from . import dock_resources
 
 
 class QDockAreaLayout(QLayout):
@@ -160,13 +162,11 @@ class QDockArea(QFrame):
         self._tab_position = QTabWidget.North
 
         # FIXME temporary VS2010-like stylesheet
-        p = os.path.dirname(__file__)
-        p = os.path.join(p, 'dockguides', 'background.png').replace('\\', '/')
         self.setStyleSheet("""
             QDockArea {
                 padding: 5px;
                 background: rgb(49, 67, 98);
-                background-image: url(%s);
+                background-image: url(:dock_images/background.png);
                 background-repeat: repeat-xy;
             }
 
@@ -210,7 +210,7 @@ class QDockArea(QFrame):
                 border-top-left-radius: 3px;
                 border-top-right-radius: 3px;
             }
-            """ % p)
+            """ )
 
     def layoutWidget(self):
         """ Get the widget implementing the layout for the area.
