@@ -55,7 +55,11 @@ setup(
     packages=find_packages(),
     package_data={
         'enaml.stdlib': ['*.enaml'],
-        'enaml.qt.docking': ['dockguides/*.png', 'dockguides/*.py'],
+        'enaml.qt.docking': [
+            'dock_images/*.png',
+            'dock_images/*.py',
+            'enaml_dock_resources.qrc'
+        ],
     },
     entry_points={'console_scripts': ['enaml-run = enaml.runner:main']},
     ext_modules=ext_modules,

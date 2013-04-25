@@ -114,12 +114,17 @@ class QGuideRose(QFrame):
         """
         super(QGuideRose, self).__init__()
         # On Mac, setting the translucent background does not cause the
-        # frame shadow to be hidden; it must be explicitly hidden.
+        # frame shadow to be hidden; it must be explicitly hidden. Mac
+        # also requires the window to be a tooltip in order to be raised
+        # above the rubber band in the Z-order. On Windows, the tooltip
+        # leaves a dropshadow on Qt >= 4.8 whereas tool does not.
         if sys.platform == 'darwin':
             self.setAttribute(Qt.WA_MacNoShadow, True)
+            flags = Qt.ToolTip
+        else:
+            flags = Qt.Tool
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-        # Window must be a tool tip to be raised above a QRubberBand on OSX
-        flags = Qt.ToolTip | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint
+        flags |= Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint
         self.setWindowFlags(flags)
         self._mode = self.Mode.NoMode
         self._center_point = QPoint()
