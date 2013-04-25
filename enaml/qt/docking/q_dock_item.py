@@ -202,6 +202,8 @@ class QDockItemLayout(QLayout):
 
         """
         old_widget = self._dock_widget
+        if widget is old_widget:
+            return
         if old_widget is not None:
             old_widget.hide()
             old_widget.setParent(None)
