@@ -131,6 +131,45 @@ class DockManager(Atom):
         container.handler = handler
         self.handlers.append(handler)
 
+    def remove_item(self, item):
+        """ Remove a dock item from the dock manager.
+
+        If the item has not been added to the manager, this is a no-op.
+
+        Parameters
+        ----------
+        items : QDockItem
+            The item to remove from the dock manager. It will be hidden
+            and unparented, but not destroyed.
+
+        """
+        if item not in self.dock_items:
+            return
+        self.dock_items.remove(item)
+        handler = item.handler
+        if not handler.floating:
+            handler.unplug()
+        container = handler.dock_container
+        container.hide()
+        container.setParent(None)
+        container.setDockItem(None)
+        item.handler = None
+        container.handler = None
+        handler.manager = None
+        self.handlers.remove(handler)
+
+    def clear_items(self):
+        """ Clear the dock items from the dock manager.
+
+        This method will hide and unparent all of the dock items that
+        were previously added to the dock manager. This is equivalent
+        to calling the 'remove_item()' method for every item managed
+        by the dock manager.
+
+        """
+        for item in list(self.dock_items):
+            self.remove_item(item)
+
     def apply_layout(self, layout):
         """ Apply a layout to the dock area.
 
@@ -140,9 +179,14 @@ class DockManager(Atom):
             The docklayout to apply to the managed area.
 
         """
+        # Remove the layout widget before resetting the handlers. This
+        # prevents a re-used container from being hidden by the call to
+        # setLayoutWidget after it has already been reset. The reference
+        # held so that the containers do not get prematurely destroyed.
+        widget = self.dock_area.layoutWidget()
+        self.dock_area.setLayoutWidget(None)
         for handler in self.handlers:
             handler.reset()
-        self.dock_area.setLayoutWidget(None)
 
         main_area = None
         floating_areas = []
