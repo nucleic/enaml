@@ -404,19 +404,28 @@ def render_hbar(painter):
     painter.fillRect(QRect(4, 4, 23, 2), color)
 
 
+def render_background(painter):
+    brush = QBrush(QColor(0x00, 0x00, 0x00, 0x10), Qt.Dense6Pattern)
+    painter.fillRect(QRect(0, 0, 127, 127), brush)
+    brush = QBrush(QColor(0xFF, 0xFF, 0xFF, 0x10), Qt.Dense6Pattern)
+    painter.translate(0, 1)
+    painter.fillRect(QRect(0, 0, 127, 127), brush)
+
+
 app = QApplication([])
-image = QImage(QSize(139, 139), QImage.Format_ARGB32_Premultiplied)
+image = QImage(QSize(128, 128), QImage.Format_ARGB32_Premultiplied)
 image.fill(0)
 painter = QPainter(image)
 #render_box(painter)
 #render_cross(painter)
-render_cross_ex(painter)
+#render_cross_ex(painter)
 #render_vbar(painter)
 #render_hbar(painter)
+render_background(painter)
 #pad = GuidePad(QRect(0, 0, 30, 30), GuidePad.CenterQuads)
 #pad.paint(painter)
 painter.end()
 
 import os
-path = os.path.join(os.path.dirname(__file__), 'cross_ex_box.png')
+path = os.path.join(os.path.dirname(__file__), 'background.png')
 image.save(path)

@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import os
 from PyQt4.QtCore import QMargins, QSize
 from PyQt4.QtGui import QFrame, QLayout, QTabWidget
 
@@ -159,19 +160,22 @@ class QDockArea(QFrame):
         self._tab_position = QTabWidget.North
 
         # FIXME temporary VS2010-like stylesheet
-        from PyQt4.QtGui import QApplication
-        QApplication.instance().setStyleSheet("""
+        p = os.path.dirname(__file__)
+        p = os.path.join(p, 'dockguides', 'background.png').replace('\\', '/')
+        self.setStyleSheet("""
             QDockArea {
                 padding: 5px;
-                background: rgb(41, 56, 85);
+                background: rgb(49, 67, 98);
+                background-image: url(%s);
+                background-repeat: repeat-xy;
             }
 
             QDockSplitterHandle {
-                background: rgb(41, 56, 85);
+                background: rgba(0, 0, 0, 0);
             }
 
             QDockContainer {
-                background: rgb(41, 56, 85);
+                background: rgb(53, 73, 106);
             }
 
             QDockItem {
@@ -200,15 +204,13 @@ class QDockArea(QFrame):
             QDockItemTitleBar {
                 color: rgb(250, 251, 254);
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 rgb(78, 97, 132),
-                            stop:0.5 rgb(66, 88, 124),
-                            stop:1.0 rgb(64, 81, 124));
-                border-top: 1px solid rgb(59, 80, 115);
+                            stop:0 rgb(77, 96, 130),
+                            stop:0.5 rgb(69, 89, 124),
+                            stop:1.0 rgb(61, 82, 119));
                 border-top-left-radius: 3px;
                 border-top-right-radius: 3px;
             }
-
-            """)
+            """ % p)
 
     def layoutWidget(self):
         """ Get the widget implementing the layout for the area.

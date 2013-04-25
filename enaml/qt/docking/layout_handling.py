@@ -102,6 +102,8 @@ def unplug_container(area, container):
 
     """
     root = area.layoutWidget()
+    if root is None:
+        return False
     if root is container:
         root.hide()
         root.setParent(None)
