@@ -95,3 +95,5 @@ class QDockTabWidget(QTabWidget):
         """
         super(QDockTabWidget, self).__init__(parent)
         self.setTabBar(QDockTabBar())
+        self.setElideMode(Qt.ElideRight)
+        self.setUsesScrollButtons(True)
