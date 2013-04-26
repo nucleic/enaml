@@ -5,11 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from PyQt4.QtCore import QSize
+from PyQt4.QtGui import QIcon
+
 from atom.api import Typed
 
 from enaml.widgets.dock_item import ProxyDockItem
 
 from .docking.q_dock_item import QDockItem
+from .q_resource_helpers import get_cached_qicon
 from .qt_widget import QtWidget
 
 
@@ -37,6 +41,10 @@ class QtDockItem(QtWidget, ProxyDockItem):
         d = self.declaration
         self.set_name(d.name)
         self.set_title(d.title)
+        if d.icon is not None:
+            self.set_icon(d.icon)
+        if -1 not in d.icon_size:
+            self.set_icon_size(d.icon_size)
         self.set_stretch(d.stretch)
 
     def init_layout(self):
@@ -88,6 +96,22 @@ class QtDockItem(QtWidget, ProxyDockItem):
 
         """
         self.widget.setTitle(title)
+
+    def set_icon(self, icon):
+        """ Set the icon on the underlying widget.
+
+        """
+        if icon:
+            qicon = get_cached_qicon(icon)
+        else:
+            qicon = QIcon()
+        self.widget.setIcon(qicon)
+
+    def set_icon_size(self, size):
+        """ Set the icon size on the underlying widget.
+
+        """
+        self.widget.setIconSize(QSize(*size))
 
     def set_stretch(self, stretch):
         """ Set the stretch factor for the underlyling widget.

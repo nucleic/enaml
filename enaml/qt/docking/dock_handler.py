@@ -13,7 +13,7 @@ from atom.api import Atom, Bool, Typed, ForwardTyped
 from .layout_handling import unplug_container
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
-
+from .q_dock_tab_widget import QDockTabWidget
 
 def DockManager():
     from .dock_manager import DockManager
@@ -217,6 +217,41 @@ class DockHandler(Atom):
     #--------------------------------------------------------------------------
     # QDockItem Handler Methods
     #--------------------------------------------------------------------------
+    def title_changed(self):
+        """ Handle the title changing for the dock item.
+
+        This handler is called by the QDockItem when the user assigns a
+        new title. It ensures that the tab title is updated if the item
+        is a descendant of QDockTabWidget.
+
+        """
+        # ancestry: QTabWidget -> QStackedWidget -> QDockContainer
+        container = self.dock_container
+        parent = container.parent()
+        if parent is not None:
+            parent = parent.parent()
+            if isinstance(parent, QDockTabWidget):
+                index = parent.indexOf(container)
+                parent.setTabText(index, container.title())
+
+    def icon_changed(self):
+        """ Handle the icon changing for the dock item.
+
+        This handler is called by the QDockItem when the user assigns a
+        new icon. It ensures that the tab icon is updated if the item
+        is a descendant of QDockTabWidget.
+
+        """
+        # ancestry: QTabWidget -> QStackedWidget -> QDockContainer
+        container = self.dock_container
+        container = self.dock_container
+        parent = container.parent()
+        if parent is not None:
+            parent = parent.parent()
+            if isinstance(parent, QDockTabWidget):
+                index = parent.indexOf(container)
+                parent.setTabIcon(index, container.icon())
+
     def mouse_press_event(self, event):
         """ Handle a mouse press event for the dock item.
 

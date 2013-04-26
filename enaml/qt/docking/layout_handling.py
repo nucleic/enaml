@@ -372,7 +372,7 @@ def _build_docktabs(layout, containers):
     tab_widget.setTabPosition(TAB_POSITION[layout.tab_position])
     for child in children:
         child.hideTitleBar()
-        tab_widget.addTab(child, child.title())
+        tab_widget.addTab(child, child.icon(), child.title())
     tab_widget.setCurrentIndex(layout.index)
     return tab_widget
 
@@ -531,7 +531,7 @@ def _plug_center(area, widget, container, tab_pos):
             return False
         _prepare_plug(container)
         container.hideTitleBar()
-        widget.addTab(container, container.title())
+        widget.addTab(container, container.icon(), container.title())
         widget.setCurrentIndex(widget.count() - 1)
         container.show()
         return True
@@ -552,10 +552,10 @@ def _plug_center(area, widget, container, tab_pos):
         index = splitter.indexOf(widget)
         splitter.insertWidget(index, tab_widget)
     widget.hideTitleBar()
-    tab_widget.addTab(widget, widget.title())
+    tab_widget.addTab(widget, widget.icon(), widget.title())
     _prepare_plug(container)
     container.hideTitleBar()
-    tab_widget.addTab(container, container.title())
+    tab_widget.addTab(container, container.icon(), container.title())
     tab_widget.setCurrentIndex(1)
     container.show()
     return True

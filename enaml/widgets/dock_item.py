@@ -5,9 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Unicode, Range, Typed, ForwardTyped, observe
+from atom.api import Coerced, Unicode, Range, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
+from enaml.icon import Icon
+from enaml.layout.geometry import Size
 
 from .container import Container
 from .widget import Widget, ProxyWidget
@@ -23,6 +25,12 @@ class ProxyDockItem(ProxyWidget):
     def set_title(self, title):
         raise NotImplementedError
 
+    def set_icon(self, icon):
+        raise NotImplementedError
+
+    def set_icon_size(self, size):
+        raise NotImplementedError
+
     def set_stretch(self, stretch):
         raise NotImplementedError
 
@@ -36,6 +44,12 @@ class DockItem(Widget):
     """
     #: The title to use in the title bar.
     title = d_(Unicode())
+
+    #: The icon to use in the title bar.
+    icon = d_(Typed(Icon))
+
+    #: The size to use for the icon in the title bar.
+    icon_size = d_(Coerced(Size, (-1, -1)))
 
     #: The stretch factor for the item when docked in a splitter.
     stretch = d_(Range(low=0, value=1))
@@ -56,7 +70,7 @@ class DockItem(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'stretch'))
+    @observe(('title', 'icon', 'icon_size', 'stretch'))
     def _update_proxy(self, change):
         """ Update the proxy when the item state changes.
 

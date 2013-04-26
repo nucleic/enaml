@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QSize, QMargins, QPoint, QEvent
-from PyQt4.QtGui import QFrame, QLayout, QRegion
+from PyQt4.QtGui import QFrame, QLayout, QRegion, QIcon
 
 from atom.api import Atom, Typed, Int, Bool
 
@@ -289,6 +289,17 @@ class QDockContainer(QFrame):
         if item is not None:
             return item.title()
         return u''
+
+    def icon(self):
+        """ Get the icon for the container.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            return item.icon()
+        return QIcon()
 
     def showTitleBar(self):
         """ Show the title bar for the container.
