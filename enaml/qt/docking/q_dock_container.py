@@ -5,175 +5,27 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize, QMargins, QPoint, QEvent
+from PyQt4.QtCore import Qt, QMargins, QPoint, QEvent
 from PyQt4.QtGui import QFrame, QLayout, QRegion, QIcon
 
 from atom.api import Atom, Typed, Int, Bool
 
 from .dock_window_resizer import DockWindowResizer
+from .q_dock_window_layout import QDockWindowLayout
 
 
-class QDockContainerLayout(QLayout):
-    """ A QLayout subclass which handles the layout for QDockContainer.
-
-    This class is used by the docking framework and is not intended for
-    direct use by user code.
+class QDockContainerLayout(QDockWindowLayout):
+    """ A QDockWindowLayout subclass which works with a QDockContainer.
 
     """
-    def __init__(self, parent=None):
-        """ Initialize a QDockContainerLayout.
-
-        Parameters
-        ----------
-        parent : QWidget or None
-            The parent widget owner of the layout.
-
-        """
-        super(QDockContainerLayout, self).__init__(parent)
-        self._size_hint = QSize()
-        self._min_size = QSize()
-        self._max_size = QSize()
-        self._dock_item = None
-
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
-    def dockItem(self):
-        """ Get the dock item for the layout.
-
-        Returns
-        -------
-        result : QDockItem
-            The dock item set in the layout.
-
-        """
-        return self._dock_item
-
-    def setDockItem(self, dock_item):
-        """ Set the dock item for the layout.
-
-        The old dock item will be hidden and unparented, but not
-        destroyed.
-
-        Parameters
-        ----------
-        dock_item : QDockItem
-            The primary dock item to use in the layout.
-
-        """
-        old_item = self._dock_item
-        if old_item is not None:
-            old_item.hide()
-            old_item.setParent(None)
-        self._dock_item = dock_item
-        if dock_item is not None:
-            dock_item.setParent(self.parentWidget())
-            dock_item.show()
-        self.invalidate()
-
-    #--------------------------------------------------------------------------
-    # QLayout API
-    #--------------------------------------------------------------------------
     def invalidate(self):
         """ Invalidate the cached layout data.
 
         """
         super(QDockContainerLayout, self).invalidate()
-        size = QSize()
-        self._size_hint = size
-        self._min_size = size
-        self._max_size = size
-        dock_item = self._dock_item
-        if dock_item is not None:
-            # Track the size policy of the child dock item
-            self.parentWidget().setSizePolicy(dock_item.sizePolicy())
-
-    def setGeometry(self, rect):
-        """ Set the geometry for the items in the layout.
-
-        """
-        super(QDockContainerLayout, self).setGeometry(rect)
-        dock_item = self._dock_item
-        if dock_item is not None:
-            dock_item.setGeometry(self.contentsRect())
-
-    def sizeHint(self):
-        """ Get the size hint for the layout.
-
-        """
-        hint = self._size_hint
-        if hint.isValid():
-            return hint
-        dock_item = self._dock_item
-        if dock_item is not None:
-            hint = dock_item.sizeHint()
-        else:
-            hint = QSize(256, 192)
-        m = self.contentsMargins()
-        hint.setWidth(hint.width() + m.left() + m.right())
-        hint.setHeight(hint.height() + m.top() + m.bottom())
-        self._size_hint = hint
-        return hint
-
-    def minimumSize(self):
-        """ Get the minimum size for the layout.
-
-        """
-        size = self._min_size
-        if size.isValid():
-            return size
-        dock_item = self._dock_item
-        if dock_item is not None:
-            size = dock_item.minimumSizeHint()
-        else:
-            size = QSize(256, 192)
-        m = self.contentsMargins()
-        size.setWidth(size.width() + m.left() + m.right())
-        size.setHeight(size.height() + m.top() + m.bottom())
-        self._min_size = size
-        return size
-
-    def maximumSize(self):
-        """ Get the maximum size for the layout.
-
-        """
-        size = self._max_size
-        if size.isValid():
-            return size
-        dock_item = self._dock_item
-        if dock_item is not None:
-            size = dock_item.maximumSize()
-        else:
-            size = QSize(16777215, 16777215)
-        self._max_size = size
-        return size
-
-    #--------------------------------------------------------------------------
-    # QLayout Abstract API
-    #--------------------------------------------------------------------------
-    def addItem(self, item):
-        """ A required virtual method implementation.
-
-        """
-        raise NotImplementedError('Use `setWidget` instead.')
-
-    def count(self):
-        """ A required virtual method implementation.
-
-        """
-        return 0
-
-    def itemAt(self, idx):
-        """ A required virtual method implementation.
-
-        """
-        return None
-
-    def takeAt(self, idx):
-        """ A required virtual method implementation.
-
-        """
-        return None
+        dock_widget = self.dockWidget()
+        if dock_widget is not None:
+            self.parentWidget().setSizePolicy(dock_widget.sizePolicy())
 
 
 class QDockContainer(QFrame):
@@ -229,7 +81,7 @@ class QDockContainer(QFrame):
             The dock item installed in the container, or None.
 
         """
-        return self.layout().dockItem()
+        return self.layout().dockWidget()
 
     def setDockItem(self, dock_item):
         """ Set the dock item for the container.
@@ -240,7 +92,7 @@ class QDockContainer(QFrame):
             The dock item to use in the container.
 
         """
-        self.layout().setDockItem(dock_item)
+        self.layout().setDockWidget(dock_item)
 
     def isFloating(self):
         """ Get whether the container is floating.
@@ -357,8 +209,9 @@ class QDockContainer(QFrame):
             # don't change the cursor until the resize is finished.
             if state.resize_mode != dwr.NoResize:
                 return
+            margins = self.contentsMargins()
             extra = self.ResizeCornerExtra
-            mode, ignored = dwr.hit_test(self, event.pos(), extra)
+            mode, ignored = dwr.hit_test(self, event.pos(), margins, extra)
             cursor = dwr.cursor(mode)
             if cursor is None:
                 self.unsetCursor()
@@ -376,8 +229,9 @@ class QDockContainer(QFrame):
         state = self.state
         if state.is_floating and event.button() == Qt.LeftButton:
             dwr = DockWindowResizer
+            margins = self.contentsMargins()
             extra = self.ResizeCornerExtra
-            mode, offset = dwr.hit_test(self, event.pos(), extra)
+            mode, offset = dwr.hit_test(self, event.pos(), margins, extra)
             if mode != dwr.NoResize:
                 state.resize_mode = mode
                 state.resize_offset = offset

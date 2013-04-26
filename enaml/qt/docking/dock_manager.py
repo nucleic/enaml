@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QRect
+from PyQt4.QtCore import Qt, QRect
 from PyQt4.QtGui import QApplication
 
 from atom.api import Atom, Typed, List
@@ -19,6 +19,7 @@ from .layout_handling import (
 )
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
+from .q_dock_window import QDockWindow
 from .q_guide_rose import QGuideRose
 
 
@@ -62,8 +63,11 @@ class DockManager(Atom):
     #: The overlay used when hovering over a dock area.
     overlay = Typed(DockOverlay, ())
 
-    #: The list of dock handlers maintained by the manager.
+    #: The list of DockHandler instances maintained by the manager.
     handlers = List()
+
+    #: The list of toplevel floating handlers.
+    toplevel = List()
 
     #: The set of QDockItem instances added to the manager.
     dock_items = Typed(set, ())
@@ -253,8 +257,8 @@ class DockManager(Atom):
                 local = container.mapFromGlobal(pos)
                 if container.rect().contains(local):
                     # FIXME floating docking not yet fully supported
-                    #self.overlay.mouse_over_widget(container, local)
-                    self.overlay.hide()
+                    self.overlay.mouse_over_widget(container, local)
+                    #self.overlay.hide()
                     return
 
         # Check the primary area second since it's guaranteed to be
@@ -298,6 +302,15 @@ class DockManager(Atom):
         overlay.hide()
         guide = overlay.guide_at(pos)
         if guide != QGuideRose.Guide.NoGuide:
+            for sibling in reversed(self.handlers):
+                if sibling.floating and sibling is not handler:
+                    container = sibling.dock_container
+                    local = container.mapFromGlobal(pos)
+                    if container.rect().contains(local):
+                        w = QDockWindow(self.dock_area)
+                        w.move(pos)
+                        w.show()
+                        return
             area = self.dock_area
             local = area.mapFromGlobal(pos)
             if area.rect().contains(local):

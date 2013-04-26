@@ -70,7 +70,7 @@ class DockWindowResizer(object):
         return cls.Cursors.get(mode)
 
     @classmethod
-    def hit_test(cls, window, pos, extra):
+    def hit_test(cls, window, pos, margins, extra):
         """ Hit test a window for the resize mode.
 
         Hit testing is confined to the contents margins of the window.
@@ -82,6 +82,10 @@ class DockWindowResizer(object):
 
         pos : QPoint
             The point of interest, expressed in local coordinates.
+
+        margins : QMargins
+            The margins which represent the resize hot-spots areas
+            around the border of the window.
 
         extra : int
             Extra space to add to the hit test for corners. The
@@ -98,42 +102,41 @@ class DockWindowResizer(object):
         y = pos.y()
         width = window.width()
         height = window.height()
-        m = window.contentsMargins()
-        if x < m.left():
-            if y < m.top() + extra:
+        if x < margins.left():
+            if y < margins.top() + extra:
                 mode = cls.NorthWest
                 offset = QPoint(x, y)
-            elif y > height - (m.bottom() + extra):
+            elif y > height - (margins.bottom() + extra):
                 mode = cls.SouthWest
                 offset = QPoint(x, height - y)
             else:
                 mode = cls.West
                 offset = QPoint(x, 0)
-        elif y < m.top():
-            if x < m.left() + extra:
+        elif y < margins.top():
+            if x < margins.left() + extra:
                 mode = cls.NorthWest
                 offset = QPoint(x, y)
-            elif x > width - (m.right() + extra):
+            elif x > width - (margins.right() + extra):
                 mode = cls.NorthEast
                 offset = QPoint(width - x, y)
             else:
                 mode = cls.North
                 offset = QPoint(0, y)
-        elif x > width - m.right():
-            if y < m.top() + extra:
+        elif x > width - margins.right():
+            if y < margins.top() + extra:
                 mode = cls.NorthEast
                 offset = QPoint(width - x, y)
-            elif y > height - (m.bottom() + extra):
+            elif y > height - (margins.bottom() + extra):
                 mode = cls.SouthEast
                 offset = QPoint(width - x, height - y)
             else:
                 mode = cls.East
                 offset = QPoint(width - x, 0)
-        elif y > height - m.bottom():
-            if x < m.left() + extra:
+        elif y > height - margins.bottom():
+            if x < margins.left() + extra:
                 mode = cls.SouthWest
                 offset = QPoint(x, height - y)
-            elif x > width - (m.right() + extra):
+            elif x > width - (margins.right() + extra):
                 mode = cls.SouthEast
                 offset = QPoint(width - x, height - y)
             else:

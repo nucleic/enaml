@@ -174,6 +174,10 @@ class QDockArea(QFrame):
                 background: rgba(0, 0, 0, 0);
             }
 
+            QDockWindow {
+                background: rgb(53, 73, 106);
+            }
+
             QDockContainer {
                 background: rgb(53, 73, 106);
             }
