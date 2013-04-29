@@ -5,21 +5,20 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QRect
+from PyQt4.QtCore import QRect
 from PyQt4.QtGui import QApplication
 
 from atom.api import Atom, Typed, List
 
 from enaml.layout.dock_layout import docklayout, dockarea, dockitem
 
-from .dock_handler import DockHandler
 from .dock_overlay import DockOverlay
 from .layout_handling import (
-    build_layout, save_layout, layout_hit_test, plug_container
+    build_layout, save_layout, layout_hit_test, plug_container,
+    unplug_container
 )
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
-from .q_dock_window import QDockWindow
 from .q_guide_rose import QGuideRose
 
 
@@ -63,11 +62,10 @@ class DockManager(Atom):
     #: The overlay used when hovering over a dock area.
     overlay = Typed(DockOverlay, ())
 
-    #: The list of DockHandler instances maintained by the manager.
-    handlers = List()
-
-    #: The list of toplevel floating handlers.
-    toplevel = List()
+    #: The list of QDockFrame instances maintained by the manager. The
+    #: QDockFrame class maintains this list in proper Z-order. It will
+    #: contain the dock containers plus the floating dock windows.
+    dock_frames = List()
 
     #: The set of QDockItem instances added to the manager.
     dock_items = Typed(set, ())
@@ -87,30 +85,9 @@ class DockManager(Atom):
         self.dock_area = dock_area
 
     #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _find_handler(self, name):
-        """ Find the handler for the given dock item name:
-
-        Parameters
-        ----------
-        name : basestring
-            The name of the dock item for which to locate a handler.
-
-        Returns
-        -------
-        result : DockHandler or None
-            The handler for the named item or None.
-
-        """
-        for handler in self.handlers:
-            if handler.name() == name:
-                return handler
-
-    #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def add_item(self, item):
+    def add_dock_item(self, item):
         """ Add a dock item to the dock manager.
 
         If the item has already been added, this is a no-op.
@@ -126,16 +103,11 @@ class DockManager(Atom):
         if item in self.dock_items:
             return
         self.dock_items.add(item)
-        container = QDockContainer()
-        container.setObjectName(item.objectName())
+        container = QDockContainer(self, self.dock_area)
         container.setDockItem(item)
-        container.setParent(self.dock_area)
-        handler = DockHandler(manager=self, dock_container=container)
-        item.handler = handler
-        container.handler = handler
-        self.handlers.append(handler)
+        self.dock_frames.append(container)
 
-    def remove_item(self, item):
+    def remove_dock_item(self, item):
         """ Remove a dock item from the dock manager.
 
         If the item has not been added to the manager, this is a no-op.
@@ -150,19 +122,15 @@ class DockManager(Atom):
         if item not in self.dock_items:
             return
         self.dock_items.remove(item)
-        handler = item.handler
-        if not handler.floating:
-            handler.unplug()
-        container = handler.dock_container
-        container.hide()
-        container.setParent(None)
-        container.setDockItem(None)
-        item.handler = None
-        container.handler = None
-        handler.manager = None
-        self.handlers.remove(handler)
+        container = self.find_container(item.objectName())
+        if container is None:
+            return
+        if not container.isWindow():
+            self.unplug_container(container)
+        container.destroy()
+        self.dock_frames.remove(container)
 
-    def clear_items(self):
+    def clear_dock_items(self):
         """ Clear the dock items from the dock manager.
 
         This method will hide and unparent all of the dock items that
@@ -172,7 +140,39 @@ class DockManager(Atom):
 
         """
         for item in list(self.dock_items):
-            self.remove_item(item)
+            self.remove_dock_item(item)
+
+    def dock_containers(self):
+        """ Get an iterable of QDockContainer instances.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields the QDockContainer instances owned
+            by this dock manager.
+
+        """
+        for frame in self.dock_frames:
+            if isinstance(frame, QDockContainer):
+                yield frame
+
+    def find_container(self, name):
+        """ Find the dock container with the given object name.
+
+        Parameters
+        ----------
+        name : basestring
+            The object name of the dock container to locate.
+
+        Returns
+        -------
+        result : QDockContainer or None
+            The dock container for the given object name or None.
+
+        """
+        for container in self.dock_containers():
+            if container.objectName() == name:
+                return container
 
     def apply_layout(self, layout):
         """ Apply a layout to the dock area.
@@ -186,11 +186,12 @@ class DockManager(Atom):
         # Remove the layout widget before resetting the handlers. This
         # prevents a re-used container from being hidden by the call to
         # setLayoutWidget after it has already been reset. The reference
-        # held so that the containers do not get prematurely destroyed.
+        # is held so the containers do not get prematurely destroyed.
         widget = self.dock_area.layoutWidget()
         self.dock_area.setLayoutWidget(None)
-        for handler in self.handlers:
-            handler.reset()
+        containers = list(self.dock_containers())
+        for container in containers:
+            container.reset()
 
         main_area = None
         floating_areas = []
@@ -201,31 +202,37 @@ class DockManager(Atom):
                 main_area = layoutarea
 
         if main_area is not None:
-            containers = (h.dock_container for h in self.handlers)
             widget = build_layout(main_area.child, containers)
             self.dock_area.setLayoutWidget(widget)
 
         for f_area in floating_areas:
             child = f_area.child
             if isinstance(child, dockitem):
-                handler = self._find_handler(child.name)
-                if handler is not None:
-                    rect = QRect(*f_area.geometry)
-                    handler.float(ensure_on_screen(rect))
+                container = self.find_container(child.name)
+                if container is not None:
+                    container.float()
+                    rect = ensure_on_screen(QRect(*f_area.geometry))
+                    container.setGeometry(rect)
+                    container.show()
 
     def save_layout(self):
-        """ Get the dictionary representation of the dock layout.
+        """ Get the current layout of the dock area.
+
+        Returns
+        -------
+        result : docklayout
+            A docklayout instance which represents the current layout
+            state.
 
         """
         areas = []
         widget = self.dock_area.layoutWidget()
         if widget is not None:
             areas.append(dockarea(save_layout(widget)))
-        for handler in self.handlers:
-            if handler.floating:
-                container = handler.dock_container
-                area = dockarea(save_layout(container), floating=True)
-                geo = container.geometry()
+        for frame in self.dock_frames:
+            if frame.isWindow():
+                area = dockarea(save_layout(frame), floating=True)
+                geo = frame.geometry()
                 area.geometry = (geo.x(), geo.y(), geo.width(), geo.height())
                 areas.append(area)
         return docklayout(*areas)
@@ -233,32 +240,72 @@ class DockManager(Atom):
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
-    def dock_drag(self, handler, pos):
-        """ Handle the dock drag event from a dock handler.
+    @staticmethod
+    def unplug_container(container):
+        """ Unplug a dock container from its dock layout.
 
-        This method is called by a floating dock handler as it is being
+        This will remove the container from the layout and cleanup any
+        of the residual effects. If this method succeeds, the container
+        will be hidden and its parent will be set to None.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container to unplug from the dock layout.
+
+        Returns
+        -------
+        result : bool
+            True if unplugging was successful, False otherwise.
+
+        """
+        dock_area = None
+        parent = container.parent()
+        while parent is not None:
+            if isinstance(parent, QDockArea):
+                dock_area = parent
+                break
+            parent = parent.parent()
+        if dock_area is None:
+            return False
+        return unplug_container(dock_area, container)
+
+    def raise_frame(self, frame):
+        """ Raise a dock frame to the top of the Z-order.
+
+        Parameters
+        ----------
+        frame : QDockFrame
+            The dock frame to raise to the top of the Z-order.
+
+        """
+        self.dock_frames.remove(frame)
+        self.dock_frames.append(frame)
+
+    def container_moved(self, container, pos):
+        """ Handle a dock container being moved by the user.
+
+        This method is called by a floating dock container when it is
         dragged by the user. It will make the dock overlay visible at
         the proper location.
 
         Parameters
         ----------
-        handler : DockHandler
-            The dock handler which owns the container being dragged by
-            the user.
+        container : QDockContainer
+            The dock container being dragged by the user.
 
         pos : QPoint
             The global coordinates of the mouse position.
 
         """
-        # Check siblings floating containers first in top-down Z-order
-        for sibling in reversed(self.handlers):
-            if sibling.floating and sibling is not handler:
-                container = sibling.dock_container
-                local = container.mapFromGlobal(pos)
-                if container.rect().contains(local):
-                    # FIXME floating docking not yet fully supported
-                    self.overlay.mouse_over_widget(container, local)
-                    #self.overlay.hide()
+        # Check the floating frames first in top-down Z-order. These
+        # floating frames will always be on top of the primary area
+        # in the overall window Z-order.
+        for frame in reversed(self.dock_frames):
+            if frame.isWindow() and frame is not container:
+                local = frame.mapFromGlobal(pos)
+                if frame.rect().contains(local):
+                    self.overlay.mouse_over_widget(frame, local)
                     return
 
         # Check the primary area second since it's guaranteed to be
@@ -277,44 +324,47 @@ class DockManager(Atom):
             overlay.mouse_over_widget(area, local)
             return
 
-        # Hide the overlay when there are no mouseover hits.
+        # Hide the dock overlay if there are no mouseover hits.
         self.overlay.hide()
 
-    def end_dock_drag(self, handler, pos):
-        """ Handle the dock drag end event from a dock handler.
+    def container_released(self, container, pos):
+        """ Handle the dock container being released by the user.
 
-        This method is called by a floating dock handler when the user
+        This method is called by a floating dock container when the user
         has completed the drag operation. It will hide the overlay and
-        redock the handler if the drag ended over a valid dock guide.
+        redock the container if the drag ended over a valid dock guide.
 
         Parameters
         ----------
-        handler : DockHandler
-            The dock handler which owns the container being dragged by
-            the user.
+        container : QDockContainer
+            The dock container being dragged by the user.
 
         pos : QPoint
             The global coordinates of the mouse position.
 
         """
-        # FIXME docking on floating handlers not yet fully supported.
         overlay = self.overlay
         overlay.hide()
         guide = overlay.guide_at(pos)
-        if guide != QGuideRose.Guide.NoGuide:
-            for sibling in reversed(self.handlers):
-                if sibling.floating and sibling is not handler:
-                    container = sibling.dock_container
-                    local = container.mapFromGlobal(pos)
-                    if container.rect().contains(local):
-                        w = QDockWindow(self.dock_area)
-                        w.move(pos)
-                        w.show()
-                        return
-            area = self.dock_area
-            local = area.mapFromGlobal(pos)
-            if area.rect().contains(local):
-                container = handler.dock_container
-                widget = layout_hit_test(area, local)
-                if plug_container(area, widget, container, guide):
-                    handler.floating = False
+        if guide == QGuideRose.Guide.NoGuide:
+            return
+
+        # Check the floating frames first in top-down Z-order. These
+        # floating frames will always be on top of the primary area
+        # in the overall window Z-order.
+        for frame in reversed(self.dock_frames):
+            if frame.isWindow() and frame is not container:
+                local = frame.mapFromGlobal(pos)
+                if frame.rect().contains(local):
+                    #w = QDockWindow(self.dock_area)
+                    #w.move(pos)
+                    #w.show()
+                    return
+
+        # Check the primary area second since it's guaranteed to be
+        # below the floating handlers in the application Z-order.
+        area = self.dock_area
+        local = area.mapFromGlobal(pos)
+        if area.rect().contains(local):
+            widget = layout_hit_test(area, local)
+            plug_container(area, widget, container, guide)

@@ -86,7 +86,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         super(QtDockArea, self).init_layout()
         manager = self.manager
         for item in self.dock_items():
-            manager.add_item(item)
+            manager.add_dock_item(item)
         manager.apply_layout(self.declaration.layout)
         self.dock_filter = dock_filter = DockFilter(self)
         self.widget.installEventFilter(dock_filter)
@@ -100,7 +100,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         self.widget.removeEventFilter(self.dock_filter)
         del self.dock_filter
-        self.manager.clear_items()
+        self.manager.clear_dock_items()
         super(QtDockArea, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -126,7 +126,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         if isinstance(child, QtDockItem):
             w = child.widget
             if w is not None:
-                self.manager.add_item(w)
+                self.manager.add_dock_item(w)
 
     def child_removed(self, child):
         """ Handle the child removed event for a QtDockArea.
@@ -136,7 +136,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         if isinstance(child, QtDockItem):
             w = child.widget
             if w is not None:
-                self.manager.remove_item(w)
+                self.manager.remove_dock_item(w)
 
     #--------------------------------------------------------------------------
     # ProxyDockArea API

@@ -8,6 +8,8 @@
 from PyQt4.QtCore import Qt, QRect, QSize, QMargins
 from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QIcon
 
+from .q_dock_tab_widget import QDockTabWidget
+
 
 class IDockItemTitleBar(QWidget):
     """ An interface class for defining a dock title bar.
@@ -480,7 +482,6 @@ class QDockItem(QFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setTitleBarWidget(QDockItemTitleBar())
-        self.handler = None  # set by the dock manager
 
     #--------------------------------------------------------------------------
     # Public API
@@ -506,9 +507,14 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setTitle(title)
-        handler = self.handler
-        if handler is not None:
-            handler.title_changed()
+        container = self.parent()
+        if container is not None:
+            stacked = container.parent()
+            if stacked is not None:
+                tabs = stacked.parent()
+                if isinstance(tabs, QDockTabWidget):
+                    index = tabs.indexOf(container)
+                    tabs.setTabText(index, title)
 
     def icon(self):
         """ Get the icon for the dock item.
@@ -531,9 +537,14 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setIcon(icon)
-        handler = self.handler
-        if handler is not None:
-            handler.icon_changed()
+        container = self.parent()
+        if container is not None:
+            stacked = container.parent()
+            if stacked is not None:
+                tabs = stacked.parent()
+                if isinstance(tabs, QDockTabWidget):
+                    index = tabs.indexOf(container)
+                    tabs.setTabIcon(index, icon)
 
     def iconSize(self):
         """ Get the icon size for the title bar.
@@ -613,45 +624,3 @@ class QDockItem(QFrame):
 
         """
         self.layout().setDockWidget(widget)
-
-    #--------------------------------------------------------------------------
-    # Reimplementations
-    #--------------------------------------------------------------------------
-    def mousePressEvent(self, event):
-        """ Handle the mouse press event for the dock item.
-
-        This handler forwards the mouse press to the dock handler which
-        handles the event for docking purposes.
-
-        """
-        event.ignore()
-        handler = self.handler
-        if handler is not None:
-            if handler.mouse_press_event(event):
-                event.accept()
-
-    def mouseMoveEvent(self, event):
-        """ Handle the mouse move event for the dock item.
-
-        This handler forwards the mouse press to the dock handler which
-        handles the event for docking purposes.
-
-        """
-        event.ignore()
-        handler = self.handler
-        if handler is not None:
-            if handler.mouse_move_event(event):
-                event.accept()
-
-    def mouseReleaseEvent(self, event):
-        """ Handle the mouse release event for the dock item.
-
-        This handler forwards the mouse press to the dock handler which
-        handles the event for docking purposes.
-
-        """
-        event.ignore()
-        handler = self.handler
-        if handler is not None:
-            if handler.mouse_release_event(event):
-                event.accept()

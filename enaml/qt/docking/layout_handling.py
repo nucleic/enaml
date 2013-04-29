@@ -501,22 +501,13 @@ def _unplug_container(widget, container):
     return False, None
 
 
-def _prepare_plug(container):
-    """ Prepare a container to be plugged into a layout.
-
-    """
-    container.hide()
-    container.setFloating(False)
-    container.setWindowFlags(Qt.Widget)
-
-
 def _plug_area_center(area, widget, container):
     """ Plug the container as the area center.
 
     """
     if widget is not None:
         return False
-    _prepare_plug(container)
+    container.unfloat()
     area.setLayoutWidget(container)
     container.show()
     return True
@@ -529,7 +520,7 @@ def _plug_center(area, widget, container, tab_pos):
     if isinstance(widget, QDockTabWidget):
         if widget.tabPosition() != tab_pos:
             return False
-        _prepare_plug(container)
+        container.unfloat()
         container.hideTitleBar()
         widget.addTab(container, container.icon(), container.title())
         widget.setCurrentIndex(widget.count() - 1)
@@ -553,7 +544,7 @@ def _plug_center(area, widget, container, tab_pos):
         splitter.insertWidget(index, tab_widget)
     widget.hideTitleBar()
     tab_widget.addTab(widget, widget.icon(), widget.title())
-    _prepare_plug(container)
+    container.unfloat()
     container.hideTitleBar()
     tab_widget.addTab(container, container.icon(), container.title())
     tab_widget.setCurrentIndex(1)
@@ -641,7 +632,7 @@ def _split_root(area, orientation, container, append):
         new.addWidget(root)
         root.show()
         root = new
-    _prepare_plug(container)
+    container.unfloat()
     if append:
         root.addWidget(container)
     else:
@@ -661,14 +652,14 @@ def _split_widget(orientation, widget, container, append):
     if splitter.orientation() == orientation:
         if append:
             index += 1
-        _prepare_plug(container)
+        container.unfloat()
         splitter.insertWidget(index, container)
         container.show()
         return True
     new = QDockSplitter(orientation)
     new.addWidget(widget)
     splitter.insertWidget(index, new)
-    _prepare_plug(container)
+    container.unfloat()
     if append:
         new.addWidget(container)
     else:
@@ -693,7 +684,7 @@ def _plug_split(handle, container, guide):
     splitter = handle.parent()
     for index in xrange(1, splitter.count()):
         if splitter.handle(index) is handle:
-            _prepare_plug(container)
+            container.unfloat()
             splitter.insertWidget(index, container)
             container.show()
             return True
