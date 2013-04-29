@@ -63,8 +63,7 @@ class DockManager(Atom):
     overlay = Typed(DockOverlay, ())
 
     #: The list of QDockFrame instances maintained by the manager. The
-    #: QDockFrame class maintains this list in proper Z-order. It will
-    #: contain the dock containers plus the floating dock windows.
+    #: QDockFrame class maintains this list in proper Z-order.
     dock_frames = List()
 
     #: The set of QDockItem instances added to the manager.
