@@ -9,15 +9,15 @@ from PyQt4.QtCore import QSize
 from PyQt4.QtGui import QLayout
 
 
-class QDockWindowLayout(QLayout):
-    """ A QLayout subclass which handles top-level dock windows.
+class QDockFrameLayout(QLayout):
+    """ A QLayout subclass which handles layout for dock frames.
 
     This class is used by the docking framework and is not intended for
     direct use by user code.
 
     """
     def __init__(self, parent=None):
-        """ Initialize a QDockWindowLayout.
+        """ Initialize a QDockFrameLayout.
 
         Parameters
         ----------
@@ -25,7 +25,7 @@ class QDockWindowLayout(QLayout):
             The parent widget owner of the layout.
 
         """
-        super(QDockWindowLayout, self).__init__(parent)
+        super(QDockFrameLayout, self).__init__(parent)
         self._size_hint = QSize()
         self._min_size = QSize()
         self._max_size = QSize()
@@ -74,7 +74,7 @@ class QDockWindowLayout(QLayout):
         """ Invalidate the cached layout data.
 
         """
-        super(QDockWindowLayout, self).invalidate()
+        super(QDockFrameLayout, self).invalidate()
         size = QSize()
         self._size_hint = size
         self._min_size = size
@@ -84,7 +84,7 @@ class QDockWindowLayout(QLayout):
         """ Set the geometry for the items in the layout.
 
         """
-        super(QDockWindowLayout, self).setGeometry(rect)
+        super(QDockFrameLayout, self).setGeometry(rect)
         dock_widget = self._dock_widget
         if dock_widget is not None:
             dock_widget.setGeometry(self.contentsRect())
