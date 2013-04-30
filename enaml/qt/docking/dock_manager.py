@@ -281,17 +281,16 @@ class DockManager(Atom):
         self.dock_frames.remove(frame)
         self.dock_frames.append(frame)
 
-    def container_moved(self, container, pos):
-        """ Handle a dock container being moved by the user.
+    def frame_moved(self, frame, pos):
+        """ Handle a dock frame being moved by the user.
 
-        This method is called by a floating dock container when it is
-        dragged by the user. It will make the dock overlay visible at
-        the proper location.
+        This method is called by a floating dock frame as it is dragged
+        by the user. It shows the dock overlay at the proper location.
 
         Parameters
         ----------
-        container : QDockContainer
-            The dock container being dragged by the user.
+        frame : QDockFrame
+            The dock frame being dragged by the user.
 
         pos : QPoint
             The global coordinates of the mouse position.
@@ -300,11 +299,11 @@ class DockManager(Atom):
         # Check the floating frames first in top-down Z-order. These
         # floating frames will always be on top of the primary area
         # in the overall window Z-order.
-        for frame in reversed(self.dock_frames):
-            if frame.isWindow() and frame is not container:
-                local = frame.mapFromGlobal(pos)
-                if frame.rect().contains(local):
-                    self.overlay.mouse_over_widget(frame, local)
+        for sibling in reversed(self.dock_frames):
+            if sibling.isWindow() and sibling is not frame:
+                local = sibling.mapFromGlobal(pos)
+                if sibling.rect().contains(local):
+                    self.overlay.mouse_over_widget(sibling, local)
                     return
 
         # Check the primary area second since it's guaranteed to be
@@ -320,23 +319,21 @@ class DockManager(Atom):
             if widget is not None:
                 overlay.mouse_over_area(area, widget, local)
                 return
-            overlay.mouse_over_widget(area, local)
-            return
 
         # Hide the dock overlay if there are no mouseover hits.
         self.overlay.hide()
 
-    def container_released(self, container, pos):
-        """ Handle the dock container being released by the user.
+    def frame_released(self, frame, pos):
+        """ Handle the dock frame being released by the user.
 
-        This method is called by a floating dock container when the user
+        This method is called by a floating dock frame when the user
         has completed the drag operation. It will hide the overlay and
-        redock the container if the drag ended over a valid dock guide.
+        redock the frame if the drag ended over a valid dock guide.
 
         Parameters
         ----------
-        container : QDockContainer
-            The dock container being dragged by the user.
+        frame : QDockFrame
+            The dock frame being dragged by the user.
 
         pos : QPoint
             The global coordinates of the mouse position.
@@ -351,10 +348,10 @@ class DockManager(Atom):
         # Check the floating frames first in top-down Z-order. These
         # floating frames will always be on top of the primary area
         # in the overall window Z-order.
-        for frame in reversed(self.dock_frames):
-            if frame.isWindow() and frame is not container:
-                local = frame.mapFromGlobal(pos)
-                if frame.rect().contains(local):
+        for sibling in reversed(self.dock_frames):
+            if sibling.isWindow() and sibling is not frame:
+                local = sibling.mapFromGlobal(pos)
+                if sibling.rect().contains(local):
                     #w = QDockWindow(self.dock_area)
                     #w.move(pos)
                     #w.show()
@@ -366,4 +363,4 @@ class DockManager(Atom):
         local = area.mapFromGlobal(pos)
         if area.rect().contains(local):
             widget = layout_hit_test(area, local)
-            plug_container(area, widget, container, guide)
+            plug_container(area, widget, frame, guide)
