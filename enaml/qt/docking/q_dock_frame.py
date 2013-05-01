@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QEvent, QRect, QPoint, QMargins
-from PyQt4.QtGui import QFrame, QRegion
+from PyQt4.QtGui import QApplication, QFrame, QRegion
 
 from atom.api import Atom, Bool, Int, Typed
 
@@ -76,9 +76,6 @@ class QDockFrame(QFrame):
         #: Whether the title bar is consuming the mouse events.
         mouse_title = Bool(False)
 
-        #: Whether or not a mouse button is down.
-        mouse_down = Bool(False)
-
         #: The resize border based on the mouse hover position.
         resize_border = Int(0)
 
@@ -120,7 +117,10 @@ class QDockFrame(QFrame):
         internal references to objects.
 
         """
-        self.hide()
+        if self.isWindow():
+            self.close()
+        else:
+            self.hide()
         self.setParent(None)
         self._manager = None
 
@@ -172,7 +172,7 @@ class QDockFrame(QFrame):
         """ Handle the resize event for the dock frame.
 
         """
-        if self.isWindow():
+        if self.isWindow() and not self.isMaximized():
             w = self.width()
             h = self.height()
             region = QRegion(0, 0, w, h)
@@ -196,10 +196,12 @@ class QDockFrame(QFrame):
         """
         event.ignore()
         state = self.frame_state
-        state.mouse_down = True
         geo = self.titleBarGeometry()
         if geo.isValid() and geo.contains(event.pos()):
             if self.titleBarMousePressEvent(event):
+                if self.isWindow():
+                    self.activateWindow()
+                    self.raise_()
                 event.accept()
                 state.mouse_title = True
                 return
@@ -232,7 +234,6 @@ class QDockFrame(QFrame):
         """
         event.ignore()
         state = self.frame_state
-        state.mouse_down = event.buttons() != Qt.NoButton
         self._refreshCursor(event.pos())
         if state.mouse_title:
             if self.titleBarMouseReleaseEvent(event):
@@ -249,11 +250,11 @@ class QDockFrame(QFrame):
 
         """
         event.ignore()
-        if not self.isWindow():
+        if not self.isWindow() or self.isMaximized():
+            return
+        if QApplication.mouseButtons() != Qt.NoButton:
             return
         state = self.frame_state
-        if state.mouse_down:
-            return
         if state.mouse_title:
             return
         if state.resize_border != self.NoBorder:
