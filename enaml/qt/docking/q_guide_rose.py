@@ -347,7 +347,7 @@ class GuideImage(Atom):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name of the image to load for the guide.
 
         """

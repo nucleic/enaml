@@ -129,7 +129,7 @@ class ProxyResolver(Atom):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name of the proxy object to resolve.
 
         Returns

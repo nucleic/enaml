@@ -124,7 +124,7 @@ class Declarative(Object):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name to which the operator of interest is bound.
 
         Returns

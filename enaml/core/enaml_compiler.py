@@ -182,7 +182,7 @@ def compile_simple(py_ast, filename):
     py_ast : ast.Expression
         A Python ast Expression node.
 
-    filename : str
+    filename : string
         The filename which generated the expression.
 
     Returns
@@ -208,7 +208,7 @@ def compile_notify(py_ast, filename):
     py_ast : ast.Module
         A Python ast Module node.
 
-    filename : str
+    filename : string
         The filename which generated the expression.
 
     Returns
@@ -237,7 +237,7 @@ def compile_subscribe(py_ast, filename):
     py_ast : ast.Expression
         A Python ast Expression node.
 
-    filename : str
+    filename : string
         The filename which generated the expression.
 
     Returns
@@ -265,7 +265,7 @@ def compile_update(py_ast, filename):
     py_ast : ast.Expression
         A Python ast Expression node.
 
-    filename : str
+    filename : string
         The filename which generated the expression.
 
     Returns
@@ -296,7 +296,7 @@ def compile_delegate(py_ast, filename):
     py_ast : ast.Expression
         A Python ast Expression node.
 
-    filename : str
+    filename : string
         The filename which generated the expression.
 
     Returns
@@ -396,7 +396,7 @@ class EnamlDefCompiler(_NodeVisitor):
         node : EnamlDef
             The EnamlDef node to compile.
 
-        filename : str
+        filename : string
             The string filename to use for the enamldef.
 
         """
@@ -490,7 +490,7 @@ class EnamlCompiler(_NodeVisitor):
         module_ast : Instance(enaml_ast.Module)
             The enaml module ast node that should be compiled.
 
-        filename : str
+        filename : string
             The string filename of the module ast being compiled.
 
         Returns
