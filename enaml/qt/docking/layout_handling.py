@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QTabWidget
+from PyQt4.QtCore import Qt, QEvent
+from PyQt4.QtGui import QApplication, QTabWidget
 
 from enaml.layout.dock_layout import dockitem, docksplit, docktabs
 
@@ -14,6 +14,10 @@ from .q_dock_container import QDockContainer
 from .q_dock_splitter import QDockSplitter, QDockSplitterHandle
 from .q_dock_tab_widget import QDockTabWidget
 from .q_guide_rose import QGuideRose
+
+
+#: An event type which indicates the contents of a dock area changed.
+DockAreaContentsChanged = QEvent.registerEventType()
 
 
 #: A mapping of qt orientation to layout orientation.
@@ -108,12 +112,14 @@ def unplug_container(area, container):
         root.hide()
         root.setParent(None)
         area.setLayoutWidget(None)
+        QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
         return True
     success, replace = _unplug(root, container)
     if not success:
         return False
     if replace is not None:
         area.setLayoutWidget(replace)
+    QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
     return True
 
 
@@ -176,6 +182,8 @@ def plug_container(area, widget, container, guide):
         res = _plug_split(widget, container, guide)
     else:
         res = False
+    if res:
+        QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
     return res
 
 
