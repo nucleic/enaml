@@ -77,8 +77,8 @@ class QDockContainer(QDockFrame):
         -------
         result : QRect
             The geometry rect for the title bar, expressed in frame
-            coordinates. An invalid rect should be returned if title
-            bar should not be active.
+            coordinates. An invalid rect is returned if title bar
+            should not be active.
 
         """
         title_bar = self.dockItem().titleBarWidget()
@@ -249,6 +249,8 @@ class QDockContainer(QDockFrame):
         self.move(pos - state.press_pos)
         self.show()
         self.grabMouse()
+        self.activateWindow()
+        self.raise_()
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -314,6 +316,8 @@ class QDockContainer(QDockFrame):
         self.move(global_pos - state.press_pos)
         self.show()
         self.grabMouse()
+        self.activateWindow()
+        self.raise_()
         return True
 
     def titleBarMouseReleaseEvent(self, event):
