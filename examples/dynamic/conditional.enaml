@@ -1,0 +1,83 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of using Conditional to generate the views for objects
+which are not known until runtime.
+
+"""
+import random
+
+from enaml.core.api import Conditional, Looper
+from enaml.widgets.api import (
+    Window, Container, Field, PushButton, CheckBox, Separator, ScrollArea
+)
+
+
+class Foo(object): pass
+class Bar(object): pass
+class Baz(object): pass
+
+
+enamldef FooView(Container):
+    attr model: Foo
+    hug_height = 'strong'
+    PushButton: text = str(model)
+    PushButton: text = str(model)
+    PushButton: text = str(model)
+
+
+enamldef BarView(Container):
+    attr model: Bar
+    hug_height = 'strong'
+    Field: text = str(model)
+    Field: text = str(model)
+    Field: text = str(model)
+
+
+enamldef BazView(Container):
+    attr model: Baz
+    hug_height = 'strong'
+    CheckBox: text = str(model)
+    CheckBox: text = str(model)
+    CheckBox: text = str(model)
+
+
+CLASSES = [Foo, Bar, Baz]
+def generate(n):
+    return [random.choice(CLASSES)() for _ in xrange(n)]
+
+
+enamldef Main(Window): main:
+    attr models = generate(5)
+    Container:
+        CheckBox: show_bar:
+            text = 'Show Bar Views'
+            checked = True
+        PushButton:
+            text = 'Regenerate Models'
+            clicked :: main.models = generate(random.randint(1, 10))
+        ScrollArea:
+            Container:
+                Looper:
+                    iterable << models
+                    Conditional:
+                        condition = isinstance(loop_item, Foo)
+                        FooView:
+                            model = loop_item
+                    Conditional:
+                        condition << isinstance(loop_item, Bar) and show_bar.checked
+                        BarView:
+                            model = loop_item
+                    Conditional:
+                        condition = isinstance(loop_item, Baz)
+                        BazView:
+                            model = loop_item
+                    Conditional:
+                        condition << (
+                            (loop_index != len(main.models) - 1) and
+                            (show_bar.checked if isinstance(loop_item, Bar) else True)
+                        )
+                        Separator:
+                            orientation = 'horizontal'
+

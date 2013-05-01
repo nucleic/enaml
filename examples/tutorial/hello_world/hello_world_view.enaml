@@ -1,0 +1,13 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+from enaml.widgets.api import Window, Container, Label
+
+
+enamldef Main(Window):
+    attr message = "Hello, world!"
+    Container:
+        Label:
+            text = message
+            

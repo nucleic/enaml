@@ -1,0 +1,5 @@
+Enhancements:
+    * Update documentation to the latest changes
+    * Allow directives to exist inside sections (done for arguments).
+    * Add error messages when formating is wrong.
+    * Clean up code.
