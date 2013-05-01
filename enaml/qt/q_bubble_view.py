@@ -30,6 +30,9 @@ class QBubbleView(QWidget):
     AnchorLeft = 2
     AnchorRight = 3
 
+    #: close on defocus
+    _close_on_defocus = True
+
     def __init__(self, parent=None):
         super(QBubbleView, self).__init__(parent)
         self._central_widget = None
@@ -201,6 +204,29 @@ class QBubbleView(QWidget):
         """
         return self._relative_pos
 
+    def setCloseOnDefocus(self, do_close):
+        """ Set whether the bubble view closes when it loses focus
+
+        Parameters
+        ----------
+        do_close : bool
+            Whether to automatically close the bubble view when it
+            loses focus
+
+        """
+        self._close_on_defocus = do_close
+
+    def closeOnDefocus(self):
+        """ Return whether to close on losing focus
+
+        Returns
+        -------
+        result : bool
+            Whether to close on losing focus
+
+        """
+        return self._close_on_defocus
+
     def paintEvent(self, event):
         """ Reimplement the paint event
 
@@ -245,6 +271,14 @@ class QBubbleView(QWidget):
 
         """
         self._close_anim.start()
+
+    def event(self, event):
+        """ Handle focus lost
+
+        """
+        if self._close_on_defocus and event.type() == QEvent.Leave:
+            self.close()
+        return super(QBubbleView, self).event(event)
 
     def _rebuild(self):
         """ Rebuild the path used to draw the outline of the popup.
