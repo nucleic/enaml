@@ -13,5 +13,15 @@
      <file>dock_images/guide_box.png</file>
      <file>dock_images/split_horizontal.png</file>
      <file>dock_images/split_vertical.png</file>
+     <file>dock_images/winbtns_rstr.png</file>
+     <file>dock_images/winbtns_rstrhl.png</file>
+     <file>dock_images/winbtns_rstrhr.png</file>
+     <file>dock_images/winbtns_rstrpl.png</file>
+     <file>dock_images/winbtns_rstrpr.png</file>
+     <file>dock_images/winbtns_std.png</file>
+     <file>dock_images/winbtns_stdhl.png</file>
+     <file>dock_images/winbtns_stdhr.png</file>
+     <file>dock_images/winbtns_stdpl.png</file>
+     <file>dock_images/winbtns_stdpr.png</file>
  </qresource>
  </RCC>
