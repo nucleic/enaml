@@ -10,6 +10,9 @@ from PyQt4.QtGui import QPainter, QImage, QFrame, QCursor
 
 from atom.api import Atom, Bool, Int, Value
 
+# Make sure the resources get registered.
+from . import dock_resources
+
 
 class QDockWindowButtons(QFrame):
     """ A custom QFrame which manages the buttons for a QDockWindow.
