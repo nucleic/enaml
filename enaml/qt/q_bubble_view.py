@@ -5,7 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize, QPoint, QMargins, QEvent, pyqtSignal
+from PyQt4.QtCore import (
+    Qt, QSize, QPoint, QMargins, QEvent, pyqtSignal, QPropertyAnimation,
+)
 from PyQt4.QtGui import QWidget, QLayout, QPainter, QPainterPath
 
 from .q_single_widget_layout import QSingleWidgetLayout
@@ -46,6 +48,14 @@ class QBubbleView(QWidget):
         self.setRelativePos((0.5, 0.5))
         self.setArrowSize(20)
         self.setRadius(10)
+
+        # Closing animation
+        self._fade_time = 150
+        self._close_anim = anim = QPropertyAnimation(self, "windowOpacity", self)
+        anim.setDuration(self._fade_time)
+        anim.setStartValue(1)
+        anim.setEndValue(0)
+        anim.finished.connect(super(QBubbleView, self).close)
 
         # track parent window movement
         parent.window().installEventFilter(self)
@@ -229,6 +239,12 @@ class QBubbleView(QWidget):
         if event.type() == QEvent.Move:
             self.move(self.pos() + event.pos() - event.oldPos())
         return False
+
+    def close(self):
+        """ Fade the popup out
+
+        """
+        self._close_anim.start()
 
     def _rebuild(self):
         """ Rebuild the path used to draw the outline of the popup.
