@@ -100,6 +100,11 @@ def html_factory():
     return QtHtml
 
 
+def histogram_slider_factory():
+    from .qt_histogram_slider import QtHistogramSlider
+    return QtHistogramSlider
+
+
 def image_factory():
     from .qt_image import QtImage
     return QtImage
@@ -289,6 +294,7 @@ QT_FACTORIES = {
     'FlowItem': flow_item_factory,
     'GroupBox': group_box_factory,
     'Html': html_factory,
+    'HistogramSlider': histogram_slider_factory,
     'Image': image_factory,
     'ImageView': image_view_factory,
     'Label': label_factory,
