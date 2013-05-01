@@ -180,6 +180,11 @@ def popup_view_factory():
     return QtPopupView
 
 
+def pivot_selector_factory():
+    from .qt_pivot_selector import QtPivotSelector
+    return QtPivotSelector
+
+
 def push_button_factory():
     from .qt_push_button import QtPushButton
     return QtPushButton
@@ -310,6 +315,7 @@ QT_FACTORIES = {
     'ObjectCombo': object_combo_factory,
     'Page': page_factory,
     'PopupView': popup_view_factory,
+    'PivotSelector': pivot_selector_factory,
     'PushButton': push_button_factory,
     'ProgressBar': progress_bar_factory,
     'RadioButton': radio_button_factory,
