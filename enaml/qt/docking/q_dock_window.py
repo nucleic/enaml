@@ -5,62 +5,129 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QMargins, QPoint, QEvent
-from PyQt4.QtGui import QFrame, QLayout, QRegion, QPushButton
+from PyQt4.QtCore import Qt, QMargins, QPoint, QRect
+from PyQt4.QtGui import QLayout
 
-from atom.api import Atom, Typed, Int
+from atom.api import Bool, Typed
 
-from .dock_window_resizer import DockWindowResizer
-from .q_dock_window_layout import QDockWindowLayout
+from .q_dock_area import QDockArea
+from .q_dock_frame import QDockFrame
+from .q_dock_frame_layout import QDockFrameLayout
+from .q_dock_window_buttons import QDockWindowButtons
 
 
-class QDockWindow(QFrame):
-    """ A custom QFrame which holds a QDockItem instance.
-
-    The dock container provides a level of indirection when tearing
-    dock items out of a dock area. The window flags for the container
-    are controlled by the dock manager driving the dock area.
+class QDockWindow(QDockFrame):
+    """ A QDockFrame which holds a toplevel dock area.
 
     """
-    #: The size of the extra space for hit testing a resize corner.
-    ResizeCornerExtra = 8
+    #: The static resize margins for the dock window.
+    ResizeMargins = QMargins(5, 5, 5, 5)
 
-    class WindowState(Atom):
-        """ A private class for managing container drag state.
+    #: The static normal contents margins for the dock window.
+    NormalMargins = QMargins(5, 20, 5, 5)
+
+    #: The static maximized margins for the dock window.
+    MaximizedMargins = QMargins(0, 20, 0, 0)
+
+    #: The minimum offset for the window buttons from the right edge.
+    MinButtonOffset = 5
+
+    class FrameState(QDockFrame.FrameState):
+        """ A private class for managing window drag state.
 
         """
+        #: The press position in the window title bar.
         press_pos = Typed(QPoint)
 
-        #: The resize mode based on the mouse hover position.
-        resize_mode = Int(DockWindowResizer.NoResize)
+        #: Whether or not the window is being dragged by the user.
+        dragging = Bool(False)
 
-        #: The offset point of the cursor during a resize press.
-        resize_offset = Typed(QPoint)
-
-    def __init__(self, parent=None):
+    def __init__(self, manager, parent=None):
         """ Initialize a QDockWindow.
 
         Parameters
         ----------
+        manager : DockManager
+            The dock manager which owns the dock window.
+
         parent : QWidget or None
-            The parent of the QDockWindow.
+            The parent of the dock window, or None.
 
         """
-        super(QDockWindow, self).__init__(parent)
+        super(QDockWindow, self).__init__(manager, parent)
         self.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_Hover, True)
-        layout = QDockWindowLayout()
+        self.setMouseTracking(True)
+        layout = QDockFrameLayout()
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
-        self.setContentsMargins(QMargins(5, 15, 5, 5))
-        self.state = self.WindowState()
-        self.handler = None  # set by the dock manager
-        self._resize_margins = QMargins(5, 5, 5, 5)
-        self.setDockArea(QPushButton())
+        self.setContentsMargins(self.NormalMargins)
+        self.setDockArea(QDockArea())
+        btns = self._buttons = QDockWindowButtons(self)
+        btns.maximizeButtonClicked.connect(self.showMaximized)
+        btns.restoreButtonClicked.connect(self.showNormal)
 
     #--------------------------------------------------------------------------
-    # Public API
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def showMaximized(self):
+        """ Handle a show maximized request for the window.
+
+        """
+        self.setContentsMargins(self.MaximizedMargins)
+        super(QDockWindow, self).showMaximized()
+        self.clearMask()
+        self._buttons.setMaximized(True)
+
+    def showNormal(self):
+        """ Handle a show normal request for the window.
+
+        """
+        super(QDockWindow, self).showNormal()
+        self.setContentsMargins(self.NormalMargins)
+        self._buttons.setMaximized(False)
+
+    def destroy(self):
+        """ Destroy the dock container and release its references.
+
+        """
+        self.setDockArea(None)
+        super(QDockWindow, self).destroy()
+
+    def titleBarGeometry(self):
+        """ Get the geometry rect for the title bar.
+
+        Returns
+        -------
+        result : QRect
+            The geometry rect for the title bar, expressed in frame
+            coordinates. An invalid rect is returned if title bar
+            should not be active.
+
+        """
+        cmargins = self.contentsMargins()
+        if self.isMaximized():
+            return QRect(0, 0, self.width(), cmargins.top())
+        rmargins = self.ResizeMargins
+        width = self.width() - (cmargins.left() + cmargins.right())
+        height = cmargins.top() - rmargins.top()
+        return QRect(cmargins.left(), rmargins.top(), width, height)
+
+    def resizeMargins(self):
+        """ Get the margins to use for resizing the container.
+
+        Returns
+        -------
+        result : QMargins
+            The margins to use for container resizing when the container
+            is a top-level window.
+
+        """
+        return self.ResizeMargins
+
+    #--------------------------------------------------------------------------
+    # Framework API
     #--------------------------------------------------------------------------
     def dockArea(self):
         """ Get the dock area installed on the container.
@@ -85,127 +152,89 @@ class QDockWindow(QFrame):
         self.layout().setDockWidget(dock_area)
 
     #--------------------------------------------------------------------------
-    # Reimplementations
+    # Event Handlers
     #--------------------------------------------------------------------------
-    def event(self, event):
-        """ A generic event handler for the dock container.
-
-        This handler dispatches hover events which are sent when the
-        container is floating. It also notifies the dock manager when
-        it is activated so that the manager can maintain a proper
-        top-level Z-order.
+    def resizeEvent(self, event):
+        """ Handle the resize event for the dock window.
 
         """
-        # hover events are only generated if the WA_Hover attribute is
-        # set, and that is only set when the container is floating.
-        if event.type() == QEvent.HoverMove:
-            self.hoverMoveEvent(event)
-            return True
-        if event.type() == QEvent.WindowActivate:
-            if self.handler is not None:
-                self.handler.window_activated()
-        return super(QDockWindow, self).event(event)
+        super(QDockWindow, self).resizeEvent(event)
+        buttons = self._buttons
+        size = buttons.minimumSizeHint()
+        offset = max(self.MinButtonOffset, self.contentsMargins().right())
+        x = self.width() - size.width() - offset
+        rect = QRect(x, 0, size.width(), size.height())
+        buttons.setGeometry(rect)
 
     def hoverMoveEvent(self, event):
-        """ Handle the hover move event for the container.
+        """ Handle the hover move event for the dock window.
 
-        This handler is invoked when the container is in floating mode.
-        It updates the cursor if the mouse is hovered over one of the
-        containers resize areas.
+        This reimplementation unsets the cursor when the mouse hovers
+        over the dock window buttons.
 
         """
-        state = self.state
-        dwr = DockWindowResizer
-        # don't change the cursor until the resize is finished.
-        if state.resize_mode != dwr.NoResize:
-            return
-        margins = self._resize_margins
-        extra = self.ResizeCornerExtra
-        mode, ignored = dwr.hit_test(self, event.pos(), margins, extra)
-        cursor = dwr.cursor(mode)
-        if cursor is None:
+        if self._buttons.geometry().contains(event.pos()):
             self.unsetCursor()
         else:
-            self.setCursor(cursor)
+            super(QDockWindow, self).hoverMoveEvent(event)
 
-    def mousePressEvent(self, event):
-        """ Handle the mouse press event for the container.
+    def titleBarMousePressEvent(self, event):
+        """ Handle the mouse press event for the dock window.
 
-        This handler sets up the resize and drag operations when the
-        container is in floating mode.
+        Returns
+        -------
+        result : bool
+            True if the event is handled, False otherwise.
 
         """
-        event.ignore()
         if event.button() == Qt.LeftButton:
-            state = self.state
-            pos = event.pos()
-            dwr = DockWindowResizer
-            margins = self._resize_margins
-            extra = self.ResizeCornerExtra
-            mode, offset = dwr.hit_test(self, pos, margins, extra)
-            if mode != dwr.NoResize:
-                state.resize_mode = mode
-                state.resize_offset = offset
-                event.accept()
-            elif pos.y() <= self.contentsMargins().top():
-                state.press_pos = pos
-                event.accept()
+            state = self.frame_state
+            if state.press_pos is None:
+                state.press_pos = event.pos()
+                return True
+        return False
 
-    def mouseReleaseEvent(self, event):
-        """ Handle the mouse release event for the container.
+    def titleBarMouseMoveEvent(self, event):
+        """ Handle the mouse move event for the dock window.
 
-        This handler finalizes the mouse event when the container is
-        in floating mode.
+        Returns
+        -------
+        result : bool
+            True if the event is handled, False otherwise.
 
         """
-        event.ignore()
+        state = self.frame_state
+        if state.press_pos is not None:
+            global_pos = event.globalPos()
+            if self.isMaximized():
+                coeff = state.press_pos.x() / float(self.width())
+                self.showNormal()
+                btn_width = self._buttons.width()
+                margins = self.contentsMargins()
+                max_x = self.width() - margins.right() - btn_width - 5
+                test_x = int(coeff * self.width())
+                new_x = max(5, min(test_x, max_x))
+                state.press_pos.setX(new_x)
+                state.press_pos.setY(margins.top() / 2)
+            self.move(global_pos - state.press_pos)
+            self.manager().frame_moved(self, global_pos)
+            return True
+        return False
+
+    def titleBarMouseReleaseEvent(self, event):
+        """ Handle the mouse release event for the dock window.
+
+        Returns
+        -------
+        result : bool
+            True if the event is handled, False otherwise.
+
+        """
         if event.button() == Qt.LeftButton:
-            state = self.state
-            state.resize_mode = DockWindowResizer.NoResize
-            state.resize_offset = None
-            state.press_pos = None
-            event.accept()
-
-    def mouseMoveEvent(self, event):
-        """ Handle the mouse move event for the container.
-
-        This handler resizes and moves the container when it is in
-        floating mode.
-
-        """
-        event.ignore()
-        state = self.state
-        dwr = DockWindowResizer
-        if state.resize_mode != dwr.NoResize:
-            mode = state.resize_mode
-            offset = state.resize_offset
-            dwr.resize(self, event.pos(), mode, offset)
-            event.accept()
-        elif state.press_pos is not None:
-            self.move(event.globalPos() - state.press_pos)
-            event.accept()
-
-
-    def resizeEvent(self, event):
-        """ Handle the resize event for the container.
-
-        This handler updates the mask on the container if it is set
-        to floating mode.
-
-        """
-        w = self.width()
-        h = self.height()
-        region = QRegion(0, 0, w, h)
-        # top left
-        region -= QRegion(0, 0, 3, 1)
-        region -= QRegion(0, 0, 1, 3)
-        # top right
-        region -= QRegion(w - 3, 0, 3, 1)
-        region -= QRegion(w - 1, 0, 1, 3)
-        # bottom left
-        region -= QRegion(0, h - 3, 1, 3)
-        region -= QRegion(0, h - 1, 3, 1)
-        # bottom right
-        region -= QRegion(w - 1, h - 3, 1, 3)
-        region -= QRegion(w - 3, h - 1, 3, 1)
-        self.setMask(region)
+            state = self.frame_state
+            if state.press_pos is not None:
+                self.manager().frame_released(self, event.globalPos())
+                state.dragging = False
+                state.press_pos = None
+                return True
+        return False
