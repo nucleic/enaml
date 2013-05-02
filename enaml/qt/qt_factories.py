@@ -15,11 +15,6 @@ def action_group_factory():
     return QtActionGroup
 
 
-def bubble_view_factory():
-    from .qt_bubble_view import QtBubbleView
-    return QtBubbleView
-
-
 def calendar_factory():
     from .qt_calendar import QtCalendar
     return QtCalendar
@@ -175,6 +170,11 @@ def page_factory():
     return QtPage
 
 
+def popup_view_factory():
+    from .qt_popup_view import QtPopupView
+    return QtPopupView
+
+
 def push_button_factory():
     from .qt_push_button import QtPushButton
     return QtPushButton
@@ -273,7 +273,6 @@ def window_factory():
 QT_FACTORIES = {
     'Action': action_factory,
     'ActionGroup': action_group_factory,
-    'BubbleView': bubble_view_factory,
     'Calendar': calendar_factory,
     'CheckBox': check_box_factory,
     'ComboBox': combo_box_factory,
@@ -304,6 +303,7 @@ QT_FACTORIES = {
     'Notebook': notebook_factory,
     'ObjectCombo': object_combo_factory,
     'Page': page_factory,
+    'PopupView': popup_view_factory,
     'PushButton': push_button_factory,
     'ProgressBar': progress_bar_factory,
     'RadioButton': radio_button_factory,

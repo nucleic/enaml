@@ -7,7 +7,6 @@
 #------------------------------------------------------------------------------
 from .action import Action
 from .action_group import ActionGroup
-from .bubble_view import BubbleView
 from .calendar import Calendar
 from .check_box import CheckBox
 from .combo_box import ComboBox
@@ -39,6 +38,7 @@ from .multiline_field import MultilineField
 from .notebook import Notebook
 from .object_combo import ObjectCombo
 from .page import Page
+from .popup_view import PopupView
 from .progress_bar import ProgressBar
 from .push_button import PushButton
 from .radio_button import RadioButton
