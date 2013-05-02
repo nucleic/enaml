@@ -6,7 +6,8 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import (
-    Qt, QPoint, QPointF, QMargins, QPropertyAnimation, QTimer, pyqtSignal
+    Qt, QPoint, QPointF, QMargins, QPropertyAnimation, QTimer, QEvent,
+    pyqtSignal
 )
 from PyQt4.QtGui import (
     QApplication, QFrame, QLayout, QPainter, QPainterPath, QRegion, QPen
@@ -115,11 +116,14 @@ class QPopupView(QFrame):
         super(QPopupView, self).__init__(parent)
         self.setWindowFlags(flags | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         layout = QSingleWidgetLayout()
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self._state = self.ViewState()
         self._state.init(self)
+        if parent is not None:
+            parent.installEventFilter(self)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -372,6 +376,19 @@ class QPopupView(QFrame):
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
+    def eventFilter(self, obj, event):
+        """ Filter the events from the parent object.
+
+        This handler ensures the position of the popup is updated
+        when the parent is resized or moved.
+
+        """
+        evt_type = event.type()
+        if evt_type == QEvent.Move or evt_type == QEvent.Resize:
+            if obj is self.parent():
+                self._updatePosition()
+        return False
+
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the popup view.
 

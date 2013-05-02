@@ -48,7 +48,7 @@ enamldef ConfigPopup(PopupView): popup:
         Slider: sizer:
             minimum = 0
             maximum = 30
-            value = 0
+            value = 20
         Label:
             foreground = 'white'
             text = 'Arrow Position'
@@ -116,11 +116,15 @@ enamldef NotificationPopup(PopupView):
             align = 'center'
 
 
-enamldef Main(Window):
+enamldef Main(Window): win:
+    initial_size = (400, 400)
     Container:
         PushButton:
             text = 'Show Config Popup'
             clicked :: ConfigPopup(self).show()
         PushButton:
-            text = 'Show Notification Popup'
+            text = 'Show Window Notification'
+            clicked :: NotificationPopup(win).show()
+        PushButton:
+            text = 'Show Desktop Notification'
             clicked :: NotificationPopup().show()
