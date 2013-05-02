@@ -47,6 +47,7 @@ class QtBubbleView(QtWidget, ProxyBubbleView):
         self.set_arrow(d.arrow)
         self.set_radius(d.radius)
         self.set_relative_pos(d.relative_pos)
+        self.set_close_on_defocus(d.close_on_defocus)
         self.widget.closed.connect(self.on_closed)
 
     def init_layout(self):
@@ -114,3 +115,9 @@ class QtBubbleView(QtWidget, ProxyBubbleView):
 
         """
         self.widget.setRelativePos(relative_pos)
+
+    def set_close_on_defocus(self, do_close):
+        """ Set whether to close bubble view on losing focus
+
+        """
+        self.widget.setCloseOnDefocus(do_close)

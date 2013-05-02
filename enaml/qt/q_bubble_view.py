@@ -5,7 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize, QPoint, QMargins, QEvent, pyqtSignal
+from PyQt4.QtCore import (
+    Qt, QSize, QPoint, QMargins, QEvent, pyqtSignal, QPropertyAnimation,
+)
 from PyQt4.QtGui import QWidget, QLayout, QPainter, QPainterPath
 
 from .q_single_widget_layout import QSingleWidgetLayout
@@ -28,6 +30,9 @@ class QBubbleView(QWidget):
     AnchorLeft = 2
     AnchorRight = 3
 
+    #: close on defocus
+    _close_on_defocus = True
+
     def __init__(self, parent=None):
         super(QBubbleView, self).__init__(parent)
         self._central_widget = None
@@ -46,6 +51,14 @@ class QBubbleView(QWidget):
         self.setRelativePos((0.5, 0.5))
         self.setArrowSize(20)
         self.setRadius(10)
+
+        # Closing animation
+        self._fade_time = 150
+        self._close_anim = anim = QPropertyAnimation(self, "windowOpacity", self)
+        anim.setDuration(self._fade_time)
+        anim.setStartValue(1)
+        anim.setEndValue(0)
+        anim.finished.connect(super(QBubbleView, self).close)
 
         # track parent window movement
         parent.window().installEventFilter(self)
@@ -191,6 +204,29 @@ class QBubbleView(QWidget):
         """
         return self._relative_pos
 
+    def setCloseOnDefocus(self, do_close):
+        """ Set whether the bubble view closes when it loses focus
+
+        Parameters
+        ----------
+        do_close : bool
+            Whether to automatically close the bubble view when it
+            loses focus
+
+        """
+        self._close_on_defocus = do_close
+
+    def closeOnDefocus(self):
+        """ Return whether to close on losing focus
+
+        Returns
+        -------
+        result : bool
+            Whether to close on losing focus
+
+        """
+        return self._close_on_defocus
+
     def paintEvent(self, event):
         """ Reimplement the paint event
 
@@ -229,6 +265,20 @@ class QBubbleView(QWidget):
         if event.type() == QEvent.Move:
             self.move(self.pos() + event.pos() - event.oldPos())
         return False
+
+    def close(self):
+        """ Fade the popup out
+
+        """
+        self._close_anim.start()
+
+    def event(self, event):
+        """ Handle focus lost
+
+        """
+        if self._close_on_defocus and event.type() == QEvent.Leave:
+            self.close()
+        return super(QBubbleView, self).event(event)
 
     def _rebuild(self):
         """ Rebuild the path used to draw the outline of the popup.

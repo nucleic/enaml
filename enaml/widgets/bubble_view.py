@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Enum, Event, Int, Tuple, Typed, ForwardTyped, observe, set_default,
+    Enum, Event, Int, Tuple, Typed, ForwardTyped, Bool, observe, set_default,
 )
 
 from enaml.application import deferred_call
@@ -38,6 +38,9 @@ class ProxyBubbleView(ProxyWidget):
     def set_relative_pos(self, relative_pos):
         raise NotImplementedError
 
+    def set_close_on_defocus(self, do_close):
+        raise NotImplementedError
+
     def close(self):
         raise NotImplementedError
 
@@ -64,6 +67,9 @@ class BubbleView(Widget):
     #: The position of the anchor relative to the BubbleView parent widget's
     #: bounds
     relative_pos = d_(Tuple(float, (0.5, 0.5)))
+
+    #: Whether to close on losing focus
+    close_on_defocus = d_(Bool(True))
 
     #: An event fired when the BubbleView is closed.
     closed = d_(Event(), writable=False)
@@ -110,7 +116,7 @@ class BubbleView(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('anchor', 'radius', 'arrow', 'relative_pos'))
+    @observe(('anchor', 'radius', 'arrow', 'relative_pos', 'close_on_defocus'))
     def _update_proxy(self, change):
         """ Update the ProxyBubbleView when the BubbleView data changes.
 
