@@ -1,0 +1,126 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" This is an example of a fully dynamic PopupView widget.
+
+The PopupView is useful for displaying transient configuration dialogs
+and notification windows. The widget supports a transparent background.
+
+"""
+from enaml.core.api import Include
+from enaml.widgets.api import (
+    Window, Container, PopupView, Form, Label, PushButton, ComboBox, Slider,
+    Field, SpinBox
+)
+
+
+POSITIONS = {
+    'Top Left': (0.0, 0.0),
+    'Top Center': (0.5, 0.0),
+    'Top Right': (1.0, 0.0),
+    'Left': (0.0, 0.5),
+    'Center': (0.5, 0.5),
+    'Right': (1.0, 0.5),
+    'Bottom Left': (0.0, 1.0),
+    'Bottom Center': (0.5, 1.0),
+    'Bottom Right': (1.0, 1.0),
+}
+
+
+enamldef ConfigPopup(PopupView): popup:
+    foreground = 'white'
+    background = 'rgba(30, 30, 30, 0.85)'
+    parent_anchor << POSITIONS[parent_box.selected_item]
+    anchor << POSITIONS[view_box.selected_item]
+    arrow_size << sizer.value
+    arrow_edge << arrow_edge.selected_item
+    arrow_position << positioner.value / 100.0
+    offset << (offset_x.value, offset_y.value)
+    Form:
+        padding = 20
+        Label:
+            foreground = 'white'
+            text = 'Arrow Size'
+        Slider: sizer:
+            minimum = 0
+            maximum = 30
+            value = 0
+        Label:
+            foreground = 'white'
+            text = 'Arrow Position'
+        Slider: positioner:
+            minimum = 0
+            maximum = 100
+            value = 50
+        Label:
+            foreground = 'white'
+            text = 'Arrow Edge'
+        ComboBox: arrow_edge:
+            items = ['top', 'bottom', 'left', 'right']
+            index = 0
+        Label:
+            foreground = 'white'
+            text = 'Parent Anchor'
+        ComboBox: parent_box:
+            items = sorted(POSITIONS.keys())
+            index = items.index('Center')
+        Label:
+            foreground = 'white'
+            text = 'View Anchor'
+        ComboBox: view_box:
+            items = sorted(POSITIONS.keys())
+            index = items.index('Top Center')
+        Label:
+            foreground = 'white'
+            text = 'Offset X'
+        SpinBox: offset_x:
+            minimum = -30
+            maximum = 30
+        Label:
+            foreground = 'white'
+            text = 'Offset Y'
+        SpinBox: offset_y:
+            minimum = -30
+            maximum = 30
+        Include: inc:
+            pass
+        PushButton:
+            text = 'Add Row'
+            clicked ::
+                items = [Label(text='Label', foreground='white'), Field()]
+                inc.objects.extend(items)
+        PushButton:
+            text = 'Close'
+            clicked :: popup.close()
+
+
+enamldef NotificationPopup(PopupView):
+    foreground = 'white'
+    background = 'rgba(30, 30, 30, 0.85)'
+    window_type = 'tool_tip'
+    parent_anchor = (1.0, 1.0)
+    anchor = (1.0, 1.0)
+    offset = (-10, -10)
+    timeout = 5
+    fade_in_duration = 500
+    fade_out_duration = 500
+    Container:
+        hug_height = 'strong'
+        Label:
+            foreground = 'white'
+            text = 'Hello Enaml Notifications'
+            align = 'center'
+
+
+enamldef Main(Window):
+    Container:
+        PushButton:
+            text = 'Show Config Popup'
+            clicked :: ConfigPopup(self).show()
+        PushButton:
+            text = 'Show Notification Popup'
+            clicked :: NotificationPopup().show()
