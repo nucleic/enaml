@@ -12,66 +12,62 @@ settings exposed by the BubbleView.
 
 """
 from enaml.widgets.api import (
-    Window, Container, BubbleView, Form, Label, PushButton, ComboBox, Slider, 
+    Window, Container, BubbleView, Form, Label, PushButton, ComboBox, Slider,
     Field
 )
 
 from enaml.core.api import Include
 
 
-relative_pos = {'top': 0., 'bottom': 1., 'left': 0., 'right': 1.}
+POSITIONS = {
+    'Top Left': (0.0, 0.0),
+    'Top Center': (0.5, 0.0),
+    'Top Right': (1.0, 0.0),
+    'Left': (0.0, 0.5),
+    'Center': (0.5, 0.5),
+    'Right': (1.0, 0.5),
+    'Bottom Left': (0.0, 1.0),
+    'Bottom Center': (0.5, 1.0),
+    'Bottom Right': (1.0, 1.0),
+}
 
 
-def convert_pos(pos):
-    y = relative_pos.get(pos[0], 0.5)
-    if len(pos) > 1:
-        x = relative_pos.get(pos[1], 0.5)
-    else:
-        x = 0.5
-    return (x, y)
-
-
-enamldef MyBubbleView(BubbleView): bubble:
+enamldef MyBubbleView(BubbleView):
+    background = 'rgba(30, 30, 30, 0.85)'
+    foreground = 'white'
+    relative_pos << POSITIONS[cbox.selected_item]
+    anchor << abox.selected_item.lower()
+    arrow_size << sizer.value
     Container:
         Form:
             Label:
-                text = 'Anchor position'
-            ComboBox:
+                foreground = 'white'
+                text = 'Anchor'
+            ComboBox: abox:
                 items = ['Bottom', 'Left', 'Right', 'Top']
                 index = 0
-                index :: bubble.anchor = items[index].lower()
             Label:
-                text = 'Corner radius'
-            Slider:
-                minimum = 2
-                maximum = 40
-                tick_interval = 1
-                value := bubble.radius
-            Label:
+                foreground = 'white'
                 text = 'Arrow size'
-            Slider:
+            Slider: sizer:
                 minimum = 0
                 maximum = 30
-                tick_interval = 1
-                value := bubble.arrow
+                value = 20
             Label:
-                text = 'Anchor to Parent'
-            ComboBox:
-                items = ["Top Left", "Top Center", "Top Right", "Center", 
-                         "Bottom Left", "Bottom Center", "Bottom Right"]
+                foreground = 'white'
+                text = 'Position'
+            ComboBox: cbox:
+                items = sorted(POSITIONS.keys())
                 index = 3
-                index ::
-                    pos = items[index].lower().split()
-                    bubble.relative_pos = convert_pos(pos)
             Include: inc:
                 pass
             PushButton:
                 text = 'Add new row'
                 clicked ::
-                    inc.objects.extend((Label(text='Label'),Field()))
+                    items = [Label(text='Label', foreground='white'), Field()]
+                    inc.objects.extend(items)
             PushButton:
                 text = 'Close'
-                clicked :: bubble.close()
 
 
 enamldef Main(Window):
@@ -81,4 +77,3 @@ enamldef Main(Window):
             clicked ::
                 bubble = MyBubbleView(btn)
                 bubble.show()
-

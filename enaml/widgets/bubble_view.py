@@ -6,10 +6,9 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Enum, Event, Int, Tuple, Typed, ForwardTyped, Bool, observe, set_default,
+    Enum, Int, Tuple, Typed, ForwardTyped, observe, set_default,
 )
 
-from enaml.application import deferred_call
 from enaml.core.declarative import d_
 
 from .container import Container
@@ -23,56 +22,35 @@ class ProxyBubbleView(ProxyWidget):
     #: A reference to the BubbleView declaration.
     declaration = ForwardTyped(lambda: BubbleView)
 
-    def setup_window(self):
-        raise NotImplementedError
-
     def set_anchor(self, anchor):
         raise NotImplementedError
 
-    def set_radius(self, radius):
-        raise NotImplementedError
-
-    def set_arrow(self, arrow):
+    def set_arrow_size(self, size):
         raise NotImplementedError
 
     def set_relative_pos(self, relative_pos):
-        raise NotImplementedError
-
-    def set_close_on_defocus(self, do_close):
-        raise NotImplementedError
-
-    def close(self):
         raise NotImplementedError
 
 
 class BubbleView(Widget):
     """ A BubbleView popup widget.
 
-    This widget implements a popup style with rounded corners and an
-    arrow anchoring it to an underlying widget. Useful for transient
-    dialogs.
+    This widget implements a transient popup view which is useful for
+    conveying contextual configuration data and notification.
+
+    A BubbleView is a single-use widget and is automatically destroyed
+    when it is closed. The view automatically closes itself when it
+    loses focus or the user clicks outside of the view area.
 
     """
-    #: An enum which indicates the which side of the parent will be used
-    #: as the anchor point. The default value is 'bottom'
+    #: The side of the parent to use as the anchor point.
     anchor = d_(Enum('bottom', 'left', 'right', 'top'))
 
-    #: The size in pixels of the x and y radii of the BubbleView's rounded
-    #: corners
-    radius = d_(Int(10))
+    #: The size of the BubbleView's anchoring arrow in pixels.
+    arrow_size = d_(Int(20))
 
-    #: The size of the BubbleView's anchoring arrow
-    arrow = d_(Int(20))
-
-    #: The position of the anchor relative to the BubbleView parent widget's
-    #: bounds
+    #: The position of the anchor relative to the BubbleView's parent.
     relative_pos = d_(Tuple(float, (0.5, 0.5)))
-
-    #: Whether to close on losing focus
-    close_on_defocus = d_(Bool(True))
-
-    #: An event fired when the BubbleView is closed.
-    closed = d_(Event(), writable=False)
 
     #: BubbleViews are invisible by default.
     visible = set_default(False)
@@ -93,18 +71,11 @@ class BubbleView(Widget):
             if isinstance(child, Container):
                 return child
 
-    def close(self):
-        """ Send the 'close' action to the client widget.
-
-        """
-        if self.proxy_is_active:
-            self.proxy.close()
-
     def show(self):
         """ Show the BubbleView.
 
-        This is a reimplemented parent class method which will init
-        and build the BubbleView hierarchy if needed.
+        This is a reimplemented method which will intitialize the proxy
+        tree before showing the view.
 
         """
         if not self.is_initialized:
@@ -116,21 +87,10 @@ class BubbleView(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('anchor', 'radius', 'arrow', 'relative_pos', 'close_on_defocus'))
+    @observe(('anchor', 'arrow_size', 'relative_pos'))
     def _update_proxy(self, change):
         """ Update the ProxyBubbleView when the BubbleView data changes.
 
         """
         # The superclass handler implementation is sufficient.
         super(BubbleView, self)._update_proxy(change)
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _handle_close(self):
-        """ Handle the close event from the proxy widget.
-
-        """
-        self.visible = False
-        self.closed()
-        deferred_call(self.destroy)
