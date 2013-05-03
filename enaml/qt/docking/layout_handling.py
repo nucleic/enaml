@@ -431,12 +431,14 @@ def _unplug_splitter(widget, container):
     up the splitter if there is only a single child remaining.
 
     """
+    sizes = widget.sizes()
     for index in xrange(widget.count()):
         success, replace = _unplug(widget.widget(index), container)
         if success:
             if replace is not None:
                 widget.insertWidget(index, replace)
                 replace.show()
+                widget.setSizes(sizes)
             replace = None
             if widget.count() == 1:
                 replace = widget.widget(0)
@@ -550,11 +552,13 @@ def _split_widget_helper(orientation, widget, frame, append):
         index += 1 if append else 0
         _splitter_insert_frame(splitter, index, frame)
         return True
+    sizes = splitter.sizes()
     new = QDockSplitter(orientation)
     new.addWidget(widget)
     splitter.insertWidget(index, new)
     index = new.count() if append else 0
     _splitter_insert_frame(new, index, frame)
+    splitter.setSizes(sizes)
     return True
 
 
@@ -610,12 +614,16 @@ def _tabify_helper(area, widget, frame, tab_pos):
     tabs.setTabPosition(tab_pos)
     if widget is root:
         area.setLayoutWidget(tabs)
+        _tabs_add_frame(tabs, widget)
+        _tabs_add_frame(tabs, frame)
     else:
         splitter = widget.parent()
+        sizes = splitter.sizes()
         index = splitter.indexOf(widget)
         splitter.insertWidget(index, tabs)
-    _tabs_add_frame(tabs, widget)
-    _tabs_add_frame(tabs, frame)
+        _tabs_add_frame(tabs, widget)
+        _tabs_add_frame(tabs, frame)
+        splitter.setSizes(sizes)
     return True
 
 
