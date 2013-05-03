@@ -15,7 +15,7 @@ from enaml.layout.dock_layout import docklayout, dockarea, dockitem
 from .dock_overlay import DockOverlay
 from .layout_handling import (
     build_layout, save_layout, layout_hit_test, plug_frame, unplug_container,
-    DockAreaContentsChanged
+    iter_containers, DockAreaContentsChanged
 )
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
@@ -284,6 +284,36 @@ class DockManager(Atom):
         if dock_area is None:
             return False
         return unplug_container(dock_area, container)
+
+    def close_window(self, window):
+        """ Handle a close request for a floating dock window.
+
+        Parameters
+        ----------
+        frame : QDockWindow
+            The dock window which should be closed.
+
+        Parameters
+        ----------
+        result : bool
+            True if the window should close and destroy itself, False
+            otherwise.
+
+        """
+        area = window.dockArea()
+        if area is None:
+            return True
+        res = True
+        dock_items = self.dock_items
+        for container in iter_containers(area):
+            item = container.dockItem()
+            if item.close():
+                self.unplug_container(container)
+                dock_items.discard(item)
+                container.destroy()
+            else:
+                res = False
+        return res
 
     def raise_frame(self, frame):
         """ Raise a dock frame to the top of the Z-order.

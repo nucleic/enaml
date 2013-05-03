@@ -67,6 +67,7 @@ class QDockWindow(QDockFrame):
         btns = self._buttons = QDockWindowButtons(self)
         btns.maximizeButtonClicked.connect(self.showMaximized)
         btns.restoreButtonClicked.connect(self.showNormal)
+        btns.closeButtonClicked.connect(self.close)
 
     #--------------------------------------------------------------------------
     # Reimplementations
@@ -87,6 +88,16 @@ class QDockWindow(QDockFrame):
         super(QDockWindow, self).showNormal()
         self.setContentsMargins(self.NormalMargins)
         self._buttons.setMaximized(False)
+
+    def closeEvent(self, event):
+        """ Handle a close event for the window.
+
+        """
+        event.ignore()
+        manager = self.manager()
+        if manager is None or manager.close_window(self):
+            self.destroy()
+            event.accept()
 
     def destroy(self):
         """ Destroy the dock container and release its references.
