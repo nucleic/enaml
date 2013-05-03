@@ -83,7 +83,6 @@ class QDockWindowFilter(QObject):
             if widget is None or isinstance(widget, QDockContainer):
                 geo = dock_window.geometry()
                 area.setLayoutWidget(None)
-                dock_window.close()
                 if widget is not None:
                     widget.float()
                     widget.setGeometry(geo)
@@ -94,6 +93,7 @@ class QDockWindowFilter(QObject):
                     widget.setAttribute(attr, old)
                     widget.manager().stack_under_top(widget)
                 dock_window.manager().remove_frame(dock_window)
+                dock_window.destroy()
                 dock_window.deleteLater()
 
 
