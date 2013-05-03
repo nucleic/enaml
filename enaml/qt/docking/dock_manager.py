@@ -14,8 +14,8 @@ from enaml.layout.dock_layout import docklayout, dockarea, dockitem
 
 from .dock_overlay import DockOverlay
 from .layout_handling import (
-    build_layout, save_layout, layout_hit_test, plug_container,
-    unplug_container, DockAreaContentsChanged
+    build_layout, save_layout, layout_hit_test, plug_frame, unplug_container,
+    DockAreaContentsChanged
 )
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
@@ -92,9 +92,7 @@ class QDockWindowFilter(QObject):
                     widget.show()
                     widget.setAttribute(attr, old)
                     widget.manager().stack_under_top(widget)
-                dock_window.manager().remove_frame(dock_window)
                 dock_window.destroy()
-                dock_window.deleteLater()
 
 
 class DockManager(Atom):
@@ -175,7 +173,6 @@ class DockManager(Atom):
         if not container.isWindow():
             self.unplug_container(container)
         container.destroy()
-        self.dock_frames.remove(container)
 
     def clear_dock_items(self):
         """ Clear the dock items from the dock manager.
@@ -188,7 +185,7 @@ class DockManager(Atom):
         """
         for item in list(self.dock_items):
             self.remove_dock_item(item)
-        for frame in self.dock_frames:
+        for frame in self.dock_frames[:]:
             frame.destroy()
         del self.dock_frames
 
@@ -288,20 +285,6 @@ class DockManager(Atom):
             return False
         return unplug_container(dock_area, container)
 
-    def remove_frame(self, frame):
-        """ Remove a frame from the list of managed frames.
-
-        This is called by the framework at the appropriate times. It
-        should never need to be called by user code.
-
-        Parameters
-        ----------
-        frame : QDockFrame
-            The dock frame to remove from the list of frames.
-
-        """
-        self.dock_frames.remove(frame)
-
     def raise_frame(self, frame):
         """ Raise a dock frame to the top of the Z-order.
 
@@ -385,15 +368,19 @@ class DockManager(Atom):
         if isinstance(target, QDockArea):
             local = target.mapFromGlobal(pos)
             widget = layout_hit_test(target, local)
-            plug_container(target, widget, frame, guide)
+            plug_frame(target, widget, frame, guide)
+            if isinstance(frame, QDockWindow):
+                frame.destroy()
         elif isinstance(target, QDockContainer):
             window = QDockWindow(self, self.dock_area)
             self.dock_frames.append(window)
             window.setGeometry(target.geometry())
             win_area = window.dockArea()
             center_guide = QGuideRose.Guide.AreaCenter
-            plug_container(win_area, None, target, center_guide)
-            plug_container(win_area, target, frame, guide)
+            plug_frame(win_area, None, target, center_guide)
+            plug_frame(win_area, target, frame, guide)
+            if isinstance(frame, QDockWindow):
+                frame.destroy()
             win_area.installEventFilter(self.window_filter)
             window.show()
 
