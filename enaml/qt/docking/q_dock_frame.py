@@ -114,7 +114,7 @@ class QDockFrame(QFrame):
 
         This method should only be called when the frame is being
         discarded and will no longer be used. It will release all
-        internal references to objects.
+        internal references to objects and request a delete later.
 
         """
         if self.isWindow():
@@ -122,7 +122,11 @@ class QDockFrame(QFrame):
         else:
             self.hide()
         self.setParent(None)
-        self._manager = None
+        manager = self._manager
+        if manager is not None:
+            manager.dock_frames.remove(self)
+            self._manager = None
+        self.deleteLater()
 
     def titleBarGeometry(self):
         """ Get the geometry rect for the title bar.
