@@ -37,6 +37,51 @@ class IDockItemTitleBar(QWidget):
         """
         raise NotImplementedError
 
+    def icon(self):
+        """ Get the icon for the title bar.
+
+        Returns
+        -------
+        result : QIcon
+            The icon set for the title bar.
+
+        """
+        raise NotImplementedError
+
+    def setIcon(self, icon):
+        """ Set the icon for the title bar.
+
+        Parameters
+        ----------
+        icon : QIcon
+            The icon to use for the title bar.
+
+        """
+        raise NotImplementedError
+
+    def iconSize(self):
+        """ Get the icon size for the title bar.
+
+        Returns
+        -------
+        result : QSize
+            The size to use for the icons in the title bar.
+
+        """
+        raise NotImplementedError
+
+    def setIconSize(self, size):
+        """ Set the icon size for the title bar.
+
+        Parameters
+        ----------
+        icon : QSize
+            The icon size to use for the title bar. Icons smaller than
+            this size will not be scaled up.
+
+        """
+        raise NotImplementedError
+
 
 class QDockItemTitleBar(QFrame, IDockItemTitleBar):
     """ A concrete implementation of IDockItemTitleBar.
@@ -507,6 +552,8 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setTitle(title)
+        # A concession to practicality: walk the ancestry and update
+        # the tab title if this item lives in a dock tab.
         container = self.parent()
         if container is not None:
             stacked = container.parent()
@@ -537,6 +584,8 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setIcon(icon)
+        # A concession to practicality: walk the ancestry and update
+        # the tab icon if this item lives in a dock tab.
         container = self.parent()
         if container is not None:
             stacked = container.parent()
