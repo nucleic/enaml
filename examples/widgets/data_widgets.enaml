@@ -36,4 +36,5 @@ enamldef Main(Window):
         Label: sel_label:
             text << sel.selected_item
         PivotSelector: sel:
-            items = ['Industry', 'Sector', 'Company']
+            offset = 2
+            items = ['ETF', 'PROSHARES' ,'Sector', 'Sym', 'Order ID']

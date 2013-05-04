@@ -38,6 +38,9 @@ class QPivotSelector(QWidget):
     #: Which item is currently selected
     _selected = -1
 
+    #: Which item is the offset
+    _offset = 0
+
     #: Is an item being dragged
     _dragging_item = False
 
@@ -94,7 +97,7 @@ class QPivotSelector(QWidget):
 
         """
         self._items = items
-        self._selected = len(items) - 1
+        #self._selected = len(items) - 1 - self._offset
 
         # Compute and cache the font widths
         fm = self.fontMetrics()
@@ -138,6 +141,28 @@ class QPivotSelector(QWidget):
         """
         return self._selected
 
+    def setOffset(self, offset):
+        """ Set the active offset
+
+        Parameters
+        ----------
+        offset : int
+            The offset to set
+
+        """
+        self._offset = offset
+
+    def offset(self):
+        """ Return the current offset
+
+        Returns
+        ----------
+        result: int
+            The current offset
+
+        """
+        return self._offset
+
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
@@ -164,22 +189,29 @@ class QPivotSelector(QWidget):
         col.setAlphaF(0.4)
         highlight_brush = QBrush(col)
 
+        col = QColor("#FCE883")
+        col = QColor("#CCCCCC")
+        col.setAlphaF(0.4)
+        fixed_brush = QBrush(col)
+
         for i, sel in enumerate(self._items):
             rect.setWidth(self._widths[i] - margin)
-            if i <= self._selected:
-                painter.setBrush(highlight_brush)
+            if i < self._offset:
+                painter.setBrush(fixed_brush)
+            #elif i <= (self._selected + self._offset):
+            #    painter.setBrush(highlight_brush)
             else:
                 painter.setBrush(QBrush())
             painter.setPen(Qt.lightGray)
             painter.drawRoundedRect(rect, 5, 5)
-            if i <= self._selected:
+            if i <= (self._selected + self._offset):
                 painter.setPen(Qt.black)
             else:
                 painter.setPen(Qt.lightGray)
             painter.drawText(rect, Qt.AlignCenter, str(sel))
 
             # Now draw the selector
-            if i == self._selected:
+            if i == (self._selected + self._offset):
                 if self._hover_item:
                     painter.setPen(hover_pen_outline)
                 else:
@@ -256,8 +288,8 @@ class QPivotSelector(QWidget):
             x, edge = event.pos().x(), 0
             for i, width in enumerate(self._widths):
                 edge += width
-                if abs(x - edge) < width/2:
-                    self._selected = i
+                if self._offset < (i+1) and abs(x - edge) < width/2:
+                    self._selected = i - self._offset
                     self.currentIndexChanged.emit(self._selected)
                     self.update()
                     break
@@ -290,7 +322,7 @@ class QPivotSelector(QWidget):
         fm = self.fontMetrics()
         border, margin = self._border, self._margin
         height = fm.height() + border + self._item_height
-        return QRect(sum(self._widths[:self._selected + 1]) - 4, 0, 8, height)
+        return QRect(sum(self._widths[:self._selected + self._offset + 1]) - 4, 0, 8, height)
 
 
 # cyclic notification guard flags
@@ -324,6 +356,7 @@ class QtPivotSelector(QtControl, ProxyPivotSelector):
         d = self.declaration
         self.set_items(d.items)
         self.set_index(d.index)
+        self.set_offset(d.offset)
         self.widget.currentIndexChanged.connect(self.on_index_changed)
 
     #--------------------------------------------------------------------------
@@ -354,3 +387,10 @@ class QtPivotSelector(QtControl, ProxyPivotSelector):
             self.widget.setCurrentIndex(index)
         finally:
             self._guard &= ~INDEX_GUARD
+
+    def set_offset(self, offset):
+        """ Set the current offset of the PivotSelector.
+
+        """
+        self.widget.setOffset(offset)
+

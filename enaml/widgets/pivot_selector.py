@@ -30,6 +30,9 @@ class ProxyPivotSelector(ProxyControl):
     def set_index(self, index):
         raise NotImplementedError
 
+    def set_offset(self, offset):
+        raise NotImplementedError
+
 
 class PivotSelector(Control):
     """ An ordered list of pivots which describe the current pivot hierarchy.
@@ -42,6 +45,9 @@ class PivotSelector(Control):
 
     #: The integer index of the currently selected item
     index = d_(Int(0))
+
+    #: The integer index of the currently selected item
+    offset = d_(Int(0))
 
     #: A reference to the ProxyPivotSelector object
     proxy = Typed(ProxyPivotSelector)
@@ -59,7 +65,7 @@ class PivotSelector(Control):
 
         """
         items = self.items
-        idx = self.index
+        idx = self.index+self.offset
         if idx < 0 or idx >= len(items):
             return u''
         return items[idx]
@@ -67,7 +73,7 @@ class PivotSelector(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('index', 'items'))
+    @observe(('index', 'items', 'offset'))
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
