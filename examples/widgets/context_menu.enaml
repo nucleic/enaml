@@ -1,0 +1,36 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of using the `Menu` widget as a context menu.
+
+"""
+from enaml.widgets.api import Window, Container, Field, Menu, Action
+
+
+enamldef SampleAction(Action):
+    text = '%s action %d' % (parent.title, parent.children.index(self))
+    triggered :: print text
+
+
+enamldef SampleMenu(Menu):
+    SampleAction: pass
+    SampleAction: pass
+    SampleAction: pass
+
+
+enamldef Main(Window):
+    Container:
+        Field:
+            text = 'foo'
+        Field:
+            text = 'bar'
+            SampleMenu:
+                title = 'bar'
+                context_menu = True
+        Field:
+            text = 'baz'
+            SampleMenu:
+                title = 'baz'
+                context_menu = True
+

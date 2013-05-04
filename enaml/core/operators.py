@@ -220,7 +220,7 @@ class SubscriptionObserver(object):
         owner : Declarative
             The declarative owner of interest.
 
-        name : str
+        name : string
             The name to which the operator is bound.
 
         """

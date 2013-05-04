@@ -1,0 +1,29 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example which demonstrates the use of the `vbox` layout helper.
+
+In this example, we use the `vbox` layout helper to layout the children
+of the Container in a vertical group. The `vbox` function is a fairly
+sophisticated layout helper which automatically takes into account the
+content boundaries of its parent. It also provides the necessary layout
+spacers in the horizontal direction to allow for children of various 
+widths.
+
+"""
+from enaml.layout.api import vbox
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            vbox(pb1, pb2, pb3)
+        ]
+        PushButton: pb1:
+            text = 'Spam'
+        PushButton: pb2:
+            text = 'Long Name Foo'
+        PushButton: pb3:
+            text = 'Bar'

@@ -22,10 +22,10 @@ def _format_source_error(filename, context, lineno):
 
     Parameters
     ----------
-    filename : str
+    filename : string
         The name of the offending file.
 
-    context : str
+    context : string
         The string name of the context scope in which the error
         occured. In the sample above, the context is 'bar'.
 
@@ -34,7 +34,7 @@ def _format_source_error(filename, context, lineno):
 
     Returns
     -------
-    result : str
+    result : string
         A nicely formatted string for including in an exception. If the
         file cannot be opened, the source lines will note be included.
 
@@ -85,13 +85,13 @@ class DeclarativeNameError(NameError, DeclarativeException):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name of global symbol which was not found.
 
-        filename : str
+        filename : string
             The name of the file where the error occurred.
 
-        context : str
+        context : string
             The context name where the error occured.
 
         lineno : int
@@ -127,13 +127,13 @@ class DeclarativeError(DeclarativeException):
 
         Parameters
         ----------
-        message : str
+        message : string
             The message to associate with the error.
 
-        filename : str
+        filename : string
             The name of the file where the error occurred.
 
-        context : str
+        context : string
             The context name where the error occured.
 
         lineno : int
@@ -168,13 +168,13 @@ class OperatorLookupError(LookupError, DeclarativeException):
 
         Parameters
         ----------
-        operator : str
+        operator : string
             The name of the operator which was not found.
 
-        filename : str
+        filename : string
             The name of the file where the error occurred.
 
-        context : str
+        context : string
             The context name where the error occured.
 
         lineno : int

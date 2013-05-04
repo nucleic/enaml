@@ -96,7 +96,7 @@ class QtDatetimeSelector(QtBoundedDatetime, ProxyDatetimeSelector):
 
         Parameters
         ----------
-        format : str
+        format : string
             A Python time formatting string.
 
         """

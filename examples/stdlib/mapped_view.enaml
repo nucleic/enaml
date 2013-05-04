@@ -1,0 +1,114 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of using the Enaml stdlib `MappedView` component.
+
+The `MappedView` is an enamldef subtype of the `Include` type which will
+automatically create a view for an object based on it's type and a given
+typemap. See the documentation for `MappedView` for a full description.
+
+In this example, a simple class hierarchy is created. For each type in
+the hierararchy, a custom view is created. These views are provided as
+a typemap to a `MappedView` so that when a given object is selected, the
+proper view is displayed.
+
+"""
+from atom.api import Atom, Str, Int, List, Range, Value, observe
+
+from enaml.layout.api import vbox
+from enaml.stdlib.mapped_view import MappedView
+from enaml.widgets.api import (
+    Window, Form, Field, SpinBox, Label, ComboBox, Container
+)
+
+
+class Base(Atom):
+    name = Str()
+
+
+class Foo(Base):
+    a = Int()
+    b = Int()
+    c = Int()
+
+
+class Bar(Base):
+    d = Str()
+    e = Str()
+    f = Str()
+    g = Str()
+
+
+enamldef BaseView(Form):
+    attr model: Base
+    hug_height = 'strong'
+    Label:
+        text = 'Name'
+    Label:
+        hug_width = 'ignore'
+        align = 'center'
+        text << model.name
+
+
+enamldef FooView(BaseView):
+    attr model: Foo
+    Label:
+        text = 'a'
+    SpinBox:
+        value := model.a
+    Label:
+        text = 'b'
+    SpinBox:
+        value := model.b
+    Label:
+        text = 'c'
+    SpinBox:
+        value := model.c
+
+
+enamldef BarView(BaseView):
+    attr model: Bar
+    Label:
+        text = 'd'
+    Field:
+        text := model.d
+    Label:
+        text = 'e'
+    Field:
+        text := model.e
+    Label:
+        text = 'f'
+    Field:
+        text := model.f
+    Label:
+        text = 'g'
+    Field:
+        text := model.g
+
+
+class Model(Atom):
+
+    index = Range(high=2)
+
+    objects = List(Base)
+
+    selected_object = Value()
+
+    @observe('index')
+    def _selected_object(self, val):
+        self.selected_object = self.objects[val['value']]
+
+
+enamldef Main(Window):
+    attr main_model = Model(index=0,
+        objects=[Base(name='Base'), Foo(name='Foo'), Bar(name='Bar')])
+    Container:
+        hug_height = 'strong'
+        ComboBox:
+            items << [obj.name for obj in main_model.objects]
+            index := main_model.index
+        MappedView:
+            model << main_model.selected_object
+            typemap = {Base: BaseView, Foo: FooView, Bar: BarView}
+

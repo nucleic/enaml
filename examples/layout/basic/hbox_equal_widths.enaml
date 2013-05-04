@@ -1,0 +1,31 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example which demonstrates the use of the `hbox` layout helper
+along with some auxiliary constraints.
+
+This example is nearly identical to the `hbox.enaml` example. However,
+this time we add some auxiliary constraints to make the buttons equal
+widths. When resizing the window, each button is therefore guaranteed
+to expand by the same amount.
+
+"""
+from enaml.layout.api import hbox
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            hbox(pb1, pb2, pb3),
+            pb1.width == pb2.width,
+            pb2.width == pb3.width,
+        ]
+        PushButton: pb1:
+            text = 'Spam'
+        PushButton: pb2:
+            text = 'Long Name Foo'
+        PushButton: pb3:
+            text = 'Bar'
+

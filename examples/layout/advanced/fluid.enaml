@@ -1,0 +1,55 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of how the constraints engine can be used to create fluid,
+adaptable layouts.
+
+At the top of the layout is an `Html` widget which expands to fill the 
+available space. Below the `Html` are four `PushButton` widgets. On the 
+left are the Add and Remove buttons, which hug the left side of the window
+and stay close to each other. Hugging the bottom right corner is the Share
+`PushButton`. Centered is the Change Mode `PushButton`. However, as the 
+window gets resized, the Change Mode button may not be able to be centered, 
+but it will always leave a gap between it and its two neighbors. This 
+type of behavior (selective centering) is difficult-if-not-impossible to
+acheive with traditional box style layouts.
+
+"""
+from enaml.layout.api import hbox, vbox, spacer, align
+from enaml.widgets.api import Window, Html, Container, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            # Arrange the Html Frame above the horizontal row of butttons
+            vbox(
+                html_frame, 
+                hbox(
+                    add_button, remove_button, spacer, 
+                    change_mode_button, spacer, share_button,
+                ),
+            ),
+
+            # Weakly align the centers of the Html frame and the center 
+            # button. Declaring this constraint as 'weak' is what allows
+            # the button to ignore the constraint as he window is resized
+            # too small to allow it to be centered.
+            align('h_center', html_frame, change_mode_button) | 'weak',
+
+            # Set a sensible minimum height for the frame
+            html_frame.height >= 150,
+        ]
+        Html: html_frame:
+            source = '<center><h1>Hello Enaml!</h1></center>'
+        PushButton: add_button:
+            text = 'Add'
+        PushButton: remove_button:
+            text = 'Remove'
+            clicked :: print 'removed'
+        PushButton: change_mode_button:
+            text = 'Change Mode'
+        PushButton: share_button:
+            text = 'Share...'
+

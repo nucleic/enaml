@@ -33,7 +33,7 @@ class CodeTracer(object):
         obj : object
             The object which owns the attribute.
 
-        attr : str
+        attr : string
             The attribute being loaded.
 
         """
@@ -126,7 +126,7 @@ class CodeInverter(object):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name being loaded.
 
         value : object
@@ -145,7 +145,7 @@ class CodeInverter(object):
         obj : object
             The object which owns the attribute.
 
-        attr : str
+        attr : string
             The attribute being loaded.
 
         value : object

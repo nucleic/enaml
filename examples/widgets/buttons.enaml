@@ -1,0 +1,51 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the various button widgets in Enaml.
+
+This example shows the usage of the `PushButton`, `CheckBox`, and 
+`RadioButton` widgets. 
+
+The intent of this example is to demonstrate the use of the button 
+widgets. See the other examples for explanations of layout and other
+language features.
+
+"""
+from enaml.widgets.api import (
+    Window, Container, PushButton, CheckBox, RadioButton
+)
+
+
+enamldef Main(Window):
+    Container:
+        PushButton:
+            text = 'Push Me'
+            clicked :: print 'I was clicked!'
+        PushButton:
+            # Note: checkable push buttons are only supported on Qt
+            text = 'Toggle Me'
+            checkable = True
+            toggled :: print 'I was toggled'
+        CheckBox:
+            text = 'Check One'
+            clicked :: print 'Check One clicked'
+        CheckBox:
+            text = 'Check Two'
+            toggled :: print 'Check Two toggled'
+        RadioButton:
+            text = 'Radio One'
+            clicked :: print 'Radio One clicked'
+        RadioButton:
+            text = 'Radio Two'
+            toggled :: print 'Radio Two toggled'
+        Container:
+            # Note: RadioButton widgets are exclusive amongst sibilings
+            RadioButton:
+                text = 'Radio One b'
+                clicked :: print 'Radio One b clicked'
+            RadioButton:
+                text = 'Radio Two b'
+                toggled :: print 'Radio Two b toggled'
+
+

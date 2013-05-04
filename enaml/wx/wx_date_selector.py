@@ -101,7 +101,7 @@ class WxDateSelector(WxBoundedDate, ProxyDateSelector):
 
         Parameters
         ----------
-        format : str
+        format : string
             A Python time formatting string.
 
         .. note:: Changing the format on wx is not supported.
