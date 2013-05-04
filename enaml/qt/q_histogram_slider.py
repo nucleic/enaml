@@ -22,6 +22,7 @@ class QHistogramSlider(QDualSlider):
 
         """
         super(QHistogramSlider, self).__init__(parent)
+        self.setAttribute(Qt.WA_Hover)
         self.setOrientation(Qt.Horizontal)
         self._points = QPolygon()
         self._clip = QRegion()
