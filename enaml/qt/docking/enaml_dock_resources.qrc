@@ -23,5 +23,8 @@
      <file>dock_images/winbtns_stdhr.png</file>
      <file>dock_images/winbtns_stdpl.png</file>
      <file>dock_images/winbtns_stdpr.png</file>
+     <file>dock_images/titlebtn_s.png</file>
+     <file>dock_images/titlebtn_h.png</file>
+     <file>dock_images/titlebtn_p.png</file>
  </qresource>
  </RCC>

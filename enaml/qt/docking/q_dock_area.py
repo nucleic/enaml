@@ -205,7 +205,7 @@ class QDockArea(QFrame):
                 bottom: 2px;  /* adjust the unsightly gap */
             }
 
-            QDockItemTitleBar {
+            QDockTitleBar {
                 color: rgb(250, 251, 254);
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                             stop:0 rgb(77, 96, 130),
