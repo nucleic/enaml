@@ -8,6 +8,7 @@
 from PyQt4.QtCore import Qt, QRect, QSize, QMargins
 from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QIcon
 
+from .q_dock_container import QDockContainer
 from .q_dock_tab_widget import QDockTabWidget
 
 
@@ -397,10 +398,10 @@ class QDockItemLayout(QLayout):
         """ Invalidate the layout.
 
         """
+        super(QDockItemLayout, self).invalidate()
         self._size_hint = QSize()
         self._min_size = QSize()
         self._max_size = QSize()
-        super(QDockItemLayout, self).invalidate()
 
     def setGeometry(self, rect):
         """ Set the geometry for the items in the layout.
@@ -673,3 +674,15 @@ class QDockItem(QFrame):
 
         """
         self.layout().setDockWidget(widget)
+
+    def closeEvent(self, event):
+        """ Handle the close event for the dock item.
+
+        """
+        event.accept()
+        parent = self.parent()
+        if isinstance(parent, QDockContainer):
+            manager = parent.manager()
+            if manager is not None:
+                manager.remove_dock_item(self)
+                event.ignore()  # the item has already been hidden
