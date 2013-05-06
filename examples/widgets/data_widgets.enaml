@@ -38,3 +38,5 @@ enamldef Main(Window):
         PivotSelector: sel:
             offset = 2
             items = ['ETF', 'PROSHARES' ,'Sector', 'Sym', 'Order ID']
+            clicked ::
+                print "Index clicked", change['value']

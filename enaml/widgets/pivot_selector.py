@@ -8,7 +8,7 @@
 from functools import partial
 
 from atom.api import (
-    Int, List, Unicode, ForwardTyped, Typed, set_default, observe,
+    Int, List, Event, Unicode, ForwardTyped, Typed, set_default, observe,
     cached_property
 )
 
@@ -48,6 +48,9 @@ class PivotSelector(Control):
 
     #: The integer index of the currently selected item
     offset = d_(Int(0))
+
+    #: The integer index of a clicked event
+    clicked = d_(Event(int), writable=False)
 
     #: A reference to the ProxyPivotSelector object
     proxy = Typed(ProxyPivotSelector)

@@ -32,6 +32,9 @@ class QPivotSelector(QWidget):
     #: TODO - fix this so dragging works correctly
     itemOrderingChanged = pyqtSignal(list)
 
+    #: A signal emitted when one of the pivots is clicked
+    indexClicked = pyqtSignal(int)
+
     #: Private list of items
     _items = []
 
@@ -69,7 +72,7 @@ class QPivotSelector(QWidget):
         self._border = 2 * (frame_width + 2) + 3
         self._margin = style.pixelMetric(QStyle.PM_ButtonMargin)
 
-        self._hand_cursor = QCursor(Qt.OpenHandCursor)
+        #self._hand_cursor = QCursor(Qt.OpenHandCursor)
         self._drag_cursor = QCursor(Qt.SizeHorCursor)
         self._hover_item = False
         self._widths = []
@@ -256,7 +259,8 @@ class QPivotSelector(QWidget):
                 self.setCursor(self._drag_cursor)
                 self._hover_item = True
             else:
-                self.setCursor(self._hand_cursor)
+                #self.setCursor(self._hand_cursor)
+                self.setCursor(Qt.ArrowCursor)
                 self._hover_item = False
             self.update()
         elif (event.type() == QEvent.HoverLeave):
@@ -269,13 +273,14 @@ class QPivotSelector(QWidget):
         """
         if self.selectorRect().contains(event.pos()):
             self._dragging_item = True
-        elif False:  # TODO fix pivot label dragging
+        else:  # TODO fix pivot label dragging
             # Check which box we clicked on
             x, r, l = event.pos().x(), 0, 0
             for i, width in enumerate(self._widths):
                 r += width
                 if l <= x <= r:
-                    self._dragging_name = i
+                    self.indexClicked.emit(i)
+                    #self._dragging_name = i
                     break
                 l += width
         return super(QPivotSelector, self).mousePressEvent(event)
@@ -358,6 +363,7 @@ class QtPivotSelector(QtControl, ProxyPivotSelector):
         self.set_index(d.index)
         self.set_offset(d.offset)
         self.widget.currentIndexChanged.connect(self.on_index_changed)
+        self.widget.indexClicked.connect(self.on_clicked)
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -368,6 +374,12 @@ class QtPivotSelector(QtControl, ProxyPivotSelector):
         """
         if not self._guard & INDEX_GUARD:
             self.declaration.index = self.widget.currentIndex()
+
+    def on_clicked(self, idx):
+        """ The signal handler for the index clicked signal.
+
+        """
+        self.declaration.clicked(idx)
 
     #--------------------------------------------------------------------------
     # ProxyComboBox API
