@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QObject, QEvent, QSize
+from PyQt4.QtCore import QObject, QEvent, QSize, QTimer
 from PyQt4.QtGui import QTabWidget
 
 from atom.api import Typed
@@ -33,19 +33,31 @@ class DockFilter(QObject):
     area widget, and will send a size_hint_updated notification to
     the constraints system when the dock area size hint changes.
 
+    The notifications are collapsed on a single shot timer so that
+    the dock area geometry can fully settle before being snapped
+    by the constraint layout engine.
+
     """
     def __init__(self, owner):
         super(DockFilter, self).__init__()
         self._owner = owner
         self._size_hint = QSize()
+        self._pending = False
+        self._timer = timer = QTimer()
+        timer.setSingleShot(True)
+        timer.timeout.connect(self.onNotify)
+
+    def onNotify(self):
+        self._owner.size_hint_updated()
+        self._pending = False
 
     def eventFilter(self, obj, event):
-        owner = self._owner
-        if owner is not None and event.type() == QEvent.LayoutRequest:
+        if not self._pending and event.type() == QEvent.LayoutRequest:
             hint = obj.sizeHint()
             if hint != self._size_hint:
                 self._size_hint = hint
-                owner.size_hint_updated()
+                self._timer.start(0)
+                self._pending = True
         return False
 
 
