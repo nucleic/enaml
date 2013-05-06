@@ -10,14 +10,11 @@ from PyQt4.QtGui import QApplication, QTabWidget
 
 from enaml.layout.dock_layout import dockitem, docksplit, docktabs
 
+from .event_types import DockAreaContentsChanged
 from .q_dock_container import QDockContainer
 from .q_dock_splitter import QDockSplitter, QDockSplitterHandle
 from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_window import QDockWindow
-
-
-#: An event type which indicates the contents of a dock area changed.
-DockAreaContentsChanged = QEvent.registerEventType()
 
 
 #: A mapping of qt orientation to layout orientation.
