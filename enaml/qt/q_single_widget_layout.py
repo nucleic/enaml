@@ -42,19 +42,20 @@ class QSingleWidgetLayout(QLayout):
     contents margins of this layout is 0px in all directions.
 
     """
-    def __init__(self, *args, **kwargs):
+    #: The initial value of the internal widget item.
+    _item = None
+
+    def __init__(self, parent=None):
         """ Initialize a QSingleWidgetLayout.
 
         Parameters
         ----------
-        *args, **kwargs
-            The positional and keyword arguments needed to initialize
-            a QLayout.
+        parent : QWidget or None
+            The parent widget owner of the layout.
 
         """
-        super(QSingleWidgetLayout, self).__init__(*args, **kwargs)
+        super(QSingleWidgetLayout, self).__init__(parent)
         self.setContentsMargins(0, 0, 0, 0)
-        self._item = None
 
     # Note: do not name this method `widget` since that is a virtual
     # method on QLayoutItem which is a parent class of QLayout.
@@ -81,8 +82,10 @@ class QSingleWidgetLayout(QLayout):
             The widget to manage with this layout.
 
         """
-        if self.getWidget() is not widget:
-            self.takeAt(0)
+        old = self.getWidget()
+        if old is not widget:
+            if old is not None:
+                old.setParent(None)
             if widget is not None:
                 self.addChildWidget(widget)
                 self._item = QSingleWidgetItem(widget)
@@ -139,7 +142,7 @@ class QSingleWidgetLayout(QLayout):
             # The creation path of the layout item bypasses the virtual
             # wrapper methods, this means that the ownership of the cpp
             # pointer is never transfered to Qt. If the item is returned
-            # here it will be delete by Qt, which doesn't own the pointer.
+            # here it will be deleted by Qt, which doesn't own the pointer.
             # A double free occurs once the Python item falls out of scope.
             # To avoid this, this method always returns None and the item
             # cleanup is performed by Python, which owns the cpp pointer.
@@ -195,4 +198,3 @@ class QSingleWidgetLayout(QLayout):
             s.setWidth(s.width() + left + right)
             return s
         return super(QSingleWidgetLayout, self).maximumSize()
-
