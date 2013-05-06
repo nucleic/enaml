@@ -59,7 +59,6 @@ class QDockWindow(QDockFrame):
         self.setAttribute(Qt.WA_Hover, True)
         self.setMouseTracking(True)
         layout = QDockFrameLayout()
-        layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setContentsMargins(self.NormalMargins)
@@ -95,9 +94,14 @@ class QDockWindow(QDockFrame):
         """
         event.ignore()
         manager = self.manager()
-        if manager is None or manager.close_window(self):
-            self.destroy()
-            event.accept()
+        if manager is not None:
+            area = self.dockArea()
+            if area is not None:
+                # avoid a circular import
+                from .layout_handling import iter_containers
+                for container in list(iter_containers(area)):
+                    manager.remove_dock_item(container.dockItem())
+        self.destroy()
 
     def destroy(self):
         """ Destroy the dock container and release its references.
@@ -149,7 +153,7 @@ class QDockWindow(QDockFrame):
             The dock area installed in the container, or None.
 
         """
-        return self.layout().dockWidget()
+        return self.layout().getWidget()
 
     def setDockArea(self, dock_area):
         """ Set the dock area for the container.
@@ -160,7 +164,7 @@ class QDockWindow(QDockFrame):
             The dock area to use in the container.
 
         """
-        self.layout().setDockWidget(dock_area)
+        self.layout().setWidget(dock_area)
 
     #--------------------------------------------------------------------------
     # Event Handlers
