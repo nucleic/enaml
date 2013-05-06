@@ -128,6 +128,16 @@ class QDockFrame(QFrame):
             self._manager = None
         self.deleteLater()
 
+    def raiseFrame(self):
+        """ Raise this frame to the top of the dock manager Z-order.
+
+        """
+        manager = self._manager
+        if manager is not None:
+            frames = manager.dock_frames
+            frames.remove(self)
+            frames.append(self)
+
     def titleBarGeometry(self):
         """ Get the geometry rect for the title bar.
 
@@ -167,9 +177,8 @@ class QDockFrame(QFrame):
         if event.type() == QEvent.HoverMove:
             self.hoverMoveEvent(event)
             return event.isAccepted()
-        if event.type() == QEvent.WindowActivate:
-            if self.isWindow():
-                self.manager().raise_frame(self)
+        if event.type() == QEvent.WindowActivate and self.isWindow():
+            self.raiseFrame()
         return super(QDockFrame, self).event(event)
 
     def resizeEvent(self, event):
