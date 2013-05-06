@@ -13,9 +13,9 @@ from atom.api import Atom, Typed, List
 from enaml.layout.dock_layout import docklayout, dockarea, dockitem
 
 from .dock_overlay import DockOverlay
+from .event_types import DockAreaContentsChanged
 from .layout_handling import (
-    build_layout, save_layout, layout_hit_test, plug_frame, unplug_container,
-    iter_containers, DockAreaContentsChanged
+    build_layout, save_layout, layout_hit_test, plug_frame,
 )
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
@@ -53,7 +53,7 @@ def ensure_on_screen(rect):
     return rect
 
 
-class QDockWindowFilter(QObject):
+class QDockAreaFilter(QObject):
     """ An event filter to listen for content changes in a dock area.
 
     """
@@ -77,11 +77,11 @@ class QDockWindowFilter(QObject):
             The dock area whose contents have changed.
 
         """
-        dock_window = area.parent()
-        if isinstance(dock_window, QDockWindow):
+        parent = area.parent()
+        if isinstance(parent, QDockWindow):
             widget = area.layoutWidget()
             if widget is None or isinstance(widget, QDockContainer):
-                geo = dock_window.geometry()
+                geo = parent.geometry()
                 area.setLayoutWidget(None)
                 if widget is not None:
                     widget.float()
@@ -91,8 +91,13 @@ class QDockWindowFilter(QObject):
                     widget.setAttribute(attr, True)
                     widget.show()
                     widget.setAttribute(attr, old)
-                    widget.manager().stack_under_top(widget)
-                dock_window.destroy()
+                    manager = widget.manager()
+                    # Stack the last widget under the toplevel frame.
+                    if manager is not None:
+                        frames = manager.dock_frames
+                        frames.remove(widget)
+                        frames.insert(-1, widget)
+                parent.destroy()
 
 
 class DockManager(Atom):
@@ -105,8 +110,8 @@ class DockManager(Atom):
     #: The overlay used when hovering over a dock area.
     overlay = Typed(DockOverlay, ())
 
-    #: The window filter installed on floating dock windows.
-    window_filter = Typed(QDockWindowFilter, ())
+    #: The dock area filter installed on floating dock windows.
+    area_filter = Typed(QDockAreaFilter, ())
 
     #: The list of QDockFrame instances maintained by the manager. The
     #: QDockFrame class maintains this list in proper Z-order.
@@ -171,7 +176,7 @@ class DockManager(Atom):
         if container is None:
             return
         if not container.isWindow():
-            self.unplug_container(container)
+            container.unplug()
         container.destroy()
 
     def clear_dock_items(self):
@@ -255,95 +260,6 @@ class DockManager(Atom):
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
-    @staticmethod
-    def unplug_container(container):
-        """ Unplug a dock container from its dock layout.
-
-        This will remove the container from the layout and cleanup any
-        of the residual effects. If this method succeeds, the container
-        will be hidden and its parent will be set to None.
-
-        Parameters
-        ----------
-        container : QDockContainer
-            The container to unplug from the dock layout.
-
-        Returns
-        -------
-        result : bool
-            True if unplugging was successful, False otherwise.
-
-        """
-        dock_area = None
-        parent = container.parent()
-        while parent is not None:
-            if isinstance(parent, QDockArea):
-                dock_area = parent
-                break
-            parent = parent.parent()
-        if dock_area is None:
-            return False
-        return unplug_container(dock_area, container)
-
-    def close_window(self, window):
-        """ Handle a close request for a floating dock window.
-
-        Parameters
-        ----------
-        frame : QDockWindow
-            The dock window which should be closed.
-
-        Parameters
-        ----------
-        result : bool
-            True if the window should close and destroy itself, False
-            otherwise.
-
-        """
-        area = window.dockArea()
-        if area is None:
-            return True
-        res = True
-        dock_items = self.dock_items
-        for container in iter_containers(area):
-            item = container.dockItem()
-            if item.close():
-                self.unplug_container(container)
-                dock_items.discard(item)
-                container.destroy()
-            else:
-                res = False
-        return res
-
-    def raise_frame(self, frame):
-        """ Raise a dock frame to the top of the Z-order.
-
-        Parameters
-        ----------
-        frame : QDockFrame
-            The dock frame to raise to the top of the Z-order.
-
-        """
-        frames = self.dock_frames
-        frames.remove(frame)
-        frames.append(frame)
-
-    def stack_under_top(self, frame):
-        """ Move the given frame to below the top frame in the Z-order.
-
-        Parameters
-        ----------
-        frame : QDockFrame
-            The dock frame to move under the top frame.
-
-        """
-        frames = self.dock_frames
-        top = frames[-1]
-        if top is frame:
-            return
-        frames.remove(frame)
-        frames.insert(-1, frame)
-
     def frame_moved(self, frame, pos):
         """ Handle a dock frame being moved by the user.
 
@@ -411,7 +327,7 @@ class DockManager(Atom):
             plug_frame(win_area, target, frame, guide)
             if isinstance(frame, QDockWindow):
                 frame.destroy()
-            win_area.installEventFilter(self.window_filter)
+            win_area.installEventFilter(self.area_filter)
             window.show()
 
     #--------------------------------------------------------------------------
