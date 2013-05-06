@@ -10,6 +10,7 @@ from PyQt4.QtGui import QApplication, QLayout, QIcon
 
 from atom.api import Typed, Bool
 
+from .q_dock_area import QDockArea
 from .q_dock_frame import QDockFrame
 from .q_dock_frame_layout import QDockFrameLayout
 
@@ -23,9 +24,9 @@ class QDockContainerLayout(QDockFrameLayout):
 
         """
         super(QDockContainerLayout, self).invalidate()
-        dock_widget = self.dockWidget()
-        if dock_widget is not None:
-            self.parentWidget().setSizePolicy(dock_widget.sizePolicy())
+        widget = self.getWidget()
+        if widget is not None:
+            self.parentWidget().setSizePolicy(widget.sizePolicy())
 
 
 class QDockContainer(QDockFrame):
@@ -56,7 +57,6 @@ class QDockContainer(QDockFrame):
         """
         super(QDockContainer, self).__init__(manager, parent)
         layout = QDockContainerLayout()
-        layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
 
@@ -111,7 +111,7 @@ class QDockContainer(QDockFrame):
             The dock item installed in the container, or None.
 
         """
-        return self.layout().dockWidget()
+        return self.layout().getWidget()
 
     def setDockItem(self, dock_item):
         """ Set the dock item for the container.
@@ -122,7 +122,7 @@ class QDockContainer(QDockFrame):
             The dock item to use in the container.
 
         """
-        self.layout().setDockWidget(dock_item)
+        self.layout().setWidget(dock_item)
         name = dock_item.objectName() if dock_item is not None else u''
         self.setObjectName(name)
 
@@ -203,9 +203,10 @@ class QDockContainer(QDockFrame):
         self.clearMask()
 
     def unplug(self):
-        """ A convenience method for unplugging the container.
+        """ Unplug the container from its containing dock area.
 
-        This method dispatches to the owner manager.
+        This method is invoked by the framework when appropriate. It
+        should not need to be called by user code.
 
         Returns
         -------
@@ -213,7 +214,18 @@ class QDockContainer(QDockFrame):
             True if the container was unplugged, False otherwise.
 
         """
-        return self.manager().unplug_container(self)
+        dock_area = None
+        parent = self.parent()
+        while parent is not None:
+            if isinstance(parent, QDockArea):
+                dock_area = parent
+                break
+            parent = parent.parent()
+        if dock_area is None:
+            return False
+        # avoid a circular import
+        from .layout_handling import unplug_container
+        return unplug_container(dock_area, self)
 
     def untab(self, pos):
         """ Unplug the container from a tab control.
@@ -240,7 +252,7 @@ class QDockContainer(QDockFrame):
         state.mouse_title = True
         state.dragging = True
         self.float()
-        self.manager().raise_frame(self)
+        self.raiseFrame()
         title_bar = self.dockItem().titleBarWidget()
         pos = QPoint(title_bar.width() / 2, title_bar.height() / 2)
         margins = self.contentsMargins()
@@ -311,7 +323,7 @@ class QDockContainer(QDockFrame):
         # Make the container a toplevel frame, update it's Z-order,
         # and grab the mouse to continue processing drag events.
         self.float()
-        self.manager().raise_frame(self)
+        self.raiseFrame()
         state.press_pos += QPoint(0, self.contentsMargins().top())
         self.move(global_pos - state.press_pos)
         self.show()
