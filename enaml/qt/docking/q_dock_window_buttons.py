@@ -165,6 +165,13 @@ class QDockWindowButtons(QFrame):
             buttons.active = buttons.Default
             self.update()
 
+    def hideEvent(self, event):
+        """ Handle the hide event for the buttons.
+
+        """
+        buttons = self._buttons
+        buttons.active = buttons.Default
+
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the buttons.
 

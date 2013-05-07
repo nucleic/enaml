@@ -112,6 +112,13 @@ class QDockTitleBarButtons(QFrame):
             buttons.active = buttons.Default
             self.update()
 
+    def hideEvent(self, event):
+        """ Handle the hide event for the buttons.
+
+        """
+        buttons = self._buttons
+        buttons.active = buttons.Default
+
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the buttons.
 
@@ -138,10 +145,8 @@ class QDockTitleBarButtons(QFrame):
             self.hoverButtons(event.pos())
             return
         b = self._buttons
-        if self.rect().contains(event.pos()):
-            active = b.ClosePress if state.close_pressed else b.CloseHover
-        else:
-            active = b.CloseHover if state.close_pressed else b.Default
+        contains = self.rect().contains(event.pos())
+        active = b.ClosePress if contains else b.CloseHover
         if active != b.active:
             b.active = active
             self.update()
