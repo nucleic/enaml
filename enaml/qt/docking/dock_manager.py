@@ -212,6 +212,9 @@ class DockManager(Atom):
         containers = list(self._dock_containers())
         for container in containers:
             container.reset()
+        for frame in self.dock_frames[:]:
+            if isinstance(frame, QDockWindow):
+                frame.destroy()
 
         main_area = None
         floating_areas = []
@@ -234,6 +237,16 @@ class DockManager(Atom):
                     rect = ensure_on_screen(QRect(*f_area.geometry))
                     container.setGeometry(rect)
                     container.show()
+            else:
+                widget = build_layout(child, containers)
+                window = QDockWindow(self, self.dock_area)
+                self.dock_frames.append(window)
+                win_area = window.dockArea()
+                win_area.setLayoutWidget(widget)
+                win_area.installEventFilter(self.area_filter)
+                rect = ensure_on_screen(QRect(*f_area.geometry))
+                window.setGeometry(rect)
+                window.show()
 
     def save_layout(self):
         """ Get the current layout of the dock area.
@@ -251,7 +264,11 @@ class DockManager(Atom):
             areas.append(dockarea(save_layout(widget)))
         for frame in self.dock_frames:
             if frame.isWindow():
-                area = dockarea(save_layout(frame), floating=True)
+                if isinstance(frame, QDockWindow):
+                    widget = frame.dockArea().layoutWidget()
+                    area = dockarea(save_layout(widget), floating=True)
+                else:
+                    area = dockarea(save_layout(frame), floating=True)
                 geo = frame.geometry()
                 area.geometry = (geo.x(), geo.y(), geo.width(), geo.height())
                 areas.append(area)
