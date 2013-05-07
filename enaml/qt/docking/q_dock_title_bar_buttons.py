@@ -77,11 +77,9 @@ class QDockTitleBarButtons(QFrame):
             The position of interest, expressed in local coordinates.
 
         """
+        rect = self.rect()
         buttons = self._buttons
-        if self.rect().contains(pos):
-            active = buttons.CloseHover
-        else:
-            active = buttons.Default
+        active = buttons.CloseHover if rect.contains(pos) else buttons.Default
         if buttons.active != active:
             buttons.active = active
             self.update()
@@ -119,11 +117,9 @@ class QDockTitleBarButtons(QFrame):
 
         """
         if event.button() == Qt.LeftButton:
-            buttons = self._buttons
             state = self._state
-            rect = self.rect()
-            pos = event.pos()
-            if rect.contains(pos):
+            buttons = self._buttons
+            if self.rect().contains(event.pos()):
                 state.close_pressed = True
                 active = buttons.ClosePress
             else:
@@ -141,18 +137,13 @@ class QDockTitleBarButtons(QFrame):
         if not state.close_pressed:
             self.hoverButtons(event.pos())
             return
-        btns = self._buttons
-        rect = self.rect()
-        pos = event.pos()
-        if rect.contains(pos):
-            if state.close_pressed:
-                active = btns.ClosePress
-            else:
-                active = btns.CloseHover
+        b = self._buttons
+        if self.rect().contains(event.pos()):
+            active = b.ClosePress if state.close_pressed else b.CloseHover
         else:
-            active = btns.Default
-        if active != btns.active:
-            btns.active = active
+            active = b.CloseHover if state.close_pressed else b.Default
+        if active != b.active:
+            b.active = active
             self.update()
 
     def mouseReleaseEvent(self, event):
@@ -161,13 +152,11 @@ class QDockTitleBarButtons(QFrame):
         """
         if event.button() == Qt.LeftButton:
             state = self._state
-            rect = self.rect()
-            pos = event.pos()
-            if rect.contains(pos) and state.close_pressed:
+            if self.rect().contains(event.pos()) and state.close_pressed:
                 self.closeButtonClicked.emit()
             state.close_pressed = False
-            pos = self.mapFromGlobal(QCursor.pos())
-            self.hoverButtons(pos)
+            local_cursor = self.mapFromGlobal(QCursor.pos())
+            self.hoverButtons(local_cursor)
 
     def paintEvent(self, event):
         """ Handle the paint event for the buttons.
@@ -176,6 +165,5 @@ class QDockTitleBarButtons(QFrame):
         super(QDockTitleBarButtons, self).paintEvent(event)
         painter = QPainter(self)
         buttons = self._buttons
-        target = buttons.active
-        image = buttons.images[target]
+        image = buttons.images[buttons.active]
         painter.drawImage(self.rect(), image)
