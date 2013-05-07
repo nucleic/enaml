@@ -129,10 +129,8 @@ class QDockWindowButtons(QFrame):
         """
         buttons = self._buttons
         if self.rect().contains(pos):
-            if pos.x() < (self.width() - pos.x()):
-                active = buttons.LeftHover
-            else:
-                active = buttons.RightHover
+            left = pos.x() < (self.width() - pos.x())
+            active = buttons.LeftHover if left else buttons.RightHover
         else:
             active = buttons.Default
         if buttons.active != active:
@@ -172,11 +170,10 @@ class QDockWindowButtons(QFrame):
 
         """
         if event.button() == Qt.LeftButton:
-            buttons = self._buttons
-            state = self._state
-            rect = self.rect()
             pos = event.pos()
-            if rect.contains(pos):
+            state = self._state
+            buttons = self._buttons
+            if self.rect().contains(pos):
                 left = pos.x() < (self.width() - pos.x())
                 state.left_pressed = left
                 state.right_pressed = not left
@@ -197,10 +194,9 @@ class QDockWindowButtons(QFrame):
         if not state.left_pressed and not state.right_pressed:
             self.hoverButtons(event.pos())
             return
-        btns = self._buttons
-        rect = self.rect()
         pos = event.pos()
-        if rect.contains(pos):
+        btns = self._buttons
+        if self.rect().contains(pos):
             left = pos.x() < (self.width() - pos.x())
             if state.left_pressed:
                 active = btns.LeftPress if left else btns.LeftHover
@@ -217,10 +213,9 @@ class QDockWindowButtons(QFrame):
 
         """
         if event.button() == Qt.LeftButton:
-            state = self._state
-            rect = self.rect()
             pos = event.pos()
-            if rect.contains(pos):
+            state = self._state
+            if self.rect().contains(pos):
                 left = pos.x() < (self.width() - pos.x())
                 if left and state.left_pressed:
                     if state.maximized:
