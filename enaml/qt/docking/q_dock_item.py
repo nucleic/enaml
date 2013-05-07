@@ -400,4 +400,3 @@ class QDockItem(QFrame):
             manager = parent.manager()
             if manager is not None:
                 manager.remove_dock_item(self)
-                event.ignore()  # the item has already been hidden

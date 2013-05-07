@@ -93,15 +93,12 @@ class QDockWindow(QDockFrame):
 
         """
         event.ignore()
-        manager = self.manager()
-        if manager is not None:
-            area = self.dockArea()
-            if area is not None:
-                # avoid a circular import
-                from .layout_handling import iter_containers
-                for container in list(iter_containers(area)):
-                    manager.remove_dock_item(container.dockItem())
-        self.destroy()
+        area = self.dockArea()
+        if area is not None:
+            # avoid a circular import
+            from .layout_handling import iter_containers
+            for container in list(iter_containers(area)):
+                container.dockItem().close()
 
     def destroy(self):
         """ Destroy the dock container and release its references.
