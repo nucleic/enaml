@@ -1,0 +1,291 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>FlowItem &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="Form" href="enaml.widgets.form.Form.html" />
+    <link rel="prev" title="FlowArea" href="enaml.widgets.flow_area.FlowArea.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.form.Form.html" title="Form"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.flow_area.FlowArea.html" title="FlowArea"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="flowitem">
+<h1>FlowItem<a class="headerlink" href="#flowitem" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.flow_item.FlowItem">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.flow_item.</tt><tt class="descname">FlowItem</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/flow_item.html#FlowItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.flow_item.FlowItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget" title="enaml.widgets.widget.Widget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.widget.Widget</span></tt></a></p>
+<p>A widget which can be used as an item in a FlowArea.</p>
+<p>A FlowItem is a widget which can be used as a child of a FlowArea
+widget. It can have at most a single child widget which is an
+instance of Container.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.flow_item.FlowItem.preferred_size">
+<tt class="descname">preferred_size</tt><a class="headerlink" href="#enaml.widgets.flow_item.FlowItem.preferred_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The preferred size of this flow item. This size will be used as
+the size of the item in the layout, bounded to the computed min
+and max size. A size of (-1, -1) indicates to use the widget&#8217;s
+size hint as the preferred size.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_item.FlowItem.align">
+<tt class="descname">align</tt><a class="headerlink" href="#enaml.widgets.flow_item.FlowItem.align" title="Permalink to this definition">¶</a></dt>
+<dd><p>The alignment of this item in the direction orthogonal to the
+layout flow.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_item.FlowItem.stretch">
+<tt class="descname">stretch</tt><a class="headerlink" href="#enaml.widgets.flow_item.FlowItem.stretch" title="Permalink to this definition">¶</a></dt>
+<dd><p>The stretch factor for this item in the flow direction, relative
+to other items in the same line. The default is zero which means
+that the item will not expand in the direction orthogonal to the
+layout flow.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_item.FlowItem.ortho_stretch">
+<tt class="descname">ortho_stretch</tt><a class="headerlink" href="#enaml.widgets.flow_item.FlowItem.ortho_stretch" title="Permalink to this definition">¶</a></dt>
+<dd><p>The stretch factor for this item in the orthogonal direction
+relative to other items in the layout. The default is zero
+which means that the item will not expand in the direction
+orthogonal to the layout flow.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_item.FlowItem.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.flow_item.FlowItem.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyFlowItem object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.flow_item.FlowItem.flow_widget">
+<tt class="descname">flow_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/flow_item.html#FlowItem.flow_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.flow_item.FlowItem.flow_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the flow widget defined on this flow item.</p>
+<p>The last Container defined on the item is the flow widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-97ca8ecd3ab9283202a1b947267cbf075ed1a214.png" alt="Inheritance diagram of enaml.qt.qt_flow_item.QtFlowItem" usemap="#inheritance4fcabb8d5f" class="inheritance"/>
+<map id="inheritance4fcabb8d5f" name="inheritance4fcabb8d5f">
+<area shape="rect" id="node11" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="553,4,622,28"/>
+<area shape="rect" id="node10" href="#enaml.qt.qt_flow_item.QtFlowItem" title="QtFlowItem" alt="" coords="682,28,763,51"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_flow_item.</tt><tt class="descname">QtFlowItem</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="enaml.qt.qt_widget.QtWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_widget.QtWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.flow_item.ProxyFlowItem</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyFlowItem.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying QFlowItem widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iitialize the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout for the underyling widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.flow_widget">
+<tt class="descname">flow_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.flow_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.flow_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the flow widget child for this widget.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (QWidget or None) &#8211; The flow widget defined for this widget, or None if one is not defined.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtFlowItem.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtFlowItem.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.set_preferred_size">
+<tt class="descname">set_preferred_size</tt><big>(</big><em>size</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.set_preferred_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.set_preferred_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the preferred size of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.set_align">
+<tt class="descname">set_align</tt><big>(</big><em>align</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.set_align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.set_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the alignment of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.set_stretch">
+<tt class="descname">set_stretch</tt><big>(</big><em>stretch</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.set_stretch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.set_stretch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the stretch factor of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_item.QtFlowItem.set_ortho_stretch">
+<tt class="descname">set_ortho_stretch</tt><big>(</big><em>stretch</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_item.html#QtFlowItem.set_ortho_stretch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_item.QtFlowItem.set_ortho_stretch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the ortho stretch factor of the underling widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">FlowItem</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.flow_area.FlowArea.html"
+                        title="previous chapter">FlowArea</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.form.Form.html"
+                        title="next chapter">Form</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.flow_item.FlowItem.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.form.Form.html" title="Form"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.flow_area.FlowArea.html" title="FlowArea"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

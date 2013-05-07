@@ -1,0 +1,291 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>FlowArea &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="FlowItem" href="enaml.widgets.flow_item.FlowItem.html" />
+    <link rel="prev" title="DockPane" href="enaml.widgets.dock_pane.DockPane.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.flow_item.FlowItem.html" title="FlowItem"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.dock_pane.DockPane.html" title="DockPane"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="flowarea">
+<h1>FlowArea<a class="headerlink" href="#flowarea" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.flow_area.FlowArea">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.flow_area.</tt><tt class="descname">FlowArea</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/flow_area.html#FlowArea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.widgets.constraints_widget.ConstraintsWidget" title="enaml.widgets.constraints_widget.ConstraintsWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.constraints_widget.ConstraintsWidget</span></tt></a></p>
+<p>A widget which lays out its children in flowing manner, wrapping
+around at the end of the available space.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.flow_area.FlowArea.direction">
+<tt class="descname">direction</tt><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea.direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>The flow direction of the layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_area.FlowArea.align">
+<tt class="descname">align</tt><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea.align" title="Permalink to this definition">¶</a></dt>
+<dd><p>The alignment of a line of items within the layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_area.FlowArea.horizontal_spacing">
+<tt class="descname">horizontal_spacing</tt><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea.horizontal_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>The amount of horizontal space to place between items.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_area.FlowArea.vertical_spacing">
+<tt class="descname">vertical_spacing</tt><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea.vertical_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>The amount of vertical space to place between items.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_area.FlowArea.margins">
+<tt class="descname">margins</tt><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea.margins" title="Permalink to this definition">¶</a></dt>
+<dd><p>The margins to use around the outside of the flow area.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_area.FlowArea.hug_width">
+<tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea.hug_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>A FlowArea expands freely in width and height by default.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.flow_area.FlowArea.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyFlowArea object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.flow_area.FlowArea.flow_items">
+<tt class="descname">flow_items</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/flow_area.html#FlowArea.flow_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.flow_area.FlowArea.flow_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the flow item children defined on this area.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-af406e6043f741e90f4f7d4062e3a20c044de4bf.png" alt="Inheritance diagram of enaml.qt.qt_flow_area.QtFlowArea" usemap="#inheritance6eade9f395" class="inheritance"/>
+<map id="inheritance6eade9f395" name="inheritance6eade9f395">
+<area shape="rect" id="node7" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="565,39,665,57"/>
+<area shape="rect" id="node8" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="447,39,501,57"/>
+<area shape="rect" id="node15" href="#enaml.qt.qt_flow_area.QtFlowArea" title="QtFlowArea" alt="" coords="700,22,764,40"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_flow_area.</tt><tt class="descname">QtFlowArea</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="enaml.qt.qt_constraints_widget.QtConstraintsWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_constraints_widget.QtConstraintsWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.flow_area.ProxyFlowArea</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyFlowArea.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout for the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtMdiArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a QtMdiArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.set_direction">
+<tt class="descname">set_direction</tt><big>(</big><em>direction</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.set_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.set_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the direction for the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.set_align">
+<tt class="descname">set_align</tt><big>(</big><em>align</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.set_align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.set_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the alignment for the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.set_horizontal_spacing">
+<tt class="descname">set_horizontal_spacing</tt><big>(</big><em>spacing</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.set_horizontal_spacing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.set_horizontal_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the horizontal spacing of the underyling control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.set_vertical_spacing">
+<tt class="descname">set_vertical_spacing</tt><big>(</big><em>spacing</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.set_vertical_spacing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.set_vertical_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the vertical spacing of the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.set_margins">
+<tt class="descname">set_margins</tt><big>(</big><em>margins</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.set_margins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.set_margins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the margins of the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_flow_area.QtFlowArea.replace_constraints">
+<tt class="descname">replace_constraints</tt><big>(</big><em>old_cns</em>, <em>new_cns</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_flow_area.html#QtFlowArea.replace_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_flow_area.QtFlowArea.replace_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reimplemented QtConstraintsWidget layout method.</p>
+<p>Constraints layout may not cross the boundary of a FlowArea,
+so this method is no-op which stops the layout propagation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">FlowArea</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.dock_pane.DockPane.html"
+                        title="previous chapter">DockPane</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.flow_item.FlowItem.html"
+                        title="next chapter">FlowItem</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.flow_area.FlowArea.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.flow_item.FlowItem.html" title="FlowItem"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.dock_pane.DockPane.html" title="DockPane"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

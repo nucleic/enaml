@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Label &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="Menu" href="enaml.widgets.menu.Menu.html" />
+    <link rel="prev" title="ImageView" href="enaml.widgets.image_view.ImageView.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.menu.Menu.html" title="Menu"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.image_view.ImageView.html" title="ImageView"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="label">
+<h1>Label<a class="headerlink" href="#label" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.label.Label">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.label.</tt><tt class="descname">Label</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/label.html#Label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.label.Label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.widgets.control.Control" title="enaml.widgets.control.Control"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.control.Control</span></tt></a></p>
+<p>A simple control for displaying read-only text.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.label.Label.text">
+<tt class="descname">text</tt><a class="headerlink" href="#enaml.widgets.label.Label.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unicode text for the label.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.label.Label.align">
+<tt class="descname">align</tt><a class="headerlink" href="#enaml.widgets.label.Label.align" title="Permalink to this definition">¶</a></dt>
+<dd><p>The horizontal alignment of the text in the widget area.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.label.Label.vertical_align">
+<tt class="descname">vertical_align</tt><a class="headerlink" href="#enaml.widgets.label.Label.vertical_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>The vertical alignment of the text in the widget area.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.label.Label.hug_width">
+<tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.label.Label.hug_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Labels hug their width weakly by default.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.label.Label.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.label.Label.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyLabel object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-515e641509c7e4f8aba2464a933d7aa2e14efefc.png" alt="Inheritance diagram of enaml.qt.qt_label.QtLabel" usemap="#inheritance252dfe23f7" class="inheritance"/>
+<map id="inheritance252dfe23f7" name="inheritance252dfe23f7">
+<area shape="rect" id="node7" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="QtControl" alt="" coords="635,35,684,52"/>
+<area shape="rect" id="node8" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="511,35,602,52"/>
+<area shape="rect" id="node11" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="405,35,453,52"/>
+<area shape="rect" id="node21" href="#enaml.qt.qt_label.QtLabel" title="QtLabel" alt="" coords="718,20,765,36"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_label.QtLabel">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_label.</tt><tt class="descname">QtLabel</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_label.html#QtLabel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_label.QtLabel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="enaml.qt.qt_control.QtControl"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_control.QtControl</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.label.ProxyLabel</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyLabel.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_label.QtLabel.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_label.QtLabel.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_label.QtLabel.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_label.html#QtLabel.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_label.QtLabel.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying label widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_label.QtLabel.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_label.html#QtLabel.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_label.QtLabel.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_label.QtLabel.set_text">
+<tt class="descname">set_text</tt><big>(</big><em>text</em>, <em>sh_guard=True</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_label.html#QtLabel.set_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_label.QtLabel.set_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the text in the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_label.QtLabel.set_align">
+<tt class="descname">set_align</tt><big>(</big><em>align</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_label.html#QtLabel.set_align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_label.QtLabel.set_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the alignment of the text in the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_label.QtLabel.set_vertical_align">
+<tt class="descname">set_vertical_align</tt><big>(</big><em>align</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_label.html#QtLabel.set_vertical_align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_label.QtLabel.set_vertical_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the vertical alignment of the text in the widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-f399271c97b230023a2c277d0bb2e10818dbc7b9.png" alt="Inheritance diagram of enaml.wx.wx_label.WxLabel" usemap="#inheritance689e94ec99" class="inheritance"/>
+<map id="inheritance689e94ec99" name="inheritance689e94ec99">
+<area shape="rect" id="node1" href="enaml.widgets.control.Control.html#enaml.wx.wx_control.WxControl" title="WxControl" alt="" coords="634,3,687,19"/>
+<area shape="rect" id="node25" href="#enaml.wx.wx_label.WxLabel" title="WxLabel" alt="" coords="718,19,765,36"/>
+<area shape="rect" id="node2" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.wx.wx_constraints_widget.WxConstraintsWidget" title="WxConstraintsWidget" alt="" coords="510,3,603,19"/>
+<area shape="rect" id="node6" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="WxWidget" alt="" coords="402,3,454,19"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_label.WxLabel">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_label.</tt><tt class="descname">WxLabel</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_label.html#WxLabel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_label.WxLabel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.wx.wx_control.WxControl" title="enaml.wx.wx_control.WxControl"><tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_control.WxControl</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.label.ProxyLabel</span></tt></p>
+<p>A Wx implementation of an Enaml ProxyLabel.</p>
+<dl class="attribute">
+<dt id="enaml.wx.wx_label.WxLabel.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.wx.wx_label.WxLabel.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_label.WxLabel.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_label.html#WxLabel.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_label.WxLabel.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying label widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_label.WxLabel.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_label.html#WxLabel.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_label.WxLabel.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_label.WxLabel.set_text">
+<tt class="descname">set_text</tt><big>(</big><em>text</em>, <em>sh_guard=True</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_label.html#WxLabel.set_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_label.WxLabel.set_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the text in the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_label.WxLabel.set_align">
+<tt class="descname">set_align</tt><big>(</big><em>align</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_label.html#WxLabel.set_align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_label.WxLabel.set_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the alignment of the text in the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_label.WxLabel.set_vertical_align">
+<tt class="descname">set_vertical_align</tt><big>(</big><em>align</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_label.html#WxLabel.set_vertical_align"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_label.WxLabel.set_vertical_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the vertical alignment of the text in the widget.</p>
+<p>This is not supported on Wx.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Label</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.image_view.ImageView.html"
+                        title="previous chapter">ImageView</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.menu.Menu.html"
+                        title="next chapter">Menu</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.label.Label.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.menu.Menu.html" title="Menu"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.image_view.ImageView.html" title="ImageView"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_scroll_area &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_scroll_area</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.scroll_area</span> <span class="kn">import</span> <span class="n">ProxyScrollArea</span>
+
+<span class="kn">from</span> <span class="nn">.wx_constraints_widget</span> <span class="kn">import</span> <span class="n">WxConstraintsWidget</span>
+<span class="kn">from</span> <span class="nn">.wx_container</span> <span class="kn">import</span> <span class="n">WxContainer</span>
+<span class="kn">from</span> <span class="nn">.wx_single_widget_sizer</span> <span class="kn">import</span> <span class="n">wxSingleWidgetSizer</span>
+
+
+<span class="c"># The &#39;always_on&#39; scroll policy is not supported on wx, because it</span>
+<span class="c"># requires setting a window style flag which does not dynamically</span>
+<span class="c"># toggle in a reliable fashion. Since we only support &#39;off&#39; or &#39;auto&#39;</span>
+<span class="c"># it&#39;s easiest to use this mapping to convert straight from policy</span>
+<span class="c"># values into a respective scroll rate. A rate of Zero causes wx not</span>
+<span class="c"># to show the scroll bar. A positive rate indicates to scroll that many</span>
+<span class="c"># pixels per event. We set the rate to 1 to have smooth scrolling. Wx</span>
+<span class="c"># doesn&#39;t make a distinction between scroll events caused by the mouse</span>
+<span class="c"># or scrollbar and those caused by clicking the scroll buttons (ala qt),</span>
+<span class="c"># and thus this rate applies the same to all of those events. Since we</span>
+<span class="c"># expect that clicking on a scroll button happens much more infrequently</span>
+<span class="c"># than scrolling by dragging the scroll bar, we opt for a lower rate</span>
+<span class="c"># in order to get smooth drag scrolling and sacrifice some usability</span>
+<span class="c"># on the scroll buttons.</span>
+<span class="n">SCROLLBAR_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;as_needed&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s">&#39;always_off&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s">&#39;always_on&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">wxScrollAreaSizer</span><span class="p">(</span><span class="n">wxSingleWidgetSizer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A wxSingleWidgetSizer subclass which makes adjusts the min</span>
+<span class="sd">    size to account for a 2 pixel error in Wx.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">CalcMin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the minimum size for the area owned by the sizer.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wxSize</span>
+<span class="sd">            The wx size representing the minimum area required by the</span>
+<span class="sd">            sizer.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The effective min size computation is correct, but the wx</span>
+        <span class="c"># scrolled window interprets it with an error of 2px. That</span>
+        <span class="c"># is we need to make wx think that the min size is 2px smaller</span>
+        <span class="c"># than it actually is so that scroll bars should and hide at</span>
+        <span class="c"># the appropriate sizes.</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">wxScrollAreaSizer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">CalcMin</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">IsFullySpecified</span><span class="p">():</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">width</span> <span class="o">-=</span> <span class="mi">2</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">height</span> <span class="o">-=</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="k">class</span> <span class="nc">wxScrollArea</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">ScrolledWindow</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom wx.ScrolledWindow which is suits Enaml&#39;s use case.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The internal best size. The same as QAbstractScrollArea.</span>
+    <span class="n">_best_size</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">192</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxScrollArea.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments needed to initialize</span>
+<span class="sd">            a wxScrolledWindow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxScrollArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scroll_widget</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">wxScrollAreaSizer</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">GetBestSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden parent class method which returns a sensible</span>
+<span class="sd">        best size.</span>
+
+<span class="sd">        The default wx implementation returns a best size of (16, 16)</span>
+<span class="sd">        on Windows; far too small to be useful. So, we just adopt the</span>
+<span class="sd">        size hint of (256, 192) used in Qt&#39;s QAbstractScrollArea.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_size</span>
+
+    <span class="k">def</span> <span class="nf">GetScrollWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the scroll widget for this scroll area.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        results : wxWindow</span>
+<span class="sd">            The wxWindow being scrolled by this scroll area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scroll_widget</span>
+
+    <span class="k">def</span> <span class="nf">SetScrollWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the scroll widget for this scroll area.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        widget : wxWindow</span>
+<span class="sd">            The wxWindow which should be scrolled by this area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scroll_widget</span> <span class="o">=</span> <span class="n">widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetSizer</span><span class="p">()</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WxScrollArea"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea">[docs]</a><span class="k">class</span> <span class="nc">WxScrollArea</span><span class="p">(</span><span class="n">WxConstraintsWidget</span><span class="p">,</span> <span class="n">ProxyScrollArea</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ScrollArea.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxScrollArea</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WxScrollArea.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying wxScrolledWindow widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">HSCROLL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">VSCROLL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">BORDER_SIMPLE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxScrollArea</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">(),</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxScrollArea.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxScrollArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_horizontal_policy</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">horizontal_policy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_vertical_policy</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">vertical_policy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_widget_resizable</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">widget_resizable</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxScrollArea.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the layout initialization for the scroll area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxScrollArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetScrollWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scroll_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxScrollArea.scroll_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.scroll_widget">[docs]</a>    <span class="k">def</span> <span class="nf">scroll_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find and return the scroll widget child for this widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">scroll_widget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">w</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span> <span class="ow">or</span> <span class="bp">None</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxScrollArea.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a WxScrollArea.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxScrollArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetScrollWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scroll_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxScrollArea.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a WxScrollArea.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxScrollArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetScrollWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scroll_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Overrides</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxScrollArea.replace_constraints"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.replace_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">replace_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_cns</span><span class="p">,</span> <span class="n">new_cns</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented WxConstraintsWidget layout method.</span>
+
+<span class="sd">        Constraints layout may not cross the boundary of a ScrollArea,</span>
+<span class="sd">        so this method is no-op which stops the layout propagation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyScrollArea API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxScrollArea.set_horizontal_policy"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.set_horizontal_policy">[docs]</a>    <span class="k">def</span> <span class="nf">set_horizontal_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the horizontal scrollbar policy of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">horiz</span> <span class="o">=</span> <span class="n">SCROLLBAR_MAP</span><span class="p">[</span><span class="n">policy</span><span class="p">]</span>
+        <span class="n">vert</span> <span class="o">=</span> <span class="n">SCROLLBAR_MAP</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">vertical_policy</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetScrollRate</span><span class="p">(</span><span class="n">horiz</span><span class="p">,</span> <span class="n">vert</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxScrollArea.set_vertical_policy"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.set_vertical_policy">[docs]</a>    <span class="k">def</span> <span class="nf">set_vertical_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the vertical scrollbar policy of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">horiz</span> <span class="o">=</span> <span class="n">SCROLLBAR_MAP</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">horizontal_policy</span><span class="p">]</span>
+        <span class="n">vert</span> <span class="o">=</span> <span class="n">SCROLLBAR_MAP</span><span class="p">[</span><span class="n">policy</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetScrollRate</span><span class="p">(</span><span class="n">horiz</span><span class="p">,</span> <span class="n">vert</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxScrollArea.set_widget_resizable"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.html#enaml.wx.wx_scroll_area.WxScrollArea.set_widget_resizable">[docs]</a>    <span class="k">def</span> <span class="nf">set_widget_resizable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resizable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not the scroll widget is resizable.</span>
+
+<span class="sd">        This is not supported on Wx.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+MdiWindow
+==================================
+
+.. currentmodule:: enaml.widgets.mdi_window
+
+.. autoclass:: MdiWindow
+
+
+Backends
+--------
+
+Qt
+^^
+
+.. inheritance-diagram::
+    enaml.qt.qt_mdi_window.QtMdiWindow
+    :parts: 1
+
+.. autoclass:: enaml.qt.qt_mdi_window.QtMdiWindow
+
+
+Wx
+^^
+
+.. inheritance-diagram::
+    enaml.wx.wx_mdi_window.WxMdiWindow
+    :parts: 1
+
+.. autoclass:: enaml.wx.wx_mdi_window.WxMdiWindow

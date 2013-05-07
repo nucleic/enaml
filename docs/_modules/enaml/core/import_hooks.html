@@ -1,0 +1,532 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.core.import_hooks &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.core.import_hooks</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">namedtuple</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+<span class="kn">import</span> <span class="nn">marshal</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">types</span>
+
+<span class="kn">from</span> <span class="nn">.enaml_compiler</span> <span class="kn">import</span> <span class="n">EnamlCompiler</span><span class="p">,</span> <span class="n">COMPILER_VERSION</span>
+<span class="kn">from</span> <span class="nn">.parser</span> <span class="kn">import</span> <span class="n">parse</span>
+
+
+<span class="c"># The magic number as symbols for the current Python interpreter. These</span>
+<span class="c"># define the naming scheme used when create cached files and directories.</span>
+<span class="n">MAGIC</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">get_magic</span><span class="p">()</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">MAGIC_TAG</span> <span class="o">=</span> <span class="s">&#39;enaml-py</span><span class="si">%s%s</span><span class="s">-cv</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">minor</span><span class="p">,</span> <span class="n">COMPILER_VERSION</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+    <span class="c"># Python 2.6 compatibility</span>
+    <span class="n">MAGIC_TAG</span> <span class="o">=</span> <span class="s">&#39;enaml-py</span><span class="si">%s%s</span><span class="s">-cv</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">COMPILER_VERSION</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="n">CACHEDIR</span> <span class="o">=</span> <span class="s">&#39;__enamlcache__&#39;</span>
+
+
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Import Helpers</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="n">EnamlFileInfo</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;EnamlFileInfo&#39;</span><span class="p">,</span> <span class="s">&#39;src_path, cache_path, cache_dir&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="make_file_info"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.make_file_info">[docs]</a><span class="k">def</span> <span class="nf">make_file_info</span><span class="p">(</span><span class="n">src_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create an EnamlFileInfo object for the given src_path.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    src_path : string</span>
+<span class="sd">        The full path to the .enaml file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : FileInfo</span>
+<span class="sd">        A properly populated EnamlFileInfo object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">root</span><span class="p">,</span> <span class="n">tail</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
+    <span class="n">fnroot</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">tail</span><span class="p">)</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">CACHEDIR</span><span class="p">)</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">fnroot</span><span class="p">,</span> <span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">MAGIC_TAG</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">extsep</span><span class="p">,</span> <span class="s">&#39;enamlc&#39;</span><span class="p">))</span>
+    <span class="n">cache_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">EnamlFileInfo</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">cache_path</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="abstractclassmethod"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.abstractclassmethod">[docs]</a><span class="k">class</span> <span class="nc">abstractclassmethod</span><span class="p">(</span><span class="nb">classmethod</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A backport of the Python 3&#39;s abc.abstractclassmethod.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__isabstractmethod__</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="n">func</span><span class="o">.</span><span class="n">__isabstractmethod__</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">abstractclassmethod</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Abstract Enaml Importer</span>
+<span class="c">#------------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="AbstractEnamlImporter"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.AbstractEnamlImporter">[docs]</a><span class="k">class</span> <span class="nc">AbstractEnamlImporter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An abstract base class which defines the api required to</span>
+<span class="sd">    implement an Enaml importer.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
+
+    <span class="c"># Count the number of times an importer has been installed.</span>
+    <span class="c"># Only uninstall it when the count hits 0 again. This permits</span>
+    <span class="c"># proper nesting of import contexts.</span>
+    <span class="n">_install_count</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="AbstractEnamlImporter.install"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.AbstractEnamlImporter.install">[docs]</a>    <span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Appends this importer into sys.meta_path.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_install_count</span><span class="p">[</span><span class="n">cls</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">meta_path</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">meta_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="AbstractEnamlImporter.uninstall"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.AbstractEnamlImporter.uninstall">[docs]</a>    <span class="k">def</span> <span class="nf">uninstall</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Removes this importer from sys.meta_path.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_install_count</span><span class="p">[</span><span class="n">cls</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">_install_count</span><span class="p">[</span><span class="n">cls</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">meta_path</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">meta_path</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Python Import API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="AbstractEnamlImporter.find_module"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.AbstractEnamlImporter.find_module">[docs]</a>    <span class="k">def</span> <span class="nf">find_module</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">fullname</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Finds the given Enaml module and returns an importer, or</span>
+<span class="sd">        None if the module is not found.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loader</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">locate_module</span><span class="p">(</span><span class="n">fullname</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">loader</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">AbstractEnamlImporter</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Enaml imports received invalid loader object </span><span class="si">%s</span><span class="s">&#39;</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="n">loader</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">loader</span>
+</div>
+<div class="viewcode-block" id="AbstractEnamlImporter.load_module"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.AbstractEnamlImporter.load_module">[docs]</a>    <span class="k">def</span> <span class="nf">load_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fullname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Loads and returns the Python module for the given enaml path.</span>
+<span class="sd">        If a module already exisist in sys.path, the existing module is</span>
+<span class="sd">        reused, otherwise a new one is created.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">code</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_code</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">fullname</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">mod</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">fullname</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mod</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">fullname</span><span class="p">]</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">(</span><span class="n">fullname</span><span class="p">)</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">__loader__</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">__file__</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="c"># Even though the import hook is already installed, this is a</span>
+        <span class="c"># safety net to avoid potentially hard to find bugs if code has</span>
+        <span class="c"># manually installed and removed a hook. The contract here is</span>
+        <span class="c"># that the import hooks are always installed when executing the</span>
+        <span class="c"># module code of an Enaml file.</span>
+        <span class="k">with</span> <span class="n">imports</span><span class="p">():</span>
+            <span class="k">exec</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">mod</span><span class="o">.</span><span class="n">__dict__</span>
+        <span class="k">return</span> <span class="n">mod</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Abstract API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@abstractclassmethod</span>
+<div class="viewcode-block" id="AbstractEnamlImporter.locate_module"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.AbstractEnamlImporter.locate_module">[docs]</a>    <span class="k">def</span> <span class="nf">locate_module</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">fullname</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Searches for the given Enaml module and returns an instance</span>
+<span class="sd">        of AbstractEnamlImporter on success.</span>
+
+<span class="sd">        Paramters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        fullname : string</span>
+<span class="sd">            The fully qualified name of the module.</span>
+
+<span class="sd">        path : string or None</span>
+<span class="sd">            The subpackage __path__ for submodules and subpackages</span>
+<span class="sd">            or None if a top-level module.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : Instance(AbstractEnamlImporter) or None</span>
+<span class="sd">            If the Enaml module is located an instance of the importer</span>
+<span class="sd">            that will perform the rest of the operations is returned.</span>
+<span class="sd">            Otherwise, returns None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractEnamlImporter.get_code"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.AbstractEnamlImporter.get_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Loads and returns the code object for the Enaml module and</span>
+<span class="sd">        the full path to the module for use as the __file__ attribute</span>
+<span class="sd">        of the module.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : (code, path)</span>
+<span class="sd">            The Python code object for the .enaml module, and the full</span>
+<span class="sd">            path to the module as a string.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Default Enaml Importer</span>
+<span class="c">#------------------------------------------------------------------------------</span></div></div>
+<div class="viewcode-block" id="EnamlImporter"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.EnamlImporter">[docs]</a><span class="k">class</span> <span class="nc">EnamlImporter</span><span class="p">(</span><span class="n">AbstractEnamlImporter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The standard Enaml importer which can import Enaml modules from</span>
+<span class="sd">    standard locations on the python path and compile them appropriately</span>
+<span class="sd">    to .enamlc files.</span>
+
+<span class="sd">    This importer adopts the Python 3 conventions and scheme for creating</span>
+<span class="sd">    the cached files and setting the __file__ attribute on the module.</span>
+<span class="sd">    See this discussion thread for more info:</span>
+<span class="sd">    http://www.mail-archive.com/python-dev@python.org/msg45203.html</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="EnamlImporter.locate_module"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.EnamlImporter.locate_module">[docs]</a>    <span class="k">def</span> <span class="nf">locate_module</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">fullname</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Searches for the given Enaml module and returns an instance</span>
+<span class="sd">        of this class on success.</span>
+
+<span class="sd">        Paramters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        fullname : string</span>
+<span class="sd">            The fully qualified name of the module.</span>
+
+<span class="sd">        path : list or None</span>
+<span class="sd">            The subpackage __path__ for submodules and subpackages</span>
+<span class="sd">            or None if a top-level module.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        results : Instance(AbstractEnamlImporter) or None</span>
+<span class="sd">            If the Enaml module is located an instance of the importer</span>
+<span class="sd">            that will perform the rest of the operations is returned.</span>
+<span class="sd">            Otherwise, returns None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># We&#39;re looking inside a package and &#39;path&#39; the package path</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">modname</span> <span class="o">=</span> <span class="n">fullname</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">leaf</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">modname</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">extsep</span><span class="p">,</span> <span class="s">&#39;enaml&#39;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">stem</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+                <span class="n">enaml_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">stem</span><span class="p">,</span> <span class="n">leaf</span><span class="p">)</span>
+                <span class="n">file_info</span> <span class="o">=</span> <span class="n">make_file_info</span><span class="p">(</span><span class="n">enaml_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">cache_path</span><span class="p">)):</span>
+                    <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">file_info</span><span class="p">)</span>
+
+        <span class="c"># We&#39;re trying a load a package</span>
+        <span class="k">elif</span> <span class="s">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">fullname</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c"># We&#39;re doing a direct import</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">leaf</span> <span class="o">=</span> <span class="n">fullname</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">extsep</span> <span class="o">+</span> <span class="s">&#39;enaml&#39;</span>
+            <span class="k">for</span> <span class="n">stem</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+                <span class="n">enaml_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">stem</span><span class="p">,</span> <span class="n">leaf</span><span class="p">)</span>
+                <span class="n">file_info</span> <span class="o">=</span> <span class="n">make_file_info</span><span class="p">(</span><span class="n">enaml_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">cache_path</span><span class="p">)):</span>
+                    <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">file_info</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="EnamlImporter.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.EnamlImporter.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_info</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize an importer object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_info : EnamlFileInfo</span>
+<span class="sd">            An instance of EnamlFileInfo.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_info</span> <span class="o">=</span> <span class="n">file_info</span>
+</div>
+    <span class="k">def</span> <span class="nf">_load_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_info</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Loads and returns the code object for the given file info.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_info : EnamlFileInfo</span>
+<span class="sd">            The file info object for the file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : types.CodeType</span>
+<span class="sd">            The code object for the file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">cache_path</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">cache_file</span><span class="p">:</span>
+            <span class="n">cache_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="n">marshal</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">code</span>
+
+    <span class="k">def</span> <span class="nf">_write_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">file_info</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Write the cached file for then given info, creating the</span>
+<span class="sd">        cache directory if needed. This call will suppress any</span>
+<span class="sd">        IOError or OSError exceptions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        code : types.CodeType</span>
+<span class="sd">            The code object to write to the cache.</span>
+
+<span class="sd">        ts : int</span>
+<span class="sd">            The integer timestamp for the file.</span>
+
+<span class="sd">        file_info : EnamlFileInfo</span>
+<span class="sd">            The file info object for the file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">cache_path</span><span class="p">,</span> <span class="s">&#39;w+b&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">cache_file</span><span class="p">:</span>
+                <span class="n">cache_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">MAGIC</span><span class="p">)</span>
+                <span class="n">cache_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s">&#39;i&#39;</span><span class="p">,</span> <span class="n">ts</span><span class="p">))</span>
+                <span class="n">marshal</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">cache_file</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">):</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_get_magic_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_info</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Loads and returns the magic info for the given path.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_info : EnamlFileInfo</span>
+<span class="sd">            The file info object for the file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : (magic, timestamp)</span>
+<span class="sd">            The magic string and integer timestamp for the file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">cache_path</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">cache_file</span><span class="p">:</span>
+            <span class="n">magic</span> <span class="o">=</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&#39;i&#39;</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">magic</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EnamlImporter.get_code"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.EnamlImporter.get_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Loads and returns the code object for the Enaml module and</span>
+<span class="sd">        the full path to the module for use as the __file__ attribute</span>
+<span class="sd">        of the module.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : (code, path)</span>
+<span class="sd">            The Python code object for the .enaml module, and the full</span>
+<span class="sd">            path to the module as a string.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># If the .enaml file does not exists, just use the .enamlc file.</span>
+        <span class="c"># We can presume that the latter exists because it was already</span>
+        <span class="c"># checked by the loader. Should the situation ever arise that</span>
+        <span class="c"># it was deleted between then and now, an IOError is more</span>
+        <span class="c"># informative than an ImportError.</span>
+        <span class="n">file_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_info</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">):</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_cache</span><span class="p">(</span><span class="n">file_info</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">)</span>
+
+        <span class="c"># Use the cached file if it exists and is current</span>
+        <span class="n">src_mod_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">cache_path</span><span class="p">):</span>
+            <span class="n">magic</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_magic_info</span><span class="p">(</span><span class="n">file_info</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">magic</span> <span class="o">==</span> <span class="n">MAGIC</span> <span class="ow">and</span> <span class="n">src_mod_time</span> <span class="o">&lt;=</span> <span class="n">ts</span><span class="p">:</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_cache</span><span class="p">(</span><span class="n">file_info</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">)</span>
+
+        <span class="c"># Otherwise, compile from source and attempt to cache</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">,</span> <span class="s">&#39;rU&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">src_file</span><span class="p">:</span>
+            <span class="n">src</span> <span class="o">=</span> <span class="n">src_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">ast</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">EnamlCompiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">ast</span><span class="p">,</span> <span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_cache</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">src_mod_time</span><span class="p">,</span> <span class="n">file_info</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">file_info</span><span class="o">.</span><span class="n">src_path</span><span class="p">)</span>
+
+
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Enaml Imports Context</span>
+<span class="c">#------------------------------------------------------------------------------</span></div></div>
+<div class="viewcode-block" id="imports"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.imports">[docs]</a><span class="k">class</span> <span class="nc">imports</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A context manager that hooks/unhooks the enaml meta path</span>
+<span class="sd">    importer for the duration of the block. The helps user avoid</span>
+<span class="sd">    unintended consequences of a having a meta path importer slow</span>
+<span class="sd">    down all of their other imports.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The framework-wide importers in use. We always have the default</span>
+    <span class="c">#: importer available, unless it is explicitly removed.</span>
+    <span class="n">__importers</span> <span class="o">=</span> <span class="p">[</span><span class="n">EnamlImporter</span><span class="p">]</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="imports.get_importers"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.imports.get_importers">[docs]</a>    <span class="k">def</span> <span class="nf">get_importers</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns a tuple of currently active importers in use for the</span>
+<span class="sd">        framework.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__importers</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="imports.add_importer"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.imports.add_importer">[docs]</a>    <span class="k">def</span> <span class="nf">add_importer</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">importer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add an importer to the list of importers for use with the</span>
+<span class="sd">        framework. It must be a subclass of AbstractEnamlImporter.</span>
+<span class="sd">        The most recently appended importer is used first. If the</span>
+<span class="sd">        importer has already been added, this is a no-op. To move</span>
+<span class="sd">        an importer up in precedence, remove it and add it again.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">importer</span><span class="p">,</span> <span class="n">AbstractEnamlImporter</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;An Enaml importer must be a subclass of &#39;</span>
+                   <span class="s">&#39;AbstractEnamlImporter. Got </span><span class="si">%s</span><span class="s"> instead.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="n">importer</span><span class="p">)</span>
+        <span class="n">importers</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__importers</span>
+        <span class="k">if</span> <span class="n">importer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">importers</span><span class="p">:</span>
+            <span class="n">importers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">importer</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="imports.remove_importer"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.imports.remove_importer">[docs]</a>    <span class="k">def</span> <span class="nf">remove_importer</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">importer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Removes the importer from the list of active importers.</span>
+<span class="sd">        If the importer is not in the list, this is a no-op.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">importers</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__importers</span>
+        <span class="k">if</span> <span class="n">importer</span> <span class="ow">in</span> <span class="n">importers</span><span class="p">:</span>
+            <span class="n">importers</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">importer</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="imports.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.imports.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initializes an Enaml import context.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">importers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_importers</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="imports.__enter__"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.imports.__enter__">[docs]</a>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Installs the current importer upon entering the context.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Install the importers reversed so that the newest ones</span>
+        <span class="c"># get first crack at the import on sys.meta_path.</span>
+        <span class="k">for</span> <span class="n">importer</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">importers</span><span class="p">):</span>
+            <span class="n">importer</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="imports.__exit__"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.import_hooks.imports.__exit__">[docs]</a>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Uninstalls the current importer when leaving the context.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># We removed in standard order since thats a more efficient</span>
+        <span class="c"># operation on sys.meta_path.</span>
+        <span class="k">for</span> <span class="n">importer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">importers</span><span class="p">:</span>
+            <span class="n">importer</span><span class="o">.</span><span class="n">uninstall</span><span class="p">()</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

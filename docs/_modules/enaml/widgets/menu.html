@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.menu &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.widgets.menu</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">observe</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+
+<span class="kn">from</span> <span class="nn">.action</span> <span class="kn">import</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">.action_group</span> <span class="kn">import</span> <span class="n">ActionGroup</span>
+<span class="kn">from</span> <span class="nn">.toolkit_object</span> <span class="kn">import</span> <span class="n">ToolkitObject</span><span class="p">,</span> <span class="n">ProxyToolkitObject</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyMenu</span><span class="p">(</span><span class="n">ProxyToolkitObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy Menu object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the Menu declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Menu</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_context_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">popup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="Menu"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.widgets.menu.Menu">[docs]</a><span class="k">class</span> <span class="nc">Menu</span><span class="p">(</span><span class="n">ToolkitObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A widget used as a menu in a MenuBar.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The title to use for the menu.</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: Whether or not the menu is enabled.</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the menu is visible.</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: Whether this menu should behave as a context menu for its parent.</span>
+    <span class="n">context_menu</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: A reference to the ProxyMenu object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyMenu</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Menu.items"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.widgets.menu.Menu.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the items defined on the Menu.</span>
+
+<span class="sd">        A menu item is one of Action, ActionGroup, or Menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allowed</span> <span class="o">=</span> <span class="p">(</span><span class="n">Action</span><span class="p">,</span> <span class="n">ActionGroup</span><span class="p">,</span> <span class="n">Menu</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">allowed</span><span class="p">)]</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@observe</span><span class="p">((</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;enabled&#39;</span><span class="p">,</span> <span class="s">&#39;visible&#39;</span><span class="p">,</span> <span class="s">&#39;context_menu&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which updates the proxy when the menu changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Menu</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Menu.popup"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.widgets.menu.Menu.popup">[docs]</a>    <span class="k">def</span> <span class="nf">popup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Popup the menu over the current mouse location.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activate_proxy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">popup</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

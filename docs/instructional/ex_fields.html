@@ -1,0 +1,214 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fields Example &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Examples Gallery" href="example.html" />
+    <link rel="next" title="Looper Example" href="ex_looper.html" />
+    <link rel="prev" title="Conditional Example" href="ex_conditional.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_looper.html" title="Looper Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ex_conditional.html" title="Conditional Example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" accesskey="U">Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fields-example">
+<h1>Fields Example<a class="headerlink" href="#fields-example" title="Permalink to this headline">¶</a></h1>
+<p><tt class="xref download docutils literal"><span class="pre">fields.enaml</span></tt></p>
+<div class="highlight-python"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of using Include to generate Field widgets on demand.
+
+There are three columns in the example, each showing one of the many
+ways that the Include component may be used.
+
+This example requires Enaml version &gt;= 0.4.0
+
+"""
+import random
+
+from enaml.layout.api import hbox, vbox, align, spacer
+from enaml.widgets.api import (
+    Window, Container, Label, Field, SpinBox, PushButton,
+)
+from enaml.core.api import Include
+
+
+enamldef Main(Window):
+    Container:
+        padding = 0
+        constraints = [
+            hbox(cont1, cont2, cont3),
+            align('width', cont1, cont2, cont3)
+        ]
+        hug_height = 'strong'
+        Container: cont1:
+            Label:
+                text = 'Replace All'
+                align = 'center'
+            SpinBox: spin1:
+                minimum = 0
+                maximum = 20
+                value = 3
+            Include:
+                # This generates a completely new list of widgets each
+                # time the spin box is changed. All the old widgets
+                # will be destroyed. This is the simplest way to use
+                # the Include, albeit not the most efficient.
+                #
+                # FIXME: this causes more flicker than i'd like. It
+                # should be possible to reduce it quite a bit.
+                objects &lt;&lt; [Field(text=str(i)) for i in xrange(spin1.value)]
+        Container: cont2:
+            Label:
+                text = 'Random Shuffle'
+                align = 'center'
+            PushButton:
+                text = 'Shuffle'
+                # This randomly shuffles the Fields of the Include. It
+                # could also have been done in-place to the same effect,
+                # but we do it on a copy to demonstrate that the Include
+                # is intelligent enought to deal with assigning it an
+                # object or objects which it already owns.
+                clicked ::
+                    new = list(inc2.objects)
+                    random.shuffle(new)
+                    inc2.objects = new
+            Include: inc2:
+                # The Fields are initialized with the spin box value.
+                objects =  [Field(text=str(i)) for i in xrange(10)]
+        Container: cont3:
+            Label:
+                text = 'Modify In-Place'
+                align = 'center'
+            PushButton:
+                text = 'Append'
+                # This appends a new Field to the Include in-place.
+                clicked ::
+                    n = len(inc3.objects)
+                    inc3.objects.append(Field(text=str(n)))
+            PushButton:
+                text = 'Pop'
+                # This pops a Field from the Include in-place.
+                clicked ::
+                    if inc3.objects:
+                        inc3.objects.pop()
+            Include: inc3:
+                objects =  [Field(text=str(i)) for i in xrange(5)]
+
+</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run fields.enaml</pre>
+</div>
+<img alt="../_images/fields.png" src="../_images/fields.png" />
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ex_conditional.html"
+                        title="previous chapter">Conditional Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ex_looper.html"
+                        title="next chapter">Looper Example</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/instructional/ex_fields.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_looper.html" title="Looper Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ex_conditional.html" title="Conditional Example"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" >Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

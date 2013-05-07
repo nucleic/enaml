@@ -1,0 +1,187 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.combo_box &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.widgets.combo_box</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Bool</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">set_default</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span>
+    <span class="n">cached_property</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+
+<span class="kn">from</span> <span class="nn">.control</span> <span class="kn">import</span> <span class="n">Control</span><span class="p">,</span> <span class="n">ProxyControl</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyComboBox</span><span class="p">(</span><span class="n">ProxyControl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract defintion of a proxy ComboBox object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the ComboBox declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">ComboBox</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_editable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">editable</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="ComboBox"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.combo_box.ComboBox.html#enaml.widgets.combo_box.ComboBox">[docs]</a><span class="k">class</span> <span class="nc">ComboBox</span><span class="p">(</span><span class="n">Control</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A drop-down list from which one item can be selected at a time.</span>
+
+<span class="sd">    Use a combo box to select a single item from a collection of items.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The unicode strings to display in the combo box.</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">List</span><span class="p">(</span><span class="n">Unicode</span><span class="p">()))</span>
+
+    <span class="c">#: The integer index of the currently selected item. If the given</span>
+    <span class="c">#: index falls outside of the range of items, the item will be</span>
+    <span class="c">#: deselected.</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c">#: Whether the text in the combo box can be edited by the user.</span>
+    <span class="n">editable</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: A combo box hugs its width weakly by default.</span>
+    <span class="n">hug_width</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;weak&#39;</span><span class="p">)</span>
+
+    <span class="c">#: A reference to the ProxyComboBox object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyComboBox</span><span class="p">)</span>
+
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">d_</span><span class="p">,</span> <span class="n">writable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">selected_item</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A read only cached property which returns the selected item.</span>
+
+<span class="sd">        If the index falls out of range, the selected item will be an</span>
+<span class="sd">        empty string.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s">u&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">items</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="nd">@observe</span><span class="p">((</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="s">&#39;items&#39;</span><span class="p">,</span> <span class="s">&#39;editable&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which sends state change to the proxy.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass handler implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ComboBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="nd">@observe</span><span class="p">((</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="s">&#39;items&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_reset_selected_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Reset the selected item when the index or items changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_member</span><span class="p">(</span><span class="s">&#39;selected_item&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

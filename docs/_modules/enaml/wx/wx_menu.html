@@ -1,0 +1,824 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_menu &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_menu</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.lib.newevent</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.menu</span> <span class="kn">import</span> <span class="n">ProxyMenu</span>
+
+<span class="kn">from</span> <span class="nn">.wx_action</span> <span class="kn">import</span> <span class="n">WxAction</span><span class="p">,</span> <span class="n">EVT_ACTION_CHANGED</span>
+<span class="kn">from</span> <span class="nn">.wx_action_group</span> <span class="kn">import</span> <span class="n">WxActionGroup</span>
+<span class="kn">from</span> <span class="nn">.wx_toolkit_object</span> <span class="kn">import</span> <span class="n">WxToolkitObject</span>
+
+
+<span class="c">#: An event emitted when the menu state changes.</span>
+<span class="n">wxMenuChangedEvent</span><span class="p">,</span> <span class="n">EVT_MENU_CHANGED</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">newevent</span><span class="o">.</span><span class="n">NewEvent</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">wxMenu</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Menu</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A wx.Menu subclass which provides a more convenient api for</span>
+<span class="sd">    working with wxMenu and wxAction children.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxMenu.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments needed to initialize</span>
+<span class="sd">            a wx.Menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxMenu</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_items</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enabled</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bar_enabled</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visible</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_context_menu</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Private API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_EmitChanged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Emits the menu changed event if not in batch mode.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch</span><span class="p">:</span>
+            <span class="n">event</span> <span class="o">=</span> <span class="n">wxMenuChangedEvent</span><span class="p">()</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">SetEventObject</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_SetBarEnabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A private method called by an owner menu bar.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        enabled : bool</span>
+<span class="sd">            Whether or not the owner menu bar is enabled.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bar_enabled</span> <span class="o">!=</span> <span class="n">enabled</span><span class="p">:</span>
+            <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">IsEnabled</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bar_enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">IsEnabled</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">old</span> <span class="o">!=</span> <span class="n">new</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_EmitChanged</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_InsertMenuItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">menu</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Insert a new item into the menu for the given menu.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        menu : wxMenu</span>
+<span class="sd">            The wxMenu instance to use as the submenu.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wx.MenuItem</span>
+<span class="sd">            The menu item to use for the given menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">menu</span><span class="o">.</span><span class="n">GetTitle</span><span class="p">()</span>
+        <span class="n">menu_id</span> <span class="o">=</span> <span class="n">menu</span><span class="o">.</span><span class="n">GetId</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span> <span class="ow">or</span> <span class="s">&#39;menu_</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">menu_id</span> <span class="c"># null text == exception</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">MenuItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">menu_id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">subMenu</span><span class="o">=</span><span class="n">menu</span><span class="p">)</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">menu</span><span class="o">.</span><span class="n">IsEnabled</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">InsertItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">_InsertActionItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Insert a new item into the menu for the given action.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        action : wxAction</span>
+<span class="sd">            The wx action for which to create a wx.MenuItem.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wx.MenuItem</span>
+<span class="sd">            The menu item for the given action.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">GetText</span><span class="p">()</span>
+        <span class="n">help</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">GetStatusTip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">IsSeparator</span><span class="p">():</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">MenuItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">ID_SEPARATOR</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">help</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">InsertItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">action_id</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">GetId</span><span class="p">()</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span> <span class="ow">or</span> <span class="s">&#39;action_</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">action_id</span> <span class="c"># null text == exception</span>
+            <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">IsCheckable</span><span class="p">():</span>
+                <span class="c"># The wx.ITEM_RADIO kind doesn&#39;t behave nicely, so we</span>
+                <span class="c"># just use the check kind and rely on the action group</span>
+                <span class="c"># to handle the exclusive radio behavior. Changing the</span>
+                <span class="c"># bitmap to something that looks like a radio button</span>
+                <span class="c"># breaks the Windows theme.</span>
+                <span class="n">kind</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">ITEM_CHECK</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">MenuItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">help</span><span class="p">,</span> <span class="n">kind</span><span class="p">)</span>
+                <span class="c"># Must instert the item before checking it, or c++</span>
+                <span class="c"># assertion errors are thrown</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">InsertItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">Check</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">IsChecked</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">kind</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">ITEM_NORMAL</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">MenuItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">help</span><span class="p">,</span> <span class="n">kind</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">InsertItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">IsEnabled</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">OnActionChanged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for the EVT_ACTION_CHANGED event.</span>
+
+<span class="sd">        This handler will be called when a child action changes. It</span>
+<span class="sd">        ensures that the new state of the child action is in sync with</span>
+<span class="sd">        the associated menu item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">Skip</span><span class="p">()</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetEventObject</span><span class="p">()</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+        <span class="c"># Fist, check for a visibility change. This requires adding or</span>
+        <span class="c"># removing the menu item from the menu and the actions map.</span>
+        <span class="n">visible</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">IsVisible</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">visible</span> <span class="o">!=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">visible</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+                <span class="n">n_visible</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="p">)</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">n_visible</span><span class="p">)</span>
+                <span class="n">new_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_InsertActionItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">[</span><span class="n">action</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_item</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">DestroyItem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">[</span><span class="n">action</span><span class="p">]</span>
+            <span class="k">return</span>
+
+        <span class="c"># If the item is invisible, there is nothing to update.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c"># If the item is a separator, and the separator state has</span>
+        <span class="c"># changed, we need to build an entirely new menu item, and</span>
+        <span class="c"># replace the existing item with the new one.</span>
+        <span class="n">item_sep</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">IsSeparator</span><span class="p">()</span>
+        <span class="n">action_sep</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">IsSeparator</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">item_sep</span> <span class="ow">or</span> <span class="n">action_sep</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">item_sep</span> <span class="o">!=</span> <span class="n">action_sep</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">DestroyItem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+                <span class="n">n_visible</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="p">)</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">n_visible</span><span class="p">)</span>
+                <span class="n">new_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_InsertActionItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">[</span><span class="n">action</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_item</span>
+            <span class="k">return</span>
+
+        <span class="c"># For all other state, the menu item can be updated in-place.</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">SetItemLabel</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">GetText</span><span class="p">())</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">SetHelp</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">GetStatusTip</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">IsCheckable</span><span class="p">():</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">SetKind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">ITEM_CHECK</span><span class="p">)</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">Check</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">IsChecked</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">IsCheckable</span><span class="p">():</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">Check</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">SetKind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">ITEM_NORMAL</span><span class="p">)</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">IsEnabled</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">OnMenuChanged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event hanlder for the EVT_MENU_CHANGED event.</span>
+
+<span class="sd">        This handler will be called when a child menu changes. It</span>
+<span class="sd">        ensure that the new state of the child menu is in sync with</span>
+<span class="sd">        the associated menu item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">Skip</span><span class="p">()</span>
+        <span class="n">menu</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetEventObject</span><span class="p">()</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+
+        <span class="c"># Fist, check for a visibility change. This requires adding or</span>
+        <span class="c"># removing the menu item from the menu and the menus map.</span>
+        <span class="n">visible</span> <span class="o">=</span> <span class="n">menu</span><span class="o">.</span><span class="n">IsVisible</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">visible</span> <span class="o">!=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">visible</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+                <span class="n">n_visible</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="p">)</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">n_visible</span><span class="p">)</span>
+                <span class="n">new_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_InsertMenuItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">menu</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="p">[</span><span class="n">menu</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_item</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># Need to first remove the submenu or wx will destroy it.</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">SetSubMenu</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">DestroyItem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="p">[</span><span class="n">menu</span><span class="p">]</span>
+            <span class="k">return</span>
+
+        <span class="c"># If the item is invisible, there is nothing to update.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c"># For all other state, the menu item can be updated in-place.</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">SetItemLabel</span><span class="p">(</span><span class="n">menu</span><span class="o">.</span><span class="n">GetTitle</span><span class="p">())</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">menu</span><span class="o">.</span><span class="n">IsEnabled</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">OnShowContextMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A private event handler for displaying the context menu.</span>
+
+<span class="sd">        This handler is connected to the context menu event on the</span>
+<span class="sd">        parent widget when this menu is marked as a context menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">Window</span><span class="p">):</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">PopupMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">BeginBatch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Enter batch update mode for the menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">EndBatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emit</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Exit batch update mode for the menu.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        emit : bool, optional</span>
+<span class="sd">            If True, emit a changed event after leaving batch mode. The</span>
+<span class="sd">            default is True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">emit</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_EmitChanged</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">GetId</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the unique wx id for this menu.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The wx id number for this menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+    <span class="k">def</span> <span class="nf">GetTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the title for the menu.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : unicode</span>
+<span class="sd">            The unicode title for the menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title</span>
+
+    <span class="k">def</span> <span class="nf">SetTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title for the menu.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        title : unicode</span>
+<span class="sd">            The unicode string to use as the menu title.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">!=</span> <span class="n">title</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">=</span> <span class="n">title</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_EmitChanged</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">IsEnabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether or not the menu is enabled.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            Whether or not the menu is enabled.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bar_enabled</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enabled</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">SetEnabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not the menu is enabled.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        enabled : bool</span>
+<span class="sd">            Whether or not the menu is enabled.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enabled</span> <span class="o">!=</span> <span class="n">enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bar_enabled</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_EmitChanged</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">IsVisible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether or not the menu is visible.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            Whether or not the menu is visible.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visible</span>
+
+    <span class="k">def</span> <span class="nf">SetVisible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not the menu is visible.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        visible : bool</span>
+<span class="sd">            Whether or not the menu is visible.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visible</span> <span class="o">!=</span> <span class="n">visible</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_visible</span> <span class="o">=</span> <span class="n">visible</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_EmitChanged</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">IsContextMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Whether this menu acts as a context menu for its parent.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            True if this menu acts as a context menu, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_context_menu</span>
+
+    <span class="k">def</span> <span class="nf">SetContextMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether this menu acts as a context menu for its parent.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        context : bool</span>
+<span class="sd">            True if this menu should act as a context menu, False</span>
+<span class="sd">            otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_context_menu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_context_menu</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="k">if</span> <span class="n">old_context</span> <span class="o">!=</span> <span class="n">context</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+            <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+                <span class="n">handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnShowContextMenu</span>
+                <span class="k">if</span> <span class="n">context</span><span class="p">:</span>
+                    <span class="n">parent</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CONTEXT_MENU</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">parent</span><span class="o">.</span><span class="n">Unbind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CONTEXT_MENU</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">AddMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">menu</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add a wx menu to the Menu.</span>
+
+<span class="sd">        If the menu already exists in this menu, it will be moved to</span>
+<span class="sd">        the end.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        menu : wxMenu</span>
+<span class="sd">            The wxMenu instance to add to this menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">InsertMenu</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">menu</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">InsertMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">menu</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Insert a wx menu into the Menu.</span>
+
+<span class="sd">        If the menu already exists in this menu, if will be moved to</span>
+<span class="sd">        the proper location.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        before : wxAction, wxMenu, or None</span>
+<span class="sd">            The item in the menu which should come directly after the</span>
+<span class="sd">            new sub-menu.</span>
+
+<span class="sd">        menu : wxMenu</span>
+<span class="sd">            The wxMenu instance to insert into this menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_items</span>
+        <span class="k">if</span> <span class="n">menu</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">before</span> <span class="ow">in</span> <span class="n">all_items</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">all_items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">before</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_items</span><span class="p">)</span>
+            <span class="n">all_items</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">menu</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">menu</span><span class="o">.</span><span class="n">IsVisible</span><span class="p">():</span>
+                <span class="n">max_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="p">)</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">max_index</span><span class="p">)</span>
+                <span class="n">menu_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_InsertMenuItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">menu</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="p">[</span><span class="n">menu</span><span class="p">]</span> <span class="o">=</span> <span class="n">menu_item</span>
+            <span class="n">menu</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_MENU_CHANGED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnMenuChanged</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># XXX this is a potentially slow way to do things if the</span>
+            <span class="c"># number of menus being moved around is large. But, the</span>
+            <span class="c"># Wx apis don&#39;t appear to offer a better way, so this is</span>
+            <span class="c"># what we get (as usual...).</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RemoveMenu</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">InsertMenu</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">menu</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">RemoveMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">menu</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove a wx menu from the Menu.</span>
+
+<span class="sd">        If the menu does not exist in the menu, this is a no-op.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        menu : wxMenu</span>
+<span class="sd">            The wxMenu instance to remove from this menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_items</span>
+        <span class="k">if</span> <span class="n">menu</span> <span class="ow">in</span> <span class="n">all_items</span><span class="p">:</span>
+            <span class="n">all_items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+            <span class="n">menu</span><span class="o">.</span><span class="n">Unbind</span><span class="p">(</span><span class="n">EVT_MENU_CHANGED</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">OnMenuChanged</span><span class="p">)</span>
+            <span class="n">menu_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">menu</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">menu_item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">RemoveItem</span><span class="p">(</span><span class="n">menu_item</span><span class="p">)</span>
+                <span class="c"># Set the SubMenu to None or wx will destroy it.</span>
+                <span class="n">menu_item</span><span class="o">.</span><span class="n">SetSubMenu</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">AddAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add a wx action to the Menu.</span>
+
+<span class="sd">        If the action already exists in the menu, it will be moved to</span>
+<span class="sd">        the end.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        action : wxAction</span>
+<span class="sd">            The wxAction instance to add to this menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">InsertAction</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">AddActions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add multiple wx actions to the Menu.</span>
+
+<span class="sd">        If an action already exists in the menu, it will be moved to</span>
+<span class="sd">        the end.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        actions : iterable</span>
+<span class="sd">            An iterable of wxAction instances to add to the menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">insert</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">InsertAction</span>
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">:</span>
+            <span class="n">insert</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">InsertAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Insert a wx action into the Menu.</span>
+
+<span class="sd">        If the action already exists in the menu, it will be moved to</span>
+<span class="sd">        the proper location.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        before : wxAction, wxMenu, or None</span>
+<span class="sd">            The item in the menu which should come directly after the</span>
+<span class="sd">            new action.</span>
+
+<span class="sd">        action : wxAction</span>
+<span class="sd">            The wxAction instance to insert into this menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_items</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">before</span> <span class="ow">in</span> <span class="n">all_items</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="n">all_items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">before</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_items</span><span class="p">)</span>
+            <span class="n">all_items</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">IsVisible</span><span class="p">():</span>
+                <span class="n">max_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_menus_map</span><span class="p">)</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">max_index</span><span class="p">)</span>
+                <span class="n">menu_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_InsertActionItem</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="p">[</span><span class="n">action</span><span class="p">]</span> <span class="o">=</span> <span class="n">menu_item</span>
+            <span class="n">action</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_ACTION_CHANGED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnActionChanged</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># XXX this is a potentially slow way to do things if the</span>
+            <span class="c"># number of actions being moved around is large. But, the</span>
+            <span class="c"># Wx apis don&#39;t appear to offer a better way, so this is</span>
+            <span class="c"># what we get (as usual...).</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RemoveAction</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">InsertAction</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">InsertActions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Insert multiple wx actions into the Menu.</span>
+
+<span class="sd">        If an action already exists in this menu, it will be moved to</span>
+<span class="sd">        the proper location.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        before : wxAction, wxMenu, or None</span>
+<span class="sd">            The item in the menu which should come directly after the</span>
+<span class="sd">            new actions.</span>
+
+<span class="sd">        actions : iterable</span>
+<span class="sd">            An iterable of wxAction instances to add to the menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">insert</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">InsertAction</span>
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">:</span>
+            <span class="n">insert</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">RemoveAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove a wx action from the Menu.</span>
+
+<span class="sd">        If the action does not exist in the menu, this is a no-op.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        action : wxAction</span>
+<span class="sd">            The wxAction instance to remove from this menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_items</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">all_items</span><span class="p">:</span>
+            <span class="n">all_items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            <span class="n">action</span><span class="o">.</span><span class="n">Unbind</span><span class="p">(</span><span class="n">EVT_ACTION_CHANGED</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">OnActionChanged</span><span class="p">)</span>
+            <span class="n">menu_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actions_map</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">menu_item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">RemoveItem</span><span class="p">(</span><span class="n">menu_item</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">RemoveActions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove multiple actions from the Menu.</span>
+
+<span class="sd">        If an action does not exist in the menu, it will be ignored.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        actions : iterable</span>
+<span class="sd">            An iterable of wxAction instances to remove from the menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">remove</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RemoveAction</span>
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">:</span>
+            <span class="n">remove</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WxMenu"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu">[docs]</a><span class="k">class</span> <span class="nc">WxMenu</span><span class="p">(</span><span class="n">WxToolkitObject</span><span class="p">,</span> <span class="n">ProxyMenu</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxyMenu.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxMenu</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxMenu.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying menu widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxMenu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">BeginBatch</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxMenu.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxMenu</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_enabled</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">visible</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_context_menu</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">context_menu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">EndBatch</span><span class="p">(</span><span class="n">emit</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxMenu.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the layout of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxMenu</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxMenu</span><span class="p">):</span>
+                <span class="n">widget</span><span class="o">.</span><span class="n">AddMenu</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxAction</span><span class="p">):</span>
+                <span class="n">widget</span><span class="o">.</span><span class="n">AddAction</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxActionGroup</span><span class="p">):</span>
+                <span class="n">widget</span><span class="o">.</span><span class="n">AddActions</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">actions</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxMenu.destroy"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented destructor.</span>
+
+<span class="sd">        This destructor simply drops the reference to the menu and the</span>
+<span class="sd">        enaml declaration. Destroying it will cause wx to segfault.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxMenu.find_next_action"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.find_next_action">[docs]</a>    <span class="k">def</span> <span class="nf">find_next_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the wxAction instance which follows the child.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        child : WxToolkitObject</span>
+<span class="sd">            The child of interest.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wxAction or None</span>
+<span class="sd">            The wxAction which comes immediately after the actions of the</span>
+<span class="sd">            given child, or None if no actions follow the child.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">dchild</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dchild</span><span class="p">,</span> <span class="p">(</span><span class="n">WxMenu</span><span class="p">,</span> <span class="n">WxAction</span><span class="p">)):</span>
+                    <span class="k">return</span> <span class="n">dchild</span><span class="o">.</span><span class="n">widget</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dchild</span><span class="p">,</span> <span class="n">WxActionGroup</span><span class="p">):</span>
+                    <span class="n">acts</span> <span class="o">=</span> <span class="n">dchild</span><span class="o">.</span><span class="n">actions</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">acts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">acts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">dchild</span> <span class="ow">is</span> <span class="n">child</span>
+</div>
+<div class="viewcode-block" id="WxMenu.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a WxMenu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxMenu</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxMenu</span><span class="p">):</span>
+            <span class="n">before</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_next_action</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">InsertMenu</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxAction</span><span class="p">):</span>
+            <span class="n">before</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_next_action</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">InsertAction</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxActionGroup</span><span class="p">):</span>
+            <span class="n">before</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_next_action</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">InsertActions</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">actions</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxMenu.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;  Handle the child removed event for a WxMenu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxMenu</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxMenu</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">RemoveMenu</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxAction</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">RemoveAction</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxActionGroup</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">RemoveActions</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">actions</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyMenu API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxMenu.set_title"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.set_title">[docs]</a>    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title of the underlyling control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxMenu.set_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.set_visible">[docs]</a>    <span class="k">def</span> <span class="nf">set_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the visibility on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetVisible</span><span class="p">(</span><span class="n">visible</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxMenu.set_enabled"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.set_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the enabled state of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetEnabled</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxMenu.set_context_menu"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.set_context_menu">[docs]</a>    <span class="k">def</span> <span class="nf">set_context_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not the menu is a context menu.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetContextMenu</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxMenu.popup"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.menu.Menu.html#enaml.wx.wx_menu.WxMenu.popup">[docs]</a>    <span class="k">def</span> <span class="nf">popup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Popup the menu at the current mouse location.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># This is not supported on wx. Wx requires the menu to be</span>
+        <span class="c"># popped up over a specified window. It can&#39;t be done using</span>
+        <span class="c"># global coordinates.</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

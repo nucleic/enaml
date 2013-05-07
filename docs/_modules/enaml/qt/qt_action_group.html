@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_action_group &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_action_group</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QActionGroup</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.action_group</span> <span class="kn">import</span> <span class="n">ProxyActionGroup</span>
+
+<span class="kn">from</span> <span class="nn">.qt_action</span> <span class="kn">import</span> <span class="n">QtAction</span>
+<span class="kn">from</span> <span class="nn">.qt_toolkit_object</span> <span class="kn">import</span> <span class="n">QtToolkitObject</span>
+
+
+<span class="k">class</span> <span class="nc">QCustomActionGroup</span><span class="p">(</span><span class="n">QActionGroup</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A QActionGroup subclass which fixes some toggling issues.</span>
+
+<span class="sd">    When a QActionGroup is set from non-exlusive to exclusive, it</span>
+<span class="sd">    doesn&#39;t uncheck the non-current actions. It also does not keep</span>
+<span class="sd">    track of the most recently checked widget when in non-exclusive</span>
+<span class="sd">    mode, so that state is lost. This subclass corrects these issues.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a QCustomActionGroup.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments needed to initialize</span>
+<span class="sd">            a QActionGroup.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QCustomActionGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onTriggered</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_checked</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">onTriggered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The signal handler for the &#39;triggered&#39; signal.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">isCheckable</span><span class="p">()</span> <span class="ow">and</span> <span class="n">action</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isExclusive</span><span class="p">():</span>
+                <span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_checked</span>
+                <span class="k">if</span> <span class="n">last</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">last</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">action</span><span class="p">:</span>
+                    <span class="n">last</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last_checked</span> <span class="o">=</span> <span class="n">action</span>
+
+    <span class="k">def</span> <span class="nf">setExclusive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exclusive</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the exclusive state of the action group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exclusive : bool</span>
+<span class="sd">            Whether or not the action group is exclusive.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QCustomActionGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setExclusive</span><span class="p">(</span><span class="n">exclusive</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exclusive</span><span class="p">:</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_checked</span>
+            <span class="k">if</span> <span class="n">last</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">last</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">last</span><span class="p">:</span>
+                        <span class="n">action</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="QtActionGroup"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup">[docs]</a><span class="k">class</span> <span class="nc">QtActionGroup</span><span class="p">(</span><span class="n">QtToolkitObject</span><span class="p">,</span> <span class="n">ProxyActionGroup</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxyActionGroup.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QCustomActionGroup</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtActionGroup.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying action group widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QCustomActionGroup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtActionGroup.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtActionGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_exclusive</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">exclusive</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_enabled</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">visible</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtActionGroup.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the layout for the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtActionGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">():</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtActionGroup.find_next_action"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.find_next_action">[docs]</a>    <span class="k">def</span> <span class="nf">find_next_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Locate the QAction object which logically follows the child.</span>
+
+<span class="sd">        If the given child is last in the list of children, then the</span>
+<span class="sd">        parent object will be invoked to find the QAction which follows</span>
+<span class="sd">        this action group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        child : QtToolkitObject</span>
+<span class="sd">            The child object of interest.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QAction or None</span>
+<span class="sd">            The QAction which logically follows the position of the</span>
+<span class="sd">            child in the list of children. None will be returned if</span>
+<span class="sd">            a relevant QAction is not found.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">dchild</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">found</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dchild</span><span class="p">,</span> <span class="n">QtAction</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">dchild</span><span class="o">.</span><span class="n">widget</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">child</span> <span class="ow">is</span> <span class="n">dchild</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parent</span><span class="o">.</span><span class="n">find_next_action</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtActionGroup.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtActionGroup.</span>
+
+<span class="sd">        This handler will also add the widget to the parent widget,</span>
+<span class="sd">        since a QActionGroup only serves as a management container.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtActionGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtAction</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">before</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_next_action</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">insertAction</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtActionGroup.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a QtActionGroup.</span>
+
+<span class="sd">        This handler will also remove the widget to the parent widget,</span>
+<span class="sd">        since a QActionGroup only serves as a management container.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtActionGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtAction</span><span class="p">)</span> <span class="ow">and</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">removeAction</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">removeAction</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtActionGroup.actions"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.actions">[docs]</a>    <span class="k">def</span> <span class="nf">actions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the QAction children for this action group.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : list</span>
+<span class="sd">            The list of QAction instances which are children of this</span>
+<span class="sd">            action group. Unlike the list returned by the `actions`</span>
+<span class="sd">            method of the QActionGroup, the children in this list will</span>
+<span class="sd">            have the correct order.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">isinst</span> <span class="o">=</span> <span class="nb">isinstance</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">widget</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">()</span> <span class="k">if</span> <span class="n">isinst</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">QtAction</span><span class="p">)]</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyActionGroup API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtActionGroup.set_exclusive"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.set_exclusive">[docs]</a>    <span class="k">def</span> <span class="nf">set_exclusive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exclusive</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the exclusive state of the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setExclusive</span><span class="p">(</span><span class="n">exclusive</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtActionGroup.set_enabled"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.set_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the enabled state of the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtActionGroup.set_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.action_group.ActionGroup.html#enaml.qt.qt_action_group.QtActionGroup.set_visible">[docs]</a>    <span class="k">def</span> <span class="nf">set_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the visible state of the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="n">visible</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

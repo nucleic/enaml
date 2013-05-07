@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_group_box &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_group_box</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.group_box</span> <span class="kn">import</span> <span class="n">ProxyGroupBox</span>
+
+<span class="kn">from</span> <span class="nn">.wx_container</span> <span class="kn">import</span> <span class="n">WxContainer</span><span class="p">,</span> <span class="n">wxContainer</span>
+
+
+<span class="n">WX_ALIGNMENTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;left&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_LEFT</span><span class="p">,</span>
+    <span class="s">&#39;center&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span>
+    <span class="s">&#39;right&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_RIGHT</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">wxGroupBox</span><span class="p">(</span><span class="n">wxContainer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A wxContainer sublcass that implements GroupBox functionality.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxGroupBox.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments to initialize a</span>
+<span class="sd">            wxContainer.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxGroupBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_border</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticBox</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_line</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticLine</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="o">.</span><span class="n">Raise</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="o">.</span><span class="n">GetBestSize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title_alignment</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_LEFT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flat</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="c"># Set the panel to double buffered or suffer terrible</span>
+        <span class="c"># rendering artifacts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetDoubleBuffered</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">GetAlignment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the wx alignment flag for the current alignment</span>
+<span class="sd">        of the group box title.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title_alignment</span>
+
+    <span class="k">def</span> <span class="nf">SetAlignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alignment</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the alignment of the title of the group box. Should</span>
+<span class="sd">        be one of wx.ALIGN_LEFT, wx.ALIGN_RIGHT, wx.ALIGN_CENTER.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title_alignment</span> <span class="o">=</span> <span class="n">alignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_layout</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">GetFlat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns a boolean indicating whether the group box is using</span>
+<span class="sd">        a flat style.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flat</span>
+
+    <span class="k">def</span> <span class="nf">SetFlat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flat</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not the group box should be displayed using</span>
+<span class="sd">        a flat style.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flat</span> <span class="o">=</span> <span class="n">flat</span>
+        <span class="k">if</span> <span class="n">flat</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_border</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_line</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_border</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_line</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_layout</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">GetTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the current title text in the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Undo the hack applied in SetTitle(...)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title</span>
+        <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">title</span>
+
+    <span class="k">def</span> <span class="nf">SetTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the current title text in the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># A bit of a hack to give us a little padding around the label</span>
+        <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&#39; </span><span class="si">%s</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="o">.</span><span class="n">GetBestSize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_layout</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">SetDimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overridden parent class method to synchronize the group</span>
+<span class="sd">        box decorations.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxGroupBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">SetDimensions</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_layout</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">SetSize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overridden parent class method to synchronize the group</span>
+<span class="sd">        box decorations.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxGroupBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">SetSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_layout</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">GetContentsMargins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the contents margins for the group box.</span>
+
+<span class="sd">        These margins are computed empirically so that they look similar</span>
+<span class="sd">        to the margins provided by Qt on Windows.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : tuple</span>
+<span class="sd">            The top, right, bottom, and left margin values.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">GetCharHeight</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">label</span><span class="o">.</span><span class="n">IsShown</span><span class="p">():</span>
+            <span class="n">height</span> <span class="o">/=</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Private API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_update_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Synchronizes the drawing of the group box decorations with</span>
+<span class="sd">        the panel.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flat</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_line_geometry</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_border_geometry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_title_geometry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Refresh</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_update_border_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the geometry of the border.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetSizeTuple</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_border</span><span class="o">.</span><span class="n">SetSizeWH</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_line_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the geometry of the line.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_size</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">width</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetSizeTuple</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_line</span><span class="o">.</span><span class="n">SetDimensions</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_title_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the geometry of the title.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span>
+        <span class="n">flat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flat</span>
+        <span class="n">align</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title_alignment</span>
+        <span class="n">text_width</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_size</span>
+        <span class="n">width</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetSizeTuple</span><span class="p">()</span>
+        <span class="c"># These offsets are determined empirically to look similar</span>
+        <span class="c"># in form to Qt on Windows</span>
+        <span class="k">if</span> <span class="n">align</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_LEFT</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">flat</span> <span class="k">else</span> <span class="mi">8</span>
+            <span class="n">label</span><span class="o">.</span><span class="n">Move</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">align</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_RIGHT</span><span class="p">:</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="n">width</span>
+            <span class="n">right</span> <span class="o">-=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">flat</span> <span class="k">else</span> <span class="mi">8</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">right</span> <span class="o">-</span> <span class="n">text_width</span>
+            <span class="n">label</span><span class="o">.</span><span class="n">Move</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">align</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">:</span>
+            <span class="n">label</span><span class="o">.</span><span class="n">CenterOnParent</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Invalid title alignment </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">align</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WxGroupBox"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.wx.wx_group_box.WxGroupBox">[docs]</a><span class="k">class</span> <span class="nc">WxGroupBox</span><span class="p">(</span><span class="n">WxContainer</span><span class="p">,</span> <span class="n">ProxyGroupBox</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxyGroupBox.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxGroupBox</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxGroupBox.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.wx.wx_group_box.WxGroupBox.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates the underlying QGroupBox control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxGroupBox</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxGroupBox.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.wx.wx_group_box.WxGroupBox.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxGroupBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">cm_update</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_flat</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">flat</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title_align</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title_align</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Layout Handling</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxGroupBox.contents_margins"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.wx.wx_group_box.WxGroupBox.contents_margins">[docs]</a>    <span class="k">def</span> <span class="nf">contents_margins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the current contents margins for the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">GetContentsMargins</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyGroupBox API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxGroupBox.set_title"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.wx.wx_group_box.WxGroupBox.set_title">[docs]</a>    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">cm_update</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the title of the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cm_update</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="n">old_margins</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="n">GetContentsMargins</span><span class="p">()</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">new_margins</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="n">GetContentsMargins</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">old_margins</span> <span class="o">!=</span> <span class="n">new_margins</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contents_margins_updated</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxGroupBox.set_flat"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.wx.wx_group_box.WxGroupBox.set_flat">[docs]</a>    <span class="k">def</span> <span class="nf">set_flat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flat</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the flattened appearance of the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetFlat</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxGroupBox.set_title_align"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.wx.wx_group_box.WxGroupBox.set_title_align">[docs]</a>    <span class="k">def</span> <span class="nf">set_title_align</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">align</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the alignment of the title of the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wx_align</span> <span class="o">=</span> <span class="n">WX_ALIGNMENTS</span><span class="p">[</span><span class="n">align</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetAlignment</span><span class="p">(</span><span class="n">wx_align</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

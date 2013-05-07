@@ -1,0 +1,71 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `ToolBar` widget.
+
+This example demonstrates the use of the `ToolBar` widget. A `ToolBar`
+can have an arbitrary number of children, which must be `Action` widgets.
+In this fashion, a `ToolBar` is very similar to a `Menu` in a `MenuBar`.
+The `ToolBar` also supports `ActionGroup` widgets in the same manner as
+a `Menu`. A `ToolBar` is typically used as a child of a `MainWindow`,
+but it can also used as a child of a `Container` and layed out using
+constraints.
+
+Implementation Notes:
+    
+    The tool bar facilities in Wx are very weak. Due to technical 
+    limitations, the `ToolBar` widget in Wx does not have the slick
+    docking features which are available in Qt. It also does not
+    look nice when used as the child of a `Container`. If a `ToolBar`
+    is required for a particular application, strongly prefer the
+    Qt backend over Wx (this is generally a good life-rule).
+
+"""
+from enaml.layout.api import vbox
+from enaml.widgets.api import (
+    MainWindow, ToolBar, Action, ActionGroup, Container, Html
+)
+
+
+enamldef MyToolBar(ToolBar):
+    Action:
+        text = 'Button'
+        tool_tip = text
+    ActionGroup:
+        Action:
+            separator = True
+        Action:
+            checkable = True
+            text = 'Exclusive'
+            triggered :: print 'triggered'
+            toggled :: print 'toggled' 
+        Action:
+            checkable = True
+            text = 'ToolBar'
+        Action:
+            checkable = True
+            text = 'Buttons'
+        Action:
+            separator = True
+    Action:
+        checkable = True
+        text = 'Checkable'
+    Action:
+        checkable = True
+        text = 'ToolBar'
+    Action:
+        checkable = True
+        text = 'Buttons'
+
+
+enamldef Main(MainWindow):
+    MyToolBar:
+        pass
+    Container:
+        constraints = [vbox(html, tbar, spacing=0)]
+        Html: html:
+            source = '<h1><center>Hello World!</center></h1>'
+        MyToolBar: tbar:
+            pass
+

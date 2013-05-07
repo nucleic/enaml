@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.stack &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.widgets.stack</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Atom</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span> <span class="n">set_default</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+
+<span class="kn">from</span> <span class="nn">.constraints_widget</span> <span class="kn">import</span> <span class="n">ConstraintsWidget</span><span class="p">,</span> <span class="n">ProxyConstraintsWidget</span>
+<span class="kn">from</span> <span class="nn">.stack_item</span> <span class="kn">import</span> <span class="n">StackItem</span>
+
+
+<span class="k">class</span> <span class="nc">Transition</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An object representing an animated transition.</span>
+
+<span class="sd">    Once a transition is created, it should be considered read-only.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The type of transition effect to use.</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;slide&#39;</span><span class="p">,</span> <span class="s">&#39;wipe&#39;</span><span class="p">,</span> <span class="s">&#39;iris&#39;</span><span class="p">,</span> <span class="s">&#39;fade&#39;</span><span class="p">,</span> <span class="s">&#39;crossfade&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The direction of the transition effect. Some transition types</span>
+    <span class="c">#: will ignore the direction if it doesn&#39;t apply to the effect.</span>
+    <span class="n">direction</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span>
+        <span class="s">&#39;left_to_right&#39;</span><span class="p">,</span> <span class="s">&#39;right_to_left&#39;</span><span class="p">,</span> <span class="s">&#39;top_to_bottom&#39;</span><span class="p">,</span> <span class="s">&#39;bottom_to_top&#39;</span>
+    <span class="p">)</span>
+
+    <span class="c">#: The duration of the transition, in milliseconds.</span>
+    <span class="n">duration</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyStack</span><span class="p">(</span><span class="n">ProxyConstraintsWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy Stack object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the Stack declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Stack</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_transition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="Stack"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.stack.Stack.html#enaml.widgets.stack.Stack">[docs]</a><span class="k">class</span> <span class="nc">Stack</span><span class="p">(</span><span class="n">ConstraintsWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A component which displays its children as a stack of widgets,</span>
+<span class="sd">    only one of which is visible at a time.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The index of the visible widget in the stack. The widget itself</span>
+    <span class="c">#: does not provide a means to changing this index. That control</span>
+    <span class="c">#: must be supplied externally. If the given index falls outside of</span>
+    <span class="c">#: the range of stack items, no widget will be visible.</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="c">#: The item transition to use when changing between stack items.</span>
+    <span class="n">transition</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">Transition</span><span class="p">))</span>
+
+    <span class="c">#: A Stack expands freely in height and width by default</span>
+    <span class="n">hug_width</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
+    <span class="n">hug_height</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
+
+    <span class="c">#: A reference to the ProxyStack widget.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyStack</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Stack.stack_items"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.stack.Stack.html#enaml.widgets.stack.Stack.stack_items">[docs]</a>    <span class="k">def</span> <span class="nf">stack_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the stack items defined on the stack</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">StackItem</span><span class="p">)]</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@observe</span><span class="p">((</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="s">&#39;transition&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which sends state change to the proxy.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass handler implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Stack</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

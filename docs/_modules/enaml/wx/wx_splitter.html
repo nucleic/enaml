@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_splitter &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_splitter</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">from</span> <span class="nn">wx.lib.splitter</span> <span class="kn">import</span> <span class="n">MultiSplitterWindow</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.splitter</span> <span class="kn">import</span> <span class="n">ProxySplitter</span>
+
+<span class="kn">from</span> <span class="nn">.wx_constraints_widget</span> <span class="kn">import</span> <span class="n">WxConstraintsWidget</span><span class="p">,</span> <span class="n">size_hint_guard</span>
+<span class="kn">from</span> <span class="nn">.wx_split_item</span> <span class="kn">import</span> <span class="n">WxSplitItem</span>
+
+
+<span class="n">_ORIENTATION_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;horizontal&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">,</span>
+    <span class="s">&#39;vertical&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">wxSplitter</span><span class="p">(</span><span class="n">MultiSplitterWindow</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A wx.lib.splitter.MultiSplitterWindow subclass that changes</span>
+<span class="sd">    the behavior of resizing neighbors to be consistent with Qt.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_OnMouse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overriden parent class mouse event handler which fakes the</span>
+<span class="sd">        state of the keyboard so that resize behavior is consistent</span>
+<span class="sd">        between wx and Qt.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># We modify the mouse event to &quot;fake&quot; like the shift key is</span>
+        <span class="c"># always down. This causes the splitter to not adjust its</span>
+        <span class="c"># neighbor when dragging the sash. This behavior is consistent</span>
+        <span class="c"># with Qt&#39;s behavior. This is not *the best* way to handle this,</span>
+        <span class="c"># but it&#39;s the easiest and quickest at the moment. The proper</span>
+        <span class="c"># way would be to reimplement this method in its entirety and</span>
+        <span class="c"># allow the adjustNeighbor computation to be based on keyboard</span>
+        <span class="c"># state as well as attribute flags.</span>
+        <span class="c">#</span>
+        <span class="c"># TODO implement this properly (or just rewrite this entire</span>
+        <span class="c"># control, because like everything else in Wx, it&#39;s crap).</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">m_shiftDown</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">wxSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_OnMouse</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_GetWindowMin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overriden parent class method which properly computes the</span>
+<span class="sd">        window min size.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">GetEffectiveMinSize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orient</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">size</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">size</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">_GetSashSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overridden parent class method to return a proper sash size</span>
+<span class="sd">        for the custom sash painting.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">4</span>
+
+    <span class="k">def</span> <span class="nf">_DrawSash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dc</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overridden parent class method which draws a custom sash.</span>
+
+<span class="sd">        On Windows, the default themed sash drawing causes the sash to</span>
+<span class="sd">        not be visible; this method corrects that problem and draws a</span>
+<span class="sd">        sash which is visibly similar to Enaml&#39;s Qt Windows version.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sash_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GetSashSize</span><span class="p">()</span>
+        <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetClientSize</span><span class="p">()</span>
+        <span class="n">light_pen</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">WHITE_PEN</span>
+        <span class="n">dark_pen</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">GREY_PEN</span>
+        <span class="n">brush</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Brush</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetBackgroundColour</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orient</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">sash</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sashes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">pos</span> <span class="o">+=</span> <span class="n">sash</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">SetPen</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">TRANSPARENT_PEN</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">SetBrush</span><span class="p">(</span><span class="n">brush</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">DrawRectangle</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sash_size</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">SetPen</span><span class="p">(</span><span class="n">light_pen</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">DrawLine</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">SetPen</span><span class="p">(</span><span class="n">dark_pen</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">DrawLine</span><span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+                <span class="n">pos</span> <span class="o">+=</span> <span class="n">sash_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">sash</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sashes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">pos</span> <span class="o">+=</span> <span class="n">sash</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">SetPen</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">TRANSPARENT_PEN</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">SetBrush</span><span class="p">(</span><span class="n">brush</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">DrawRectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">sash_size</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">SetPen</span><span class="p">(</span><span class="n">light_pen</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">DrawLine</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">SetPen</span><span class="p">(</span><span class="n">dark_pen</span><span class="p">)</span>
+                <span class="n">dc</span><span class="o">.</span><span class="n">DrawLine</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">pos</span> <span class="o">+=</span> <span class="n">sash_size</span>
+
+    <span class="k">def</span> <span class="nf">_OnSize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overridden parent class method which resizes the sashes.</span>
+
+<span class="sd">        The default Wx behavior allocates all extra space to the last</span>
+<span class="sd">        split item, and it will clip the items when the window size is</span>
+<span class="sd">        reduced. This override uses a weighted algorithm to allocate</span>
+<span class="sd">        the free space among the items and will not allow the items</span>
+<span class="sd">        to be clipped by a window resize.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Pre-fetch some commonly used objects</span>
+        <span class="n">get_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GetWindowMin</span>
+        <span class="n">windows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_windows</span>
+        <span class="n">sashes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sashes</span>
+
+        <span class="c"># Compute the total space available for the sashes</span>
+        <span class="n">sash_widths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GetSashSize</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">windows</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">sash_widths</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GetBorderSize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orient</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">:</span>
+            <span class="n">free_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetClientSize</span><span class="p">()</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">()</span> <span class="o">-</span> <span class="n">offset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">free_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetClientSize</span><span class="p">()</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">()</span> <span class="o">-</span> <span class="n">offset</span>
+
+        <span class="c"># Compute the effective stretch factors for each window. The</span>
+        <span class="c"># effective stretch factor is the greater of the current or</span>
+        <span class="c"># minimum width of the window, multiplied by the window&#39;s</span>
+        <span class="c"># stretch factor.</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">total_stretch</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">sash</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">sashes</span><span class="p">,</span> <span class="n">windows</span><span class="p">)):</span>
+            <span class="n">minw</span> <span class="o">=</span> <span class="n">get_min</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sash</span> <span class="o">&lt;</span> <span class="n">minw</span><span class="p">:</span>
+                <span class="n">sash</span> <span class="o">=</span> <span class="n">sashes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">minw</span>
+            <span class="n">stretch</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">GetStretch</span><span class="p">()</span> <span class="o">*</span> <span class="n">sash</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">stretch</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">minw</span><span class="p">,</span> <span class="n">window</span><span class="p">))</span>
+            <span class="n">total_stretch</span> <span class="o">+=</span> <span class="n">stretch</span>
+
+        <span class="c"># Add (or remove) the extra space by fairly allocating it to</span>
+        <span class="c"># each window based on their effective stretch factor.</span>
+        <span class="n">diff_space</span> <span class="o">=</span> <span class="n">free_space</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sashes</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">stretch</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">minw</span><span class="p">,</span> <span class="n">window</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stretch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">diff_space</span> <span class="o">*</span> <span class="n">stretch</span> <span class="o">/</span> <span class="n">total_stretch</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sashes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">minw</span><span class="p">)</span>
+                <span class="n">sashes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+
+        <span class="c"># Since the windows are clipped to their minimum width, it&#39;s</span>
+        <span class="c"># possible that the current space occupied by the windows will</span>
+        <span class="c"># be too large. In that case, the overage is distributed to the</span>
+        <span class="c"># windows fairly, based on their relative capacity for shrink.</span>
+        <span class="n">curr_space</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sashes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">curr_space</span> <span class="o">&gt;</span> <span class="n">free_space</span><span class="p">:</span>
+            <span class="n">diffs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">total_diff</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">stretch</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">minw</span><span class="p">,</span> <span class="n">window</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+                <span class="n">diff</span> <span class="o">=</span> <span class="n">sashes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">minw</span>
+                <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">diffs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">diff</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">minw</span><span class="p">))</span>
+                    <span class="n">total_diff</span> <span class="o">+=</span> <span class="n">diff</span>
+            <span class="n">remaining</span> <span class="o">=</span> <span class="n">curr_space</span> <span class="o">-</span> <span class="n">free_space</span>
+            <span class="n">diffs</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">diff</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">minw</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">diffs</span><span class="p">):</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="n">remaining</span> <span class="o">*</span> <span class="n">diff</span> <span class="o">/</span> <span class="n">total_diff</span>
+                <span class="n">old</span> <span class="o">=</span> <span class="n">sashes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">old</span> <span class="o">-</span> <span class="n">delta</span><span class="p">,</span> <span class="n">minw</span><span class="p">)</span>
+                <span class="n">actual_diff</span> <span class="o">=</span> <span class="n">old</span> <span class="o">-</span> <span class="n">new</span>
+                <span class="n">remaining</span> <span class="o">-=</span> <span class="n">actual_diff</span>
+                <span class="n">total_diff</span> <span class="o">-=</span> <span class="n">actual_diff</span>
+                <span class="n">sashes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+
+        <span class="c"># The superclass handler which will actually perform the layout.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_OnSize</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WxSplitter"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter">[docs]</a><span class="k">class</span> <span class="nc">WxSplitter</span><span class="p">(</span><span class="n">WxConstraintsWidget</span><span class="p">,</span> <span class="n">ProxySplitter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxySplitter.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxSplitter</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Setup methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxSplitter.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates the underlying wxSplitter widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxSplitter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxSplitter.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_orientation</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">orientation</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_live_drag</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">live_drag</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSplitter.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the layout initialization for the splitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_items</span><span class="p">():</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">AppendWindow</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxSplitter.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a WxSplitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxSplitItem</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">dchild</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">child</span> <span class="ow">is</span> <span class="n">dchild</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">InsertWindow</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">size_hint_updated</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxSplitter.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a WxSplitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxSplitItem</span><span class="p">):</span>
+            <span class="n">widget</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">DetachWindow</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">size_hint_updated</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxSplitter.split_items"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter.split_items">[docs]</a>    <span class="k">def</span> <span class="nf">split_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the split items defined for the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">split_items</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">d</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span> <span class="ow">or</span> <span class="bp">None</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxySplitter API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxSplitter.set_orientation"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter.set_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">set_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the orientation of the splitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wx_orientation</span> <span class="o">=</span> <span class="n">_ORIENTATION_MAP</span><span class="p">[</span><span class="n">orientation</span><span class="p">]</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">if</span> <span class="n">sh_guard</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">size_hint_guard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="n">widget</span><span class="o">.</span><span class="n">SetOrientation</span><span class="p">(</span><span class="n">wx_orientation</span><span class="p">)</span>
+                <span class="n">widget</span><span class="o">.</span><span class="n">SizeWindows</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">SetOrientation</span><span class="p">(</span><span class="n">wx_orientation</span><span class="p">)</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">SizeWindows</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxSplitter.set_live_drag"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.wx.wx_splitter.WxSplitter.set_live_drag">[docs]</a>    <span class="k">def</span> <span class="nf">set_live_drag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">live_drag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the drag state of the splitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">live_drag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">WindowStyle</span> <span class="o">|=</span> <span class="n">wx</span><span class="o">.</span><span class="n">SP_LIVE_UPDATE</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">WindowStyle</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">wx</span><span class="o">.</span><span class="n">SP_LIVE_UPDATE</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

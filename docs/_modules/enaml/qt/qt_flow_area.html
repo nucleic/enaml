@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_flow_area &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_flow_area</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QScrollArea</span><span class="p">,</span> <span class="n">QFrame</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.flow_area</span> <span class="kn">import</span> <span class="n">ProxyFlowArea</span>
+
+<span class="kn">from</span> <span class="nn">.qt_constraints_widget</span> <span class="kn">import</span> <span class="n">QtConstraintsWidget</span>
+<span class="kn">from</span> <span class="nn">.qt_flow_item</span> <span class="kn">import</span> <span class="n">QtFlowItem</span>
+<span class="kn">from</span> <span class="nn">.q_flow_layout</span> <span class="kn">import</span> <span class="n">QFlowLayout</span>
+
+
+<span class="n">_DIRECTION_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;left_to_right&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">LeftToRight</span><span class="p">,</span>
+    <span class="s">&#39;right_to_left&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">RightToLeft</span><span class="p">,</span>
+    <span class="s">&#39;top_to_bottom&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">TopToBottom</span><span class="p">,</span>
+    <span class="s">&#39;bottom_to_top&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">BottomToTop</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="n">_ALIGN_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;leading&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">AlignLeading</span><span class="p">,</span>
+    <span class="s">&#39;trailing&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">AlignTrailing</span><span class="p">,</span>
+    <span class="s">&#39;center&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">AlignCenter</span><span class="p">,</span>
+    <span class="s">&#39;justify&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">AlignJustify</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">QFlowArea</span><span class="p">(</span><span class="n">QScrollArea</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom QScrollArea which implements a flowing layout.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a QFlowArea.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parent : QWidget, optional</span>
+<span class="sd">            The parent widget of this widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QFlowArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_widget</span> <span class="o">=</span> <span class="n">QFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span> <span class="o">=</span> <span class="n">QFlowLayout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_widget</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_layout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWidgetResizable</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_widget</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the layout for this flow area.</span>
+
+<span class="sd">        The majority of interaction for a QFlowArea takes place through</span>
+<span class="sd">        its layout, rather than through the widget itself.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QFlowLayout</span>
+<span class="sd">            The flow layout for this flow area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span>
+
+    <span class="k">def</span> <span class="nf">setLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented method. Setting the layout on a QFlowArea</span>
+<span class="sd">        is not supported.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Cannot set layout on a QFlowArea.&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="QtFlowArea"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea">[docs]</a><span class="k">class</span> <span class="nc">QtFlowArea</span><span class="p">(</span><span class="n">QtConstraintsWidget</span><span class="p">,</span> <span class="n">ProxyFlowArea</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxyFlowArea.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QFlowArea</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtFlowArea.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QFlowArea</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtFlowArea.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtFlowArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_direction</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_align</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">align</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_horizontal_spacing</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">horizontal_spacing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_vertical_spacing</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">vertical_spacing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_margins</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">margins</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtFlowArea.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the layout for the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtFlowArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtFlowItem</span><span class="p">):</span>
+                <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtFlowArea.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtMdiArea.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtFlowArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtFlowItem</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">dchild</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">dchild</span> <span class="ow">is</span> <span class="n">child</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">insertWidget</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtFlowArea.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a QtMdiArea.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtFlowArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtFlowItem</span><span class="p">)</span> <span class="ow">and</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">removeWidget</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyFlowArea API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtFlowArea.set_direction"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.set_direction">[docs]</a>    <span class="k">def</span> <span class="nf">set_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the direction for the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setDirection</span><span class="p">(</span><span class="n">_DIRECTION_MAP</span><span class="p">[</span><span class="n">direction</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="QtFlowArea.set_align"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.set_align">[docs]</a>    <span class="k">def</span> <span class="nf">set_align</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">align</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the alignment for the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">_ALIGN_MAP</span><span class="p">[</span><span class="n">align</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="QtFlowArea.set_horizontal_spacing"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.set_horizontal_spacing">[docs]</a>    <span class="k">def</span> <span class="nf">set_horizontal_spacing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spacing</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the horizontal spacing of the underyling control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setHorizontalSpacing</span><span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtFlowArea.set_vertical_spacing"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.set_vertical_spacing">[docs]</a>    <span class="k">def</span> <span class="nf">set_vertical_spacing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spacing</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the vertical spacing of the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setVerticalSpacing</span><span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtFlowArea.set_margins"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.set_margins">[docs]</a>    <span class="k">def</span> <span class="nf">set_margins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">margins</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the margins of the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">top</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">left</span> <span class="o">=</span> <span class="n">margins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Overrides</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtFlowArea.replace_constraints"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_area.FlowArea.html#enaml.qt.qt_flow_area.QtFlowArea.replace_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">replace_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_cns</span><span class="p">,</span> <span class="n">new_cns</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented QtConstraintsWidget layout method.</span>
+
+<span class="sd">        Constraints layout may not cross the boundary of a FlowArea,</span>
+<span class="sd">        so this method is no-op which stops the layout propagation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ScrollArea &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="SplitItem" href="enaml.widgets.split_item.SplitItem.html" />
+    <link rel="prev" title="Page" href="enaml.widgets.page.Page.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.split_item.SplitItem.html" title="SplitItem"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.page.Page.html" title="Page"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="scrollarea">
+<h1>ScrollArea<a class="headerlink" href="#scrollarea" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.scroll_area.ScrollArea">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.scroll_area.</tt><tt class="descname">ScrollArea</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/scroll_area.html#ScrollArea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.scroll_area.ScrollArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.widgets.constraints_widget.ConstraintsWidget" title="enaml.widgets.constraints_widget.ConstraintsWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.constraints_widget.ConstraintsWidget</span></tt></a></p>
+<p>A widget which displays a single child in a scrollable area.</p>
+<p>A ScrollArea has at most a single child Container widget.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.scroll_area.ScrollArea.horizontal_policy">
+<tt class="descname">horizontal_policy</tt><a class="headerlink" href="#enaml.widgets.scroll_area.ScrollArea.horizontal_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>The horizontal scrollbar policy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.scroll_area.ScrollArea.vertical_policy">
+<tt class="descname">vertical_policy</tt><a class="headerlink" href="#enaml.widgets.scroll_area.ScrollArea.vertical_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>The vertical scrollbar policy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.scroll_area.ScrollArea.widget_resizable">
+<tt class="descname">widget_resizable</tt><a class="headerlink" href="#enaml.widgets.scroll_area.ScrollArea.widget_resizable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to resize the scroll widget when possible to avoid the
+need for scrollbars or to make use of extra space.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.scroll_area.ScrollArea.hug_width">
+<tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.scroll_area.ScrollArea.hug_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>A scroll area is free to expand in width and height by default.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.scroll_area.ScrollArea.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.scroll_area.ScrollArea.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyScrollArea object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.scroll_area.ScrollArea.scroll_widget">
+<tt class="descname">scroll_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/scroll_area.html#ScrollArea.scroll_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.scroll_area.ScrollArea.scroll_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the scroll widget child defined on the area.</p>
+<p>The scroll widget is the last Container child.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-940425c9d9ebcb775a87d04f4e8f13c015f3f53b.png" alt="Inheritance diagram of enaml.qt.qt_scroll_area.QtScrollArea" usemap="#inheritance5c2f685fa5" class="inheritance"/>
+<map id="inheritance5c2f685fa5" name="inheritance5c2f685fa5">
+<area shape="rect" id="node5" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="562,39,661,57"/>
+<area shape="rect" id="node6" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="445,39,498,57"/>
+<area shape="rect" id="node16" href="#enaml.qt.qt_scroll_area.QtScrollArea" title="QtScrollArea" alt="" coords="696,21,764,40"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_scroll_area.</tt><tt class="descname">QtScrollArea</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="enaml.qt.qt_constraints_widget.QtConstraintsWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_constraints_widget.QtConstraintsWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.scroll_area.ProxyScrollArea</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyScrollArea.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying QScrollArea widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.scroll_widget">
+<tt class="descname">scroll_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.scroll_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.scroll_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the scroll widget child for this widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtScrollArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a QtScrollArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.on_layout_requested">
+<tt class="descname">on_layout_requested</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.on_layout_requested"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.on_layout_requested" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the <cite>layoutRequested</cite> signal from the QScrollArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.replace_constraints">
+<tt class="descname">replace_constraints</tt><big>(</big><em>old_cns</em>, <em>new_cns</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.replace_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.replace_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reimplemented QtConstraintsWidget layout method.</p>
+<p>Constraints layout may not cross the boundary of a ScrollArea,
+so this method is no-op which stops the layout propagation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.set_horizontal_policy">
+<tt class="descname">set_horizontal_policy</tt><big>(</big><em>policy</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.set_horizontal_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.set_horizontal_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the horizontal scrollbar policy of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.set_vertical_policy">
+<tt class="descname">set_vertical_policy</tt><big>(</big><em>policy</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.set_vertical_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.set_vertical_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the vertical scrollbar policy of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_scroll_area.QtScrollArea.set_widget_resizable">
+<tt class="descname">set_widget_resizable</tt><big>(</big><em>resizable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_scroll_area.html#QtScrollArea.set_widget_resizable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_scroll_area.QtScrollArea.set_widget_resizable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set whether or not the scroll widget is resizable.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-57a0f8c7b0808560136fd309a60d2a64982e1dc9.png" alt="Inheritance diagram of enaml.wx.wx_scroll_area.WxScrollArea" usemap="#inheritancedbc586f670" class="inheritance"/>
+<map id="inheritancedbc586f670" name="inheritancedbc586f670">
+<area shape="rect" id="node2" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.wx.wx_constraints_widget.WxConstraintsWidget" title="WxConstraintsWidget" alt="" coords="559,3,660,21"/>
+<area shape="rect" id="node14" href="#enaml.wx.wx_scroll_area.WxScrollArea" title="WxScrollArea" alt="" coords="694,21,764,39"/>
+<area shape="rect" id="node3" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="WxWidget" alt="" coords="441,3,497,21"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_scroll_area.</tt><tt class="descname">WxScrollArea</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.wx.wx_constraints_widget.WxConstraintsWidget" title="enaml.wx.wx_constraints_widget.WxConstraintsWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_constraints_widget.WxConstraintsWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.scroll_area.ProxyScrollArea</span></tt></p>
+<p>A Wx implementation of an Enaml ScrollArea.</p>
+<dl class="attribute">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying wxScrolledWindow widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the layout initialization for the scroll area.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.scroll_widget">
+<tt class="descname">scroll_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.scroll_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.scroll_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the scroll widget child for this widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a WxScrollArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a WxScrollArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.replace_constraints">
+<tt class="descname">replace_constraints</tt><big>(</big><em>old_cns</em>, <em>new_cns</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.replace_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.replace_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reimplemented WxConstraintsWidget layout method.</p>
+<p>Constraints layout may not cross the boundary of a ScrollArea,
+so this method is no-op which stops the layout propagation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.set_horizontal_policy">
+<tt class="descname">set_horizontal_policy</tt><big>(</big><em>policy</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.set_horizontal_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.set_horizontal_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the horizontal scrollbar policy of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.set_vertical_policy">
+<tt class="descname">set_vertical_policy</tt><big>(</big><em>policy</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.set_vertical_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.set_vertical_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the vertical scrollbar policy of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_scroll_area.WxScrollArea.set_widget_resizable">
+<tt class="descname">set_widget_resizable</tt><big>(</big><em>resizable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_scroll_area.html#WxScrollArea.set_widget_resizable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_scroll_area.WxScrollArea.set_widget_resizable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set whether or not the scroll widget is resizable.</p>
+<p>This is not supported on Wx.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ScrollArea</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.page.Page.html"
+                        title="previous chapter">Page</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.split_item.SplitItem.html"
+                        title="next chapter">SplitItem</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.scroll_area.ScrollArea.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.split_item.SplitItem.html" title="SplitItem"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.page.Page.html" title="Page"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

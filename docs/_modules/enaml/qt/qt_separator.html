@@ -1,0 +1,222 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_separator &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_separator</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtCore</span> <span class="kn">import</span> <span class="n">QSize</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QFrame</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.separator</span> <span class="kn">import</span> <span class="n">ProxySeparator</span>
+
+<span class="kn">from</span> <span class="nn">.qt_constraints_widget</span> <span class="kn">import</span> <span class="n">size_hint_guard</span>
+<span class="kn">from</span> <span class="nn">.qt_control</span> <span class="kn">import</span> <span class="n">QtControl</span>
+
+
+<span class="c"># A mapping from Enaml orientation to frame shape enum.</span>
+<span class="n">LINE_SHAPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;horizontal&#39;</span><span class="p">:</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">HLine</span><span class="p">,</span>
+    <span class="s">&#39;vertical&#39;</span><span class="p">:</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">VLine</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c"># A mapping from Enaml line style to frame shadow enum.</span>
+<span class="n">LINE_STYLES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;sunken&#39;</span><span class="p">:</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">,</span>
+    <span class="s">&#39;raised&#39;</span><span class="p">:</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">Raised</span><span class="p">,</span>
+    <span class="s">&#39;plain&#39;</span><span class="p">:</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">Plain</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">QSeparator</span><span class="p">(</span><span class="n">QFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A QFrame subclass which acts as a separator.</span>
+
+<span class="sd">    This subclass reimplements the sizeHint method to compute a hint</span>
+<span class="sd">    which is appropriate for a frame being used as a vertical or</span>
+<span class="sd">    horizontal separator line.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">sizeHint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># The default sizeHint method returns (-1, 3) or (3, -1) when</span>
+        <span class="c"># the frame is used as a separator, regardless of the computed</span>
+        <span class="c"># frame width. This override corrects that behavior.</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">QSeparator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">sizeHint</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frameShadow</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Raised</span><span class="p">,</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">):</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frameShape</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">shape</span> <span class="o">==</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">HLine</span><span class="p">:</span>
+                <span class="n">hint</span> <span class="o">=</span> <span class="n">QSize</span><span class="p">(</span><span class="n">hint</span><span class="o">.</span><span class="n">width</span><span class="p">(),</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frameWidth</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">shape</span> <span class="o">==</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">VLine</span><span class="p">:</span>
+                <span class="n">hint</span> <span class="o">=</span> <span class="n">QSize</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frameWidth</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span> <span class="n">hint</span><span class="o">.</span><span class="n">height</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">hint</span>
+
+
+<div class="viewcode-block" id="QtSeparator"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.separator.Separator.html#enaml.qt.qt_separator.QtSeparator">[docs]</a><span class="k">class</span> <span class="nc">QtSeparator</span><span class="p">(</span><span class="n">QtControl</span><span class="p">,</span> <span class="n">ProxySeparator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxySeparator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QSeparator</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtSeparator.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.separator.Separator.html#enaml.qt.qt_separator.QtSeparator.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create underlying QSeparator control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QSeparator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtSeparator.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.separator.Separator.html#enaml.qt.qt_separator.QtSeparator.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtSeparator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_orientation</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">orientation</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_line_style</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">line_style</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_line_width</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">line_width</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_midline_width</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">midline_width</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Widget Update Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtSeparator.set_orientation"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.separator.Separator.html#enaml.qt.qt_separator.QtSeparator.set_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">set_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the orientation of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sh_guard</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">size_hint_guard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setFrameShape</span><span class="p">(</span><span class="n">LINE_SHAPES</span><span class="p">[</span><span class="n">orientation</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setFrameShape</span><span class="p">(</span><span class="n">LINE_SHAPES</span><span class="p">[</span><span class="n">orientation</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="QtSeparator.set_line_style"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.separator.Separator.html#enaml.qt.qt_separator.QtSeparator.set_line_style">[docs]</a>    <span class="k">def</span> <span class="nf">set_line_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the line style of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sh_guard</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">size_hint_guard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setFrameShadow</span><span class="p">(</span><span class="n">LINE_STYLES</span><span class="p">[</span><span class="n">style</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setFrameShadow</span><span class="p">(</span><span class="n">LINE_STYLES</span><span class="p">[</span><span class="n">style</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="QtSeparator.set_line_width"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.separator.Separator.html#enaml.qt.qt_separator.QtSeparator.set_line_width">[docs]</a>    <span class="k">def</span> <span class="nf">set_line_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the line width of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sh_guard</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">size_hint_guard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setLineWidth</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setLineWidth</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtSeparator.set_midline_width"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.separator.Separator.html#enaml.qt.qt_separator.QtSeparator.set_midline_width">[docs]</a>    <span class="k">def</span> <span class="nf">set_midline_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the midline width of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sh_guard</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">size_hint_guard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setMidLineWidth</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setMidLineWidth</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

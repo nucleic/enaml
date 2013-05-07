@@ -1,0 +1,463 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.core.code_tracing &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.core.code_tracing</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">.byteplay</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="n">LOAD_CONST</span><span class="p">,</span> <span class="n">ROT_TWO</span><span class="p">,</span> <span class="n">DUP_TOP</span><span class="p">,</span> <span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="n">POP_TOP</span><span class="p">,</span> <span class="n">LOAD_FAST</span><span class="p">,</span>
+    <span class="n">BUILD_TUPLE</span><span class="p">,</span> <span class="n">ROT_THREE</span><span class="p">,</span> <span class="n">UNPACK_SEQUENCE</span><span class="p">,</span> <span class="n">DUP_TOPX</span><span class="p">,</span> <span class="n">BINARY_SUBSCR</span><span class="p">,</span> <span class="n">GET_ITER</span><span class="p">,</span>
+    <span class="n">LOAD_NAME</span><span class="p">,</span> <span class="n">RETURN_VALUE</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="CodeTracer"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeTracer">[docs]</a><span class="k">class</span> <span class="nc">CodeTracer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A base class for implementing code tracers.</span>
+
+<span class="sd">    This class defines the interface for a code tracer object, which is</span>
+<span class="sd">    an object which can be passed as the first argument to a code object</span>
+<span class="sd">    which has been transformed to enable tracing. Methods on the tracer</span>
+<span class="sd">    are called with relevant arguments from the Python stack when that</span>
+<span class="sd">    particular code segment is executing. The return value of a tracer</span>
+<span class="sd">    method is ignored; exceptions are propagated.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="CodeTracer.load_attr"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeTracer.load_attr">[docs]</a>    <span class="k">def</span> <span class="nf">load_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called before the LOAD_ATTR opcode is executed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        obj : object</span>
+<span class="sd">            The object which owns the attribute.</span>
+
+<span class="sd">        attr : string</span>
+<span class="sd">            The attribute being loaded.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="CodeTracer.call_function"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeTracer.call_function">[docs]</a>    <span class="k">def</span> <span class="nf">call_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">argtuple</span><span class="p">,</span> <span class="n">argspec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called before the CALL_FUNCTION opcode is executed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func : object</span>
+<span class="sd">            The object being called.</span>
+
+<span class="sd">        argtuple : tuple</span>
+<span class="sd">            The argument tuple from the stack (see notes).</span>
+
+<span class="sd">        argspec : int</span>
+<span class="sd">            The argument tuple specification.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The `argstuple` contains both positional and keyword argument</span>
+<span class="sd">        information. `argspec` is an int which specifies how to parse</span>
+<span class="sd">        the information. The lower 16bits of `argspec` are significant.</span>
+<span class="sd">        The lowest 8 bits are the number of positional arguments which</span>
+<span class="sd">        are the first n items in `argtuple`. The second 8 bits are the</span>
+<span class="sd">        number of keyword arguments which follow the positional args in</span>
+<span class="sd">        `argtuple` and alternate name -&gt; value. `argtuple` can be parsed</span>
+<span class="sd">        into a conventional tuple and dict with the following:</span>
+
+<span class="sd">            nargs = argspec &amp; 0xFF</span>
+<span class="sd">            args = argtuple[:nargs]</span>
+<span class="sd">            kwargs = dict(zip(argtuple[nargs::2], argtuple[nargs+1::2]))</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="CodeTracer.binary_subscr"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeTracer.binary_subscr">[docs]</a>    <span class="k">def</span> <span class="nf">binary_subscr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called before the BINARY_SUBSCR opcode is executed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        obj : object</span>
+<span class="sd">            The object being indexed.</span>
+
+<span class="sd">        idx : object</span>
+<span class="sd">            The index.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="CodeTracer.get_iter"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeTracer.get_iter">[docs]</a>    <span class="k">def</span> <span class="nf">get_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called before the GET_ITER opcode is executed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        obj : object</span>
+<span class="sd">            The object which should return an iterator.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+</div></div>
+<div class="viewcode-block" id="CodeInverter"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeInverter">[docs]</a><span class="k">class</span> <span class="nc">CodeInverter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A base class for implementing code inverters.</span>
+
+<span class="sd">    This class defines the interface for a code inverter object, which is</span>
+<span class="sd">    an object which can be passed as the first argument to a code object</span>
+<span class="sd">    which has been transformed to enable inversion. The methods on the</span>
+<span class="sd">    inverter are called with relevant arguments from the Python stack</span>
+<span class="sd">    when that particular code segment is executing. The return values of</span>
+<span class="sd">    a tracer method is ignored; exceptions are propagated.</span>
+
+<span class="sd">    The default behavior of an inverter is to raise. Implementations</span>
+<span class="sd">    must provide their own code in order to enable inversion.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="CodeInverter.fail"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeInverter.fail">[docs]</a>    <span class="k">def</span> <span class="nf">fail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called by handlers to raise an inversion exception.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;can&#39;t assign to expression&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CodeInverter.load_name"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeInverter.load_name">[docs]</a>    <span class="k">def</span> <span class="nf">load_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called before the LOAD_NAME opcode is executed.</span>
+
+<span class="sd">        This method should perform a STORE_NAME operation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            The name being loaded.</span>
+
+<span class="sd">        value : object</span>
+<span class="sd">            The value to store.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="CodeInverter.load_attr"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeInverter.load_attr">[docs]</a>    <span class="k">def</span> <span class="nf">load_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called before the LOAD_ATTR opcode is executed.</span>
+
+<span class="sd">        This method should perform a STORE_ATTR operation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        obj : object</span>
+<span class="sd">            The object which owns the attribute.</span>
+
+<span class="sd">        attr : string</span>
+<span class="sd">            The attribute being loaded.</span>
+
+<span class="sd">        value : object</span>
+<span class="sd">            The value to store</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="CodeInverter.call_function"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeInverter.call_function">[docs]</a>    <span class="k">def</span> <span class="nf">call_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">argtuple</span><span class="p">,</span> <span class="n">argspec</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called before the CALL_FUNCTION opcode is executed.</span>
+
+<span class="sd">        This method should perform an appropriate store operation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func : object</span>
+<span class="sd">            The object being called.</span>
+
+<span class="sd">        argtuple : tuple</span>
+<span class="sd">            The argument tuple from the stack (see Notes).</span>
+
+<span class="sd">        argspec : int</span>
+<span class="sd">            The argument tuple specification.</span>
+
+<span class="sd">        value : object</span>
+<span class="sd">            The value to store.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The semantics of the arguments is identical to the method</span>
+<span class="sd">        `call_function` on the `CodeTracer` type.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="CodeInverter.binary_subscr"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.CodeInverter.binary_subscr">[docs]</a>    <span class="k">def</span> <span class="nf">binary_subscr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Called before the BINARY_SUBSCR opcode is executed.</span>
+
+<span class="sd">        This method should perform a STORE_SUBSCR operation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        obj : object</span>
+<span class="sd">            The object being indexed.</span>
+
+<span class="sd">        idx : object</span>
+<span class="sd">            The index.</span>
+
+<span class="sd">        value : object</span>
+<span class="sd">            The value to store.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="inject_tracing"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.inject_tracing">[docs]</a><span class="k">def</span> <span class="nf">inject_tracing</span><span class="p">(</span><span class="n">codelist</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Inject tracing code into the given code list.</span>
+
+<span class="sd">    This will inject the bytecode operations required to trace the</span>
+<span class="sd">    execution of the code using a `CodeTracer` object. The generated</span>
+<span class="sd">    opcodes expect a fast local &#39;_[tracer]&#39; to be available when the</span>
+<span class="sd">    code is executed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    codelist : list</span>
+<span class="sd">        The list of byteplay code ops to modify.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : list</span>
+<span class="sd">        A *new* list of code ops which implement the desired behavior.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># This builds a mapping of code idx to a list of ops, which are the</span>
+    <span class="c"># tracing bytecode instructions which will be inserted into the code</span>
+    <span class="c"># object being transformed. The ops assume that a tracer object is</span>
+    <span class="c"># available in the fast locals using a non-clashable name. All of</span>
+    <span class="c"># the ops have a net-zero effect on the execution stack. Provided</span>
+    <span class="c"># that the tracer has no visible side effects, the tracing is</span>
+    <span class="c"># transparent.</span>
+    <span class="n">inserts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">op_arg</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">codelist</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="n">LOAD_ATTR</span><span class="p">:</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="p">[</span>                        <span class="c"># obj</span>
+                <span class="p">(</span><span class="n">DUP_TOP</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>            <span class="c"># obj -&gt; obj</span>
+                <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[tracer]&#39;</span><span class="p">),</span>   <span class="c"># obj -&gt; obj -&gt; tracer</span>
+                <span class="p">(</span><span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="s">&#39;load_attr&#39;</span><span class="p">),</span>   <span class="c"># obj -&gt; obj -&gt; tracefunc</span>
+                <span class="p">(</span><span class="n">ROT_TWO</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>            <span class="c"># obj -&gt; tracefunc -&gt; obj</span>
+                <span class="p">(</span><span class="n">LOAD_CONST</span><span class="p">,</span> <span class="n">op_arg</span><span class="p">),</span>       <span class="c"># obj -&gt; tracefunc -&gt; obj -&gt; attr</span>
+                <span class="p">(</span><span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="mh">0x0002</span><span class="p">),</span>    <span class="c"># obj -&gt; retval</span>
+                <span class="p">(</span><span class="n">POP_TOP</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>            <span class="c"># obj</span>
+            <span class="p">]</span>
+            <span class="n">inserts</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
+        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="n">CALL_FUNCTION</span><span class="p">:</span>
+            <span class="c"># This computes the number of objects on the stack between</span>
+            <span class="c"># TOS and the object being called. Only the last 16bits of</span>
+            <span class="c"># the op_arg are signifcant. The lowest 8 are the number of</span>
+            <span class="c"># positional args on the stack, the upper 8 is the number of</span>
+            <span class="c"># kwargs. For kwargs, the number of items on the stack is</span>
+            <span class="c"># twice this number since the values on the stack alternate</span>
+            <span class="c"># name, value.</span>
+            <span class="n">n_stack_args</span> <span class="o">=</span> <span class="p">(</span><span class="n">op_arg</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">((</span><span class="n">op_arg</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="p">[</span>                                <span class="c"># func -&gt; arg(0) -&gt; arg(1) -&gt; ... -&gt; arg(n-1)</span>
+                <span class="p">(</span><span class="n">BUILD_TUPLE</span><span class="p">,</span> <span class="n">n_stack_args</span><span class="p">),</span>        <span class="c"># func -&gt; argtuple</span>
+                <span class="p">(</span><span class="n">DUP_TOPX</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>                      <span class="c"># func -&gt; argtuple -&gt; func -&gt; argtuple</span>
+                <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[tracer]&#39;</span><span class="p">),</span>           <span class="c"># func -&gt; argtuple -&gt; func -&gt; argtuple -&gt; tracer</span>
+                <span class="p">(</span><span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="s">&#39;call_function&#39;</span><span class="p">),</span>       <span class="c"># func -&gt; argtuple -&gt; func -&gt; argtuple -&gt; tracefunc</span>
+                <span class="p">(</span><span class="n">ROT_THREE</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>                  <span class="c"># func -&gt; argtuple -&gt; tracefunc -&gt; func -&gt; argtuple</span>
+                <span class="p">(</span><span class="n">LOAD_CONST</span><span class="p">,</span> <span class="n">op_arg</span><span class="p">),</span>               <span class="c"># func -&gt; argtuple -&gt; tracefunc -&gt; func -&gt; argtuple -&gt; argspec</span>
+                <span class="p">(</span><span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="mh">0x0003</span><span class="p">),</span>            <span class="c"># func -&gt; argtuple -&gt; retval</span>
+                <span class="p">(</span><span class="n">POP_TOP</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>                    <span class="c"># func -&gt; argtuple</span>
+                <span class="p">(</span><span class="n">UNPACK_SEQUENCE</span><span class="p">,</span> <span class="n">n_stack_args</span><span class="p">),</span>    <span class="c"># func -&gt; arg(n-1) -&gt; arg(n-2) -&gt; ... -&gt; arg(0)</span>
+                <span class="p">(</span><span class="n">BUILD_TUPLE</span><span class="p">,</span> <span class="n">n_stack_args</span><span class="p">),</span>        <span class="c"># func -&gt; reversedargtuple</span>
+                <span class="p">(</span><span class="n">UNPACK_SEQUENCE</span><span class="p">,</span> <span class="n">n_stack_args</span><span class="p">),</span>    <span class="c"># func -&gt; arg(0) -&gt; arg(1) -&gt; ... -&gt; arg(n-1)</span>
+            <span class="p">]</span>
+            <span class="n">inserts</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
+        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="n">BINARY_SUBSCR</span><span class="p">:</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="p">[</span>                            <span class="c"># obj -&gt; idx</span>
+                <span class="p">(</span><span class="n">DUP_TOPX</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>                  <span class="c"># obj -&gt; idx -&gt; obj -&gt; idx</span>
+                <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[tracer]&#39;</span><span class="p">),</span>       <span class="c"># obj -&gt; idx -&gt; obj -&gt; idx -&gt; tracer</span>
+                <span class="p">(</span><span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="s">&#39;binary_subscr&#39;</span><span class="p">),</span>   <span class="c"># obj -&gt; idx -&gt; obj -&gt; idx -&gt; tracefunc</span>
+                <span class="p">(</span><span class="n">ROT_THREE</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>              <span class="c"># obj -&gt; idx -&gt; tracefunc -&gt; obj -&gt; idx</span>
+                <span class="p">(</span><span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="mh">0x0002</span><span class="p">),</span>        <span class="c"># obj -&gt; idx -&gt; retval</span>
+                <span class="p">(</span><span class="n">POP_TOP</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>                <span class="c"># obj -&gt; idx</span>
+            <span class="p">]</span>
+            <span class="n">inserts</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
+        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="n">GET_ITER</span><span class="p">:</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="p">[</span>                        <span class="c"># obj</span>
+                <span class="p">(</span><span class="n">DUP_TOP</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>            <span class="c"># obj -&gt; obj</span>
+                <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[tracer]&#39;</span><span class="p">),</span>   <span class="c"># obj -&gt; obj -&gt; tracer</span>
+                <span class="p">(</span><span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="s">&#39;get_iter&#39;</span><span class="p">),</span>    <span class="c"># obj -&gt; obj -&gt; tracefunc</span>
+                <span class="p">(</span><span class="n">ROT_TWO</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>            <span class="c"># obj -&gt; tracefunc -&gt; obj</span>
+                <span class="p">(</span><span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="mh">0x0001</span><span class="p">),</span>    <span class="c"># obj -&gt; retval</span>
+                <span class="p">(</span><span class="n">POP_TOP</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>            <span class="c"># obj</span>
+            <span class="p">]</span>
+            <span class="n">inserts</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">code</span>
+
+    <span class="c"># Create a new code list which interleaves the generated code with</span>
+    <span class="c"># the original code at the appropriate location.</span>
+    <span class="n">new_code</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">code_op</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">codelist</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">inserts</span><span class="p">:</span>
+            <span class="n">new_code</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">inserts</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">new_code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code_op</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_code</span>
+
+</div>
+<div class="viewcode-block" id="inject_inversion"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.code_tracing.inject_inversion">[docs]</a><span class="k">def</span> <span class="nf">inject_inversion</span><span class="p">(</span><span class="n">codelist</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Inject inversion code into the given code list.</span>
+
+<span class="sd">    This will inject the bytecode operations required to invert the</span>
+<span class="sd">    execution of the code using a `CodeInverter` object. The generated</span>
+<span class="sd">    opcodes expect the fast local &#39;_[inverter]&#39; and &#39;_[value]&#39; to be</span>
+<span class="sd">    available when the code is executed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    codelist : list</span>
+<span class="sd">        The list of byteplay code ops to modify.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : list</span>
+<span class="sd">        A *new* list of code ops which implement the desired behavior.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        The given code is not suitable for inversion.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">opcode</span><span class="p">,</span> <span class="n">oparg</span> <span class="o">=</span> <span class="n">codelist</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">new_code</span> <span class="o">=</span> <span class="n">codelist</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="n">LOAD_NAME</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">codelist</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">new_code</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>                   <span class="c">#:</span>
+            <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[inverter]&#39;</span><span class="p">),</span>     <span class="c">#: inverter</span>
+            <span class="p">(</span><span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="s">&#39;load_name&#39;</span><span class="p">),</span>       <span class="c">#: invertfunc</span>
+            <span class="p">(</span><span class="n">LOAD_CONST</span><span class="p">,</span> <span class="n">oparg</span><span class="p">),</span>            <span class="c">#: invertfunc -&gt; name</span>
+            <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[value]&#39;</span><span class="p">),</span>        <span class="c">#: invertfunc -&gt; name - &gt; value</span>
+            <span class="p">(</span><span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="mh">0x0002</span><span class="p">),</span>        <span class="c">#: retval</span>
+            <span class="p">(</span><span class="n">RETURN_VALUE</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>           <span class="c">#:</span>
+        <span class="p">])</span>
+    <span class="k">elif</span> <span class="n">opcode</span> <span class="o">==</span> <span class="n">LOAD_ATTR</span><span class="p">:</span>
+        <span class="n">new_code</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>                   <span class="c">#: obj</span>
+            <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[inverter]&#39;</span><span class="p">),</span>     <span class="c">#: obj -&gt; inverter</span>
+            <span class="p">(</span><span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="s">&#39;load_attr&#39;</span><span class="p">),</span>       <span class="c">#: obj -&gt; invertfunc</span>
+            <span class="p">(</span><span class="n">ROT_TWO</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>                <span class="c">#: invertfunc -&gt; obj</span>
+            <span class="p">(</span><span class="n">LOAD_CONST</span><span class="p">,</span> <span class="n">oparg</span><span class="p">),</span>            <span class="c">#: invertfunc -&gt; obj -&gt; attr</span>
+            <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[value]&#39;</span><span class="p">),</span>        <span class="c">#: invertfunc -&gt; obj -&gt; attr -&gt; value</span>
+            <span class="p">(</span><span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="mh">0x0003</span><span class="p">),</span>        <span class="c">#: retval</span>
+            <span class="p">(</span><span class="n">RETURN_VALUE</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>           <span class="c">#:</span>
+        <span class="p">])</span>
+    <span class="k">elif</span> <span class="n">opcode</span> <span class="o">==</span> <span class="n">CALL_FUNCTION</span><span class="p">:</span>
+        <span class="n">n_stack_args</span> <span class="o">=</span> <span class="p">(</span><span class="n">oparg</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">((</span><span class="n">oparg</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span>
+        <span class="n">new_code</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>                   <span class="c">#: func -&gt; arg(0) -&gt; arg(1) -&gt; ... -&gt; arg(n-1)</span>
+            <span class="p">(</span><span class="n">BUILD_TUPLE</span><span class="p">,</span> <span class="n">n_stack_args</span><span class="p">),</span>    <span class="c">#: func -&gt; argtuple</span>
+            <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[inverter]&#39;</span><span class="p">),</span>     <span class="c">#: func -&gt; argtuple -&gt; inverter</span>
+            <span class="p">(</span><span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="s">&#39;call_function&#39;</span><span class="p">),</span>   <span class="c">#: func -&gt; argtuple -&gt; invertfunc</span>
+            <span class="p">(</span><span class="n">ROT_THREE</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>              <span class="c">#: invertfunc -&gt; func -&gt; argtuple</span>
+            <span class="p">(</span><span class="n">LOAD_CONST</span><span class="p">,</span> <span class="n">oparg</span><span class="p">),</span>            <span class="c">#: invertfunc -&gt; func -&gt; argtuple -&gt; argspec</span>
+            <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[value]&#39;</span><span class="p">),</span>        <span class="c">#: invertfunc -&gt; func -&gt; argtuple -&gt; argspec -&gt; value</span>
+            <span class="p">(</span><span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="mh">0x0004</span><span class="p">),</span>        <span class="c">#: retval</span>
+            <span class="p">(</span><span class="n">RETURN_VALUE</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>           <span class="c">#:</span>
+        <span class="p">])</span>
+    <span class="k">elif</span> <span class="n">opcode</span> <span class="o">==</span> <span class="n">BINARY_SUBSCR</span><span class="p">:</span>
+        <span class="n">new_code</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>                   <span class="c">#: obj -&gt; index</span>
+            <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[inverter]&#39;</span><span class="p">),</span>     <span class="c">#: obj -&gt; index -&gt; inverter</span>
+            <span class="p">(</span><span class="n">LOAD_ATTR</span><span class="p">,</span> <span class="s">&#39;binary_subscr&#39;</span><span class="p">),</span>   <span class="c">#: obj -&gt; index -&gt; invertfunc</span>
+            <span class="p">(</span><span class="n">ROT_THREE</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>              <span class="c">#: invertfunc -&gt; obj -&gt; index</span>
+            <span class="p">(</span><span class="n">LOAD_FAST</span><span class="p">,</span> <span class="s">&#39;_[value]&#39;</span><span class="p">),</span>        <span class="c">#: invertfunc -&gt; obj -&gt; index -&gt; value</span>
+            <span class="p">(</span><span class="n">CALL_FUNCTION</span><span class="p">,</span> <span class="mh">0x0003</span><span class="p">),</span>        <span class="c">#: retval</span>
+            <span class="p">(</span><span class="n">RETURN_VALUE</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>           <span class="c">#:</span>
+        <span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;can&#39;t invert code&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_code</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,439 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_window &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_window</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtCore</span> <span class="kn">import</span> <span class="n">Qt</span><span class="p">,</span> <span class="n">QSize</span><span class="p">,</span> <span class="n">pyqtSignal</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QFrame</span><span class="p">,</span> <span class="n">QLayout</span><span class="p">,</span> <span class="n">QIcon</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.window</span> <span class="kn">import</span> <span class="n">ProxyWindow</span>
+
+<span class="kn">from</span> <span class="nn">.q_resource_helpers</span> <span class="kn">import</span> <span class="n">get_cached_qicon</span>
+<span class="kn">from</span> <span class="nn">.q_single_widget_layout</span> <span class="kn">import</span> <span class="n">QSingleWidgetLayout</span>
+<span class="kn">from</span> <span class="nn">.qt_container</span> <span class="kn">import</span> <span class="n">QtContainer</span>
+<span class="kn">from</span> <span class="nn">.qt_widget</span> <span class="kn">import</span> <span class="n">QtWidget</span>
+
+
+<span class="n">MODALITY</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;non_modal&#39;</span><span class="p">:</span> <span class="n">Qt</span><span class="o">.</span><span class="n">NonModal</span><span class="p">,</span>
+    <span class="s">&#39;application_modal&#39;</span><span class="p">:</span> <span class="n">Qt</span><span class="o">.</span><span class="n">ApplicationModal</span><span class="p">,</span>
+    <span class="s">&#39;window_modal&#39;</span><span class="p">:</span> <span class="n">Qt</span><span class="o">.</span><span class="n">WindowModal</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">QWindowLayout</span><span class="p">(</span><span class="n">QSingleWidgetLayout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A QSingleWidgetLayout subclass which adds support for windows</span>
+<span class="sd">    which explicitly set their minimum and maximum sizes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">minimumSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The minimum size for the layout area.</span>
+
+<span class="sd">        This is a reimplemented method which will return the explicit</span>
+<span class="sd">        minimum size of the window, if provided.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">explicitMinimumSize</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">size</span><span class="o">.</span><span class="n">isValid</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">size</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">QWindowLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">minimumSize</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">maximumSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The maximum size for the layout area.</span>
+
+<span class="sd">        This is a reimplemented method which will return the explicit</span>
+<span class="sd">        maximum size of the window, if provided.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">explicitMaximumSize</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">size</span><span class="o">.</span><span class="n">isValid</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">size</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">QWindowLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">maximumSize</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">QWindow</span><span class="p">(</span><span class="n">QFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom QFrame which uses a QWindowLayout to manage its</span>
+<span class="sd">    central widget.</span>
+
+<span class="sd">    The window layout computes the min/max size of the window based</span>
+<span class="sd">    on its central widget, unless the user explicitly changes them.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A signal emitted when the window is closed.</span>
+    <span class="n">closed</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a QWindow.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments needed to initialize</span>
+<span class="sd">            a QFrame.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Window</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_central_widget</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_expl_min_size</span> <span class="o">=</span> <span class="n">QSize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_expl_max_size</span> <span class="o">=</span> <span class="n">QSize</span><span class="p">()</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QWindowLayout</span><span class="p">()</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setSizeConstraint</span><span class="p">(</span><span class="n">QLayout</span><span class="o">.</span><span class="n">SetMinAndMaxSize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">closeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the QCloseEvent from the window system.</span>
+
+<span class="sd">        By default, this handler calls the superclass&#39; method to close</span>
+<span class="sd">        the window and then emits the &#39;closed&#39; signal.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">closeEvent</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">centralWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the central widget for the window.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QWidget or None</span>
+<span class="sd">            The central widget of the window, or None if no widget</span>
+<span class="sd">            was provided.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_central_widget</span>
+
+    <span class="k">def</span> <span class="nf">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the central widget for this window.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        widget : QWidget</span>
+<span class="sd">            The widget to use as the content of the window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_central_widget</span> <span class="o">=</span> <span class="n">widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">explicitMinimumSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the explicit minimum size for this widget.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QSize</span>
+<span class="sd">            If the user has explitly set the minimum size of the</span>
+<span class="sd">            widget, that size will be returned. Otherwise, an</span>
+<span class="sd">            invalid QSize will be returned.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expl_min_size</span>
+
+    <span class="k">def</span> <span class="nf">explicitMaximumSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the explicit maximum size for this widget.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QSize</span>
+<span class="sd">            If the user has explitly set the maximum size of the</span>
+<span class="sd">            widget, that size will be returned. Otherwise, an</span>
+<span class="sd">            invalid QSize will be returned.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expl_max_size</span>
+
+    <span class="k">def</span> <span class="nf">setMinimumSize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the minimum size for the QWindow.</span>
+
+<span class="sd">        This is an overridden parent class method which stores the</span>
+<span class="sd">        provided size as the explictly set QSize. The explicit</span>
+<span class="sd">        size can be reset by passing a QSize of (0, 0).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        size : QSize</span>
+<span class="sd">            The minimum size for the QWindow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setMinimumSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="n">QSize</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_expl_min_size</span> <span class="o">=</span> <span class="n">QSize</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_expl_min_size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">setMaximumSize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the maximum size for the QWindow.</span>
+
+<span class="sd">        This is an overridden parent class method which stores the</span>
+<span class="sd">        provided size as the explictly set QSize. The explicit</span>
+<span class="sd">        size can be reset by passing a QSize equal to the maximum</span>
+<span class="sd">        widget size of QSize(16777215, 16777215).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        size : QSize</span>
+<span class="sd">            The maximum size for the QWindow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setMaximumSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="n">QSize</span><span class="p">(</span><span class="mi">16777215</span><span class="p">,</span> <span class="mi">16777215</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_expl_max_size</span> <span class="o">=</span> <span class="n">QSize</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_expl_max_size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="QtWindow"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow">[docs]</a><span class="k">class</span> <span class="nc">QtWindow</span><span class="p">(</span><span class="n">QtWidget</span><span class="p">,</span> <span class="n">ProxyWindow</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxyWindow.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the toolkit widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QWindow</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtWindow.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the QWindow widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QWindow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtWindow.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">title</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">initial_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_initial_size</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">initial_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">modality</span> <span class="o">!=</span> <span class="s">&#39;non_modal&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_modality</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">modality</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">icon</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_icon</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">icon</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">closed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_closed</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtWindow.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the widget layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">central_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtWindow.central_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.central_widget">[docs]</a>    <span class="k">def</span> <span class="nf">central_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find and return the central widget child for this widget.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QWidget or None</span>
+<span class="sd">            The central widget defined for this widget, or None if one</span>
+<span class="sd">            is not defined.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">central_widget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span>
+</div>
+<div class="viewcode-block" id="QtWindow.on_closed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.on_closed">[docs]</a>    <span class="k">def</span> <span class="nf">on_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The signal handler for the &#39;closed&#39; signal.</span>
+
+<span class="sd">        This method will fire the &#39;closed&#39; event on the declaration.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">_handle_close</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtWindow.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtWindow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">central_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtWindow.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtWindow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">central_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyWindow API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtWindow.close"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Close the window</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtWindow.maximize"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.maximize">[docs]</a>    <span class="k">def</span> <span class="nf">maximize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Maximize the window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">showMaximized</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtWindow.minimize"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.minimize">[docs]</a>    <span class="k">def</span> <span class="nf">minimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Minimize the window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">showMinimized</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtWindow.restore"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.restore">[docs]</a>    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Restore the window after a minimize or maximize.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">showNormal</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtWindow.send_to_front"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.send_to_front">[docs]</a>    <span class="k">def</span> <span class="nf">send_to_front</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Move the window to the top of the Z order.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">raise_</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtWindow.send_to_back"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.send_to_back">[docs]</a>    <span class="k">def</span> <span class="nf">send_to_back</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Move the window to the bottom of the Z order.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtWindow.set_icon"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.set_icon">[docs]</a>    <span class="k">def</span> <span class="nf">set_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">icon</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the window icon.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">icon</span><span class="p">:</span>
+            <span class="n">qicon</span> <span class="o">=</span> <span class="n">get_cached_qicon</span><span class="p">(</span><span class="n">icon</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">qicon</span> <span class="o">=</span> <span class="n">QIcon</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setWindowIcon</span><span class="p">(</span><span class="n">qicon</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtWindow.set_title"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.set_title">[docs]</a>    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title of the window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtWindow.set_initial_size"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.set_initial_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_initial_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the initial size of the window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">size</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">QSize</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="QtWindow.set_modality"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.window.Window.html#enaml.qt.qt_window.QtWindow.set_modality">[docs]</a>    <span class="k">def</span> <span class="nf">set_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modality</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the modality of the window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setWindowModality</span><span class="p">(</span><span class="n">MODALITY</span><span class="p">[</span><span class="n">modality</span><span class="p">])</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

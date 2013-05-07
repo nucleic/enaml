@@ -1,0 +1,29 @@
+Separator
+=================================
+
+.. currentmodule:: enaml.widgets.separator
+
+.. autoclass:: Separator
+
+
+Backends
+--------
+
+Qt
+^^
+
+.. inheritance-diagram::
+    enaml.qt.qt_separator.QtSeparator
+    :parts: 1
+
+.. autoclass:: enaml.qt.qt_separator.QtSeparator
+
+
+Wx
+^^
+
+.. inheritance-diagram::
+    enaml.wx.wx_separator.WxSeparator
+    :parts: 1
+
+.. autoclass:: enaml.wx.wx_separator.WxSeparator

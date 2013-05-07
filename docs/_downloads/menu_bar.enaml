@@ -1,0 +1,86 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `MenuBar` widget.
+
+This example demonstrates the use of the `MenuBar` widget. A `MenuBar`
+can have an arbitrary number of children, which must be `Menu` widgets.
+A `Menu` can have an arbitrary number of children which must be `Menu`
+widgets or `Action` widgets. An `Menu` child becomes a submenu, and an
+`Action` is represented as a clickable menu item. A `MenuBar` must be
+used as the child of a `MainWindow`.
+
+This example also demonstrates the `ActionGroup` widget. An `ActionGroup`
+is used logically group multiple `Action` widgets together. Changes to 
+the `enabled` or `visible` state of the `ActionGroup` apply to all of the
+`Action` widgets in that group. Additionally, the `ActionGroup` is the
+primary means of making `Action` widgets exclusive. The default behavior
+of the group is to make all child `Action` widgets mutually exclusive.
+This can be disabled by setting `exclusive = False` on the `ActionGroup`.
+
+"""
+from enaml.widgets.api import MainWindow, MenuBar, Menu, Action, ActionGroup
+
+
+enamldef Main(MainWindow):
+    MenuBar:
+        Menu:
+            title = '&File'
+            Action:
+                text = 'New File\tCtrl+N'
+                triggered :: print 'New File triggered'
+            Action:
+                text = 'Open File\tCtrl+O'
+                triggered :: print 'Open File triggered'
+            Action:
+                text = 'Open Folder...'
+                triggered :: print 'Open Folder triggered'
+        Menu:
+            title = '&Edit'
+            Action:
+                text = 'Undo\tCtrl+Z'
+                triggered :: print 'Undo triggered'
+            Action:
+                text = 'Redo\tCtrl+R'
+                triggered :: print 'Redo triggered'
+            Menu:
+                title = 'Undo Selection'
+                Action:
+                    text = 'Undo Insert\tCtrl+U'
+                    triggered :: print 'Undo Insert triggered'
+                Action:
+                    text = 'Redo Insert\tCtrl+Shift+U'
+                    enabled = False
+                    triggered :: print 'Redo Insert triggered'
+            Action:
+                separator = True
+            Action:
+                text = 'Cut\tCtrl+X'
+                triggered :: print "Cut triggered"
+            Action:
+                text = 'Copy\tCtrl+C'
+                triggered :: print 'Copy triggered'
+            Action:
+                text = 'Paste\tCtrl+V'
+                triggered :: print 'Paste triggered'
+        Menu:
+            title = '&View'
+            ActionGroup:
+                Action:
+                    checkable = True
+                    text = 'Center'
+                    toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+                Action:
+                    checkable = True
+                    text = 'Left'
+                    toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+                Action:
+                    checkable = True
+                    text = 'Right'
+                    toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+                Action:
+                    checkable = True
+                    text = 'Justify'
+                    toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+

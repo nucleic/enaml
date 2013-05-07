@@ -1,0 +1,221 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ScrollArea Example &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Examples Gallery" href="example.html" />
+    <link rel="next" title="Slider Example" href="ex_slider.html" />
+    <link rel="prev" title="ProgressBar Example" href="ex_progress_bar.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_slider.html" title="Slider Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ex_progress_bar.html" title="ProgressBar Example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" accesskey="U">Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="scrollarea-example">
+<h1>ScrollArea Example<a class="headerlink" href="#scrollarea-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/scroll_area.enaml"><tt class="xref download docutils literal"><span class="pre">scroll_area.enaml</span></tt></a></p>
+<div class="highlight-python"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `ScrollArea` widget.
+
+A `ScrollArea` can have at most one child which must be an instance of
+`Container`. When to show the scroll bars is determined automatically
+based on the sizing constraints of the `Container`. However, that 
+policy can be changed through the attributes 'horizontal_scrollbar' and 
+'vertical_scrollbar'. These attributes can be set to 'as_needed', 
+'always_on', and 'always_off'. The default is 'as_needed'.
+
+"""
+from enaml.widgets.api import (
+    Window, ScrollArea, Form, Label, Field, Container,
+)
+
+
+enamldef Main(Window):
+    title = "Scroll Area"
+    Container:
+        padding = 0
+        ScrollArea:
+            constraints = [width &gt;= 200]
+            Form:
+                Label:
+                    text = "First name:"
+                Field:
+                    pass
+                Label:
+                    text = "Last name:"
+                Field:
+                    pass
+                Label:
+                    text = "Address:"
+                Field:
+                    pass
+                Label:
+                    text = ""
+                Field:
+                    pass
+                Label:
+                    text = "City:"
+                Field:
+                    pass
+                Label:
+                    text = "State:"
+                Field:
+                    pass
+                Label:
+                    text = "Postal Code:"
+                Field:
+                    pass
+                Label:
+                    text = "Country:"
+                Field:
+                    pass
+                Label:
+                    text = "Phone number:"
+                Field:
+                    pass
+                Label:
+                    text = "Email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run scroll_area.enaml</pre>
+</div>
+<img alt="../_images/scroll_area.png" src="../_images/scroll_area.png" />
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ex_progress_bar.html"
+                        title="previous chapter">ProgressBar Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ex_slider.html"
+                        title="next chapter">Slider Example</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/instructional/ex_scroll_area.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_slider.html" title="Slider Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ex_progress_bar.html" title="ProgressBar Example"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" >Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

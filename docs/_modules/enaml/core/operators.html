@@ -1,0 +1,680 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.core.operators &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.core.operators</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">DefaultValue</span><span class="p">,</span> <span class="n">Typed</span>
+<span class="kn">from</span> <span class="nn">atom.datastructures.api</span> <span class="kn">import</span> <span class="n">sortedmap</span>
+
+<span class="kn">from</span> <span class="nn">.dynamic_scope</span> <span class="kn">import</span> <span class="n">DynamicScope</span><span class="p">,</span> <span class="n">Nonlocals</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">DeclarativeError</span>
+<span class="kn">from</span> <span class="nn">.funchelper</span> <span class="kn">import</span> <span class="n">call_func</span>
+<span class="kn">from</span> <span class="nn">.standard_inverter</span> <span class="kn">import</span> <span class="n">StandardInverter</span>
+<span class="kn">from</span> <span class="nn">.standard_tracer</span> <span class="kn">import</span> <span class="n">StandardTracer</span>
+
+
+<div class="viewcode-block" id="OperatorBase"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OperatorBase">[docs]</a><span class="k">class</span> <span class="nc">OperatorBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The base class of the standard Enaml operator implementations.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="s">&#39;binding&#39;</span>
+
+<div class="viewcode-block" id="OperatorBase.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OperatorBase.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize an OperatorBase.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        binding : BindingConstruct</span>
+<span class="sd">            The construct node for the operator binding.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binding</span> <span class="o">=</span> <span class="n">binding</span>
+</div>
+<div class="viewcode-block" id="OperatorBase.get_locals"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OperatorBase.get_locals">[docs]</a>    <span class="k">def</span> <span class="nf">get_locals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the local scope for this operator and owner.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        owner : Declarative</span>
+<span class="sd">            The declarative object of interest.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scope_member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">scope_member</span>
+        <span class="k">if</span> <span class="n">scope_member</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">scope_member</span><span class="o">.</span><span class="n">get_slot</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="p">{}</span>
+</div>
+<div class="viewcode-block" id="OperatorBase.release"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OperatorBase.release">[docs]</a>    <span class="k">def</span> <span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Release any resources held for the given owner.</span>
+
+<span class="sd">        This method is called by a declarative object when it is being</span>
+<span class="sd">        destroyed. It releases the strong reference the owner may have</span>
+<span class="sd">        to the local scope. Subclasses should reimplement this method</span>
+<span class="sd">        if more control is needed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        owner : Declarative</span>
+<span class="sd">            The declarative object being destroyed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scope_member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">scope_member</span>
+        <span class="k">if</span> <span class="n">scope_member</span><span class="p">:</span>
+            <span class="n">scope_member</span><span class="o">.</span><span class="n">set_slot</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="OpSimple"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpSimple">[docs]</a><span class="k">class</span> <span class="nc">OpSimple</span><span class="p">(</span><span class="n">OperatorBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An operator class which implements the `=` operator semantics.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="OpSimple.eval"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpSimple.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Evaluate and return the expression value.</span>
+
+<span class="sd">        This method is called by the &#39;_run_eval_operator()&#39; method on</span>
+<span class="sd">        a Declarative instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        owner : Declarative</span>
+<span class="sd">            The declarative object requesting the evaluation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;nonlocals&#39;</span><span class="p">:</span> <span class="n">Nonlocals</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="s">&#39;self&#39;</span><span class="p">:</span> <span class="n">owner</span><span class="p">}</span>
+        <span class="n">f_locals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_locals</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="o">.</span><span class="n">func</span>
+        <span class="n">scope</span> <span class="o">=</span> <span class="n">DynamicScope</span><span class="p">(</span>
+            <span class="n">owner</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">,</span> <span class="n">overrides</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">func_globals</span><span class="p">,</span> <span class="bp">None</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">call_func</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{},</span> <span class="n">scope</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DeprecatedNotificationEvent"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.DeprecatedNotificationEvent">[docs]</a><span class="k">class</span> <span class="nc">DeprecatedNotificationEvent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A backwards compatibility object.</span>
+
+<span class="sd">    This object implements the magic &#39;event&#39; scope object on the rhs</span>
+<span class="sd">    of a &#39;::&#39; operator. That object is deprecated and this object will</span>
+<span class="sd">    raise a deprecation warning when it is used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># TODO: Remove this class in Enaml version 0.8.0</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;_change&#39;</span><span class="p">,</span> <span class="s">&#39;_binding&#39;</span><span class="p">)</span>
+
+    <span class="n">_warning_registry</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_change</span> <span class="o">=</span> <span class="n">change</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binding</span> <span class="o">=</span> <span class="n">binding</span>
+
+    <span class="k">def</span> <span class="nf">_raise_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;The &#39;event&#39; scope object will be removed in Enaml &quot;</span>
+        <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;version 0.8.0. Use the &#39;change&#39; scope object instead.&quot;</span>
+        <span class="n">binding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binding</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">lineno</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">lineno</span>
+        <span class="n">reg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_warning_registry</span>
+        <span class="kn">import</span> <span class="nn">warnings</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn_explicit</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">reg</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_warning</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change</span><span class="p">[</span><span class="s">&#39;object&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_warning</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">old</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_warning</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;oldvalue&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raise_warning</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_change</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="OpNotify"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpNotify">[docs]</a><span class="k">class</span> <span class="nc">OpNotify</span><span class="p">(</span><span class="n">OperatorBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An operator class which implements the `::` operator semantics.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="OpNotify.notify"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpNotify.notify">[docs]</a>    <span class="k">def</span> <span class="nf">notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Run the notification code bound to the operator.</span>
+
+<span class="sd">        This method is called by the &#39;_run_notify_operator()&#39; method on</span>
+<span class="sd">        a Declarative instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        change : dict</span>
+<span class="sd">            The change dict for the change on the requestor.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">owner</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;object&#39;</span><span class="p">]</span>
+        <span class="n">nonlocals</span> <span class="o">=</span> <span class="n">Nonlocals</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;change&#39;</span><span class="p">:</span> <span class="n">change</span><span class="p">,</span> <span class="s">&#39;nonlocals&#39;</span><span class="p">:</span> <span class="n">nonlocals</span><span class="p">,</span> <span class="s">&#39;self&#39;</span><span class="p">:</span> <span class="n">owner</span><span class="p">}</span>
+        <span class="c"># TODO remove &#39;event&#39; in Enaml version 0.8.0</span>
+        <span class="n">overrides</span><span class="p">[</span><span class="s">&#39;event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DeprecatedNotificationEvent</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="p">)</span>
+        <span class="n">f_locals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_locals</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="o">.</span><span class="n">func</span>
+        <span class="n">scope</span> <span class="o">=</span> <span class="n">DynamicScope</span><span class="p">(</span>
+            <span class="n">owner</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">,</span> <span class="n">overrides</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">func_globals</span><span class="p">,</span> <span class="bp">None</span>
+        <span class="p">)</span>
+        <span class="n">call_func</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{},</span> <span class="n">scope</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="OpUpdate"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpUpdate">[docs]</a><span class="k">class</span> <span class="nc">OpUpdate</span><span class="p">(</span><span class="n">OperatorBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An operator class which implements the `&gt;&gt;` operator semantics.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="OpUpdate.notify"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpUpdate.notify">[docs]</a>    <span class="k">def</span> <span class="nf">notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Run the notification code bound to the operator.</span>
+
+<span class="sd">        This method is called by the &#39;_run_notify_operator()&#39; method on</span>
+<span class="sd">        a Declarative instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        change : dict</span>
+<span class="sd">            The change dict for the change on the requestor.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">owner</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;object&#39;</span><span class="p">]</span>
+        <span class="n">nonlocals</span> <span class="o">=</span> <span class="n">Nonlocals</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;nonlocals&#39;</span><span class="p">:</span> <span class="n">nonlocals</span><span class="p">,</span> <span class="s">&#39;self&#39;</span><span class="p">:</span> <span class="n">owner</span><span class="p">}</span>
+        <span class="n">inverter</span> <span class="o">=</span> <span class="n">StandardInverter</span><span class="p">(</span><span class="n">nonlocals</span><span class="p">)</span>
+        <span class="n">f_locals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_locals</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="o">.</span><span class="n">func</span>
+        <span class="n">scope</span> <span class="o">=</span> <span class="n">DynamicScope</span><span class="p">(</span>
+            <span class="n">owner</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">,</span> <span class="n">overrides</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">func_globals</span><span class="p">,</span> <span class="bp">None</span>
+        <span class="p">)</span>
+        <span class="n">call_func</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">inverter</span><span class="p">,</span> <span class="n">change</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">)),</span> <span class="p">{},</span> <span class="n">scope</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="SubscriptionObserver"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.SubscriptionObserver">[docs]</a><span class="k">class</span> <span class="nc">SubscriptionObserver</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An observer used to listen for changes in &quot;&lt;&lt;&quot; expressions.</span>
+
+<span class="sd">    Instances of this class are created and managed by the OpSubscribe</span>
+<span class="sd">    class when the operator is evaluated and traced.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;owner&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SubscriptionObserver.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.SubscriptionObserver.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a SubscriptionObserver.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        owner : Declarative</span>
+<span class="sd">            The declarative owner of interest.</span>
+
+<span class="sd">        name : string</span>
+<span class="sd">            The name to which the operator is bound.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">owner</span>  <span class="c"># will be reset to None by OpSubscribe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+</div>
+<div class="viewcode-block" id="SubscriptionObserver.__nonzero__"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.SubscriptionObserver.__nonzero__">[docs]</a>    <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The notifier is valid when it has an internal owner.</span>
+
+<span class="sd">        The atom observer mechanism will remove the observer when it</span>
+<span class="sd">        tests boolean False. This removes the need to keep a weakref</span>
+<span class="sd">        to the owner.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="SubscriptionObserver.__call__"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.SubscriptionObserver.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The handler for the change notification.</span>
+
+<span class="sd">        This will be invoked by the Atom observer mechanism when the</span>
+<span class="sd">        item which is being observed changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">owner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span>
+        <span class="k">if</span> <span class="n">owner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">owner</span><span class="o">.</span><span class="n">_run_eval_operator</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="OpSubscribe"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpSubscribe">[docs]</a><span class="k">class</span> <span class="nc">OpSubscribe</span><span class="p">(</span><span class="n">OperatorBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An operator class which implements the `&lt;&lt;` operator semantics.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="OpSubscribe.get_storage"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpSubscribe.get_storage">[docs]</a>    <span class="k">def</span> <span class="nf">get_storage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the operator storage for the owner.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">member</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">get_member</span><span class="p">(</span><span class="s">&#39;__op_storage__&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">member</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;no operator storage&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">member</span><span class="o">.</span><span class="n">do_getattr</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="OpSubscribe.release"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpSubscribe.release">[docs]</a>    <span class="k">def</span> <span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Release the resources held for the given owner.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">OpSubscribe</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+        <span class="n">storage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_storage</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+        <span class="n">observer</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">observer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">observer</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="OpSubscribe.eval"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpSubscribe.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Evaluate and return the expression value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tracer</span> <span class="o">=</span> <span class="n">StandardTracer</span><span class="p">()</span>
+        <span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;nonlocals&#39;</span><span class="p">:</span> <span class="n">Nonlocals</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">tracer</span><span class="p">),</span> <span class="s">&#39;self&#39;</span><span class="p">:</span> <span class="n">owner</span><span class="p">}</span>
+        <span class="n">f_locals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_locals</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="o">.</span><span class="n">func</span>
+        <span class="n">scope</span> <span class="o">=</span> <span class="n">DynamicScope</span><span class="p">(</span>
+            <span class="n">owner</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">,</span> <span class="n">overrides</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">func_globals</span><span class="p">,</span> <span class="n">tracer</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">call_func</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">tracer</span><span class="p">,),</span> <span class="p">{},</span> <span class="n">scope</span><span class="p">)</span>
+
+        <span class="c"># Invalidate the old observer so that it gets cleaned up.</span>
+        <span class="n">storage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_storage</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+        <span class="n">old_observer</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">old_observer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">old_observer</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c"># Create a new observer to bind to the current change set.</span>
+        <span class="k">if</span> <span class="n">tracer</span><span class="o">.</span><span class="n">traced_items</span><span class="p">:</span>
+            <span class="n">observer</span> <span class="o">=</span> <span class="n">SubscriptionObserver</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">storage</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="n">observer</span>
+            <span class="k">for</span> <span class="n">obj</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">tracer</span><span class="o">.</span><span class="n">traced_items</span><span class="p">:</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">observer</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+</div></div>
+<div class="viewcode-block" id="OpDelegate"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpDelegate">[docs]</a><span class="k">class</span> <span class="nc">OpDelegate</span><span class="p">(</span><span class="n">OpSubscribe</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An operator class which implements the `:=` operator semantics.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="OpDelegate.notify"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.OpDelegate.notify">[docs]</a>    <span class="k">def</span> <span class="nf">notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Run the notification code bound to the operator.</span>
+
+<span class="sd">        This method is called by the &#39;_run_notify_operator()&#39; method on</span>
+<span class="sd">        a Declarative instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        change : dict</span>
+<span class="sd">            The change dict for the change on the requestor.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">owner</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;object&#39;</span><span class="p">]</span>
+        <span class="n">nonlocals</span> <span class="o">=</span> <span class="n">Nonlocals</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">inverter</span> <span class="o">=</span> <span class="n">StandardInverter</span><span class="p">(</span><span class="n">nonlocals</span><span class="p">)</span>
+        <span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;nonlocals&#39;</span><span class="p">:</span> <span class="n">nonlocals</span><span class="p">,</span> <span class="s">&#39;self&#39;</span><span class="p">:</span> <span class="n">owner</span><span class="p">}</span>
+        <span class="n">f_locals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_locals</span><span class="p">(</span><span class="n">owner</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binding</span><span class="o">.</span><span class="n">auxfunc</span>
+        <span class="n">scope</span> <span class="o">=</span> <span class="n">DynamicScope</span><span class="p">(</span>
+            <span class="n">owner</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">,</span> <span class="n">overrides</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">func_globals</span><span class="p">,</span> <span class="bp">None</span>
+        <span class="p">)</span>
+        <span class="n">call_func</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">inverter</span><span class="p">,</span> <span class="n">change</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">)),</span> <span class="p">{},</span> <span class="n">scope</span><span class="p">)</span>
+
+
+<span class="c"># TODO remove this in Enaml 0.8.0</span></div></div>
+<span class="n">_warn_color_registry</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">def</span> <span class="nf">_warn_color_binding</span><span class="p">(</span><span class="n">binding</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;The &#39;</span><span class="si">%s</span><span class="s">&#39; attribute has been removed. Use &#39;</span><span class="si">%s</span><span class="s">&#39; instead. &quot;</span>
+    <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;Compatibility will be removed in Enaml version 0.8.0.&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;fgcolor&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;fgcolor&#39;</span><span class="p">,</span> <span class="s">&#39;foreground&#39;</span><span class="p">),</span>
+        <span class="s">&#39;bgcolor&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;bgcolor&#39;</span><span class="p">,</span> <span class="s">&#39;background&#39;</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="n">d</span><span class="p">[</span><span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+    <span class="n">lineno</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">lineno</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">filename</span>
+    <span class="n">reg</span> <span class="o">=</span> <span class="n">_warn_color_registry</span>
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn_explicit</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">reg</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="assert_d_member"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.assert_d_member">[docs]</a><span class="k">def</span> <span class="nf">assert_d_member</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">readable</span><span class="p">,</span> <span class="n">writable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Assert binding points to a valid declarative member.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    klass : Declarative</span>
+<span class="sd">        The declarative class which owns the binding.</span>
+
+<span class="sd">    binding : BindingConstruct</span>
+<span class="sd">        The binding construct created by the resolver.</span>
+
+<span class="sd">    readable : bool</span>
+<span class="sd">        Whether the member should have the &#39;d_readable&#39; metadata flag.</span>
+
+<span class="sd">    writable : bool</span>
+<span class="sd">        Whether the member should have the &#39;d_writable&#39; metadata flag.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : tuple</span>
+<span class="sd">        A 2-tuple of (name, member) on which the binding should operate.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    DeclarativeError</span>
+<span class="sd">        This will be raised if the member is not valid for the spec.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">members</span> <span class="o">=</span> <span class="n">klass</span><span class="o">.</span><span class="n">members</span><span class="p">()</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">members</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="c"># TODO remove this backwards compatibility mod in Enaml 0.8.0</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">binding</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;fgcolor&#39;</span> <span class="ow">and</span> <span class="s">&#39;foreground&#39;</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+            <span class="n">_warn_color_binding</span><span class="p">(</span><span class="n">binding</span><span class="p">)</span>
+            <span class="n">binding</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;foreground&#39;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">members</span><span class="p">[</span><span class="s">&#39;foreground&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">binding</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;bgcolor&#39;</span> <span class="ow">and</span> <span class="s">&#39;background&#39;</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+            <span class="n">_warn_color_binding</span><span class="p">(</span><span class="n">binding</span><span class="p">)</span>
+            <span class="n">binding</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;background&#39;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">members</span><span class="p">[</span><span class="s">&#39;background&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">m</span><span class="o">.</span><span class="n">metadata</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">m</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;d_member&#39;</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a declarative member&quot;</span> <span class="o">%</span> <span class="n">binding</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">root</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">typename</span>
+        <span class="n">lineno</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">lineno</span>
+        <span class="k">raise</span> <span class="n">DeclarativeError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">lineno</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">readable</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">m</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;d_readable&#39;</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not readable from enaml&quot;</span> <span class="o">%</span> <span class="n">binding</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">root</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">typename</span>
+        <span class="n">lineno</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">lineno</span>
+        <span class="k">raise</span> <span class="n">DeclarativeError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">lineno</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">writable</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">m</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;d_writable&#39;</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not writable from enaml&quot;</span> <span class="o">%</span> <span class="n">binding</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">root</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">typename</span>
+        <span class="n">lineno</span> <span class="o">=</span> <span class="n">binding</span><span class="o">.</span><span class="n">lineno</span>
+        <span class="k">raise</span> <span class="n">DeclarativeError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">lineno</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">m</span>
+
+</div>
+<div class="viewcode-block" id="bind_read_operator"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.bind_read_operator">[docs]</a><span class="k">def</span> <span class="nf">bind_read_operator</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">operator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Bind a readable operator for the binding to the given klass.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    klass : Declarative</span>
+<span class="sd">        The declarative class which owns the binding.</span>
+
+<span class="sd">    binding : dict</span>
+<span class="sd">        The binding dict created by the enaml compiler.</span>
+
+<span class="sd">    operator : object</span>
+<span class="sd">        The operator to bind to the class.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">member</span> <span class="o">=</span> <span class="n">assert_d_member</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">klass</span><span class="o">.</span><span class="n">notify_operators</span><span class="p">()</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">operator</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">member</span><span class="o">.</span><span class="n">has_observer</span><span class="p">(</span><span class="s">&#39;_run_notify_operator&#39;</span><span class="p">):</span>
+        <span class="n">clone</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="n">clone</span><span class="o">.</span><span class="n">add_static_observer</span><span class="p">(</span><span class="s">&#39;_run_notify_operator&#39;</span><span class="p">)</span>
+        <span class="n">klass</span><span class="o">.</span><span class="n">members</span><span class="p">()[</span><span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">clone</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">clone</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="bind_write_operator"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.bind_write_operator">[docs]</a><span class="k">def</span> <span class="nf">bind_write_operator</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">operator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Bind a writable operator for the binding to the given klass.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    klass : Declarative</span>
+<span class="sd">        The declarative class which owns the binding.</span>
+
+<span class="sd">    binding : dict</span>
+<span class="sd">        The binding dict created by the enaml compiler.</span>
+
+<span class="sd">    operator : OperatorBase</span>
+<span class="sd">        The operator handler to bind to the class.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">member</span> <span class="o">=</span> <span class="n">assert_d_member</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">klass</span><span class="o">.</span><span class="n">eval_operators</span><span class="p">()[</span><span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">operator</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="p">(</span><span class="n">DefaultValue</span><span class="o">.</span><span class="n">ObjectMethod_Name</span><span class="p">,</span> <span class="s">&#39;_run_eval_operator&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">member</span><span class="o">.</span><span class="n">default_value_mode</span> <span class="o">!=</span> <span class="n">mode</span><span class="p">:</span>
+        <span class="n">clone</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="n">clone</span><span class="o">.</span><span class="n">set_default_value_mode</span><span class="p">(</span><span class="o">*</span><span class="n">mode</span><span class="p">)</span>
+        <span class="n">klass</span><span class="o">.</span><span class="n">members</span><span class="p">()[</span><span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">clone</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">clone</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="add_operator_storage"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.add_operator_storage">[docs]</a><span class="k">def</span> <span class="nf">add_operator_storage</span><span class="p">(</span><span class="n">klass</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Add a member to the class named &#39;__op_storage__&#39;.</span>
+
+<span class="sd">    This member will be added as needed, and can be used to store</span>
+<span class="sd">    instance specific data needed by the operators. The value of the</span>
+<span class="sd">    storage will be a sortedmap.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">members</span> <span class="o">=</span> <span class="n">klass</span><span class="o">.</span><span class="n">members</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s">&#39;__op_storage__&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">sortedmap</span><span class="p">,</span> <span class="p">())</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s">&#39;__op_storage__&#39;</span><span class="p">)</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">))</span>
+        <span class="n">members</span><span class="p">[</span><span class="s">&#39;__op_storage__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+
+</div>
+<div class="viewcode-block" id="op_simple"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.op_simple">[docs]</a><span class="k">def</span> <span class="nf">op_simple</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The default Enaml operator function for the `=` operator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bind_write_operator</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">OpSimple</span><span class="p">(</span><span class="n">binding</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="op_notify"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.op_notify">[docs]</a><span class="k">def</span> <span class="nf">op_notify</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The default Enaml operator function for the `::` operator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bind_read_operator</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">OpNotify</span><span class="p">(</span><span class="n">binding</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="op_update"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.op_update">[docs]</a><span class="k">def</span> <span class="nf">op_update</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The default Enaml operator function for the `&gt;&gt;` operator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bind_read_operator</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">OpUpdate</span><span class="p">(</span><span class="n">binding</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="op_subscribe"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.op_subscribe">[docs]</a><span class="k">def</span> <span class="nf">op_subscribe</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The default Enaml operator function for the `&lt;&lt;` operator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bind_write_operator</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">OpSubscribe</span><span class="p">(</span><span class="n">binding</span><span class="p">))</span>
+    <span class="n">add_operator_storage</span><span class="p">(</span><span class="n">klass</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="op_delegate"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.op_delegate">[docs]</a><span class="k">def</span> <span class="nf">op_delegate</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The default Enaml operator function for the `:=` operator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">operator</span> <span class="o">=</span> <span class="n">OpDelegate</span><span class="p">(</span><span class="n">binding</span><span class="p">)</span>
+    <span class="n">bind_read_operator</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">operator</span><span class="p">)</span>
+    <span class="n">bind_write_operator</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">operator</span><span class="p">)</span>
+    <span class="n">add_operator_storage</span><span class="p">(</span><span class="n">klass</span><span class="p">)</span>
+
+</div>
+<span class="n">DEFAULT_OPERATORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;=&#39;</span><span class="p">:</span> <span class="n">op_simple</span><span class="p">,</span>
+    <span class="s">&#39;::&#39;</span><span class="p">:</span> <span class="n">op_notify</span><span class="p">,</span>
+    <span class="s">&#39;&gt;&gt;&#39;</span><span class="p">:</span> <span class="n">op_update</span><span class="p">,</span>
+    <span class="s">&#39;&lt;&lt;&#39;</span><span class="p">:</span> <span class="n">op_subscribe</span><span class="p">,</span>
+    <span class="s">&#39;:=&#39;</span><span class="p">:</span> <span class="n">op_delegate</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c">#: The internal stack of operators pushed by the operator context.</span>
+<span class="n">__operator_stack</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<span class="nd">@contextmanager</span>
+<div class="viewcode-block" id="operator_context"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.operators.operator_context">[docs]</a><span class="k">def</span> <span class="nf">operator_context</span><span class="p">(</span><span class="n">ops</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Push operators onto the stack for the duration of the context.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ops : dict</span>
+<span class="sd">        The dictionary of operators to push onto the stack.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__operator_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="n">__operator_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+</div>
+<span class="k">def</span> <span class="nf">__get_default_operators</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Set the default operators.</span>
+
+<span class="sd">    This function is for internal use only and may disappear at any time.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">DEFAULT_OPERATORS</span>
+
+
+<span class="k">def</span> <span class="nf">__set_default_operators</span><span class="p">(</span><span class="n">ops</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Set the default operators.</span>
+
+<span class="sd">    This function is for internal use only and may disappear at any time.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">DEFAULT_OPERATORS</span>
+    <span class="n">DEFAULT_OPERATORS</span> <span class="o">=</span> <span class="n">ops</span>
+
+
+<span class="k">def</span> <span class="nf">__get_operators</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; An internal routine used to get the operators for a given class.</span>
+
+<span class="sd">    Operators resolution is performed in the following order:</span>
+
+<span class="sd">        - The operators on the top of the operators stack.</span>
+<span class="sd">        - The default operators via __get_default_operators()</span>
+
+<span class="sd">    This function may disappear at any time.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">__operator_stack</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">__operator_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">__get_default_operators</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

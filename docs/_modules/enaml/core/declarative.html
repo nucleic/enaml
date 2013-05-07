@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.core.declarative &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.core.declarative</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Event</span>
+
+<span class="kn">from</span> <span class="nn">.declarative_meta</span> <span class="kn">import</span> <span class="n">DeclarativeMeta</span>
+<span class="kn">from</span> <span class="nn">.object</span> <span class="kn">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">flag_generator</span><span class="p">,</span> <span class="n">flag_property</span>
+
+
+<div class="viewcode-block" id="d_"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.d_">[docs]</a><span class="k">def</span> <span class="nf">d_</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="n">readable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">writable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Mark an Atom member as bindable from Enaml syntax.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    member : Member</span>
+<span class="sd">        The atom member to mark as bindable from Enaml syntax.</span>
+
+<span class="sd">    readable : bool, optional</span>
+<span class="sd">        Whether the member is readable from Enaml syntax. The member</span>
+<span class="sd">        must be readable to use the &#39;&gt;&gt;&#39;, &#39;:=&#39;, and &#39;::&#39; operators.</span>
+
+<span class="sd">    writable : bool, optional</span>
+<span class="sd">        Whether the member is writable from Enaml syntax. The member</span>
+<span class="sd">        must be writable to use the &#39;=&#39;, &#39;&lt;&lt;&#39;, and &#39;:=&#39; operators.</span>
+
+<span class="sd">    final : bool, optional</span>
+<span class="sd">        Whether or not the member can be redefined from Enaml syntax</span>
+<span class="sd">        using the &#39;attr&#39; keyword. The default is True and indicates</span>
+<span class="sd">        that the member cannot be overridden.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">metadata</span>
+    <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">metadata</span><span class="p">[</span><span class="s">&#39;d_member&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">metadata</span><span class="p">[</span><span class="s">&#39;d_readable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">readable</span>
+    <span class="n">metadata</span><span class="p">[</span><span class="s">&#39;d_writable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">writable</span>
+    <span class="n">metadata</span><span class="p">[</span><span class="s">&#39;d_final&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">final</span>
+    <span class="k">return</span> <span class="n">member</span>
+
+
+<span class="c">#: The flag indicating that the Declarative object has been initialized.</span></div>
+<span class="n">INITIALIZED_FLAG</span> <span class="o">=</span> <span class="n">flag_generator</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="Declarative"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.Declarative">[docs]</a><span class="k">class</span> <span class="nc">Declarative</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The most base class of the Enaml declarative objects.</span>
+
+<span class="sd">    This class provides the core functionality required of declarative</span>
+<span class="sd">    Enaml types. It can be used directly in a declarative Enaml object</span>
+<span class="sd">    tree to store and react to state changes. It has no concept of a</span>
+<span class="sd">    visual representation; that functionality is added by subclasses.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">DeclarativeMeta</span>
+
+    <span class="c">#: Export the &#39;name&#39; attribute as a declarative member.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Str</span><span class="p">())</span>
+
+    <span class="c">#: An event fired when an object is initialized. It is triggered</span>
+    <span class="c">#: once during the object lifetime, at the end of the initialize</span>
+    <span class="c">#: method.</span>
+    <span class="n">initialized</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Event</span><span class="p">(),</span> <span class="n">writable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: A property which gets and sets the initialized flag. This should</span>
+    <span class="c">#: not be manipulated directly by user code.</span>
+    <span class="n">is_initialized</span> <span class="o">=</span> <span class="n">flag_property</span><span class="p">(</span><span class="n">INITIALIZED_FLAG</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Declarative.initialize"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.Declarative.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize this object all of its children recursively.</span>
+
+<span class="sd">        This is called to give the objects in the tree the opportunity</span>
+<span class="sd">        to initialize additional state which depends upon the object</span>
+<span class="sd">        tree being fully built. It is the responsibility of external</span>
+<span class="sd">        code to call this method at the appropriate time. This will</span>
+<span class="sd">        emit the `initialized` signal after all of the children have</span>
+<span class="sd">        been initialized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Iterate over a copy since the children add and remove</span>
+        <span class="c"># other children during initialization.</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[:]:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Declarative</span><span class="p">):</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Declarative.destroy"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.Declarative.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden destructor method for declarative cleanup.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__eval_operators__</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="n">op</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">oplist</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__notify_operators__</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">oplist</span><span class="p">:</span>
+                <span class="n">op</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Declarative</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Declarative.child_added"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.Declarative.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden child added event handler.</span>
+
+<span class="sd">        This handler will automatically initialize a declarative child</span>
+<span class="sd">        if this object itself has already been initialized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Declarative</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Declarative</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">child</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Private Framework API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="k">def</span> <span class="nf">_run_eval_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Run the eval operator attached to the given name.</span>
+
+<span class="sd">        This method is used as a default value handler by the Enaml</span>
+<span class="sd">        operators when an eval operator is bound to the object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            The name to which the operator of interest is bound.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : object or NotImplemented</span>
+<span class="sd">            The result of the evaluated operator, or NotImplemented if</span>
+<span class="sd">            there is no eval operator bound for the given name.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">op</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__eval_operators__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">op</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">op</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">_run_notify_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Invoke a bound notify operator for the given change.</span>
+
+<span class="sd">        This method is used as a static observer by the Enaml</span>
+<span class="sd">        operators when a notify operator is bound to the object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        change : dict</span>
+<span class="sd">            The change dictionary for the notification.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oplist</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__notify_operators__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">oplist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">oplist</span><span class="p">:</span>
+                <span class="n">op</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">change</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

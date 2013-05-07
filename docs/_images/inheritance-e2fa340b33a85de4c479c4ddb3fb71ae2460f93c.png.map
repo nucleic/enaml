@@ -1,0 +1,7 @@
+<map id="inheritancecd2cbac4c8" name="inheritancecd2cbac4c8">
+<area shape="rect" id="node12" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="QtControl" alt="" coords="531,29,571,42"/>
+<area shape="rect" id="node13" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="417,29,491,42"/>
+<area shape="rect" id="node5" href="#enaml.qt.qt_time_selector.QtTimeSelector" title="QtTimeSelector" alt="" coords="706,16,765,29"/>
+<area shape="rect" id="node6" href="enaml.widgets.bounded_time.BoundedTime.html#enaml.qt.qt_bounded_time.QtBoundedTime" title="QtBoundedTime" alt="" coords="616,29,676,42"/>
+<area shape="rect" id="node16" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="330,29,370,42"/>
+</map>

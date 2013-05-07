@@ -1,0 +1,29 @@
+DockPane
+================================
+
+.. currentmodule:: enaml.widgets.dock_pane
+
+.. autoclass:: DockPane
+
+
+Backends
+--------
+
+Qt
+^^
+
+.. inheritance-diagram::
+    enaml.qt.qt_dock_pane.QtDockPane
+    :parts: 1
+
+.. autoclass:: enaml.qt.qt_dock_pane.QtDockPane
+
+
+Wx
+^^
+
+.. inheritance-diagram::
+    enaml.wx.wx_dock_pane.WxDockPane
+    :parts: 1
+
+.. autoclass:: enaml.wx.wx_dock_pane.WxDockPane

@@ -1,0 +1,646 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_spin_box &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_spin_box</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.lib.newevent</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.spin_box</span> <span class="kn">import</span> <span class="n">ProxySpinBox</span>
+
+<span class="kn">from</span> <span class="nn">.wx_control</span> <span class="kn">import</span> <span class="n">WxControl</span>
+
+
+<span class="c">#: The changed event for the custom spin box</span>
+<span class="n">wxSpinBoxEvent</span><span class="p">,</span> <span class="n">EVT_SPIN_BOX</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">newevent</span><span class="o">.</span><span class="n">NewEvent</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">wxProperSpinBox</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">SpinCtrl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom wx spin control that acts more like QSpinBox.</span>
+
+<span class="sd">    The standard wx.SpinCtrl doesn&#39;t support too many features, and</span>
+<span class="sd">    the ones it does support are (like wrapping) are limited. So,</span>
+<span class="sd">    this custom control hard codes the internal range to the maximum</span>
+<span class="sd">    range of the wx.SpinCtrl and implements wrapping manually.</span>
+
+<span class="sd">    For changed events, users should bind to EVT_SPIN_BOX rather than</span>
+<span class="sd">    EVT_SPINCTRL.</span>
+
+<span class="sd">    See the method docstrings for supported functionality.</span>
+
+<span class="sd">    This control is really a god awful hack and needs to be rewritten</span>
+<span class="sd">    using a combination wx.SpinButton and wx.TextCtrl.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; CustomSpinCtrl constructor.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments for initializing a</span>
+<span class="sd">            wx.SpinCtrl.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The max range of the wx.SpinCtrl is the range of a signed</span>
+        <span class="c"># 32bit integer. We don&#39;t care about wx&#39;s internal value of</span>
+        <span class="c"># the control, since we maintain our own internal counter.</span>
+        <span class="c"># and because the internal value of the widget gets reset to</span>
+        <span class="c"># the minimum of the range whenever SetValueString is called.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hard_min</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">31</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hard_max</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">31</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_internal_value</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_step</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_suffix</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_special_value_text</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_string</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c"># Stores whether spin-up or spin-down was pressed.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spin_state</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxProperSpinBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxProperSpinBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">SetRange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hard_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hard_max</span><span class="p">)</span>
+
+        <span class="c"># Setting the spin control to process the enter key removes</span>
+        <span class="c"># its processing of the Tab key. This is desired for two reasons:</span>
+        <span class="c"># 1) It is consistent with the Qt version of the control.</span>
+        <span class="c"># 2) The default tab processing is kinda wacky in that when</span>
+        <span class="c">#    tab is pressed, it emits a text event with the string</span>
+        <span class="c">#    representation of the integer value of the control,</span>
+        <span class="c">#    regardless of the value of the user supplied string.</span>
+        <span class="c">#    This is definitely not correct and so processing on</span>
+        <span class="c">#    Enter allows us to avoid the issue entirely.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">WindowStyle</span> <span class="o">|=</span> <span class="n">wx</span><span class="o">.</span><span class="n">TE_PROCESS_ENTER</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SPIN_UP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSpinUp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SPIN_DOWN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSpinDown</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SPINCTRL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSpinCtrl</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TEXT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnText</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_KILL_FOCUS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnKillFocus</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TEXT_ENTER</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnEnterPressed</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Event Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">OnEnterPressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for an enter key press. It forces an</span>
+<span class="sd">        interpretation of the current text control value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">InterpretText</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">OnKillFocus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles evaluating the text in the control when the control</span>
+<span class="sd">        loses focus.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The spin control doesn&#39;t emit a spin event when losing focus</span>
+        <span class="c"># to process typed input change unless it results in a different</span>
+        <span class="c"># value, so we have to handle it manually and update the control</span>
+        <span class="c"># again after the event. It must be invoked on a CallAfter or it</span>
+        <span class="c"># doesn&#39;t work properly. The lambda avoids a DeadObjectError if</span>
+        <span class="c"># the app is exited before the callback executes.</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">CallAfter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">InterpretText</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">OnText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles the text event of the spin control to store away the</span>
+<span class="sd">        user typed text for later conversion.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="c"># Do not be tempted to try to implement the &#39;tracking&#39; feature</span>
+        <span class="c"># by adding logic to this method. Wx emits this event at weird</span>
+        <span class="c"># times such as ctrl-a select all as well as when SetValueString</span>
+        <span class="c"># is called. Granted, this can be avoided with a recursion guard,</span>
+        <span class="c"># however, there is no way to get/set the caret position on the</span>
+        <span class="c"># control and every call to SetValueString resets the caret</span>
+        <span class="c"># position to Zero. So, there is really no possible way to</span>
+        <span class="c"># implement &#39;tracking&#39; without creating an entirely new custom</span>
+        <span class="c"># control. So for now, the wx backend just lacks that feature.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_string</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetString</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">OnSpinUp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for the spin up event. We veto the spin</span>
+<span class="sd">        event to prevent the control from changing it&#39;s internal value.</span>
+<span class="sd">        Instead, we maintain complete control of the value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">Veto</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spin_state</span> <span class="o">=</span> <span class="s">&#39;up&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OnSpinCtrl</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spin_state</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">OnSpinDown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for the spin down event. We veto the spin</span>
+<span class="sd">        event to prevent the control from changing it&#39;s internal value.</span>
+<span class="sd">        Instead, we maintain complete control of the value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">Veto</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spin_state</span> <span class="o">=</span> <span class="s">&#39;down&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OnSpinCtrl</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spin_state</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">OnSpinCtrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles the spin control being changed by user interaction.</span>
+<span class="sd">        All of the manual stepping and wrapping logic is computed by</span>
+<span class="sd">        this method.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_value</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span>
+        <span class="n">wrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span>
+        <span class="n">spin_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spin_state</span>
+        <span class="k">if</span> <span class="n">spin_state</span> <span class="o">==</span> <span class="s">&#39;down&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">last</span> <span class="o">==</span> <span class="n">low</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">wrap</span><span class="p">:</span>
+                    <span class="n">computed</span> <span class="o">=</span> <span class="n">high</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">computed</span> <span class="o">=</span> <span class="n">low</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">computed</span> <span class="o">=</span> <span class="n">last</span> <span class="o">-</span> <span class="n">step</span>
+                <span class="k">if</span> <span class="n">computed</span> <span class="o">&lt;</span> <span class="n">low</span><span class="p">:</span>
+                    <span class="n">computed</span> <span class="o">=</span> <span class="n">low</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">computed</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">spin_state</span> <span class="o">==</span> <span class="s">&#39;up&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">last</span> <span class="o">==</span> <span class="n">high</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">wrap</span><span class="p">:</span>
+                    <span class="n">computed</span> <span class="o">=</span> <span class="n">low</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">computed</span> <span class="o">=</span> <span class="n">high</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">computed</span> <span class="o">=</span> <span class="n">last</span> <span class="o">+</span> <span class="n">step</span>
+                <span class="k">if</span> <span class="n">computed</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
+                    <span class="n">computed</span> <span class="o">=</span> <span class="n">high</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">computed</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># A suprious spin event generated by wx when the widget loses</span>
+            <span class="c"># focus. We can safetly ignore it.</span>
+            <span class="k">pass</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Getters/Setters</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">GetLow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the minimum value of the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span>
+
+    <span class="k">def</span> <span class="nf">GetMin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Equivalent to GetLow().</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span>
+
+    <span class="k">def</span> <span class="nf">SetLow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the minimum value of the control and changes the</span>
+<span class="sd">        value to the min if the current value would be out of range.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">low</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hard_min</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> is too low for wxProperSpinBox.&#39;</span> <span class="o">%</span> <span class="n">low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">=</span> <span class="n">low</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">low</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">low</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetHigh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the maximum value of the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span>
+
+    <span class="k">def</span> <span class="nf">GetMax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Equivalent to GetHigh().</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span>
+
+    <span class="k">def</span> <span class="nf">SetHigh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">high</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the maximum value of the control and changes the</span>
+<span class="sd">        value to the max if the current value would be out of range.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">high</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hard_max</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> is too high for wxProperSpinBox.&#39;</span> <span class="o">%</span> <span class="n">high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_high</span> <span class="o">=</span> <span class="n">high</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">high</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">SetRange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the low and high values of the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetLow</span><span class="p">(</span><span class="n">low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetHigh</span><span class="p">(</span><span class="n">high</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetStep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the step size of the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span>
+
+    <span class="k">def</span> <span class="nf">SetStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the step size of the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_step</span> <span class="o">=</span> <span class="n">step</span>
+
+    <span class="k">def</span> <span class="nf">GetWrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the wrap flag of the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span>
+
+    <span class="k">def</span> <span class="nf">SetWrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrap</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the wrap flag of the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span> <span class="o">=</span> <span class="n">wrap</span>
+
+    <span class="k">def</span> <span class="nf">GetPrefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the prefix text for the control.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : unicode</span>
+<span class="sd">            The unicode prefix text.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span>
+
+    <span class="k">def</span> <span class="nf">SetPrefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the prefix text for the control.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        prefix : unicode</span>
+<span class="sd">            The unicode prefix text for the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+
+    <span class="k">def</span> <span class="nf">GetSuffix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the suffix text for the control.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : unicode</span>
+<span class="sd">            The unicode suffix text.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_suffix</span>
+
+    <span class="k">def</span> <span class="nf">SetSuffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the suffix text for the control.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        suffix : unicode</span>
+<span class="sd">            The unicode suffix text for the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_suffix</span> <span class="o">=</span> <span class="n">suffix</span>
+
+    <span class="k">def</span> <span class="nf">GetSpecialValueText</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the special value text for the spin box.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : unicode</span>
+<span class="sd">            The unicode special value text.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_special_value_text</span>
+
+    <span class="k">def</span> <span class="nf">SetSpecialValueText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the special value text for the control.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : unicode</span>
+<span class="sd">            The unicode special value text for the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_special_value_text</span> <span class="o">=</span> <span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">GetReadOnly</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the read only flag for the control.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            True if the control is read only, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_suffix</span>
+
+    <span class="k">def</span> <span class="nf">SetReadOnly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the read only flag for the control</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        read_only : bool</span>
+<span class="sd">            True if the control should be read only, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span> <span class="o">=</span> <span class="n">read_only</span>
+
+    <span class="k">def</span> <span class="nf">GetValue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the internal integer value of the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_value</span>
+
+    <span class="k">def</span> <span class="nf">SetValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the value of the control to the given value, provided</span>
+<span class="sd">        that the value is within the range of the control. If the</span>
+<span class="sd">        given value is within range, and is different from the current</span>
+<span class="sd">        value of the control, an EVT_SPIN_BOX will be emitted.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">different</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="o">&lt;=</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high</span><span class="p">:</span>
+            <span class="n">different</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_internal_value</span> <span class="o">!=</span> <span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_internal_value</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="c"># Always set the value string, just to be overly</span>
+        <span class="c"># safe that we don&#39;t fall out of sync.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TextFromValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_internal_value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetValueString</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_value_string</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">different</span><span class="p">:</span>
+            <span class="n">evt</span> <span class="o">=</span> <span class="n">wxSpinBoxEvent</span><span class="p">()</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Support Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">InterpretText</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Interprets the user supplied text and updates the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_suffix</span>
+        <span class="n">svt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_special_value_text</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value_string</span>
+        <span class="k">if</span> <span class="n">svt</span> <span class="ow">and</span> <span class="n">text</span> <span class="o">==</span> <span class="n">svt</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_low</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">prefix</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">):]</span>
+        <span class="k">if</span> <span class="n">suffix</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">)]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">TextFromValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Converts the given integer to a string for display.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_suffix</span>
+        <span class="n">svt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_special_value_text</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low</span> <span class="ow">and</span> <span class="n">svt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">svt</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prefix</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">suffix</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span>
+
+
+<span class="c">#: Cyclic guard flag</span>
+<span class="n">VALUE_FLAG</span> <span class="o">=</span> <span class="mh">0x1</span>
+
+
+<div class="viewcode-block" id="WxSpinBox"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox">[docs]</a><span class="k">class</span> <span class="nc">WxSpinBox</span><span class="p">(</span><span class="n">WxControl</span><span class="p">,</span> <span class="n">ProxySpinBox</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxySpinBox.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxProperSpinBox</span><span class="p">)</span>
+
+    <span class="c">#: Cyclic guard flags</span>
+    <span class="n">_guard</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxSpinBox.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying wxProperSpinBox widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxProperSpinBox</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxSpinBox.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create and initialize the slider control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSpinBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_maximum</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">maximum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_minimum</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">minimum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_prefix</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_suffix</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_special_value_text</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">special_value_text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_single_step</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">single_step</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_read_only</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">read_only</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_wrapping</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">wrapping</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_SPIN_BOX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_value_changed</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Event Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxSpinBox.on_value_changed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.on_value_changed">[docs]</a>    <span class="k">def</span> <span class="nf">on_value_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for the &#39;EVT_SPIN_BOX&#39; event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;</span> <span class="n">VALUE_FLAG</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">VALUE_FLAG</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">VALUE_FLAG</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxySpinBox API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxSpinBox.set_maximum"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_maximum">[docs]</a>    <span class="k">def</span> <span class="nf">set_maximum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maximum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the widget&#39;s maximum value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetHigh</span><span class="p">(</span><span class="n">maximum</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSpinBox.set_minimum"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_minimum">[docs]</a>    <span class="k">def</span> <span class="nf">set_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the widget&#39;s minimum value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetLow</span><span class="p">(</span><span class="n">minimum</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSpinBox.set_value"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_value">[docs]</a>    <span class="k">def</span> <span class="nf">set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the spin box&#39;s value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;</span> <span class="n">VALUE_FLAG</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">VALUE_FLAG</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">VALUE_FLAG</span>
+
+</div>
+<div class="viewcode-block" id="WxSpinBox.set_prefix"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">set_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the prefix for the spin box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetPrefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSpinBox.set_suffix"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_suffix">[docs]</a>    <span class="k">def</span> <span class="nf">set_suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the suffix for the spin box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetSuffix</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSpinBox.set_special_value_text"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_special_value_text">[docs]</a>    <span class="k">def</span> <span class="nf">set_special_value_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the special value text for the spin box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetSpecialValueText</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSpinBox.set_single_step"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_single_step">[docs]</a>    <span class="k">def</span> <span class="nf">set_single_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the widget&#39;s single step value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetStep</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSpinBox.set_read_only"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_read_only">[docs]</a>    <span class="k">def</span> <span class="nf">set_read_only</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the widget&#39;s read only flag.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetReadOnly</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSpinBox.set_wrapping"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.wx.wx_spin_box.WxSpinBox.set_wrapping">[docs]</a>    <span class="k">def</span> <span class="nf">set_wrapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapping</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the widget&#39;s wrapping flag.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetWrap</span><span class="p">(</span><span class="n">wrapping</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

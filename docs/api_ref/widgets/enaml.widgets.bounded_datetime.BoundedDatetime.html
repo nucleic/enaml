@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>BoundedDatetime &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="BoundedTime" href="enaml.widgets.bounded_time.BoundedTime.html" />
+    <link rel="prev" title="BoundedDate" href="enaml.widgets.bounded_date.BoundedDate.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.bounded_time.BoundedTime.html" title="BoundedTime"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.bounded_date.BoundedDate.html" title="BoundedDate"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="boundeddatetime">
+<h1>BoundedDatetime<a class="headerlink" href="#boundeddatetime" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.bounded_datetime.BoundedDatetime">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.bounded_datetime.</tt><tt class="descname">BoundedDatetime</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/bounded_datetime.html#BoundedDatetime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.bounded_datetime.BoundedDatetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.widgets.control.Control" title="enaml.widgets.control.Control"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.control.Control</span></tt></a></p>
+<p>A base class for use with widgets that edit a Python
+datetime.datetime object bounded between minimum and maximum
+values. This class is not meant to be used directly.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.bounded_datetime.BoundedDatetime.minimum">
+<tt class="descname">minimum</tt><a class="headerlink" href="#enaml.widgets.bounded_datetime.BoundedDatetime.minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum datetime available in the datetime edit. If not
+defined then the default value is midnight September 14, 1752.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.bounded_datetime.BoundedDatetime.maximum">
+<tt class="descname">maximum</tt><a class="headerlink" href="#enaml.widgets.bounded_datetime.BoundedDatetime.maximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum datetime available in the datetime edit. If not
+defined then the default value is the second before midnight
+December 31, 7999.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.bounded_datetime.BoundedDatetime.datetime">
+<tt class="descname">datetime</tt><a class="headerlink" href="#enaml.widgets.bounded_datetime.BoundedDatetime.datetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>The currently selected date. Default is datetime.now(). The
+value is bounded between <a class="reference internal" href="#enaml.widgets.bounded_datetime.BoundedDatetime.minimum" title="enaml.widgets.bounded_datetime.BoundedDatetime.minimum"><tt class="xref py py-attr docutils literal"><span class="pre">minimum</span></tt></a> and <a class="reference internal" href="#enaml.widgets.bounded_datetime.BoundedDatetime.maximum" title="enaml.widgets.bounded_datetime.BoundedDatetime.maximum"><tt class="xref py py-attr docutils literal"><span class="pre">maximum</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.bounded_datetime.BoundedDatetime.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.bounded_datetime.BoundedDatetime.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyBoundedDatetime object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-6a9d943b5821025258ff9647f74ff2f9bde93cc5.png" alt="Inheritance diagram of enaml.qt.qt_bounded_datetime.QtBoundedDatetime" usemap="#inheritance4cdfd8de55" class="inheritance"/>
+<map id="inheritance4cdfd8de55" name="inheritance4cdfd8de55">
+<area shape="rect" id="node7" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="QtControl" alt="" coords="590,31,635,46"/>
+<area shape="rect" id="node8" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="459,31,539,46"/>
+<area shape="rect" id="node11" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="363,31,407,46"/>
+<area shape="rect" id="node21" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime" title="QtBoundedDatetime" alt="" coords="686,17,765,32"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_bounded_datetime.QtBoundedDatetime">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_bounded_datetime.</tt><tt class="descname">QtBoundedDatetime</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_bounded_datetime.html#QtBoundedDatetime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="enaml.qt.qt_control.QtControl"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_control.QtControl</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.bounded_datetime.ProxyBoundedDatetime</span></tt></p>
+<p>A base class for implementing Qt Enaml datetime widgets.</p>
+<dl class="method">
+<dt id="enaml.qt.qt_bounded_datetime.QtBoundedDatetime.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_bounded_datetime.html#QtBoundedDatetime.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement in a subclass to create the datetime widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_bounded_datetime.QtBoundedDatetime.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_bounded_datetime.html#QtBoundedDatetime.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and initialize the underlying datetime widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_bounded_datetime.QtBoundedDatetime.on_datetime_changed">
+<tt class="descname">on_datetime_changed</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_bounded_datetime.html#QtBoundedDatetime.on_datetime_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime.on_datetime_changed" title="Permalink to this definition">¶</a></dt>
+<dd><p>A signal handler for the datetime changed signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_bounded_datetime.QtBoundedDatetime.get_datetime">
+<tt class="descname">get_datetime</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_bounded_datetime.html#QtBoundedDatetime.get_datetime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime.get_datetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the current datetime in the control.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (datetime) &#8211; The current control datetime as a datetime object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_bounded_datetime.QtBoundedDatetime.set_minimum">
+<tt class="descname">set_minimum</tt><big>(</big><em>datetime</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_bounded_datetime.html#QtBoundedDatetime.set_minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime.set_minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the widget&#8217;s minimum datetime.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>datetime</strong> (<a class="reference external" href="http://docs.python.org/library/datetime.html#datetime" title="(in Python v2.7)"><em>datetime</em></a>) &#8211; The datetime object to use for setting the minimum datetime.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_bounded_datetime.QtBoundedDatetime.set_maximum">
+<tt class="descname">set_maximum</tt><big>(</big><em>datetime</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_bounded_datetime.html#QtBoundedDatetime.set_maximum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime.set_maximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the widget&#8217;s maximum datetime.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>datetime</strong> (<a class="reference external" href="http://docs.python.org/library/datetime.html#datetime" title="(in Python v2.7)"><em>datetime</em></a>) &#8211; The datetime object to use for setting the maximum datetime.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_bounded_datetime.QtBoundedDatetime.set_datetime">
+<tt class="descname">set_datetime</tt><big>(</big><em>datetime</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_bounded_datetime.html#QtBoundedDatetime.set_datetime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_bounded_datetime.QtBoundedDatetime.set_datetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the widget&#8217;s current datetime.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>datetime</strong> (<a class="reference external" href="http://docs.python.org/library/datetime.html#datetime" title="(in Python v2.7)"><em>datetime</em></a>) &#8211; The datetime object to use for setting the datetime.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">BoundedDatetime</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.bounded_date.BoundedDate.html"
+                        title="previous chapter">BoundedDate</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.bounded_time.BoundedTime.html"
+                        title="next chapter">BoundedTime</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.bounded_datetime.BoundedDatetime.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.bounded_time.BoundedTime.html" title="BoundedTime"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.bounded_date.BoundedDate.html" title="BoundedDate"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

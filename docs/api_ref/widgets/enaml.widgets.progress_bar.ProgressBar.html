@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ProgressBar &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="PushButton" href="enaml.widgets.push_button.PushButton.html" />
+    <link rel="prev" title="MPLCanvas" href="enaml.widgets.mpl_canvas.MPLCanvas.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.push_button.PushButton.html" title="PushButton"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.mpl_canvas.MPLCanvas.html" title="MPLCanvas"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="progressbar">
+<h1>ProgressBar<a class="headerlink" href="#progressbar" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.progress_bar.ProgressBar">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.progress_bar.</tt><tt class="descname">ProgressBar</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/progress_bar.html#ProgressBar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.progress_bar.ProgressBar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.widgets.control.Control" title="enaml.widgets.control.Control"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.control.Control</span></tt></a></p>
+<p>A control which displays a value as a ticking progress bar.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.progress_bar.ProgressBar.minimum">
+<tt class="descname">minimum</tt><a class="headerlink" href="#enaml.widgets.progress_bar.ProgressBar.minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum progress value. If the minimum value is changed such
+that it becomes greater than the current value or the maximum
+value, then those values will be adjusted. The default is 0.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.progress_bar.ProgressBar.maximum">
+<tt class="descname">maximum</tt><a class="headerlink" href="#enaml.widgets.progress_bar.ProgressBar.maximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum progress value. If the maximum value is changed such
+that it becomes smaller than the current value or the minimum
+value, then those values will be adjusted. The default is 100.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.progress_bar.ProgressBar.value">
+<tt class="descname">value</tt><a class="headerlink" href="#enaml.widgets.progress_bar.ProgressBar.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>The position value of the Slider. The value will be clipped to
+always fall between the minimum and maximum.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.progress_bar.ProgressBar.text_visible">
+<tt class="descname">text_visible</tt><a class="headerlink" href="#enaml.widgets.progress_bar.ProgressBar.text_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not to display progress percentage on the control.
+This may not be supported by all toolkits and platforms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.progress_bar.ProgressBar.hug_width">
+<tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.progress_bar.ProgressBar.hug_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>How strongly a component hugs it&#8217;s content. ProgressBars expand
+to fill the available horizontal space by default.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.progress_bar.ProgressBar.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.progress_bar.ProgressBar.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyProgressBar object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-a6d34e3b9c4b5da5ad5f4cefbd8bc9e7d67fa6b6.png" alt="Inheritance diagram of enaml.qt.qt_progress_bar.QtProgressBar" usemap="#inheritanced7aaae831c" class="inheritance"/>
+<map id="inheritanced7aaae831c" name="inheritanced7aaae831c">
+<area shape="rect" id="node7" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="QtControl" alt="" coords="611,33,657,49"/>
+<area shape="rect" id="node8" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="482,33,567,49"/>
+<area shape="rect" id="node11" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="382,33,427,49"/>
+<area shape="rect" id="node23" href="#enaml.qt.qt_progress_bar.QtProgressBar" title="QtProgressBar" alt="" coords="701,18,765,34"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_progress_bar.QtProgressBar">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_progress_bar.</tt><tt class="descname">QtProgressBar</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_progress_bar.html#QtProgressBar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_progress_bar.QtProgressBar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="enaml.qt.qt_control.QtControl"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_control.QtControl</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.progress_bar.ProxyProgressBar</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyProgressBar.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_progress_bar.QtProgressBar.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_progress_bar.QtProgressBar.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_progress_bar.QtProgressBar.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_progress_bar.html#QtProgressBar.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_progress_bar.QtProgressBar.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying progress bar widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_progress_bar.QtProgressBar.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_progress_bar.html#QtProgressBar.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_progress_bar.QtProgressBar.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_progress_bar.QtProgressBar.set_minimum">
+<tt class="descname">set_minimum</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_progress_bar.html#QtProgressBar.set_minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_progress_bar.QtProgressBar.set_minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the minimum value of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_progress_bar.QtProgressBar.set_maximum">
+<tt class="descname">set_maximum</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_progress_bar.html#QtProgressBar.set_maximum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_progress_bar.QtProgressBar.set_maximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the maximum value of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_progress_bar.QtProgressBar.set_value">
+<tt class="descname">set_value</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_progress_bar.html#QtProgressBar.set_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_progress_bar.QtProgressBar.set_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the value of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_progress_bar.QtProgressBar.set_text_visible">
+<tt class="descname">set_text_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_progress_bar.html#QtProgressBar.set_text_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_progress_bar.QtProgressBar.set_text_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the text visibility on the widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-c68f83393be2946680b8c35b7d9e963b1f34856a.png" alt="Inheritance diagram of enaml.wx.wx_progress_bar.WxProgressBar" usemap="#inheritance14b7b08ee9" class="inheritance"/>
+<map id="inheritance14b7b08ee9" name="inheritance14b7b08ee9">
+<area shape="rect" id="node1" href="enaml.widgets.control.Control.html#enaml.wx.wx_control.WxControl" title="WxControl" alt="" coords="608,3,657,18"/>
+<area shape="rect" id="node21" href="#enaml.wx.wx_progress_bar.WxProgressBar" title="WxProgressBar" alt="" coords="698,18,765,34"/>
+<area shape="rect" id="node2" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.wx.wx_constraints_widget.WxConstraintsWidget" title="WxConstraintsWidget" alt="" coords="479,3,566,18"/>
+<area shape="rect" id="node6" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="WxWidget" alt="" coords="378,3,426,18"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_progress_bar.WxProgressBar">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_progress_bar.</tt><tt class="descname">WxProgressBar</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_progress_bar.html#WxProgressBar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_progress_bar.WxProgressBar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.wx.wx_control.WxControl" title="enaml.wx.wx_control.WxControl"><tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_control.WxControl</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.progress_bar.ProxyProgressBar</span></tt></p>
+<p>A Wx implementation of an Enaml ProxyProgressBar.</p>
+<dl class="attribute">
+<dt id="enaml.wx.wx_progress_bar.WxProgressBar.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.wx.wx_progress_bar.WxProgressBar.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_progress_bar.WxProgressBar.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_progress_bar.html#WxProgressBar.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_progress_bar.WxProgressBar.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying wx.Gauge widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_progress_bar.WxProgressBar.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_progress_bar.html#WxProgressBar.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_progress_bar.WxProgressBar.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and initialize the progress bar control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_progress_bar.WxProgressBar.set_minimum">
+<tt class="descname">set_minimum</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_progress_bar.html#WxProgressBar.set_minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_progress_bar.WxProgressBar.set_minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the minimum value of the progress bar</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_progress_bar.WxProgressBar.set_maximum">
+<tt class="descname">set_maximum</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_progress_bar.html#WxProgressBar.set_maximum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_progress_bar.WxProgressBar.set_maximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the maximum value of the progress bar</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_progress_bar.WxProgressBar.set_value">
+<tt class="descname">set_value</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_progress_bar.html#WxProgressBar.set_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_progress_bar.WxProgressBar.set_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the value of the progress bar</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_progress_bar.WxProgressBar.set_text_visible">
+<tt class="descname">set_text_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_progress_bar.html#WxProgressBar.set_text_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_progress_bar.WxProgressBar.set_text_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the text visibility on the widget.</p>
+<p>This is not implemented on Wx.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ProgressBar</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.mpl_canvas.MPLCanvas.html"
+                        title="previous chapter">MPLCanvas</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.push_button.PushButton.html"
+                        title="next chapter">PushButton</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.progress_bar.ProgressBar.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.push_button.PushButton.html" title="PushButton"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.mpl_canvas.MPLCanvas.html" title="MPLCanvas"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

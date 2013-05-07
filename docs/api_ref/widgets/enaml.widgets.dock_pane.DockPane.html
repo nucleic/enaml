@@ -1,0 +1,525 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DockPane &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="FlowArea" href="enaml.widgets.flow_area.FlowArea.html" />
+    <link rel="prev" title="DockItem" href="enaml.widgets.dock_item.DockItem.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.flow_area.FlowArea.html" title="FlowArea"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.dock_item.DockItem.html" title="DockItem"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dockpane">
+<h1>DockPane<a class="headerlink" href="#dockpane" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.dock_pane.DockPane">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.dock_pane.</tt><tt class="descname">DockPane</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_pane.html#DockPane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget" title="enaml.widgets.widget.Widget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.widget.Widget</span></tt></a></p>
+<p>A widget which can be docked in a MainWindow.</p>
+<p>A DockPane is a widget which can be docked in designated dock areas
+in a MainWindow. It can have at most a single child widget which is
+an instance of Container.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.title">
+<tt class="descname">title</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>The title to use in the title bar.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.title_bar_visible">
+<tt class="descname">title_bar_visible</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.title_bar_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the title bar is visible.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.title_bar_orientation">
+<tt class="descname">title_bar_orientation</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.title_bar_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>The orientation of the title bar.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.closable">
+<tt class="descname">closable</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.closable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the dock pane is closable via a close button.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.movable">
+<tt class="descname">movable</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.movable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the dock pane is movable by the user.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.floatable">
+<tt class="descname">floatable</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.floatable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the dock can be floated as a separate window.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.floating">
+<tt class="descname">floating</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.floating" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean indicating whether or not the dock pane is floating.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.dock_area">
+<tt class="descname">dock_area</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.dock_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>The dock area in the MainWindow where the pane is docked.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.allowed_dock_areas">
+<tt class="descname">allowed_dock_areas</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.allowed_dock_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>The dock areas in the MainWindow where the pane can be docked
+by the user. Note that this does not preclude the pane from
+being docked programmatically via the &#8216;dock_area&#8217; attribute.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.closed">
+<tt class="descname">closed</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>An event fired when the user closes the pane by clicking on the
+dock pane&#8217;s close button.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_pane.DockPane.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyDockPane object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.dock_pane.DockPane.dock_widget">
+<tt class="descname">dock_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_pane.html#DockPane.dock_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_pane.DockPane.dock_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dock widget defined for the dock pane.</p>
+<p>The last child Container is considered the dock widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-cb33fe0e95499c1cd7063e00b2a553658458dc1d.png" alt="Inheritance diagram of enaml.qt.qt_dock_pane.QtDockPane" usemap="#inheritance624b96e1c6" class="inheritance"/>
+<map id="inheritance624b96e1c6" name="inheritance624b96e1c6">
+<area shape="rect" id="node2" href="#enaml.qt.qt_dock_pane.QtDockPane" title="QtDockPane" alt="" coords="680,28,763,51"/>
+<area shape="rect" id="node3" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="551,4,620,28"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_dock_pane.</tt><tt class="descname">QtDockPane</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="enaml.qt.qt_widget.QtWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_widget.QtWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.dock_pane.ProxyDockPane</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyDockPane.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference tot he widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the QCustomDockWidget widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the dock pane control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the layout initialization for the dock pane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.dock_widget">
+<tt class="descname">dock_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.dock_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.dock_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the dock widget child for this widget.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (QWidget or None) &#8211; The dock widget defined for this widget, or None if one is not defined.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtDockPane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a QtDockPane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.on_closed">
+<tt class="descname">on_closed</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.on_closed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.on_closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>The signal handler for the &#8216;closed&#8217; signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.on_floated">
+<tt class="descname">on_floated</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.on_floated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.on_floated" title="Permalink to this definition">¶</a></dt>
+<dd><p>The signal handler for the &#8216;floated&#8217; signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.on_docked">
+<tt class="descname">on_docked</tt><big>(</big><em>area</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.on_docked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.on_docked" title="Permalink to this definition">¶</a></dt>
+<dd><p>The signal handler for the &#8216;docked&#8217; signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_title">
+<tt class="descname">set_title</tt><big>(</big><em>title</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_title"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_title_bar_visible">
+<tt class="descname">set_title_bar_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_title_bar_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_title_bar_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title bar visibility of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_title_bar_orientation">
+<tt class="descname">set_title_bar_orientation</tt><big>(</big><em>orientation</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_title_bar_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_title_bar_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title bar orientation of the underyling widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_closable">
+<tt class="descname">set_closable</tt><big>(</big><em>closable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_closable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_closable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the closable state on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_movable">
+<tt class="descname">set_movable</tt><big>(</big><em>movable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_movable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_movable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the movable state on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_floatable">
+<tt class="descname">set_floatable</tt><big>(</big><em>floatable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_floatable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_floatable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the floatable state on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_floating">
+<tt class="descname">set_floating</tt><big>(</big><em>floating</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_floating"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_floating" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the floating staet on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_dock_area">
+<tt class="descname">set_dock_area</tt><big>(</big><em>dock_area</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_dock_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_dock_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the dock area on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_pane.QtDockPane.set_allowed_dock_areas">
+<tt class="descname">set_allowed_dock_areas</tt><big>(</big><em>dock_areas</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_pane.html#QtDockPane.set_allowed_dock_areas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_pane.QtDockPane.set_allowed_dock_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the allowed dock areas on the underlying widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-89d65d67d44f4b70132e2a24b24f9f68259e0ff6.png" alt="Inheritance diagram of enaml.wx.wx_dock_pane.WxDockPane" usemap="#inheritancec73006d853" class="inheritance"/>
+<map id="inheritancec73006d853" name="inheritancec73006d853">
+<area shape="rect" id="node2" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="WxWidget" alt="" coords="546,4,619,27"/>
+<area shape="rect" id="node15" href="#enaml.wx.wx_dock_pane.WxDockPane" title="WxDockPane" alt="" coords="676,27,763,50"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_dock_pane.</tt><tt class="descname">WxDockPane</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="enaml.wx.wx_widget.WxWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_widget.WxWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.dock_pane.ProxyDockPane</span></tt></p>
+<p>A Wx implementation of an Enaml ProxyDockPane.</p>
+<dl class="attribute">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference tot he widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the wxDockPane widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the dock pane control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the layout initialization for the dock pane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.dock_widget">
+<tt class="descname">dock_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.dock_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.dock_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the dock widget child for this widget.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (wxWindow or None) &#8211; The dock widget defined for this widget, or None if one is not defined.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a WxDockPane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a WxDockPane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.on_closed">
+<tt class="descname">on_closed</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.on_closed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.on_closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>The event handler for the EVT_DOCK_PANE_CLOSED event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.on_floated">
+<tt class="descname">on_floated</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.on_floated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.on_floated" title="Permalink to this definition">¶</a></dt>
+<dd><p>The event handler for the EVT_DOCK_PANE_FLOATED event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.on_docked">
+<tt class="descname">on_docked</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.on_docked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.on_docked" title="Permalink to this definition">¶</a></dt>
+<dd><p>The event handler for the EVT_DOCK_PANE_AREA event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_visible">
+<tt class="descname">set_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+dock pane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.ensure_visible">
+<tt class="descname">ensure_visible</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.ensure_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.ensure_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+dock pane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.ensure_hidden">
+<tt class="descname">ensure_hidden</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.ensure_hidden"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.ensure_hidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+dock pane.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_title">
+<tt class="descname">set_title</tt><big>(</big><em>title</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_title"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_title_bar_visible">
+<tt class="descname">set_title_bar_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_title_bar_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_title_bar_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title bar visibility of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_title_bar_orientation">
+<tt class="descname">set_title_bar_orientation</tt><big>(</big><em>orientation</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_title_bar_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_title_bar_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title bar orientation of the underyling widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_closable">
+<tt class="descname">set_closable</tt><big>(</big><em>closable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_closable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_closable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the closable state on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_movable">
+<tt class="descname">set_movable</tt><big>(</big><em>movable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_movable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_movable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the movable state on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_floatable">
+<tt class="descname">set_floatable</tt><big>(</big><em>floatable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_floatable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_floatable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the floatable state on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_floating">
+<tt class="descname">set_floating</tt><big>(</big><em>floating</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_floating"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_floating" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the floating staet on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_dock_area">
+<tt class="descname">set_dock_area</tt><big>(</big><em>dock_area</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_dock_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_dock_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the dock area on the underyling widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_dock_pane.WxDockPane.set_allowed_dock_areas">
+<tt class="descname">set_allowed_dock_areas</tt><big>(</big><em>dock_areas</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_dock_pane.html#WxDockPane.set_allowed_dock_areas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_dock_pane.WxDockPane.set_allowed_dock_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the allowed dock areas on the underlying widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">DockPane</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.dock_item.DockItem.html"
+                        title="previous chapter">DockItem</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.flow_area.FlowArea.html"
+                        title="next chapter">FlowArea</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.dock_pane.DockPane.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.flow_area.FlowArea.html" title="FlowArea"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.dock_item.DockItem.html" title="DockItem"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

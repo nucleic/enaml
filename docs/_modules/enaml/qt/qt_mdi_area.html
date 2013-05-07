@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_mdi_area &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_mdi_area</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QMdiArea</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.mdi_area</span> <span class="kn">import</span> <span class="n">ProxyMdiArea</span>
+
+<span class="kn">from</span> <span class="nn">.qt_constraints_widget</span> <span class="kn">import</span> <span class="n">QtConstraintsWidget</span>
+<span class="kn">from</span> <span class="nn">.qt_mdi_window</span> <span class="kn">import</span> <span class="n">QtMdiWindow</span>
+
+
+<div class="viewcode-block" id="QtMdiArea"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.mdi_area.MdiArea.html#enaml.qt.qt_mdi_area.QtMdiArea">[docs]</a><span class="k">class</span> <span class="nc">QtMdiArea</span><span class="p">(</span><span class="n">QtConstraintsWidget</span><span class="p">,</span> <span class="n">ProxyMdiArea</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxyMdiArea.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QMdiArea</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtMdiArea.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.mdi_area.MdiArea.html#enaml.qt.qt_mdi_area.QtMdiArea.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying QMdiArea widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QMdiArea</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtMdiArea.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.mdi_area.MdiArea.html#enaml.qt.qt_mdi_area.QtMdiArea.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the layout for the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtMdiArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">for</span> <span class="n">window</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mdi_windows</span><span class="p">():</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">addSubWindow</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">subWindowActivated</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_subwindow_activated</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtMdiArea.mdi_windows"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.mdi_area.MdiArea.html#enaml.qt.qt_mdi_area.QtMdiArea.mdi_windows">[docs]</a>    <span class="k">def</span> <span class="nf">mdi_windows</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the mdi windows defined for the area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">window</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">mdi_windows</span><span class="p">():</span>
+            <span class="n">widget</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span>
+            <span class="k">if</span> <span class="n">widget</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">widget</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Signal Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtMdiArea.on_subwindow_activated"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.mdi_area.MdiArea.html#enaml.qt.qt_mdi_area.QtMdiArea.on_subwindow_activated">[docs]</a>    <span class="k">def</span> <span class="nf">on_subwindow_activated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The handler for the &#39;subWindowActivated&#39; signal.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># On OSX there is painting bug where a subwindow is not repainted</span>
+        <span class="c"># properly when it is activated. This handler ensures an update.</span>
+        <span class="k">if</span> <span class="n">window</span><span class="p">:</span>
+            <span class="n">window</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtMdiArea.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.mdi_area.MdiArea.html#enaml.qt.qt_mdi_area.QtMdiArea.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtMdiArea.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The size hint of a QMdiArea is typically quite large and the</span>
+        <span class="c"># size hint constraints are usually ignored. There is no need</span>
+        <span class="c"># to notify of a change in size hint here.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtMdiArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtMdiWindow</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">addSubWindow</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtMdiArea.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.mdi_area.MdiArea.html#enaml.qt.qt_mdi_area.QtMdiArea.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a QtMdiArea.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtMdiWindow</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">removeSubWindow</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">QtMdiArea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

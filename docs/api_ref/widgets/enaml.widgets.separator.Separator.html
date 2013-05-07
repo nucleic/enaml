@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Separator &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="Slider" href="enaml.widgets.slider.Slider.html" />
+    <link rel="prev" title="RadioButton" href="enaml.widgets.radio_button.RadioButton.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.slider.Slider.html" title="Slider"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.radio_button.RadioButton.html" title="RadioButton"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="separator">
+<h1>Separator<a class="headerlink" href="#separator" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.separator.Separator">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.separator.</tt><tt class="descname">Separator</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/separator.html#Separator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.separator.Separator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.widgets.control.Control" title="enaml.widgets.control.Control"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.control.Control</span></tt></a></p>
+<p>A widget which draws a horizontal or vertical separator line.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.separator.Separator.orientation">
+<tt class="descname">orientation</tt><a class="headerlink" href="#enaml.widgets.separator.Separator.orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>The orientation of the separator line.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.separator.Separator.line_style">
+<tt class="descname">line_style</tt><a class="headerlink" href="#enaml.widgets.separator.Separator.line_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>The line style for the separator.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.separator.Separator.line_width">
+<tt class="descname">line_width</tt><a class="headerlink" href="#enaml.widgets.separator.Separator.line_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>The thickness of the outer separator line.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.separator.Separator.midline_width">
+<tt class="descname">midline_width</tt><a class="headerlink" href="#enaml.widgets.separator.Separator.midline_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>The thickness of the inner separator line. This only has an
+effect for the &#8216;sunken&#8217; and &#8216;raised&#8217; line styles.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.separator.Separator.auto_hug">
+<tt class="descname">auto_hug</tt><a class="headerlink" href="#enaml.widgets.separator.Separator.auto_hug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not to automatically adjust the &#8216;hug_width&#8217; and
+&#8216;hug_height&#8217; values based on the value of &#8216;orientation&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.separator.Separator.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.separator.Separator.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxySeparator object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-5866b4f12ab2d0e590d80b4b20d0739e11252c4e.png" alt="Inheritance diagram of enaml.qt.qt_separator.QtSeparator" usemap="#inheritance2a993ca59f" class="inheritance"/>
+<map id="inheritance2a993ca59f" name="inheritance2a993ca59f">
+<area shape="rect" id="node2" href="#enaml.qt.qt_separator.QtSeparator" title="QtSeparator" alt="" coords="707,19,764,34"/>
+<area shape="rect" id="node3" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="QtControl" alt="" coords="618,34,665,49"/>
+<area shape="rect" id="node10" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="490,34,577,49"/>
+<area shape="rect" id="node14" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="388,34,435,49"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_separator.QtSeparator">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_separator.</tt><tt class="descname">QtSeparator</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_separator.html#QtSeparator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_separator.QtSeparator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="enaml.qt.qt_control.QtControl"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_control.QtControl</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.separator.ProxySeparator</span></tt></p>
+<p>A Qt implementation of an Enaml ProxySeparator.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_separator.QtSeparator.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_separator.QtSeparator.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_separator.QtSeparator.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_separator.html#QtSeparator.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_separator.QtSeparator.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create underlying QSeparator control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_separator.QtSeparator.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_separator.html#QtSeparator.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_separator.QtSeparator.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_separator.QtSeparator.set_orientation">
+<tt class="descname">set_orientation</tt><big>(</big><em>orientation</em>, <em>sh_guard=True</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_separator.html#QtSeparator.set_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_separator.QtSeparator.set_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the orientation of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_separator.QtSeparator.set_line_style">
+<tt class="descname">set_line_style</tt><big>(</big><em>style</em>, <em>sh_guard=True</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_separator.html#QtSeparator.set_line_style"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_separator.QtSeparator.set_line_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the line style of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_separator.QtSeparator.set_line_width">
+<tt class="descname">set_line_width</tt><big>(</big><em>width</em>, <em>sh_guard=True</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_separator.html#QtSeparator.set_line_width"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_separator.QtSeparator.set_line_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the line width of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_separator.QtSeparator.set_midline_width">
+<tt class="descname">set_midline_width</tt><big>(</big><em>width</em>, <em>sh_guard=True</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_separator.html#QtSeparator.set_midline_width"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_separator.QtSeparator.set_midline_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the midline width of the underlying widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Separator</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.radio_button.RadioButton.html"
+                        title="previous chapter">RadioButton</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.slider.Slider.html"
+                        title="next chapter">Slider</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.separator.Separator.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.slider.Slider.html" title="Slider"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.radio_button.RadioButton.html" title="RadioButton"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

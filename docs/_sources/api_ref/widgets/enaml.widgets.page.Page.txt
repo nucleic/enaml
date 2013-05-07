@@ -1,0 +1,29 @@
+Page
+=======================
+
+.. currentmodule:: enaml.widgets.page
+
+.. autoclass:: Page
+
+
+Backends
+--------
+
+Qt
+^^
+
+.. inheritance-diagram::
+    enaml.qt.qt_page.QtPage
+    :parts: 1
+
+.. autoclass:: enaml.qt.qt_page.QtPage
+
+
+Wx
+^^
+
+.. inheritance-diagram::
+    enaml.wx.wx_page.WxPage
+    :parts: 1
+
+.. autoclass:: enaml.wx.wx_page.WxPage

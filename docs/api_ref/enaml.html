@@ -1,0 +1,887 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Enaml API Reference" href="index.html" />
+    <link rel="next" title="enaml.core" href="enaml.core.html" />
+    <link rel="prev" title="Enaml API Reference" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.core.html" title="enaml.core"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Enaml API Reference"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Enaml API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="enaml">
+<h1>enaml<a class="headerlink" href="#enaml" title="Permalink to this headline">¶</a></h1>
+<p>The top-level enaml package contains modules used throughout the Enaml library.</p>
+<div class="section" id="module-enaml.application">
+<span id="application-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">application</span></tt> Module<a class="headerlink" href="#module-enaml.application" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="enaml.application.ScheduledTask">
+<em class="property">class </em><tt class="descclassname">enaml.application.</tt><tt class="descname">ScheduledTask</tt><big>(</big><em>callback</em>, <em>args</em>, <em>kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object representing a task in the scheduler.</p>
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>callback</em>, <em>args</em>, <em>kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a ScheduledTask.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The callable to run when the task is executed.</li>
+<li><strong>args</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)"><em>tuple</em></a>) &#8211; The tuple of positional arguments to pass to the callback.</li>
+<li><strong>kwargs</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The dict of keyword arguments to pass to the callback.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.notify">
+<tt class="descname">notify</tt><big>(</big><em>callback</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.notify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.notify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a callback to be run when the task is executed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; A callable which accepts a single argument which is the
+results of the task. It will be invoked immediate after
+the task is executed, on the main event loop thread.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.pending">
+<tt class="descname">pending</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.pending"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.pending" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this task is pending execution, False
+otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.unschedule">
+<tt class="descname">unschedule</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.unschedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.unschedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unschedule the task so that it will not be executed. If
+the task has already been executed, this call has no effect.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.result">
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the result of the task, or ScheduledTask.undefined
+if the task has not yet been executed, was unscheduled before
+execution, or raised an exception on execution.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.application.ProxyResolver">
+<em class="property">class </em><tt class="descclassname">enaml.application.</tt><tt class="descname">ProxyResolver</tt><a class="reference internal" href="../_modules/enaml/application.html#ProxyResolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ProxyResolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object which resolves requests for proxy objects.</p>
+<dl class="attribute">
+<dt id="enaml.application.ProxyResolver.factories">
+<tt class="descname">factories</tt><a class="headerlink" href="#enaml.application.ProxyResolver.factories" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of factories functions to use when resolving the
+proxy. The function should take no arguments, and return the
+proxy class when called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ProxyResolver.resolve">
+<tt class="descname">resolve</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ProxyResolver.resolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ProxyResolver.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve the given name to a proxy calls.</p>
+<p>For example, &#8216;Field&#8217; should resolve to a class which implements
+the ProxyField interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The name of the proxy object to resolve.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (type or None) &#8211; A class which implements the proxy interface, or None if no class can be found for the given name.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.application.Application">
+<em class="property">class </em><tt class="descclassname">enaml.application.</tt><tt class="descname">Application</tt><a class="reference internal" href="../_modules/enaml/application.html#Application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>The application object which manages the top-level communication
+protocol for serving Enaml views.</p>
+<dl class="attribute">
+<dt id="enaml.application.Application.resolver">
+<tt class="descname">resolver</tt><a class="headerlink" href="#enaml.application.Application.resolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>The proxy resolver to use for the application. This will normally
+be supplied by application subclasses, but can also be supplied
+by the developer to supply custom proxy resolution behavior.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="enaml.application.Application.instance">
+<em class="property">static </em><tt class="descname">instance</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the global Application instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (Application or None) &#8211; The global application instance, or None if one has not yet been created.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="enaml.application.Application.__new__">
+<em class="property">static </em><tt class="descname">__new__</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.__new__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.__new__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new Enaml Application.</p>
+<p>There may be only one application instance in existence at any
+point in time. Attempting to create a new Application when one
+exists will raise an exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the application&#8217;s main event loop.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the application&#8217;s main event loop.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.deferred_call">
+<tt class="descname">deferred_call</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.deferred_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.deferred_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke a callable on the next cycle of the main event loop
+thread.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The callable object to execute at some point in the future.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs</dt>
+<dd>Any additional positional and keyword arguments to pass to
+the callback.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.timed_call">
+<tt class="descname">timed_call</tt><big>(</big><em>ms</em>, <em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.timed_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.timed_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke a callable on the main event loop thread at a
+specified time in the future.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ms</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The time to delay, in milliseconds, before executing the
+callable.</li>
+<li><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The callable object to execute at some point in the future.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><a href="#id5"><span class="problematic" id="id6">*</span></a>args, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs</dt>
+<dd>Any additional positional and keyword arguments to pass to
+the callback.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.is_main_thread">
+<tt class="descname">is_main_thread</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.is_main_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.is_main_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates whether the caller is on the main gui thread.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (bool) &#8211; True if called from the main gui thread. False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.create_proxy">
+<tt class="descname">create_proxy</tt><big>(</big><em>declaration</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.create_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.create_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the proxy object for the given declaration.</p>
+<p>This can be reimplemented by Application subclasses if more
+control is needed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>declaration</strong> (<em>ToolkitObject</em>) &#8211; The object for which a toolkit proxy should be created.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (ProxyToolkitObject or None) &#8211; An appropriate toolkit proxy object, or None if one cannot be create for the given declaration object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.schedule">
+<tt class="descname">schedule</tt><big>(</big><em>callback</em>, <em>args=None</em>, <em>kwargs=None</em>, <em>priority=0</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedule a callable to be executed on the event loop thread.</p>
+<p>This call is thread-safe.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The callable object to be executed.</li>
+<li><strong>args</strong> (<em>tuple, optional</em>) &#8211; The positional arguments to pass to the callable.</li>
+<li><strong>kwargs</strong> (<em>dict, optional</em>) &#8211; The keyword arguments to pass to the callable.</li>
+<li><strong>priority</strong> (<em>int, optional</em>) &#8211; The queue priority for the callable. Smaller values indicate
+lower priority, larger values indicate higher priority. The
+default priority is zero.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>result</strong> (ScheduledTask) &#8211; A task object which can be used to unschedule the task or retrieve the results of the callback after the task has been executed.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.has_pending_tasks">
+<tt class="descname">has_pending_tasks</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.has_pending_tasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.has_pending_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get whether or not the application has pending tasks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (bool) &#8211; True if there are pending tasks. False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.destroy">
+<tt class="descname">destroy</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destroy this application instance.</p>
+<p>Once an application is created, it must be destroyed before a
+new application can be instantiated.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.application.deferred_call">
+<tt class="descclassname">enaml.application.</tt><tt class="descname">deferred_call</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#deferred_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.deferred_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke a callable on the next cycle of the main event loop
+thread.</p>
+<p>This is a convenience function for invoking the same method on the
+current application instance. If an application instance does not
+exist, a RuntimeError will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The callable object to execute at some point in the future.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><a href="#id9"><span class="problematic" id="id10">*</span></a>args, <a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs</dt>
+<dd>Any additional positional and keyword arguments to pass to
+the callback.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.application.timed_call">
+<tt class="descclassname">enaml.application.</tt><tt class="descname">timed_call</tt><big>(</big><em>ms</em>, <em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#timed_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.timed_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke a callable on the main event loop thread at a specified
+time in the future.</p>
+<p>This is a convenience function for invoking the same method on the
+current application instance. If an application instance does not
+exist, a RuntimeError will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ms</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The time to delay, in milliseconds, before executing the
+callable.</li>
+<li><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The callable object to execute at some point in the future.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt><a href="#id13"><span class="problematic" id="id14">*</span></a>args, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs</dt>
+<dd>Any additional positional and keyword arguments to pass to
+the callback.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.application.is_main_thread">
+<tt class="descclassname">enaml.application.</tt><tt class="descname">is_main_thread</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#is_main_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.is_main_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates whether the caller is on the main gui thread.</p>
+<p>This is a convenience function for invoking the same method on the
+current application instance. If an application instance does not
+exist, a RuntimeError will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (bool) &#8211; True if called from the main gui thread. False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.application.schedule">
+<tt class="descclassname">enaml.application.</tt><tt class="descname">schedule</tt><big>(</big><em>callback</em>, <em>args=None</em>, <em>kwargs=None</em>, <em>priority=0</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedule a callable to be executed on the event loop thread.</p>
+<p>This call is thread-safe.</p>
+<p>This is a convenience function for invoking the same method on the
+current application instance. If an application instance does not
+exist, a RuntimeError will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; The callable object to be executed.</li>
+<li><strong>args</strong> (<em>tuple, optional</em>) &#8211; The positional arguments to pass to the callable.</li>
+<li><strong>kwargs</strong> (<em>dict, optional</em>) &#8211; The keyword arguments to pass to the callable.</li>
+<li><strong>priority</strong> (<em>int, optional</em>) &#8211; The queue priority for the callable. Smaller values indicate
+lower priority, larger values indicate higher priority. The
+default priority is zero.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>result</strong> (ScheduledTask) &#8211; A task object which can be used to unschedule the task or retrieve the results of the callback after the task has been executed.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-enaml.callableref">
+<span id="callableref-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">callableref</span></tt> Module<a class="headerlink" href="#module-enaml.callableref" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-enaml.colorext">
+<span id="colorext-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">colorext</span></tt> Module<a class="headerlink" href="#module-enaml.colorext" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-enaml.colors">
+<span id="colors-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">colors</span></tt> Module<a class="headerlink" href="#module-enaml.colors" title="Permalink to this headline">¶</a></h2>
+<p>A utility module for dealing with CSS3 color strings.</p>
+<dl class="data">
+<dt id="enaml.colors.SVG_COLORS">
+<tt class="descclassname">enaml.colors.</tt><tt class="descname">SVG_COLORS</tt><em class="property"> = {'indigo': Color(red=75, green=0, blue=130, alpha=255), 'gold': Color(red=255, green=215, blue=0, alpha=255), 'hotpink': Color(red=255, green=105, blue=180, alpha=255), 'firebrick': Color(red=178, green=34, blue=34, alpha=255), 'indianred': Color(red=205, green=92, blue=92, alpha=255), 'yellow': Color(red=255, green=255, blue=0, alpha=255), 'mistyrose': Color(red=255, green=228, blue=225, alpha=255), 'darkolivegreen': Color(red=85, green=107, blue=47, alpha=255), 'olive': Color(red=128, green=128, blue=0, alpha=255), 'darkseagreen': Color(red=143, green=188, blue=143, alpha=255), 'pink': Color(red=255, green=192, blue=203, alpha=255), 'tomato': Color(red=255, green=99, blue=71, alpha=255), 'lightcoral': Color(red=240, green=128, blue=128, alpha=255), 'orangered': Color(red=255, green=69, blue=0, alpha=255), 'navajowhite': Color(red=255, green=222, blue=173, alpha=255), 'lime': Color(red=0, green=255, blue=0, alpha=255), 'palegreen': Color(red=152, green=251, blue=152, alpha=255), 'darkslategrey': Color(red=47, green=79, blue=79, alpha=255), 'greenyellow': Color(red=173, green=255, blue=47, alpha=255), 'burlywood': Color(red=222, green=184, blue=135, alpha=255), 'seashell': Color(red=255, green=245, blue=238, alpha=255), 'mediumspringgreen': Color(red=0, green=250, blue=154, alpha=255), 'fuchsia': Color(red=255, green=0, blue=255, alpha=255), 'papayawhip': Color(red=255, green=239, blue=213, alpha=255), 'blanchedalmond': Color(red=255, green=235, blue=205, alpha=255), 'chartreuse': Color(red=127, green=255, blue=0, alpha=255), 'dimgray': Color(red=105, green=105, blue=105, alpha=255), 'black': Color(red=0, green=0, blue=0, alpha=255), 'peachpuff': Color(red=255, green=218, blue=185, alpha=255), 'springgreen': Color(red=0, green=255, blue=127, alpha=255), 'aquamarine': Color(red=127, green=255, blue=212, alpha=255), 'white': Color(red=255, green=255, blue=255, alpha=255), 'orange': Color(red=255, green=165, blue=0, alpha=255), 'lightsalmon': Color(red=255, green=160, blue=122, alpha=255), 'darkslategray': Color(red=47, green=79, blue=79, alpha=255), 'brown': Color(red=165, green=42, blue=42, alpha=255), 'ivory': Color(red=255, green=255, blue=240, alpha=255), 'dodgerblue': Color(red=30, green=144, blue=255, alpha=255), 'peru': Color(red=205, green=133, blue=63, alpha=255), 'lawngreen': Color(red=124, green=252, blue=0, alpha=255), 'chocolate': Color(red=210, green=105, blue=30, alpha=255), 'crimson': Color(red=220, green=20, blue=60, alpha=255), 'forestgreen': Color(red=34, green=139, blue=34, alpha=255), 'darkgrey': Color(red=169, green=169, blue=169, alpha=255), 'lightseagreen': Color(red=32, green=178, blue=170, alpha=255), 'cyan': Color(red=0, green=255, blue=255, alpha=255), 'mintcream': Color(red=245, green=255, blue=250, alpha=255), 'silver': Color(red=192, green=192, blue=192, alpha=255), 'antiquewhite': Color(red=250, green=235, blue=215, alpha=255), 'mediumorchid': Color(red=186, green=85, blue=211, alpha=255), 'skyblue': Color(red=135, green=206, blue=235, alpha=255), 'gray': Color(red=128, green=128, blue=128, alpha=255), 'darkturquoise': Color(red=0, green=206, blue=209, alpha=255), 'goldenrod': Color(red=218, green=165, blue=32, alpha=255), 'darkgreen': Color(red=0, green=100, blue=0, alpha=255), 'floralwhite': Color(red=255, green=250, blue=240, alpha=255), 'darkviolet': Color(red=148, green=0, blue=211, alpha=255), 'darkgray': Color(red=169, green=169, blue=169, alpha=255), 'moccasin': Color(red=255, green=228, blue=181, alpha=255), 'saddlebrown': Color(red=139, green=69, blue=19, alpha=255), 'grey': Color(red=128, green=128, blue=128, alpha=255), 'darkslateblue': Color(red=72, green=61, blue=139, alpha=255), 'lightskyblue': Color(red=135, green=206, blue=250, alpha=255), 'lightpink': Color(red=255, green=182, blue=193, alpha=255), 'mediumvioletred': Color(red=199, green=21, blue=133, alpha=255), 'slategrey': Color(red=112, green=128, blue=144, alpha=255), 'red': Color(red=255, green=0, blue=0, alpha=255), 'deeppink': Color(red=255, green=20, blue=147, alpha=255), 'limegreen': Color(red=50, green=205, blue=50, alpha=255), 'darkmagenta': Color(red=139, green=0, blue=139, alpha=255), 'palegoldenrod': Color(red=238, green=232, blue=170, alpha=255), 'plum': Color(red=221, green=160, blue=221, alpha=255), 'turquoise': Color(red=64, green=224, blue=208, alpha=255), 'lightgrey': Color(red=211, green=211, blue=211, alpha=255), 'lightgoldenrodyellow': Color(red=250, green=250, blue=210, alpha=255), 'darkgoldenrod': Color(red=184, green=134, blue=11, alpha=255), 'lavender': Color(red=230, green=230, blue=250, alpha=255), 'maroon': Color(red=128, green=0, blue=0, alpha=255), 'yellowgreen': Color(red=154, green=205, blue=50, alpha=255), 'sandybrown': Color(red=244, green=164, blue=96, alpha=255), 'thistle': Color(red=216, green=191, blue=216, alpha=255), 'violet': Color(red=238, green=130, blue=238, alpha=255), 'navy': Color(red=0, green=0, blue=128, alpha=255), 'magenta': Color(red=255, green=0, blue=255, alpha=255), 'dimgrey': Color(red=105, green=105, blue=105, alpha=255), 'tan': Color(red=210, green=180, blue=140, alpha=255), 'rosybrown': Color(red=188, green=143, blue=143, alpha=255), 'olivedrab': Color(red=107, green=142, blue=35, alpha=255), 'blue': Color(red=0, green=0, blue=255, alpha=255), 'lightblue': Color(red=173, green=216, blue=230, alpha=255), 'ghostwhite': Color(red=248, green=248, blue=255, alpha=255), 'honeydew': Color(red=240, green=255, blue=240, alpha=255), 'cornflowerblue': Color(red=100, green=149, blue=237, alpha=255), 'slateblue': Color(red=106, green=90, blue=205, alpha=255), 'linen': Color(red=250, green=240, blue=230, alpha=255), 'darkblue': Color(red=0, green=0, blue=139, alpha=255), 'powderblue': Color(red=176, green=224, blue=230, alpha=255), 'seagreen': Color(red=46, green=139, blue=87, alpha=255), 'darkkhaki': Color(red=189, green=183, blue=107, alpha=255), 'snow': Color(red=255, green=250, blue=250, alpha=255), 'sienna': Color(red=160, green=82, blue=45, alpha=255), 'mediumblue': Color(red=0, green=0, blue=205, alpha=255), 'royalblue': Color(red=65, green=105, blue=225, alpha=255), 'lightcyan': Color(red=224, green=255, blue=255, alpha=255), 'green': Color(red=0, green=128, blue=0, alpha=255), 'mediumpurple': Color(red=147, green=112, blue=219, alpha=255), 'midnightblue': Color(red=25, green=25, blue=112, alpha=255), 'cornsilk': Color(red=255, green=248, blue=220, alpha=255), 'paleturquoise': Color(red=175, green=238, blue=238, alpha=255), 'bisque': Color(red=255, green=228, blue=196, alpha=255), 'slategray': Color(red=112, green=128, blue=144, alpha=255), 'darkcyan': Color(red=0, green=139, blue=139, alpha=255), 'khaki': Color(red=240, green=230, blue=140, alpha=255), 'wheat': Color(red=245, green=222, blue=179, alpha=255), 'teal': Color(red=0, green=128, blue=128, alpha=255), 'darkorchid': Color(red=153, green=50, blue=204, alpha=255), 'deepskyblue': Color(red=0, green=191, blue=255, alpha=255), 'salmon': Color(red=250, green=128, blue=114, alpha=255), 'darkred': Color(red=139, green=0, blue=0, alpha=255), 'steelblue': Color(red=70, green=130, blue=180, alpha=255), 'palevioletred': Color(red=219, green=112, blue=147, alpha=255), 'lightslategray': Color(red=119, green=136, blue=153, alpha=255), 'aliceblue': Color(red=240, green=248, blue=255, alpha=255), 'lightslategrey': Color(red=119, green=136, blue=153, alpha=255), 'lightgreen': Color(red=144, green=238, blue=144, alpha=255), 'orchid': Color(red=218, green=112, blue=214, alpha=255), 'gainsboro': Color(red=220, green=220, blue=220, alpha=255), 'mediumseagreen': Color(red=60, green=179, blue=113, alpha=255), 'lightgray': Color(red=211, green=211, blue=211, alpha=255), 'mediumturquoise': Color(red=72, green=209, blue=204, alpha=255), 'lemonchiffon': Color(red=255, green=250, blue=205, alpha=255), 'cadetblue': Color(red=95, green=158, blue=160, alpha=255), 'lightyellow': Color(red=255, green=255, blue=224, alpha=255), 'lavenderblush': Color(red=255, green=240, blue=245, alpha=255), 'coral': Color(red=255, green=127, blue=80, alpha=255), 'purple': Color(red=128, green=0, blue=128, alpha=255), 'aqua': Color(red=0, green=255, blue=255, alpha=255), 'whitesmoke': Color(red=245, green=245, blue=245, alpha=255), 'mediumslateblue': Color(red=123, green=104, blue=238, alpha=255), 'darkorange': Color(red=255, green=140, blue=0, alpha=255), 'mediumaquamarine': Color(red=102, green=205, blue=170, alpha=255), 'darksalmon': Color(red=233, green=150, blue=122, alpha=255), 'beige': Color(red=245, green=245, blue=220, alpha=255), 'blueviolet': Color(red=138, green=43, blue=226, alpha=255), 'azure': Color(red=240, green=255, blue=255, alpha=255), 'lightsteelblue': Color(red=176, green=196, blue=222, alpha=255), 'oldlace': Color(red=253, green=245, blue=230, alpha=255)}</em><a class="headerlink" href="#enaml.colors.SVG_COLORS" title="Permalink to this definition">¶</a></dt>
+<dd><p>A table of all 147 named SVG colors supported by CSS3.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.colors.parse_color">
+<tt class="descclassname">enaml.colors.</tt><tt class="descname">parse_color</tt><big>(</big><em>color</em><big>)</big><a class="reference internal" href="../_modules/enaml/colors.html#parse_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.colors.parse_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a CSS3 color string into a tuple of RGBA values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>color</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; A CSS3 string representation of the color.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (Color or None) &#8211; A color object representing the parsed color. If the string is invalid, None will be returned.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.colors.coerce_color">
+<tt class="descclassname">enaml.colors.</tt><tt class="descname">coerce_color</tt><big>(</big><em>color</em><big>)</big><a class="reference internal" href="../_modules/enaml/colors.html#coerce_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.colors.coerce_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>The coercing function for the ColorMember.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.colors.ColorMember">
+<tt class="descclassname">enaml.colors.</tt><tt class="descname">ColorMember</tt><a class="reference internal" href="../_modules/enaml/colors.html#ColorMember"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.colors.ColorMember" title="Permalink to this definition">¶</a></dt>
+<dd><p>An Atom member class which coerces a value to a color.</p>
+<p>A color member can be set to a Color, a string, or None. A string
+color will be parsed into a Color object. If the parsing fails,
+the color will be None.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-enaml.fontext">
+<span id="fontext-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">fontext</span></tt> Module<a class="headerlink" href="#module-enaml.fontext" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-enaml.fonts">
+<span id="fonts-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">fonts</span></tt> Module<a class="headerlink" href="#module-enaml.fonts" title="Permalink to this headline">¶</a></h2>
+<p>A utility module for dealing with CSS3 font strings.</p>
+<dl class="function">
+<dt id="enaml.fonts.parse_font">
+<tt class="descclassname">enaml.fonts.</tt><tt class="descname">parse_font</tt><big>(</big><em>font</em><big>)</big><a class="reference internal" href="../_modules/enaml/fonts.html#parse_font"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.fonts.parse_font" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a CSS3 shorthand font string into an Enaml Font object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (Font or None) &#8211; A font object representing the parsed font. If the string is invalid, None will be returned.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.fonts.coerce_font">
+<tt class="descclassname">enaml.fonts.</tt><tt class="descname">coerce_font</tt><big>(</big><em>font</em><big>)</big><a class="reference internal" href="../_modules/enaml/fonts.html#coerce_font"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.fonts.coerce_font" title="Permalink to this definition">¶</a></dt>
+<dd><p>The coercing function for the FontMember.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.fonts.FontMember">
+<tt class="descclassname">enaml.fonts.</tt><tt class="descname">FontMember</tt><a class="reference internal" href="../_modules/enaml/fonts.html#FontMember"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.fonts.FontMember" title="Permalink to this definition">¶</a></dt>
+<dd><p>An Atom member class which coerces a value to a font.</p>
+<p>A font member can be set to a Font, a string, or None. A string
+font will be parsed into a Font object. If the parsing fails,
+the font will be None.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-enaml.icon">
+<span id="icon-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">icon</span></tt> Module<a class="headerlink" href="#module-enaml.icon" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="enaml.icon.IconImage">
+<em class="property">class </em><tt class="descclassname">enaml.icon.</tt><tt class="descname">IconImage</tt><a class="reference internal" href="../_modules/enaml/icon.html#IconImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.icon.IconImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object representing an image in an icon.</p>
+<p>Instances of this class are used to populate the &#8216;images&#8217; list of
+an &#8216;Icon&#8217; instance. Instances of this class should be treated as
+read only once they are created.</p>
+<dl class="attribute">
+<dt id="enaml.icon.IconImage.mode">
+<tt class="descname">mode</tt><a class="headerlink" href="#enaml.icon.IconImage.mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The widget mode for which this icon should apply.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.icon.IconImage.state">
+<tt class="descname">state</tt><a class="headerlink" href="#enaml.icon.IconImage.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>The widget state for which this icon should apply.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.icon.IconImage.image">
+<tt class="descname">image</tt><a class="headerlink" href="#enaml.icon.IconImage.image" title="Permalink to this definition">¶</a></dt>
+<dd><p>The image to use for this icon image.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.icon.Icon">
+<em class="property">class </em><tt class="descclassname">enaml.icon.</tt><tt class="descname">Icon</tt><a class="reference internal" href="../_modules/enaml/icon.html#Icon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.icon.Icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object object representing an icon.</p>
+<p>Once an image is created it should be treated as read only. User
+code should create a new icon object if the parameters need to
+be changed.</p>
+<dl class="attribute">
+<dt id="enaml.icon.Icon.images">
+<tt class="descname">images</tt><a class="headerlink" href="#enaml.icon.Icon.images" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of icon images which compose this icon.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-enaml.image">
+<span id="image-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">image</span></tt> Module<a class="headerlink" href="#module-enaml.image" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="enaml.image.Image">
+<em class="property">class </em><tt class="descclassname">enaml.image.</tt><tt class="descname">Image</tt><a class="reference internal" href="../_modules/enaml/image.html#Image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.image.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object representing an image.</p>
+<p>Once an image is created it should be treated as read only. User
+code should create a new image object if the parameters need to
+be changed.</p>
+<dl class="attribute">
+<dt id="enaml.image.Image.format">
+<tt class="descname">format</tt><a class="headerlink" href="#enaml.image.Image.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>The format of the image. By default, the consumer of the image
+will probe the header to automatically infer a type.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.image.Image.size">
+<tt class="descname">size</tt><a class="headerlink" href="#enaml.image.Image.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The (width, height) size of the image. An invalid size indicates
+that the size of the image should be automatically inferred. A
+valid size indicates that the toolkit image should be scaled to
+the specified size.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.image.Image.aspect_ratio_mode">
+<tt class="descname">aspect_ratio_mode</tt><a class="headerlink" href="#enaml.image.Image.aspect_ratio_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The aspect ratio mode to use when the toolkit scales the image.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.image.Image.transform_mode">
+<tt class="descname">transform_mode</tt><a class="headerlink" href="#enaml.image.Image.transform_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The transform mode to use when the toolkit scales the image.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.image.Image.data">
+<tt class="descname">data</tt><a class="headerlink" href="#enaml.image.Image.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>The bytestring holding the data for the image.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-enaml.runner">
+<span id="runner-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">runner</span></tt> Module<a class="headerlink" href="#module-enaml.runner" title="Permalink to this headline">¶</a></h2>
+<p>Command-line tool to run .enaml files.</p>
+</div>
+<div class="section" id="module-enaml.signaling">
+<span id="signaling-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">signaling</span></tt> Module<a class="headerlink" href="#module-enaml.signaling" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="validator-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">validator</span></tt> Module<a class="headerlink" href="#validator-module" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-enaml.validator"></span><dl class="class">
+<dt id="enaml.validator.Validator">
+<em class="property">class </em><tt class="descclassname">enaml.validator.</tt><tt class="descname">Validator</tt><a class="reference internal" href="../_modules/enaml/validator.html#Validator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.Validator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>The base class for creating widget text validators.</p>
+<p>This class is abstract. It&#8217;s abstract api must be implemented by a
+subclass in order to be usable.</p>
+<dl class="attribute">
+<dt id="enaml.validator.Validator.message">
+<tt class="descname">message</tt><a class="headerlink" href="#enaml.validator.Validator.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>An optional message to associate with the validator. This message
+may be used by the toolkit to display information to the user
+about what went wrong.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.validator.Validator.validate">
+<tt class="descname">validate</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../_modules/enaml/validator.html#Validator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.Validator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate the text as the user types.</p>
+<p>This method is called on every keystroke to validate the text
+as the user inputs characters. It should be efficient. This is
+an abstract method which must be implemented by sublasses.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>text</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#unicode" title="(in Python v2.7)"><em>unicode</em></a>) &#8211; The unicode text entered by the user.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (bool) &#8211; True if the text is valid, False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.validator.Validator.fixup">
+<tt class="descname">fixup</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../_modules/enaml/validator.html#Validator.fixup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.Validator.fixup" title="Permalink to this definition">¶</a></dt>
+<dd><p>An optional method to fix invalid user input.</p>
+<p>This method will be called if user attempts to apply text which
+is not valid. This method may convert the text to a valid form.
+The returned text will be retested for validity. The default
+implementation of this method is a no-op.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (unicode) &#8211; The optionally modified input text.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.validator.IntValidator">
+<em class="property">class </em><tt class="descclassname">enaml.validator.</tt><tt class="descname">IntValidator</tt><a class="reference internal" href="../_modules/enaml/validator.html#IntValidator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.IntValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.validator.Validator" title="enaml.validator.Validator"><tt class="xref py py-class docutils literal"><span class="pre">enaml.validator.Validator</span></tt></a></p>
+<p>A concrete Validator which handles integer input.</p>
+<p>This validator ensures that the text represents an integer within a
+specified range in a specified base.</p>
+<dl class="attribute">
+<dt id="enaml.validator.IntValidator.minimum">
+<tt class="descname">minimum</tt><a class="headerlink" href="#enaml.validator.IntValidator.minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum value allowed for the int, inclusive, or None if
+there is no lower bound.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.validator.IntValidator.maximum">
+<tt class="descname">maximum</tt><a class="headerlink" href="#enaml.validator.IntValidator.maximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum value allowed for the int, inclusive, or None if
+there is no upper bound.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.validator.IntValidator.base">
+<tt class="descname">base</tt><a class="headerlink" href="#enaml.validator.IntValidator.base" title="Permalink to this definition">¶</a></dt>
+<dd><p>The base in which the int is represented.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.validator.IntValidator.validate">
+<tt class="descname">validate</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../_modules/enaml/validator.html#IntValidator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.IntValidator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates the given text matches the integer range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>text</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#unicode" title="(in Python v2.7)"><em>unicode</em></a>) &#8211; The unicode text edited by the client widget.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (bool) &#8211; True if the text is valid, False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.validator.FloatValidator">
+<em class="property">class </em><tt class="descclassname">enaml.validator.</tt><tt class="descname">FloatValidator</tt><a class="reference internal" href="../_modules/enaml/validator.html#FloatValidator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.FloatValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.validator.Validator" title="enaml.validator.Validator"><tt class="xref py py-class docutils literal"><span class="pre">enaml.validator.Validator</span></tt></a></p>
+<p>A concrete Validator which handles floating point input.</p>
+<p>This validator ensures that the text represents a floating point
+number within a specified range.</p>
+<dl class="attribute">
+<dt id="enaml.validator.FloatValidator.minimum">
+<tt class="descname">minimum</tt><a class="headerlink" href="#enaml.validator.FloatValidator.minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum value allowed for the float, inclusive, or None if
+there is no lower bound.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.validator.FloatValidator.maximum">
+<tt class="descname">maximum</tt><a class="headerlink" href="#enaml.validator.FloatValidator.maximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum value allowed for the float, inclusive, or None if
+there is no upper bound.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.validator.FloatValidator.allow_exponent">
+<tt class="descname">allow_exponent</tt><a class="headerlink" href="#enaml.validator.FloatValidator.allow_exponent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not to allow exponents like &#8216;1e6&#8217; in the input.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.validator.FloatValidator.validate">
+<tt class="descname">validate</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../_modules/enaml/validator.html#FloatValidator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.FloatValidator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates the given text matches the float range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>text</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#unicode" title="(in Python v2.7)"><em>unicode</em></a>) &#8211; The unicode text edited by the client widget.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (bool) &#8211; True if the text is valid, False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.validator.RegexValidator">
+<em class="property">class </em><tt class="descclassname">enaml.validator.</tt><tt class="descname">RegexValidator</tt><a class="reference internal" href="../_modules/enaml/validator.html#RegexValidator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.RegexValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.validator.Validator" title="enaml.validator.Validator"><tt class="xref py py-class docutils literal"><span class="pre">enaml.validator.Validator</span></tt></a></p>
+<p>A concrete Validator which handles text input.</p>
+<p>This validator ensures that the text matches a provided regular
+expression string.</p>
+<dl class="attribute">
+<dt id="enaml.validator.RegexValidator.regex">
+<tt class="descname">regex</tt><a class="headerlink" href="#enaml.validator.RegexValidator.regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>The regular expression string to use for validation. The default
+regex matches everything.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.validator.RegexValidator.validate">
+<tt class="descname">validate</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../_modules/enaml/validator.html#RegexValidator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.validator.RegexValidator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates the given text matches the regular expression.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>text</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#unicode" title="(in Python v2.7)"><em>unicode</em></a>) &#8211; The unicode text edited by the client widget.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (bool) &#8211; True if the text is valid, False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-enaml.version">
+<span id="version-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">version</span></tt> Module<a class="headerlink" href="#module-enaml.version" title="Permalink to this headline">¶</a></h2>
+<p>The version information for this release of Enaml.</p>
+</div>
+<div class="section" id="module-enaml.weakmethod">
+<span id="weakmethod-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">weakmethod</span></tt> Module<a class="headerlink" href="#module-enaml.weakmethod" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">enaml</a><ul>
+<li><a class="reference internal" href="#module-enaml.application"><tt class="docutils literal"><span class="pre">application</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.callableref"><tt class="docutils literal"><span class="pre">callableref</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.colorext"><tt class="docutils literal"><span class="pre">colorext</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.colors"><tt class="docutils literal"><span class="pre">colors</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.fontext"><tt class="docutils literal"><span class="pre">fontext</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.fonts"><tt class="docutils literal"><span class="pre">fonts</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.icon"><tt class="docutils literal"><span class="pre">icon</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.image"><tt class="docutils literal"><span class="pre">image</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.runner"><tt class="docutils literal"><span class="pre">runner</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.signaling"><tt class="docutils literal"><span class="pre">signaling</span></tt> Module</a></li>
+<li><a class="reference internal" href="#validator-module"><tt class="docutils literal"><span class="pre">validator</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.version"><tt class="docutils literal"><span class="pre">version</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-enaml.weakmethod"><tt class="docutils literal"><span class="pre">weakmethod</span></tt> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Enaml API Reference</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.core.html"
+                        title="next chapter">enaml.core</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api_ref/enaml.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.core.html" title="enaml.core"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Enaml API Reference"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Enaml API Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

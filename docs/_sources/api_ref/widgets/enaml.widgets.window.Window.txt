@@ -1,0 +1,29 @@
+Window
+===========================
+
+.. currentmodule:: enaml.widgets.window
+
+.. autoclass:: Window
+
+
+Backends
+--------
+
+Qt
+^^
+
+.. inheritance-diagram::
+    enaml.qt.qt_window.QtWindow
+    :parts: 1
+
+.. autoclass:: enaml.qt.qt_window.QtWindow
+
+
+Wx
+^^
+
+.. inheritance-diagram::
+    enaml.wx.wx_window.WxWindow
+    :parts: 1
+
+.. autoclass:: enaml.wx.wx_window.WxWindow

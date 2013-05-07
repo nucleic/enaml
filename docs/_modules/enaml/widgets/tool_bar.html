@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.tool_bar &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.widgets.tool_bar</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+
+<span class="kn">from</span> <span class="nn">.action</span> <span class="kn">import</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">.action_group</span> <span class="kn">import</span> <span class="n">ActionGroup</span>
+<span class="kn">from</span> <span class="nn">.constraints_widget</span> <span class="kn">import</span> <span class="n">ConstraintsWidget</span><span class="p">,</span> <span class="n">ProxyConstraintsWidget</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyToolBar</span><span class="p">(</span><span class="n">ProxyConstraintsWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy ToolBar object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the ToolBar declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">ToolBar</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_movable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movable</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_floatable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floatable</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_floating</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_dock_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">area</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_allowed_dock_areas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">areas</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="ToolBar"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.tool_bar.ToolBar.html#enaml.widgets.tool_bar.ToolBar">[docs]</a><span class="k">class</span> <span class="nc">ToolBar</span><span class="p">(</span><span class="n">ConstraintsWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A widget which displays a row of tool buttons.</span>
+
+<span class="sd">    A ToolBar is typically used as a child of a MainWindow where it can</span>
+<span class="sd">    be dragged and docked in various locations in the same fashion as a</span>
+<span class="sd">    DockPane. However, a ToolBar can also be used as the child of a</span>
+<span class="sd">    Container and layed out with constraints, though in this case it will</span>
+<span class="sd">    lose its ability to be docked.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: Whether or not the tool bar is movable by the user. This value</span>
+    <span class="c">#: only has meaning if the tool bar is the child of a MainWindow.</span>
+    <span class="n">movable</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the tool bar can be floated as a separate window.</span>
+    <span class="c">#: This value only has meaning if the tool bar is the child of a</span>
+    <span class="c">#: MainWindow.</span>
+    <span class="n">floatable</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: A boolean indicating whether or not the tool bar is floating.</span>
+    <span class="c">#: This value only has meaning if the tool bar is the child of a</span>
+    <span class="c">#: MainWindow.</span>
+    <span class="n">floating</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: The dock area in the MainWindow where the tool bar is docked.</span>
+    <span class="c">#: This value only has meaning if the tool bar is the child of a</span>
+    <span class="c">#: MainWindow.</span>
+    <span class="n">dock_area</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Enum</span><span class="p">(</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">))</span>
+
+    <span class="c">#: The areas in the MainWindow where the tool bar can be docked</span>
+    <span class="c">#: by the user. This value only has meaning if the tool bar is the</span>
+    <span class="c">#: child of a MainWindow.</span>
+    <span class="n">allowed_dock_areas</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">List</span><span class="p">(</span>
+        <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;all&#39;</span><span class="p">),</span> <span class="p">[</span><span class="s">&#39;all&#39;</span><span class="p">],</span>
+    <span class="p">))</span>
+
+    <span class="c">#: The orientation of the toolbar. This only has meaning when the</span>
+    <span class="c">#: toolbar is not a child of a MainWindow and is used as part of</span>
+    <span class="c">#: a constraints based layout.</span>
+    <span class="n">orientation</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Enum</span><span class="p">(</span><span class="s">&#39;horizontal&#39;</span><span class="p">,</span> <span class="s">&#39;vertical&#39;</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not to automatically adjust the &#39;hug_width&#39; and</span>
+    <span class="c">#: &#39;hug_height&#39; values based on the value of &#39;orientation&#39;.</span>
+    <span class="n">auto_hug</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: A reference to the ProxyToolBar object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyToolBar</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ToolBar.items"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.tool_bar.ToolBar.html#enaml.widgets.tool_bar.ToolBar.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the items defined on the tool bar.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allowed</span> <span class="o">=</span> <span class="p">(</span><span class="n">Action</span><span class="p">,</span> <span class="n">ActionGroup</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">allowed</span><span class="p">)]</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@observe</span><span class="p">((</span><span class="s">&#39;movable&#39;</span><span class="p">,</span> <span class="s">&#39;floatable&#39;</span><span class="p">,</span> <span class="s">&#39;floating&#39;</span><span class="p">,</span> <span class="s">&#39;dock_area&#39;</span><span class="p">,</span>
+        <span class="s">&#39;allowed_dock_areas&#39;</span><span class="p">,</span> <span class="s">&#39;orientation&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which sends state change to the proxy.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass handler implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ToolBar</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># DefaultValue Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_default_hug_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the default hug width for the slider.</span>
+
+<span class="sd">        The default hug width is computed based on the orientation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">==</span> <span class="s">&#39;horizontal&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;ignore&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;strong&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_default_hug_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the default hug height for the slider.</span>
+
+<span class="sd">        The default hug height is computed based on the orientation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span> <span class="o">==</span> <span class="s">&#39;vertical&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;ignore&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;strong&#39;</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># PostSetAttr Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_post_setattr_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Post setattr the orientation for the tool bar.</span>
+
+<span class="sd">        If auto hug is enabled, the hug values will be updated.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_hug</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">new</span> <span class="o">==</span> <span class="s">&#39;vertical&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;ignore&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;ignore&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

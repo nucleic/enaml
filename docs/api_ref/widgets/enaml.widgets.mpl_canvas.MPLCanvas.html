@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MPLCanvas &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="ProgressBar" href="enaml.widgets.progress_bar.ProgressBar.html" />
+    <link rel="prev" title="MenuBar" href="enaml.widgets.menu_bar.MenuBar.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.progress_bar.ProgressBar.html" title="ProgressBar"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.menu_bar.MenuBar.html" title="MenuBar"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="mplcanvas">
+<h1>MPLCanvas<a class="headerlink" href="#mplcanvas" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.mpl_canvas.MPLCanvas">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.mpl_canvas.</tt><tt class="descname">MPLCanvas</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/mpl_canvas.html#MPLCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.mpl_canvas.MPLCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.widgets.control.Control" title="enaml.widgets.control.Control"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.control.Control</span></tt></a></p>
+<p>A control which can be used to embded a matplotlib figure.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.mpl_canvas.MPLCanvas.figure">
+<tt class="descname">figure</tt><a class="headerlink" href="#enaml.widgets.mpl_canvas.MPLCanvas.figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>The matplotlib figure to display in the widget.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.mpl_canvas.MPLCanvas.toolbar_visible">
+<tt class="descname">toolbar_visible</tt><a class="headerlink" href="#enaml.widgets.mpl_canvas.MPLCanvas.toolbar_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the matplotlib figure toolbar is visible.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.mpl_canvas.MPLCanvas.hug_width">
+<tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.mpl_canvas.MPLCanvas.hug_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matplotlib figures expand freely in height and width by default.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.mpl_canvas.MPLCanvas.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.mpl_canvas.MPLCanvas.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyMPLCanvas object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-7448d4203c10eba7a701a29792b7f2d4d69d7ad8.png" alt="Inheritance diagram of enaml.qt.qt_mpl_canvas.QtMPLCanvas" usemap="#inheritance2a7436bb80" class="inheritance"/>
+<map id="inheritance2a7436bb80" name="inheritance2a7436bb80">
+<area shape="rect" id="node7" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="QtControl" alt="" coords="614,33,661,49"/>
+<area shape="rect" id="node8" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="486,33,572,49"/>
+<area shape="rect" id="node13" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="385,33,431,49"/>
+<area shape="rect" id="node25" href="#enaml.qt.qt_mpl_canvas.QtMPLCanvas" title="QtMPLCanvas" alt="" coords="704,19,765,34"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_mpl_canvas.QtMPLCanvas">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_mpl_canvas.</tt><tt class="descname">QtMPLCanvas</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_mpl_canvas.html#QtMPLCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_mpl_canvas.QtMPLCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.qt.qt_control.QtControl" title="enaml.qt.qt_control.QtControl"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_control.QtControl</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.mpl_canvas.ProxyMPLCanvas</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyMPLCanvas.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_mpl_canvas.QtMPLCanvas.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_mpl_canvas.QtMPLCanvas.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_mpl_canvas.QtMPLCanvas.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_mpl_canvas.html#QtMPLCanvas.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_mpl_canvas.QtMPLCanvas.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_mpl_canvas.QtMPLCanvas.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_mpl_canvas.html#QtMPLCanvas.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_mpl_canvas.QtMPLCanvas.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_mpl_canvas.QtMPLCanvas.set_figure">
+<tt class="descname">set_figure</tt><big>(</big><em>figure</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_mpl_canvas.html#QtMPLCanvas.set_figure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_mpl_canvas.QtMPLCanvas.set_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the MPL figure for the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_mpl_canvas.QtMPLCanvas.set_toolbar_visible">
+<tt class="descname">set_toolbar_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_mpl_canvas.html#QtMPLCanvas.set_toolbar_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_mpl_canvas.QtMPLCanvas.set_toolbar_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the toolbar visibility for the widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-03c75b38efcae37b96245f6d13bd3b3cf6329130.png" alt="Inheritance diagram of enaml.wx.wx_mpl_canvas.WxMPLCanvas" usemap="#inheritance5c67bb61a3" class="inheritance"/>
+<map id="inheritance5c67bb61a3" name="inheritance5c67bb61a3">
+<area shape="rect" id="node1" href="enaml.widgets.control.Control.html#enaml.wx.wx_control.WxControl" title="WxControl" alt="" coords="618,19,669,35"/>
+<area shape="rect" id="node15" href="#enaml.wx.wx_mpl_canvas.WxMPLCanvas" title="WxMPLCanvas" alt="" coords="699,19,765,35"/>
+<area shape="rect" id="node2" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.wx.wx_constraints_widget.WxConstraintsWidget" title="WxConstraintsWidget" alt="" coords="496,3,587,19"/>
+<area shape="rect" id="node6" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="WxWidget" alt="" coords="392,3,442,19"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_mpl_canvas.WxMPLCanvas">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_mpl_canvas.</tt><tt class="descname">WxMPLCanvas</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_mpl_canvas.html#WxMPLCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_mpl_canvas.WxMPLCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.control.Control.html#enaml.wx.wx_control.WxControl" title="enaml.wx.wx_control.WxControl"><tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_control.WxControl</span></tt></a></p>
+<p>A Wx implementation of an Enaml MPLCanvas.</p>
+<dl class="method">
+<dt id="enaml.wx.wx_mpl_canvas.WxMPLCanvas.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><em>parent</em>, <em>tree</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_mpl_canvas.html#WxMPLCanvas.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_mpl_canvas.WxMPLCanvas.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_mpl_canvas.WxMPLCanvas.create">
+<tt class="descname">create</tt><big>(</big><em>tree</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_mpl_canvas.html#WxMPLCanvas.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_mpl_canvas.WxMPLCanvas.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_mpl_canvas.WxMPLCanvas.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_mpl_canvas.html#WxMPLCanvas.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_mpl_canvas.WxMPLCanvas.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout of the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_mpl_canvas.WxMPLCanvas.on_action_set_figure">
+<tt class="descname">on_action_set_figure</tt><big>(</big><em>content</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_mpl_canvas.html#WxMPLCanvas.on_action_set_figure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_mpl_canvas.WxMPLCanvas.on_action_set_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the &#8216;set_figure&#8217; action from the Enaml widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_mpl_canvas.WxMPLCanvas.on_action_set_toolbar_visible">
+<tt class="descname">on_action_set_toolbar_visible</tt><big>(</big><em>content</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_mpl_canvas.html#WxMPLCanvas.on_action_set_toolbar_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_mpl_canvas.WxMPLCanvas.on_action_set_toolbar_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the &#8216;set_toolbar_visible&#8217; action from the Enaml
+widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_mpl_canvas.WxMPLCanvas.refresh_mpl_widget">
+<tt class="descname">refresh_mpl_widget</tt><big>(</big><em>notify=True</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_mpl_canvas.html#WxMPLCanvas.refresh_mpl_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_mpl_canvas.WxMPLCanvas.refresh_mpl_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the mpl widget and update the underlying control.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>notify</strong> (<em>bool, optional</em>) &#8211; Whether to notify the layout system if the size hint of the
+widget has changed. The default is True.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">MPLCanvas</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.menu_bar.MenuBar.html"
+                        title="previous chapter">MenuBar</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.progress_bar.ProgressBar.html"
+                        title="next chapter">ProgressBar</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.mpl_canvas.MPLCanvas.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.progress_bar.ProgressBar.html" title="ProgressBar"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.menu_bar.MenuBar.html" title="MenuBar"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

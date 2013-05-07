@@ -1,0 +1,306 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.container &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.widgets.container</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Atom</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">Coerced</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span>
+    <span class="n">set_default</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.geometry</span> <span class="kn">import</span> <span class="n">Box</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.layout_helpers</span> <span class="kn">import</span> <span class="n">vbox</span>
+
+<span class="kn">from</span> <span class="nn">.constraints_widget</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ConstraintsWidget</span><span class="p">,</span> <span class="n">ProxyConstraintsWidget</span><span class="p">,</span> <span class="n">ConstraintMember</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Border</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A class for defining a border on a Container.</span>
+
+<span class="sd">    Border instances should be treated as read-only once created.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The style of the border.</span>
+    <span class="n">style</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;box&#39;</span><span class="p">,</span> <span class="s">&#39;panel&#39;</span><span class="p">,</span> <span class="s">&#39;styled_panel&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The showdow style applied to the border.</span>
+    <span class="n">line_style</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;plain&#39;</span><span class="p">,</span> <span class="s">&#39;sunken&#39;</span><span class="p">,</span> <span class="s">&#39;raised&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The thickness of the outer border line.</span>
+    <span class="n">line_width</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c">#: The thickness of the inner border line. This only has an effect</span>
+    <span class="c">#: for the &#39;sunken&#39; and &#39;raised&#39; line styles.</span>
+    <span class="n">midline_width</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyContainer</span><span class="p">(</span><span class="n">ProxyConstraintsWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy Container object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the Container declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Container</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_border</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">border</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.container.Container.html#enaml.widgets.container.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">(</span><span class="n">ConstraintsWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A ConstraintsWidget subclass that provides functionality for</span>
+<span class="sd">    laying out constrainable children according to their system of</span>
+<span class="sd">    constraints.</span>
+
+<span class="sd">    The Container is the canonical component used to arrange child</span>
+<span class="sd">    widgets using constraints-based layout. Given a heierarchy of</span>
+<span class="sd">    components, the top-most Container will be charged with the actual</span>
+<span class="sd">    layout of the decendents. This allows constraints to cross the</span>
+<span class="sd">    boundaries of Containers, enabling powerful and flexible layouts.</span>
+
+<span class="sd">    There are widgets whose boundaries constraints may not cross. Some</span>
+<span class="sd">    examples of these would be a ScrollArea or a TabGroup. See the</span>
+<span class="sd">    documentation of a given container component as to whether or not</span>
+<span class="sd">    constraints may cross its boundaries.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: An optional border to apply around the container.</span>
+    <span class="n">border</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">Border</span><span class="p">))</span>
+
+    <span class="c">#: A boolean which indicates whether or not to allow the layout</span>
+    <span class="c">#: ownership of this container to be transferred to an ancestor.</span>
+    <span class="c">#: This is False by default, which means that every container</span>
+    <span class="c">#: get its own layout solver. This improves speed and reduces</span>
+    <span class="c">#: memory use (by keeping a solver&#39;s internal tableaux small)</span>
+    <span class="c">#: but at the cost of not being able to share constraints</span>
+    <span class="c">#: across Container boundaries. This flag must be explicitly</span>
+    <span class="c">#: marked as True to enable sharing.</span>
+    <span class="n">share_layout</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: A constant symbolic object that represents the internal left</span>
+    <span class="c">#: boundary of the content area of the container.</span>
+    <span class="n">contents_left</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
+
+    <span class="c">#: A constant symbolic object that represents the internal right</span>
+    <span class="c">#: boundary of the content area of the container.</span>
+    <span class="n">contents_right</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
+
+    <span class="c">#: A constant symbolic object that represents the internal top</span>
+    <span class="c">#: boundary of the content area of the container.</span>
+    <span class="n">contents_top</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
+
+    <span class="c">#: A constant symbolic object that represents the internal bottom</span>
+    <span class="c">#: boundary of the content area of the container.</span>
+    <span class="n">contents_bottom</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
+
+    <span class="c">#: A constant symbolic object that represents the internal width of</span>
+    <span class="c">#: the content area of the container.</span>
+    <span class="n">contents_width</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_default_contents_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_right</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_left</span>
+
+    <span class="c">#: A constant symbolic object that represents the internal height of</span>
+    <span class="c">#: the content area of the container.</span>
+    <span class="n">contents_height</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_default_contents_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_bottom</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_top</span>
+
+    <span class="c">#: A constant symbolic object that represents the internal center</span>
+    <span class="c">#: along the vertical direction the content area of the container.</span>
+    <span class="n">contents_v_center</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_default_contents_v_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_top</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_height</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="c">#: A constant symbolic object that represents the internal center</span>
+    <span class="c">#: along the horizontal direction of the content area of the container.</span>
+    <span class="n">contents_h_center</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_default_contents_h_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_left</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_width</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="c">#: A box object which holds the padding for this component. The</span>
+    <span class="c">#: padding is the amount of space between the outer boundary box</span>
+    <span class="c">#: and the content box. The default padding is (10, 10, 10, 10).</span>
+    <span class="c">#: Certain subclasses, such as GroupBox, may provide additional</span>
+    <span class="c">#: margin than what is specified by the padding.</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">Box</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)))</span>
+
+    <span class="c">#: Containers freely exapnd in width and height. The size hint</span>
+    <span class="c">#: constraints for a Container are used when the container is</span>
+    <span class="c">#: not sharing its layout. In these cases, expansion of the</span>
+    <span class="c">#: container is typically desired.</span>
+    <span class="n">hug_width</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
+    <span class="n">hug_height</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
+
+    <span class="c">#: A reference to the ProxyContainer object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyContainer</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Container.widgets"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.container.Container.html#enaml.widgets.container.Container.widgets">[docs]</a>    <span class="k">def</span> <span class="nf">widgets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the child ConstraintsWidgets defined on the container.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ConstraintsWidget</span><span class="p">)]</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="Container.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.container.Container.html#enaml.widgets.container.Container.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event on the container.</span>
+
+<span class="sd">        This event handler will request a relayout if the added child</span>
+<span class="sd">        is an instance of &#39;ConstraintsWidget&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Container</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">ConstraintsWidget</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request_relayout</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Container.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.container.Container.html#enaml.widgets.container.Container.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event on the container.</span>
+
+<span class="sd">        This event handler will request a relayout if the removed child</span>
+<span class="sd">        is an instance of &#39;ConstraintsWidget&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Container</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">ConstraintsWidget</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request_relayout</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;border&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which updates the proxy when the border changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass handler is sufficient</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Container</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="nd">@observe</span><span class="p">((</span><span class="s">&#39;share_layout&#39;</span><span class="p">,</span> <span class="s">&#39;padding&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_layout_invalidated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A private observer which invalidates the layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass handler is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Container</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_layout_invalidated</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Layout Constraints</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Container.layout_constraints"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.container.Container.html#enaml.widgets.container.Container.layout_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">layout_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The constraints generation for a Container.</span>
+
+<span class="sd">        This method supplies default vbox constraints to the children of</span>
+<span class="sd">        the container unless the user has given explicit &#39;constraints&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[:]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cns</span><span class="p">:</span>
+            <span class="n">cns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vbox</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">widgets</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">cns</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

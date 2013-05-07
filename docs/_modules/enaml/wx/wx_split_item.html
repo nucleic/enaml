@@ -1,0 +1,262 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_split_item &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_split_item</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.split_item</span> <span class="kn">import</span> <span class="n">ProxySplitItem</span>
+
+<span class="kn">from</span> <span class="nn">.wx_single_widget_sizer</span> <span class="kn">import</span> <span class="n">wxSingleWidgetSizer</span>
+<span class="kn">from</span> <span class="nn">.wx_container</span> <span class="kn">import</span> <span class="n">WxContainer</span>
+<span class="kn">from</span> <span class="nn">.wx_widget</span> <span class="kn">import</span> <span class="n">WxWidget</span>
+
+
+<span class="k">class</span> <span class="nc">wxSplitItem</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A wxPanel subclass which acts as an item in a wxSplitter.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxSplitItem.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parent : wx.Window</span>
+<span class="sd">            The parent widget of the split item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxSplitItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_split_widget</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stretch</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">wxSingleWidgetSizer</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">GetSplitWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the split widget for this split item.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wxWindow or None</span>
+<span class="sd">            The split widget being managed by this item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_widget</span>
+
+    <span class="k">def</span> <span class="nf">SetSplitWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the split widget for this split item.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        widget : wxWindow</span>
+<span class="sd">            The wxWindow to use as the split widget in this item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_split_widget</span> <span class="o">=</span> <span class="n">widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetSizer</span><span class="p">()</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetStretch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the stretch factor for the widget.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The stretch factor for the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stretch</span>
+
+    <span class="k">def</span> <span class="nf">SetStretch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stretch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the stretch factor for the widget.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stretch : int</span>
+<span class="sd">            The stretch factor for the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stretch</span> <span class="o">=</span> <span class="n">stretch</span>
+
+
+<div class="viewcode-block" id="WxSplitItem"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem">[docs]</a><span class="k">class</span> <span class="nc">WxSplitItem</span><span class="p">(</span><span class="n">WxWidget</span><span class="p">,</span> <span class="n">ProxySplitItem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxySplitItem.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxSplitItem</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxSplitItem.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying QStackItem widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxSplitItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxSplitItem.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underyling widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSplitItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_stretch</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">stretch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_collapsible</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">collapsible</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSplitItem.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the layout for the underyling widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSplitItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetSplitWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">split_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxSplitItem.split_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem.split_widget">[docs]</a>    <span class="k">def</span> <span class="nf">split_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find and return the split widget child for this widget.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wxWindow or None</span>
+<span class="sd">            The split widget defined for this widget, or None if one is</span>
+<span class="sd">            not defined.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">split_widget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span> <span class="ow">or</span> <span class="bp">None</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxSplitItem.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a WxSplitItem.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSplitItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetSplitWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">split_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxSplitItem.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a WxSplitItem.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxSplitItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetSplitWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">split_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxySplitItem API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxSplitItem.set_stretch"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem.set_stretch">[docs]</a>    <span class="k">def</span> <span class="nf">set_stretch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stretch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the stretch factor for the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetStretch</span><span class="p">(</span><span class="n">stretch</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxSplitItem.set_collapsible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.split_item.SplitItem.html#enaml.wx.wx_split_item.WxSplitItem.set_collapsible">[docs]</a>    <span class="k">def</span> <span class="nf">set_collapsible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collapsible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the collapsible flag for the underlying widget.</span>
+
+<span class="sd">        This is not supported on wx.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

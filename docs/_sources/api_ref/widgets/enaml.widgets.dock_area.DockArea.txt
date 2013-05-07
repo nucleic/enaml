@@ -1,0 +1,29 @@
+DockArea
+================================
+
+.. currentmodule:: enaml.widgets.dock_area
+
+.. autoclass:: DockArea
+
+
+Backends
+--------
+
+Qt
+^^
+
+.. inheritance-diagram::
+    enaml.qt.qt_dock_area.QtDockArea
+    :parts: 1
+
+.. autoclass:: enaml.qt.qt_dock_area.QtDockArea
+
+
+Wx
+^^
+
+.. inheritance-diagram::
+    enaml.wx.wx_dock_area.WxDockArea
+    :parts: 1
+
+.. autoclass:: enaml.wx.wx_dock_area.WxDockArea

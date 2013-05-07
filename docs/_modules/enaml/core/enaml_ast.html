@@ -1,0 +1,211 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.core.enaml_ast &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.core.enaml_ast</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Typed</span>
+
+
+<div class="viewcode-block" id="ASTNode"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.enaml_ast.ASTNode">[docs]</a><span class="k">class</span> <span class="nc">ASTNode</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The base class for Enaml ast nodes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The line number in the .enaml file which generated the node.</span>
+    <span class="n">lineno</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Module"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.enaml_ast.Module">[docs]</a><span class="k">class</span> <span class="nc">Module</span><span class="p">(</span><span class="n">ASTNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An ASTNode representing an Enaml module.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The list of ast nodes for the body of the module. This will be</span>
+    <span class="c">#: composed of Python and EnamlDef nodes.</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="Python"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.enaml_ast.Python">[docs]</a><span class="k">class</span> <span class="nc">Python</span><span class="p">(</span><span class="n">ASTNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An ASTNode representing a chunk of pure Python code.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The python ast node for the given python code.</span>
+    <span class="n">ast</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">AST</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="EnamlDef"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.enaml_ast.EnamlDef">[docs]</a><span class="k">class</span> <span class="nc">EnamlDef</span><span class="p">(</span><span class="n">ASTNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An ASTNode representing an enamldef block.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The type name given to the enamldef.</span>
+    <span class="n">typename</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The name of the base class which is being inherited.</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The identifier given to the enamldef.</span>
+    <span class="n">identifier</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The docstring for the enamldef.</span>
+    <span class="n">docstring</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The list of decorator for the enamldef. This will be composed of</span>
+    <span class="c">#: Python nodes.</span>
+    <span class="n">decorators</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span>
+
+    <span class="c">#: The list of body nodes for the enamldef. This will be composed</span>
+    <span class="c">#: of StorageDef, Binding, and ChildDef nodes.</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="ChildDef"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.enaml_ast.ChildDef">[docs]</a><span class="k">class</span> <span class="nc">ChildDef</span><span class="p">(</span><span class="n">ASTNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An ASTNode representing a child definition.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The type name of the child to create.</span>
+    <span class="n">typename</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The identifier given to the child.</span>
+    <span class="n">identifier</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The list of body nodes for the child definition. This will be</span>
+    <span class="c">#: composed of StorageDef, Binding, and ChildDef nodes.</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="OperatorExpr"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.enaml_ast.OperatorExpr">[docs]</a><span class="k">class</span> <span class="nc">OperatorExpr</span><span class="p">(</span><span class="n">ASTNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An AST node which represents an operator expression.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The operator used to bind the code.</span>
+    <span class="n">operator</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The python ast node for the bound python code.</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">Python</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Binding"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.enaml_ast.Binding">[docs]</a><span class="k">class</span> <span class="nc">Binding</span><span class="p">(</span><span class="n">ASTNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An AST node which represents a code binding.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the attribute being bound.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The operator expression for the binding.</span>
+    <span class="n">expr</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">OperatorExpr</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="StorageDef"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.enaml_ast.StorageDef">[docs]</a><span class="k">class</span> <span class="nc">StorageDef</span><span class="p">(</span><span class="n">ASTNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An AST node for storage definitions.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The kind of the storage definition.</span>
+    <span class="n">kind</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;attr&#39;</span><span class="p">,</span> <span class="s">&#39;event&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The name of the storage object being defined.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The typename of the allowed values for the storage object.</span>
+    <span class="n">typename</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: The default expression bound to the storage object. This may</span>
+    <span class="c">#: be None if the storage object has no default expr binding.</span>
+    <span class="n">expr</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">OperatorExpr</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

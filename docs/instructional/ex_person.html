@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Person Example &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Examples Gallery" href="example.html" />
+    <link rel="next" title="Employee Example" href="ex_employee.html" />
+    <link rel="prev" title="Hello World Example" href="ex_hello_world.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_employee.html" title="Employee Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ex_hello_world.html" title="Hello World Example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" accesskey="U">Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="person-example">
+<h1>Person Example<a class="headerlink" href="#person-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/person_view.enaml"><tt class="xref download docutils literal"><span class="pre">person_view.enaml</span></tt></a></p>
+<div class="highlight-python"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+from enaml.widgets.api import Window, Label, Field, Form
+from enaml.stdlib.fields import IntField
+
+
+enamldef PersonForm(Form):
+    attr person
+    Label:
+        text = 'First Name'
+    Field:
+        text := person.first_name
+    Label:
+        text = 'Last Name'
+    Field:
+        text := person.last_name
+    Label:
+        text = 'Age'
+    IntField:
+        minimum = 0
+        value := person.age
+
+
+enamldef PersonView(Window):
+    attr person
+    PersonForm:
+        person := parent.person
+
+</pre>
+</div>
+<p><a class="reference download internal" href="../_downloads/person.py"><tt class="xref download docutils literal"><span class="pre">person.py</span></tt></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c">#  Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#  All rights reserved.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">observe</span>
+
+<span class="kn">import</span> <span class="nn">enaml</span>
+<span class="kn">from</span> <span class="nn">enaml.qt.qt_application</span> <span class="kn">import</span> <span class="n">QtApplication</span>
+
+
+<span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A simple class representing a person object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="n">age</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">debug</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;age&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">debug_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Prints out a debug message whenever the person&#39;s age changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="s">&quot;{first} {last} is {age} years old.&quot;</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">first</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">print</span> <span class="n">s</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">enaml</span><span class="o">.</span><span class="n">imports</span><span class="p">():</span>
+        <span class="kn">from</span> <span class="nn">person_view</span> <span class="kn">import</span> <span class="n">PersonView</span>
+
+    <span class="n">john</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s">&#39;John&#39;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s">&#39;Doe&#39;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+    <span class="n">john</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QtApplication</span><span class="p">()</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="n">PersonView</span><span class="p">(</span><span class="n">person</span><span class="o">=</span><span class="n">john</span><span class="p">)</span>
+    <span class="n">view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>$ python person.py</pre>
+</div>
+<img alt="../_images/john_doe.png" src="../_images/john_doe.png" />
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ex_hello_world.html"
+                        title="previous chapter">Hello World Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ex_employee.html"
+                        title="next chapter">Employee Example</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/instructional/ex_person.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_employee.html" title="Employee Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ex_hello_world.html" title="Hello World Example"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" >Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

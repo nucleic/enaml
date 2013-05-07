@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>John Doe tutorial &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Enaml Tutorials" href="tutorials_home.html" />
+    <link rel="next" title="Mary Sue tutorial" href="tut_employee.html" />
+    <link rel="prev" title="“Hello World” tutorial" href="tut_hello_world.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tut_employee.html" title="Mary Sue tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tut_hello_world.html" title="“Hello World” tutorial"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="tutorials_home.html" accesskey="U">Enaml Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="john-doe-tutorial">
+<span id="john-doe"></span><h1>John Doe tutorial<a class="headerlink" href="#john-doe-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial expands on the <a class="reference internal" href="tut_hello_world.html#hello-world"><em>&#8220;Hello World&#8221; Tutorial</em></a> to
+introduce the concepts of reusable component declarations and components from
+the standard widget library in Enaml. It sets up a GUI with the name and age
+of a person.</p>
+<p>Here is the Enaml file (<a class="reference download internal" href="../_downloads/person_view.enaml"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">here</span></tt></a>):</p>
+<div class="highlight-python"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+from enaml.widgets.api import Window, Label, Field, Form
+from enaml.stdlib.fields import IntField
+
+
+enamldef PersonForm(Form):
+    attr person
+    Label:
+        text = 'First Name'
+    Field:
+        text := person.first_name
+    Label:
+        text = 'Last Name'
+    Field:
+        text := person.last_name
+    Label:
+        text = 'Age'
+    IntField:
+        minimum = 0
+        value := person.age
+
+
+enamldef PersonView(Window):
+    attr person
+    PersonForm:
+        person := parent.person
+
+</pre>
+</div>
+<p>Here is the Python code (<a class="reference download internal" href="../_downloads/person.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">here</span></tt></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c">#  Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#  All rights reserved.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">observe</span>
+
+<span class="kn">import</span> <span class="nn">enaml</span>
+<span class="kn">from</span> <span class="nn">enaml.qt.qt_application</span> <span class="kn">import</span> <span class="n">QtApplication</span>
+
+
+<span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A simple class representing a person object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="n">age</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">debug</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;age&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">debug_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Prints out a debug message whenever the person&#39;s age changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="s">&quot;{first} {last} is {age} years old.&quot;</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">first</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">print</span> <span class="n">s</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">enaml</span><span class="o">.</span><span class="n">imports</span><span class="p">():</span>
+        <span class="kn">from</span> <span class="nn">person_view</span> <span class="kn">import</span> <span class="n">PersonView</span>
+
+    <span class="n">john</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s">&#39;John&#39;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s">&#39;Doe&#39;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+    <span class="n">john</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QtApplication</span><span class="p">()</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="n">PersonView</span><span class="p">(</span><span class="n">person</span><span class="o">=</span><span class="n">john</span><span class="p">)</span>
+    <span class="n">view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The resulting GUI looks like this (on Mac OSX):</p>
+<img alt="../_images/john_doe.png" src="../_images/john_doe.png" />
+<div class="section" id="enaml-imports">
+<h2>Enaml Imports<a class="headerlink" href="#enaml-imports" title="Permalink to this headline">¶</a></h2>
+<p>This <tt class="docutils literal"><span class="pre">.enaml</span></tt> file begins like the <a class="reference internal" href="tut_hello_world.html#hello-world"><em>&#8220;Hello World&#8221;</em></a> example
+with comments, but next we see that we can import other <tt class="docutils literal"><span class="pre">.enaml</span></tt> files in Enaml,
+just like we can import <tt class="docutils literal"><span class="pre">.py</span></tt> files.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">enaml.stdlib.fields</span> <span class="kn">import</span> <span class="n">IntField</span>
+</pre></div>
+</div>
+<p>In this case, we are importing the integer field widget <tt class="docutils literal"><span class="pre">IntField</span></tt> from
+Enaml&#8216;s <em class="xref std std-ref">standard widget library.</em> This widget
+lets us assign an integer to the <tt class="docutils literal"><span class="pre">value</span></tt> attribute of the widget. The
+widget automatically converts to and from the <tt class="docutils literal"><span class="pre">text</span></tt> representation of the
+integer complete with validation and error checking.</p>
+<p>Note that this import points to a widget definition in an <tt class="docutils literal"><span class="pre">.enaml</span></tt> file.
+<em>The import statement looks like Python but imports from an</em> <tt class="docutils literal"><span class="pre">.enaml</span></tt> <em>file.</em></p>
+</div>
+<div class="section" id="personform-definition-block">
+<h2><tt class="docutils literal"><span class="pre">PersonForm</span></tt> Definition Block<a class="headerlink" href="#personform-definition-block" title="Permalink to this headline">¶</a></h2>
+<p>Next, there is a <strong>component definition</strong> block. We define a component, in this
+case an entry form, using a component hierarchy definition. With this block of
+code, we define a reusable component derived from other components.</p>
+<div class="highlight-python"><pre>enamldef PersonForm(Form):
+    attr person
+    Label:
+        text = 'First Name'
+    Field:
+        text := person.first_name
+    Label:
+        text = 'Last Name'
+    Field:
+        text := person.last_name
+    Label:
+        text = 'Age'
+    IntField:
+        minimum = 0
+        value := person.age</pre>
+</div>
+<p>A component definition block header line begins with <tt class="docutils literal"><span class="pre">enamldef</span></tt> followed by
+the name of the component followed by the base component or widget from which
+it inherits. <em>A widget defined with</em> <tt class="docutils literal"><span class="pre">enamldef</span></tt> <em>must inherit from a builtin
+widget or another</em> <tt class="docutils literal"><span class="pre">enamldef</span></tt>. The header line ends with a colon:</p>
+<div class="highlight-python"><pre>enamldef PersonForm(Form):</pre>
+</div>
+<p>Indented under the header line are statements declaring either attributes or
+children. <tt class="docutils literal"><span class="pre">attr</span> <span class="pre">person</span></tt> declares a <tt class="docutils literal"><span class="pre">person</span></tt> attribute of <tt class="docutils literal"><span class="pre">PersonForm</span></tt>.
+Because no default value is specified, this attribute must be supplied by code
+which uses the <tt class="docutils literal"><span class="pre">PersonForm</span></tt>.</p>
+</div>
+<div class="section" id="built-in-components">
+<h2>Built-in Components<a class="headerlink" href="#built-in-components" title="Permalink to this headline">¶</a></h2>
+<p>Next, we add a series of labels and fields. <tt class="docutils literal"><span class="pre">Form</span></tt>, <tt class="docutils literal"><span class="pre">Label</span></tt> and <tt class="docutils literal"><span class="pre">Field</span></tt>
+are all from the library of Enaml <a class="reference internal" href="../api_ref/enaml.widgets.html#widgets-ref"><em>built-in widgets.</em></a></p>
+<p><a class="reference internal" href="../api_ref/widgets/enaml.widgets.form.Form.html#enaml.widgets.form.Form" title="enaml.widgets.form.Form"><tt class="xref py py-class docutils literal"><span class="pre">Form</span></tt></a> is a built-in container that arranges
+alternating child components into two columns. This is typically done in the
+way seen here with alternating <tt class="docutils literal"><span class="pre">Label</span></tt> and widget children, though there
+are no restrictions on the types of widgets which can be used. In a form with
+an odd number of components, the last component spans both columns.</p>
+<p><a class="reference internal" href="../api_ref/widgets/enaml.widgets.label.Label.html#enaml.widgets.label.Label" title="enaml.widgets.label.Label"><tt class="xref py py-class docutils literal"><span class="pre">Label</span></tt></a> is a built-in component for displaying
+read-only text.</p>
+<p><a class="reference internal" href="../api_ref/widgets/enaml.widgets.field.Field.html#enaml.widgets.field.Field" title="enaml.widgets.field.Field"><tt class="xref py py-class docutils literal"><span class="pre">Field</span></tt></a> is a built-in widget for entering a text
+value. Field is used as the base component for many other components that do
+type conversions.</p>
+</div>
+<div class="section" id="delegation-operator">
+<h2>Delegation Operator :=<a class="headerlink" href="#delegation-operator" title="Permalink to this headline">¶</a></h2>
+<p>In the <tt class="docutils literal"><span class="pre">Field</span></tt> code block, we notice a new operator <tt class="docutils literal"><span class="pre">:=</span></tt>. This is the
+<a class="reference internal" href="../tech_ref/grammar_ref.html#delegation-opr"><em>delegation operator</em></a>, one of the five special operators in
+the Enaml <a class="reference internal" href="../tech_ref/grammar_ref.html#grammar-ref"><em>grammar</em></a>. It sets up a two-way synchronization
+between the objects on the left-hand and right-hand sides. That is, changes to
+the value of the <tt class="docutils literal"><span class="pre">text</span></tt> field in the GUI widget are applied to the value of
+<tt class="docutils literal"><span class="pre">person.first_name</span></tt>, and changes to the value of <tt class="docutils literal"><span class="pre">person.first_name</span></tt> are
+displayed in the GUI component.</p>
+</div>
+<div class="section" id="standard-library-of-derived-components">
+<h2>Standard Library of Derived Components<a class="headerlink" href="#standard-library-of-derived-components" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">IntField</span></tt> component is derived from <tt class="docutils literal"><span class="pre">Field</span></tt> and provides
+string-to-integer conversion, validation, and error reporting functions. By
+using the <tt class="docutils literal"><span class="pre">IntField</span></tt> component, we add validation to the GUI, as shown in the
+example below, where a non-integer value was entered in the age field:</p>
+<img alt="../_images/john_doe_error.png" src="../_images/john_doe_error.png" />
+</div>
+<div class="section" id="personview-definitions-block">
+<h2><tt class="docutils literal"><span class="pre">PersonView</span></tt> Definitions Block<a class="headerlink" href="#personview-definitions-block" title="Permalink to this headline">¶</a></h2>
+<p>Now, with another <tt class="docutils literal"><span class="pre">enamldef</span></tt> block, we can make a view available using our
+previously declared <tt class="docutils literal"><span class="pre">PersonForm</span></tt>. If we wanted to, we could add <tt class="docutils literal"><span class="pre">PersonForm</span></tt>
+many times over in this view or any other view, but for now we&#8217;ll keep it
+simple. Note that we will pass a <tt class="docutils literal"><span class="pre">person</span></tt> object to the view when we create
+an instance of it.</p>
+<div class="highlight-python"><pre>enamldef PersonView(Window):
+    attr person
+    PersonForm:
+        person = parent.person</pre>
+</div>
+<p>Now, on to the Python code.</p>
+<div class="section" id="atom-object">
+<h3>Atom Object<a class="headerlink" href="#atom-object" title="Permalink to this headline">¶</a></h3>
+<p>Enaml is designed to be model framework independent and ships with a formal
+API for attaching to any Python model framework which provides notification of
+state change. However, Enaml itself is built with Atom and will work
+with <a class="reference external" href="http://github.com/nucleic/atom/">Atom objects</a> out of the
+box. The important thing to note is that the <tt class="docutils literal"><span class="pre">Person</span></tt> attribute names match
+the attribute names of the <tt class="docutils literal"><span class="pre">person</span></tt> object used by the <tt class="docutils literal"><span class="pre">PersonForm</span></tt> in the
+.enaml file.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot; A simple class representing a person object.</span>
+
+<span class="sd">   &quot;&quot;&quot;</span>
+   <span class="n">last_name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+   <span class="n">first_name</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+   <span class="n">age</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+   <span class="n">debug</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+   <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;age&#39;</span><span class="p">)</span>
+   <span class="k">def</span> <span class="nf">debug_print</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+       <span class="sd">&quot;&quot;&quot; Prints out a debug message whenever the person&#39;s age changes.</span>
+
+<span class="sd">       &quot;&quot;&quot;</span>
+       <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+           <span class="n">templ</span> <span class="o">=</span> <span class="s">&quot;{first} {last} is {age} years old.&quot;</span>
+           <span class="n">s</span> <span class="o">=</span> <span class="n">templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+               <span class="n">first</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="p">,</span>
+           <span class="p">)</span>
+           <span class="k">print</span> <span class="n">s</span>
+</pre></div>
+</div>
+<p>Note that our <tt class="docutils literal"><span class="pre">Person</span></tt> class is designed to print out the name and age of the
+person when the <tt class="docutils literal"><span class="pre">age</span></tt> attribute changes. See the <a class="reference external" href="http://github.com/nucleic/atom/index.html">Atom user guide</a> for help
+on Atom.</p>
+</div>
+</div>
+<div class="section" id="hooking-up-an-enaml-view-to-an-atom-object">
+<h2>Hooking up an Enaml View to an Atom Object<a class="headerlink" href="#hooking-up-an-enaml-view-to-an-atom-object" title="Permalink to this headline">¶</a></h2>
+<p>In the code block for launching the script from the command line, we create a
+<tt class="docutils literal"><span class="pre">Person</span></tt> object and create an application which serves it using the
+<tt class="docutils literal"><span class="pre">PersonView</span></tt> for the GUI:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">enaml</span>
+    <span class="k">with</span> <span class="n">enaml</span><span class="o">.</span><span class="n">imports</span><span class="p">():</span>
+        <span class="kn">from</span> <span class="nn">person_view</span> <span class="kn">import</span> <span class="n">PersonView</span>
+
+    <span class="n">john</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s">&#39;John&#39;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s">&#39;Doe&#39;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+    <span class="n">john</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>Then we instantiate a PersonView object, although now we would like to hook
+john as the Person instance used by this PersonView. Finally, like in the
+previous example, we show the view and start the application&#8217;s event loop.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">app</span> <span class="o">=</span> <span class="n">QtApplication</span><span class="p">()</span>
+<span class="n">view</span> <span class="o">=</span> <span class="n">PersonView</span><span class="p">(</span><span class="n">person</span><span class="o">=</span><span class="n">john</span><span class="p">)</span>
+<span class="n">view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Running it from the command line, we see:</p>
+<div class="highlight-python"><pre>$ python person.py</pre>
+</div>
+<img alt="../_images/john_doe.png" src="../_images/john_doe.png" />
+<p>We can then make a change in the GUI and see:</p>
+<div class="highlight-python"><pre>John Doe Jr. is 22 years old.</pre>
+</div>
+<img alt="../_images/john_doe_jr.png" src="../_images/john_doe_jr.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">John Doe tutorial</a><ul>
+<li><a class="reference internal" href="#enaml-imports">Enaml Imports</a></li>
+<li><a class="reference internal" href="#personform-definition-block"><tt class="docutils literal"><span class="pre">PersonForm</span></tt> Definition Block</a></li>
+<li><a class="reference internal" href="#built-in-components">Built-in Components</a></li>
+<li><a class="reference internal" href="#delegation-operator">Delegation Operator :=</a></li>
+<li><a class="reference internal" href="#standard-library-of-derived-components">Standard Library of Derived Components</a></li>
+<li><a class="reference internal" href="#personview-definitions-block"><tt class="docutils literal"><span class="pre">PersonView</span></tt> Definitions Block</a><ul>
+<li><a class="reference internal" href="#atom-object">Atom Object</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hooking-up-an-enaml-view-to-an-atom-object">Hooking up an Enaml View to an Atom Object</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tut_hello_world.html"
+                        title="previous chapter">&#8220;Hello World&#8221; tutorial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tut_employee.html"
+                        title="next chapter">Mary Sue tutorial</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/instructional/tut_person.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tut_employee.html" title="Mary Sue tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tut_hello_world.html" title="“Hello World” tutorial"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="tutorials_home.html" >Enaml Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

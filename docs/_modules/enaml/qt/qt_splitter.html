@@ -1,0 +1,322 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_splitter &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_splitter</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4.QtCore</span> <span class="kn">import</span> <span class="n">Qt</span><span class="p">,</span> <span class="n">QEvent</span><span class="p">,</span> <span class="n">pyqtSignal</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">QSplitter</span><span class="p">,</span> <span class="n">QSplitterHandle</span><span class="p">,</span> <span class="n">QVBoxLayout</span><span class="p">,</span> <span class="n">QFrame</span><span class="p">,</span> <span class="n">QApplication</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.splitter</span> <span class="kn">import</span> <span class="n">ProxySplitter</span>
+
+<span class="kn">from</span> <span class="nn">.qt_constraints_widget</span> <span class="kn">import</span> <span class="n">QtConstraintsWidget</span><span class="p">,</span> <span class="n">size_hint_guard</span>
+<span class="kn">from</span> <span class="nn">.qt_split_item</span> <span class="kn">import</span> <span class="n">QtSplitItem</span>
+
+
+<span class="n">ORIENTATION</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;horizontal&#39;</span><span class="p">:</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">,</span>
+    <span class="s">&#39;vertical&#39;</span><span class="p">:</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Vertical</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">QWinSplitterHandle</span><span class="p">(</span><span class="n">QSplitterHandle</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom QSplitterHandle which is used on win32 platforms.</span>
+
+<span class="sd">    The native Windows style draws the splitter handle the same color as</span>
+<span class="sd">    the widget background, which makes it invisible for most cases. This</span>
+<span class="sd">    subclass overlays a raised line on the splitter to provide a little</span>
+<span class="sd">    bit of visual feedback.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QWinSplitterHandle</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">orientation</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frame</span> <span class="o">=</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">QFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateFrame</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">updateFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the internal frame style for the current orientation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">()</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">VLine</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span> <span class="k">else</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">HLine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frame</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">s</span> <span class="o">|</span> <span class="n">QFrame</span><span class="o">.</span><span class="n">Raised</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">QCustomSplitter</span><span class="p">(</span><span class="n">QSplitter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom QSplitter which handles children of type QSplitItem.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A signal emitted when a LayoutRequest event is posted to the</span>
+    <span class="c">#: splitter widget. This will typically occur when the size hint</span>
+    <span class="c">#: of the splitter is no longer valid.</span>
+    <span class="n">layoutRequested</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">createHandle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented virtual method to create splitter handles.</span>
+
+<span class="sd">        On win32 platforms, this will return a custom QSplitterHandle</span>
+<span class="sd">        which works around an issue with handle not drawing nicely. On</span>
+<span class="sd">        all other platforms, a normal QSplitterHandler widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;win32&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">QWinSplitterHandle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">(),</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">QSplitterHandle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">(),</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setOrientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the orientation of the splitter.</span>
+
+<span class="sd">        This overriden method will call the `updateFrame` method of the</span>
+<span class="sd">        splitter handles when running on win32 platforms. On any other</span>
+<span class="sd">        platform, this method simply calls the superclass method.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">old</span> <span class="o">!=</span> <span class="n">orientation</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">QCustomSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setOrientation</span><span class="p">(</span><span class="n">orientation</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;win32&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">()):</span>
+                    <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                    <span class="n">handle</span><span class="o">.</span><span class="n">updateFrame</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A custom event handler which handles LayoutRequest events.</span>
+
+<span class="sd">        When a LayoutRequest event is posted to this widget, it will</span>
+<span class="sd">        emit the `layoutRequested` signal. This allows an external</span>
+<span class="sd">        consumer of this widget to update their external layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">QCustomSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="n">QEvent</span><span class="o">.</span><span class="n">LayoutRequest</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layoutRequested</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+
+<div class="viewcode-block" id="QtSplitter"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter">[docs]</a><span class="k">class</span> <span class="nc">QtSplitter</span><span class="p">(</span><span class="n">QtConstraintsWidget</span><span class="p">,</span> <span class="n">ProxySplitter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxySplitter.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QCustomSplitter</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtSplitter.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates the underlying QSplitter control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QCustomSplitter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtSplitter.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_orientation</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">orientation</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_live_drag</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">live_drag</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtSplitter.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the layout initialization for the splitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_items</span><span class="p">():</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">layoutRequested</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_layout_requested</span><span class="p">)</span>
+
+        <span class="c"># On Windows, messages are consumed from three different queues,</span>
+        <span class="c"># each with a different priority. The lowest priority is the</span>
+        <span class="c"># queue which holds WM_PAINT messages. Dragging the splitter bar</span>
+        <span class="c"># generates WM_MOUSEMOVE messages which have a higher priority.</span>
+        <span class="c"># These messages (dragging the bar) generate size events in Qt</span>
+        <span class="c"># which are delivered immediately. This means that if handling</span>
+        <span class="c"># the resize event from the drag takes too long (&gt; ~800us) then</span>
+        <span class="c"># another size event will arrive before the paint event, since</span>
+        <span class="c"># the new WM_MOUSEMOVE will be processed before the WM_PAINT.</span>
+        <span class="c"># So on Windows, the `splitterMoved` signal, which is emitted</span>
+        <span class="c"># on every drag, is connected to a handler which will force a</span>
+        <span class="c"># repaint if opaque resize is turned on. Since paint event are</span>
+        <span class="c"># collapsed, the effect of this is to restore the order of event</span>
+        <span class="c"># processing.</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;win32&#39;</span><span class="p">:</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">splitterMoved</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_win32_splitter_moved</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtSplitter.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtSplitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtSplitter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtSplitItem</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">dchild</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">child</span> <span class="ow">is</span> <span class="n">dchild</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">insertWidget</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="c"># QSplitter automatically removes a widget when it&#39;s reparented. The</span>
+    <span class="c"># base child_removed event handler will set the parent to None, and</span>
+    <span class="c"># that is all that is needed.</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtSplitter.split_items"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.split_items">[docs]</a>    <span class="k">def</span> <span class="nf">split_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the split items defined for the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">split_items</span><span class="p">():</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span>
+            <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">w</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Signal Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtSplitter.on_layout_requested"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.on_layout_requested">[docs]</a>    <span class="k">def</span> <span class="nf">on_layout_requested</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the `layoutRequested` signal from the QSplitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size_hint_updated</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtSplitter.on_win32_splitter_moved"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.on_win32_splitter_moved">[docs]</a>    <span class="k">def</span> <span class="nf">on_win32_splitter_moved</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the &#39;splitterMoved&#39; signal from the QSplitter.</span>
+
+<span class="sd">        This handler is only connected when running on Windows and it</span>
+<span class="sd">        serves to make sure paint events get processed during heavy</span>
+<span class="sd">        resize events when opaque resizing is turned on.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">opaqueResize</span><span class="p">():</span>
+            <span class="n">QApplication</span><span class="o">.</span><span class="n">sendPostedEvents</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxySplitter API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtSplitter.set_orientation"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.set_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">set_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">sh_guard</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the orientation of the QSplitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sh_guard</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">size_hint_guard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setOrientation</span><span class="p">(</span><span class="n">ORIENTATION</span><span class="p">[</span><span class="n">orientation</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setOrientation</span><span class="p">(</span><span class="n">ORIENTATION</span><span class="p">[</span><span class="n">orientation</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="QtSplitter.set_live_drag"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.splitter.Splitter.html#enaml.qt.qt_splitter.QtSplitter.set_live_drag">[docs]</a>    <span class="k">def</span> <span class="nf">set_live_drag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">live_drag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the dragging mode of the QSplitter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setOpaqueResize</span><span class="p">(</span><span class="n">live_drag</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

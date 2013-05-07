@@ -1,0 +1,261 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.widget &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.widgets.widget</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">Coerced</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span>
+
+<span class="kn">from</span> <span class="nn">enaml.colors</span> <span class="kn">import</span> <span class="n">ColorMember</span>
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">enaml.fonts</span> <span class="kn">import</span> <span class="n">FontMember</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.geometry</span> <span class="kn">import</span> <span class="n">Size</span>
+
+<span class="kn">from</span> <span class="nn">.toolkit_object</span> <span class="kn">import</span> <span class="n">ToolkitObject</span><span class="p">,</span> <span class="n">ProxyToolkitObject</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyWidget</span><span class="p">(</span><span class="n">ProxyToolkitObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy Widget object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the Widget declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Widget</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">background</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_foreground</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">foreground</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_font</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">font</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_minimum_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum_size</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_maximum_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maximum_size</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_tool_tip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_tip</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_status_tip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_tip</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_show_focus_rect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_focus_rect</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">ensure_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">ensure_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="c"># TODO remove in Enaml version 0.8.0</span>
+<span class="k">def</span> <span class="nf">_warn_prop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">newname</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;The &#39;</span><span class="si">%s</span><span class="s">&#39; attribute has been removed. Use the &#39;</span><span class="si">%s</span><span class="s">&#39; attribute&quot;</span>
+    <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;instead. Compatibilty will be removed in Enaml version 0.8.0&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">newname</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_warn</span><span class="p">():</span>
+        <span class="kn">import</span> <span class="nn">warnings</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">getter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_warn</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newname</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">setter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">_warn</span><span class="p">()</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newname</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">deleter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_warn</span><span class="p">()</span>
+        <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">property</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">setter</span><span class="p">,</span> <span class="n">deleter</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget">[docs]</a><span class="k">class</span> <span class="nc">Widget</span><span class="p">(</span><span class="n">ToolkitObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The base class of visible widgets in Enaml.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: Whether or not the widget is enabled.</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the widget is visible.</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: The background color of the widget.</span>
+    <span class="n">background</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">ColorMember</span><span class="p">())</span>
+    <span class="c"># TODO remove in Enaml version 0.8.0</span>
+    <span class="n">bgcolor</span> <span class="o">=</span> <span class="n">_warn_prop</span><span class="p">(</span><span class="s">&#39;bgcolor&#39;</span><span class="p">,</span> <span class="s">&#39;background&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The foreground color of the widget.</span>
+    <span class="n">foreground</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">ColorMember</span><span class="p">())</span>
+    <span class="c"># TODO remove in Enaml version 0.8.0</span>
+    <span class="n">fgcolor</span> <span class="o">=</span> <span class="n">_warn_prop</span><span class="p">(</span><span class="s">&#39;fgcolor&#39;</span><span class="p">,</span> <span class="s">&#39;foreground&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The font used for the widget.</span>
+    <span class="n">font</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">FontMember</span><span class="p">())</span>
+
+    <span class="c">#: The minimum size for the widget. The default means that the</span>
+    <span class="c">#: client should determine an intelligent minimum size.</span>
+    <span class="n">minimum_size</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">Size</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c">#: The maximum size for the widget. The default means that the</span>
+    <span class="c">#: client should determine and inteliigent maximum size.</span>
+    <span class="n">maximum_size</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">Size</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c">#: The tool tip to show when the user hovers over the widget.</span>
+    <span class="n">tool_tip</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: The status tip to show when the user hovers over the widget.</span>
+    <span class="n">status_tip</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: A flag indicating whether or not to show the focus rectangle for</span>
+    <span class="c">#: the given widget. This is not necessarily support by all widgets</span>
+    <span class="c">#: on all clients. A value of None indicates to use the default as</span>
+    <span class="c">#: supplied by the client.</span>
+    <span class="n">show_focus_rect</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Enum</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: A reference to the ProxyWidget object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyWidget</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="nd">@observe</span><span class="p">((</span><span class="s">&#39;enabled&#39;</span><span class="p">,</span> <span class="s">&#39;visible&#39;</span><span class="p">,</span> <span class="s">&#39;background&#39;</span><span class="p">,</span> <span class="s">&#39;foreground&#39;</span><span class="p">,</span> <span class="s">&#39;font&#39;</span><span class="p">,</span>
+        <span class="s">&#39;minimum_size&#39;</span><span class="p">,</span> <span class="s">&#39;maximum_size&#39;</span><span class="p">,</span> <span class="s">&#39;show_focus_rect&#39;</span><span class="p">,</span> <span class="s">&#39;tool_tip&#39;</span><span class="p">,</span>
+        <span class="s">&#39;status_tip&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the proxy widget when the Widget data changes.</span>
+
+<span class="sd">        This method only updates the proxy when an attribute is updated;</span>
+<span class="sd">        not when it is created or deleted.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Widget</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Widget.show"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Ensure the widget is shown.</span>
+
+<span class="sd">        Calling this method will also set the widget visibility to True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">ensure_visible</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Widget.hide"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget.hide">[docs]</a>    <span class="k">def</span> <span class="nf">hide</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Ensure the widget is hidden.</span>
+
+<span class="sd">        Calling this method will also set the widget visibility to False.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">ensure_hidden</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

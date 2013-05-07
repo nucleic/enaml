@@ -1,0 +1,29 @@
+CheckBox
+================================
+
+.. currentmodule:: enaml.widgets.check_box
+
+.. autoclass:: CheckBox
+
+
+Backends
+--------
+
+Qt
+^^
+
+.. inheritance-diagram::
+    enaml.qt.qt_check_box.QtCheckBox
+    :parts: 1
+
+.. autoclass:: enaml.qt.qt_check_box.QtCheckBox
+
+
+Wx
+^^
+
+.. inheritance-diagram::
+    enaml.wx.wx_check_box.WxCheckBox
+    :parts: 1
+
+.. autoclass:: enaml.wx.wx_check_box.WxCheckBox

@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Form &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="GroupBox" href="enaml.widgets.group_box.GroupBox.html" />
+    <link rel="prev" title="FlowItem" href="enaml.widgets.flow_item.FlowItem.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.group_box.GroupBox.html" title="GroupBox"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.flow_item.FlowItem.html" title="FlowItem"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="form">
+<h1>Form<a class="headerlink" href="#form" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.form.Form">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.form.</tt><tt class="descname">Form</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/form.html#Form"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.form.Form" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.container.Container.html#enaml.widgets.container.Container" title="enaml.widgets.container.Container"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.container.Container</span></tt></a></p>
+<p>A Container subclass that arranges its children in two columns.</p>
+<p>The left column is typically Labels (but this is not a requirement).
+The right are the actual widgets for data entry. The children should
+be in alternating label/widget order. If there are an odd number
+of children, the last child will span both columns.</p>
+<p>The Form provides an extra constraint variable, &#8216;midline&#8217;, which
+is used as the alignment anchor for the columns.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.form.Form.midline">
+<tt class="descname">midline</tt><a class="headerlink" href="#enaml.widgets.form.Form.midline" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ConstraintVariable giving the midline along which the labels
+and widgets are aligned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.form.Form.hug_height">
+<tt class="descname">hug_height</tt><a class="headerlink" href="#enaml.widgets.form.Form.hug_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>A form hugs its height strongly by default. Forms are typcially
+used to display vertical arrangements of widgets, with forms
+often being stacked on top of each other. For this case, hugging
+the height is desired.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.form.Form.layout_constraints">
+<tt class="descname">layout_constraints</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/form.html#Form.layout_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.form.Form.layout_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the layout constraints for a Form.</p>
+<p>A Form supplies default constraints which will arrange the
+children in a two column layout. User defined &#8216;constraints&#8217;
+will be added on top of the generated form constraints.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Form</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.flow_item.FlowItem.html"
+                        title="previous chapter">FlowItem</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.group_box.GroupBox.html"
+                        title="next chapter">GroupBox</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.form.Form.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.group_box.GroupBox.html" title="GroupBox"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.flow_item.FlowItem.html" title="FlowItem"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

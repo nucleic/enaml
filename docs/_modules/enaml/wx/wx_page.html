@@ -1,0 +1,448 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_page &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_page</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.lib.newevent</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.page</span> <span class="kn">import</span> <span class="n">ProxyPage</span>
+
+<span class="kn">from</span> <span class="nn">.wx_container</span> <span class="kn">import</span> <span class="n">WxContainer</span>
+<span class="kn">from</span> <span class="nn">.wx_widget</span> <span class="kn">import</span> <span class="n">WxWidget</span>
+<span class="kn">from</span> <span class="nn">.wx_single_widget_sizer</span> <span class="kn">import</span> <span class="n">wxSingleWidgetSizer</span>
+
+
+<span class="c">#: An event emitted when the notebook page is closed.</span>
+<span class="n">wxPageClosedEvent</span><span class="p">,</span> <span class="n">EVT_PAGE_CLOSED</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">newevent</span><span class="o">.</span><span class="n">NewEvent</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">wxPage</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A wxPanel subclass which acts as a page in a wx notebook.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxPage.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The position and keyword arguments required to initialize</span>
+<span class="sd">            a wxContainer.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxPage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_enabled</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_page_widget</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">wxSingleWidgetSizer</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SHOW</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnShow</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Event Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">OnClose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the page close event.</span>
+
+<span class="sd">        This event handler is called by the parent notebook. The parent</span>
+<span class="sd">        event is always be vetoed or else Wx will destroy the page. If</span>
+<span class="sd">        the page is closable, we close the page and emit the custom</span>
+<span class="sd">        close event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">Veto</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetClosable</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+            <span class="n">evt</span> <span class="o">=</span> <span class="n">wxPageClosedEvent</span><span class="p">()</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">OnShow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the show event.</span>
+
+<span class="sd">        Wx will not emit an EVT_SHOW on the child of this page. So, this</span>
+<span class="sd">        event handler passes the show event along to the contained page</span>
+<span class="sd">        widget, so that it can disable its layout when not visible.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_page_widget</span>
+        <span class="k">if</span> <span class="n">page</span><span class="p">:</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Private API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_PageIndexOperation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A private method which will run the given closure if there</span>
+<span class="sd">        is a valid index for this page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetParent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">GetPageIndex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">closure</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">GetPageWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the page widget for this page.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wxWindow or None</span>
+<span class="sd">            The page widget being managed by this page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_page_widget</span>
+
+    <span class="k">def</span> <span class="nf">SetPageWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the page widget for this page.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        widget : wxWindow</span>
+<span class="sd">            The wx widget to use as the page widget in this page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_page_widget</span> <span class="o">=</span> <span class="n">widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetSizer</span><span class="p">()</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">IsOpen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether or not the page is open.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            True if the page is open, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span>
+
+    <span class="k">def</span> <span class="nf">Open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Open the page in the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetParent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">ShowWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">Close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Close the page in the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetParent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">HideWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetEnabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the enabled state of the page.</span>
+
+<span class="sd">        This method should be used in favor of IsEnabled.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            True the page is enabled, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_enabled</span>
+
+    <span class="k">def</span> <span class="nf">SetEnabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the enabled state of the page.</span>
+
+<span class="sd">        This method should be used in favor of Enable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ---------</span>
+<span class="sd">        enabled : bool</span>
+<span class="sd">            Whether or not the page should be enabled.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+        <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">nb</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+            <span class="n">nb</span><span class="o">.</span><span class="n">EnableTab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PageIndexOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns tab title for this page.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : unicode</span>
+<span class="sd">            The title string for the page&#39;s tab.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title</span>
+
+    <span class="k">def</span> <span class="nf">SetTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title for this page.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        title : unicode</span>
+<span class="sd">            The string to use for this page&#39;s tab title.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">nb</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+            <span class="n">nb</span><span class="o">.</span><span class="n">SetPageText</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PageIndexOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetClosable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns whether or not this page is closable.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            True if this page is closable, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closable</span>
+
+    <span class="k">def</span> <span class="nf">SetClosable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether this page is closable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        closable : bool</span>
+<span class="sd">            True if this page should be closable, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closable</span> <span class="o">=</span> <span class="n">closable</span>
+        <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">nb</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+            <span class="n">nb</span><span class="o">.</span><span class="n">SetCloseButton</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">closable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PageIndexOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WxPage"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage">[docs]</a><span class="k">class</span> <span class="nc">WxPage</span><span class="p">(</span><span class="n">WxWidget</span><span class="p">,</span> <span class="n">ProxyPage</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml notebook ProxyPage.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxPage</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Setup Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxPage.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying wxPage widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxPage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxPage.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create and initialize the page control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxPage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_closable</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">closable</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">icon</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_icon</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">icon</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_PAGE_CLOSED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_page_closed</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxPage.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the layout of the notebook page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxPage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetPageWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxPage.page_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.page_widget">[docs]</a>    <span class="k">def</span> <span class="nf">page_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find and return the page widget child for this widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">page_widget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span> <span class="ow">or</span> <span class="bp">None</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxPage.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a WxPage.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxPage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetPageWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxPage.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a WxPage.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxPage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetPageWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Event Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxPage.on_page_closed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.on_page_closed">[docs]</a>    <span class="k">def</span> <span class="nf">on_page_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for the EVT_PAGE_CLOSED event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">_handle_close</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyPage API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxPage.set_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.set_visible">[docs]</a>    <span class="k">def</span> <span class="nf">set_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden visibility setter which to opens|closes the</span>
+<span class="sd">        notebook page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">visible</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Open</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxPage.ensure_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.ensure_visible">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden visibility setter which to opens|closes the</span>
+<span class="sd">        notebook page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxPage.ensure_hidden"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.ensure_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden visibility setter which to opens|closes the</span>
+<span class="sd">        notebook page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxPage.set_enabled"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.set_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden enabled setter which sets the tab enabled</span>
+<span class="sd">        state.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetEnabled</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxPage.set_title"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.set_title">[docs]</a>    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title of the tab for this page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxPage.set_icon"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.set_icon">[docs]</a>    <span class="k">def</span> <span class="nf">set_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">icon</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the widget&#39;s icon to the provided image.</span>
+
+<span class="sd">        This is not supported on Wx.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="WxPage.set_closable"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.page.Page.html#enaml.wx.wx_page.WxPage.set_closable">[docs]</a>    <span class="k">def</span> <span class="nf">set_closable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not this page is closable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetClosable</span><span class="p">(</span><span class="n">closable</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

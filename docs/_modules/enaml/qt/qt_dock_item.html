@@ -1,0 +1,219 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_dock_item &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_dock_item</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtCore</span> <span class="kn">import</span> <span class="n">QSize</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QIcon</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.dock_item</span> <span class="kn">import</span> <span class="n">ProxyDockItem</span>
+
+<span class="kn">from</span> <span class="nn">.docking.q_dock_item</span> <span class="kn">import</span> <span class="n">QDockItem</span>
+<span class="kn">from</span> <span class="nn">.q_resource_helpers</span> <span class="kn">import</span> <span class="n">get_cached_qicon</span>
+<span class="kn">from</span> <span class="nn">.qt_widget</span> <span class="kn">import</span> <span class="n">QtWidget</span>
+
+
+<div class="viewcode-block" id="QtDockItem"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem">[docs]</a><span class="k">class</span> <span class="nc">QtDockItem</span><span class="p">(</span><span class="n">QtWidget</span><span class="p">,</span> <span class="n">ProxyDockItem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxyDockItem.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QDockItem</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtDockItem.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying QDockItem widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QDockItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtDockItem.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the state of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtDockItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">icon</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_icon</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">icon</span><span class="p">)</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">icon_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_icon_size</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">icon_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_stretch</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">stretch</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtDockItem.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the layout for the underyling widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtDockItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setDockWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dock_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtDockItem.dock_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.dock_widget">[docs]</a>    <span class="k">def</span> <span class="nf">dock_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find and return the dock widget child for this widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">dock_widget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtDockItem.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtDockItem.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtDockItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setDockWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dock_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtDockItem.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtDockItem.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtDockItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setDockWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dock_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyDockItem API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtDockItem.set_name"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.set_name">[docs]</a>    <span class="k">def</span> <span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the object name on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtDockItem.set_title"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.set_title">[docs]</a>    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtDockItem.set_icon"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.set_icon">[docs]</a>    <span class="k">def</span> <span class="nf">set_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">icon</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the icon on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">icon</span><span class="p">:</span>
+            <span class="n">qicon</span> <span class="o">=</span> <span class="n">get_cached_qicon</span><span class="p">(</span><span class="n">icon</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">qicon</span> <span class="o">=</span> <span class="n">QIcon</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setIcon</span><span class="p">(</span><span class="n">qicon</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtDockItem.set_icon_size"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.set_icon_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_icon_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the icon size on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setIconSize</span><span class="p">(</span><span class="n">QSize</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="QtDockItem.set_stretch"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_item.DockItem.html#enaml.qt.qt_dock_item.QtDockItem.set_stretch">[docs]</a>    <span class="k">def</span> <span class="nf">set_stretch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stretch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the stretch factor for the underlyling widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">sizePolicy</span><span class="p">()</span>
+        <span class="n">sp</span><span class="o">.</span><span class="n">setHorizontalStretch</span><span class="p">(</span><span class="n">stretch</span><span class="p">)</span>
+        <span class="n">sp</span><span class="o">.</span><span class="n">setVerticalStretch</span><span class="p">(</span><span class="n">stretch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

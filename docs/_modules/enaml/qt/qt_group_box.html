@@ -1,0 +1,248 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_group_box &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_group_box</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4.QtCore</span> <span class="kn">import</span> <span class="n">Qt</span><span class="p">,</span> <span class="n">QSize</span><span class="p">,</span> <span class="n">pyqtSignal</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QGroupBox</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.group_box</span> <span class="kn">import</span> <span class="n">ProxyGroupBox</span>
+
+<span class="kn">from</span> <span class="nn">.qt_container</span> <span class="kn">import</span> <span class="n">QtContainer</span>
+
+
+<span class="n">QT_ALIGNMENTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;left&#39;</span><span class="p">:</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span><span class="p">,</span>
+    <span class="s">&#39;right&#39;</span><span class="p">:</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span><span class="p">,</span>
+    <span class="s">&#39;center&#39;</span><span class="p">:</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignHCenter</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">QResizingGroupBox</span><span class="p">(</span><span class="n">QGroupBox</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A subclass of QGroupBox which behaves like a container.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A signal which is emitted on a resize event.</span>
+    <span class="n">resized</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">()</span>
+
+    <span class="c">#: The internally cached size hint.</span>
+    <span class="n">_size_hint</span> <span class="o">=</span> <span class="n">QSize</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">resizeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Converts a resize event into a signal.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QResizingGroupBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">resizeEvent</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resized</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">sizeHint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the previously set size hint. If that size hint is</span>
+<span class="sd">        invalid, the superclass&#39; sizeHint will be used.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size_hint</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">hint</span><span class="o">.</span><span class="n">isValid</span><span class="p">():</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">QResizingGroupBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">sizeHint</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">QSize</span><span class="p">(</span><span class="n">hint</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setSizeHint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hint</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the size hint to use for this widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_size_hint</span> <span class="o">=</span> <span class="n">QSize</span><span class="p">(</span><span class="n">hint</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">minimumSizeHint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the minimum size hint of the widget.</span>
+
+<span class="sd">        The minimum size hint for a QResizingGroupBox is conceptually</span>
+<span class="sd">        the same as its size hint, so we just return that value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizeHint</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="QtGroupBox"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.qt.qt_group_box.QtGroupBox">[docs]</a><span class="k">class</span> <span class="nc">QtGroupBox</span><span class="p">(</span><span class="n">QtContainer</span><span class="p">,</span> <span class="n">ProxyGroupBox</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxyGroupBox.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QResizingGroupBox</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtGroupBox.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.qt.qt_group_box.QtGroupBox.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates the underlying QGroupBox control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="n">QResizingGroupBox</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;darwin&#39;</span><span class="p">:</span>
+            <span class="c"># On OSX, the widget item layout rect is too small.</span>
+            <span class="c"># Setting this attribute forces the widget item to</span>
+            <span class="c"># use the widget rect for layout.</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">WA_LayoutUsesWidgetRect</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">widget</span>
+</div>
+<div class="viewcode-block" id="QtGroupBox.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.qt.qt_group_box.QtGroupBox.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtGroupBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">cm_update</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_flat</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">flat</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title_align</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title_align</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Layout Handling</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtGroupBox.contents_margins"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.qt.qt_group_box.QtGroupBox.contents_margins">[docs]</a>    <span class="k">def</span> <span class="nf">contents_margins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the current contents margins for the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">contentsMargins</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">top</span><span class="p">(),</span> <span class="n">m</span><span class="o">.</span><span class="n">right</span><span class="p">(),</span> <span class="n">m</span><span class="o">.</span><span class="n">bottom</span><span class="p">(),</span> <span class="n">m</span><span class="o">.</span><span class="n">left</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyGroupBox API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtGroupBox.set_title"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.qt.qt_group_box.QtGroupBox.set_title">[docs]</a>    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">cm_update</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the title of group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cm_update</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="n">old_margins</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="n">contentsMargins</span><span class="p">()</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">setTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="n">new_margins</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="n">contentsMargins</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">old_margins</span> <span class="o">!=</span> <span class="n">new_margins</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contents_margins_updated</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtGroupBox.set_flat"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.qt.qt_group_box.QtGroupBox.set_flat">[docs]</a>    <span class="k">def</span> <span class="nf">set_flat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flat</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the flattened appearance of the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setFlat</span><span class="p">(</span><span class="n">flat</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtGroupBox.set_title_align"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.qt.qt_group_box.QtGroupBox.set_title_align">[docs]</a>    <span class="k">def</span> <span class="nf">set_title_align</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">align</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Updates the alignment of the title of the group box.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qt_align</span> <span class="o">=</span> <span class="n">QT_ALIGNMENTS</span><span class="p">[</span><span class="n">align</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">qt_align</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Overrides</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtGroupBox.set_border"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.group_box.GroupBox.html#enaml.qt.qt_group_box.QtGroupBox.set_border">[docs]</a>    <span class="k">def</span> <span class="nf">set_border</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">border</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden parent class method.</span>
+
+<span class="sd">        Borders are not supported on a group box, so this method is a</span>
+<span class="sd">        no-op.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

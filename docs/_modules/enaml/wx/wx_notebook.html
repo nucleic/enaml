@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_notebook &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_notebook</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">weakref</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Instance</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.notebook</span> <span class="kn">import</span> <span class="n">ProxyNotebook</span>
+
+<span class="kn">from</span> <span class="nn">.wx_constraints_widget</span> <span class="kn">import</span> <span class="n">WxConstraintsWidget</span>
+<span class="kn">from</span> <span class="nn">.wx_layout_request</span> <span class="kn">import</span> <span class="n">EVT_COMMAND_LAYOUT_REQUESTED</span>
+<span class="kn">from</span> <span class="nn">.wx_page</span> <span class="kn">import</span> <span class="n">WxPage</span>
+<span class="kn">from</span> <span class="nn">.wx_upstream</span> <span class="kn">import</span> <span class="n">aui</span>
+
+
+<span class="c">#: A mapping of notebook tab positions for the document style tabs.</span>
+<span class="c">#: Wx currently only supports top and bottom tab positions.</span>
+<span class="n">_TAB_POSITION_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;top&#39;</span><span class="p">:</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_TOP</span><span class="p">,</span>
+    <span class="s">&#39;left&#39;</span><span class="p">:</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_TOP</span><span class="p">,</span>
+    <span class="s">&#39;bottom&#39;</span><span class="p">:</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_BOTTOM</span><span class="p">,</span>
+    <span class="s">&#39;right&#39;</span><span class="p">:</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_BOTTOM</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c">#: A mask of notebook tab positions for the document style tabs.</span>
+<span class="n">_TAB_POSITION_MASK</span> <span class="o">=</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_TOP</span> <span class="o">|</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_BOTTOM</span>
+
+
+<span class="k">class</span> <span class="nc">wxDocumentNotebook</span><span class="p">(</span><span class="n">aui</span><span class="o">.</span><span class="n">AuiNotebook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom AuiNotebook which handles children of type wxPage.</span>
+
+<span class="sd">    This notebook is used to implement &#39;document&#39; style tabs for an</span>
+<span class="sd">    Enaml Notebook control.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxDocumentNotebook.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments to pass to the super</span>
+<span class="sd">            class.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxDocumentNotebook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">aui</span><span class="o">.</span><span class="n">EVT_AUINOTEBOOK_PAGE_CLOSE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnPageClose</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakKeyDictionary</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Event Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">OnPageClose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The handler for the EVT_AUINOTEBOOK_PAGE_CLOSE event.</span>
+
+<span class="sd">        This handler forwards the event to the wxPage instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetPage</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">GetSelection</span><span class="p">())</span><span class="o">.</span><span class="n">OnClose</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">GetBestSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overridden GetBestSize method which will return the best</span>
+<span class="sd">        size for the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">192</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetPageCount</span><span class="p">()):</span>
+            <span class="n">page</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPage</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">psize</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">GetBestSize</span><span class="p">()</span>
+            <span class="n">size</span><span class="o">.</span><span class="n">SetWidth</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">(),</span> <span class="n">psize</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">()))</span>
+            <span class="n">size</span><span class="o">.</span><span class="n">SetHeight</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">(),</span> <span class="n">psize</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">()))</span>
+        <span class="c"># On windows, there&#39;s an off by 2 error in the width.</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetHeightForPageHeight</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">wx</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ShowWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Show a hidden wxPage instance in the notebook.</span>
+
+<span class="sd">        If the page is not owned by the notebook, this is a no-op.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The hidden wxPage instance to show in the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageIndex</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">InsertWxPage</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">page</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">HideWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Hide the given wxPage instance in the notebook.</span>
+
+<span class="sd">        If the page is not owned by the notebook, this is a no-op.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance to hide in the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageIndex</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RemovePage</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span><span class="p">[</span><span class="n">page</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+
+    <span class="k">def</span> <span class="nf">AddWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add a wxPage instance to the notebook.</span>
+
+<span class="sd">        This should be used in favor of AddPage for adding a wxPage</span>
+<span class="sd">        instance to the notebook, as it takes into account the current</span>
+<span class="sd">        page state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance to add to the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">IsOpen</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AddPage</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">GetTitle</span><span class="p">())</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageIndex</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">page</span><span class="o">.</span><span class="n">GetEnabled</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EnableTab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">page</span><span class="o">.</span><span class="n">GetClosable</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SetCloseButton</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span><span class="p">[</span><span class="n">page</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageCount</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">InsertWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Insert a wxPage instance into the notebook.</span>
+
+<span class="sd">        This should be used in favor of InsertPage for inserting a</span>
+<span class="sd">        wxPage instance into the notebook, as it takes into account the</span>
+<span class="sd">        current page state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        index : int</span>
+<span class="sd">            The index at which to insert the page.</span>
+
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance to add to the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">IsOpen</span><span class="p">():</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageCount</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">InsertPage</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">page</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">GetTitle</span><span class="p">())</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">page</span><span class="o">.</span><span class="n">GetEnabled</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EnableTab</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">page</span><span class="o">.</span><span class="n">GetClosable</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SetCloseButton</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span><span class="p">[</span><span class="n">page</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+
+    <span class="k">def</span> <span class="nf">RemoveWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove a wxPage instance from the notebook.</span>
+
+<span class="sd">        If the page does not exist in the notebook, this is a no-op.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance to remove from the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageIndex</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RemovePage</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">wxPreferencesNotebook</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Notebook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom wx.Notebook which handles children of type wxPage.</span>
+
+<span class="sd">    This notebook is used to implement &#39;document&#39; style tabs for an</span>
+<span class="sd">    Enaml Notebook control.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxPreferencesNotebook.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments to pass to the super</span>
+<span class="sd">            class.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxPreferencesNotebook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakKeyDictionary</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">GetBestSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overridden GetBestSize method which will return the best</span>
+<span class="sd">        size for the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">192</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetPageCount</span><span class="p">()):</span>
+            <span class="n">page</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPage</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">psize</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">GetBestSize</span><span class="p">()</span>
+            <span class="n">size</span><span class="o">.</span><span class="n">SetWidth</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">(),</span> <span class="n">psize</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">()))</span>
+            <span class="n">size</span><span class="o">.</span><span class="n">SetHeight</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">(),</span> <span class="n">psize</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">()))</span>
+        <span class="c"># On windows, the wx.Notebook renders each page with 2 pixels</span>
+        <span class="c"># of padding on the top, and bottom, and 4 pixels of padding</span>
+        <span class="c"># on the left and right (at least under the Windows 7 theme).</span>
+        <span class="c"># We need to compensate for this padding along with the space</span>
+        <span class="c"># taken up by the tab bar. The tab bar height was manually</span>
+        <span class="c"># measured to be 21 pixels. I&#39;ve found no way to have wx measure</span>
+        <span class="c"># it for me (there&#39;s nothing in RendererNative for it), so its</span>
+        <span class="c"># just hard-coded for now.</span>
+        <span class="k">return</span> <span class="n">wx</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">()</span> <span class="o">+</span> <span class="mi">8</span><span class="p">,</span> <span class="n">size</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">()</span> <span class="o">+</span> <span class="mi">25</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ShowWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Show a hidden wxPage instance in the notebook.</span>
+
+<span class="sd">        If the page is not owned by the notebook, this is a no-op.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The hidden wxPage instance to show in the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageIndex</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">InsertWxPage</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">page</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">HideWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Hide the given wxPage instance in the notebook.</span>
+
+<span class="sd">        If the page is not owned by the notebook, this is a no-op.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance to hide in the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageIndex</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RemovePage</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span><span class="p">[</span><span class="n">page</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+
+    <span class="k">def</span> <span class="nf">AddWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add a wxPage instance to the notebook.</span>
+
+<span class="sd">        This should be used in favor of AddPage for adding a wxPage</span>
+<span class="sd">        instance to the notebook, as it takes into account the current</span>
+<span class="sd">        page state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance to add to the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">IsOpen</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AddPage</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">GetTitle</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span><span class="p">[</span><span class="n">page</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageCount</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">InsertWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Insert a wxPage instance into the notebook.</span>
+
+<span class="sd">        This should be used in favor of InsertPage for inserting a</span>
+<span class="sd">        wxPage instance into the notebook, as it takes into account the</span>
+<span class="sd">        current page state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        index : int</span>
+<span class="sd">            The index at which to insert the page.</span>
+
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance to add to the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">IsOpen</span><span class="p">():</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageCount</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">InsertPage</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">page</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">GetTitle</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hidden_pages</span><span class="p">[</span><span class="n">page</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+
+    <span class="k">def</span> <span class="nf">RemoveWxPage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Remove a wxPage instance from the notebook.</span>
+
+<span class="sd">        If the page does not exist in the notebook, this is a no-op.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance to remove from the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageIndex</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RemovePage</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetPageIndex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the index of the page in the control.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        page : wxPage</span>
+<span class="sd">            The wxPage instance in the control.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The index of the page in the control, or -1 if the page</span>
+<span class="sd">            is not found.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Wx has no way of querying for the index of a page, so we must</span>
+        <span class="c"># linear search ourselves. Hooray for brain-dead toolkits!</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetPageCount</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPage</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="n">page</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">idx</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">EnableTab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Change the enabled state of the tab at the given index.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        index : int</span>
+<span class="sd">            The index of the target tab.</span>
+
+<span class="sd">        enabled : bool</span>
+<span class="sd">            Whether or not the tab should be enabled.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPageCount</span><span class="p">():</span>
+            <span class="n">page</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetPage</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">page</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">SetCloseButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">closable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A dummy method which makes the wxPreferencesNotebook api</span>
+<span class="sd">        compatible with the wxDocumentNotebook.</span>
+
+<span class="sd">        Close buttons cannot be set on a preferences notebook. This</span>
+<span class="sd">        method exists soley so that child wxPages do not need to</span>
+<span class="sd">        special case their implementation based on their parent.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="WxNotebook"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook">[docs]</a><span class="k">class</span> <span class="nc">WxNotebook</span><span class="p">(</span><span class="n">WxConstraintsWidget</span><span class="p">,</span> <span class="n">ProxyNotebook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxyNotebook.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Instance</span><span class="p">((</span><span class="n">wxPreferencesNotebook</span><span class="p">,</span> <span class="n">wxDocumentNotebook</span><span class="p">))</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxNotebook.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying wx notebook widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">tab_style</span> <span class="o">==</span> <span class="s">&#39;preferences&#39;</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">wxPreferencesNotebook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_SCROLL_BUTTONS</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">wxDocumentNotebook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">(),</span> <span class="n">agwStyle</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">w</span>
+</div>
+<div class="viewcode-block" id="WxNotebook.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create and initialize the notebook control</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxNotebook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tab_style</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tab_style</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tab_position</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tab_position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tabs_closable</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tabs_closable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tabs_movable</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tabs_movable</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxNotebook.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the layout initialization for the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxNotebook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">AddWxPage</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_COMMAND_LAYOUT_REQUESTED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_layout_requested</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxNotebook.pages"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.pages">[docs]</a>    <span class="k">def</span> <span class="nf">pages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the pages defined for the notebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">pages</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">p</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span> <span class="ow">or</span> <span class="bp">None</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxNotebook.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a WxNotebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxNotebook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxPage</span><span class="p">):</span>
+             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">dchild</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">child</span> <span class="ow">is</span> <span class="n">dchild</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">InsertWxPage</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxNotebook.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a WxNotebook.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxNotebook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxPage</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span><span class="o">.</span><span class="n">RemoveWxPage</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">widget</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">size_hint_updated</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Event Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxNotebook.on_layout_requested"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.on_layout_requested">[docs]</a>    <span class="k">def</span> <span class="nf">on_layout_requested</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the layout request event from a child page.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size_hint_updated</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyNotebook API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxNotebook.set_tab_style"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.set_tab_style">[docs]</a>    <span class="k">def</span> <span class="nf">set_tab_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the tab style for the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Changing the tab style on wx is not supported</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="WxNotebook.set_tab_position"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.set_tab_position">[docs]</a>    <span class="k">def</span> <span class="nf">set_tab_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the position of the tab bar in the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Tab position changes only supported on the document notebook.</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">wxDocumentNotebook</span><span class="p">):</span>
+            <span class="n">flags</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="n">GetAGWWindowStyleFlag</span><span class="p">()</span>
+            <span class="n">flags</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">_TAB_POSITION_MASK</span>
+            <span class="n">flags</span> <span class="o">|=</span> <span class="n">_TAB_POSITION_MAP</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">SetAGWWindowStyleFlag</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">Refresh</span><span class="p">()</span> <span class="c"># Avoids rendering artifacts</span>
+</div>
+<div class="viewcode-block" id="WxNotebook.set_tabs_closable"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.set_tabs_closable">[docs]</a>    <span class="k">def</span> <span class="nf">set_tabs_closable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not the tabs are closable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Closable tabs are only supported on the document notebook.</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">wxDocumentNotebook</span><span class="p">):</span>
+            <span class="n">flags</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="n">GetAGWWindowStyleFlag</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">closable</span><span class="p">:</span>
+                <span class="n">flags</span> <span class="o">|=</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_CLOSE_ON_ALL_TABS</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">flags</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_CLOSE_ON_ALL_TABS</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">SetAGWWindowStyleFlag</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxNotebook.set_tabs_movable"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.notebook.Notebook.html#enaml.wx.wx_notebook.WxNotebook.set_tabs_movable">[docs]</a>    <span class="k">def</span> <span class="nf">set_tabs_movable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not the tabs are movable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Movable tabs are only supported on the document notebook.</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">wxDocumentNotebook</span><span class="p">):</span>
+            <span class="n">flags</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="n">GetAGWWindowStyleFlag</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">movable</span><span class="p">:</span>
+               <span class="n">flags</span> <span class="o">|=</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_TAB_MOVE</span>
+            <span class="k">else</span><span class="p">:</span>
+               <span class="n">flags</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">aui</span><span class="o">.</span><span class="n">AUI_NB_TAB_MOVE</span>
+            <span class="n">widget</span><span class="o">.</span><span class="n">SetAGWWindowStyleFlag</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

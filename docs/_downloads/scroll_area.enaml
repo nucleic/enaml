@@ -1,0 +1,90 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `ScrollArea` widget.
+
+A `ScrollArea` can have at most one child which must be an instance of
+`Container`. When to show the scroll bars is determined automatically
+based on the sizing constraints of the `Container`. However, that 
+policy can be changed through the attributes 'horizontal_scrollbar' and 
+'vertical_scrollbar'. These attributes can be set to 'as_needed', 
+'always_on', and 'always_off'. The default is 'as_needed'.
+
+"""
+from enaml.widgets.api import (
+    Window, ScrollArea, Form, Label, Field, Container,
+)
+
+
+enamldef Main(Window):
+    title = "Scroll Area"
+    Container:
+        padding = 0
+        ScrollArea:
+            constraints = [width >= 200]
+            Form:
+                Label:
+                    text = "First name:"
+                Field:
+                    pass
+                Label:
+                    text = "Last name:"
+                Field:
+                    pass
+                Label:
+                    text = "Address:"
+                Field:
+                    pass
+                Label:
+                    text = ""
+                Field:
+                    pass
+                Label:
+                    text = "City:"
+                Field:
+                    pass
+                Label:
+                    text = "State:"
+                Field:
+                    pass
+                Label:
+                    text = "Postal Code:"
+                Field:
+                    pass
+                Label:
+                    text = "Country:"
+                Field:
+                    pass
+                Label:
+                    text = "Phone number:"
+                Field:
+                    pass
+                Label:
+                    text = "Email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass
+                Label:
+                    text = "Confirm email:"
+                Field:
+                    pass

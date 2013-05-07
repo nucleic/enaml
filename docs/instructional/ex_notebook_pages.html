@@ -1,0 +1,218 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Notebook Pages Example &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Examples Gallery" href="example.html" />
+    <link rel="next" title="Help and Troubleshooting" href="faq.html" />
+    <link rel="prev" title="Looper Example" href="ex_looper.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="faq.html" title="Help and Troubleshooting"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ex_looper.html" title="Looper Example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" accesskey="U">Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="notebook-pages-example">
+<h1>Notebook Pages Example<a class="headerlink" href="#notebook-pages-example" title="Permalink to this headline">¶</a></h1>
+<p><tt class="xref download docutils literal"><span class="pre">notebook_pages.enaml</span></tt></p>
+<div class="highlight-python"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of using dynamic notebook pages.
+
+This example demonstrates using the `Include` component to dynamically
+insert and remove pages from a notebook.
+
+This example requires Enaml version &gt;= 0.4.0
+
+"""
+from enaml.layout.api import vbox, hbox, align, spacer
+from enaml.widgets.api import (
+    Window, Notebook, Page, Container, PushButton, Field, Html, CheckBox
+)
+from enaml.core.api import Include
+
+enamldef ContentPage(Page):
+    attr n: int
+    closable = False
+    Container:
+        constraints = [
+            vbox(
+                hbox(pb, cb, fld),
+                html,
+            ),
+            align('v_center', pb, cb, fld),
+        ]
+        PushButton: pb:
+            text = 'Button'
+        CheckBox: cb:
+            text = 'Activate'
+        Field: fld:
+            pass
+        Html: html:
+            source = '&lt;h1&gt;&lt;center&gt;Dynamic Page %d&lt;/center&gt;&lt;/h1&gt;' % n
+
+
+enamldef Main(Window): main:
+    attr counter = 0
+    Container:
+        constraints = [
+            vbox(
+                hbox(show_st, hide_st, spacer, ins_dyn, rem_dyn),
+                nbook,
+            ),
+        ]
+        PushButton: show_st:
+            text = 'Show Static Pages'
+            clicked ::
+                static1.show()
+                static2.show()
+        PushButton: hide_st:
+            text = 'Hide Static Pages'
+            clicked ::
+                static2.hide()
+                static1.hide()
+        PushButton: ins_dyn:
+            text = 'Insert Dynamic Page'
+            clicked ::
+                title = 'Dynamic Page %s' % main.counter
+                page = ContentPage(n=main.counter, title=title)
+                dyn_pages.objects.insert(0, page)
+                main.counter += 1
+        PushButton: rem_dyn:
+            text = 'Remove Dynamic Page'
+            clicked ::
+                if dyn_pages.objects:
+                    dyn_pages.objects.pop()
+        Notebook: nbook:
+            tab_style = 'document'
+            Page: static1:
+                title = 'Static Page1'
+                Container:
+                    padding = 0
+                    Html:
+                        source = '&lt;h1&gt;&lt;center&gt;Static Page 1&lt;/center&gt;&lt;/h1&gt;'
+            Page: static2:
+                title = 'Static Page2'
+                Container:
+                    padding = 0
+                    Html:
+                        source = '&lt;h1&gt;&lt;center&gt;Static Page 2&lt;/center&gt;&lt;/h1&gt;'
+            Include: dyn_pages:
+                pass
+
+</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run notebook_pages.enaml</pre>
+</div>
+<img alt="../_images/notebook_pages.png" src="../_images/notebook_pages.png" />
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ex_looper.html"
+                        title="previous chapter">Looper Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="faq.html"
+                        title="next chapter">Help and Troubleshooting</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/instructional/ex_notebook_pages.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="faq.html" title="Help and Troubleshooting"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ex_looper.html" title="Looper Example"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" >Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

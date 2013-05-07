@@ -1,0 +1,37 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the 'ProgressBar' widget.
+
+This example demonstrates the use the `ProgressBar` widget by hooking
+it up to a `PushButton` widgets which simulates a work update.
+
+"""
+import random
+from enaml.layout.api import hbox, align
+from enaml.widgets.api import (
+    Window, Container, ProgressBar, Label, PushButton
+)
+
+
+enamldef Main(Window):
+    title = 'Progress Bar'
+    Container:
+        constraints = [
+            hbox(work_button, progress, label),
+            align('v_center', work_button, progress, label),
+        ]
+        ProgressBar: progress:
+            pass
+        Label: label:
+            text << '{0}% ({1}/{2})'.format(progress.percentage, progress.value, progress.maximum)
+        PushButton: work_button:
+            text << "Do Some Work" if progress.percentage < 100 else "Reset"
+            clicked ::
+                if progress.percentage < 100:
+                    val = progress.value + random.randint(0, 10)
+                    progress.value = min(val, 100)
+                else:
+                    progress.value = 0
+

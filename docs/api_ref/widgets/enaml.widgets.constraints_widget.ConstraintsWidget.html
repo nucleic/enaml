@@ -1,0 +1,549 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ConstraintsWidget &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="Control" href="enaml.widgets.control.Control.html" />
+    <link rel="prev" title="Widget" href="enaml.widgets.widget.Widget.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.control.Control.html" title="Control"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.widget.Widget.html" title="Widget"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="constraintswidget">
+<h1>ConstraintsWidget<a class="headerlink" href="#constraintswidget" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.constraints_widget.</tt><tt class="descname">ConstraintsWidget</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/constraints_widget.html#ConstraintsWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget" title="enaml.widgets.widget.Widget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.widget.Widget</span></tt></a></p>
+<p>A Widget subclass which adds constraint information.</p>
+<p>A ConstraintsWidget is augmented with symbolic constraint variables
+which define a box model on the widget. This box model is used to
+declare constraints between this widget and other components which
+participate in constraints-based layout.</p>
+<p>Constraints are added to a widget by assigning a list to the
+&#8216;constraints&#8217; attribute. This list may contain raw LinearConstraint
+objects (which are created by manipulating the symbolic constraint
+variables) or DeferredConstraints objects which generated these
+LinearConstraint objects on-the-fly.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.constraints">
+<tt class="descname">constraints</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of user-specified constraints or constraint-generating
+objects for this component.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.left">
+<tt class="descname">left</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.left" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant symbolic object that represents the left boundary of
+the widget.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.top">
+<tt class="descname">top</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.top" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant symbolic object that represents the top boundary of
+the widget.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.width">
+<tt class="descname">width</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.width" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant symbolic object that represents the width of the
+widget.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.height">
+<tt class="descname">height</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.height" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant symbolic object that represents the height of the
+widget.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.right">
+<tt class="descname">right</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.right" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant symbolic object that represents the right boundary
+of the component. This is computed as left + width.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.bottom">
+<tt class="descname">bottom</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.bottom" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant symbolic object that represents the bottom boundary
+of the component. This is computed as top + height.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.v_center">
+<tt class="descname">v_center</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.v_center" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant symbolic object that represents the vertical center
+of the width. This is computed as top + 0.5 * height.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.h_center">
+<tt class="descname">h_center</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.h_center" title="Permalink to this definition">¶</a></dt>
+<dd><p>A constant symbolic object that represents the horizontal center
+of the widget. This is computed as left + 0.5 * width.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.hug_width">
+<tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.hug_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>How strongly a component hugs it&#8217;s width hint. Valid strengths
+are &#8216;weak&#8217;, &#8216;medium&#8217;, &#8216;strong&#8217;, &#8216;required&#8217; and &#8216;ignore&#8217;. Default
+is &#8216;strong&#8217;. This can be overridden on a per-control basis to
+specify a logical default for the given control.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.hug_height">
+<tt class="descname">hug_height</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.hug_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>How strongly a component hugs it&#8217;s height hint. Valid strengths
+are &#8216;weak&#8217;, &#8216;medium&#8217;, &#8216;strong&#8217;, &#8216;required&#8217; and &#8216;ignore&#8217;. Default
+is &#8216;strong&#8217;. This can be overridden on a per-control basis to
+specify a logical default for the given control.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.resist_width">
+<tt class="descname">resist_width</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.resist_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>How strongly a component resists clipping its contents. Valid
+strengths are &#8216;weak&#8217;, &#8216;medium&#8217;, &#8216;strong&#8217;, &#8216;required&#8217; and &#8216;ignore&#8217;.
+The default is &#8216;strong&#8217; for width.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.resist_height">
+<tt class="descname">resist_height</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.resist_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>How strongly a component resists clipping its contents. Valid
+strengths are &#8216;weak&#8217;, &#8216;medium&#8217;, &#8216;strong&#8217;, &#8216;required&#8217; and &#8216;ignore&#8217;.
+The default is &#8216;strong&#8217; for height.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyConstraintsWidget object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.request_relayout">
+<tt class="descname">request_relayout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/constraints_widget.html#ConstraintsWidget.request_relayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.request_relayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request a relayout from the proxy widget.</p>
+<p>This will invoke the &#8216;request_relayout&#8217; method on an active
+proxy. The proxy should collapse the requests as necessary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.when">
+<tt class="descname">when</tt><big>(</big><em>switch</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/constraints_widget.html#ConstraintsWidget.when"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.when" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method which returns <cite>self</cite> or None based on the truthness
+of the argument.</p>
+<p>This can be useful to easily turn off the effects of an object
+in constraints-based layout.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>switch</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; A boolean which indicates whether this instance or None
+should be returned.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (self or None) &#8211; If &#8216;switch&#8217; is boolean True, self is returned. Otherwise, None is returned.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.constraints_widget.ConstraintsWidget.layout_constraints">
+<tt class="descname">layout_constraints</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/constraints_widget.html#ConstraintsWidget.layout_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.constraints_widget.ConstraintsWidget.layout_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the constraints to use for this component&#8217;s layout.</p>
+<p>This method may be overridden by subclasses as needed to create
+custom constraints. It will be called when the relayout request
+has been made by the layout engine. The default implementation
+will return the list of &#8216;constraints&#8217; defined by the user.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-a9083fcb4248a74adab805af12610637b188bbad.png" alt="Inheritance diagram of enaml.qt.qt_constraints_widget.QtConstraintsWidget" usemap="#inheritance7c2e8f94d0" class="inheritance"/>
+<map id="inheritance7c2e8f94d0" name="inheritance7c2e8f94d0">
+<area shape="rect" id="node5" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="649,25,764,46"/>
+<area shape="rect" id="node6" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="514,45,575,65"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_constraints_widget.</tt><tt class="descname">QtConstraintsWidget</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_constraints_widget.html#QtConstraintsWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="enaml.qt.qt_widget.QtWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_widget.QtWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.constraints_widget.ProxyConstraintsWidget</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyConstraintsWidget.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget.size_hint_cns">
+<tt class="descname">size_hint_cns</tt><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget.size_hint_cns" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of size hint constraints to apply to the widget. These
+constraints are computed once and then cached. If the size hint
+of a widget changes at run time, then <cite>size_hint_updated</cite> should
+be called to trigger an appropriate relayout of the widget.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget.layout_timer">
+<tt class="descname">layout_timer</tt><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget.layout_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A timer used to collapse relayout requests. The timer is created
+on an as needed basis and destroyed when it is no longer needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget.request_relayout">
+<tt class="descname">request_relayout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_constraints_widget.html#QtConstraintsWidget.request_relayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget.request_relayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request a relayout of the proxy widget.</p>
+<p>This call will be placed on a collapsed timer. The first request
+will cause updates to be disabled on the widget. The updates will
+be reenabled after the actual relayout is performed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget.on_layout_triggered">
+<tt class="descname">on_layout_triggered</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_constraints_widget.html#QtConstraintsWidget.on_layout_triggered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget.on_layout_triggered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the timeout even from the layout trigger timer.</p>
+<p>This handler will drop the reference to the timer, invoke the
+&#8216;relayout&#8217; method, and reenable the updates on the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget.relayout">
+<tt class="descname">relayout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_constraints_widget.html#QtConstraintsWidget.relayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget.relayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Peform a relayout for this constraints widget.</p>
+<p>The default behavior of this method is to proxy the call up the
+tree of ancestors until it is either handled by a subclass which
+has reimplemented this method (see QtContainer), or the ancestor
+is not an instance of QtConstraintsWidget, at which point the
+layout request is dropped.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget.replace_constraints">
+<tt class="descname">replace_constraints</tt><big>(</big><em>old_cns</em>, <em>new_cns</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_constraints_widget.html#QtConstraintsWidget.replace_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget.replace_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace constraints in the current layout system.</p>
+<p>The default behavior of this method is to proxy the call up the
+tree of ancestors until it is either handled by a subclass which
+has reimplemented this method (see QtContainer), or the ancestor
+is not an instance of QtConstraintsWidget, at which point the
+request is dropped.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>old_cns</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The list of casuarius constraints to remove from the
+current layout system.</li>
+<li><strong>new_cns</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The list of casuarius constraints to add to the
+current layout system.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget.size_hint_updated">
+<tt class="descname">size_hint_updated</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_constraints_widget.html#QtConstraintsWidget.size_hint_updated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget.size_hint_updated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify the layout system that the size hint has changed.</p>
+<p>This method should be called when the size hint of the widget has
+changed and the layout should be refreshed to reflect the new
+state of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_constraints_widget.QtConstraintsWidget.geometry_updater">
+<tt class="descname">geometry_updater</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_constraints_widget.html#QtConstraintsWidget.geometry_updater"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_constraints_widget.QtConstraintsWidget.geometry_updater" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a layout function for the widget.</p>
+<p>This method will create a function which will update the
+layout geometry of the underlying widget. The parameter and
+return values below describe the function that is returned by
+calling this method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dx</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; The offset of the parent widget from the computed origin
+of the layout. This amount is subtracted from the computed
+layout &#8216;x&#8217; amount, which is expressed in the coordinates
+of the owner widget.</li>
+<li><strong>dy</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; The offset of the parent widget from the computed origin
+of the layout. This amount is subtracted from the computed
+layout &#8216;y&#8217; amount, which is expressed in the coordinates
+of the layout owner widget.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>result</strong> ((x, y)) &#8211; The computed layout &#8216;x&#8217; and &#8216;y&#8217; amount, expressed in the coordinates of the layout owner widget.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-b2cc5e3bf76778e6777781c282f4fb1254f09809.png" alt="Inheritance diagram of enaml.wx.wx_constraints_widget.WxConstraintsWidget" usemap="#inheritanceadc3877570" class="inheritance"/>
+<map id="inheritanceadc3877570" name="inheritanceadc3877570">
+<area shape="rect" id="node2" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget" title="WxConstraintsWidget" alt="" coords="646,25,764,45"/>
+<area shape="rect" id="node3" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="WxWidget" alt="" coords="509,4,575,25"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_constraints_widget.</tt><tt class="descname">WxConstraintsWidget</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_constraints_widget.html#WxConstraintsWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="enaml.wx.wx_widget.WxWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_widget.WxWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.constraints_widget.ProxyConstraintsWidget</span></tt></p>
+<p>A Wx implementation of an Enaml ProxyConstraintsWidget.</p>
+<dl class="attribute">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget.size_hint_cns">
+<tt class="descname">size_hint_cns</tt><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget.size_hint_cns" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of size hint constraints to apply to the widget. These
+constraints are computed once and then cached. If the size hint
+of a widget changes at run time, then <cite>size_hint_updated</cite> should
+be called to trigger an appropriate relayout of the widget.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget.layout_timer">
+<tt class="descname">layout_timer</tt><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget.layout_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A timer used to collapse relayout requests. The timer is created
+on an as needed basis and destroyed when it is no longer needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget.request_relayout">
+<tt class="descname">request_relayout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_constraints_widget.html#WxConstraintsWidget.request_relayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget.request_relayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request a relayout of the proxy widget.</p>
+<p>This call will be placed on a collapsed timer. The first request
+will cause updates to be disabled on the widget. The updates will
+be reenabled after the actual relayout is performed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget.on_layout_triggered">
+<tt class="descname">on_layout_triggered</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_constraints_widget.html#WxConstraintsWidget.on_layout_triggered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget.on_layout_triggered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the timeout even from the layout trigger timer.</p>
+<p>This handler will drop the reference to the timer, invoke the
+&#8216;relayout&#8217; method, and reenable the updates on the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget.relayout">
+<tt class="descname">relayout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_constraints_widget.html#WxConstraintsWidget.relayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget.relayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Peform a relayout for this constraints widget.</p>
+<p>The default behavior of this method is to proxy the call up the
+tree of ancestors until it is either handled by a subclass which
+has reimplemented this method (see WxContainer), or the ancestor
+is not an instance of WxConstraintsWidget, at which point the
+layout request is dropped.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget.replace_constraints">
+<tt class="descname">replace_constraints</tt><big>(</big><em>old_cns</em>, <em>new_cns</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_constraints_widget.html#WxConstraintsWidget.replace_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget.replace_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace constraints in the current layout system.</p>
+<p>The default behavior of this method is to proxy the call up the
+tree of ancestors until it is either handled by a subclass which
+has reimplemented this method (see WxContainer), or the ancestor
+is not an instance of WxConstraintsWidget, at which point the
+request is dropped.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>old_cns</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The list of casuarius constraints to remove from the
+current layout system.</li>
+<li><strong>new_cns</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The list of casuarius constraints to add to the
+current layout system.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget.size_hint_updated">
+<tt class="descname">size_hint_updated</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_constraints_widget.html#WxConstraintsWidget.size_hint_updated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget.size_hint_updated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify the layout system that the size hint has changed.</p>
+<p>This method should be called when the size hint of the widget has
+changed and the layout should be refreshed to reflect the new
+state of the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_constraints_widget.WxConstraintsWidget.geometry_updater">
+<tt class="descname">geometry_updater</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_constraints_widget.html#WxConstraintsWidget.geometry_updater"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_constraints_widget.WxConstraintsWidget.geometry_updater" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a layout function for the widget.</p>
+<p>This method will create a function which will update the
+layout geometry of the underlying widget. The parameter and
+return values below describe the function that is returned by
+calling this method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dx</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; The offset of the parent widget from the computed origin
+of the layout. This amount is subtracted from the computed
+layout &#8216;x&#8217; amount, which is expressed in the coordinates
+of the owner widget.</li>
+<li><strong>dy</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; The offset of the parent widget from the computed origin
+of the layout. This amount is subtracted from the computed
+layout &#8216;y&#8217; amount, which is expressed in the coordinates
+of the layout owner widget.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>result</strong> ((x, y)) &#8211; The computed layout &#8216;x&#8217; and &#8216;y&#8217; amount, expressed in the coordinates of the layout owner widget.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ConstraintsWidget</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.widget.Widget.html"
+                        title="previous chapter">Widget</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.control.Control.html"
+                        title="next chapter">Control</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.constraints_widget.ConstraintsWidget.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.control.Control.html" title="Control"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.widget.Widget.html" title="Widget"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

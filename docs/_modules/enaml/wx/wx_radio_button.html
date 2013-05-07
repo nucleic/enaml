@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_radio_button &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_radio_button</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">weakref</span> <span class="kn">import</span> <span class="n">WeakKeyDictionary</span>
+
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.lib.newevent</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.radio_button</span> <span class="kn">import</span> <span class="n">ProxyRadioButton</span>
+
+<span class="kn">from</span> <span class="nn">.wx_abstract_button</span> <span class="kn">import</span> <span class="n">WxAbstractButton</span><span class="p">,</span> <span class="n">CHECKED_GUARD</span>
+
+
+<span class="c">#: A radio button event that is emited when the button is clicked.</span>
+<span class="n">wxRadioClicked</span><span class="p">,</span> <span class="n">EVT_RADIO_CLICKED</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">newevent</span><span class="o">.</span><span class="n">NewEvent</span><span class="p">()</span>
+
+<span class="c">#: A radio button event emitted when the button value is changed.</span>
+<span class="n">wxRadioToggled</span><span class="p">,</span> <span class="n">EVT_RADIO_TOGGLED</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">newevent</span><span class="o">.</span><span class="n">NewEvent</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">wxProperRadioButton</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">RadioButton</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom stubclass of wx.RadioButton.</span>
+
+<span class="sd">    The wx.RadioButton doesn&#39;t emit toggled events when it unchecks the</span>
+<span class="sd">    other radio buttons in the same group. So, the only time an</span>
+<span class="sd">    EVT_RADIOBUTTON is emitted is when the button changes from off to</span>
+<span class="sd">    on. This custom subclass does some orchestration and will emit an</span>
+<span class="sd">    EVT_RADIO_TOGGLED whenever the control changes its value. It also</span>
+<span class="sd">    emits an EVT_RADIO_CLICKED event when the control is clicked, even</span>
+<span class="sd">    if the click doesn&#39;t change the value in the control.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The WeakKeyDictionary which stores the sibling radio buttons</span>
+    <span class="c">#: for a given parent widget. When any radio button is toggled,</span>
+    <span class="c">#: the list of siblings is iterated and each child is given the</span>
+    <span class="c">#: the chance to see it&#39;s been toggled off. If it has, then it</span>
+    <span class="c">#: will emit a toggled event.</span>
+    <span class="n">_parents</span> <span class="o">=</span> <span class="n">WeakKeyDictionary</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxProperRadioButton.</span>
+
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments required to initialize</span>
+<span class="sd">            a wx.RadioButton.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxProperRadioButton</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetParent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parents</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_click</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_LEFT_DOWN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnLeftDown</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_LEFT_UP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnLeftUp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_RADIOBUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnToggled</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">OnLeftDown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles the left down mouse event for the radio button.</span>
+
+<span class="sd">        This is first part of generating a click event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">Skip</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_click</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">OnLeftUp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles the left up mouse event for the radio button.</span>
+
+<span class="sd">        This is the second part of generating a click event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">Skip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_click</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_in_click</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">event</span> <span class="o">=</span> <span class="n">wxRadioClicked</span><span class="p">()</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">OnToggled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles the standard toggle event and emits a toggle on</span>
+<span class="sd">        event. After emitting that event, it will cycle through the</span>
+<span class="sd">        list of its siblings and give them a change to emit a toggle</span>
+<span class="sd">        off event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">wxRadioToggled</span><span class="p">()</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CheckSiblings</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">CheckToggledOff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Checks the state of the radio button to see if it has been</span>
+<span class="sd">        toggled from on to off. If it has, it will emit a toggle off</span>
+<span class="sd">        event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last</span>
+        <span class="n">curr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">curr</span> <span class="ow">and</span> <span class="n">last</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last</span> <span class="o">=</span> <span class="n">curr</span>
+            <span class="n">event</span> <span class="o">=</span> <span class="n">wxRadioToggled</span><span class="p">()</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">CheckSiblings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Iterates over the siblings of this radio button, giving</span>
+<span class="sd">        each a chance to respond to a possible toggle off.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetParent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parents</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">[</span><span class="n">parent</span><span class="p">]:</span>
+                    <span class="n">child</span><span class="o">.</span><span class="n">CheckToggledOff</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">SetValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overrides the default SetValue method to emit proper events.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">old</span> <span class="o">!=</span> <span class="n">val</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">wxProperRadioButton</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="n">event</span> <span class="o">=</span> <span class="n">wxRadioToggled</span><span class="p">()</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CheckSiblings</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">Destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overridden destroy method to remove the radio button from</span>
+<span class="sd">        the list of siblings before it&#39;s destroyed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetParent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parents</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
+                <span class="n">children</span> <span class="o">=</span> <span class="n">parents</span><span class="p">[</span><span class="n">parent</span><span class="p">]</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">children</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxProperRadioButton</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">Destroy</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="WxRadioButton"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.radio_button.RadioButton.html#enaml.wx.wx_radio_button.WxRadioButton">[docs]</a><span class="k">class</span> <span class="nc">WxRadioButton</span><span class="p">(</span><span class="n">WxAbstractButton</span><span class="p">,</span> <span class="n">ProxyRadioButton</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxyRadioButton.</span>
+
+<span class="sd">    WxRadioButton uses a custom wx.RadioButton control. Radio buttons</span>
+<span class="sd">    with the same parent will be mutually exclusive. For independent</span>
+<span class="sd">    groups, place them in their own parent component.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxProperRadioButton</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxRadioButton.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.radio_button.RadioButton.html#enaml.wx.wx_radio_button.WxRadioButton.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates the underlying custom wx.RadioButton control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxProperRadioButton</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxRadioButton.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.radio_button.RadioButton.html#enaml.wx.wx_radio_button.WxRadioButton.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the radio button control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxRadioButton</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_RADIO_CLICKED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_clicked</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_RADIO_TOGGLED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_toggled</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Abstract API Implementation</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxRadioButton.set_checkable"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.radio_button.RadioButton.html#enaml.wx.wx_radio_button.WxRadioButton.set_checkable">[docs]</a>    <span class="k">def</span> <span class="nf">set_checkable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets whether or not the widget is checkable.</span>
+
+<span class="sd">        This is not supported in Wx.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="WxRadioButton.get_checked"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.radio_button.RadioButton.html#enaml.wx.wx_radio_button.WxRadioButton.get_checked">[docs]</a>    <span class="k">def</span> <span class="nf">get_checked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the checked state of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxRadioButton.set_checked"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.radio_button.RadioButton.html#enaml.wx.wx_radio_button.WxRadioButton.set_checked">[docs]</a>    <span class="k">def</span> <span class="nf">set_checked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the widget&#39;s checked state with the provided value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">CHECKED_GUARD</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">checked</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">CHECKED_GUARD</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

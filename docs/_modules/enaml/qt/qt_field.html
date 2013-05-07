@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_field &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_field</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QLineEdit</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtCore</span> <span class="kn">import</span> <span class="n">pyqtSignal</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.field</span> <span class="kn">import</span> <span class="n">ProxyField</span>
+
+<span class="kn">from</span> <span class="nn">.qt_control</span> <span class="kn">import</span> <span class="n">QtControl</span>
+
+
+<span class="n">ECHO_MODES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;normal&#39;</span><span class="p">:</span> <span class="n">QLineEdit</span><span class="o">.</span><span class="n">Normal</span><span class="p">,</span>
+    <span class="s">&#39;password&#39;</span><span class="p">:</span> <span class="n">QLineEdit</span><span class="o">.</span><span class="n">Password</span><span class="p">,</span>
+    <span class="s">&#39;silent&#39;</span><span class="p">:</span> <span class="n">QLineEdit</span><span class="o">.</span><span class="n">NoEcho</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">QFocusLineEdit</span><span class="p">(</span><span class="n">QLineEdit</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A QLineEdit which converts a lost focus event into a signal.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lostFocus</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">focusOutEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lostFocus</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">QFocusLineEdit</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">focusOutEvent</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+
+<span class="c"># Guard flags</span>
+<span class="n">TEXT_GUARD</span> <span class="o">=</span> <span class="mh">0x1</span>
+<span class="n">ERROR_FLAG</span> <span class="o">=</span> <span class="mh">0x2</span>
+
+
+<div class="viewcode-block" id="QtField"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField">[docs]</a><span class="k">class</span> <span class="nc">QtField</span><span class="p">(</span><span class="n">QtControl</span><span class="p">,</span> <span class="n">ProxyField</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt4 implementation of an Enaml ProxyField.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QFocusLineEdit</span><span class="p">)</span>
+
+    <span class="c">#: Cyclic notification guard. This a bitfield of multiple guards.</span>
+    <span class="n">_guard</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtField.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates the underlying QFocusLineEdit widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QFocusLineEdit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtField.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create and initialize the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">placeholder</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_placeholder</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">placeholder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_echo_mode</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">echo_mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_max_length</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">max_length</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_read_only</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">read_only</span><span class="p">)</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">lostFocus</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_lost_focus</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">returnPressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_return_pressed</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">textEdited</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_text_edited</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Private API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="k">def</span> <span class="nf">_validate_and_apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Validate and apply the text in the control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">validator</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">d</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">fixup</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">d</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+                <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clear_error_state</span><span class="p">()</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">_set_error_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the error state of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># A temporary hack until styles are implemented</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;</span> <span class="n">ERROR_FLAG</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">ERROR_FLAG</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;QLineEdit { border: 2px solid red; background: rgb(255, 220, 220); }&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_clear_error_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Clear the error state of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># A temporary hack until styles are implemented</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;</span> <span class="n">ERROR_FLAG</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">ERROR_FLAG</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Signal Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtField.on_lost_focus"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.on_lost_focus">[docs]</a>    <span class="k">def</span> <span class="nf">on_lost_focus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The signal handler for &#39;lostFocus&#39; signal.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&#39;lost_focus&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">submit_triggers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">TEXT_GUARD</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_and_apply</span><span class="p">()</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">TEXT_GUARD</span>
+</div>
+<div class="viewcode-block" id="QtField.on_return_pressed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.on_return_pressed">[docs]</a>    <span class="k">def</span> <span class="nf">on_return_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The signal handler for &#39;returnPressed&#39; signal.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&#39;return_pressed&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">submit_triggers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">TEXT_GUARD</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_validate_and_apply</span><span class="p">()</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">TEXT_GUARD</span>
+</div>
+<div class="viewcode-block" id="QtField.on_text_edited"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.on_text_edited">[docs]</a>    <span class="k">def</span> <span class="nf">on_text_edited</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The signal handler for the &#39;textEdited&#39; signal.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Temporary kludge until error style is fully implemented</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">validator</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">d</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">text</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_error_state</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_error_state</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="s">u&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyField API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtField.set_text"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.set_text">[docs]</a>    <span class="k">def</span> <span class="nf">set_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the text in the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;</span> <span class="n">TEXT_GUARD</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_error_state</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QtField.set_mask"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.set_mask">[docs]</a>    <span class="k">def</span> <span class="nf">set_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the make for the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setInputMask</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtField.set_placeholder"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.set_placeholder">[docs]</a>    <span class="k">def</span> <span class="nf">set_placeholder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the placeholder text of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtField.set_echo_mode"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.set_echo_mode">[docs]</a>    <span class="k">def</span> <span class="nf">set_echo_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the echo mode of the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setEchoMode</span><span class="p">(</span><span class="n">ECHO_MODES</span><span class="p">[</span><span class="n">mode</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="QtField.set_max_length"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.set_max_length">[docs]</a>    <span class="k">def</span> <span class="nf">set_max_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the maximum text length in the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">32767</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="mi">32767</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setMaxLength</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtField.set_read_only"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.set_read_only">[docs]</a>    <span class="k">def</span> <span class="nf">set_read_only</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set whether or not the widget is read only.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setReadOnly</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtField.field_text"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.field.Field.html#enaml.qt.qt_field.QtField.field_text">[docs]</a>    <span class="k">def</span> <span class="nf">field_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the text stored in the widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">text</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

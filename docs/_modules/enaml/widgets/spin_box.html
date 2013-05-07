@@ -1,0 +1,239 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.spin_box &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.widgets.spin_box</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Int</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span> <span class="n">set_default</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+
+<span class="kn">from</span> <span class="nn">.control</span> <span class="kn">import</span> <span class="n">Control</span><span class="p">,</span> <span class="n">ProxyControl</span>
+
+
+<span class="k">class</span> <span class="nc">ProxySpinBox</span><span class="p">(</span><span class="n">ProxyControl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract defintion of a proxy SpinBox object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the SpinBox declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">SpinBox</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_maximum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maximum</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_special_value_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_single_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_read_only</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_wrapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapping</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="SpinBox"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.spin_box.SpinBox.html#enaml.widgets.spin_box.SpinBox">[docs]</a><span class="k">class</span> <span class="nc">SpinBox</span><span class="p">(</span><span class="n">Control</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A spin box widget which manipulates integer values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The minimum value for the spin box. Defaults to 0.</span>
+    <span class="n">minimum</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="c">#: The maximum value for the spin box. Defaults to 100.</span>
+    <span class="n">maximum</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+
+    <span class="c">#: The position value of the spin box. The value will be clipped to</span>
+    <span class="c">#: always fall between the minimum and maximum.</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="c">#: An optional prefix to include in the displayed text.</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: An optional suffix to include in the displayed text.</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: Optional text to display when the spin box is at its minimum.</span>
+    <span class="c">#: This allows the developer to indicate to the user a special</span>
+    <span class="c">#: significance to the minimum value e.g. &quot;Auto&quot;</span>
+    <span class="n">special_value_text</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: The step size for the spin box. Defaults to 1.</span>
+    <span class="n">single_step</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Range</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the spin box is read-only. If True, the user</span>
+    <span class="c">#: will not be able to edit the values in the spin box, but they</span>
+    <span class="c">#: will still be able to copy the text to the clipboard.</span>
+    <span class="n">read_only</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the spin box will wrap around at its extremes.</span>
+    <span class="c">#: Defaults to False.</span>
+    <span class="n">wrapping</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: A spin box expands freely in width by default.</span>
+    <span class="n">hug_width</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
+
+    <span class="c">#: A reference to the ProxySpinBox object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxySpinBox</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="nd">@observe</span><span class="p">((</span><span class="s">&#39;minimum&#39;</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">,</span> <span class="s">&#39;prefix&#39;</span><span class="p">,</span> <span class="s">&#39;suffix&#39;</span><span class="p">,</span>
+        <span class="s">&#39;special_value_text&#39;</span><span class="p">,</span> <span class="s">&#39;single_step&#39;</span><span class="p">,</span> <span class="s">&#39;read_only&#39;</span><span class="p">,</span> <span class="s">&#39;wrapping&#39;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which sends state change to the proxy.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass handler implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SpinBox</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># PostSetAttr Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_post_setattr_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Post setattr the minimum value for the spin box.</span>
+
+<span class="sd">        If the new minimum is greater than the current value or maximum,</span>
+<span class="sd">        those values are adjusted up.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maximum</span> <span class="o">=</span> <span class="n">new</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">new</span>
+
+    <span class="k">def</span> <span class="nf">_post_setattr_maximum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Post setattr the maximum value for the spin box.</span>
+
+<span class="sd">        If the new maximum is less than the current value or the minimum,</span>
+<span class="sd">        those values are adjusted down.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minimum</span> <span class="o">=</span> <span class="n">new</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">new</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Post Validation Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_post_validate_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Post validate the value for the spin box.</span>
+
+<span class="sd">        The value is clipped to minimum and maximum bounds.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

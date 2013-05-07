@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.qt.qt_flow_item &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.qt.qt_flow_item</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtCore</span> <span class="kn">import</span> <span class="n">QSize</span><span class="p">,</span> <span class="n">QEvent</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="kn">import</span> <span class="n">QFrame</span><span class="p">,</span> <span class="n">QLayout</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.flow_item</span> <span class="kn">import</span> <span class="n">ProxyFlowItem</span>
+
+<span class="kn">from</span> <span class="nn">.q_flow_layout</span> <span class="kn">import</span> <span class="n">QFlowLayout</span><span class="p">,</span> <span class="n">AbstractFlowWidget</span><span class="p">,</span> <span class="n">FlowLayoutData</span>
+<span class="kn">from</span> <span class="nn">.q_single_widget_layout</span> <span class="kn">import</span> <span class="n">QSingleWidgetLayout</span>
+<span class="kn">from</span> <span class="nn">.qt_container</span> <span class="kn">import</span> <span class="n">QtContainer</span>
+<span class="kn">from</span> <span class="nn">.qt_widget</span> <span class="kn">import</span> <span class="n">QtWidget</span>
+
+
+<span class="n">_ALIGN_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;leading&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">AlignLeading</span><span class="p">,</span>
+    <span class="s">&#39;trailing&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">AlignTrailing</span><span class="p">,</span>
+    <span class="s">&#39;center&#39;</span><span class="p">:</span> <span class="n">QFlowLayout</span><span class="o">.</span><span class="n">AlignCenter</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">QFlowItem</span><span class="p">(</span><span class="n">QFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A QFrame subclass which acts as an item in a QFlowArea.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a QFlowItem.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parent : QWidget, optional</span>
+<span class="sd">            The parent of the flow item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QFlowItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flow_widget</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span> <span class="o">=</span> <span class="n">FlowLayoutData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">QSingleWidgetLayout</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setSizeConstraint</span><span class="p">(</span><span class="n">QLayout</span><span class="o">.</span><span class="n">SetMinAndMaxSize</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">layoutData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the layout data associate with this flow item.</span>
+
+<span class="sd">        This method implements the AbstractFlowWidget interface.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : FlowLayoutData</span>
+<span class="sd">            The layout data for this flow item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span>
+
+    <span class="k">def</span> <span class="nf">preferredSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the preferred size for this widget.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QSize</span>
+<span class="sd">            The preferred size of this flow item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span><span class="o">.</span><span class="n">preferred_size</span>
+
+    <span class="k">def</span> <span class="nf">setPreferredSize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the preferred size for this flow item.</span>
+
+<span class="sd">        This will trigger an invalidation of the layout data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        size : QSize</span>
+<span class="sd">            The preferred size for the flow item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">preferred_size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateGeometry</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">alignment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the alignment for the flow item.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QFlowLayout alignment</span>
+<span class="sd">            The alignment for the flow item in the layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span><span class="o">.</span><span class="n">alignment</span>
+
+    <span class="k">def</span> <span class="nf">setAlignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alignment</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the alignment for the flot item.</span>
+
+<span class="sd">        This will trigger an invalidation of the layout data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        alignment : QFlowLayout alignment</span>
+<span class="sd">            The alignment for the flow item in the layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">alignment</span> <span class="o">=</span> <span class="n">alignment</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateGeometry</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">stretch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the stretch factor for the flow item.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The stretch factor for the flow item in the direction of</span>
+<span class="sd">            the layout flow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span><span class="o">.</span><span class="n">stretch</span>
+
+    <span class="k">def</span> <span class="nf">setStretch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stretch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the stretch factor for the flow item.</span>
+
+<span class="sd">        This will trigger an invalidation of the layout data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stretch : int</span>
+<span class="sd">            The stretch factor for the flow item in the direction of</span>
+<span class="sd">            the layout flow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">stretch</span> <span class="o">=</span> <span class="n">stretch</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateGeometry</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">orthoStretch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the ortho stretch factor for the flow item.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The stretch factor for the flow item in the direction</span>
+<span class="sd">            orthogonal to the layout flow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span><span class="o">.</span><span class="n">stretch</span>
+
+    <span class="k">def</span> <span class="nf">setOrthoStretch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stretch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the ortho stretch factor for the flow item.</span>
+
+<span class="sd">        This will trigger an invalidation of the layout data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stretch : int</span>
+<span class="sd">            The stretch factor for the flow item in the direction</span>
+<span class="sd">            orthogonal to the layout flow.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">ortho_stretch</span> <span class="o">=</span> <span class="n">stretch</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateGeometry</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">flowWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the flow widget for this flow item.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QWidget or None</span>
+<span class="sd">            The flow widget being managed by this item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flow_widget</span>
+
+    <span class="k">def</span> <span class="nf">setFlowWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the flow widget for this flow item.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        widget : QWidget</span>
+<span class="sd">            The QWidget to use as the flow widget in this item.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flow_widget</span> <span class="o">=</span> <span class="n">widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A custom event handler which handles LayoutRequest events.</span>
+
+<span class="sd">        When a LayoutRequest event is posted to this widget, it will</span>
+<span class="sd">        emit the `layoutRequested` signal. This allows an external</span>
+<span class="sd">        consumer of this widget to update their external layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="n">QEvent</span><span class="o">.</span><span class="n">LayoutRequest</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_layout_data</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">QFlowItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+
+<span class="n">AbstractFlowWidget</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">QFlowItem</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="QtFlowItem"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem">[docs]</a><span class="k">class</span> <span class="nc">QtFlowItem</span><span class="p">(</span><span class="n">QtWidget</span><span class="p">,</span> <span class="n">ProxyFlowItem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Qt implementation of an Enaml ProxyFlowItem.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">QFlowItem</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="QtFlowItem.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the underlying QFlowItem widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">QFlowItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtFlowItem.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Iitialize the underlying control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtFlowItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_preferred_size</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">preferred_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_align</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">align</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_stretch</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">stretch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ortho_stretch</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">ortho_stretch</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtFlowItem.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the layout for the underyling widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtFlowItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setFlowWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtFlowItem.flow_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.flow_widget">[docs]</a>    <span class="k">def</span> <span class="nf">flow_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find and return the flow widget child for this widget.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : QWidget or None</span>
+<span class="sd">            The flow widget defined for this widget, or None if one is</span>
+<span class="sd">            not defined.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">flow_widget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtFlowItem.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtFlowItem.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtFlowItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setFlowWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="QtFlowItem.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a QtFlowItem.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">QtFlowItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">QtContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setFlowWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyFlowItem API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="QtFlowItem.set_preferred_size"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.set_preferred_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_preferred_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the preferred size of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setPreferredSize</span><span class="p">(</span><span class="n">QSize</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="QtFlowItem.set_align"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.set_align">[docs]</a>    <span class="k">def</span> <span class="nf">set_align</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">align</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the alignment of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">_ALIGN_MAP</span><span class="p">[</span><span class="n">align</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="QtFlowItem.set_stretch"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.set_stretch">[docs]</a>    <span class="k">def</span> <span class="nf">set_stretch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stretch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the stretch factor of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setStretch</span><span class="p">(</span><span class="n">stretch</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QtFlowItem.set_ortho_stretch"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.flow_item.FlowItem.html#enaml.qt.qt_flow_item.QtFlowItem.set_ortho_stretch">[docs]</a>    <span class="k">def</span> <span class="nf">set_ortho_stretch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stretch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the ortho stretch factor of the underling widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">setOrthoStretch</span><span class="p">(</span><span class="n">stretch</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

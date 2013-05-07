@@ -1,0 +1,413 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Page &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="ScrollArea" href="enaml.widgets.scroll_area.ScrollArea.html" />
+    <link rel="prev" title="Notebook" href="enaml.widgets.notebook.Notebook.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.scroll_area.ScrollArea.html" title="ScrollArea"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.notebook.Notebook.html" title="Notebook"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="page">
+<h1>Page<a class="headerlink" href="#page" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.page.Page">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.page.</tt><tt class="descname">Page</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/page.html#Page"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.page.Page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget" title="enaml.widgets.widget.Widget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.widget.Widget</span></tt></a></p>
+<p>A widget which can be used as a page in a Notebook control.</p>
+<p>A Page is a widget which can be used as a child of a Notebook
+control. It can have at most a single child widget which is an
+instance of Container.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.page.Page.title">
+<tt class="descname">title</tt><a class="headerlink" href="#enaml.widgets.page.Page.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>The title to use for the page in the notebook.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.page.Page.icon">
+<tt class="descname">icon</tt><a class="headerlink" href="#enaml.widgets.page.Page.icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>The icon to use for the page tab.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.page.Page.closable">
+<tt class="descname">closable</tt><a class="headerlink" href="#enaml.widgets.page.Page.closable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not this individual page is closable. Note that the
+&#8216;tabs_closable&#8217; flag on the parent Notebook must be set to True
+for this to have any effect.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.page.Page.closed">
+<tt class="descname">closed</tt><a class="headerlink" href="#enaml.widgets.page.Page.closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>An event fired when the user closes the page by clicking on
+the tab&#8217;s close button.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.page.Page.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.page.Page.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyPage object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.page.Page.page_widget">
+<tt class="descname">page_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/page.html#Page.page_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.page.Page.page_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the page widget defined for the page.</p>
+<p>The last child Container is the page widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-02870070426a156b467d223f9191d4a562955915.png" alt="Inheritance diagram of enaml.qt.qt_page.QtPage" usemap="#inheritanced83c58e529" class="inheritance"/>
+<map id="inheritanced83c58e529" name="inheritanced83c58e529">
+<area shape="rect" id="node15" href="#enaml.qt.qt_page.QtPage" title="QtPage" alt="" coords="693,29,763,54"/>
+<area shape="rect" id="node12" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="570,53,642,77"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_page.QtPage">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_page.</tt><tt class="descname">QtPage</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="enaml.qt.qt_widget.QtWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_widget.QtWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.page.ProxyPage</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyPage.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_page.QtPage.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_page.QtPage.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying page widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout for the underyling widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.page_widget">
+<tt class="descname">page_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.page_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.page_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the page widget child for this widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtPage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a QtPage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.on_page_closed">
+<tt class="descname">on_page_closed</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.on_page_closed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.on_page_closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>The signal handler for the &#8216;pageClosed&#8217; signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.set_visible">
+<tt class="descname">set_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.set_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.set_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+notebook page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.ensure_visible">
+<tt class="descname">ensure_visible</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.ensure_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.ensure_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+notebook page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.ensure_hidden">
+<tt class="descname">ensure_hidden</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.ensure_hidden"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.ensure_hidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+notebook page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.set_enabled">
+<tt class="descname">set_enabled</tt><big>(</big><em>enabled</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.set_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.set_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden enabled setter which sets the tab enabled
+state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.set_title">
+<tt class="descname">set_title</tt><big>(</big><em>title</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.set_title"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.set_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title of the tab for this page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.set_icon">
+<tt class="descname">set_icon</tt><big>(</big><em>icon</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.set_icon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.set_icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the widget&#8217;s icon to the provided image.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_page.QtPage.set_closable">
+<tt class="descname">set_closable</tt><big>(</big><em>closable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_page.html#QtPage.set_closable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_page.QtPage.set_closable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set whether or not this page is closable.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-258b26fd2e1b58d740d5e1483fb7677779cb88b8.png" alt="Inheritance diagram of enaml.wx.wx_page.WxPage" usemap="#inheritance71c4f472f9" class="inheritance"/>
+<map id="inheritance71c4f472f9" name="inheritance71c4f472f9">
+<area shape="rect" id="node2" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="WxWidget" alt="" coords="568,5,645,29"/>
+<area shape="rect" id="node13" href="#enaml.wx.wx_page.WxPage" title="WxPage" alt="" coords="693,29,763,54"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_page.WxPage">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_page.</tt><tt class="descname">WxPage</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="enaml.wx.wx_widget.WxWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_widget.WxWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.page.ProxyPage</span></tt></p>
+<p>A Wx implementation of an Enaml notebook ProxyPage.</p>
+<dl class="attribute">
+<dt id="enaml.wx.wx_page.WxPage.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.wx.wx_page.WxPage.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying wxPage widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and initialize the page control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout of the notebook page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.page_widget">
+<tt class="descname">page_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.page_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.page_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the page widget child for this widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a WxPage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a WxPage.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.on_page_closed">
+<tt class="descname">on_page_closed</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.on_page_closed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.on_page_closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>The event handler for the EVT_PAGE_CLOSED event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.set_visible">
+<tt class="descname">set_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.set_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.set_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+notebook page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.ensure_visible">
+<tt class="descname">ensure_visible</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.ensure_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.ensure_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+notebook page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.ensure_hidden">
+<tt class="descname">ensure_hidden</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.ensure_hidden"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.ensure_hidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter which to opens|closes the
+notebook page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.set_enabled">
+<tt class="descname">set_enabled</tt><big>(</big><em>enabled</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.set_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.set_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden enabled setter which sets the tab enabled
+state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.set_title">
+<tt class="descname">set_title</tt><big>(</big><em>title</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.set_title"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.set_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title of the tab for this page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.set_icon">
+<tt class="descname">set_icon</tt><big>(</big><em>icon</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.set_icon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.set_icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the widget&#8217;s icon to the provided image.</p>
+<p>This is not supported on Wx.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_page.WxPage.set_closable">
+<tt class="descname">set_closable</tt><big>(</big><em>closable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_page.html#WxPage.set_closable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_page.WxPage.set_closable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set whether or not this page is closable.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Page</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.notebook.Notebook.html"
+                        title="previous chapter">Notebook</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.scroll_area.ScrollArea.html"
+                        title="next chapter">ScrollArea</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.page.Page.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.scroll_area.ScrollArea.html" title="ScrollArea"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.notebook.Notebook.html" title="Notebook"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

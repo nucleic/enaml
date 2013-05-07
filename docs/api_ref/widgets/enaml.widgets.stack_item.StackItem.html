@@ -1,0 +1,227 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>StackItem &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="Developer’s Guide" href="../../developer_guide/index.html" />
+    <link rel="prev" title="Stack" href="enaml.widgets.stack.Stack.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../developer_guide/index.html" title="Developer’s Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.stack.Stack.html" title="Stack"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="stackitem">
+<h1>StackItem<a class="headerlink" href="#stackitem" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.stack_item.StackItem">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.stack_item.</tt><tt class="descname">StackItem</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/stack_item.html#StackItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.stack_item.StackItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget" title="enaml.widgets.widget.Widget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.widget.Widget</span></tt></a></p>
+<p>A widget which can be used as an item in a Stack.</p>
+<p>A StackItem is a widget which can be used as a child of a Stack
+widget. It can have at most a single child widget which is an
+instance of Container.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.stack_item.StackItem.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.stack_item.StackItem.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyStackItem object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.stack_item.StackItem.stack_widget">
+<tt class="descname">stack_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/stack_item.html#StackItem.stack_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.stack_item.StackItem.stack_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the stack widget defined for the item.</p>
+<p>The stack widget is the last child Container.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-e27e834e10f60c478cab86244d009a65335ed7f1.png" alt="Inheritance diagram of enaml.qt.qt_stack_item.QtStackItem" usemap="#inheritancef8552d126b" class="inheritance"/>
+<map id="inheritancef8552d126b" name="inheritancef8552d126b">
+<area shape="rect" id="node12" href="#enaml.qt.qt_stack_item.QtStackItem" title="QtStackItem" alt="" coords="678,27,763,51"/>
+<area shape="rect" id="node13" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="549,49,617,73"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_stack_item.QtStackItem">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_stack_item.</tt><tt class="descname">QtStackItem</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_stack_item.html#QtStackItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_stack_item.QtStackItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="enaml.qt.qt_widget.QtWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_widget.QtWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.stack_item.ProxyStackItem</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyStackItem.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_stack_item.QtStackItem.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_stack_item.QtStackItem.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_stack_item.QtStackItem.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_stack_item.html#QtStackItem.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_stack_item.QtStackItem.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying QStackItem widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_stack_item.QtStackItem.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_stack_item.html#QtStackItem.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_stack_item.QtStackItem.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout for the underyling widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_stack_item.QtStackItem.stack_widget">
+<tt class="descname">stack_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_stack_item.html#QtStackItem.stack_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_stack_item.QtStackItem.stack_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the stack widget child for this widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_stack_item.QtStackItem.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_stack_item.html#QtStackItem.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_stack_item.QtStackItem.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtStackItem.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_stack_item.QtStackItem.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_stack_item.html#QtStackItem.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_stack_item.QtStackItem.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtStackItem.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_stack_item.QtStackItem.set_visible">
+<tt class="descname">set_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_stack_item.html#QtStackItem.set_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_stack_item.QtStackItem.set_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden visibility setter.</p>
+<p>This setter disables changing visibility on the widget since
+the visibility is controlled entirely by the parent stack.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">StackItem</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.stack.Stack.html"
+                        title="previous chapter">Stack</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../developer_guide/index.html"
+                        title="next chapter">Developer&#8217;s Guide</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.stack_item.StackItem.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../developer_guide/index.html" title="Developer’s Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.stack.Stack.html" title="Stack"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_widget &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_widget</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.widget</span> <span class="kn">import</span> <span class="n">ProxyWidget</span>
+
+<span class="kn">from</span> <span class="nn">.wx_layout_request</span> <span class="kn">import</span> <span class="n">wxEvtLayoutRequested</span>
+<span class="kn">from</span> <span class="nn">.wx_resource_helpers</span> <span class="kn">import</span> <span class="n">get_cached_wxcolor</span><span class="p">,</span> <span class="n">get_cached_wxfont</span>
+<span class="kn">from</span> <span class="nn">.wx_toolkit_object</span> <span class="kn">import</span> <span class="n">WxToolkitObject</span>
+
+
+<div class="viewcode-block" id="WxWidget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget">[docs]</a><span class="k">class</span> <span class="nc">WxWidget</span><span class="p">(</span><span class="n">WxToolkitObject</span><span class="p">,</span> <span class="n">ProxyWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxyWidget.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the toolkit widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Window</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxWidget.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates the underlying wx.Window widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxWidget.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxWidget</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">background</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_background</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">background</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">foreground</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_foreground</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">foreground</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">font</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_font</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">font</span><span class="p">)</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">minimum_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_minimum_size</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">minimum_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">maximum_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_maximum_size</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">maximum_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">tool_tip</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_tool_tip</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tool_tip</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">status_tip</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_status_tip</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">status_tip</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_enabled</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">visible</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxWidget.update_geometry"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.update_geometry">[docs]</a>    <span class="k">def</span> <span class="nf">update_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Notify the layout system that this widget has changed.</span>
+
+<span class="sd">        This method should be called when the geometry of the widget has</span>
+<span class="sd">        changed and the layout system should update the layout. This will</span>
+<span class="sd">        post a wxEvtLayoutRequested event to the parent of this widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="k">if</span> <span class="n">widget</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="n">GetParent</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+                <span class="n">event</span> <span class="o">=</span> <span class="n">wxEvtLayoutRequested</span><span class="p">(</span><span class="n">widget</span><span class="o">.</span><span class="n">GetId</span><span class="p">())</span>
+                <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyWidget API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxWidget.set_minimum_size"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_minimum_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_minimum_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the minimum size on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetMinSize</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="o">*</span><span class="n">min_size</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_maximum_size"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_maximum_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_maximum_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the maximum size on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetMaxSize</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="o">*</span><span class="n">max_size</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_enabled"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_enabled">[docs]</a>    <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the enabled state on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_visible">[docs]</a>    <span class="k">def</span> <span class="nf">set_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the visibility state on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="n">visible</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_background"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_background">[docs]</a>    <span class="k">def</span> <span class="nf">set_background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">background</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the background color on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">background</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">wxcolor</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">NullColour</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">wxcolor</span> <span class="o">=</span> <span class="n">get_cached_wxcolor</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">SetBackgroundColour</span><span class="p">(</span><span class="n">wxcolor</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Refresh</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_foreground"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_foreground">[docs]</a>    <span class="k">def</span> <span class="nf">set_foreground</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">foreground</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the foreground color on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">foreground</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">wxcolor</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">NullColour</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">wxcolor</span> <span class="o">=</span> <span class="n">get_cached_wxcolor</span><span class="p">(</span><span class="n">foreground</span><span class="p">)</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">SetForegroundColour</span><span class="p">(</span><span class="n">wxcolor</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Refresh</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_font"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_font">[docs]</a>    <span class="k">def</span> <span class="nf">set_font</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">font</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the font on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wxfont</span> <span class="o">=</span> <span class="n">get_cached_wxfont</span><span class="p">(</span><span class="n">font</span><span class="p">)</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">SetFont</span><span class="p">(</span><span class="n">wxfont</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Refresh</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_show_focus_rect"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_show_focus_rect">[docs]</a>    <span class="k">def</span> <span class="nf">set_show_focus_rect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This is not supported on Wx.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_tool_tip"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_tool_tip">[docs]</a>    <span class="k">def</span> <span class="nf">set_tool_tip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_tip</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the tool tip of for this widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetToolTipString</span><span class="p">(</span><span class="n">tool_tip</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxWidget.set_status_tip"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.set_status_tip">[docs]</a>    <span class="k">def</span> <span class="nf">set_status_tip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_tip</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; This is not supported on Wx.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="WxWidget.ensure_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.ensure_visible">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Ensure the widget is visible.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxWidget.ensure_hidden"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget.ensure_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Ensure the widget is hidden.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

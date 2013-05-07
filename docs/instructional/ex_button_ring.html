@@ -1,0 +1,230 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ButtonRing Example &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Examples Gallery" href="example.html" />
+    <link rel="next" title="FindReplace Example" href="ex_find_replace.html" />
+    <link rel="prev" title="Vertical Example" href="ex_vertical.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_find_replace.html" title="FindReplace Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ex_vertical.html" title="Vertical Example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" accesskey="U">Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="buttonring-example">
+<h1>ButtonRing Example<a class="headerlink" href="#buttonring-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/button_ring.enaml"><tt class="xref download docutils literal"><span class="pre">button_ring.enaml</span></tt></a></p>
+<div class="highlight-python"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of a layout which cannot be achieved with typical layout
+managers.
+
+This example creates a ring of 50 `PushButton` widgets with a `Label` in
+the center. The constraints shown here are generally silly in that the
+resulting layout is more-or-less useless. Nevertheless, it serves well to
+demonstrate the power and flexibility of constraints-based layout.
+
+Note that the 'gen_constraints' function is only called once, not on
+every resize as may be expected when laying out widgets manually.
+
+Note that this example also demonstrates that constraints may be defined
+on any subclass of `ConstraintsWidget`. They need not be confined to a
+`Container`.
+
+"""
+import numpy as np
+from enaml.widgets.api import MainWindow, Container, PushButton, Label
+from enaml.core.include import Include
+
+def gen_constraints(comps, top, left, width, height):
+    """ A helper function which generates radial constraints.
+
+    Parameters
+    ----------
+    comps : list
+        A list of ConstraintWidget instances which should be arrange
+        radially over an intervale of 2-Pi.
+
+    top : ConstraintVariable
+        The variable representing the top of the layout area.
+
+    left : ConstraintVariable
+        The variable representing the left of the layout area.
+
+    width : ConstraintVariable
+        The variable representing the width of the layout area.
+
+    height : ConstraintVariable
+        The variable representing the height of the layout area.
+
+    Returns
+    -------
+    result : list
+        The list of primitive constraints which arrange the given
+        components radially in the layout area.
+
+    """
+    res = []
+    nitems = len(comps)
+    rads = np.linspace(0, 2 * np.pi, nitems)
+    x_coeffs = (np.cos(rads) + 1.0) / 2.0
+    y_coeffs = (np.sin(rads) + 1.0) / 2.0
+    for comp, x_coeff, y_coeff in zip(comps, x_coeffs, y_coeffs):
+        res.extend([
+            comp.left == (left + x_coeff * (width - comp.width)),
+            comp.top == (top + y_coeff * (height - comp.height)),
+        ])
+    return res
+
+
+enamldef SimpleButton(PushButton):
+    """ A custom `PushButton` for use in the button ring example.
+
+    The width and height of this `PushButton` is fixed to its size hint.
+    This is required since no other constraints are placed on the width
+    of the button in this example. If these constraints were not added,
+    then the constraints solver would error with an unbounded system,
+    indicating an underconstrained system.
+
+    """
+    hug_width = 'required'
+    hug_height = 'required'
+    clicked :: print '%s clicked' % text
+
+
+enamldef Main(MainWindow):
+    Container: cntr:
+        constraints &lt;&lt; gen_constraints(
+            inc.objects, top, left, width, height,
+        ) + [width &gt;= 200, height &gt;= 200]
+        Include: inc:
+            objects = [SimpleButton(text=str(i)) for i in range(50)]
+        Label: lbl:
+            # Constraints can also be directly defined on a component.
+            # This is provided as a convenience where it makes the code
+            # clearer and easier to understand. It makes no difference
+            # if the constraints are defined here, or on the Container.
+            constraints = [
+                v_center == cntr.v_center,
+                h_center == cntr.h_center,
+            ]
+            text = 'Button Ring'
+            font = 'arial 12 bold'
+
+</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run button_ring.enaml</pre>
+</div>
+<img alt="../_images/button_ring.png" src="../_images/button_ring.png" />
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ex_vertical.html"
+                        title="previous chapter">Vertical Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ex_find_replace.html"
+                        title="next chapter">FindReplace Example</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/instructional/ex_button_ring.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_find_replace.html" title="FindReplace Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ex_vertical.html" title="Vertical Example"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" >Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

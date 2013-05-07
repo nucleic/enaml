@@ -1,0 +1,326 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Writing .enaml Files &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Enaml Technical Reference" href="index.html" />
+    <link rel="next" title="Enaml Grammar Reference" href="grammar_ref.html" />
+    <link rel="prev" title="Enaml Technical Reference" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grammar_ref.html" title="Enaml Grammar Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Enaml Technical Reference"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Enaml Technical Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="writing-enaml-files">
+<h1>Writing .enaml Files<a class="headerlink" href="#writing-enaml-files" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This documentation is currently under development and may
+be missing information.</p>
+</div>
+<p>Enaml files contain a domain-specific language for specifying a user-interface
+and dynamically binding and computing values based on user interaction.</p>
+<p>A simple example of an Enaml file might look something like this:</p>
+<div class="highlight-python"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `Form` widget.
+
+A `Form` is a simple subclass of `Container` which automatically lays
+out it children in two columns, neatly aligning the widget edges. If
+a `Form` has an odd number of children, the last child will span both
+columns. The typical use case of a `Form` alternates `Label` and `Field`
+instances, but there is not restriction on the types of children used
+with a form, except that they be constrainable.
+
+"""
+from enaml.layout.api import hbox
+from enaml.widgets.api import Window, Form, Container, Label, Slider, Field
+
+
+enamldef Main(Window):
+    Form:
+        Label:
+            text = 'First Name'
+        Field:
+            pass
+        Label:
+            text = 'Last Name'
+        Field:
+            pass
+        Label:
+            text = 'Age'
+        Container:
+            padding = 0
+            constraints = [
+                hbox(lbl, sldr),
+                lbl.v_center == sldr.v_center,
+            ]
+            Label: lbl:
+                text &lt;&lt; '%d' % sldr.value
+                constraints = [width == 25]
+            Slider: sldr:
+                pass
+        Field:
+            placeholder = 'Odd Number Child'
+
+</pre>
+</div>
+<p>On the Python side, the Enaml code can be imported using a <tt class="docutils literal"><span class="pre">with</span></tt> statement
+to add the Enaml import hooks.  The <tt class="docutils literal"><span class="pre">enamldef</span></tt> blocks are then available as
+module-level functions that can be called normally from Python code.  Building
+the UI is then a matter of calling an Enaml <tt class="docutils literal"><span class="pre">enamldef</span></tt> to build the view, and
+creating that view from a <tt class="docutils literal"><span class="pre">Session</span></tt> instance. The parameters passed in to
+the Enaml <tt class="docutils literal"><span class="pre">enamldef</span></tt> block from the Python side can be any Python or Enaml
+objects that would make sense to use within the Enaml code. For example, if you
+use an attribute of an object in the Enaml code, then passing an object without
+that attribute will raise an <tt class="docutils literal"><span class="pre">AttributeError</span></tt> just as if you did the same
+thing in a Python function.</p>
+<div class="section" id="enaml-widgets-and-layout">
+<h2>Enaml Widgets and Layout<a class="headerlink" href="#enaml-widgets-and-layout" title="Permalink to this headline">¶</a></h2>
+<p>Enaml widgets come in two basic types: Containers and Controls.  Controls
+are conceptually single UI elements with no other Enaml widgets inside them,
+such as labels, fields, and buttons.  Containers are widgets which contain other
+widgets, usually including information about how to layout the widgets that they
+contain.  Examples of containers include top-level windows, scroll areas and forms.</p>
+<p>Enaml uses constraints-based layout implemented by the Cassowary layout system.
+Constraints are specified as a system of linear inequalities together with an
+error function which is minimized according to a modified version of the Simplex
+method.  The error function is specified via assigning weights to the various
+inequalities.  The default weights exposed in Enaml are <tt class="docutils literal"><span class="pre">'weak'</span></tt>, <tt class="docutils literal"><span class="pre">'medium'</span></tt>,
+<tt class="docutils literal"><span class="pre">'strong'</span></tt>, <tt class="docutils literal"><span class="pre">'required'</span></tt>, and <tt class="docutils literal"><span class="pre">'ignored'</span></tt>, but other values are possible
+within the system, if needed. While a developer writing Enaml code could specify
+all constraints directly, in practice they will use a set of helper classes,
+functions and attributes to help specify the set of constraints in a more
+understandable way.</p>
+<p>Every widget knows its preferred size, usually by querying the underlying toolkit,
+and can express how closely it adheres to the preferred size via its <tt class="docutils literal"><span class="pre">hug_width</span></tt>,
+<tt class="docutils literal"><span class="pre">hug_height</span></tt>, <tt class="docutils literal"><span class="pre">resist_width</span></tt> and <tt class="docutils literal"><span class="pre">resist_height</span></tt> attribute which take one
+of the previously mentioned weights. These are set to reasonable defaults for most
+widgets, but they can be overriden. The <tt class="docutils literal"><span class="pre">hug</span></tt> attributes specify how strongly
+the widget resists expansion by adding a constraint of the appropriate weight that
+specifies that the dimension be equal to the preferred value, while the <tt class="docutils literal"><span class="pre">resist_clip</span></tt>
+attributes specify how strongly the widget resists compression by adding a constraint
+that specifies that the dimension be greater than or equal to the preferred value.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Example here</p>
+</div>
+<p>Containers can specify additional constraints that relate their child widgets.
+By default a container simply lays out its children as a vertical list and tries
+to expand them to use the full width and height that the container has available.
+Layout containers, like Form, specify different default constraints that give
+automatic layout of their children, and may provide additional hooks for other
+widgets to use to align with their significant features.</p>
+<p>Additional constraints are specified via the <tt class="docutils literal"><span class="pre">constraints</span></tt> attribute on the
+container.  The simplest way to specify a constraint is with a simple equality
+or inequality.  Inequalities can be specified in terms of symbols provided
+by the components, which at least default to the symbols for a basic box model:
+<tt class="docutils literal"><span class="pre">top</span></tt>, <tt class="docutils literal"><span class="pre">bottom</span></tt>, <tt class="docutils literal"><span class="pre">left</span></tt>, <tt class="docutils literal"><span class="pre">right</span></tt>, <tt class="docutils literal"><span class="pre">v_center</span></tt>, <tt class="docutils literal"><span class="pre">h_center</span></tt>, <tt class="docutils literal"><span class="pre">width</span></tt>
+and <tt class="docutils literal"><span class="pre">height</span></tt>.  Other components may expose other symbols: for example the
+<tt class="docutils literal"><span class="pre">Form</span></tt> widget exposes <tt class="docutils literal"><span class="pre">midline</span></tt> for aligning the fields of multiple forms
+along the same line, and a <tt class="docutils literal"><span class="pre">Container</span></tt> exposes various <tt class="docutils literal"><span class="pre">contents</span></tt> symbols
+to accound for padding around the boundaries of its children.</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Example here</p>
+</div>
+<p>However, this can get tedious, and so there are some helpers that are
+available to simplify specifying layout.  These are:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">spacer</span></tt></dt>
+<dd>A singleton spacer that represents a flexible space in a layout
+with a minimum value of the default space.  Additional restrictions
+on the space can be specified using <tt class="docutils literal"><span class="pre">==</span></tt>, <tt class="docutils literal"><span class="pre">&lt;=</span></tt> and <tt class="docutils literal"><span class="pre">&gt;=</span></tt> with
+an integer value.</dd>
+<dt><tt class="docutils literal"><span class="pre">spacer.flex()</span></tt></dt>
+<dd>A flexible spacer that has a hard minimum but also a weaker preference
+to be no larger than that minimum.</dd>
+</dl>
+<p><tt class="docutils literal"><span class="pre">horizontal(*items)</span></tt> or <tt class="docutils literal"><span class="pre">hbox(*items)</span></tt></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">vertical(*items)</span></tt> or <tt class="docutils literal"><span class="pre">vbox(*items)</span></tt></dt>
+<dd>These four functions take a list of symbols, widgets and spacers and
+create a series of constraints that specify a sequential horizontal
+or vertical layout where the sides of each object in sequence abut
+against each other.</dd>
+<dt><tt class="docutils literal"><span class="pre">align(variable,</span> <span class="pre">*items)</span></tt></dt>
+<dd>Align the given string variable name on each of the specified items.</dd>
+<dt><tt class="docutils literal"><span class="pre">grid(*rows,</span> <span class="pre">**config)</span></tt></dt>
+<dd>A function which takes a variable number of iterable rows and
+arranges the items in a grid according to the configuration
+parameters.</dd>
+</dl>
+</div></blockquote>
+<p>By using appropriate combinations of these objects you can specify complex layouts
+quickly and clearly.</p>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">Example here</p>
+</div>
+</div>
+<div class="section" id="binding-operators">
+<h2>Binding Operators<a class="headerlink" href="#binding-operators" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><cite>=</cite></dt>
+<dd><em>Assignment</em>. RHS can be any expression. The assignment will be the
+default value, but the value can be changed later through Python code
+or other expression execution.</dd>
+<dt><cite>:=</cite></dt>
+<dd><em>Delegation</em>. RHS must be a simple lvalue, like <tt class="docutils literal"><span class="pre">foo.bar</span></tt> or
+<tt class="docutils literal"><span class="pre">spam[idx]</span></tt>. Non-lvalue expressions here are a syntax error. The
+value of the view property and value of the attribute are synced,
+but the type checking of the view property is enforced.</dd>
+<dt><cite>&lt;&lt;</cite></dt>
+<dd><em>Subscription</em>. RHS can be any expression. The expression will be parsed
+for dependencies, and any dependency which is an atom attribute on an
+Atom subclass will have a listener attached. When the listener fires,
+the expression will be re-evaluated and the value of the view property
+will be updated.</dd>
+<dt><cite>&gt;&gt;</cite></dt>
+<dd><em>Update</em>. RHS must be a simple lvalue. The attribute will receive the
+view property&#8217;s value any time it changes.</dd>
+<dt><cite>::</cite></dt>
+<dd><em>Notification</em>. RHS can be any statement. Additionally, an indented
+block of code can also be used. The statement/block will be evaluated
+any time the view property changes.</dd>
+</dl>
+</div>
+<div class="section" id="scoping-rules">
+<h2>Scoping Rules<a class="headerlink" href="#scoping-rules" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Imports are global and accessible to everything in the file.</li>
+<li>Each top-level item defines its own local namespace. This namespace
+includes all elements that have a declared identifier.</li>
+<li>Each expression has its local namespace that is the union of the block
+locals and the attribute namespace of the object to which the expression
+is bound. In otherwords <cite>self</cite> is implicit. However, a <cite>self</cite> exists in
+this local namespace in order to break naming conflicts between block
+locals and attribute names. To any C++ or Java developers, this will seem
+natural.</li>
+<li>Each expression has a dynamic scope which exists between its local scope
+and the global scope. This scope is the chained union of all attribute
+namespaces of the ancestor tree of the object to which the expression
+is bound.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Writing .enaml Files</a><ul>
+<li><a class="reference internal" href="#enaml-widgets-and-layout">Enaml Widgets and Layout</a></li>
+<li><a class="reference internal" href="#binding-operators">Binding Operators</a></li>
+<li><a class="reference internal" href="#scoping-rules">Scoping Rules</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Enaml Technical Reference</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="grammar_ref.html"
+                        title="next chapter">Enaml Grammar Reference</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tech_ref/enaml_file.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grammar_ref.html" title="Enaml Grammar Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Enaml Technical Reference"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Enaml Technical Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

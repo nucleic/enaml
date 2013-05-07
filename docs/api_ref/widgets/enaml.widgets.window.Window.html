@@ -1,0 +1,582 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Window &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="Container" href="enaml.widgets.container.Container.html" />
+    <link rel="prev" title="MdiWindow" href="enaml.widgets.mdi_window.MdiWindow.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.container.Container.html" title="Container"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.mdi_window.MdiWindow.html" title="MdiWindow"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="window">
+<h1>Window<a class="headerlink" href="#window" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.window.Window">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.window.</tt><tt class="descname">Window</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.widgets.widget.Widget" title="enaml.widgets.widget.Widget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.widget.Widget</span></tt></a></p>
+<p>A top-level Window component.</p>
+<p>A Window component is represents of a top-level visible component
+with a frame decoration. It may have at most one child widget which
+is dubbed the &#8216;central widget&#8217;. The central widget is an instance
+of Container and is expanded to fit the size of the window.</p>
+<p>A Window does not support features like MenuBars or DockPanes, for
+such functionality, use a MainWindow widget.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.windows">
+<tt class="descname">windows</tt><em class="property"> = set([])</em><a class="headerlink" href="#enaml.widgets.window.Window.windows" title="Permalink to this definition">¶</a></dt>
+<dd><p>A static set of windows being used by the application. A window
+adds itself to this list when it is initialized, and removes
+itself when it is destroyed. This allows toplevel windows with
+no parent to persist without any other strong references.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.title">
+<tt class="descname">title</tt><a class="headerlink" href="#enaml.widgets.window.Window.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>The titlebar text.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.initial_size">
+<tt class="descname">initial_size</tt><a class="headerlink" href="#enaml.widgets.window.Window.initial_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The initial size of the window. A value of (-1, -1) indicates
+to let the toolkit choose the initial size.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.modality">
+<tt class="descname">modality</tt><a class="headerlink" href="#enaml.widgets.window.Window.modality" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enum which indicates the modality of the window. The default
+value is &#8216;non_modal&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.destroy_on_close">
+<tt class="descname">destroy_on_close</tt><a class="headerlink" href="#enaml.widgets.window.Window.destroy_on_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this value is set to True, the window will be destroyed on
+the completion of the <cite>closed</cite> event.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.icon">
+<tt class="descname">icon</tt><a class="headerlink" href="#enaml.widgets.window.Window.icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>The title bar icon.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.always_on_top">
+<tt class="descname">always_on_top</tt><a class="headerlink" href="#enaml.widgets.window.Window.always_on_top" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the window remains on top of all others.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.closed">
+<tt class="descname">closed</tt><a class="headerlink" href="#enaml.widgets.window.Window.closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>An event fired when the window is closed. This event is triggered
+by the proxy object when the window is closed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.visible">
+<tt class="descname">visible</tt><a class="headerlink" href="#enaml.widgets.window.Window.visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Windows are invisible by default.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.window.Window.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.window.Window.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyWindow object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden initializer method.</p>
+<p>This method adds the window to the static set of Windows.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.destroy">
+<tt class="descname">destroy</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden destructor method.</p>
+<p>This method removes the window from the static set of Windows.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.central_widget">
+<tt class="descname">central_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.central_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.central_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the central widget defined on the window.</p>
+<p>The last <cite>Container</cite> child of the window is the central widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the &#8216;close&#8217; action to the client widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.maximize">
+<tt class="descname">maximize</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.maximize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.maximize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the &#8216;maximize&#8217; action to the client widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.minimize">
+<tt class="descname">minimize</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.minimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.minimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the &#8216;minimize&#8217; action to the client widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.restore">
+<tt class="descname">restore</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.restore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the &#8216;restore&#8217; action to the client widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.send_to_front">
+<tt class="descname">send_to_front</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.send_to_front"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.send_to_front" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the window to the top of the Z order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.send_to_back">
+<tt class="descname">send_to_back</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.send_to_back"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.send_to_back" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the window to the bottom of the Z order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.window.Window.show">
+<tt class="descname">show</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/window.html#Window.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.window.Window.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the window to the screen.</p>
+<p>This is a reimplemented parent class method which will init
+and build the window hierarchy if needed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-40f3ec368aaefeef77c3a960cbb8c7d1eeda6779.png" alt="Inheritance diagram of enaml.qt.qt_window.QtWindow" usemap="#inheritance744c866cdf" class="inheritance"/>
+<map id="inheritance744c866cdf" name="inheritance744c866cdf">
+<area shape="rect" id="node2" href="#enaml.qt.qt_window.QtWindow" title="QtWindow" alt="" coords="686,28,762,52"/>
+<area shape="rect" id="node3" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="558,4,629,28"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_window.QtWindow">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_window.</tt><tt class="descname">QtWindow</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="enaml.qt.qt_widget.QtWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_widget.QtWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.window.ProxyWindow</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyWindow.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_window.QtWindow.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the toolkit widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the QWindow widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the widget layout.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.central_widget">
+<tt class="descname">central_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.central_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.central_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the central widget child for this widget.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (QWidget or None) &#8211; The central widget defined for this widget, or None if one is not defined.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.on_closed">
+<tt class="descname">on_closed</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.on_closed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.on_closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>The signal handler for the &#8216;closed&#8217; signal.</p>
+<p>This method will fire the &#8216;closed&#8217; event on the declaration.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtWindow.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtWindow.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the window</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.maximize">
+<tt class="descname">maximize</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.maximize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.maximize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximize the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.minimize">
+<tt class="descname">minimize</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.minimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.minimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimize the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.restore">
+<tt class="descname">restore</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.restore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore the window after a minimize or maximize.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.send_to_front">
+<tt class="descname">send_to_front</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.send_to_front"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.send_to_front" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the window to the top of the Z order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.send_to_back">
+<tt class="descname">send_to_back</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.send_to_back"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.send_to_back" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the window to the bottom of the Z order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.set_icon">
+<tt class="descname">set_icon</tt><big>(</big><em>icon</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.set_icon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.set_icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the window icon.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.set_title">
+<tt class="descname">set_title</tt><big>(</big><em>title</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.set_title"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.set_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title of the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.set_initial_size">
+<tt class="descname">set_initial_size</tt><big>(</big><em>size</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.set_initial_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.set_initial_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the initial size of the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_window.QtWindow.set_modality">
+<tt class="descname">set_modality</tt><big>(</big><em>modality</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_window.html#QtWindow.set_modality"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_window.QtWindow.set_modality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the modality of the window.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-00ad89dedcb14c3ba685821f1e887efc050abef3.png" alt="Inheritance diagram of enaml.wx.wx_window.WxWindow" usemap="#inheritance5f481f269c" class="inheritance"/>
+<map id="inheritance5f481f269c" name="inheritance5f481f269c">
+<area shape="rect" id="node1" href="#enaml.wx.wx_window.WxWindow" title="WxWindow" alt="" coords="682,28,762,52"/>
+<area shape="rect" id="node2" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="WxWidget" alt="" coords="553,4,628,28"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_window.WxWindow">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_window.</tt><tt class="descname">WxWindow</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.widget.Widget.html#enaml.wx.wx_widget.WxWidget" title="enaml.wx.wx_widget.WxWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_widget.WxWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.window.ProxyWindow</span></tt></p>
+<p>A Wx implementation of an Enaml ProxyWindow.</p>
+<dl class="attribute">
+<dt id="enaml.wx.wx_window.WxWindow.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference tot he toolkit widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying wxCustomWindow widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the window control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform layout initialization for the control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.central_widget">
+<tt class="descname">central_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.central_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.central_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find and return the central widget child for this widget.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (wxWindow or None) &#8211; The central widget defined for this widget, or None if one is not defined.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a QtWindow.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtWindow.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.on_close">
+<tt class="descname">on_close</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.on_close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.on_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>The event handler for the EVT_CLOSE event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.on_layout_requested">
+<tt class="descname">on_layout_requested</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.on_layout_requested"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.on_layout_requested" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the layout request event from the central widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the window</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.maximize">
+<tt class="descname">maximize</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.maximize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.maximize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximize the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.minimize">
+<tt class="descname">minimize</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.minimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.minimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimize the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.restore">
+<tt class="descname">restore</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.restore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore the window after a minimize or maximize.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.send_to_front">
+<tt class="descname">send_to_front</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.send_to_front"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.send_to_front" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the window to the top of the Z order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.send_to_back">
+<tt class="descname">send_to_back</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.send_to_back"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.send_to_back" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the window to the bottom of the Z order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.set_icon">
+<tt class="descname">set_icon</tt><big>(</big><em>icon</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.set_icon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.set_icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is not supported on Wx.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.set_title">
+<tt class="descname">set_title</tt><big>(</big><em>title</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.set_title"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.set_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the title of the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.set_initial_size">
+<tt class="descname">set_initial_size</tt><big>(</big><em>size</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.set_initial_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.set_initial_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the initial size of the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.set_modality">
+<tt class="descname">set_modality</tt><big>(</big><em>modality</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.set_modality"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.set_modality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the modality of the window.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.set_visible">
+<tt class="descname">set_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.set_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.set_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the visibility state on the underlying widget.</p>
+<p>This override sets the modality to false when hiding the window
+and enabled it when showing the window (if requested).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.ensure_visible">
+<tt class="descname">ensure_visible</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.ensure_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.ensure_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure the widget is visible.</p>
+<p>This override forwards to the &#8216;set_visible&#8217; method so that the
+window modality is handled properly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_window.WxWindow.ensure_hidden">
+<tt class="descname">ensure_hidden</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_window.html#WxWindow.ensure_hidden"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_window.WxWindow.ensure_hidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure the widget is hidden.</p>
+<p>This override forwards to the &#8216;set_visible&#8217; method so that the
+window modality is handled properly.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Window</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.mdi_window.MdiWindow.html"
+                        title="previous chapter">MdiWindow</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.container.Container.html"
+                        title="next chapter">Container</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.window.Window.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.container.Container.html" title="Container"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.mdi_window.MdiWindow.html" title="MdiWindow"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

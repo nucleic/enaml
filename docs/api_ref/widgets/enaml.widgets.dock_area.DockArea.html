@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DockArea &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="DockItem" href="enaml.widgets.dock_item.DockItem.html" />
+    <link rel="prev" title="Container" href="enaml.widgets.container.Container.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.dock_item.DockItem.html" title="DockItem"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.container.Container.html" title="Container"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dockarea">
+<h1>DockArea<a class="headerlink" href="#dockarea" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.dock_area.DockArea">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.dock_area.</tt><tt class="descname">DockArea</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_area.html#DockArea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_area.DockArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.widgets.constraints_widget.ConstraintsWidget" title="enaml.widgets.constraints_widget.ConstraintsWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.constraints_widget.ConstraintsWidget</span></tt></a></p>
+<p>A component which aranges dock item children.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.dock_area.DockArea.layout">
+<tt class="descname">layout</tt><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>The layout of dock items for the area. The layout can also be
+changed at runtime with the &#8216;apply_layout()&#8217; method.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_area.DockArea.tab_position">
+<tt class="descname">tab_position</tt><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.tab_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default tab position for newly created dock tabs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_area.DockArea.hug_width">
+<tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.hug_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Stack expands freely in height and width by default</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.dock_area.DockArea.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyStack widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.dock_area.DockArea.dock_items">
+<tt class="descname">dock_items</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_area.html#DockArea.dock_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.dock_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dock items defined on the stack</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.dock_area.DockArea.save_layout">
+<tt class="descname">save_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_area.html#DockArea.save_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.save_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current dictionary representation of the layout.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>result</strong> (docklayout) &#8211; The current docklayout state of the dock area.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.dock_area.DockArea.apply_layout">
+<tt class="descname">apply_layout</tt><big>(</big><em>layout</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_area.html#DockArea.apply_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.apply_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a layout from a saved layout state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>layout</strong> (<em>docklayout</em>) &#8211; The docklayout to apply to the dock area.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-08f641270508367a63a8ada9ba9ef5a848f61887.png" alt="Inheritance diagram of enaml.qt.qt_dock_area.QtDockArea" usemap="#inheritancea12c08c732" class="inheritance"/>
+<map id="inheritancea12c08c732" name="inheritancea12c08c732">
+<area shape="rect" id="node5" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="QtConstraintsWidget" alt="" coords="565,39,665,57"/>
+<area shape="rect" id="node6" href="enaml.widgets.widget.Widget.html#enaml.qt.qt_widget.QtWidget" title="QtWidget" alt="" coords="447,39,501,57"/>
+<area shape="rect" id="node16" href="#enaml.qt.qt_dock_area.QtDockArea" title="QtDockArea" alt="" coords="700,22,764,40"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_dock_area.QtDockArea">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_dock_area.</tt><tt class="descname">QtDockArea</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="enaml.widgets.constraints_widget.ConstraintsWidget.html#enaml.qt.qt_constraints_widget.QtConstraintsWidget" title="enaml.qt.qt_constraints_widget.QtConstraintsWidget"><tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_constraints_widget.QtConstraintsWidget</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.dock_area.ProxyDockArea</span></tt></p>
+<p>A Qt implementation of an Enaml DockArea.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.manager">
+<tt class="descname">manager</tt><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>The docking manager which will drive the dock area.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.dock_filter">
+<tt class="descname">dock_filter</tt><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.dock_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>The event filter which listens for layout requests.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying QDockArea widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.init_layout">
+<tt class="descname">init_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.init_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.init_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the layout of the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.destroy">
+<tt class="descname">destroy</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reimplemented destructor.</p>
+<p>This removes the event filter from the dock area and releases
+the items from the dock manager.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.dock_items">
+<tt class="descname">dock_items</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.dock_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.dock_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an iterable of QDockItem children for this area.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child added event for a QtDockArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the child removed event for a QtDockArea.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.set_tab_position">
+<tt class="descname">set_tab_position</tt><big>(</big><em>position</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.set_tab_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.set_tab_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the default tab position on the underyling widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.save_layout">
+<tt class="descname">save_layout</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.save_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.save_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current layout on the underlying widget.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_dock_area.QtDockArea.apply_layout">
+<tt class="descname">apply_layout</tt><big>(</big><em>layout</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_dock_area.html#QtDockArea.apply_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_dock_area.QtDockArea.apply_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a new layout to the underlying widget.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">DockArea</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.container.Container.html"
+                        title="previous chapter">Container</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.dock_item.DockItem.html"
+                        title="next chapter">DockItem</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.dock_area.DockArea.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.dock_item.DockItem.html" title="DockItem"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.container.Container.html" title="Container"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

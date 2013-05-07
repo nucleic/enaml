@@ -1,0 +1,110 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+from enaml.layout.api import vertical, horizontal, align, spacer, vbox
+from enaml.widgets.api import (
+    Window, Label, Field, Form, DateSelector, CheckBox, GroupBox, Container,
+    PushButton
+)
+
+from phone_validator import PhoneNumberValidator
+
+
+enamldef EmployeeForm(Form):
+    attr employee
+    attr show_employer: bool = True
+    Label:
+        text = "First name:"
+    Field:
+        text := employee.first_name
+    Label:
+        text = "Last name:"
+    Field:
+        text := employee.last_name
+    Label:
+        text = "Home phone:"
+    Field:
+        validator = PhoneNumberValidator()
+        text << '(%s) %s-%s' % employee.phone
+        text ::
+            match = validator.proper.match(text)
+            if match:
+                area = match.group(1)
+                prefix = match.group(2)
+                suffix = match.group(3)
+                employee.phone = tuple(map(int, (area, prefix, suffix)))
+    Label:
+        text = 'Date of Birth:'
+    DateSelector:
+        date := employee.dob
+    Label:
+        text = 'Age:'
+    Label:
+        text << str(employee.age)
+    Label:
+        text = 'Password:'
+    Field:
+        echo_mode << 'password' if not pw_cb.checked else 'normal'
+        text :: print 'Password:', text
+    Label:
+        text = 'Show Password:'
+    CheckBox: pw_cb:
+        checked = False
+    Label:
+        pass
+    PushButton: btn:
+        checked := show_employer
+        checkable = True
+        text << ('Hide' if show_employer else 'Show') + ' Employer Details'
+
+
+enamldef EmployerForm(Form):
+    attr employer
+    Label:
+        text = "Company:"
+    Field:
+        text << employer.company_name
+        enabled << en_cb.checked
+    Label:
+        text = "Reporting Manager:"
+    Field:
+        text << "%s %s" % (employer.first_name, employer.last_name)
+        enabled << en_cb.checked
+    Label:
+        text = "Allow Editing:"
+    CheckBox: en_cb:
+        checked = True
+
+
+enamldef EmployeeView(Window): main:
+    attr employee
+    title << "Employee Record for: %s, %s" % (employee.last_name,
+                                              employee.first_name)
+    Container:
+        constraints << [
+            vertical(
+                top, top_box, btm_box.when(btm_box.visible), spacer, bottom
+            ),
+            horizontal(left, spacer.flex(), top_box, spacer.flex(), right),
+            horizontal(left, spacer.flex(), btm_box, spacer.flex(), right),
+            align('midline', top_form, btm_form),
+        ]
+        GroupBox: top_box:
+            share_layout = True
+            title = "Personal Details"
+            EmployeeForm: top_form:
+                share_layout = True
+                # We access the employee object through the identifier
+                # 'main' here, because the EmployeeForm also has an
+                # 'employee' attribute declared, and that would be
+                # found first.
+                employee = main.employee
+        GroupBox: btm_box:
+            share_layout = True
+            title = "Employer Details"
+            visible << top_form.show_employer
+            EmployerForm: btm_form:
+                share_layout = True
+                employer << employee.boss
+

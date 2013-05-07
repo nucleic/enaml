@@ -1,0 +1,831 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.wx.wx_dock_pane &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.wx.wx_dock_pane</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.lib.newevent</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Typed</span>
+
+<span class="kn">from</span> <span class="nn">enaml.widgets.dock_pane</span> <span class="kn">import</span> <span class="n">ProxyDockPane</span>
+
+<span class="kn">from</span> <span class="nn">.wx_container</span> <span class="kn">import</span> <span class="n">WxContainer</span>
+<span class="kn">from</span> <span class="nn">.wx_single_widget_sizer</span> <span class="kn">import</span> <span class="n">wxSingleWidgetSizer</span>
+<span class="kn">from</span> <span class="nn">.wx_upstream</span> <span class="kn">import</span> <span class="n">aui</span>
+<span class="kn">from</span> <span class="nn">.wx_widget</span> <span class="kn">import</span> <span class="n">WxWidget</span>
+
+
+<span class="c">#: A mapping from Enaml dock areas to wx aui dock area enums</span>
+<span class="n">_DOCK_AREA_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;top&#39;</span><span class="p">:</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_TOP</span><span class="p">,</span>
+    <span class="s">&#39;right&#39;</span><span class="p">:</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_RIGHT</span><span class="p">,</span>
+    <span class="s">&#39;bottom&#39;</span><span class="p">:</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_BOTTOM</span><span class="p">,</span>
+    <span class="s">&#39;left&#39;</span><span class="p">:</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_LEFT</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c">#: A mapping from wx aui dock area enums to Enaml dock areas.</span>
+<span class="n">_DOCK_AREA_INV_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_TOP</span><span class="p">:</span> <span class="s">&#39;top&#39;</span><span class="p">,</span>
+    <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_RIGHT</span><span class="p">:</span> <span class="s">&#39;right&#39;</span><span class="p">,</span>
+    <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_BOTTOM</span><span class="p">:</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span>
+    <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_LEFT</span><span class="p">:</span> <span class="s">&#39;left&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c">#: A mapping from Enaml allowed dock areas to wx direction enums.</span>
+<span class="n">_ALLOWED_AREAS_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;top&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">TOP</span><span class="p">,</span>
+    <span class="s">&#39;right&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">RIGHT</span><span class="p">,</span>
+    <span class="s">&#39;bottom&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">BOTTOM</span><span class="p">,</span>
+    <span class="s">&#39;left&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">LEFT</span><span class="p">,</span>
+    <span class="s">&#39;all&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c">#: A mappint from Enaml orientations to wx orientations.</span>
+<span class="n">_ORIENTATION_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;horizontal&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">,</span>
+    <span class="s">&#39;vertical&#39;</span><span class="p">:</span> <span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c">#: An event emitted when the dock pane is floated.</span>
+<span class="n">wxDockPaneFloatedEvent</span><span class="p">,</span> <span class="n">EVT_DOCK_PANE_FLOATED</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">newevent</span><span class="o">.</span><span class="n">NewEvent</span><span class="p">()</span>
+
+<span class="c">#: An event emitted when the dock is docked.</span>
+<span class="n">wxDockPaneDockedEvent</span><span class="p">,</span> <span class="n">EVT_DOCK_PANE_DOCKED</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">newevent</span><span class="o">.</span><span class="n">NewEvent</span><span class="p">()</span>
+
+<span class="c">#: An event emitted when the dock pane is closed.</span>
+<span class="n">wxDockPaneClosedEvent</span><span class="p">,</span> <span class="n">EVT_DOCK_PANE_CLOSED</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">newevent</span><span class="o">.</span><span class="n">NewEvent</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">wxDockPane</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A wxPanel subclass which adds DockPane features.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a wxDockPane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args, **kwargs</span>
+<span class="sd">            The positional and keyword arguments needed to initialize</span>
+<span class="sd">            a wxPanel.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">wxDockPane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_visible</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_orientation</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_movable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floatable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floating</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dock_area</span> <span class="o">=</span> <span class="n">aui</span><span class="o">.</span><span class="n">AUI_DOCK_LEFT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_dock_areas</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dock_widget</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">wxSingleWidgetSizer</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Private API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_FindPaneManager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find the pane manager for this dock pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : AuiManager or None</span>
+<span class="sd">            The AuiManager for this dock pane, or None if not found.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">aui</span><span class="o">.</span><span class="n">AuiManagerEvent</span><span class="p">(</span><span class="n">aui</span><span class="o">.</span><span class="n">wxEVT_AUI_FIND_MANAGER</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ProcessEvent</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">event</span><span class="o">.</span><span class="n">GetManager</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_PaneInfoOperation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A private method which will run the given closure if there</span>
+<span class="sd">        is a valid pane info object for this dock pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FindPaneManager</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">pane</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">GetPane</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pane</span><span class="o">.</span><span class="n">IsOk</span><span class="p">():</span>
+                <span class="n">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">)</span>
+                <span class="n">manager</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Event Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">OnClose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles the parent EVT_AUI_PANE_CLOSE event.</span>
+
+<span class="sd">        This event handler is called directly by the parent wxMainWindow</span>
+<span class="sd">        from its pane close event handler. This handler simply emits the</span>
+<span class="sd">        EVT_DOCK_PANE_CLOSED event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxDockPaneClosedEvent</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">OnFloated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles the parent EVT_AUI_PANE_FLOATED event.</span>
+
+<span class="sd">        This event handler is called directly by the parent wxMainWindow</span>
+<span class="sd">        from its pane floated event handler. This handler simply emits</span>
+<span class="sd">        the EVT_DOCK_PANE_FLOATED event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floating</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxDockPaneFloatedEvent</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">OnDocked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles the parent EVT_AUI_PANE_DOCKED event.</span>
+
+<span class="sd">        This event handler is called directly by the parent wxMainWindow</span>
+<span class="sd">        from its pane docked event handler. This handler simply emits</span>
+<span class="sd">        the EVT_DOCK_PANE_DOCKED event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floating</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dock_area</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetPane</span><span class="p">()</span><span class="o">.</span><span class="n">dock_direction</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxDockPaneDockedEvent</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">MakePaneInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create a new AuiPaneInfo object for this dock pane.</span>
+
+<span class="sd">        This is called by the wxMainWindow when it adds this dock pane</span>
+<span class="sd">        to its internal layout for the first time.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : AuiPaneInfo</span>
+<span class="sd">            An initialized AuiPaneInfo object for this pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">aui</span><span class="o">.</span><span class="n">AuiPaneInfo</span><span class="p">()</span>
+
+        <span class="c"># Don&#39;t allow docking panes as a notebook since that causes</span>
+        <span class="c"># issues with finding the proper parent manager on updates</span>
+        <span class="c"># and it makes resizing of dock panes abysmally slow.</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">NotebookDockable</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">info</span><span class="o">.</span><span class="n">BestSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetBestSize</span><span class="p">())</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">MinSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetEffectiveMinSize</span><span class="p">())</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">IsOpen</span><span class="p">())</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">Caption</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetTitle</span><span class="p">())</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">CloseButton</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetClosable</span><span class="p">())</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">Movable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetMovable</span><span class="p">())</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">Floatable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetFloatable</span><span class="p">())</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">Direction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetDockArea</span><span class="p">())</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetTitleBarOrientation</span><span class="p">()</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">CaptionVisible</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetTitleBarVisible</span><span class="p">(),</span> <span class="n">left</span><span class="p">)</span>
+
+        <span class="n">areas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetAllowedDockAreas</span><span class="p">()</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">TopDockable</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">areas</span> <span class="o">&amp;</span> <span class="n">wx</span><span class="o">.</span><span class="n">TOP</span><span class="p">))</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">RightDockable</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">areas</span> <span class="o">&amp;</span> <span class="n">wx</span><span class="o">.</span><span class="n">RIGHT</span><span class="p">))</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">LeftDockable</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">areas</span> <span class="o">&amp;</span> <span class="n">wx</span><span class="o">.</span><span class="n">LEFT</span><span class="p">))</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">BottomDockable</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">areas</span> <span class="o">&amp;</span> <span class="n">wx</span><span class="o">.</span><span class="n">BOTTOM</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetFloating</span><span class="p">():</span>
+            <span class="n">info</span><span class="o">.</span><span class="n">Float</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">info</span><span class="o">.</span><span class="n">Dock</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">info</span>
+
+    <span class="k">def</span> <span class="nf">GetDockWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the dock widget being managed by this pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wxWindow or None</span>
+<span class="sd">            The wx widget being managed by this dock pane, or None</span>
+<span class="sd">            if no widget is being managed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dock_widget</span>
+
+    <span class="k">def</span> <span class="nf">SetDockWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the dock widget to be managed by the pane.</span>
+
+<span class="sd">        Any old dock widget will be removed, but not destroyed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        widget : wxWindow</span>
+<span class="sd">            The wx widget to use as the dock widget for this pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old_widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dock_widget</span>
+        <span class="k">if</span> <span class="n">old_widget</span><span class="p">:</span>
+            <span class="n">old_widget</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dock_widget</span> <span class="o">=</span> <span class="n">widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GetSizer</span><span class="p">()</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">UpdateSizing</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">UpdateSizing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Trigger a sizing update of the pane manager.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+            <span class="n">pane</span><span class="o">.</span><span class="n">MinSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetBestSize</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">IsOpen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether or not the dock pane is open.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            True if the pane is open, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span>
+
+    <span class="k">def</span> <span class="nf">Open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Open the dock pane in the main window.</span>
+
+<span class="sd">        If the pane is already open, this method is a no-op.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">pane</span><span class="o">.</span><span class="n">IsShown</span><span class="p">():</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">Close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Close the dock pane in the main window.</span>
+
+<span class="sd">        If the pane is already closed, this method is no-op.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pane</span><span class="o">.</span><span class="n">IsShown</span><span class="p">():</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the title for the dock pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : unicode</span>
+<span class="sd">            The title of the dock pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title</span>
+
+    <span class="k">def</span> <span class="nf">SetTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title for the dock pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        title : unicode</span>
+<span class="sd">            The title to use for the dock pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">!=</span> <span class="n">title</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_title</span> <span class="o">=</span> <span class="n">title</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">Caption</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetTitleBarVisible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the title bar visibility state for the dock pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            Whether or not the title bar is visible.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_visible</span>
+
+    <span class="k">def</span> <span class="nf">SetTitleBarVisible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title bar visibility state for the dock pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        visible : bool</span>
+<span class="sd">            Whether or not the title bar should be visible.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_visible</span> <span class="o">!=</span> <span class="n">visible</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_visible</span> <span class="o">=</span> <span class="n">visible</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_orientation</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">CaptionVisible</span><span class="p">(</span><span class="n">visible</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetTitleBarOrientation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the title bar orientation for the dock pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The orientation of the title bar. Either wx.HORIZONTAL</span>
+<span class="sd">            or wx.VERTICAL</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_orientation</span>
+
+    <span class="k">def</span> <span class="nf">SetTitleBarOrientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title bar orientation for the dock pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The orientation of the title bar. Either wx.HORIZONTAL</span>
+<span class="sd">            or wx.VERTICAL</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_orientation</span> <span class="o">!=</span> <span class="n">orientation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_orientation</span> <span class="o">=</span> <span class="n">orientation</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="n">visible</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title_bar_visible</span>
+                <span class="n">left</span> <span class="o">=</span> <span class="n">orientation</span> <span class="o">==</span> <span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">CaptionVisible</span><span class="p">(</span><span class="n">visible</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetClosable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the closable state of the pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            Whether or not the pane is closable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closable</span>
+
+    <span class="k">def</span> <span class="nf">SetClosable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the closable state of the pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        closable : bool</span>
+<span class="sd">            Whether or not the pane is closable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closable</span> <span class="o">!=</span> <span class="n">closable</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_closable</span> <span class="o">=</span> <span class="n">closable</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">CloseButton</span><span class="p">(</span><span class="n">closable</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetMovable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the movable state of the pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            Whether or not the pane is movable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_movable</span>
+
+    <span class="k">def</span> <span class="nf">SetMovable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the movable state of the pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        movable : bool</span>
+<span class="sd">            Whether or not the pane is movable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_movable</span> <span class="o">!=</span> <span class="n">movable</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_movable</span> <span class="o">=</span> <span class="n">movable</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">Movable</span><span class="p">(</span><span class="n">movable</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetFloatable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the floatable state of the pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            Whether or not the pane is floatable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floatable</span>
+
+    <span class="k">def</span> <span class="nf">SetFloatable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floatable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the floatable state of the pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        floatable : bool</span>
+<span class="sd">            Whether or not the pane is floatable.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floatable</span> <span class="o">!=</span> <span class="n">floatable</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_floatable</span> <span class="o">=</span> <span class="n">floatable</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">Floatable</span><span class="p">(</span><span class="n">floatable</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetFloating</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the floating state of the pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            Whether or not the pane is floating.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating</span>
+
+    <span class="k">def</span> <span class="nf">SetFloating</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the floating state of the pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        floating : bool</span>
+<span class="sd">            Whether or not the pane should be floating.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floating</span> <span class="o">!=</span> <span class="n">floating</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_floating</span> <span class="o">=</span> <span class="n">floating</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">floating</span><span class="p">:</span>
+                    <span class="n">pane</span><span class="o">.</span><span class="n">Float</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pane</span><span class="o">.</span><span class="n">Dock</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetDockArea</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the current dock area of the pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The current dock area of the pane. One of the wx enums</span>
+<span class="sd">            LEFT, RIGHT, TOP, or BOTTOM.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dock_area</span>
+
+    <span class="k">def</span> <span class="nf">SetDockArea</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dock_area</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the dock area for the pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dock_area : int</span>
+<span class="sd">            The dock area for the pane. One of the wx enums LEFT,</span>
+<span class="sd">            RIGHT, TOP, or BOTTOM.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dock_area</span> <span class="o">!=</span> <span class="n">dock_area</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dock_area</span> <span class="o">=</span> <span class="n">dock_area</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">Direction</span><span class="p">(</span><span class="n">dock_area</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">GetAllowedDockAreas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the allowed dock areas for the pane.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : int</span>
+<span class="sd">            The allowed dock areas for the pane. One of the wx enums</span>
+<span class="sd">            LEFT, RIGHT, TOP, BOTTOM, or ALL.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_dock_areas</span>
+
+    <span class="k">def</span> <span class="nf">SetAllowedDockAreas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dock_areas</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the allowed dock areas for the pane.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dock_areas : int</span>
+<span class="sd">            The allowed dock areas for the pane. One of the wx enums</span>
+<span class="sd">            LEFT, RIGHT, TOP, BOTTOM, or ALL.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_dock_areas</span> <span class="o">!=</span> <span class="n">dock_areas</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_allowed_dock_areas</span> <span class="o">=</span> <span class="n">dock_areas</span>
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="n">pane</span><span class="p">):</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">TopDockable</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">dock_areas</span> <span class="o">&amp;</span> <span class="n">wx</span><span class="o">.</span><span class="n">TOP</span><span class="p">))</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">RightDockable</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">dock_areas</span> <span class="o">&amp;</span> <span class="n">wx</span><span class="o">.</span><span class="n">RIGHT</span><span class="p">))</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">LeftDockable</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">dock_areas</span> <span class="o">&amp;</span> <span class="n">wx</span><span class="o">.</span><span class="n">LEFT</span><span class="p">))</span>
+                <span class="n">pane</span><span class="o">.</span><span class="n">BottomDockable</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">dock_areas</span> <span class="o">&amp;</span> <span class="n">wx</span><span class="o">.</span><span class="n">BOTTOM</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PaneInfoOperation</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+
+
+<span class="c"># cyclic notification guard flags</span>
+<span class="n">FLOATED_GUARD</span> <span class="o">=</span> <span class="mh">0x1</span>
+
+
+<div class="viewcode-block" id="WxDockPane"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane">[docs]</a><span class="k">class</span> <span class="nc">WxDockPane</span><span class="p">(</span><span class="n">WxWidget</span><span class="p">,</span> <span class="n">ProxyDockPane</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Wx implementation of an Enaml ProxyDockPane.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference tot he widget created by the proxy.</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">wxDockPane</span><span class="p">)</span>
+
+    <span class="c">#: Cyclic notification guard. This a bitfield of multiple guards.</span>
+    <span class="n">_guard</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Initialization API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="WxDockPane.create_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.create_widget">[docs]</a>    <span class="k">def</span> <span class="nf">create_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create the wxDockPane widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">wxDockPane</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.init_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.init_widget">[docs]</a>    <span class="k">def</span> <span class="nf">init_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the dock pane control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxDockPane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_widget</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title_bar_visible</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title_bar_visible</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_title_bar_orientation</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">title_bar_orientation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_closable</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">closable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_movable</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">movable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_floatable</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">floatable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_floating</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_dock_area</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">dock_area</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed_dock_areas</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">allowed_dock_areas</span><span class="p">)</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_DOCK_PANE_FLOATED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_floated</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_DOCK_PANE_DOCKED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_docked</span><span class="p">)</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">EVT_DOCK_PANE_CLOSED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_closed</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.init_layout"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.init_layout">[docs]</a>    <span class="k">def</span> <span class="nf">init_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the layout initialization for the dock pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxDockPane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">init_layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetDockWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dock_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Utility Methods</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxDockPane.dock_widget"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.dock_widget">[docs]</a>    <span class="k">def</span> <span class="nf">dock_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find and return the dock widget child for this widget.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : wxWindow or None</span>
+<span class="sd">            The dock widget defined for this widget, or None if one is</span>
+<span class="sd">            not defined.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">dock_widget</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">widget</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Child Events</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxDockPane.child_added"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child added event for a WxDockPane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxDockPane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetDockWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dock_widget</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.child_removed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the child removed event for a WxDockPane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WxDockPane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">WxContainer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetDockWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dock_widget</span><span class="p">())</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Event Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxDockPane.on_closed"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.on_closed">[docs]</a>    <span class="k">def</span> <span class="nf">on_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for the EVT_DOCK_PANE_CLOSED event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The closed signal is only emitted when the widget is closed</span>
+        <span class="c"># by the user, so there is no need for a loopback guard.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">closed</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.on_floated"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.on_floated">[docs]</a>    <span class="k">def</span> <span class="nf">on_floated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for the EVT_DOCK_PANE_FLOATED event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;</span> <span class="n">FLOATED_GUARD</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">FLOATED_GUARD</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">floating</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">FLOATED_GUARD</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.on_docked"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.on_docked">[docs]</a>    <span class="k">def</span> <span class="nf">on_docked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The event handler for the EVT_DOCK_PANE_AREA event.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">GetDockArea</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;</span> <span class="n">FLOATED_GUARD</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">FLOATED_GUARD</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">floating</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">declaration</span><span class="o">.</span><span class="n">dock_area</span> <span class="o">=</span> <span class="n">_DOCK_AREA_INV_MAP</span><span class="p">[</span><span class="n">area</span><span class="p">]</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">FLOATED_GUARD</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># ProxyDockPane API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="WxDockPane.set_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_visible">[docs]</a>    <span class="k">def</span> <span class="nf">set_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden visibility setter which to opens|closes the</span>
+<span class="sd">        dock pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">visible</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Open</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.ensure_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.ensure_visible">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden visibility setter which to opens|closes the</span>
+<span class="sd">        dock pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.ensure_hidden"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.ensure_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden visibility setter which to opens|closes the</span>
+<span class="sd">        dock pane.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_title"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_title">[docs]</a>    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_title_bar_visible"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_title_bar_visible">[docs]</a>    <span class="k">def</span> <span class="nf">set_title_bar_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title bar visibility of the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetTitleBarVisible</span><span class="p">(</span><span class="n">visible</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_title_bar_orientation"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_title_bar_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">set_title_bar_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the title bar orientation of the underyling widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetTitleBarOrientation</span><span class="p">(</span><span class="n">_ORIENTATION_MAP</span><span class="p">[</span><span class="n">orientation</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_closable"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_closable">[docs]</a>    <span class="k">def</span> <span class="nf">set_closable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the closable state on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetClosable</span><span class="p">(</span><span class="n">closable</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_movable"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_movable">[docs]</a>    <span class="k">def</span> <span class="nf">set_movable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the movable state on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetMovable</span><span class="p">(</span><span class="n">movable</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_floatable"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_floatable">[docs]</a>    <span class="k">def</span> <span class="nf">set_floatable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floatable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the floatable state on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetFloatable</span><span class="p">(</span><span class="n">floatable</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_floating"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_floating">[docs]</a>    <span class="k">def</span> <span class="nf">set_floating</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the floating staet on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;</span> <span class="n">FLOATED_GUARD</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">|=</span> <span class="n">FLOATED_GUARD</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetFloating</span><span class="p">(</span><span class="n">floating</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_guard</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">FLOATED_GUARD</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_dock_area"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_dock_area">[docs]</a>    <span class="k">def</span> <span class="nf">set_dock_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dock_area</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the dock area on the underyling widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetDockArea</span><span class="p">(</span><span class="n">_DOCK_AREA_MAP</span><span class="p">[</span><span class="n">dock_area</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="WxDockPane.set_allowed_dock_areas"><a class="viewcode-back" href="../../../api_ref/widgets/enaml.widgets.dock_pane.DockPane.html#enaml.wx.wx_dock_pane.WxDockPane.set_allowed_dock_areas">[docs]</a>    <span class="k">def</span> <span class="nf">set_allowed_dock_areas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dock_areas</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the allowed dock areas on the underlying widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wx_areas</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">area</span> <span class="ow">in</span> <span class="n">dock_areas</span><span class="p">:</span>
+            <span class="n">wx_areas</span> <span class="o">|=</span> <span class="n">_ALLOWED_AREAS_MAP</span><span class="p">[</span><span class="n">area</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">SetAllowedDockAreas</span><span class="p">(</span><span class="n">wx_areas</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

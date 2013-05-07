@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.fonts &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.fonts</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; A utility module for dealing with CSS3 font strings.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Coerced</span>
+
+<span class="kn">from</span> <span class="nn">.fontext</span> <span class="kn">import</span> <span class="n">Font</span><span class="p">,</span> <span class="n">FontStyle</span><span class="p">,</span> <span class="n">FontCaps</span>
+
+
+<span class="c">#: A mapping from CSS font style keyword to style enum</span>
+<span class="n">_STYLES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;normal&#39;</span><span class="p">:</span> <span class="n">FontStyle</span><span class="o">.</span><span class="n">Normal</span><span class="p">,</span>
+    <span class="s">&#39;italic&#39;</span><span class="p">:</span> <span class="n">FontStyle</span><span class="o">.</span><span class="n">Italic</span><span class="p">,</span>
+    <span class="s">&#39;oblique&#39;</span><span class="p">:</span> <span class="n">FontStyle</span><span class="o">.</span><span class="n">Oblique</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c">#: A mapping from CSS font variant keyword to caps enum</span>
+<span class="n">_VARIANTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;normal&#39;</span><span class="p">:</span> <span class="n">FontCaps</span><span class="o">.</span><span class="n">MixedCase</span><span class="p">,</span>
+    <span class="s">&#39;small-caps&#39;</span><span class="p">:</span>  <span class="n">FontCaps</span><span class="o">.</span><span class="n">SmallCaps</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c">#: A mapping from CSS font weight to integer weight. These values are</span>
+<span class="c">#: pulled from the Qt stylesheet implementation of font parsing. Enaml</span>
+<span class="c">#: does not support the &#39;bolder&#39; and &#39;lighter&#39; keywords.</span>
+<span class="n">_WEIGHTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;100&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="s">&#39;200&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="s">&#39;300&#39;</span><span class="p">:</span> <span class="mi">37</span><span class="p">,</span>
+    <span class="s">&#39;400&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="s">&#39;500&#39;</span><span class="p">:</span> <span class="mi">62</span><span class="p">,</span>
+    <span class="s">&#39;600&#39;</span><span class="p">:</span> <span class="mi">75</span><span class="p">,</span>
+    <span class="s">&#39;700&#39;</span><span class="p">:</span> <span class="mi">87</span><span class="p">,</span>
+    <span class="s">&#39;800&#39;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span>
+    <span class="s">&#39;900&#39;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span>
+    <span class="s">&#39;normal&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="s">&#39;bold&#39;</span><span class="p">:</span> <span class="mi">75</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c">#: A mapping from CSS font size keywords to font point sizes. These are</span>
+<span class="c">#: based on a standard 12 point font size.</span>
+<span class="n">_SIZES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;xx-small&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="s">&#39;x-small&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="s">&#39;small&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+    <span class="s">&#39;medium&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="s">&#39;large&#39;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="s">&#39;x-large&#39;</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span>
+    <span class="s">&#39;xx-large&#39;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="c">#: A mapping from CSS font units to functions which convert to points.</span>
+<span class="n">_UNITS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;in&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">72.0</span><span class="p">),</span>
+    <span class="s">&#39;cm&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">72.0</span> <span class="o">/</span> <span class="mf">2.54</span><span class="p">),</span>
+    <span class="s">&#39;mm&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">72.0</span> <span class="o">/</span> <span class="mf">254.0</span><span class="p">),</span>
+    <span class="s">&#39;pt&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">),</span>
+    <span class="s">&#39;pc&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">12.0</span><span class="p">),</span>
+    <span class="s">&#39;px&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="mf">0.75</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="parse_font"><a class="viewcode-back" href="../../api_ref/enaml.html#enaml.fonts.parse_font">[docs]</a><span class="k">def</span> <span class="nf">parse_font</span><span class="p">(</span><span class="n">font</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Parse a CSS3 shorthand font string into an Enaml Font object.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : Font or None</span>
+<span class="sd">        A font object representing the parsed font. If the string is</span>
+<span class="sd">        invalid, None will be returned.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">quotechar</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">font</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">quotechar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="n">quotechar</span><span class="p">:</span>
+                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">quotechar</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">token</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&#39;&quot;&#39;</span> <span class="ow">or</span> <span class="n">char</span> <span class="o">==</span> <span class="s">&quot;&#39;&quot;</span><span class="p">:</span>
+            <span class="n">quotechar</span> <span class="o">=</span> <span class="n">char</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="s">&#39; </span><span class="se">\t</span><span class="s">&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">token</span><span class="p">:</span>
+                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">token</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+
+    <span class="c"># Failed to close quoted string.</span>
+    <span class="k">if</span> <span class="n">quotechar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">token</span><span class="p">:</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+
+    <span class="n">sizes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">families</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">optionals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">_STYLES</span> <span class="ow">or</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">_VARIANTS</span> <span class="ow">or</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">_WEIGHTS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">families</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="n">optionals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">_SIZES</span> <span class="ow">or</span> <span class="n">token</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="ow">in</span> <span class="n">_UNITS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">families</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">families</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">optionals</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">families</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">style</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">variant</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">optionals</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">opt</span> <span class="o">==</span> <span class="s">&#39;normal&#39;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">elif</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">_STYLES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="n">opt</span>
+        <span class="k">elif</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">_VARIANTS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">variant</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="n">variant</span> <span class="o">=</span> <span class="n">opt</span>
+        <span class="k">elif</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">_WEIGHTS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">opt</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">size</span> <span class="o">=</span> <span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">_SIZES</span><span class="p">:</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">_SIZES</span><span class="p">[</span><span class="n">size</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sizenum</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="n">size</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sizenum</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sizenum</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">_UNITS</span><span class="p">[</span><span class="n">units</span><span class="p">](</span><span class="n">sizenum</span><span class="p">)</span>
+
+    <span class="n">family</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">families</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="n">_WEIGHTS</span><span class="p">[</span><span class="n">weight</span><span class="p">]</span> <span class="k">if</span> <span class="n">weight</span> <span class="k">else</span> <span class="n">_WEIGHTS</span><span class="p">[</span><span class="s">&#39;normal&#39;</span><span class="p">]</span>
+    <span class="n">style</span> <span class="o">=</span> <span class="n">_STYLES</span><span class="p">[</span><span class="n">style</span><span class="p">]</span> <span class="k">if</span> <span class="n">style</span> <span class="k">else</span> <span class="n">_STYLES</span><span class="p">[</span><span class="s">&#39;normal&#39;</span><span class="p">]</span>
+    <span class="n">variant</span> <span class="o">=</span> <span class="n">_VARIANTS</span><span class="p">[</span><span class="n">variant</span><span class="p">]</span> <span class="k">if</span> <span class="n">variant</span> <span class="k">else</span> <span class="n">_VARIANTS</span><span class="p">[</span><span class="s">&#39;normal&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">Font</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">variant</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="coerce_font"><a class="viewcode-back" href="../../api_ref/enaml.html#enaml.fonts.coerce_font">[docs]</a><span class="k">def</span> <span class="nf">coerce_font</span><span class="p">(</span><span class="n">font</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The coercing function for the FontMember.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">font</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">parse_font</span><span class="p">(</span><span class="n">font</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="FontMember"><a class="viewcode-back" href="../../api_ref/enaml.html#enaml.fonts.FontMember">[docs]</a><span class="k">class</span> <span class="nc">FontMember</span><span class="p">(</span><span class="n">Coerced</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An Atom member class which coerces a value to a font.</span>
+
+<span class="sd">    A font member can be set to a Font, a string, or None. A string</span>
+<span class="sd">    font will be parsed into a Font object. If the parsing fails,</span>
+<span class="sd">    the font will be None.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a FontMember.</span>
+
+<span class="sd">        default : Font, string, or None, optional</span>
+<span class="sd">            The default font to use for the member.</span>
+
+<span class="sd">        factory : callable, optional</span>
+<span class="sd">            An optional callable which takes no arguments and returns</span>
+<span class="sd">            the default value for the member. If this is provided, it</span>
+<span class="sd">            will override any value passed as &#39;default&#39;.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        When providing a default font value, prefer using a Font object</span>
+<span class="sd">        directly as this object will be shared among all instances of</span>
+<span class="sd">        the class. Using a font string will result in a new Font object</span>
+<span class="sd">        being created for each class instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">factory</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">factory</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">default</span>
+        <span class="n">kind</span> <span class="o">=</span> <span class="p">(</span><span class="n">Font</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">None</span><span class="p">))</span>
+        <span class="n">sup</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">FontMember</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">sup</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="n">factory</span><span class="p">,</span> <span class="n">coercer</span><span class="o">=</span><span class="n">coerce_font</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,206 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.core.include &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for enaml.core.include</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">ContainerList</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">Bool</span>
+
+<span class="kn">from</span> <span class="nn">.declarative</span> <span class="kn">import</span> <span class="n">Declarative</span><span class="p">,</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">.object</span> <span class="kn">import</span> <span class="n">Object</span>
+
+
+<div class="viewcode-block" id="Include"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.include.Include">[docs]</a><span class="k">class</span> <span class="nc">Include</span><span class="p">(</span><span class="n">Declarative</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An object which dynamically inserts children into its parent.</span>
+
+<span class="sd">    The &#39;Include&#39; object is used to cleanly and easily insert objects</span>
+<span class="sd">    into the children of its parent. &#39;Object&#39; instances assigned to the</span>
+<span class="sd">    &#39;objects&#39; list of the &#39;Include&#39; will be parented with the parent of</span>
+<span class="sd">    the &#39;Include&#39;. Creating an &#39;Include&#39; with no parent is a programming</span>
+<span class="sd">    error.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The list of objects belonging to this Include. Objects in this</span>
+    <span class="c">#: list will be automatically parented with the Include&#39;s parent.</span>
+    <span class="n">objects</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">ContainerList</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">Object</span><span class="p">)))</span>
+
+    <span class="c">#: A boolean flag indicating whether to destroy the old objects that</span>
+    <span class="c">#: are removed from the parent. The default is True.</span>
+    <span class="n">destroy_old</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Include.initialize"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.include.Include.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented initializer.</span>
+
+<span class="sd">        This method will add the include objects to the parent of the</span>
+<span class="sd">        include and ensure that they are initialized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Include</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">insert_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">_observe_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A change handler for the &#39;objects&#39; list of the Include.</span>
+
+<span class="sd">        If the object is initialized objects which are removed will be</span>
+<span class="sd">        unparented and objects which are added will be reparented. Old</span>
+<span class="sd">        objects will be destroyed if the &#39;destroy_old&#39; flag is True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># TODO clean this up</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;update&#39;</span><span class="p">:</span>
+                <span class="n">oldvalue</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;oldvalue&#39;</span><span class="p">]</span>
+                <span class="n">newvalue</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
+                <span class="n">newset</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">newvalue</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">destroy_old</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">oldvalue</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">newset</span><span class="p">:</span>
+                            <span class="n">obj</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">oldvalue</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">newset</span><span class="p">:</span>
+                            <span class="n">obj</span><span class="o">.</span><span class="n">set_parent</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">newvalue</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">insert_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newvalue</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;container&#39;</span><span class="p">:</span>
+                <span class="n">added</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">removed</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">op</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;operation&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;__delitem__&#39;</span><span class="p">:</span>
+                    <span class="n">item</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;item&#39;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">removed</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">removed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;__iadd__&#39;</span><span class="p">:</span>
+                    <span class="n">added</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s">&#39;items&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;__setitem__&#39;</span><span class="p">:</span>
+                    <span class="n">olditem</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;olditem&#39;</span><span class="p">]</span>
+                    <span class="n">newitem</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;newitem&#39;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">olditem</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">removed</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">olditem</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">removed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">olditem</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">newitem</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">added</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">newitem</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">added</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newitem</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;append&#39;</span><span class="p">:</span>
+                    <span class="n">added</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s">&#39;item&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;extend&#39;</span><span class="p">:</span>
+                    <span class="n">added</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s">&#39;items&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;insert&#39;</span><span class="p">:</span>
+                    <span class="n">added</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s">&#39;item&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;pop&#39;</span><span class="p">:</span>
+                    <span class="n">removed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s">&#39;item&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s">&#39;remove&#39;</span><span class="p">:</span>
+                    <span class="n">removed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s">&#39;item&#39;</span><span class="p">])</span>
+                <span class="n">addset</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">added</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">destroy_old</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">removed</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">addset</span><span class="p">:</span>
+                            <span class="n">obj</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">removed</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">addset</span><span class="p">:</span>
+                            <span class="n">obj</span><span class="o">.</span><span class="n">set_parent</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">insert_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

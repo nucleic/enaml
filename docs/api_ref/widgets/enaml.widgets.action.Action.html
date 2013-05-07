@@ -1,0 +1,432 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Action &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../../index.html" />
+    <link rel="up" title="Widgets" href="../enaml.widgets.html" />
+    <link rel="next" title="ActionGroup" href="enaml.widgets.action_group.ActionGroup.html" />
+    <link rel="prev" title="BoundedTime" href="enaml.widgets.bounded_time.BoundedTime.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.action_group.ActionGroup.html" title="ActionGroup"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.bounded_time.BoundedTime.html" title="BoundedTime"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" accesskey="U">Widgets</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="action">
+<h1>Action<a class="headerlink" href="#action" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="enaml.widgets.action.Action">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.action.</tt><tt class="descname">Action</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/action.html#Action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.action.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.toolkit_object.ToolkitObject</span></tt></p>
+<p>A non visible widget used in a ToolBar or Menu.</p>
+<p>An Action represents an actionable item in a ToolBar or a Menu.
+Though an Action itself is a non-visible component, it will be
+rendered in an appropriate fashion for the location where it is
+used.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.text">
+<tt class="descname">text</tt><a class="headerlink" href="#enaml.widgets.action.Action.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>The text label associate with the action.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.tool_tip">
+<tt class="descname">tool_tip</tt><a class="headerlink" href="#enaml.widgets.action.Action.tool_tip" title="Permalink to this definition">¶</a></dt>
+<dd><p>The tool tip text to use for this action. Typically displayed
+as a small label when the user hovers over the action.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.status_tip">
+<tt class="descname">status_tip</tt><a class="headerlink" href="#enaml.widgets.action.Action.status_tip" title="Permalink to this definition">¶</a></dt>
+<dd><p>The text that is displayed in the status bar when the user
+hovers over the action.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.icon">
+<tt class="descname">icon</tt><a class="headerlink" href="#enaml.widgets.action.Action.icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>The icon to use for the Action.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.checkable">
+<tt class="descname">checkable</tt><a class="headerlink" href="#enaml.widgets.action.Action.checkable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the action can be checked.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.checked">
+<tt class="descname">checked</tt><a class="headerlink" href="#enaml.widgets.action.Action.checked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the action is checked. This value only has meaning
+if &#8216;checkable&#8217; is set to True.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.enabled">
+<tt class="descname">enabled</tt><a class="headerlink" href="#enaml.widgets.action.Action.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the item representing the action is enabled.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.visible">
+<tt class="descname">visible</tt><a class="headerlink" href="#enaml.widgets.action.Action.visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the item representing the action is visible.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.separator">
+<tt class="descname">separator</tt><a class="headerlink" href="#enaml.widgets.action.Action.separator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the action should be treated as a separator. If
+this value is True, none of the other values have meaning.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.triggered">
+<tt class="descname">triggered</tt><a class="headerlink" href="#enaml.widgets.action.Action.triggered" title="Permalink to this definition">¶</a></dt>
+<dd><p>An event fired when the action is triggered by user interaction.
+They payload will be the current checked state. This event is
+triggered by the proxy object when the action is triggerd.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.toggled">
+<tt class="descname">toggled</tt><a class="headerlink" href="#enaml.widgets.action.Action.toggled" title="Permalink to this definition">¶</a></dt>
+<dd><p>An event fired when a checkable action changes its checked state.
+The payload will be the current checked state. This event is
+triggerd by the proxy object when the action is toggled.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.action.Action.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.action.Action.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyAction object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="backends">
+<h2>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="qt">
+<h3>Qt<a class="headerlink" href="#qt" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-4e993e54ec2bb16f01fd8d734c4ae8c6ad4c72bb.png" alt="Inheritance diagram of enaml.qt.qt_action.QtAction" usemap="#inheritanceb5746a392f" class="inheritance"/>
+<map id="inheritanceb5746a392f" name="inheritanceb5746a392f">
+<area shape="rect" id="node8" href="#enaml.qt.qt_action.QtAction" title="QtAction" alt="" coords="581,30,653,55"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.qt.qt_action.QtAction">
+<em class="property">class </em><tt class="descclassname">enaml.qt.qt_action.</tt><tt class="descname">QtAction</tt><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">enaml.qt.qt_toolkit_object.QtToolkitObject</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.action.ProxyAction</span></tt></p>
+<p>A Qt implementation of an Enaml ProxyAction.</p>
+<dl class="attribute">
+<dt id="enaml.qt.qt_action.QtAction.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.qt.qt_action.QtAction.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying QAction object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.on_triggered">
+<tt class="descname">on_triggered</tt><big>(</big><em>checked</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.on_triggered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.on_triggered" title="Permalink to this definition">¶</a></dt>
+<dd><p>The signal handler for the &#8216;triggered&#8217; signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.on_toggled">
+<tt class="descname">on_toggled</tt><big>(</big><em>checked</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.on_toggled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.on_toggled" title="Permalink to this definition">¶</a></dt>
+<dd><p>The signal handler for the &#8216;toggled&#8217; signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_text">
+<tt class="descname">set_text</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the text on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_tool_tip">
+<tt class="descname">set_tool_tip</tt><big>(</big><em>tool_tip</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_tool_tip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_tool_tip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the tool tip on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_status_tip">
+<tt class="descname">set_status_tip</tt><big>(</big><em>status_tip</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_status_tip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_status_tip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the status tip on the underyling control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_icon">
+<tt class="descname">set_icon</tt><big>(</big><em>icon</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_icon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the icon for the action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_checkable">
+<tt class="descname">set_checkable</tt><big>(</big><em>checkable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_checkable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_checkable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the checkable state on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_checked">
+<tt class="descname">set_checked</tt><big>(</big><em>checked</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_checked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_checked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the checked state on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_enabled">
+<tt class="descname">set_enabled</tt><big>(</big><em>enabled</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the enabled state on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_visible">
+<tt class="descname">set_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the visible state on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.qt.qt_action.QtAction.set_separator">
+<tt class="descname">set_separator</tt><big>(</big><em>separator</em><big>)</big><a class="reference internal" href="../../_modules/enaml/qt/qt_action.html#QtAction.set_separator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.qt.qt_action.QtAction.set_separator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the separator state on the underlying control.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="wx">
+<h3>Wx<a class="headerlink" href="#wx" title="Permalink to this headline">¶</a></h3>
+<p class="graphviz">
+<img src="../../_images/inheritance-a1f94d6b2d5b4e24d0d061502f9c61f8a78a631f.png" alt="Inheritance diagram of enaml.wx.wx_action.WxAction" usemap="#inheritancefa5c5615f3" class="inheritance"/>
+<map id="inheritancefa5c5615f3" name="inheritancefa5c5615f3">
+<area shape="rect" id="node7" href="#enaml.wx.wx_action.WxAction" title="WxAction" alt="" coords="584,30,659,55"/>
+</map>
+</p>
+<dl class="class">
+<dt id="enaml.wx.wx_action.WxAction">
+<em class="property">class </em><tt class="descclassname">enaml.wx.wx_action.</tt><tt class="descname">WxAction</tt><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">enaml.wx.wx_toolkit_object.WxToolkitObject</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.action.ProxyAction</span></tt></p>
+<p>A Wx implementation of an Enaml ProxyAction.</p>
+<dl class="attribute">
+<dt id="enaml.wx.wx_action.WxAction.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#enaml.wx.wx_action.WxAction.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the widget created by the proxy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.create_widget">
+<tt class="descname">create_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.create_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.create_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the underlying wxAction object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.init_widget">
+<tt class="descname">init_widget</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.init_widget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.init_widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and initialize the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.on_triggered">
+<tt class="descname">on_triggered</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.on_triggered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.on_triggered" title="Permalink to this definition">¶</a></dt>
+<dd><p>The event handler for the EVT_ACTION_TRIGGERED event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.on_toggled">
+<tt class="descname">on_toggled</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.on_toggled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.on_toggled" title="Permalink to this definition">¶</a></dt>
+<dd><p>The event handler for the EVT_ACTION_TOGGLED event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_text">
+<tt class="descname">set_text</tt><big>(</big><em>text</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the text on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_tool_tip">
+<tt class="descname">set_tool_tip</tt><big>(</big><em>tool_tip</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_tool_tip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_tool_tip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the tool tip on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_status_tip">
+<tt class="descname">set_status_tip</tt><big>(</big><em>status_tip</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_status_tip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_status_tip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the status tip on the underyling control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_icon">
+<tt class="descname">set_icon</tt><big>(</big><em>icon</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_icon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the icon for the action.</p>
+<p>This is not supported on Wx.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_checkable">
+<tt class="descname">set_checkable</tt><big>(</big><em>checkable</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_checkable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_checkable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the checkable state on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_checked">
+<tt class="descname">set_checked</tt><big>(</big><em>checked</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_checked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_checked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the checked state on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_enabled">
+<tt class="descname">set_enabled</tt><big>(</big><em>enabled</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_enabled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the enabled state on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_visible">
+<tt class="descname">set_visible</tt><big>(</big><em>visible</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_visible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the visible state on the underlying control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.wx.wx_action.WxAction.set_separator">
+<tt class="descname">set_separator</tt><big>(</big><em>separator</em><big>)</big><a class="reference internal" href="../../_modules/enaml/wx/wx_action.html#WxAction.set_separator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.wx.wx_action.WxAction.set_separator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the separator state on the underlying control.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Action</a><ul>
+<li><a class="reference internal" href="#backends">Backends</a><ul>
+<li><a class="reference internal" href="#qt">Qt</a></li>
+<li><a class="reference internal" href="#wx">Wx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enaml.widgets.bounded_time.BoundedTime.html"
+                        title="previous chapter">BoundedTime</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="enaml.widgets.action_group.ActionGroup.html"
+                        title="next chapter">ActionGroup</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api_ref/widgets/enaml.widgets.action.Action.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.action_group.ActionGroup.html" title="ActionGroup"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enaml.widgets.bounded_time.BoundedTime.html" title="BoundedTime"
+             >previous</a> |</li>
+        <li><a href="../../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="../index.html" >Enaml API Reference</a> &raquo;</li>
+          <li><a href="../enaml.widgets.html" >Widgets</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>FindReplace Example &mdash; enaml 0.7.6 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="enaml 0.7.6 documentation" href="../index.html" />
+    <link rel="up" title="Examples Gallery" href="example.html" />
+    <link rel="next" title="Fluid Example" href="ex_fluid.html" />
+    <link rel="prev" title="ButtonRing Example" href="ex_button_ring.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_fluid.html" title="Fluid Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ex_button_ring.html" title="ButtonRing Example"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" accesskey="U">Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="findreplace-example">
+<h1>FindReplace Example<a class="headerlink" href="#findreplace-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/find_replace.enaml"><tt class="xref download docutils literal"><span class="pre">find_replace.enaml</span></tt></a></p>
+<div class="highlight-python"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example demonstrating the layout for a find-replace dialog.
+
+To make the buttons look nice, weak constraints are set requesting that
+the adjacent buttons have the same width after satisfying all of the
+other constraints. The left border of the Fields should be aligned. The
+width taken up by the buttons is controlled by the lower row since the
+PushButton labels "Replace" and "Replace &amp; Find" take up more space than
+"Find" and "Find Next". The lower row's buttons are not equal widths,
+because that would take up a bunch of extra space, but the top row's
+buttons do expand equally to take up the available space.
+
+"""
+from enaml.layout.api import hbox, vbox, spacer, align
+from enaml.widgets.api import Window, Container, PushButton, Field
+
+
+enamldef Main(Window):
+    title = "Find &amp; Replace"
+    Container:
+        hug_height = 'strong'
+        constraints = [
+            vbox(
+                hbox(find, find_next, find_field),
+                hbox(replace, replace_and_find, replace_field),
+            ),
+
+            # Setup the alignment of the left of the two fields
+            align('left', find_field, replace_field),
+
+            # Setup the vertical aligment of each row of controls
+            align('v_center', find, find_next, find_field),
+            align('v_center', replace, replace_and_find, replace_field),
+
+            # Setup the weak width constraints of each control
+            (find.width == find_next.width) | 'weak',
+            (replace.width == replace_and_find.width) | 'weak',
+        ]
+        PushButton: find:
+            text = "Find"
+        PushButton: find_next:
+            text = "Find Next"
+        PushButton: replace:
+            text = "Replace"
+        PushButton: replace_and_find:
+            text = "Replace &amp;&amp; Find"
+        Field: find_field:
+            pass
+        Field: replace_field:
+            pass
+</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run find_replace.enaml</pre>
+</div>
+<img alt="../_images/find_replace.png" src="../_images/find_replace.png" />
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ex_button_ring.html"
+                        title="previous chapter">ButtonRing Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ex_fluid.html"
+                        title="next chapter">Fluid Example</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/instructional/ex_find_replace.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ex_fluid.html" title="Fluid Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ex_button_ring.html" title="ButtonRing Example"
+             >previous</a> |</li>
+        <li><a href="../index.html">enaml v0.7.6</a> &raquo;</li>
+          <li><a href="index.html" >Getting Started</a> &raquo;</li>
+          <li><a href="example.html" >Examples Gallery</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Nucleic Development Team.
+      <br>
+      Last updated on May 07, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
