@@ -5,18 +5,60 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QRect, QSize, QMargins, pyqtSignal
-from PyQt4.QtGui import QWidget, QFrame, QPainter, QIcon
+from PyQt4.QtCore import QSize, QMargins, pyqtSignal
+from PyQt4.QtGui import QWidget, QFrame, QHBoxLayout, QIcon
 
-from .q_dock_title_bar_buttons import QDockTitleBarButtons
+from .q_icon_button import QIconButton
+from .q_icon_widget import QIconWidget
+from .q_text_label import QTextLabel
 
 
 class IDockTitleBar(QWidget):
     """ An interface class for defining a title bar.
 
     """
+    #: A signal emitted when the maximize button is clicked.
+    maximizeButtonClicked = pyqtSignal()
+
+    #: A signal emitted when the restore button is clicked.
+    restoreButtonClicked = pyqtSignal()
+
     #: A signal emitted when the close button is clicked.
     closeButtonClicked = pyqtSignal()
+
+    #: Show no buttons in the title bar.
+    NoButtons = 0x0
+
+    #: Show the maximize button in the title bar.
+    MaximizeButton = 0x1
+
+    #: Show the restore button in the title bar.
+    RestoreButton = 0x2
+
+    #: Show the close button in the title bar.
+    CloseButton = 0x4
+
+    def buttons(self):
+        """ Get the buttons to show in the title bar.
+
+        Returns
+        -------
+        result : int
+            An or'd combination of the buttons to show.
+
+        """
+        raise NotImplementedError
+
+    def setButtons(self, buttons):
+        """ Set the buttons to show in the title bar.
+
+        Parameters
+        ----------
+        buttons : int
+            An or'd combination of the buttons to show.
+
+        """
+        raise NotImplementedError
 
     def title(self):
         """ Get the title string of the title bar.
@@ -92,26 +134,14 @@ class QDockTitleBar(QFrame, IDockTitleBar):
     This class serves as the default title bar for a QDockItem.
 
     """
+    #: A signal emitted when the maximize button is clicked.
+    maximizeButtonClicked = pyqtSignal()
+
+    #: A signal emitted when the restore button is clicked.
+    restoreButtonClicked = pyqtSignal()
+
     #: A signal emitted when the close button is clicked.
     closeButtonClicked = pyqtSignal()
-
-    #: The minimum height of the title bar.
-    MIN_HEIGHT = 19
-
-    #: The horizontal gap between the icon and the title text.
-    ICON_HGAP = 3
-
-    #: The vertical padding to use when auto-computing an icon size.
-    ICON_PAD = 4
-
-    #: The vertical margin when no icon is present.
-    VMARGIN_NO_ICON = 2
-
-    #: The vertical margin when an icon is present.
-    VMARGIN_ICON = 4
-
-    #: The horizontal margin.
-    HMARGIN = 4
 
     def __init__(self, parent=None):
         """ Initialize a QDockTitleBar.
@@ -123,58 +153,92 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         """
         super(QDockTitleBar, self).__init__(parent)
-        self._size_hint = QSize()
-        self._cicon_size = QSize()
-        self._title = u''
-        self._icon = QIcon()
-        self._icon_size = QSize()
-        self._buttons = QDockTitleBarButtons(self)
-        self._buttons.closeButtonClicked.connect(self.closeButtonClicked)
-        hmargin = self.HMARGIN
-        vmargin = self.VMARGIN_NO_ICON
-        self.setContentsMargins(QMargins(hmargin, vmargin, hmargin, vmargin))
+        self._buttons = self.CloseButton | self.MaximizeButton
 
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    @staticmethod
-    def _computeElidedText(text):
-        """ Compute the minimum elided text for the tab title.
+        title_icon = self._title_icon = QIconWidget(self)
+        title_icon.setVisible(False)
 
-        """
-        # Based on QTabBar::computeElidedText
-        if len(text) > 3:
-            text = text[:2] + '...'
-        return text
+        title_label = self._title_label = QTextLabel(self)
+        title_label.setText('foo' * 12)
 
-    def _invalidate(self):
-        """ Invalidate the computed cached data.
+        max_icon = QIcon()
+        max_icon.addFile(':dock_images/maxbtn_s.png')
+        max_icon.addFile(':dock_images/maxbtn_h.png', mode=QIcon.Active)
+        max_icon.addFile(':dock_images/maxbtn_p.png', mode=QIcon.Selected)
 
-        """
-        self._size_hint = QSize()
-        self._cicon_size = QSize()
+        rstr_icon = QIcon()
+        rstr_icon.addFile(':dock_images/rstrbtn_s.png')
+        rstr_icon.addFile(':dock_images/rstrbtn_h.png', mode=QIcon.Active)
+        rstr_icon.addFile(':dock_images/rstrbtn_p.png', mode=QIcon.Selected)
 
-    def _effectiveIconSize(self):
-        """ Get the actual icon size for the title bar.
+        close_icon = QIcon()
+        close_icon.addFile(':dock_images/closebtn_s.png')
+        close_icon.addFile(':dock_images/closebtn_h.png', mode=QIcon.Active)
+        close_icon.addFile(':dock_images/closebtn_p.png', mode=QIcon.Selected)
 
-        This will return the user specified size if valid, or a size
-        computed from the text height of the title bar.
+        btn_size = QSize(14, 14)
 
-        """
-        size = self._icon_size
-        if size.isValid():
-            return size
-        size = self._cicon_size
-        if size.isValid():
-            return size
-        pad = 2 * self.ICON_PAD
-        height = self.fontMetrics().tightBoundingRect('M').height() + pad
-        size = self._cicon_size = QSize(height, height)
-        return size
+        max_button = self._max_button = QIconButton(self)
+        max_button.setIcon(max_icon)
+        max_button.setIconSize(btn_size)
+        max_button.setVisible(self._buttons & self.MaximizeButton)
+
+        restore_button = self._restore_button = QIconButton(self)
+        restore_button.setIcon(rstr_icon)
+        restore_button.setIconSize(btn_size)
+        restore_button.setVisible(self._buttons & self.RestoreButton)
+
+        close_button = self._close_button = QIconButton(self)
+        close_button.setIcon(close_icon)
+        close_button.setIconSize(btn_size)
+        close_button.setVisible(self._buttons & self.CloseButton)
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        layout.setSpacing(1)
+        layout.addWidget(title_icon)
+        layout.addSpacing(0)
+        layout.addWidget(title_label, 1)
+        layout.addSpacing(4)
+        layout.addWidget(max_button)
+        layout.addWidget(restore_button)
+        layout.addWidget(close_button)
+
+        self.setContentsMargins(QMargins(5, 2, 5, 2))
+        self.setLayout(layout)
+
+        max_button.clicked.connect(self.maximizeButtonClicked)
+        restore_button.clicked.connect(self.restoreButtonClicked)
+        close_button.clicked.connect(self.closeButtonClicked)
 
     #--------------------------------------------------------------------------
     # IDockItemTitleBar API
     #--------------------------------------------------------------------------
+    def buttons(self):
+        """ Get the buttons to show in the title bar.
+
+        Returns
+        -------
+        result : int
+            An or'd combination of the buttons to show.
+
+        """
+        return self._buttons
+
+    def setButtons(self, buttons):
+        """ Set the buttons to show in the title bar.
+
+        Parameters
+        ----------
+        buttons : int
+            An or'd combination of the buttons to show.
+
+        """
+        self._buttons = buttons
+        self._max_button.setVisible(buttons & self.MaximizeButton)
+        self._restore_button.setVisible(buttons & self.RestoreButton)
+        self._close_button.setVisible(buttons & self.CloseButton)
+
     def title(self):
         """ Get the title string of the title bar.
 
@@ -184,7 +248,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
             The unicode title string for the title bar.
 
         """
-        return self._title
+        return self._title_label.text()
 
     def setTitle(self, title):
         """ Set the title string of the title bar.
@@ -195,10 +259,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
             The unicode string to use for the title bar.
 
         """
-        self._invalidate()
-        self._title = title
-        self.updateGeometry()
-        self.update()
+        self._title_label.setText(title)
 
     def icon(self):
         """ Get the icon for the title bar.
@@ -209,7 +270,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
             The icon set for the title bar.
 
         """
-        return self._icon
+        return self._title_icon.icon()
 
     def setIcon(self, icon):
         """ Set the icon for the title bar.
@@ -220,13 +281,13 @@ class QDockTitleBar(QFrame, IDockTitleBar):
             The icon to use for the title bar.
 
         """
-        self._invalidate()
-        self._icon = icon
-        hmargin = self.HMARGIN
-        vmargin = self.VMARGIN_NO_ICON if icon.isNull() else self.VMARGIN_ICON
-        self.setContentsMargins(QMargins(hmargin, vmargin, hmargin, vmargin))
-        self.updateGeometry()
-        self.update()
+        visible, spacing = (False, 0) if icon.isNull() else (True, 4)
+        title_icon = self._title_icon
+        title_icon.setIcon(icon)
+        title_icon.setVisible(visible)
+        layout = self.layout()
+        layout.takeAt(1)
+        layout.insertSpacing(1, spacing)
 
     def iconSize(self):
         """ Get the icon size for the title bar.
@@ -237,7 +298,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
             The size to use for the icons in the title bar.
 
         """
-        return self._icon_size
+        return self._title_icon.iconSize()
 
     def setIconSize(self, size):
         """ Set the icon size for the title bar.
@@ -249,80 +310,4 @@ class QDockTitleBar(QFrame, IDockTitleBar):
             this size will not be scaled up.
 
         """
-        self._invalidate()
-        self._icon_size = size
-        self.updateGeometry()
-        self.update()
-
-    #--------------------------------------------------------------------------
-    # Reimplementations
-    #--------------------------------------------------------------------------
-    def resizeEvent(self, event):
-        """ Handle the resize event for the title bar.
-
-        This handler will position the title bar buttons.
-
-        """
-        super(QDockTitleBar, self).resizeEvent(event)
-        buttons = self._buttons
-        size = buttons.minimumSizeHint()
-        x = self.width() - size.width() - self.contentsMargins().right()
-        y = (self.height() - size.height()) / 2
-        rect = QRect(x, y, size.width(), size.height())
-        buttons.setGeometry(rect)
-
-    def paintEvent(self, event):
-        """ Handle the paint event for the title bar.
-
-        This paint handler draws the title bar text and title buttons.
-
-        """
-        super(QDockTitleBar, self).paintEvent(event)
-        painter = QPainter(self)
-        rect = self.contentsRect()
-        icon = self._icon
-        if not icon.isNull():
-            pm = icon.pixmap(self._effectiveIconSize())
-            x = rect.left()
-            y = rect.top() + (rect.height() - pm.height()) / 2
-            painter.drawPixmap(x, y, pm)
-            rect.setLeft(x + pm.width() + self.ICON_HGAP + 1)
-        metrics = self.fontMetrics()
-        width_adjust = self._buttons.width() + self.ICON_HGAP
-        rect = rect.adjusted(0, 0, -width_adjust, 0)
-        text = metrics.elidedText(self._title, Qt.ElideRight, rect.width())
-        painter.drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, text)
-
-    def sizeHint(self):
-        """ Get the size hint for the title bar.
-
-        The title bar's size hint is equivalent to its minimumSizeHint.
-
-        """
-        return self.minimumSizeHint()
-
-    def minimumSizeHint(self):
-        """ Get the minimum size hint for the title bar.
-
-        The minimum size hint allows for enough space for the minimum
-        elided text, the icon, and the contents margins.
-
-        """
-        size = self._size_hint
-        if size.isValid():
-            return size
-        metrics = self.fontMetrics()
-        mgns = self.contentsMargins()
-        text = self._computeElidedText(self._title)
-        bsize = self._buttons.minimumSizeHint()
-        bwidth = bsize.width() + self.ICON_HGAP
-        width = mgns.left() + metrics.width(text) + bwidth + mgns.right()
-        height = mgns.top() + mgns.bottom()
-        if self._icon.isNull():
-            height += max(metrics.height(), bsize.height())
-        else:
-            icon_size = self._effectiveIconSize()
-            width += icon_size.width() + self.ICON_HGAP
-            height += max(metrics.height(), icon_size.height(), bsize.height())
-        size = self._size_hint = QSize(width, max(self.MIN_HEIGHT, height))
-        return size
+        self._title_icon.setIconSize(size)

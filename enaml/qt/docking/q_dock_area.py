@@ -206,13 +206,17 @@ class QDockArea(QFrame):
             }
 
             QDockTitleBar {
-                color: rgb(250, 251, 254);
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                             stop:0 rgb(77, 96, 130),
                             stop:0.5 rgb(69, 89, 124),
                             stop:1.0 rgb(61, 82, 119));
                 border-top-left-radius: 3px;
                 border-top-right-radius: 3px;
+            }
+
+            QDockTitleBar > QTextLabel {
+                color: rgb(250, 251, 254);
+                font: 9pt "Segoe UI";
             }
             """ )
 

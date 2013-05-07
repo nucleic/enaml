@@ -23,8 +23,14 @@
      <file>dock_images/winbtns_stdhr.png</file>
      <file>dock_images/winbtns_stdpl.png</file>
      <file>dock_images/winbtns_stdpr.png</file>
-     <file>dock_images/titlebtn_s.png</file>
-     <file>dock_images/titlebtn_h.png</file>
-     <file>dock_images/titlebtn_p.png</file>
+     <file>dock_images/closebtn_s.png</file>
+     <file>dock_images/closebtn_h.png</file>
+     <file>dock_images/closebtn_p.png</file>
+     <file>dock_images/maxbtn_s.png</file>
+     <file>dock_images/maxbtn_h.png</file>
+     <file>dock_images/maxbtn_p.png</file>
+     <file>dock_images/rstrbtn_s.png</file>
+     <file>dock_images/rstrbtn_h.png</file>
+     <file>dock_images/rstrbtn_p.png</file>
  </qresource>
  </RCC>
