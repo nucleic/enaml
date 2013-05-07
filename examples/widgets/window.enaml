@@ -1,0 +1,16 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" The 'Hello World' of Gui examples.
+
+This example shows how to create a bare bones window with a title. For
+this simple example, the `Window` has no children.
+
+"""
+from enaml.widgets.api import Window
+
+
+enamldef Main(Window):
+    title = 'Hello World!'
+

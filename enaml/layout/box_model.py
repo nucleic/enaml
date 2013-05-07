@@ -28,7 +28,7 @@ class BoxModel(object):
 
         Parameters
         ----------
-        owner : str
+        owner : string
             A string which uniquely identifies the owner of this box
             model.
 

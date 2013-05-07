@@ -1,0 +1,18 @@
+Change Log
+==========
+
+Version 0.2dev (current)
+------------------------
+
+- Draft version of the documentation
+- Removed depedancy to docscrape.py
+- Refactor_doc is now a valid sphinx extention
+
+26/10/2011
+
+Early Versions
+--------------
+
+An early copy of the refactor_doc` can be found in the enaml documentation
+source directory. The module is named ``enamldoc`` and uses the Reader
+class that is in the docscrape.py file of the numpydoc package.

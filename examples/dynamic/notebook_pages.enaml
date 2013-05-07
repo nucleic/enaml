@@ -1,0 +1,87 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of using dynamic notebook pages.
+
+This example demonstrates using the `Include` component to dynamically
+insert and remove pages from a notebook.
+
+This example requires Enaml version >= 0.4.0
+
+"""
+from enaml.layout.api import vbox, hbox, align, spacer
+from enaml.widgets.api import (
+    Window, Notebook, Page, Container, PushButton, Field, Html, CheckBox
+)
+from enaml.core.api import Include
+
+enamldef ContentPage(Page):
+    attr n: int
+    closable = False
+    Container:
+        constraints = [
+            vbox(
+                hbox(pb, cb, fld),
+                html,
+            ),
+            align('v_center', pb, cb, fld),
+        ]
+        PushButton: pb:
+            text = 'Button'
+        CheckBox: cb:
+            text = 'Activate'
+        Field: fld:
+            pass
+        Html: html:
+            source = '<h1><center>Dynamic Page %d</center></h1>' % n
+
+
+enamldef Main(Window): main:
+    attr counter = 0
+    Container:
+        constraints = [
+            vbox(
+                hbox(show_st, hide_st, spacer, ins_dyn, rem_dyn),
+                nbook,
+            ),
+        ]
+        PushButton: show_st:
+            text = 'Show Static Pages'
+            clicked ::
+                static1.show()
+                static2.show()
+        PushButton: hide_st:
+            text = 'Hide Static Pages'
+            clicked ::
+                static2.hide()
+                static1.hide()
+        PushButton: ins_dyn:
+            text = 'Insert Dynamic Page'
+            clicked ::
+                title = 'Dynamic Page %s' % main.counter
+                page = ContentPage(n=main.counter, title=title)
+                dyn_pages.objects.insert(0, page)
+                main.counter += 1
+        PushButton: rem_dyn:
+            text = 'Remove Dynamic Page'
+            clicked ::
+                if dyn_pages.objects:
+                    dyn_pages.objects.pop()
+        Notebook: nbook:
+            tab_style = 'document'
+            Page: static1:
+                title = 'Static Page1'
+                Container:
+                    padding = 0
+                    Html:
+                        source = '<h1><center>Static Page 1</center></h1>'
+            Page: static2:
+                title = 'Static Page2'
+                Container:
+                    padding = 0
+                    Html:
+                        source = '<h1><center>Static Page 2</center></h1>'
+            Include: dyn_pages:
+                pass
+
