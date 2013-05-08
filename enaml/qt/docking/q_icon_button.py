@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import sys
+
 from PyQt4.QtGui import QAbstractButton, QPainter, QIcon
 
 
@@ -56,6 +58,8 @@ class QIconButton(QAbstractButton):
         """
         self._has_mouse = True
         super(QIconButton, self).leaveEvent(event)
+        if sys.platform == 'darwin':
+            self.repaint()
 
     def leaveEvent(self, event):
         """ Handle the leave event for the button.
@@ -63,6 +67,8 @@ class QIconButton(QAbstractButton):
         """
         self._has_mouse = False
         super(QIconButton, self).leaveEvent(event)
+        if sys.platform == 'darwin':
+            self.repaint()
 
     def paintEvent(self, event):
         """ Handle the paint event for the button.
