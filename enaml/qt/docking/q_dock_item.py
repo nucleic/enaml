@@ -5,10 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QRect, QSize
+from PyQt4.QtCore import QRect, QSize, pyqtSignal
 from PyQt4.QtGui import QFrame, QLayout
 
-from .q_dock_container import QDockContainer
 from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_title_bar import QDockTitleBar
 
@@ -223,6 +222,18 @@ class QDockItem(QFrame):
     """ A QFrame subclass which acts as an item QDockArea.
 
     """
+    #: A signal emitted when the maximize button is clicked. This
+    #: signal is proxied from the current dock item title bar.
+    maximizeButtonClicked = pyqtSignal()
+
+    #: A signal emitted when the restore button is clicked. This
+    #: signal is proxied from the current dock item title bar.
+    restoreButtonClicked = pyqtSignal()
+
+    #: A signal emitted when the close button is clicked. This
+    #: signal is proxied from the current dock item title bar.
+    closeButtonClicked = pyqtSignal()
+
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
 
@@ -363,10 +374,14 @@ class QDockItem(QFrame):
         layout = self.layout()
         old = layout.titleBarWidget()
         if old is not None:
-            old.closeButtonClicked.disconnect(self.close)
+            old.maximizeButtonClicked.disconnect(self.maximizeButtonClicked)
+            old.restoreButtonClicked.disconnect(self.restoreButtonClicked)
+            old.closeButtonClicked.disconnect(self.closeButtonClicked)
         title_bar = title_bar or QDockTitleBar()
-        title_bar.closeButtonClicked.connect(self.close)
-        self.layout().setTitleBarWidget(title_bar)
+        title_bar.maximizeButtonClicked.connect(self.maximizeButtonClicked)
+        title_bar.restoreButtonClicked.connect(self.restoreButtonClicked)
+        title_bar.closeButtonClicked.connect(self.closeButtonClicked)
+        layout.setTitleBarWidget(title_bar)
 
     def dockWidget(self):
         """ Get the dock widget for this dock item.
@@ -389,14 +404,3 @@ class QDockItem(QFrame):
 
         """
         self.layout().setDockWidget(widget)
-
-    def closeEvent(self, event):
-        """ Handle the close event for the dock item.
-
-        """
-        event.accept()
-        parent = self.parent()
-        if isinstance(parent, QDockContainer):
-            manager = parent.manager()
-            if manager is not None:
-                manager.remove_dock_item(self)
