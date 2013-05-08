@@ -166,8 +166,6 @@ class QDockArea(QFrame):
             QDockArea {
                 padding: 5px;
                 background: rgb(49, 67, 98);
-                background-image: url(:dock_images/background.png);
-                background-repeat: repeat-xy;
             }
 
             QDockSplitterHandle {
@@ -184,17 +182,6 @@ class QDockArea(QFrame):
 
             QDockItem {
                 background: rgb(237, 237, 237);
-                border-top-left-radius: 5px;
-                border-top-right-radius: 5px;
-                border-bottom-left-radius: 3px;
-                border-bottom-right-radius: 3px;
-            }
-
-            QDockTabWidget QDockItem {
-                border-top-left-radius: 0px;
-                border-top-right-radius: 0px;
-                border-bottom-left-radius: 0px;
-                border-bottom-right-radius: 0px;
             }
 
             QDockTabWidget[tabPosition="3"]::tab-bar {
@@ -210,8 +197,6 @@ class QDockArea(QFrame):
                             stop:0 rgb(77, 96, 130),
                             stop:0.5 rgb(69, 89, 124),
                             stop:1.0 rgb(61, 82, 119));
-                border-top-left-radius: 3px;
-                border-top-right-radius: 3px;
             }
 
             QDockTitleBar > QTextLabel {
