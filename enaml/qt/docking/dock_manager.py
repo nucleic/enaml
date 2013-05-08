@@ -137,7 +137,7 @@ class DockManager(Atom):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def add_dock_item(self, item):
+    def add_item(self, item):
         """ Add a dock item to the dock manager.
 
         If the item has already been added, this is a no-op.
@@ -157,7 +157,7 @@ class DockManager(Atom):
         container.setDockItem(item)
         self.dock_frames.append(container)
 
-    def remove_dock_item(self, item):
+    def remove_item(self, item):
         """ Remove a dock item from the dock manager.
 
         If the item has not been added to the manager, this is a no-op.
@@ -171,7 +171,6 @@ class DockManager(Atom):
         """
         if item not in self.dock_items:
             return
-        self.dock_items.remove(item)
         container = self._find_container(item.objectName())
         if container is None:
             return
@@ -179,7 +178,7 @@ class DockManager(Atom):
             container.unplug()
         container.destroy()
 
-    def clear_dock_items(self):
+    def clear_items(self):
         """ Clear the dock items from the dock manager.
 
         This method will hide and unparent all of the dock items that
@@ -189,7 +188,7 @@ class DockManager(Atom):
 
         """
         for item in list(self.dock_items):
-            self.remove_dock_item(item)
+            self.remove_item(item)
         for frame in self.dock_frames[:]:
             frame.destroy()
         del self.dock_frames
@@ -239,7 +238,7 @@ class DockManager(Atom):
                     container.show()
             else:
                 widget = build_layout(child, containers)
-                window = QDockWindow(self, self.dock_area)
+                window = QDockWindow.create(self, self.dock_area)
                 self.dock_frames.append(window)
                 win_area = window.dockArea()
                 win_area.setLayoutWidget(widget)
@@ -335,7 +334,7 @@ class DockManager(Atom):
             if isinstance(frame, QDockWindow):
                 frame.destroy()
         elif isinstance(target, QDockContainer):
-            window = QDockWindow(self, self.dock_area)
+            window = QDockWindow.create(self, self.dock_area)
             self.dock_frames.append(window)
             window.setGeometry(target.geometry())
             win_area = window.dockArea()
