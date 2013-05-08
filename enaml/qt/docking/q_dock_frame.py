@@ -181,28 +181,6 @@ class QDockFrame(QFrame):
             self.raiseFrame()
         return super(QDockFrame, self).event(event)
 
-    def resizeEvent(self, event):
-        """ Handle the resize event for the dock frame.
-
-        """
-        if self.isWindow() and not self.isMaximized():
-            w = self.width()
-            h = self.height()
-            region = QRegion(0, 0, w, h)
-            # top left
-            region -= QRegion(0, 0, 3, 1)
-            region -= QRegion(0, 0, 1, 3)
-            # top right
-            region -= QRegion(w - 3, 0, 3, 1)
-            region -= QRegion(w - 1, 0, 1, 3)
-            # bottom left
-            region -= QRegion(0, h - 3, 1, 3)
-            region -= QRegion(0, h - 1, 3, 1)
-            # bottom right
-            region -= QRegion(w - 1, h - 3, 1, 3)
-            region -= QRegion(w - 3, h - 1, 3, 1)
-            self.setMask(region)
-
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the dock frame.
 
