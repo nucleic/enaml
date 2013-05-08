@@ -23,7 +23,7 @@ class QTextLabel(QFrame):
 
         """
         super(QTextLabel, self).__init__(parent)
-        self._size_hint = QSize()
+        self._text_size = QSize()
         self._text = u''
 
     #--------------------------------------------------------------------------
@@ -62,7 +62,7 @@ class QTextLabel(QFrame):
             The unicode string to use for the text label.
 
         """
-        self._size_hint = QSize()
+        self._text_size = QSize()
         self._text = text
         self.updateGeometry()
         self.update()
@@ -80,12 +80,14 @@ class QTextLabel(QFrame):
         """ Get the minimum size hint for the text label.
 
         """
-        size = self._size_hint
-        if size.isValid():
-            return size
-        metrics = self.fontMetrics()
-        text = self._computeElidedText(self._text)
-        return QSize(metrics.width(text), metrics.height())
+        base = self._text_size
+        if not base.isValid():
+            metrics = self.fontMetrics()
+            text = self._computeElidedText(self._text)
+            base = QSize(metrics.width(text), metrics.height())
+            self._text_size = base
+        left, top, right, bottom = self.getContentsMargins()
+        return base + QSize(left + right, top + bottom)
 
     def paintEvent(self, event):
         """ Handle the paint event for the title bar.
@@ -94,7 +96,7 @@ class QTextLabel(QFrame):
 
         """
         super(QTextLabel, self).paintEvent(event)
-        rect = self.rect()
+        rect = self.contentsRect()
         metrics = self.fontMetrics()
         text = metrics.elidedText(self._text, Qt.ElideRight, rect.width())
         QPainter(self).drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, text)

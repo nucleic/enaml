@@ -90,9 +90,10 @@ class QIconWidget(QFrame):
 
         """
         size = self._icon_size
-        if size.isValid():
-            return size
-        return QSize(16, 16)
+        if not size.isValid():
+            size = QSize(16, 16)
+        left, top, right, bottom = self.getContentsMargins()
+        return size + QSize(left + right, top + bottom)
 
     def paintEvent(self, event):
         """ Handle the paint event for the widget.
@@ -102,4 +103,4 @@ class QIconWidget(QFrame):
         icon = self._icon
         if icon.isNull():
             return
-        icon.paint(QPainter(self), self.rect())
+        icon.paint(QPainter(self), self.contentsRect())

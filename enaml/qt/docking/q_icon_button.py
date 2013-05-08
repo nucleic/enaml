@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 import sys
 
+from PyQt4.QtCore import QSize
 from PyQt4.QtGui import QAbstractButton, QPainter, QIcon
 
 
@@ -36,7 +37,8 @@ class QIconButton(QAbstractButton):
         """ Get the minimum size hint for the icon button.
 
         """
-        return self.iconSize()
+        left, top, right, bottom = self.getContentsMargins()
+        return self.iconSize() + QSize(left + right, top + bottom)
 
     def mousePressEvent(self, event):
         """ Handle the mouse move event for the button.
@@ -83,4 +85,4 @@ class QIconButton(QAbstractButton):
             mode = QIcon.Active
         else:
             mode = QIcon.Normal
-        icon.paint(QPainter(self), self.rect(), mode=mode)
+        icon.paint(QPainter(self), self.contentsRect(), mode=mode)
