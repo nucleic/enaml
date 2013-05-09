@@ -37,7 +37,7 @@ class StandardTracer(CodeTracer):
         obj : Atom
             The atom object owning the attribute.
 
-        name : str
+        name : string
             The member name to for which to bind a handler.
 
         """

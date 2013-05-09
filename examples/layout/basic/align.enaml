@@ -1,0 +1,45 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example which demonstrates the use of the `align` layout helper.
+
+In this example, we use the `align` layout helper to align various
+constraints of the children of a container. The layout consists of 
+a Field pinned to the top of the Container. Below the Field are two
+PushButtons each of which have their `left` boundary aligned. The 
+top PushButton is then aligned with the `h_center` of the Field.
+
+"""
+from enaml.layout.api import align
+from enaml.widgets.api import Window, Container, Field, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            # Align the left edges of both PushButtons.
+            align('left', pb1, pb2),
+
+            # Align the top button with the center of the field.
+            align('h_center', fld, pb1),
+
+            # Pin the Field to the top of the Container. This is 
+            # orthogonal to the use of `align` for this example,
+            # but is needed to have a well constrained system.
+            contents_top == fld.top, contents_left == fld.left, 
+            contents_right == fld.right,
+
+            # Setup the vertical constraints for the widgets. This is
+            # orthogonal to the use of `align` for this example, but
+            # is needed to have a well constrained system.
+            fld.bottom + 10 == pb1.top, pb1.bottom + 10 == pb2.top,
+            pb2.bottom <= contents_bottom,
+        ]
+        Field: fld:
+            pass
+        PushButton: pb1:
+            text = 'Long Name Foo'
+        PushButton: pb2:
+            text = 'Bar'
+

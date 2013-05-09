@@ -1,0 +1,44 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example which demonstrates the manual specification of a `vbox`.
+
+This example demonstrates how one would manually define the constraints
+for a `vbox` style layout. In fact, the `vbox` layout helper generates
+the primitive constraints in a fashion very similar to this example.
+The intent of this example is to demonstrate that all of the layout
+helper functions can be distilled down to a list of primitive
+constraints.
+
+"""
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        hug_height = 'strong'
+        constraints = [
+            # Vertical Constraints
+            contents_top == pb1.top,
+            pb1.bottom + 10 == pb2.top,
+            pb2.bottom + 10 == pb3.top,
+            pb3.bottom == contents_bottom,
+            # Horizontal Constraints
+            (contents_left == pb1.left) | 'medium',
+            (contents_left == pb2.left) | 'medium',
+            (contents_left == pb3.left) | 'medium',
+            (pb1.right == contents_right) | 'medium',
+            (pb2.right == contents_right) | 'medium',
+            (pb3.right == contents_right) | 'medium',
+        ]
+        PushButton: pb1:
+            text = 'Spam'
+        PushButton: pb2:
+            text = 'Long Name Foo'
+        PushButton: pb3:
+            text = 'Bar'
+

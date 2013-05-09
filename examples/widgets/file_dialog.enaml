@@ -1,0 +1,50 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+from os.path import abspath
+
+from enaml.layout.api import hbox, align
+from enaml.widgets.api import (
+    Container,
+    Field,
+    FileDialog,
+    Label,
+    PushButton,
+    Window,
+    )
+
+def get_file_chooser_callback(obj, attr):
+
+    def file_chooser_callback(dlg):
+        if dlg.result == 'accepted':
+            setattr(obj, attr, dlg.path)
+
+    return file_chooser_callback
+
+enamldef Main(Window): window:
+    attr path : unicode = u""
+
+    title = 'File Chooser'
+
+    Container:
+        constraints = [
+            hbox(lbl, fld, pb),
+            align('v_center', lbl, fld, pb),
+            pb.height == fld.height,
+        ]
+        Label: lbl:
+            text = 'File'
+        Field: fld:
+            read_only = True
+            text << window.path
+        PushButton: pb:
+            text = 'Browse'
+            clicked ::
+                dlg = FileDialog(
+                    window,
+                    title='Choose File',
+                    mode='open_file',
+                    path=abspath(__file__),
+                    callback=get_file_chooser_callback(window, 'path'),
+                ).open()

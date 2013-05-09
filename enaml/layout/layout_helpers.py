@@ -336,7 +336,7 @@ class BoxHelper(DeferredConstraints):
 
         Parameters
         ----------
-        name : str
+        name : string
             A string name to prepend to a unique owner id generated
             for this box helper, to aid in debugging.
 
@@ -380,7 +380,7 @@ class LinearBoxHelper(BoxHelper):
 
         Parameters
         ----------
-        orientation : str
+        orientation : string
             The layout orientation of the box. This must be either
             'horizontal' or 'vertical'.
 

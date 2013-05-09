@@ -1,0 +1,29 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `Slider` widget.
+
+This example demonstrates the use of a simple `Slider` control which is
+used to compute the log of a range of numbers.
+
+"""
+import math
+from enaml.widgets.api import Window, Container, Label, Field, Slider
+from enaml.layout.api import hbox, vbox
+
+
+enamldef Main(Window):
+    title = 'Slider Example'
+    Container:
+        constraints = [vbox(hbox(lbl, fld), slider)]
+        Label: lbl:
+            text = 'Log Value'
+        Field: fld:
+            text << u'{}'.format(math.log(slider.value))
+            read_only = True
+        Slider: slider:
+            tick_interval = 50
+            maximum = 1000
+            minimum = 1
+

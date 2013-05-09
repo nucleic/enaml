@@ -128,7 +128,7 @@ class FileDialog(ToolkitObject):
 
         Parameters
         ----------
-        result : str
+        result : string
             The result of the dialog; either 'accepted' or 'rejected'.
 
         paths : list

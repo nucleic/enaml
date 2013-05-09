@@ -1,0 +1,46 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of using Looper to generate widgets from an iterable.
+
+"""
+from enaml.core.api import Looper
+from enaml.layout.api import vbox, hbox, align
+from enaml.widgets.api import (
+    Window, Container, Label, Field, PushButton, ScrollArea, Slider, Html,
+)
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            vbox(
+                hbox(label, field),
+                button,
+                scroller,
+            ),
+            align('v_center', label, field),
+        ]
+        Label: label:
+            text = 'Items'
+        Field: field:
+            text = 'foo bar baz spam ham'
+        PushButton: button:
+            text = 'Print Items'
+            clicked ::
+                for item in looper.items:
+                    print item
+        ScrollArea: scroller:
+            Container:
+                Looper: looper:
+                    iterable << field.text.split()
+                    Field:
+                        placeholder = 'Field %d: %s' % (loop_index, loop_item)
+                    PushButton:
+                        text = 'pb %s' % loop_index
+                    Slider:
+                        value :: print 'Slider %d changed' % loop_index
+                    Html:
+                        source << '<h1><center>%s</center></h1>' % loop_item
+

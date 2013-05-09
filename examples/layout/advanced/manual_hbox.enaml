@@ -1,0 +1,41 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example which demonstrates the manual specification of an `hbox`.
+
+This example demonstrates how one would manually define the constraints
+for an `hbox` style layout. In fact, the `hbox` layout helper generates
+the primitive constraints in a fashion very similar to this example.
+The intent of this example is to demonstrate that all of the layout
+helper functions can be distilled down to a list of primitive
+constraints.
+
+"""
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        hug_height = 'strong'
+        constraints = [
+            # Horizontal Constraints
+            contents_left == pb1.left,
+            pb1.right + 10 == pb2.left,
+            pb2.right + 10 == pb3.left,
+            pb3.right == contents_right,
+            # Vertical Constraints
+            (contents_top == pb1.top) | 'medium',
+            (contents_top == pb2.top) | 'medium',
+            (contents_top == pb3.top) | 'medium',
+            (pb1.bottom == contents_bottom) | 'medium',
+            (pb2.bottom == contents_bottom) | 'medium',
+            (pb3.bottom == contents_bottom) | 'medium',
+        ]
+        PushButton: pb1:
+            text = 'Spam'
+        PushButton: pb2:
+            text = 'Long Name Foo'
+        PushButton: pb3:
+            text = 'Bar'
+

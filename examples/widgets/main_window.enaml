@@ -1,0 +1,166 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `MainWindow` widget.
+
+This example demonstrates the use of the `MainWindow` widget. This is a
+subclass of the `Window` widget which adds support for dock panes, tool
+bars and a menu bar. The children of a `MainWindow` can be defined in
+any order. Like `Window`, a `MainWindow` has at most one central widget
+which is an instance of `Container`. A `MainWindow` can have any number
+of `DockPane` and `ToolBar` children, and at most one `MenuBar`.
+
+Support for a `StatusBar` will be added in the future.
+
+Implementation Notes:
+    
+    The main window facilities in Wx are very weak. If these features
+    are required for a particular application, strongly prefer the Qt 
+    backend over Wx (this is generally a good life-rule).
+
+"""
+from enaml.layout.api import vbox
+from enaml.widgets.api import (
+    MainWindow, ToolBar, DockPane, MenuBar, Menu, Action, ActionGroup,
+    StatusBar, StatusItem, Container, Html, PushButton, Label,
+)
+
+
+enamldef MyMenuBar(MenuBar):
+    Menu:
+        title = '&File'
+        Action:
+            text = 'New File\tCtrl+N'
+            triggered :: print 'New File triggered'
+        Action:
+            text = 'Open File\tCtrl+O'
+            triggered :: print 'Open File triggered'
+        Action:
+            text = 'Open Folder...'
+            triggered :: print 'Open Folder triggered'
+    Menu:
+        title = '&Edit'
+        Action:
+            text = 'Undo\tCtrl+Z'
+            triggered :: print 'Undo triggered'
+        Action:
+            text = 'Redo\tCtrl+R'
+            triggered :: print 'Redo triggered'
+        Menu:
+            title = 'Undo Selection'
+            Action:
+                text = 'Undo Insert\tCtrl+U'
+                triggered :: print 'Undo Insert triggered'
+            Action:
+                text = 'Redo Insert\tCtrl+Shift+U'
+                enabled = False
+                triggered :: print 'Redo Insert triggered'
+        Action:
+            separator = True
+        Action:
+            text = 'Cut\tCtrl+X'
+            triggered :: print "Cut triggered"
+        Action:
+            text = 'Copy\tCtrl+C'
+            triggered :: print 'Copy triggered'
+        Action:
+            text = 'Paste\tCtrl+V'
+            triggered :: print 'Paste triggered'
+    Menu:
+        title = '&View'
+        ActionGroup:
+            Action:
+                checkable = True
+                text = 'Center'
+                toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+            Action:
+                checkable = True
+                text = 'Left'
+                toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+            Action:
+                checkable = True
+                text = 'Right'
+                toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+            Action:
+                checkable = True
+                text = 'Justify'
+                toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+
+
+enamldef MyStatusBar(StatusBar):
+    StatusItem:
+        Label:
+            text = "Status"
+
+
+enamldef MyToolBar(ToolBar):
+    Action:
+        text = 'Button'
+        tool_tip = text
+    ActionGroup:
+        Action:
+            separator = True
+        Action:
+            checkable = True
+            text = 'Exclusive'
+            triggered :: print 'triggered'
+            toggled :: print 'toggled'
+        Action:
+            checkable = True
+            text = 'ToolBar'
+        Action:
+            checkable = True
+            text = 'Buttons'
+        Action:
+            separator = True
+    Action:
+        checkable = True
+        text = 'Checkable'
+    Action:
+        checkable = True
+        text = 'ToolBar'
+    Action:
+        checkable = True
+        text = 'Buttons'
+
+
+enamldef MyDockPane(DockPane):
+    title << 'Dock Area %s | %s' % (dock_area, 'floating' if floating else 'docked')
+    Container:
+        PushButton:
+            text = 'Foo'
+        PushButton:
+            text = 'Bar'
+        PushButton:
+            text = 'Baz'
+
+
+enamldef Main(MainWindow):
+    MyMenuBar:
+        pass
+    MyStatusBar:
+        pass
+    MyToolBar:
+        pass
+    MyToolBar:
+        dock_area = 'left'
+    MyToolBar:
+        dock_area = 'bottom'
+    MyDockPane:
+        dock_area = 'left'
+        allowed_dock_areas = ['left', 'right']
+    MyDockPane:
+        dock_area = 'right'
+    MyDockPane:
+        dock_area = 'right'
+        movable = False
+    Container:
+        constraints = [vbox(html, tbar, spacing=0)]
+        Html: html:
+            source = '<h1><center>Hello World!</center></h1>'
+        MyToolBar: tbar:
+            pass
+    MyDockPane:
+        dock_area = 'bottom'
+        floating = True

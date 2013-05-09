@@ -29,7 +29,7 @@ class AbstractScopeListener(object):
         obj : object
             The object which owns the attribute.
 
-        name : str
+        name : string
             The name of the attribute loaded.
 
         value : object
@@ -94,7 +94,7 @@ class DynamicScope(object):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name of the item to retrieve from the scope.
 
         Raises
@@ -134,7 +134,7 @@ class DynamicScope(object):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name of the item to set in the scope.
 
         value : object
@@ -253,7 +253,7 @@ class Nonlocals(object):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name of the item to retrieve from the nonlocals.
 
         Raises
@@ -280,7 +280,7 @@ class Nonlocals(object):
 
         Parameters
         ----------
-        name : str
+        name : string
             The name of the item to set in the nonlocals.
 
         value : object

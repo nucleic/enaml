@@ -1,0 +1,62 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team.
+#  All rights reserved.
+#------------------------------------------------------------------------------
+""" An example of the `GroupBox` widget.
+
+A `GroupBox` is a simple subclass of `Container` which draws itself with
+an optional bounding box and title.
+
+"""
+from enaml.layout.api import vbox, hbox, spacer, align
+from enaml.widgets.api import (
+    Window, Container, GroupBox, Form, Label, Field, CheckBox, ComboBox,
+    MultilineField, PushButton,
+)
+
+
+enamldef Main(Window):
+    title = "Group Boxes"
+    Container:
+        constraints = [
+            vbox(
+                grp_box,
+                hbox(push, spacer, title_check, flat_check, combo_box),
+                multiline,
+            ),
+            align('v_center', title_check, flat_check, combo_box),
+        ]
+        GroupBox: grp_box:
+            title << "Personal Details" if title_check.checked else ""
+            title_align << combo_box.items[combo_box.index]
+            hug_height = 'strong'
+            Form:
+                Label:
+                    text = "First name:"
+                Field:
+                    pass
+                Label:
+                    text = "Last name:"
+                Field:
+                    pass
+                Label:
+                    text = "Home phone:"
+                Field:
+                    pass
+        CheckBox: title_check:
+            text = "Show Title"
+            checked = True
+        CheckBox: flat_check:
+            text = "Flat"
+            checked := grp_box.flat
+        PushButton: push:
+            text = "Submit"
+            clicked ::
+                print 'Submit'
+                print multiline.text
+        ComboBox: combo_box:
+            index = 0
+            items = ['left', 'center', 'right']
+        MultilineField: multiline:
+            pass
+            
