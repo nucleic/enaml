@@ -200,7 +200,6 @@ class QDockWindow(QDockFrame):
         will be called automatically by a dock window destructor.
 
         """
-        window._manager = None
         if len(FREE_WINDOWS) < FREE_WINDOWS_MAX:
             FREE_WINDOWS.append(window)
         else:
@@ -264,11 +263,8 @@ class QDockWindow(QDockFrame):
 
         """
         self.close()
-        self.setParent(None)
         self.setDockArea(None)
-        manager = self.manager()
-        if manager is not None:
-            manager.dock_frames.remove(self)
+        super(QDockWindow, self).destroy()
         QDockWindow.free(self)
 
     def titleBarGeometry(self):
@@ -334,11 +330,11 @@ class QDockWindow(QDockFrame):
         """ Handle a close event for the window.
 
         """
+        # The dock manager installs a filter on the dock area which
+        # will destroy the window once all containers are removed.
+        # The delayed import avoids a circular import condition.
         area = self.dockArea()
         if area is not None:
-            # The dock manager installs a filter on the dock area which
-            # will destroy this window once all containers are removed.
-            # The delayed import avoids a circular import condition.
             from .layout_handling import iter_containers
             for container in list(iter_containers(area)):
                 container.close()
