@@ -320,8 +320,11 @@ class QDockContainer(QDockFrame):
         """ Handle the close event for the dock container.
 
         """
-        # TODO notify the dock item of the closure.
-        self.destroy()
+        item = self.dockItem()
+        if item is None or item.close():
+            self.destroy()
+        else:
+            event.ignore()
 
     def titleBarMousePressEvent(self, event):
         """ Handle a mouse press event on the title bar.
