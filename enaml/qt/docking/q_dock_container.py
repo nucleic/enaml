@@ -43,6 +43,9 @@ class QDockContainer(QDockFrame):
         #: Whether or not the dock item is being dragged.
         dragging = Bool(False)
 
+        #: Whether the container is being destroyed.
+        destroying = Bool(False)
+
     def __init__(self, manager, parent=None):
         """ Initialize a QDockContainer.
 
@@ -63,12 +66,49 @@ class QDockContainer(QDockFrame):
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
+    def showMaximized(self):
+        """ Handle a show maximized request for the window.
+
+        """
+        if self.isWindow():
+            super(QDockContainer, self).showMaximized()
+            bar = self.dockItem().titleBarWidget()
+            buttons = bar.buttons()
+            buttons |= bar.RestoreButton
+            buttons &= ~bar.MaximizeButton
+            bar.setButtons(buttons)
+
+    def showNormal(self):
+        """ Handle a show normal request for the window.
+
+        """
+        if self.isWindow():
+            super(QDockContainer, self).showNormal()
+            bar = self.dockItem().titleBarWidget()
+            buttons = bar.buttons()
+            buttons |= bar.MaximizeButton
+            buttons &= ~bar.RestoreButton
+            bar.setButtons(buttons)
+
     def destroy(self):
         """ Destroy the dock container and release its references.
 
         """
+        state = self.frame_state
+        if state.destroying:
+            return
+        state.destroying = True
+        if self.isWindow():
+            self.close()
+        else:
+            self.unplug()
+        manager = self.manager()
+        if manager is not None:
+            manager.dock_items.discard(self.dockItem())
         self.setDockItem(None)
         super(QDockContainer, self).destroy()
+        self.deleteLater()
+        state.destroying = False
 
     def titleBarGeometry(self):
         """ Get the geometry rect for the title bar.
@@ -122,7 +162,17 @@ class QDockContainer(QDockFrame):
             The dock item to use in the container.
 
         """
-        self.layout().setWidget(dock_item)
+        layout = self.layout()
+        old = layout.getWidget()
+        if old is not None:
+            old.maximizeButtonClicked.disconnect(self.showMaximized)
+            old.restoreButtonClicked.disconnect(self.showNormal)
+            old.closeButtonClicked.disconnect(self.close)
+        if dock_item is not None:
+            dock_item.maximizeButtonClicked.connect(self.showMaximized)
+            dock_item.restoreButtonClicked.connect(self.showNormal)
+            dock_item.closeButtonClicked.connect(self.close)
+        layout.setWidget(dock_item)
         name = dock_item.objectName() if dock_item is not None else u''
         self.setObjectName(name)
 
@@ -200,7 +250,6 @@ class QDockContainer(QDockFrame):
         self.setParent(self.manager().dock_area, flags)
         self.setContentsMargins(QMargins(0, 0, 0, 0))
         self.unsetCursor()
-        self.clearMask()
 
     def unplug(self):
         """ Unplug the container from its containing dock area.
@@ -267,6 +316,13 @@ class QDockContainer(QDockFrame):
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
+    def closeEvent(self, event):
+        """ Handle the close event for the dock container.
+
+        """
+        # TODO notify the dock item of the closure.
+        self.destroy()
+
     def titleBarMousePressEvent(self, event):
         """ Handle a mouse press event on the title bar.
 
@@ -301,6 +357,19 @@ class QDockContainer(QDockFrame):
         global_pos = event.globalPos()
         if state.dragging:
             if self.isWindow():
+                if self.isMaximized():
+                    coeff = state.press_pos.x() / float(self.width())
+                    self.showNormal()
+                    margins = self.contentsMargins()
+                    button_width = 50  # general approximation
+                    max_x = self.width() - margins.right() - button_width
+                    test_x = int(coeff * self.width())
+                    new_x = max(margins.left() + 5, min(test_x, max_x))
+                    title_bar = self.dockItem().titleBarWidget()
+                    title_height = title_bar.height() / 2
+                    mid_title = title_bar.mapTo(self, QPoint(0, title_height))
+                    state.press_pos.setX(new_x)
+                    state.press_pos.setY(mid_title.y())
                 self.move(global_pos - state.press_pos)
                 self.manager().frame_moved(self, global_pos)
             return True
