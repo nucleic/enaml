@@ -218,6 +218,26 @@ class QDockContainer(QDockFrame):
         if item is not None:
             item.titleBarWidget().hide()
 
+    def showControlButtons(self):
+        """ Show the maximize button in the title bar.
+
+        """
+        title_bar = self.dockItem().titleBarWidget()
+        buttons = title_bar.buttons()
+        buttons |= title_bar.MaximizeButton
+        buttons &= ~title_bar.RestoreButton
+        title_bar.setButtons(buttons)
+
+    def hideControlButtons(self):
+        """ Hide the maximize button in the title bar.
+
+        """
+        title_bar = self.dockItem().titleBarWidget()
+        buttons = title_bar.buttons()
+        buttons &= ~title_bar.MaximizeButton
+        buttons &= ~title_bar.RestoreButton
+        title_bar.setButtons(buttons)
+
     def reset(self):
         """ Reset the container to the initial pre-docked state.
 
@@ -235,6 +255,7 @@ class QDockContainer(QDockFrame):
 
         """
         self.hide()
+        self.showControlButtons()
         self.setAttribute(Qt.WA_Hover, True)
         flags = Qt.Tool | Qt.FramelessWindowHint
         self.setParent(self.manager().dock_area, flags)
@@ -245,6 +266,7 @@ class QDockContainer(QDockFrame):
 
         """
         self.hide()
+        self.hideControlButtons()
         self.setAttribute(Qt.WA_Hover, False)
         flags = Qt.Widget
         self.setParent(self.manager().dock_area, flags)
