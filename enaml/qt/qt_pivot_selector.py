@@ -100,7 +100,9 @@ class QPivotSelector(QWidget):
 
         """
         self._items = items
-        #self._selected = len(items) - 1 - self._offset
+        if items:
+            self._selected = len(items) - 1 - self._offset
+            self.currentIndexChanged.emit(self._selected)
 
         # Compute and cache the font widths
         fm = self.fontMetrics()
