@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QSize
+from PyQt4.QtCore import Qt, QSize, pyqtSignal
 from PyQt4.QtGui import QIcon
 
 from atom.api import Typed
@@ -17,12 +17,29 @@ from .q_resource_helpers import get_cached_qicon
 from .qt_widget import QtWidget
 
 
+class QCustomDockItem(QDockItem):
+    """ A custom dock item which converts a close event into a signal.
+
+    """
+    #: A signal emitted if the close event is accepted. It it emitted
+    #: before the close event handler returns.
+    closed = pyqtSignal()
+
+    def closeEvent(self, event):
+        """ Handle the close event for the dock item.
+
+        """
+        super(QCustomDockItem, self).closeEvent(event)
+        if event.isAccepted():
+            self.closed.emit()
+
+
 class QtDockItem(QtWidget, ProxyDockItem):
     """ A Qt implementation of an Enaml ProxyDockItem.
 
     """
     #: A reference to the widget created by the proxy.
-    widget = Typed(QDockItem)
+    widget = Typed(QCustomDockItem)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -31,7 +48,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         """ Create the underlying QDockItem widget.
 
         """
-        self.widget = QDockItem(self.parent_widget())
+        self.widget = QCustomDockItem(self.parent_widget())
 
     def init_widget(self):
         """ Initialize the state of the underlying widget.
@@ -52,7 +69,11 @@ class QtDockItem(QtWidget, ProxyDockItem):
 
         """
         super(QtDockItem, self).init_layout()
-        self.widget.setDockWidget(self.dock_widget())
+        widget = self.widget
+        widget.setDockWidget(self.dock_widget())
+        # Use a queued connection so the dock manager can finish
+        # closing the dock item before the signal handler runs.
+        widget.closed.connect(self.on_closed, Qt.QueuedConnection)
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -64,6 +85,17 @@ class QtDockItem(QtWidget, ProxyDockItem):
         d = self.declaration.dock_widget()
         if d is not None:
             return d.proxy.widget
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def on_closed(self):
+        """ Handle the closed signal from the dock item.
+
+        """
+        d = self.declaration
+        if d is not None:
+            d._item_closed()
 
     #--------------------------------------------------------------------------
     # Child Events

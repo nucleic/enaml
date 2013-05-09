@@ -5,8 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Coerced, Unicode, Range, Typed, ForwardTyped, observe
+from atom.api import (
+    Coerced, Event, Unicode, Range, Typed, ForwardTyped, observe
+)
 
+from enaml.application import deferred_call
 from enaml.core.declarative import d_
 from enaml.icon import Icon
 from enaml.layout.geometry import Size
@@ -54,6 +57,10 @@ class DockItem(Widget):
     #: The stretch factor for the item when docked in a splitter.
     stretch = d_(Range(low=0, value=1))
 
+    #: An event emitted when the dock item is closed. The item will be
+    #: destroyed after this event has completed.
+    closed = d_(Event(), writable=False)
+
     #: A reference to the ProxyDockItem object.
     proxy = Typed(ProxyDockItem)
 
@@ -77,3 +84,14 @@ class DockItem(Widget):
         """
         # The superclass implementation is sufficient.
         super(DockItem, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _item_closed(self):
+        """ Called by the proxy when the toolkit item is closed.
+
+        """
+        # TODO allow the user to veto the close request
+        self.closed()
+        deferred_call(self.destroy)
