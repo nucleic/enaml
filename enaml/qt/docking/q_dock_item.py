@@ -5,254 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QRect, QSize, QMargins
-from PyQt4.QtGui import QWidget, QFrame, QPainter, QLayout, QIcon
+from PyQt4.QtCore import QRect, QSize, pyqtSignal
+from PyQt4.QtGui import QFrame, QLayout
 
-
-class IDockItemTitleBar(QWidget):
-    """ An interface class for defining a dock title bar.
-
-    """
-    def title(self):
-        """ Get the title string of the title bar.
-
-        Returns
-        -------
-        result : unicode
-            The unicode title string for the title bar.
-
-        """
-        raise NotImplementedError
-
-    def setTitle(self, title):
-        """ Set the title string of the title bar.
-
-        Parameters
-        ----------
-        title : unicode
-            The unicode string to use for the title bar.
-
-        """
-        raise NotImplementedError
-
-
-class QDockItemTitleBar(QFrame, IDockItemTitleBar):
-    """ A concrete implementation of IDockItemTitleBar.
-
-    This class serves as the default title bar for a QDockItem.
-
-    """
-    #: The minimum height of the title bar.
-    MIN_HEIGHT = 19
-
-    #: The horizontal gap between the icon and the title text.
-    ICON_HGAP = 3
-
-    #: The vertical padding to use when auto-computing an icon size.
-    ICON_PAD = 4
-
-    #: The vertical margin when no icon is present.
-    VMARGIN_NO_ICON = 2
-
-    #: The vertical margin when an icon is present.
-    VMARGIN_ICON = 4
-
-    #: The horizontal margin.
-    HMARGIN = 4
-
-    def __init__(self, parent=None):
-        """ Initialize a QDockItemTitleBar.
-
-        Parameters
-        ----------
-        parent : QWidget or None
-            The parent of the title bar.
-
-        """
-        super(QDockItemTitleBar, self).__init__(parent)
-        self._size_hint = QSize()
-        self._cicon_size = QSize()
-        self._title = u''
-        self._icon = QIcon()
-        self._icon_size = QSize()
-        hmargin = self.HMARGIN
-        vmargin = self.VMARGIN_NO_ICON
-        self.setContentsMargins(QMargins(hmargin, vmargin, hmargin, vmargin))
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    @staticmethod
-    def _computeElidedText(text):
-        """ Compute the minimum elided text for the tab title.
-
-        """
-        # Based on QTabBar::computeElidedText
-        if len(text) > 3:
-            text = text[:2] + '...'
-        return text
-
-    def _invalidate(self):
-        """ Invalidate the computed cached data.
-
-        """
-        self._size_hint = QSize()
-        self._cicon_size = QSize()
-
-    def _effectiveIconSize(self):
-        """ Get the actual icon size for the title bar.
-
-        This will return the user specified size if valid, or a size
-        computed from the text height of the title bar.
-
-        """
-        size = self._icon_size
-        if size.isValid():
-            return size
-        size = self._cicon_size
-        if size.isValid():
-            return size
-        pad = 2 * self.ICON_PAD
-        height = self.fontMetrics().tightBoundingRect('M').height() + pad
-        size = self._cicon_size = QSize(height, height)
-        return size
-
-    #--------------------------------------------------------------------------
-    # IDockItemTitleBar API
-    #--------------------------------------------------------------------------
-    def title(self):
-        """ Get the title string of the title bar.
-
-        Returns
-        -------
-        result : unicode
-            The unicode title string for the title bar.
-
-        """
-        return self._title
-
-    def setTitle(self, title):
-        """ Set the title string of the title bar.
-
-        Parameters
-        ----------
-        title : unicode
-            The unicode string to use for the title bar.
-
-        """
-        self._invalidate()
-        self._title = title
-        self.updateGeometry()
-        self.update()
-
-    def icon(self):
-        """ Get the icon for the title bar.
-
-        Returns
-        -------
-        result : QIcon
-            The icon set for the title bar.
-
-        """
-        return self._icon
-
-    def setIcon(self, icon):
-        """ Set the icon for the title bar.
-
-        Parameters
-        ----------
-        icon : QIcon
-            The icon to use for the title bar.
-
-        """
-        self._invalidate()
-        self._icon = icon
-        hmargin = self.HMARGIN
-        vmargin = self.VMARGIN_NO_ICON if icon.isNull() else self.VMARGIN_ICON
-        self.setContentsMargins(QMargins(hmargin, vmargin, hmargin, vmargin))
-        self.updateGeometry()
-        self.update()
-
-    def iconSize(self):
-        """ Get the icon size for the title bar.
-
-        Returns
-        -------
-        result : QSize
-            The size to use for the icons in the title bar.
-
-        """
-        return self._icon_size
-
-    def setIconSize(self, size):
-        """ Set the icon size for the title bar.
-
-        Parameters
-        ----------
-        icon : QSize
-            The icon size to use for the title bar. Icons smaller than
-            this size will not be scaled up.
-
-        """
-        self._invalidate()
-        self._icon_size = size
-        self.updateGeometry()
-        self.update()
-
-    #--------------------------------------------------------------------------
-    # Reimplementations
-    #--------------------------------------------------------------------------
-    def paintEvent(self, event):
-        """ Handle the paint event for the title bar.
-
-        This paint handler draws the title bar text and title buttons.
-
-        """
-        super(QDockItemTitleBar, self).paintEvent(event)
-        painter = QPainter(self)
-        rect = self.contentsRect()
-        icon = self._icon
-        if not icon.isNull():
-            pm = icon.pixmap(self._effectiveIconSize())
-            x = rect.left()
-            y = rect.top() + (rect.height() - pm.height()) / 2
-            painter.drawPixmap(x, y, pm)
-            rect.setLeft(x + pm.width() + self.ICON_HGAP + 1)
-        metrics = self.fontMetrics()
-        text = metrics.elidedText(self._title, Qt.ElideRight, rect.width())
-        painter.drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, text)
-
-    def sizeHint(self):
-        """ Get the size hint for the title bar.
-
-        The title bar's size hint is equivalent to its minimumSizeHint.
-
-        """
-        return self.minimumSizeHint()
-
-    def minimumSizeHint(self):
-        """ Get the minimum size hint for the title bar.
-
-        The minimum size hint allows for enough space for the minimum
-        elided text, the icon, and the contents margins.
-
-        """
-        size = self._size_hint
-        if size.isValid():
-            return size
-        metrics = self.fontMetrics()
-        margins = self.contentsMargins()
-        text = self._computeElidedText(self._title)
-        width = metrics.width(text) + margins.left() + margins.right()
-        height = margins.top() + margins.bottom()
-        if self._icon.isNull():
-            height += metrics.height()
-        else:
-            icon_size = self._effectiveIconSize()
-            width += icon_size.width() + self.ICON_HGAP
-            height += max(metrics.height(), icon_size.height())
-        size = self._size_hint = QSize(width, max(self.MIN_HEIGHT, height))
-        return size
+from .q_dock_tab_widget import QDockTabWidget
+from .q_dock_title_bar import QDockTitleBar
 
 
 class QDockItemLayout(QLayout):
@@ -350,10 +107,10 @@ class QDockItemLayout(QLayout):
         """ Invalidate the layout.
 
         """
+        super(QDockItemLayout, self).invalidate()
         self._size_hint = QSize()
         self._min_size = QSize()
         self._max_size = QSize()
-        super(QDockItemLayout, self).invalidate()
 
     def setGeometry(self, rect):
         """ Set the geometry for the items in the layout.
@@ -465,6 +222,18 @@ class QDockItem(QFrame):
     """ A QFrame subclass which acts as an item QDockArea.
 
     """
+    #: A signal emitted when the maximize button is clicked. This
+    #: signal is proxied from the current dock item title bar.
+    maximizeButtonClicked = pyqtSignal()
+
+    #: A signal emitted when the restore button is clicked. This
+    #: signal is proxied from the current dock item title bar.
+    restoreButtonClicked = pyqtSignal()
+
+    #: A signal emitted when the close button is clicked. This
+    #: signal is proxied from the current dock item title bar.
+    closeButtonClicked = pyqtSignal()
+
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
 
@@ -479,8 +248,7 @@ class QDockItem(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
-        self.setTitleBarWidget(QDockItemTitleBar())
-        self.handler = None  # set by the dock manager
+        self.setTitleBarWidget(QDockTitleBar())
 
     #--------------------------------------------------------------------------
     # Public API
@@ -506,9 +274,16 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setTitle(title)
-        handler = self.handler
-        if handler is not None:
-            handler.title_changed()
+        # A concession to practicality: walk the ancestry and update
+        # the tab title if this item lives in a dock tab.
+        container = self.parent()
+        if container is not None:
+            stacked = container.parent()
+            if stacked is not None:
+                tabs = stacked.parent()
+                if isinstance(tabs, QDockTabWidget):
+                    index = tabs.indexOf(container)
+                    tabs.setTabText(index, title)
 
     def icon(self):
         """ Get the icon for the dock item.
@@ -531,9 +306,16 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setIcon(icon)
-        handler = self.handler
-        if handler is not None:
-            handler.icon_changed()
+        # A concession to practicality: walk the ancestry and update
+        # the tab icon if this item lives in a dock tab.
+        container = self.parent()
+        if container is not None:
+            stacked = container.parent()
+            if stacked is not None:
+                tabs = stacked.parent()
+                if isinstance(tabs, QDockTabWidget):
+                    index = tabs.indexOf(container)
+                    tabs.setTabIcon(index, icon)
 
     def iconSize(self):
         """ Get the icon size for the title bar.
@@ -575,8 +357,8 @@ class QDockItem(QFrame):
         layout = self.layout()
         bar = layout.titleBarWidget()
         if bar is None:
-            bar = QDockItemTitleBar()
-            layout.setTitleBarWidget(bar)
+            bar = QDockTitleBar()
+            self.setTitleBarWidget(bar)
         return bar
 
     def setTitleBarWidget(self, title_bar):
@@ -589,8 +371,17 @@ class QDockItem(QFrame):
             None, then the default title bar will be restored.
 
         """
-        title_bar = title_bar or QDockItemTitleBar()
-        self.layout().setTitleBarWidget(title_bar)
+        layout = self.layout()
+        old = layout.titleBarWidget()
+        if old is not None:
+            old.maximizeButtonClicked.disconnect(self.maximizeButtonClicked)
+            old.restoreButtonClicked.disconnect(self.restoreButtonClicked)
+            old.closeButtonClicked.disconnect(self.closeButtonClicked)
+        title_bar = title_bar or QDockTitleBar()
+        title_bar.maximizeButtonClicked.connect(self.maximizeButtonClicked)
+        title_bar.restoreButtonClicked.connect(self.restoreButtonClicked)
+        title_bar.closeButtonClicked.connect(self.closeButtonClicked)
+        layout.setTitleBarWidget(title_bar)
 
     def dockWidget(self):
         """ Get the dock widget for this dock item.
@@ -613,45 +404,3 @@ class QDockItem(QFrame):
 
         """
         self.layout().setDockWidget(widget)
-
-    #--------------------------------------------------------------------------
-    # Reimplementations
-    #--------------------------------------------------------------------------
-    def mousePressEvent(self, event):
-        """ Handle the mouse press event for the dock item.
-
-        This handler forwards the mouse press to the dock handler which
-        handles the event for docking purposes.
-
-        """
-        event.ignore()
-        handler = self.handler
-        if handler is not None:
-            if handler.mouse_press_event(event):
-                event.accept()
-
-    def mouseMoveEvent(self, event):
-        """ Handle the mouse move event for the dock item.
-
-        This handler forwards the mouse press to the dock handler which
-        handles the event for docking purposes.
-
-        """
-        event.ignore()
-        handler = self.handler
-        if handler is not None:
-            if handler.mouse_move_event(event):
-                event.accept()
-
-    def mouseReleaseEvent(self, event):
-        """ Handle the mouse release event for the dock item.
-
-        This handler forwards the mouse press to the dock handler which
-        handles the event for docking purposes.
-
-        """
-        event.ignore()
-        handler = self.handler
-        if handler is not None:
-            if handler.mouse_release_event(event):
-                event.accept()

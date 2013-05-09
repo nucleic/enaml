@@ -166,12 +166,14 @@ class QDockArea(QFrame):
             QDockArea {
                 padding: 5px;
                 background: rgb(49, 67, 98);
-                background-image: url(:dock_images/background.png);
-                background-repeat: repeat-xy;
             }
 
             QDockSplitterHandle {
                 background: rgba(0, 0, 0, 0);
+            }
+
+            QDockWindow {
+                background: rgb(53, 73, 106);
             }
 
             QDockContainer {
@@ -180,17 +182,6 @@ class QDockArea(QFrame):
 
             QDockItem {
                 background: rgb(237, 237, 237);
-                border-top-left-radius: 5px;
-                border-top-right-radius: 5px;
-                border-bottom-left-radius: 3px;
-                border-bottom-right-radius: 3px;
-            }
-
-            QDockTabWidget QDockItem {
-                border-top-left-radius: 0px;
-                border-top-right-radius: 0px;
-                border-bottom-left-radius: 0px;
-                border-bottom-right-radius: 0px;
             }
 
             QDockTabWidget[tabPosition="3"]::tab-bar {
@@ -201,14 +192,16 @@ class QDockArea(QFrame):
                 bottom: 2px;  /* adjust the unsightly gap */
             }
 
-            QDockItemTitleBar {
-                color: rgb(250, 251, 254);
+            QDockTitleBar {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                             stop:0 rgb(77, 96, 130),
                             stop:0.5 rgb(69, 89, 124),
                             stop:1.0 rgb(61, 82, 119));
-                border-top-left-radius: 3px;
-                border-top-right-radius: 3px;
+            }
+
+            QDockTitleBar > QTextLabel {
+                color: rgb(250, 251, 254);
+                font: 9pt "Segoe UI";
             }
             """ )
 

@@ -27,6 +27,7 @@ class QDockTabBar(QTabBar):
 
         """
         super(QDockTabBar, self).__init__(parent)
+        self.setSelectionBehaviorOnRemove(QTabBar.SelectPreviousTab)
         self._press_pos = None
 
     #--------------------------------------------------------------------------
@@ -59,9 +60,8 @@ class QDockTabBar(QTabBar):
         if self._press_pos is not None:
             dist = (event.pos() - self._press_pos).manhattanLength()
             if dist > QApplication.startDragDistance():
-                index = self.currentIndex()
-                container = self.parent().widget(index)
-                container.handler.untab(event.globalPos())
+                container = self.parent().widget(self.currentIndex())
+                container.untab(event.globalPos())
                 self._press_pos = None
         else:
             super(QDockTabBar, self).mouseMoveEvent(event)
