@@ -336,8 +336,21 @@ class QDockWindow(QDockFrame):
         area = self.dockArea()
         if area is not None:
             from .layout_handling import iter_containers
-            for container in list(iter_containers(area)):
-                container.close()
+            containers = list(iter_containers(area))
+            # Save the geometry of the containers before closing them.
+            # This allows the geometry to be restored for containers
+            # which are floated when they veto the close event.
+            geometries = {}
+            for container in containers:
+                pos = container.mapToGlobal(QPoint(0, 0))
+                size = container.size()
+                geometries[container] = QRect(pos, size)
+            for container in containers:
+                if not container.close():
+                    container.unplug()
+                    container.float()
+                    container.setGeometry(geometries[container])
+                    container.show()
 
     def resizeEvent(self, event):
         """ Handle the resize event for the dock window.
