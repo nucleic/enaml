@@ -1,5 +1,12 @@
 Enaml Release Notes
 ===================
+0.7.7 - 05/09/2013
+------------------
+- Add support for floating "dock rafts" in the DockArea. 402330dcaf_
+- Add a PopupView widget to support transparent popups and growl-style notifications. a5117121bf_
+
+.. _402330dcaf: https://github.com/nucleic/enaml/commit/402330dcafefaf8470db74bf632d58f039fc4a4f
+.. _a5117121bf: https://github.com/nucleic/enaml/commit/a5117121bf5e553a6d5953685605494d676d1661
 
 0.7.6 - 04/25/2013
 ------------------
