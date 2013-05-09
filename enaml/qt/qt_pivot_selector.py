@@ -389,6 +389,7 @@ class QtPivotSelector(QtControl, ProxyPivotSelector):
 
         """
         self.widget.setItems(items)
+        self.request_relayout()
 
     def set_index(self, index):
         """ Set the current index of the PivotSelector.
@@ -405,4 +406,3 @@ class QtPivotSelector(QtControl, ProxyPivotSelector):
 
         """
         self.widget.setOffset(offset)
-

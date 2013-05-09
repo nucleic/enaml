@@ -55,9 +55,6 @@ class PivotSelector(Control):
     #: A reference to the ProxyPivotSelector object
     proxy = Typed(ProxyPivotSelector)
 
-    #: A pivot selector hugs its width weakly by default
-    hug_width = set_default('weak')
-
     @partial(d_, writable=False)
     @cached_property
     def selected_item(self):
