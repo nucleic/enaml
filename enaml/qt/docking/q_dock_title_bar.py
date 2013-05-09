@@ -156,7 +156,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         """
         super(QDockTitleBar, self).__init__(parent)
-        self._buttons = self.CloseButton | self.MaximizeButton
+        self._buttons = self.CloseButton
 
         title_icon = self._title_icon = QIconWidget(self)
         title_icon.setVisible(False)
