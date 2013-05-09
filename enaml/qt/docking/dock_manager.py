@@ -172,11 +172,8 @@ class DockManager(Atom):
         if item not in self.dock_items:
             return
         container = self._find_container(item.objectName())
-        if container is None:
-            return
-        if not container.isWindow():
-            container.unplug()
-        container.destroy()
+        if container is not None:
+            container.destroy()
 
     def clear_items(self):
         """ Clear the dock items from the dock manager.
