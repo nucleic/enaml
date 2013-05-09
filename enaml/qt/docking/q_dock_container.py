@@ -222,7 +222,11 @@ class QDockContainer(QDockFrame):
         """ Show the maximize button in the title bar.
 
         """
-        title_bar = self.dockItem().titleBarWidget()
+        # FIXME this is needed during shutdown with a floating window
+        item = self.dockItem()
+        if item is None:
+            return
+        title_bar = item.titleBarWidget()
         buttons = title_bar.buttons()
         buttons |= title_bar.MaximizeButton
         buttons &= ~title_bar.RestoreButton
@@ -232,7 +236,11 @@ class QDockContainer(QDockFrame):
         """ Hide the maximize button in the title bar.
 
         """
-        title_bar = self.dockItem().titleBarWidget()
+        # FIXME this is needed during shutdown with a floating window
+        item = self.dockItem()
+        if item is None:
+            return
+        title_bar = item.titleBarWidget()
         buttons = title_bar.buttons()
         buttons &= ~title_bar.MaximizeButton
         buttons &= ~title_bar.RestoreButton
