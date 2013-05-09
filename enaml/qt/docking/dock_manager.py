@@ -262,11 +262,12 @@ class DockManager(Atom):
             if frame.isWindow():
                 if isinstance(frame, QDockWindow):
                     widget = frame.dockArea().layoutWidget()
-                    area = dockarea(save_layout(widget), floating=True)
+                    layout = save_layout(widget)
                 else:
-                    area = dockarea(save_layout(frame), floating=True)
+                    layout = save_layout(frame)
                 geo = frame.geometry()
-                area.geometry = (geo.x(), geo.y(), geo.width(), geo.height())
+                geo = (geo.x(), geo.y(), geo.width(), geo.height())
+                area = dockarea(layout, floating=True, geometry=geo)
                 areas.append(area)
         return docklayout(*areas)
 
