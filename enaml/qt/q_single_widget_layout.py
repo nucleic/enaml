@@ -83,14 +83,15 @@ class QSingleWidgetLayout(QLayout):
 
         """
         old = self.getWidget()
-        if old is not widget:
-            if old is not None:
-                old.setParent(None)
-            if widget is not None:
-                self.addChildWidget(widget)
-                self._item = QSingleWidgetItem(widget)
-                widget.show()
-                self.invalidate()
+        if old is widget:
+            return
+        if old is not None:
+            old.setParent(None)
+        if widget is not None:
+            self.addChildWidget(widget)
+            self._item = QSingleWidgetItem(widget)
+            widget.show()
+            self.invalidate()
 
     def addWidget(self, widget):
         """ Overridden parent class method. This method redirects to the
@@ -139,6 +140,7 @@ class QSingleWidgetLayout(QLayout):
             self._item = None
             if item is not None:
                 item.widget().hide()
+                self.invalidate()
             # The creation path of the layout item bypasses the virtual
             # wrapper methods, this means that the ownership of the cpp
             # pointer is never transfered to Qt. If the item is returned
