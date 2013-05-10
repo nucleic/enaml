@@ -155,6 +155,7 @@ class DockManager(Atom):
         self.dock_items.add(item)
         container = QDockContainer(self, self.dock_area)
         container.setDockItem(item)
+        container.setObjectName(item.objectName())
         self.dock_frames.append(container)
 
     def remove_item(self, item):
