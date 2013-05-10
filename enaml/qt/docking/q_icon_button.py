@@ -15,18 +15,6 @@ class QIconButton(QAbstractButton):
     """ A button widget which renders tightly to its icon.
 
     """
-    def __init__(self, parent=None):
-        """ Initialize a QIconButton.
-
-        Parameters
-        ----------
-        parent : QWidget, optional
-            The parent of the icon button.
-
-        """
-        super(QIconButton, self).__init__(parent)
-        self._has_mouse = False
-
     def sizeHint(self):
         """ Get the size hint for the icon button.
 
@@ -40,26 +28,11 @@ class QIconButton(QAbstractButton):
         left, top, right, bottom = self.getContentsMargins()
         return self.iconSize() + QSize(left + right, top + bottom)
 
-    def mousePressEvent(self, event):
-        """ Handle the mouse move event for the button.
-
-        """
-        self._has_mouse = True
-        super(QIconButton, self).mousePressEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        """ Handle the mouse release event for the button.
-
-        """
-        self._has_mouse = self.hitButton(event.pos())
-        super(QIconButton, self).mouseReleaseEvent(event)
-
     def enterEvent(self, event):
         """ Handle the enter event for the button.
 
         """
-        self._has_mouse = True
-        super(QIconButton, self).leaveEvent(event)
+        super(QIconButton, self).enterEvent(event)
         if sys.platform == 'darwin':
             self.repaint()
 
@@ -67,7 +40,6 @@ class QIconButton(QAbstractButton):
         """ Handle the leave event for the button.
 
         """
-        self._has_mouse = False
         super(QIconButton, self).leaveEvent(event)
         if sys.platform == 'darwin':
             self.repaint()
@@ -81,7 +53,7 @@ class QIconButton(QAbstractButton):
             return
         if self.isDown():
             mode = QIcon.Selected
-        elif self._has_mouse:
+        elif self.underMouse():
             mode = QIcon.Active
         else:
             mode = QIcon.Normal
