@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import QMargins, QSize
-from PyQt4.QtGui import QFrame, QLayout, QTabWidget
+from PyQt4.QtGui import QFrame, QLayout, QTabWidget, QWidgetItem
 
 # Make sure the resources get registered.
 from . import dock_resources
@@ -16,6 +16,12 @@ class QDockAreaLayout(QLayout):
     """ A custom QLayout which is part of the dock area implementation.
 
     """
+    #: The index of the layout widget in the layout.
+    LayoutWidget = 0
+
+    #: The index of the maximized widget in the layout.
+    MaximizedWidget = 1
+
     def __init__(self, parent=None):
         """ Initialize a QDockAreaLayout.
 
@@ -26,7 +32,46 @@ class QDockAreaLayout(QLayout):
 
         """
         super(QDockAreaLayout, self).__init__(parent)
-        self._layout_widget = None
+        self._items = [None, None]
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _getWidgetForRole(self, role):
+        """ Get the widget for a given layout role.
+
+        """
+        item = self._items[role]
+        if item is not None:
+            return item.widget()
+
+    def _setWidgetForRole(self, role, widget):
+        """ Set the widget for a given layout role.
+
+        """
+        old = self._getWidgetForRole(role)
+        if old is widget:
+            return
+        if old is not None:
+            old.setParent(None)
+        if widget is not None:
+            self.addChildWidget(widget)
+            item = QWidgetItem(widget)
+            self._items[role] = item
+        self._updateVisibilities()
+        self.invalidate()
+
+    def _updateVisibilities(self):
+        """ Update the visibilities of the layout items.
+
+        """
+        layout, maxed = self._items
+        if maxed is not None:
+            maxed.widget().show()
+            if layout is not None:
+                layout.widget().hide()
+        elif layout is not None:
+            layout.widget().show()
 
     #--------------------------------------------------------------------------
     # Public API
@@ -41,7 +86,7 @@ class QDockAreaLayout(QLayout):
             installed.
 
         """
-        return self._layout_widget
+        return self._getWidgetForRole(self.LayoutWidget)
 
     def setLayoutWidget(self, widget):
         """ Set the layout widget for the dock area.
@@ -55,31 +100,48 @@ class QDockAreaLayout(QLayout):
             The widget which implements the dock area layout.
 
         """
-        old_widget = self._layout_widget
-        if old_widget is not None:
-            old_widget.hide()
-            old_widget.setParent(None)
-        self._layout_widget = widget
-        area = self.parentWidget()
-        if widget is not None:
-            widget.setParent(area)
-            if not area.isHidden():
-                widget.show()
+        self._setWidgetForRole(self.LayoutWidget, widget)
+
+    def maximizedWidget(self):
+        """ Get the widget to that is set as the maximized widget.
+
+        Returns
+        -------
+        result : QWidget or None
+            The widget which is maximized over the layout area.
+
+        """
+        return self._getWidgetForRole(self.MaximizedWidget)
+
+    def setMaximizedWidget(self, widget):
+        """ Set the widget to maximize over the area.
+
+        Returns
+        -------
+        result : QWidget or None
+            The widget to maximize over the layout area.
+
+        """
+        self._setWidgetForRole(self.MaximizedWidget, widget)
 
     def setGeometry(self, rect):
         """ Sets the geometry of all the items in the layout.
 
         """
         super(QDockAreaLayout, self).setGeometry(rect)
-        widget = self._layout_widget
-        if widget is not None:
-            widget.setGeometry(self.contentsRect())
+        rect = self.contentsRect()
+        for item in self._items:
+            if item is not None:
+                item.setGeometry(rect)
 
     def sizeHint(self):
         """ Get the size hint for the layout.
 
         """
-        widget = self._layout_widget
+        widget = self._getWidgetForRole(self.MaximizedWidget)
+        if widget is not None:
+            return widget.sizeHint()
+        widget = self._getWidgetForRole(self.LayoutWidget)
         if widget is not None:
             return widget.sizeHint()
         return QSize(256, 192)
@@ -88,7 +150,10 @@ class QDockAreaLayout(QLayout):
         """ Get the minimum size of the layout.
 
         """
-        widget = self._layout_widget
+        widget = self._getWidgetForRole(self.MaximizedWidget)
+        if widget is not None:
+            return widget.minimumSizeHint()
+        widget = self._getWidgetForRole(self.LayoutWidget)
         if widget is not None:
             return widget.minimumSizeHint()
         return QSize(256, 192)
@@ -97,10 +162,17 @@ class QDockAreaLayout(QLayout):
         """ Get the maximum size for the layout.
 
         """
-        widget = self._layout_widget
+        widget = self._getWidgetForRole(self.MaximizedWidget)
+        if widget is not None:
+            # FIXME i'm not totally sold on this logic:
+            # A dock area with a maximized widget is free to expand.
+            # This avoids ugly corner cases where the maximized widget
+            # cannot expand, and will try to shrink the dock area.
+            return super(QDockAreaLayout, self).maximumSize()
+        widget = self._getWidgetForRole(self.LayoutWidget)
         if widget is not None:
             return widget.maximumSize()
-        return QSize(16777215, 16777215)
+        return super(QDockAreaLayout, self).maximumSize()
 
     #--------------------------------------------------------------------------
     # QLayout Abstract API
@@ -108,10 +180,11 @@ class QDockAreaLayout(QLayout):
     def addItem(self, item):
         """ A required virtual method implementation.
 
-        This method should not be used. Use `setDockLayout` instead.
+        This method should not be used. Use `setLayoutWidget` and
+        `setMaximizedWidget` instead.
 
         """
-        msg = 'Use `setDockLayout` instead.'
+        msg = 'Use `setLayoutWidget` and `setMaximizedWidget` instead.'
         raise NotImplementedError(msg)
 
     def count(self):
@@ -120,19 +193,36 @@ class QDockAreaLayout(QLayout):
         This method should not be used and returns a constant value.
 
         """
-        return 0
+        items = self._items
+        return len(items) - items.count(None)
 
-    def itemAt(self, idx):
+    def itemAt(self, index):
         """ A virtual method implementation which returns None.
 
         """
-        return None
+        j = 0
+        for item in self._items:
+            if item is None:
+                continue
+            if j == index:
+                return item
+            j += 1
 
-    def takeAt(self, idx):
+    def takeAt(self, index):
         """ A virtual method implementation which does nothing.
 
         """
-        return None
+        j = 0
+        for i, item in enumerate(self._items):
+            if item is None:
+                continue
+            if j == index:
+                self._items[i] = None
+                item.widget().hide()
+                self._updateVisibilities()
+                self.invalidate()
+                return
+            j += 1
 
 
 class QDockArea(QFrame):
@@ -233,6 +323,28 @@ class QDockArea(QFrame):
 
         """
         self.layout().setLayoutWidget(widget)
+
+    def maximizedWidget(self):
+        """ Get the widget to that is set as the maximized widget.
+
+        Returns
+        -------
+        result : QWidget or None
+            The widget which is maximized over the dock area.
+
+        """
+        return self.layout().maximizedWidget()
+
+    def setMaximizedWidget(self, widget):
+        """ Set the widget to maximize over the dock area.
+
+        Returns
+        -------
+        result : QWidget or None
+            The widget to maximize over the dock area.
+
+        """
+        self.layout().setMaximizedWidget(widget)
 
     def tabPosition(self):
         """ Get the default position for newly created tab widgets.
