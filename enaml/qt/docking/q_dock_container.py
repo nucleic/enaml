@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QMargins, QPoint, QRect
+from PyQt4.QtCore import Qt, QMargins, QPoint, QRect, QEvent
 from PyQt4.QtGui import QApplication, QLayout, QIcon
 
 from atom.api import Typed, Bool
@@ -29,6 +29,30 @@ class QDockContainerLayout(QDockFrameLayout):
             self.parentWidget().setSizePolicy(widget.sizePolicy())
 
 
+def _computePressPos(container, coeff):
+    """ Compute the press position for a title bar.
+
+    Parameters
+    ----------
+    container : QDockContainer
+        The dock container which owns the title bar of interest.
+
+    coeff : float
+        A floating point value between 0.0 and 1.0 which is the
+        proportional x-offset of the mouse press in the title bar.
+
+    """
+    margins = container.contentsMargins()
+    button_width = 50  # general approximation
+    max_x = container.width() - margins.right() - button_width
+    test_x = int(coeff * container.width())
+    new_x = max(margins.left() + 5, min(test_x, max_x))
+    title_bar = container.dockItem().titleBarWidget()
+    title_height = title_bar.height() / 2
+    mid_title = title_bar.mapTo(container, QPoint(0, title_height))
+    return QPoint(new_x, mid_title.y())
+
+
 class QDockContainer(QDockFrame):
     """ A QDockFrame which holds a QDockItem instance.
 
@@ -46,6 +70,9 @@ class QDockContainer(QDockFrame):
         #: Whether the container is being destroyed.
         destroying = Bool(False)
 
+        #: Whether the dock item is maximized in the dock area.
+        item_is_maximized = Bool(False)
+
     def __init__(self, manager, parent=None):
         """ Initialize a QDockContainer.
 
@@ -62,34 +89,11 @@ class QDockContainer(QDockFrame):
         layout = QDockContainerLayout()
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
+        self._dock_item = None
 
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
-    def showMaximized(self):
-        """ Handle a show maximized request for the window.
-
-        """
-        if self.isWindow():
-            super(QDockContainer, self).showMaximized()
-            bar = self.dockItem().titleBarWidget()
-            buttons = bar.buttons()
-            buttons |= bar.RestoreButton
-            buttons &= ~bar.MaximizeButton
-            bar.setButtons(buttons)
-
-    def showNormal(self):
-        """ Handle a show normal request for the window.
-
-        """
-        if self.isWindow():
-            super(QDockContainer, self).showNormal()
-            bar = self.dockItem().titleBarWidget()
-            buttons = bar.buttons()
-            buttons |= bar.MaximizeButton
-            buttons &= ~bar.RestoreButton
-            bar.setButtons(buttons)
-
     def destroy(self):
         """ Destroy the dock container and release its references.
 
@@ -139,6 +143,40 @@ class QDockContainer(QDockFrame):
         """
         return self.contentsMargins()
 
+    def showMaximized(self):
+        """ Handle the show maximized request for the dock container.
+
+        """
+        if self.isWindow():
+            super(QDockContainer, self).showMaximized()
+            bar = self.dockItem().titleBarWidget()
+            bar.setButtons(bar.RestoreButton | bar.CloseButton)
+        else:
+            area = self.parentDockArea()
+            if area is not None:
+                item = self.dockItem()
+                bar = item.titleBarWidget()
+                bar.setButtons(bar.RestoreButton | bar.CloseButton)
+                area.setMaximizedWidget(item)
+                self.frame_state.item_is_maximized = True
+                item.installEventFilter(self)
+
+    def showNormal(self):
+        """ Handle the show normal request for the dock container.
+
+        """
+        if self.isWindow():
+            super(QDockContainer, self).showNormal()
+            bar = self.dockItem().titleBarWidget()
+            bar.setButtons(bar.MaximizeButton | bar.CloseButton)
+        elif self.frame_state.item_is_maximized:
+            item = self.dockItem()
+            bar = item.titleBarWidget()
+            bar.setButtons(bar.MaximizeButton | bar.CloseButton)
+            self.layout().setWidget(item)
+            self.item_is_maximized = False
+            item.removeEventFilter(self)
+
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
@@ -151,7 +189,7 @@ class QDockContainer(QDockFrame):
             The dock item installed in the container, or None.
 
         """
-        return self.layout().getWidget()
+        return self._dock_item
 
     def setDockItem(self, dock_item):
         """ Set the dock item for the container.
@@ -173,8 +211,7 @@ class QDockContainer(QDockFrame):
             dock_item.restoreButtonClicked.connect(self.showNormal)
             dock_item.closeButtonClicked.connect(self.close)
         layout.setWidget(dock_item)
-        name = dock_item.objectName() if dock_item is not None else u''
-        self.setObjectName(name)
+        self._dock_item = dock_item
 
     def title(self):
         """ Get the title for the container.
@@ -218,34 +255,6 @@ class QDockContainer(QDockFrame):
         if item is not None:
             item.titleBarWidget().hide()
 
-    def showControlButtons(self):
-        """ Show the maximize button in the title bar.
-
-        """
-        # FIXME this is needed during shutdown with a floating window
-        item = self.dockItem()
-        if item is None:
-            return
-        title_bar = item.titleBarWidget()
-        buttons = title_bar.buttons()
-        buttons |= title_bar.MaximizeButton
-        buttons &= ~title_bar.RestoreButton
-        title_bar.setButtons(buttons)
-
-    def hideControlButtons(self):
-        """ Hide the maximize button in the title bar.
-
-        """
-        # FIXME this is needed during shutdown with a floating window
-        item = self.dockItem()
-        if item is None:
-            return
-        title_bar = item.titleBarWidget()
-        buttons = title_bar.buttons()
-        buttons &= ~title_bar.MaximizeButton
-        buttons &= ~title_bar.RestoreButton
-        title_bar.setButtons(buttons)
-
     def reset(self):
         """ Reset the container to the initial pre-docked state.
 
@@ -263,7 +272,6 @@ class QDockContainer(QDockFrame):
 
         """
         self.hide()
-        self.showControlButtons()
         self.setAttribute(Qt.WA_Hover, True)
         flags = Qt.Tool | Qt.FramelessWindowHint
         self.setParent(self.manager().dock_area, flags)
@@ -274,12 +282,27 @@ class QDockContainer(QDockFrame):
 
         """
         self.hide()
-        self.hideControlButtons()
         self.setAttribute(Qt.WA_Hover, False)
         flags = Qt.Widget
         self.setParent(self.manager().dock_area, flags)
         self.setContentsMargins(QMargins(0, 0, 0, 0))
         self.unsetCursor()
+
+    def parentDockArea(self):
+        """ Get the parent dock area of the container.
+
+        Returns
+        -------
+        result : QDockArea or None
+            The nearest ancestor which is an instance of QDockArea, or
+            None if no such ancestor exists.
+
+        """
+        parent = self.parent()
+        while parent is not None:
+            if isinstance(parent, QDockArea):
+                return parent
+            parent = parent.parent()
 
     def unplug(self):
         """ Unplug the container from its containing dock area.
@@ -346,6 +369,51 @@ class QDockContainer(QDockFrame):
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
+    def eventFilter(self, obj, event):
+        """ Filter the events for the dock item.
+
+        This filter will proxy out the mouse events for the dock item.
+        This event filter will only be activated when the dock item is
+        set to maximzed mode.
+
+        """
+        if obj is not self._dock_item:
+            return False
+        if event.type() == QEvent.MouseButtonPress:
+            return self.filteredMousePressEvent(event)
+        elif event.type() == QEvent.MouseMove:
+            return self.filteredMouseMoveEvent(event)
+        elif event.type() == QEvent.MouseButtonRelease:
+            return self.filteredMouseReleaseEvent(event)
+        return False
+
+    def filteredMousePressEvent(self, event):
+        """ Handle the filtered mouse press event for the dock item.
+
+        """
+        bar = self.dockItem().titleBarWidget()
+        if bar.isVisible() and bar.geometry().contains(event.pos()):
+            self.frame_state.mouse_title = True
+            return self.titleBarMousePressEvent(event)
+        return False
+
+    def filteredMouseMoveEvent(self, event):
+        """ Handle the filtered mouse move event for the dock item.
+
+        """
+        if self.frame_state.mouse_title:
+            return self.titleBarMouseMoveEvent(event)
+        return False
+
+    def filteredMouseReleaseEvent(self, event):
+        """ Handle the filtered mouse release event for the dock item.
+
+        """
+        if self.frame_state.mouse_title:
+            self.frame_state.mouse_title = False
+            return self.titleBarMouseReleaseEvent(event)
+        return False
+
     def closeEvent(self, event):
         """ Handle the close event for the dock container.
 
@@ -386,23 +454,15 @@ class QDockContainer(QDockFrame):
             return False
 
         # If dragging and floating, move the container's position and
-        # notify the manager of that the container was mouse moved.
+        # notify the manager of that the container was mouse moved. If
+        # the container is maximized, it is first restored before.
         global_pos = event.globalPos()
         if state.dragging:
             if self.isWindow():
                 if self.isMaximized():
                     coeff = state.press_pos.x() / float(self.width())
                     self.showNormal()
-                    margins = self.contentsMargins()
-                    button_width = 50  # general approximation
-                    max_x = self.width() - margins.right() - button_width
-                    test_x = int(coeff * self.width())
-                    new_x = max(margins.left() + 5, min(test_x, max_x))
-                    title_bar = self.dockItem().titleBarWidget()
-                    title_height = title_bar.height() / 2
-                    mid_title = title_bar.mapTo(self, QPoint(0, title_height))
-                    state.press_pos.setX(new_x)
-                    state.press_pos.setY(mid_title.y())
+                    state.press_pos = _computePressPos(self, coeff)
                 self.move(global_pos - state.press_pos)
                 self.manager().frame_moved(self, global_pos)
             return True
@@ -416,6 +476,13 @@ class QDockContainer(QDockFrame):
         state.dragging = True
         if self.isWindow():
             return True
+
+        # Restore a maximized dock item before unplugging.
+        if state.item_is_maximized:
+            bar = self.dockItem().titleBarWidget()
+            coeff = state.press_pos.x() / float(bar.width())
+            self.showNormal()
+            state.press_pos = _computePressPos(self, coeff)
 
         # Unplug the container from the layout before floating so
         # that layout widgets can clean themselves up when empty.
@@ -447,7 +514,8 @@ class QDockContainer(QDockFrame):
             state = self.frame_state
             if state.press_pos is not None:
                 self.releaseMouse()
-                self.manager().frame_released(self, event.globalPos())
+                if self.isWindow():
+                    self.manager().frame_released(self, event.globalPos())
                 state.dragging = False
                 state.press_pos = None
                 return True
