@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import ContainerList, Typed, Bool
+from atom.api import ContainerList, Bool
 
 from .declarative import Declarative, d_
 from .object import Object
@@ -23,7 +23,7 @@ class Include(Declarative):
     """
     #: The list of objects belonging to this Include. Objects in this
     #: list will be automatically parented with the Include's parent.
-    objects = d_(ContainerList(Typed(Object)))
+    objects = d_(ContainerList(Object))
 
     #: A boolean flag indicating whether to destroy the old objects that
     #: are removed from the parent. The default is True.
