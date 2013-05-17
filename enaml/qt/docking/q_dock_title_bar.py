@@ -196,9 +196,8 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         close_button.setVisible(self._buttons & self.CloseButton)
 
         layout = QHBoxLayout()
-        layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        layout.setContentsMargins(QMargins(5, 2, 5, 2))
         layout.setSpacing(1)
-
         layout.addWidget(title_icon)
         layout.addSpacing(0)
         layout.addWidget(title_label, 1)
@@ -207,7 +206,6 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         layout.addWidget(restore_button)
         layout.addWidget(close_button)
 
-        self.setContentsMargins(QMargins(5, 2, 5, 2))
         self.setLayout(layout)
 
         max_button.clicked.connect(self.maximizeButtonClicked)
