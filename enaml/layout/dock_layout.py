@@ -186,7 +186,7 @@ class dockarea(Atom):
     #: The geometry to apply to the area if it is floating.
     geometry = Coerced(Rect, (-1, -1, -1, -1), coercer=_coerce_rect)
 
-    #: Whether or not the dock area is maximized.
+    #: Whether or not the dock area is maximized if it is floating.
     maximized = Bool(False)
 
     #: The name of the dock item that is maximized in the dock area.
