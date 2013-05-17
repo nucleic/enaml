@@ -81,6 +81,8 @@ class QDockAreaFilter(QObject):
         if isinstance(parent, QDockWindow):
             widget = area.layoutWidget()
             if widget is None or isinstance(widget, QDockContainer):
+                if parent.isMaximized():
+                    parent.showNormal()
                 geo = parent.geometry()
                 area.setLayoutWidget(None)
                 if widget is not None:
@@ -214,36 +216,49 @@ class DockManager(Atom):
                 frame.destroy()
 
         main_area = None
-        floating_areas = []
-        for layoutarea in layout.children:
-            if layoutarea.floating:
-                floating_areas.append(layoutarea)
-            else:
-                main_area = layoutarea
+        floating_items = list(layout.children)
+        for item in layout.children:
+            if isinstance(item, dockarea):
+                if not item.floating:
+                    main_area = item
+                    floating_items.remove(item)
+                    break
 
         if main_area is not None:
             widget = build_layout(main_area.child, containers)
             self.dock_area.setLayoutWidget(widget)
+            if main_area.maximized_item:
+                maxed = self._find_container(main_area.maximized_item)
+                if maxed is not None:
+                    maxed.showMaximized()
 
-        for f_area in floating_areas:
-            child = f_area.child
-            if isinstance(child, dockitem):
-                container = self._find_container(child.name)
-                if container is not None:
-                    container.float()
-                    rect = ensure_on_screen(QRect(*f_area.geometry))
-                    container.setGeometry(rect)
-                    container.show()
+        for f_item in floating_items:
+            if isinstance(f_item, dockarea):
+                child = f_item.child
+                if isinstance(child, dockitem):
+                    target = self._find_container(child.name)
+                    target.float()
+                else:
+                    target = QDockWindow.create(self, self.dock_area)
+                    self.dock_frames.append(target)
+                    widget = build_layout(child, containers)
+                    win_area = target.dockArea()
+                    win_area.setLayoutWidget(widget)
+                    win_area.installEventFilter(self.area_filter)
+                    if f_item.maximized_item:
+                        maxed = self._find_container(f_item.maximized_item)
+                        if maxed is not None:
+                            maxed.showMaximized()
             else:
-                widget = build_layout(child, containers)
-                window = QDockWindow.create(self, self.dock_area)
-                self.dock_frames.append(window)
-                win_area = window.dockArea()
-                win_area.setLayoutWidget(widget)
-                win_area.installEventFilter(self.area_filter)
-                rect = ensure_on_screen(QRect(*f_area.geometry))
-                window.setGeometry(rect)
-                window.show()
+                target = self._find_container(f_item.name)
+                target.float()
+            rect = QRect(*f_item.geometry)
+            if rect.isValid():
+                rect = ensure_on_screen(rect)
+                target.setGeometry(rect)
+            target.show()
+            if f_item.maximized:
+                target.showMaximized()
 
     def save_layout(self):
         """ Get the current layout of the dock area.
@@ -255,22 +270,37 @@ class DockManager(Atom):
             state.
 
         """
-        areas = []
-        widget = self.dock_area.layoutWidget()
+        layout_items = []
+
+        area = self.dock_area
+        widget = area.layoutWidget()
         if widget is not None:
-            areas.append(dockarea(save_layout(widget)))
+            item = dockarea(save_layout(widget))
+            maxed = area.maximizedWidget()
+            if maxed is not None:
+                item.maximized_item = maxed.objectName()
+            layout_items.append(item)
+
         for frame in self.dock_frames:
             if frame.isWindow():
                 if isinstance(frame, QDockWindow):
-                    widget = frame.dockArea().layoutWidget()
-                    layout = save_layout(widget)
+                    area = frame.dockArea()
+                    item = dockarea(save_layout(area.layoutWidget()))
+                    maxed = area.maximizedWidget()
+                    if maxed is not None:
+                        item.maximized_item = maxed.objectName()
                 else:
-                    layout = save_layout(frame)
-                geo = frame.geometry()
-                geo = (geo.x(), geo.y(), geo.width(), geo.height())
-                area = dockarea(layout, floating=True, geometry=geo)
-                areas.append(area)
-        return docklayout(*areas)
+                    item = save_layout(frame)
+                item.floating = True
+                item.maximized = frame.isMaximized()
+                if frame.isMaximized():
+                    geo = frame.normalGeometry()
+                else:
+                    geo = frame.geometry()
+                item.geometry = (geo.x(), geo.y(), geo.width(), geo.height())
+                layout_items.append(item)
+
+        return docklayout(*layout_items)
 
     #--------------------------------------------------------------------------
     # Framework API
@@ -295,6 +325,11 @@ class DockManager(Atom):
             local = target.mapFromGlobal(pos)
             self.overlay.mouse_over_widget(target, local)
         elif isinstance(target, QDockArea):
+            # Disallow docking onto an area with a maximized widget.
+            # This prevents a non-intuitive user experience.
+            if target.maximizedWidget() is not None:
+                self.overlay.hide()
+                return
             local = target.mapFromGlobal(pos)
             if target.layoutWidget() is None:
                 self.overlay.mouse_over_widget(target, local, empty=True)
@@ -327,6 +362,10 @@ class DockManager(Atom):
             return
         target = self._dock_target(frame, pos)
         if isinstance(target, QDockArea):
+            # Disallow docking onto an area with a maximized widget.
+            # This prevents a non-intuitive user experience.
+            if target.maximizedWidget() is not None:
+                return
             local = target.mapFromGlobal(pos)
             widget = layout_hit_test(target, local)
             plug_frame(target, widget, frame, guide)
