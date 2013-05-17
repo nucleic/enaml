@@ -187,7 +187,7 @@ class QDockWindow(QDockFrame):
             self._manager = manager
             self.setParent(parent, Qt.Tool | Qt.FramelessWindowHint)
             self.setDockArea(QDockArea())
-            self.setContentsMargins(self.NormalMargins)
+            self.layout().setContentsMargins(self.NormalMargins)
             return self
         return cls(manager, parent)
 
@@ -223,9 +223,9 @@ class QDockWindow(QDockFrame):
         self.setMouseTracking(True)
         layout = QDockFrameLayout()
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        layout.setContentsMargins(self.NormalMargins)
         self.setLayout(layout)
         self.setDockArea(QDockArea())
-        self.setContentsMargins(self.NormalMargins)
         buttons = self._title_buttons = QDockWindowButtons(self)
         buttons.maximizeButtonClicked.connect(self.showMaximized)
         buttons.restoreButtonClicked.connect(self.showNormal)
@@ -238,7 +238,7 @@ class QDockWindow(QDockFrame):
         """ Handle a show maximized request for the window.
 
         """
-        self.setContentsMargins(self.MaximizedMargins)
+        self.layout().setContentsMargins(self.MaximizedMargins)
         super(QDockWindow, self).showMaximized()
         title_buttons = self._title_buttons
         buttons = title_buttons.buttons()
@@ -251,7 +251,7 @@ class QDockWindow(QDockFrame):
 
         """
         super(QDockWindow, self).showNormal()
-        self.setContentsMargins(self.NormalMargins)
+        self.layout().setContentsMargins(self.NormalMargins)
         title_buttons = self._title_buttons
         buttons = title_buttons.buttons()
         buttons |= title_buttons.MaximizeButton
@@ -278,7 +278,7 @@ class QDockWindow(QDockFrame):
             should not be active.
 
         """
-        cmargins = self.contentsMargins()
+        cmargins = self.layout().contentsMargins()
         if self.isMaximized():
             return QRect(0, 0, self.width(), cmargins.top())
         rmargins = self.ResizeMargins
@@ -296,6 +296,8 @@ class QDockWindow(QDockFrame):
             is a top-level window.
 
         """
+        if self.isMaximized():
+            return QMargins()
         return self.ResizeMargins
 
     #--------------------------------------------------------------------------
@@ -359,7 +361,8 @@ class QDockWindow(QDockFrame):
         super(QDockWindow, self).resizeEvent(event)
         title_buttons = self._title_buttons
         size = title_buttons.minimumSizeHint()
-        offset = max(self.MinButtonOffset, self.contentsMargins().right())
+        margins = self.layout().contentsMargins()
+        offset = max(self.MinButtonOffset, margins.right())
         x = self.width() - size.width() - offset
         rect = QRect(x, 1, size.width(), size.height())
         title_buttons.setGeometry(rect)
@@ -408,7 +411,7 @@ class QDockWindow(QDockFrame):
                 coeff = state.press_pos.x() / float(self.width())
                 self.showNormal()
                 button_width = self._title_buttons.width()
-                margins = self.contentsMargins()
+                margins = self.layout().contentsMargins()
                 max_x = self.width() - margins.right() - button_width - 5
                 test_x = int(coeff * self.width())
                 new_x = max(5, min(test_x, max_x))

@@ -42,7 +42,7 @@ def _computePressPos(container, coeff):
         proportional x-offset of the mouse press in the title bar.
 
     """
-    margins = container.contentsMargins()
+    margins = container.layout().contentsMargins()
     button_width = 50  # general approximation
     max_x = container.width() - margins.right() - button_width
     test_x = int(coeff * container.width())
@@ -141,7 +141,9 @@ class QDockContainer(QDockFrame):
             is a top-level window.
 
         """
-        return self.contentsMargins()
+        if self.isMaximized():
+            return QMargins()
+        return self.layout().contentsMargins()
 
     def showMaximized(self):
         """ Handle the show maximized request for the dock container.
@@ -275,7 +277,7 @@ class QDockContainer(QDockFrame):
         self.setAttribute(Qt.WA_Hover, True)
         flags = Qt.Tool | Qt.FramelessWindowHint
         self.setParent(self.manager().dock_area, flags)
-        self.setContentsMargins(QMargins(5, 5, 5, 5))
+        self.layout().setContentsMargins(QMargins(5, 5, 5, 5))
 
     def unfloat(self):
         """ Set the window state to be non-floating window.
@@ -285,7 +287,7 @@ class QDockContainer(QDockFrame):
         self.setAttribute(Qt.WA_Hover, False)
         flags = Qt.Widget
         self.setParent(self.manager().dock_area, flags)
-        self.setContentsMargins(QMargins(0, 0, 0, 0))
+        self.layout().setContentsMargins(QMargins(0, 0, 0, 0))
         self.unsetCursor()
 
     def parentDockArea(self):
@@ -357,7 +359,7 @@ class QDockContainer(QDockFrame):
         self.raiseFrame()
         title_bar = self.dockItem().titleBarWidget()
         pos = QPoint(title_bar.width() / 2, title_bar.height() / 2)
-        margins = self.contentsMargins()
+        margins = self.layout().contentsMargins()
         offset = QPoint(margins.left(), margins.top())
         state.press_pos = title_bar.mapTo(self, pos) + offset
         self.move(pos - state.press_pos)
@@ -493,7 +495,8 @@ class QDockContainer(QDockFrame):
         # and grab the mouse to continue processing drag events.
         self.float()
         self.raiseFrame()
-        state.press_pos += QPoint(0, self.contentsMargins().top())
+        margins = self.layout().contentsMargins()
+        state.press_pos += QPoint(0, margins.top())
         self.move(global_pos - state.press_pos)
         self.show()
         self.grabMouse()
