@@ -31,7 +31,7 @@ def coerce_layout(thing):
         return docklayout(dockarea(thing))
     if isinstance(thing, dockarea):
         return docklayout(thing)
-    msg = "cannot coerce '%s' to a docklayout"
+    msg = "cannot coerce '%s' to a 'docklayout'"
     raise TypeError(msg % type(thing).__name__)
 
 
