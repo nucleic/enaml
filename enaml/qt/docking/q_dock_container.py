@@ -261,6 +261,8 @@ class QDockContainer(QDockFrame):
         """ Reset the container to the initial pre-docked state.
 
         """
+        if self.dockItem() is not None:
+            self.showNormal()
         state = self.frame_state
         state.dragging = False
         state.press_pos = None

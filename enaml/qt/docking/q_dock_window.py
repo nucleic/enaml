@@ -187,7 +187,7 @@ class QDockWindow(QDockFrame):
             self._manager = manager
             self.setParent(parent, Qt.Tool | Qt.FramelessWindowHint)
             self.setDockArea(QDockArea())
-            self.layout().setContentsMargins(self.NormalMargins)
+            self.applyNormalState()
             return self
         return cls(manager, parent)
 
@@ -251,6 +251,12 @@ class QDockWindow(QDockFrame):
 
         """
         super(QDockWindow, self).showNormal()
+        self.applyNormalState()
+
+    def applyNormalState(self):
+        """ Apply the proper state for normal window geometry.
+
+        """
         self.layout().setContentsMargins(self.NormalMargins)
         title_buttons = self._title_buttons
         buttons = title_buttons.buttons()
