@@ -372,6 +372,9 @@ class DockManager(Atom):
             if isinstance(frame, QDockWindow):
                 frame.destroy()
         elif isinstance(target, QDockContainer):
+            maxed = target.isMaximized()
+            if maxed:
+                target.showNormal()
             window = QDockWindow.create(self, self.dock_area)
             self.dock_frames.append(window)
             window.setGeometry(target.geometry())
@@ -383,6 +386,8 @@ class DockManager(Atom):
                 frame.destroy()
             win_area.installEventFilter(self.area_filter)
             window.show()
+            if maxed:
+                window.showMaximized()
 
     #--------------------------------------------------------------------------
     # Private API
