@@ -59,9 +59,10 @@ enamldef Main(Window):
                     new = list(inc2.objects)
                     random.shuffle(new)
                     inc2.objects = new
+                    cont2.request_relayout()
             Include: inc2:
                 # The Fields are initialized with the spin box value.
-                objects =  [Field(text=str(i)) for i in xrange(10)]
+                objects = [Field(text=str(i)) for i in xrange(10)]
         Container: cont3:
             Label:
                 text = 'Modify In-Place'
@@ -80,4 +81,3 @@ enamldef Main(Window):
                         inc3.objects.pop()
             Include: inc3:
                 objects =  [Field(text=str(i)) for i in xrange(5)]
-
