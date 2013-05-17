@@ -15,7 +15,7 @@ Tabbed dock items can be torn out of the dock area by holding the shift
 key while dragging a tab.
 
 """
-import json
+import cPickle
 
 from enaml.layout.api import (
     hbox, vbox, spacer, vdocksplit, hdocksplit, docktabs, docklayout
@@ -101,14 +101,12 @@ enamldef Main(Window):
             text = 'Save Layout'
             clicked ::
                 layout = area.save_layout()
-                layout_dict = layout.as_dict()
-                parent.stored = json.dumps(layout_dict)  # or write to file
+                parent.stored = cPickle.dumps(layout, -1)  # or write to file
         PushButton: restore:
             text = 'Restore Layout'
             enabled << stored is not None
             clicked ::
-                layout_dict = json.loads(stored)  # or load from file
-                layout = docklayout.from_dict(layout_dict)
+                layout = cPickle.loads(stored)  # or load from file
                 area.apply_layout(layout)
         MyDockArea: area:
             pass
