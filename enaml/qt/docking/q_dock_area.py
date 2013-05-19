@@ -264,10 +264,15 @@ class QDockArea(QFrame):
 
             QDockWindow {
                 background: rgb(53, 73, 106);
+                border: 1px solid rgb(40, 60, 90);
             }
 
             QDockContainer {
                 background: rgb(53, 73, 106);
+            }
+
+            QDockContainer[floating="true"] {
+                border: 1px solid rgb(40, 60, 90);
             }
 
             QDockItem {
