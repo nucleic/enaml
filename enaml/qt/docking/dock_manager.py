@@ -215,24 +215,18 @@ class DockManager(Atom):
             if isinstance(frame, QDockWindow):
                 frame.destroy()
 
-        main_area = None
-        floating_items = list(layout.children)
-        for item in layout.children:
-            if isinstance(item, dockarea):
-                if not item.floating:
-                    main_area = item
-                    floating_items.remove(item)
-                    break
-
-        if main_area is not None:
-            widget = build_layout(main_area.child, containers)
+        primary = layout.primary
+        if isinstance(primary, dockarea):
+            widget = build_layout(primary.child, containers)
             self.dock_area.setLayoutWidget(widget)
-            if main_area.maximized_item:
-                maxed = self._find_container(main_area.maximized_item)
-                if maxed is not None:
-                    maxed.showMaximized()
+            maxed = self._find_container(primary.maximized_item)
+            if maxed is not None:
+                maxed.showMaximized()
+        else:
+            widget = build_layout(primary, containers)
+            self.dock_area.setLayoutWidget(widget)
 
-        for f_item in floating_items:
+        for f_item in layout.secondary:
             if isinstance(f_item, dockarea):
                 child = f_item.child
                 if isinstance(child, dockitem):
@@ -270,16 +264,16 @@ class DockManager(Atom):
             state.
 
         """
-        layout_items = []
+        primary = u''
+        secondary = []
 
         area = self.dock_area
         widget = area.layoutWidget()
         if widget is not None:
-            item = dockarea(save_layout(widget))
+            primary = dockarea(save_layout(widget))
             maxed = area.maximizedWidget()
             if maxed is not None:
-                item.maximized_item = maxed.objectName()
-            layout_items.append(item)
+                primary.maximized_item = maxed.objectName()
 
         for frame in self.dock_frames:
             if frame.isWindow():
@@ -291,16 +285,15 @@ class DockManager(Atom):
                         item.maximized_item = maxed.objectName()
                 else:
                     item = save_layout(frame)
-                item.floating = True
                 item.maximized = frame.isMaximized()
                 if frame.isMaximized():
                     geo = frame.normalGeometry()
                 else:
                     geo = frame.geometry()
                 item.geometry = (geo.x(), geo.y(), geo.width(), geo.height())
-                layout_items.append(item)
+                secondary.append(item)
 
-        return docklayout(*layout_items)
+        return docklayout(primary, *secondary)
 
     #--------------------------------------------------------------------------
     # Framework API
@@ -368,6 +361,14 @@ class DockManager(Atom):
                 return
             local = target.mapFromGlobal(pos)
             widget = layout_hit_test(target, local)
+            # Ensure that a maximized widget is restored before docking.
+            if isinstance(frame, QDockWindow):
+                win_area = frame.dockArea()
+                maxed = win_area.maximizedWidget()
+                if maxed is not None:
+                    container = self._find_container(maxed.objectName())
+                    if container is not None:
+                        container.showNormal()
             plug_frame(target, widget, frame, guide)
             if isinstance(frame, QDockWindow):
                 frame.destroy()
