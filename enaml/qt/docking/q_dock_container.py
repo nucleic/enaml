@@ -13,6 +13,7 @@ from atom.api import Typed, Bool
 from .q_dock_area import QDockArea
 from .q_dock_frame import QDockFrame
 from .q_dock_frame_layout import QDockFrameLayout
+from .utils import repolish
 
 
 class QDockContainerLayout(QDockFrameLayout):
@@ -56,6 +57,10 @@ def _computePressPos(container, coeff):
 class QDockContainer(QDockFrame):
     """ A QDockFrame which holds a QDockItem instance.
 
+    A QDockContainer has a dynamic boolean property 'floating' which
+    can be used to apply custom stylesheet styling when the container
+    is a floating top level window versus docked in a dock area.
+
     """
     class FrameState(QDockFrame.FrameState):
         """ A private class for managing container drag state.
@@ -89,6 +94,7 @@ class QDockContainer(QDockFrame):
         layout = QDockContainerLayout()
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
+        self.setProperty('floating', False)
         self._dock_item = None
 
     #--------------------------------------------------------------------------
@@ -261,11 +267,10 @@ class QDockContainer(QDockFrame):
         """ Reset the container to the initial pre-docked state.
 
         """
-        if self.dockItem() is not None:
-            self.showNormal()
         state = self.frame_state
         state.dragging = False
         state.press_pos = None
+        self.showNormal()
         self.unfloat()
         self.showTitleBar()
         self.setAttribute(Qt.WA_WState_ExplicitShowHide, False)
@@ -280,6 +285,8 @@ class QDockContainer(QDockFrame):
         flags = Qt.Tool | Qt.FramelessWindowHint
         self.setParent(self.manager().dock_area, flags)
         self.layout().setContentsMargins(QMargins(5, 5, 5, 5))
+        self.setProperty('floating', True)
+        repolish(self)
 
     def unfloat(self):
         """ Set the window state to be non-floating window.
@@ -291,6 +298,8 @@ class QDockContainer(QDockFrame):
         self.setParent(self.manager().dock_area, flags)
         self.layout().setContentsMargins(QMargins(0, 0, 0, 0))
         self.unsetCursor()
+        self.setProperty('floating', False)
+        repolish(self)
 
     def parentDockArea(self):
         """ Get the parent dock area of the container.
@@ -463,10 +472,6 @@ class QDockContainer(QDockFrame):
         global_pos = event.globalPos()
         if state.dragging:
             if self.isWindow():
-                if self.isMaximized():
-                    coeff = state.press_pos.x() / float(self.width())
-                    self.showNormal()
-                    state.press_pos = _computePressPos(self, coeff)
                 self.move(global_pos - state.press_pos)
                 self.manager().frame_moved(self, global_pos)
             return True
@@ -476,9 +481,14 @@ class QDockContainer(QDockFrame):
         if dist <= QApplication.startDragDistance():
             return True
 
-        # If the container is already floating, nothing left to do.
+        # If the container is already floating, ensure that it is shown
+        # normal size. The next move event will move the window.
         state.dragging = True
         if self.isWindow():
+            if self.isMaximized():
+                coeff = state.press_pos.x() / float(self.width())
+                self.showNormal()
+                state.press_pos = _computePressPos(self, coeff)
             return True
 
         # Restore a maximized dock item before unplugging.
