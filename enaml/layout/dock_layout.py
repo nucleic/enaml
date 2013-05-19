@@ -29,13 +29,12 @@ class dockitem(Atom):
     #: The name of the item referenced in the layout.
     name = Unicode()
 
-    #: Whether or not the item is free floating.
-    floating = Bool(False)
-
-    #: The geometry to apply to the item if it is floating.
+    #: The geometry to apply to the item. This only has an effect if
+    #: the dock item is a floating item.
     geometry = Coerced(Rect, (-1, -1, -1, -1), coercer=_coerce_rect)
 
-    #: Whether or not the item is maximized.
+    #: Whether or not the item is maximized. This only has an effect
+    #: if the dock item is a floating item.
     maximized = Bool(False)
 
     def __init__(self, name, **kwargs):
@@ -180,13 +179,12 @@ class dockarea(Atom):
     """ A layout node for declaring a dock layout area.
 
     """
-    #: Whether or not the dock area is floating.
-    floating = Bool(False)
-
-    #: The geometry to apply to the area if it is floating.
+    #: The geometry to apply to the area. This only has an effect if
+    #: the dock area is a floating area.
     geometry = Coerced(Rect, (-1, -1, -1, -1), coercer=_coerce_rect)
 
-    #: Whether or not the dock area is maximized if it is floating.
+    #: Whether or not the dock area is maximized. This only has an
+    #: effect if the dock area is a floating area.
     maximized = Bool(False)
 
     #: The name of the dock item that is maximized in the dock area.
@@ -232,22 +230,27 @@ class docklayout(Atom):
     """ The toplevel layout node for declaring dock layouts.
 
     """
-    #: The child layout areas to use with the dock layout.
-    children = List(Coerced(_layoutnode))
+    #: The primary, non-floating dock layout node.
+    primary = Coerced(_layoutnode)
 
-    def __init__(self, *children, **kwargs):
+    #: The secondary, floating dock layout nodes.
+    secondary = List(Coerced(_layoutnode))
+
+    def __init__(self, primary, *secondary, **kwargs):
         """ Initialize a docklayout.
 
         Parameters
         ----------
-        *children
-            The child layout areas to use in the layout. The allowed
-            types are 'basestring', 'dockarea', and 'dockitem'. Only
-            one non-floating dockarea is allowed; all others will be
-            made floating. All dockitem instances will be floated.
+        primary : dockarea, dockitem, or basetring
+            The primary non-floating dock layout node.
+
+        *floating
+            The secondary floating dock layout nodes. The allowed types
+            are the same as for the 'primary' node.
 
         **kwargs
             Additional configuration data for the layout.
 
         """
-        super(docklayout, self).__init__(children=list(children), **kwargs)
+        sup = super(docklayout, self)
+        sup.__init__(primary=primary, secondary=list(secondary), **kwargs)
