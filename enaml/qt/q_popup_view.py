@@ -491,7 +491,7 @@ class QPopupView(QFrame):
     # Private API
     #--------------------------------------------------------------------------
     @staticmethod
-    def _arrowOffset(length, size, pos):
+    def _arrowOffset(length, height, pos):
         """ Compute the offset for an arrow from parameters.
 
         Parameters
@@ -499,8 +499,8 @@ class QPopupView(QFrame):
         length : int
             The length of the edge on which the arrow is being drawn.
 
-        size : int
-            The size of the arrow.
+        height : int
+            The height of the arrow.
 
         pos : float
             The position of the arrow along the edge.
@@ -512,9 +512,10 @@ class QPopupView(QFrame):
             the base of the arrow.
 
         """
+        base = 2 * height
         pos = max(0.0, min(1.0, pos))
-        size = min(length, size)
-        return int(pos * (length - size)) + size / 2
+        base = min(length, base)
+        return int(pos * (length - base)) + base / 2
 
     def _updateMargins(self):
         """ Update the contents margins for the popup view.
@@ -560,17 +561,17 @@ class QPopupView(QFrame):
             path.moveTo(0, 0)
             path.lineTo(w, 0)
             path.lineTo(w, ledge)
-            path.lineTo(offset + asize / 2, ledge)
+            path.lineTo(offset + asize, ledge)
             path.lineTo(offset, h)
-            path.lineTo(offset - asize / 2, ledge)
+            path.lineTo(offset - asize, ledge)
             path.lineTo(0, ledge)
             path.lineTo(0, 0)
         elif edge == QPopupView.TopEdge:
             offset = self._arrowOffset(w, asize, apos)
             path.moveTo(0, asize)
-            path.lineTo(offset - asize / 2, asize)
+            path.lineTo(offset - asize, asize)
             path.lineTo(offset, 0)
-            path.lineTo(offset + asize / 2, asize)
+            path.lineTo(offset + asize, asize)
             path.lineTo(w, asize)
             path.lineTo(w, h)
             path.lineTo(0, h)
@@ -581,18 +582,18 @@ class QPopupView(QFrame):
             path.lineTo(w, 0)
             path.lineTo(w, h)
             path.lineTo(asize, h)
-            path.lineTo(asize, offset + asize / 2)
+            path.lineTo(asize, offset + asize)
             path.lineTo(0, offset)
-            path.lineTo(asize, offset - asize / 2)
+            path.lineTo(asize, offset - asize)
             path.lineTo(asize, 0)
         else:
             offset = self._arrowOffset(h, asize, apos)
             ledge = w - asize
             path.moveTo(0, 0)
             path.lineTo(ledge, 0)
-            path.lineTo(ledge, offset - asize / 2)
+            path.lineTo(ledge, offset - asize)
             path.lineTo(w, offset)
-            path.lineTo(ledge, offset + asize / 2)
+            path.lineTo(ledge, offset + asize)
             path.lineTo(ledge, h)
             path.lineTo(0, h)
             path.lineTo(0, 0)
