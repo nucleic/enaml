@@ -196,14 +196,13 @@ class QDockWindow(QDockFrame):
         """ A classmethod to free a QDockWindow.
 
         This method can be called to return a dock window to the free
-        list if there is capacity, or delete it otherwise. This method
-        will be called automatically by a dock window destructor.
+        list if there is capacity. It is called by the dock manager at
+        the appropriate times.
 
         """
         if len(FREE_WINDOWS) < FREE_WINDOWS_MAX:
-            FREE_WINDOWS.append(window)
-        else:
-            window.deleteLater()
+            if window not in FREE_WINDOWS:
+                FREE_WINDOWS.append(window)
 
     def __init__(self, manager, parent=None):
         """ Initialize a QDockWindow.
@@ -263,15 +262,6 @@ class QDockWindow(QDockFrame):
         buttons |= title_buttons.MaximizeButton
         buttons &= ~title_buttons.RestoreButton
         title_buttons.setButtons(buttons)
-
-    def destroy(self):
-        """ Destroy the dock window and release its references.
-
-        """
-        self.close()
-        self.setDockArea(None)
-        super(QDockWindow, self).destroy()
-        QDockWindow.free(self)
 
     def titleBarGeometry(self):
         """ Get the geometry rect for the title bar.
@@ -338,27 +328,7 @@ class QDockWindow(QDockFrame):
         """ Handle a close event for the window.
 
         """
-        # The dock manager installs a filter on the dock area which
-        # will destroy the window once all containers are removed.
-        # The delayed import avoids a circular import condition.
-        area = self.dockArea()
-        if area is not None:
-            from .layout_handling import iter_containers
-            containers = list(iter_containers(area))
-            # Save the geometry of the containers before closing them.
-            # This allows the geometry to be restored for containers
-            # which are floated when they veto the close event.
-            geometries = {}
-            for container in containers:
-                pos = container.mapToGlobal(QPoint(0, 0))
-                size = container.size()
-                geometries[container] = QRect(pos, size)
-            for container in containers:
-                if not container.close():
-                    container.unplug()
-                    container.float()
-                    container.setGeometry(geometries[container])
-                    container.show()
+        self.manager()._close_window(self, event)
 
     def resizeEvent(self, event):
         """ Handle the resize event for the dock window.
@@ -424,7 +394,7 @@ class QDockWindow(QDockFrame):
                 state.press_pos.setX(new_x)
                 state.press_pos.setY(margins.top() / 2)
             self.move(global_pos - state.press_pos)
-            self.manager().frame_moved(self, global_pos)
+            self.manager()._frame_moved(self, global_pos)
             return True
         return False
 
@@ -440,7 +410,7 @@ class QDockWindow(QDockFrame):
         if event.button() == Qt.LeftButton:
             state = self.frame_state
             if state.press_pos is not None:
-                self.manager().frame_released(self, event.globalPos())
+                self.manager()._frame_released(self, event.globalPos())
                 state.dragging = False
                 state.press_pos = None
                 return True
