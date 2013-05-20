@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QRect, QObject
+from PyQt4.QtCore import Qt, QPoint, QRect, QObject, QMetaObject
 from PyQt4.QtGui import QApplication
 
 from atom.api import Atom, Typed, List
@@ -15,7 +15,7 @@ from enaml.layout.dock_layout import docklayout, dockarea, dockitem
 from .dock_overlay import DockOverlay
 from .event_types import DockAreaContentsChanged
 from .layout_handling import (
-    build_layout, save_layout, layout_hit_test, plug_frame,
+    build_layout, save_layout, layout_hit_test, plug_frame, iter_containers
 )
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
@@ -77,13 +77,13 @@ class QDockAreaFilter(QObject):
             The dock area whose contents have changed.
 
         """
-        parent = area.parent()
-        if isinstance(parent, QDockWindow):
+        window = area.parent()
+        if isinstance(window, QDockWindow):
             widget = area.layoutWidget()
             if widget is None or isinstance(widget, QDockContainer):
-                if parent.isMaximized():
-                    parent.showNormal()
-                geo = parent.geometry()
+                if window.isMaximized():
+                    window.showNormal()
+                geo = window.geometry()
                 area.setLayoutWidget(None)
                 if widget is not None:
                     widget.float()
@@ -99,7 +99,10 @@ class QDockAreaFilter(QObject):
                         frames = manager.dock_frames
                         frames.remove(widget)
                         frames.insert(-1, widget)
-                parent.destroy()
+                # Invoke the close slot later since it would remove this
+                # event filter from the dock area while the event is in
+                # process resulting in a segfault.
+                QMetaObject.invokeMethod(window, 'close', Qt.QueuedConnection)
 
 
 class DockManager(Atom):
@@ -176,7 +179,10 @@ class DockManager(Atom):
             return
         container = self._find_container(item.objectName())
         if container is not None:
-            container.destroy()
+            if container.isWindow():
+                container.unplug()
+            container.hide()
+            self._free_container(container)
 
     def clear_items(self):
         """ Clear the dock items from the dock manager.
@@ -187,11 +193,19 @@ class DockManager(Atom):
         by the dock manager.
 
         """
-        for item in list(self.dock_items):
-            self.remove_item(item)
-        for frame in self.dock_frames[:]:
-            frame.destroy()
+        windows = []
+        containers = []
+        for frame in self.dock_frames:
+            if isinstance(frame, QDockContainer):
+                containers.append(frame)
+            else:
+                windows.append(frame)
+        for frame in containers:
+            self._free_container(frame)
+        for frame in windows:
+            self._free_window(frame)
         del self.dock_frames
+        self.dock_area.setLayoutWidget(None)
 
     def apply_layout(self, layout):
         """ Apply a layout to the dock area.
@@ -213,7 +227,7 @@ class DockManager(Atom):
             container.reset()
         for frame in self.dock_frames[:]:
             if isinstance(frame, QDockWindow):
-                frame.destroy()
+                frame.close()
 
         primary = layout.primary
         if isinstance(primary, dockarea):
@@ -298,7 +312,7 @@ class DockManager(Atom):
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
-    def frame_moved(self, frame, pos):
+    def _frame_moved(self, frame, pos):
         """ Handle a dock frame being moved by the user.
 
         This method is called by a floating dock frame as it is dragged
@@ -332,7 +346,7 @@ class DockManager(Atom):
         else:
             self.overlay.hide()
 
-    def frame_released(self, frame, pos):
+    def _frame_released(self, frame, pos):
         """ Handle the dock frame being released by the user.
 
         This method is called by a floating dock frame when the user
@@ -371,7 +385,7 @@ class DockManager(Atom):
                         container.showNormal()
             plug_frame(target, widget, frame, guide)
             if isinstance(frame, QDockWindow):
-                frame.destroy()
+                frame.close()
         elif isinstance(target, QDockContainer):
             maxed = target.isMaximized()
             if maxed:
@@ -384,15 +398,103 @@ class DockManager(Atom):
             plug_frame(win_area, None, target, center_guide)
             plug_frame(win_area, target, frame, guide)
             if isinstance(frame, QDockWindow):
-                frame.destroy()
+                frame.close()
             win_area.installEventFilter(self.area_filter)
             window.show()
             if maxed:
                 window.showMaximized()
 
+    def _close_container(self, container, event):
+        """ Close a QDockContainer.
+
+        This is called by a QDockContainer from its close event handler.
+
+        Parameters
+        ----------
+        window : QDockContainer
+            The dock container to close.
+
+        event : QCloseEvent
+            The close event passed to the event handler.
+
+        """
+        item = container.dockItem()
+        if item is None or item.close():
+            if not container.isWindow():
+                container.unplug()
+            self._free_container(container)
+        else:
+            event.ignore()
+
+    def _close_window(self, window, event):
+        """ Close a QDockWindow.
+
+        This is called by a QDockWindow from its close event handler
+        or from the dock area filter when all items have been removed
+        from the dock window.
+
+        Parameters
+        ----------
+        window : QDockWindow
+            The dock window to close.
+
+        event : QCloseEvent
+            The close event passed to the event handler.
+
+        """
+        area = window.dockArea()
+        if area is not None:
+            area.removeEventFilter(self.area_filter)
+            containers = list(iter_containers(area))
+            geometries = {}
+            for container in containers:
+                pos = container.mapToGlobal(QPoint(0, 0))
+                size = container.size()
+                geometries[container] = QRect(pos, size)
+            for container in containers:
+                if not container.close():
+                    container.unplug()
+                    container.float()
+                    container.setGeometry(geometries[container])
+                    container.show()
+        self._free_window(window)
+
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    def _free_container(self, container):
+        """ Free the resources attached to the container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container which should be cleaned up. It should be
+            unplugged from any layout before being passed to this
+            method.
+
+        """
+        item = container.dockItem()
+        container.setParent(None)
+        container.setDockItem(None)
+        container._manager = None
+        self.dock_items.discard(item)
+        self.dock_frames.remove(container)
+
+    def _free_window(self, window):
+        """ Free the resources attached to the window.
+
+        Parameters
+        ----------
+        window : QDockWindow
+            The Window which should be cleaned up.
+
+        """
+        window.setParent(None)
+        window.setDockArea(None)
+        window._manager = None
+        self.dock_frames.remove(window)
+        QDockWindow.free(window)
+
     def _dock_containers(self):
         """ Get an iterable of QDockContainer instances.
 
