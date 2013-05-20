@@ -109,20 +109,6 @@ class QDockFrame(QFrame):
         """
         return self._manager
 
-    def destroy(self):
-        """ Destroy the dock frame.
-
-        This method should only be called when the frame is discarded
-        and will no longer be used. It will set the parent to None and
-        release the internal reference to the dock manager.
-
-        """
-        self.setParent(None)
-        manager = self._manager
-        if manager is not None:
-            manager.dock_frames.remove(self)
-            self._manager = None
-
     def raiseFrame(self):
         """ Raise this frame to the top of the dock manager Z-order.
 
