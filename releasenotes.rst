@@ -1,5 +1,14 @@
 Enaml Release Notes
 ===================
+0.7.8 - 05/20/2013
+------------------
+- Add support for maximizing a docked item within a DockArea. a051862ce5_
+- Update the popup view to use a 45 degree angled arrow. f3edc88fe1_
+- Miscellaneous updates and bug fixes to the DockArea.
+
+.. _a051862ce5: https://github.com/nucleic/enaml/commit/a051862ce5dbe2240295c4ae9fc19187554a928f
+.. _f3edc88fe1: : https://github.com/nucleic/enaml/commit/f3edc88fe163cbe02b08b5215f78de0fbd1ac61b
+
 0.7.7 - 05/09/2013
 ------------------
 - Add support for floating "dock rafts" in the DockArea. 402330dcaf_
