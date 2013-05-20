@@ -72,9 +72,6 @@ class QDockContainer(QDockFrame):
         #: Whether or not the dock item is being dragged.
         dragging = Bool(False)
 
-        #: Whether the container is being destroyed.
-        destroying = Bool(False)
-
         #: Whether the dock item is maximized in the dock area.
         item_is_maximized = Bool(False)
 
@@ -100,26 +97,6 @@ class QDockContainer(QDockFrame):
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
-    def destroy(self):
-        """ Destroy the dock container and release its references.
-
-        """
-        state = self.frame_state
-        if state.destroying:
-            return
-        state.destroying = True
-        if self.isWindow():
-            self.close()
-        else:
-            self.unplug()
-        manager = self.manager()
-        if manager is not None:
-            manager.dock_items.discard(self.dockItem())
-        self.setDockItem(None)
-        super(QDockContainer, self).destroy()
-        self.deleteLater()
-        state.destroying = False
-
     def titleBarGeometry(self):
         """ Get the geometry rect for the title bar.
 
@@ -431,11 +408,7 @@ class QDockContainer(QDockFrame):
         """ Handle the close event for the dock container.
 
         """
-        item = self.dockItem()
-        if item is None or item.close():
-            self.destroy()
-        else:
-            event.ignore()
+        self.manager()._close_container(self, event)
 
     def titleBarMousePressEvent(self, event):
         """ Handle a mouse press event on the title bar.
@@ -473,7 +446,7 @@ class QDockContainer(QDockFrame):
         if state.dragging:
             if self.isWindow():
                 self.move(global_pos - state.press_pos)
-                self.manager().frame_moved(self, global_pos)
+                self.manager()._frame_moved(self, global_pos)
             return True
 
         # Ensure the drag has crossed the app drag threshold.
@@ -530,7 +503,7 @@ class QDockContainer(QDockFrame):
             if state.press_pos is not None:
                 self.releaseMouse()
                 if self.isWindow():
-                    self.manager().frame_released(self, event.globalPos())
+                    self.manager()._frame_released(self, event.globalPos())
                 state.dragging = False
                 state.press_pos = None
                 return True
