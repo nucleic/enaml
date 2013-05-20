@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, QMetaObject
 from PyQt4.QtGui import QApplication, QTabBar, QTabWidget
 
 
@@ -97,3 +97,19 @@ class QDockTabWidget(QTabWidget):
         self.setTabBar(QDockTabBar())
         self.setElideMode(Qt.ElideRight)
         self.setUsesScrollButtons(True)
+        self.setTabsClosable(True)
+        self.setDocumentMode(True)
+        self.setMovable(True)
+        self.tabBar().setDrawBase(False)
+        self.tabCloseRequested.connect(self._onTabCloseRequested)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _onTabCloseRequested(self, index):
+        """ Handle the close request for the given tab index.
+
+        """
+        # Invoke the close slot later to allow the signal to return.
+        container = self.widget(index)
+        QMetaObject.invokeMethod(container, 'close', Qt.QueuedConnection)

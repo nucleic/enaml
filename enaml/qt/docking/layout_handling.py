@@ -342,8 +342,6 @@ def _build_docktabs(layout, containers):
     if len(children) == 1:
         return children[0]
     tab_widget = QDockTabWidget()
-    tab_widget.setMovable(True)
-    tab_widget.setDocumentMode(True)
     tab_widget.setTabPosition(TAB_POSITION[layout.tab_position])
     for child in children:
         child.hideTitleBar()
@@ -606,8 +604,6 @@ def _tabify_helper(area, widget, frame, tab_pos):
         if not isinstance(widget.parent(), QDockSplitter):
             return False
     tabs = QDockTabWidget()
-    tabs.setMovable(True)
-    tabs.setDocumentMode(True)
     tabs.setTabPosition(tab_pos)
     if widget is root:
         area.setLayoutWidget(tabs)
