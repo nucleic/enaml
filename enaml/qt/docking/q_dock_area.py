@@ -279,25 +279,67 @@ class QDockArea(QFrame):
                 background: rgb(237, 237, 237);
             }
 
-            QDockTabWidget[tabPosition="3"]::tab-bar {
-                right: 2px;  /* adjust the unsightly gap */
-            }
-
-            QDockTabWidget[tabPosition="1"]::tab-bar {
-                bottom: 2px;  /* adjust the unsightly gap */
-            }
-
             QDockTitleBar {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 rgb(77, 96, 130),
-                            stop:0.5 rgb(69, 89, 124),
-                            stop:1.0 rgb(61, 82, 119));
+                background: rgb(77, 96, 130);
             }
 
             QDockTitleBar > QTextLabel {
                 color: rgb(250, 251, 254);
                 font: 9pt "Segoe UI";
             }
+
+            /* Correct a bug in the pane size when using system styling */
+            QDockTabWidget::pane {
+            }
+
+            QDockTabBar::close-button {
+                margin-bottom: 2px;
+                image: url(:dock_images/closebtn_s.png);
+            }
+
+            QDockTabBar::close-button:selected {
+                image: url(:dock_images/closebtn_b.png);
+            }
+
+            QDockTabBar::close-button:hover,
+            QDockTabBar::close-button:selected:hover {
+                image: url(:dock_images/closebtn_h.png);
+            }
+
+            QDockTabBar::close-button:pressed,
+            QDockTabBar::close-button:selected:pressed {
+                image: url(:dock_images/closebtn_p.png);
+            }
+
+            QDockTabBar::tab {
+                background: rgba(255, 255, 255, 15);
+                color: rgb(250, 251, 254);
+            }
+
+            QDockTabBar::tab:top, QDockTabBar::tab:bottom {
+                margin-right: 1px;
+                padding-left: 5px;
+                padding-right: 5px;
+                padding-bottom: 2px;
+                height: 17px;
+            }
+
+            QDockTabBar::tab:left, QDockTabBar::tab:right {
+                margin-bottom: 1px;
+                padding-top: 5px;
+                padding-bottom: 5px;
+                width: 20px;
+            }
+
+            QDockTabBar::tab:hover {
+                background: rgb(76, 105, 153);
+            }
+
+            QDockTabBar::tab:selected {
+                background: rgb(237, 237, 237);
+                color: black;
+            }
+
             """ )
 
     def layoutWidget(self):
