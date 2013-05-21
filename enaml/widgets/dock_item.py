@@ -80,6 +80,36 @@ class DockItem(Widget):
             if isinstance(child, Container):
                 return child
 
+    def split(self, direction, *names):
+        """ Split this dock item with another item.
+
+        Parameters
+        ----------
+        direction : str
+            The direction to perform the split. This should be one of
+            'left', 'right', 'top', or 'bottom'.
+
+        *names
+            The names of the dock items to insert into the layout.
+
+        """
+        self._call_parent('split_items', direction, self.name, *names)
+
+    def tabify(self, direction, *names):
+        """ Tabify this dock item with another item.
+
+        Parameters
+        ----------
+        direction : str
+            The direction to tabify the items. This should be one of
+            'left', 'right', 'top', 'bottom', or 'default'.
+
+        *names
+            The names of the dock items to tabify with this item.
+
+        """
+        self._call_parent('tabify_items', direction, self.name, *names)
+
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
@@ -101,3 +131,13 @@ class DockItem(Widget):
         # TODO allow the user to veto the close request
         self.closed()
         deferred_call(self.destroy)
+
+    def _call_parent(self, name, *args, **kwargs):
+        """ Call a parent method with the given name and arguments.
+
+        """
+        # Avoid a circular import
+        from .dock_area import DockArea
+        parent = self.parent
+        if isinstance(parent, DockArea):
+            getattr(parent, name)(*args, **kwargs)

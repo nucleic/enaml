@@ -19,8 +19,37 @@ from .layout_handling import (
 )
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
+from .q_dock_splitter import QDockSplitter
 from .q_dock_window import QDockWindow
 from .q_guide_rose import QGuideRose
+
+
+class LayoutOp(object):
+    """ An enum class for defining layout operations.
+
+    These enum values are used by the programmatic layout api.
+
+    """
+    SplitItem = 0
+
+    TabifyItem = 1
+
+    SplitArea = 2
+
+
+class LayoutDirection(object):
+    """ An enum class for defining layout directions.
+
+    These enum values are used by the programmatic layout api.
+
+    """
+    Left = 0
+
+    Top = 1
+
+    Right = 2
+
+    Bottom = 3
 
 
 def ensure_on_screen(rect):
@@ -309,6 +338,14 @@ class DockManager(Atom):
 
         return docklayout(primary, *secondary)
 
+
+    def layout_op(self, op, direction, *item_names):
+        handler = getattr(self, self._op_handlers[op])
+        handler(direction, *item_names)
+
+
+
+
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
@@ -567,3 +604,85 @@ class DockManager(Atom):
                 local = target.mapFromGlobal(pos)
                 if target.rect().contains(local):
                     return target
+
+    # A table of LayoutOp enum values to layout handler name.
+    _op_handlers = [
+        '_op_split_item',
+        '_op_tabify_item',
+        '_op_split_area',
+    ]
+
+    # A table of LayoutDirection enum values to layout metadata.
+    _split_item_guides = [
+        (QGuideRose.Guide.CompassWest, False),
+        (QGuideRose.Guide.CompassNorth, False),
+        (QGuideRose.Guide.CompassEast, True),
+        (QGuideRose.Guide.CompassSouth, True),
+    ]
+
+    def _op_split_item(self, direction, *item_names):
+        """ Handle the SplitItem layout operation.
+
+        Parameters
+        ----------
+        direction : LayoutDirection
+            The direction in which to perform the split.
+
+        *item_names
+            The item names which take part in the operation. There
+            must be 2 or more names and they must refer to items
+            which have been added to the manager.
+
+        """
+        if len(item_names) < 2:
+            msg = "the split item layout operation requires at least 2 "
+            msg += "dock item names (%d given)"
+            raise ValueError(msg % len(item_names))
+        containers = []
+        for name in item_names:
+            container = self._find_container(name)
+            if container is None:
+                msg = "'%s' does not exist in the dock area"
+                raise ValueError(msg % name)
+            containers.append(container)
+        first = containers.pop(0)
+        guide, reverse = self._split_item_guides[direction]
+        if reverse:
+            containers.reverse()
+        gpos = first.mapToGlobal(QPoint(0, 0))
+        target = self._dock_target(None, gpos)
+        if isinstance(target, QDockArea):
+            widget = first
+            if not isinstance(first.parent(), (QDockArea, QDockSplitter)):
+                widget = first.parent().parent()  # QDockTabWidget
+                guide = QGuideRose.Guide.CompassCenter
+                if reverse:
+                    containers.reverse()
+            for container in containers:
+                if container is not first:
+                    container.unplug()
+                    plug_frame(target, widget, container, guide)
+        elif isinstance(target, QDockContainer):
+            maxed = target.isMaximized()
+            if maxed:
+                target.showNormal()
+            window = QDockWindow.create(self, self.dock_area)
+            self.dock_frames.append(window)
+            window.setGeometry(target.geometry())
+            win_area = window.dockArea()
+            plug_frame(win_area, None, target, QGuideRose.Guide.AreaCenter)
+            for container in containers:
+                if container is not first:
+                    plug_frame(win_area, target, container, guide)
+            win_area.installEventFilter(self.area_filter)
+            window.show()
+            if maxed:
+                window.showMaximized()
+        else:
+            raise ValueError('Invalid split item target %s' % target)
+
+    def _op_tabify_item(self, direction, *item_names):
+        pass
+
+    def _op_split_area(self, direction, *item_names):
+        pass

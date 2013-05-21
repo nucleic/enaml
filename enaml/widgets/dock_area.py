@@ -51,6 +51,9 @@ class ProxyDockArea(ProxyConstraintsWidget):
     def apply_layout(self, layout):
         raise NotImplementedError
 
+    def layout_op(self, op, direction, *item_names):
+        raise NotImplementedError
+
 
 class DockArea(ConstraintsWidget):
     """ A component which aranges dock item children.
@@ -75,6 +78,29 @@ class DockArea(ConstraintsWidget):
 
         """
         return [c for c in self.children if isinstance(c, DockItem)]
+
+    def layout_op(self, op, direction, *item_names):
+        """ Apply a layout operation to the dock area.
+
+        Parameters
+        ----------
+        op : str
+            The operation to peform. This must be one of 'split_item',
+            'tabify_item', or 'split_area'.
+
+        direction : str
+            The direction to peform the operation. This must be one of
+            'left', 'right', 'top', or 'bottom'.
+
+        *item_names
+            The list of string names of the dock items to include in
+            the operation.
+
+        """
+        assert op in ('split_item', 'tabify_item', 'split_area')
+        assert direction in ('left', 'right', 'top', 'bottom')
+        if self.proxy_is_active:
+            self.proxy.layout_op(op, direction, *item_names)
 
     #--------------------------------------------------------------------------
     # Observers

@@ -90,12 +90,20 @@ enamldef MyDockArea(DockArea):
             Html: source = '<h1><center>Bonjour!</center></h1>'
 
 
+enamldef MyItem(DockItem): owner:
+    title = name
+    Container:
+        Field: text = owner.name
+        Field: text = owner.name
+        Field: text = owner.name
+        Field: text = owner.name
+
 enamldef Main(Window):
     Container:
         attr stored = None
         padding = (0, 0, 0, 10)
         constraints = [
-            hbox(vbox(10, save, restore, spacer), area)
+            hbox(vbox(10, save, restore, newitem, spacer), area)
         ]
         PushButton: save:
             text = 'Save Layout'
@@ -108,5 +116,14 @@ enamldef Main(Window):
             clicked ::
                 layout = cPickle.loads(stored)  # or load from file
                 area.apply_layout(layout)
+        PushButton: newitem:
+            text = 'New item'
+            clicked ::
+                cs = []
+                for _ in xrange(3):
+                    name = 'Item %d' % (len(area.children) + 1)
+                    MyItem(area, name=name)
+                    cs.append(name)
+                area.layout_op('split_item', 'left', 'Item 1', *cs)
         MyDockArea: area:
             pass
