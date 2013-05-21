@@ -58,7 +58,7 @@ class DockArea(ConstraintsWidget):
     """
     #: The layout of dock items for the area. The layout can also be
     #: changed at runtime with the 'apply_layout()' method.
-    layout = d_(Coerced(docklayout, coercer=coerce_layout))
+    layout = d_(Coerced(docklayout, ('',), coercer=coerce_layout))
 
     #: The default tab position for newly created dock tabs.
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
