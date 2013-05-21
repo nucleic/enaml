@@ -63,6 +63,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         if -1 not in d.icon_size:
             self.set_icon_size(d.icon_size)
         self.set_stretch(d.stretch)
+        self.set_closable(d.closable)
 
     def init_layout(self):
         """ Initialize the layout for the underyling widget.
@@ -153,3 +154,9 @@ class QtDockItem(QtWidget, ProxyDockItem):
         sp.setHorizontalStretch(stretch)
         sp.setVerticalStretch(stretch)
         self.widget.setSizePolicy(sp)
+
+    def set_closable(self, closable):
+        """ Set the closable flag for the underlying widget.
+
+        """
+        self.widget.setClosable(closable)

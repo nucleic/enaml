@@ -249,6 +249,19 @@ class QDockItem(QFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setTitleBarWidget(QDockTitleBar())
+        self._closable = True
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def closeEvent(self, event):
+        """ Handle the close event for the dock item.
+
+        This handler will reject the event if the item is not closable.
+
+        """
+        if not self._closable:
+            event.ignore()
 
     #--------------------------------------------------------------------------
     # Public API
@@ -339,6 +352,46 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setIconSize(size)
+
+    def closable(self):
+        """ Get whether or not the dock item is closable.
+
+        Returns
+        -------
+        result : bool
+            True if the dock item is closable, False otherwise.
+
+        """
+        return self._closable
+
+    def setClosable(self, closable):
+        """ Set whether or not the dock item is closable.
+
+        Parameters
+        ----------
+        closable : bool
+            True if the dock item is closable, False otherwise.
+
+        """
+        if closable != self._closable:
+            self._closable = closable
+            bar = self.titleBarWidget()
+            buttons = bar.buttons()
+            if closable:
+                buttons |= bar.CloseButton
+            else:
+                buttons &= ~bar.CloseButton
+            bar.setButtons(buttons)
+            # A concession to practicality: walk the ancestry and update
+            # the tab close button if this item lives in a dock tab.
+            container = self.parent()
+            if container is not None:
+                stacked = container.parent()
+                if stacked is not None:
+                    tabs = stacked.parent()
+                    if isinstance(tabs, QDockTabWidget):
+                        index = tabs.indexOf(container)
+                        tabs.setCloseButtonVisible(index, closable)
 
     def titleBarWidget(self):
         """ Get the title bar widget for the dock item.

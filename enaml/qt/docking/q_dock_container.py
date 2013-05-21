@@ -132,16 +132,19 @@ class QDockContainer(QDockFrame):
         """ Handle the show maximized request for the dock container.
 
         """
+        def update_buttons(bar):
+            buttons = bar.buttons()
+            buttons |= bar.RestoreButton
+            buttons &= ~bar.MaximizeButton
+            bar.setButtons(buttons)
         if self.isWindow():
             super(QDockContainer, self).showMaximized()
-            bar = self.dockItem().titleBarWidget()
-            bar.setButtons(bar.RestoreButton | bar.CloseButton)
+            update_buttons(self.dockItem().titleBarWidget())
         else:
             area = self.parentDockArea()
             if area is not None:
                 item = self.dockItem()
-                bar = item.titleBarWidget()
-                bar.setButtons(bar.RestoreButton | bar.CloseButton)
+                update_buttons(item.titleBarWidget())
                 area.setMaximizedWidget(item)
                 self.frame_state.item_is_maximized = True
                 item.installEventFilter(self)
@@ -150,14 +153,17 @@ class QDockContainer(QDockFrame):
         """ Handle the show normal request for the dock container.
 
         """
+        def update_buttons(bar):
+            buttons = bar.buttons()
+            buttons |= bar.MaximizeButton
+            buttons &= ~bar.RestoreButton
+            bar.setButtons(buttons)
         if self.isWindow():
             super(QDockContainer, self).showNormal()
-            bar = self.dockItem().titleBarWidget()
-            bar.setButtons(bar.MaximizeButton | bar.CloseButton)
+            update_buttons(self.dockItem().titleBarWidget())
         elif self.frame_state.item_is_maximized:
             item = self.dockItem()
-            bar = item.titleBarWidget()
-            bar.setButtons(bar.MaximizeButton | bar.CloseButton)
+            update_buttons(item.titleBarWidget())
             self.layout().setWidget(item)
             self.item_is_maximized = False
             item.removeEventFilter(self)
@@ -219,6 +225,17 @@ class QDockContainer(QDockFrame):
         if item is not None:
             return item.icon()
         return QIcon()
+
+    def closable(self):
+        """ Get whether or not the container is closable.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            return item.closable()
+        return True
 
     def showTitleBar(self):
         """ Show the title bar for the container.

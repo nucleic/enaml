@@ -6,7 +6,9 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QPoint, QMetaObject, QEvent
-from PyQt4.QtGui import QApplication, QTabBar, QTabWidget, QMouseEvent
+from PyQt4.QtGui import (
+    QApplication, QTabBar, QTabWidget, QMouseEvent, QResizeEvent
+)
 
 
 class QDockTabBar(QTabBar):
@@ -28,18 +30,81 @@ class QDockTabBar(QTabBar):
         """
         super(QDockTabBar, self).__init__(parent)
         self.setSelectionBehaviorOnRemove(QTabBar.SelectPreviousTab)
+        self._has_mouse = False
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def setCloseButtonVisible(self, index, visible):
+        """ Set the close button visibility for the given tab index.
+
+        Parameters
+        ----------
+        index : int
+            The index of the tab to set the close button visibility.
+
+        visible : bool
+            Whether or not the close button should be visible.
+
+        """
+        if index < 0 or index >= self.count():
+            return
+        button = self.tabButton(index, QTabBar.RightSide)
+        if button is not None:
+            if button.isVisibleTo(self) != visible:
+                # The public QTabBar api does not provide a way to
+                # trigger the 'layoutTabs' method of QTabBarPrivate
+                # and there are certain operations (such as modifying
+                # a tab close button) which need to have that happen.
+                # A workaround is to send a dummy resize event.
+                button.setVisible(visible)
+                if not visible:
+                   button.resize(0, 0)
+                else:
+                   button.resize(button.sizeHint())
+                size = self.size()
+                event = QResizeEvent(size, size)
+                QApplication.sendEvent(self, event)
+                self.update()
 
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
+    def tabInserted(self, index):
+        """ Handle a tab insertion in the tab bar.
+
+        This handler will update the visibilty of close button for
+        the inserted tab. This method assumes that this tab bar is
+        properly parented by a QDockTabWidget.
+
+        """
+        visible = self.parent().widget(index).closable()
+        self.setCloseButtonVisible(index, visible)
+
+    def mousePressEvent(self, event):
+        """ Handle the mouse press event for the tab bar.
+
+        This handler will set the internal '_has_mouse' flag if the
+        left mouse button is pressed on a tab.
+
+        """
+        super(QDockTabBar, self).mousePressEvent(event)
+        self._has_mouse = False
+        if event.button() == Qt.LeftButton:
+            if self.tabAt(event.pos()) != -1:
+                self._has_mouse = True
+
     def mouseMoveEvent(self, event):
         """ Handle the mouse move event for the tab bar.
 
-        If the dock drag is initiated and distances is greater than the
-        start drag distances, the item will be undocked.
+        This handler will undock the tab if the mouse is held and the
+        drag leaves the boundary of the container by the application
+        drag distance amount.
 
         """
         super(QDockTabBar, self).mouseMoveEvent(event)
+        if not self._has_mouse:
+            return
         pos = event.pos()
         if self.rect().contains(pos):
             return
@@ -56,6 +121,18 @@ class QDockTabBar(QTabBar):
             QApplication.sendEvent(self, evt)
             container = self.parent().widget(self.currentIndex())
             container.untab(event.globalPos())
+            self._has_mouse = False
+
+    def mouseReleaseEvent(self, event):
+        """ Handle the mouse release event for the tab bar.
+
+        This handler will reset the internal '_has_mouse' flag when the
+        left mouse button is released.
+
+        """
+        super(QDockTabBar, self).mouseReleaseEvent(event)
+        if event.button() == Qt.LeftButton:
+            self._has_mouse = False
 
 
 class QDockTabWidget(QTabWidget):
@@ -95,3 +172,17 @@ class QDockTabWidget(QTabWidget):
         # Invoke the close slot later to allow the signal to return.
         container = self.widget(index)
         QMetaObject.invokeMethod(container, 'close', Qt.QueuedConnection)
+
+    def setCloseButtonVisible(self, index, visible):
+        """ Set the close button visibility for the given tab index.
+
+        Parameters
+        ----------
+        index : int
+            The index of the tab to set the close button visibility.
+
+        visible : bool
+            Whether or not the close button should be visible.
+
+        """
+        self.tabBar().setCloseButtonVisible(index, visible)

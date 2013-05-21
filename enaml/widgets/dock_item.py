@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Coerced, Event, Unicode, Range, Typed, ForwardTyped, observe
+    Coerced, Event, Unicode, Bool, Range, Typed, ForwardTyped, observe
 )
 
 from enaml.application import deferred_call
@@ -37,6 +37,9 @@ class ProxyDockItem(ProxyWidget):
     def set_stretch(self, stretch):
         raise NotImplementedError
 
+    def set_closable(self, closable):
+        raise NotImplementedError
+
 
 class DockItem(Widget):
     """ A widget which can be docked in a DockArea.
@@ -56,6 +59,9 @@ class DockItem(Widget):
 
     #: The stretch factor for the item when docked in a splitter.
     stretch = d_(Range(low=0, value=1))
+
+    #: Whether or not the dock item is closable via a close button.
+    closable = d_(Bool(True))
 
     #: An event emitted when the dock item is closed. The item will be
     #: destroyed after this event has completed.
@@ -77,7 +83,7 @@ class DockItem(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'icon', 'icon_size', 'stretch'))
+    @observe(('title', 'icon', 'icon_size', 'stretch', 'closable'))
     def _update_proxy(self, change):
         """ Update the proxy when the item state changes.
 
