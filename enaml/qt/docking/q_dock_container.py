@@ -323,13 +323,7 @@ class QDockContainer(QDockFrame):
             True if the container was unplugged, False otherwise.
 
         """
-        dock_area = None
-        parent = self.parent()
-        while parent is not None:
-            if isinstance(parent, QDockArea):
-                dock_area = parent
-                break
-            parent = parent.parent()
+        dock_area = self.parentDockArea()
         if dock_area is None:
             return False
         # avoid a circular import
