@@ -115,7 +115,7 @@ class docktabs(Atom):
         """
         yield self
         for child in self.children:
-            for item in self.child.traverse():
+            for item in child.traverse():
                 yield item
 
 
@@ -272,12 +272,13 @@ class _primarynode(object):
     class __metaclass__(type):
 
         def __instancecheck__(cls, instance):
-            nonetype = type(None)
-            return isinstance(instance, (nonetype, dockarea, dockitem))
+            return isinstance(instance, (type(None), dockarea, dockitem))
 
         def __call__(cls, item):
             if isinstance(item, basestring):
                 return dockitem(item)
+            if isinstance(item, (docksplit, docktabs)):
+                return dockarea(item)
             msg = "cannot coerce '%s' to a primary 'docklayout' child"
             raise TypeError(msg % type(item).__name__)
 
@@ -296,6 +297,8 @@ class _secondarynode(object):
         def __call__(cls, item):
             if isinstance(item, basestring):
                 return dockitem(item)
+            if isinstance(item, (docksplit, docktabs)):
+                return dockarea(item)
             msg = "cannot coerce '%s' to a secondary 'docklayout' child"
             raise TypeError(msg % type(item).__name__)
 
