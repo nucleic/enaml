@@ -12,7 +12,7 @@ from atom.api import Typed
 
 from enaml.widgets.dock_area import ProxyDockArea
 
-from .docking.dock_manager import DockManager, LayoutOp, LayoutDirection
+from .docking.dock_manager import DockManager
 from .docking.q_dock_area import QDockArea
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_dock_item import QtDockItem
@@ -23,21 +23,6 @@ TAB_POSITIONS = {
     'bottom': QTabWidget.South,
     'left': QTabWidget.West,
     'right': QTabWidget.East,
-}
-
-
-LAYOUT_OPS = {
-    'split_item': LayoutOp.SplitItem,
-    'tabify_item': LayoutOp.TabifyItem,
-    'split_area': LayoutOp.SplitArea,
-}
-
-
-LAYOUT_DIRECTIONS = {
-    'left': LayoutDirection.Left,
-    'top': LayoutDirection.Top,
-    'right': LayoutDirection.Right,
-    'bottom': LayoutDirection.Bottom,
 }
 
 
@@ -186,10 +171,8 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         self.manager.apply_layout(layout)
 
-    def layout_op(self, op, direction, *item_names):
+    def apply_layout_op(self, op, direction, *item_names):
         """ Apply the layout operation to the underlying widget
 
         """
-        op = LAYOUT_OPS[op]
-        direction = LAYOUT_DIRECTIONS[direction]
-        self.manager.layout_op(op, direction, *item_names)
+        self.manager.apply_layout_op(op, direction, *item_names)
