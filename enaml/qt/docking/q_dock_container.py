@@ -363,10 +363,10 @@ class QDockContainer(QDockFrame):
         self.float()
         self.raiseFrame()
         title_bar = self.dockItem().titleBarWidget()
-        pos = QPoint(title_bar.width() / 2, title_bar.height() / 2)
+        title_pos = QPoint(title_bar.width() / 2, title_bar.height() / 2)
         margins = self.layout().contentsMargins()
         offset = QPoint(margins.left(), margins.top())
-        state.press_pos = title_bar.mapTo(self, pos) + offset
+        state.press_pos = title_bar.mapTo(self, title_pos) + offset
         self.move(pos - state.press_pos)
         self.show()
         self.grabMouse()
