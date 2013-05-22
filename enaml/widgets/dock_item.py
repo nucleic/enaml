@@ -81,34 +81,26 @@ class DockItem(Widget):
                 return child
 
     def split(self, direction, *names):
-        """ Split this dock item with another item.
+        """ Split the dock item in the given direction.
 
-        Parameters
-        ----------
-        direction : str
-            The direction to perform the split. This should be one of
-            'left', 'right', 'top', or 'bottom'.
-
-        *names
-            The names of the dock items to insert into the layout.
+        This is a convenience method for applying a 'split_item' layout
+        operation to the parent dock area. See the 'apply_layout_op'
+        method of the 'DockArea' class for more info.
 
         """
-        self._call_parent('split_items', direction, self.name, *names)
+        args = ('split_item', direction, self.name) + names
+        self._call_parent('apply_layout_op', *args)
 
     def tabify(self, direction, *names):
-        """ Tabify this dock item with another item.
+        """ Split the dock item in the given direction.
 
-        Parameters
-        ----------
-        direction : str
-            The direction to tabify the items. This should be one of
-            'left', 'right', 'top', 'bottom', or 'default'.
-
-        *names
-            The names of the dock items to tabify with this item.
+        This is a convenience method for applying a 'tabify_item' layout
+        operation to the parent dock area. See the 'apply_layout_op'
+        method of the 'DockArea' class for more info.
 
         """
-        self._call_parent('tabify_items', direction, self.name, *names)
+        args = ('tabify_item', direction, self.name) + names
+        self._call_parent('apply_layout_op', *args)
 
     #--------------------------------------------------------------------------
     # Observers
