@@ -208,7 +208,26 @@ class dockarea(Atom):
         super(dockarea, self).__init__(child=child, **kwargs)
 
 
-class _layoutnode(object):
+class _primarynode(object):
+    """ A typeclass which implements type checking for dock layouts.
+
+    This class is a private implementation detail.
+
+    """
+    class __metaclass__(type):
+
+        def __instancecheck__(cls, instance):
+            nonetype = type(None)
+            return isinstance(instance, (nonetype, dockarea, dockitem))
+
+        def __call__(cls, item):
+            if isinstance(item, basestring):
+                return dockitem(item)
+            msg = "cannot coerce '%s' to a primary 'docklayout' child"
+            raise TypeError(msg % type(item).__name__)
+
+
+class _secondarynode(object):
     """ A typeclass which implements type checking for dock layouts.
 
     This class is a private implementation detail.
@@ -222,7 +241,7 @@ class _layoutnode(object):
         def __call__(cls, item):
             if isinstance(item, basestring):
                 return dockitem(item)
-            msg = "cannot coerce '%s' to a 'docklayout' child"
+            msg = "cannot coerce '%s' to a secondary 'docklayout' child"
             raise TypeError(msg % type(item).__name__)
 
 
@@ -231,10 +250,10 @@ class docklayout(Atom):
 
     """
     #: The primary, non-floating dock layout node.
-    primary = Coerced(_layoutnode)
+    primary = Coerced(_primarynode)
 
     #: The secondary, floating dock layout nodes.
-    secondary = List(Coerced(_layoutnode))
+    secondary = List(Coerced(_secondarynode))
 
     def __init__(self, primary, *secondary, **kwargs):
         """ Initialize a docklayout.
