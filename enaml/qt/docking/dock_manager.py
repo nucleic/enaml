@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from contextlib import contextmanager
 import warnings
 
 from PyQt4.QtCore import Qt, QPoint, QRect, QObject, QMetaObject
@@ -21,8 +22,6 @@ from .layout_handling import (
 )
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
-from .q_dock_splitter import QDockSplitter
-from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_window import QDockWindow
 from .q_guide_rose import QGuideRose
 
@@ -238,7 +237,7 @@ class DockManager(Atom):
         filter_func = lambda item: isinstance(item, dockitem)
         for item in filter(filter_func, layout.traverse()):
             if item.name not in names:
-                msg = "layout references non-existent item '%s'"
+                msg = "dock item '%s' was not found in the dock manager"
                 warnings.warn(msg % item.name, stacklevel=2)
 
         # A convenience closure for populating a dock area.
@@ -428,36 +427,16 @@ class DockManager(Atom):
             # This prevents a non-intuitive user experience.
             if target.maximizedWidget() is not None:
                 return
-            local = target.mapFromGlobal(pos)
-            widget = layout_hit_test(target, local)
-            # Ensure that a maximized widget is restored before docking.
-            if isinstance(frame, QDockWindow):
-                win_area = frame.dockArea()
-                maxed = win_area.maximizedWidget()
-                if maxed is not None:
-                    container = self._find_container(maxed.objectName())
-                    if container is not None:
-                        container.showNormal()
-            plug_frame(target, widget, frame, guide)
-            if isinstance(frame, QDockWindow):
-                frame.close()
+            with self._drop_window_context(frame):
+                local = target.mapFromGlobal(pos)
+                widget = layout_hit_test(target, local)
+                plug_frame(target, widget, frame, guide)
         elif isinstance(target, QDockContainer):
-            maxed = target.isMaximized()
-            if maxed:
-                target.showNormal()
-            window = QDockWindow.create(self, self.dock_area)
-            self.dock_frames.append(window)
-            window.setGeometry(target.geometry())
-            win_area = window.dockArea()
-            center_guide = QGuideRose.Guide.AreaCenter
-            plug_frame(win_area, None, target, center_guide)
-            plug_frame(win_area, target, frame, guide)
-            if isinstance(frame, QDockWindow):
-                frame.close()
-            win_area.installEventFilter(self.area_filter)
-            window.show()
-            if maxed:
-                window.showMaximized()
+            with self._dock_context(target):
+                with self._drop_window_context(frame):
+                    area = target.parentDockArea()
+                    if area is not None:
+                        plug_frame(area, target, frame, guide)
 
     def _close_container(self, container, event):
         """ Close a QDockContainer.
@@ -582,6 +561,33 @@ class DockManager(Atom):
             if container.objectName() == name:
                 return container
 
+    def _find_containers(self, names, missing=None):
+        """ Find the dock containers with the given names.
+
+        Parameters
+        ----------
+        names : iterable
+            An iterable of names of the containers to find.
+
+        missing : callable, optional
+            A callable which will be invoked with the name of any
+            container which is not found.
+
+        Returns
+        -------
+        result : list
+            The list of QDockContainers which were found.
+
+        """
+        cs = dict((c.objectName(), c) for c in self._dock_containers())
+        res = []
+        for name in names:
+            if name in cs:
+                res.append(cs[name])
+            elif missing is not None:
+                missing(name)
+        return res
+
     def _iter_dock_targets(self):
         """ Get an iterable of potential dock targets.
 
@@ -623,7 +629,69 @@ class DockManager(Atom):
                 if target.rect().contains(local):
                     return target
 
-    # A mapping of direction to layout metadata.
+    @contextmanager
+    def _dock_context(self, container):
+        """ Setup a dock context for a dock container.
+
+        This context manager ensures handled setting up the QDockWindow
+        for a floating dock container. It ensures that the container
+        will have a proper dock area for adding new items.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container onto which another container is to
+            be docked.
+
+        """
+        window = None
+        win_area = None
+        is_maxed = False
+        is_window = container.isWindow()
+        if is_window:
+            is_maxed = container.isMaximized()
+            if is_maxed:
+                container.showNormal()
+            window = QDockWindow.create(self, self.dock_area)
+            self.dock_frames.append(window)
+            window.setGeometry(container.geometry())
+            win_area = window.dockArea()
+            plug_frame(win_area, None, container, QGuideRose.Guide.AreaCenter)
+        yield
+        if is_window:
+            win_area.installEventFilter(self.area_filter)
+            window.show()
+            if is_maxed:
+                window.showMaximized()
+
+    @contextmanager
+    def _drop_window_context(self, window):
+        """ Setup a drop contents for a dock window.
+
+        This context manager prepares a QDockWindow to be dropped onto
+        a dock area or dock container.
+
+        Parameters
+        ----------
+        window : object
+            The window of interest. The method will only operate on
+            instances of QDockWindow, but it is safe to pass any other
+            type.
+
+        """
+        is_window = isinstance(window, QDockWindow)
+        if is_window:
+            win_area = window.dockArea()
+            maxed = win_area.maximizedWidget()
+            if maxed is not None:
+                container = self._find_container(maxed.objectName())
+                if container is not None:
+                    container.showNormal()
+        yield
+        if is_window:
+            window.close()
+
+    # A mapping of direction to split item layout metadata.
     _split_item_guides = {
         'left': (QGuideRose.Guide.CompassWest, False),
         'top': (QGuideRose.Guide.CompassNorth, False),
@@ -632,7 +700,7 @@ class DockManager(Atom):
     }
 
     def _apply_op_split_item(self, direction, *item_names):
-        """ Handle the SplitItem layout operation.
+        """ Handle the 'split_item' layout operation.
 
         Parameters
         ----------
@@ -640,19 +708,15 @@ class DockManager(Atom):
             The direction in which to perform the split.
 
         *item_names
-            The item names which take part in the operation. There
-            must be 2 or more names and they must refer to items
-            which have been added to the manager.
+            The item names which take part in the operation. There must
+            be 2 or more names and they must refer to items which have
+            been added to the manager.
 
         """
-        containers = []
-        for name in item_names:
-            container = self._find_container(name)
-            if container is None:
-                msg = "item '%s' does not exist in the dock area"
-                warnings.warn(msg % name, stacklevel=2)
-            containers.append(container)
-
+        def missing(name):
+            msg = "dock item '%s' was not found in the dock manager"
+            warnings.warn(msg % name, stacklevel=5)
+        containers = self._find_containers(item_names, missing)
         if len(containers) < 2:
             return
 
@@ -661,44 +725,104 @@ class DockManager(Atom):
         # order for the entire group.
         primary = containers.pop(0)
         guide, reverse = self._split_item_guides[direction]
+        tabs = primary.parentDockTabWidget()
+        if tabs is not None:
+            guide = QGuideRose.Guide.CompassCenter
+        if reverse and tabs is None:
+            containers.reverse()
+
+        with self._dock_context(primary):
+            for container in containers:
+                if container is primary:
+                    continue
+                area = primary.parentDockArea()
+                if area is None:
+                    continue
+                container.unplug()
+                plug_frame(area, tabs or primary, container, guide)
+
+    # A mapping of direction to tabify item layout metadata.
+    _tabify_item_guides = {
+        'left': QGuideRose.Guide.CompassExWest,
+        'top': QGuideRose.Guide.CompassExNorth,
+        'right': QGuideRose.Guide.CompassExEast,
+        'bottom': QGuideRose.Guide.CompassExSouth,
+    }
+
+    def _apply_op_tabify_item(self, direction, *item_names):
+        """ Handle the 'tabify_item' layout operation.
+
+        Parameters
+        ----------
+        direction : LayoutDirection
+            The direction in which to perform the split.
+
+        *item_names
+            The item names which take part in the operation. There must
+            be 2 or more names and they must refer to items which have
+            been added to the manager.
+
+        """
+        def missing(name):
+            msg = "dock item '%s' was not found in the dock manager"
+            warnings.warn(msg % name, stacklevel=5)
+        containers = self._find_containers(item_names, missing)
+        if len(containers) < 2:
+            return
+
+        primary = containers.pop(0)
+        with self._dock_context(primary):
+            for container in containers:
+                if container is primary:
+                    continue
+                area = primary.parentDockArea()
+                if area is None:
+                    continue
+                container.unplug()
+                tabs = primary.parentDockTabWidget()
+                if tabs is not None:
+                    guide = QGuideRose.Guide.CompassCenter
+                    plug_frame(area, tabs, container, guide)
+                else:
+                    guide = self._tabify_item_guides[direction]
+                    plug_frame(area, primary, container, guide)
+
+    _split_area_guides = {
+        'left': (QGuideRose.Guide.BorderWest, True),
+        'top': (QGuideRose.Guide.BorderNorth, True),
+        'right': (QGuideRose.Guide.BorderEast, False),
+        'bottom': (QGuideRose.Guide.BorderSouth, False),
+    }
+
+    def _apply_op_split_area(self, direction, *item_names):
+        """ Handle the 'split_area' layout operation.
+
+        Parameters
+        ----------
+        direction : LayoutDirection
+            The direction in which to perform the split.
+
+        *item_names
+            The item names which take part in the operation. There must
+            be 1 or more names and they must refer to items which have
+            been added to the manager.
+
+        """
+        def missing(name):
+            msg = "dock item '%s' was not found in the dock manager"
+            warnings.warn(msg % name, stacklevel=5)
+        containers = self._find_containers(item_names, missing)
+        if len(containers) < 1:
+            return
+
+        guide, reverse = self._split_area_guides[direction]
         if reverse:
             containers.reverse()
 
-        if primary.isWindow():
-            maxed = primary.isMaximized()
-            if maxed:
-                primary.showNormal()
-            window = QDockWindow.create(self, self.dock_area)
-            self.dock_frames.append(window)
-            window.setGeometry(primary.geometry())
-            win_area = window.dockArea()
-            plug_frame(win_area, None, primary, QGuideRose.Guide.AreaCenter)
-            for container in containers:
-                if container is not primary:
-                    container.unplug()
-                    plug_frame(win_area, primary, container, guide)
-            win_area.installEventFilter(self.area_filter)
-            window.show()
-            if maxed:
-                window.showMaximized()
-        else:
-            area = primary.parentDockArea()
-            if area is None:
-                return
-            if not isinstance(primary.parent(), (QDockArea, QDockSplitter)):
-                primary = primary.parent().parent()
-                assert isinstance(primary, QDockTabWidget)
-                guide = QGuideRose.Guide.CompassCenter
-                if reverse:
-                    # reverse again so tabs are added in order
-                    containers.reverse()
-            for container in containers:
-                if container is not primary:
-                    container.unplug()
-                    plug_frame(area, primary, container, guide)
-
-    def _apply_op_tabify_item(self, direction, *item_names):
-        pass
-
-    def _apply_op_split_area(self, direction, *item_names):
-        pass
+        area = self.dock_area
+        for container in containers:
+            container.unplug()
+            if area.layoutWidget() is None:
+                plug_frame(area, None, container, QGuideRose.Guide.AreaCenter)
+            else:
+                plug_frame(area, None, container, guide)
