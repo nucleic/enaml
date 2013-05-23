@@ -13,6 +13,7 @@ from atom.api import Typed, Bool
 from .q_dock_area import QDockArea
 from .q_dock_frame import QDockFrame
 from .q_dock_frame_layout import QDockFrameLayout
+from .q_dock_tab_widget import QDockTabWidget
 from .utils import repolish
 
 
@@ -308,6 +309,22 @@ class QDockContainer(QDockFrame):
         parent = self.parent()
         while parent is not None:
             if isinstance(parent, QDockArea):
+                return parent
+            parent = parent.parent()
+
+    def parentDockTabWidget(self):
+        """ Get the parent dock area of the container.
+
+        Returns
+        -------
+        result : QDockTabWidget or None
+            The nearest ancestor which is an instance of QDockTabWidget,
+            or None if no such ancestor exists.
+
+        """
+        parent = self.parent()
+        while parent is not None:
+            if isinstance(parent, QDockTabWidget):
                 return parent
             parent = parent.parent()
 
