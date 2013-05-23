@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from textwrap import dedent
+
 from PyQt4.QtCore import QObject, QEvent, QSize, QTimer
 from PyQt4.QtGui import QTabWidget
 
@@ -25,6 +27,127 @@ TAB_POSITIONS = {
     'right': QTabWidget.East,
 }
 
+
+def make_style_sheet(style):
+    """ A function to generate the stylesheet for the give style.
+
+    """
+
+    if style is None:
+        return ''
+    bg = '    background: rgba({0.red}, {0.green}, {0.blue}, {0.alpha});'
+    fg = '    color: rgba({0.red}, {0.green}, {0.blue}, {0.alpha});'
+    bd = '    border: 1px solid rgba({0.red}, {0.green}, {0.blue}, {0.alpha});'
+    items = {}
+    parts = []
+    push = parts.append
+    def get(attr, which):
+        if getattr(style, attr) is not None:
+            items[attr] = which.format(getattr(style, attr))
+    def push_item(attr):
+        push(items[attr])
+    def push_item_if(attr):
+        if attr in items:
+            push(items[attr])
+    get('dock_area_background', bg)
+    get('splitter_handle_background', bg)
+    get('dock_window_background', bg)
+    get('dock_window_border', bd)
+    get('dock_container_background', bg)
+    get('dock_container_border', bd)
+    get('dock_item_background', bg)
+    get('title_bar_background', bg)
+    get('title_bar_foreground', fg)
+    get('tab_background', bg)
+    get('tab_hover_background', bg)
+    get('tab_selected_background', bg)
+    get('tab_foreground', fg)
+    get('tab_selected_foreground', fg)
+    push('QDockArea {')
+    push('    padding: 5px;')
+    push_item_if('dock_area_background')
+    push('}')
+    if 'splitter_handle_background' in items:
+        push('QDockSplitterHandle {')
+        push_item('splitter_handle_background')
+        push('}')
+    if 'dock_window_background' in items or 'dock_window_border' in items:
+        push('QDockWindow {')
+        push_item_if('dock_window_background')
+        push_item_if('dock_window_border')
+        push('}')
+    if 'dock_container_background' in items:
+        push('QDockContainer {')
+        push_item('dock_container_background')
+        push('}')
+    if 'dock_container_border' in items:
+        push('QDockContainer[floating="true"] {')
+        push_item('dock_container_border')
+        push('}')
+    if 'dock_item_background' in items:
+        push('QDockItem {')
+        push_item('dock_item_background')
+        push('}')
+    if 'title_bar_background' in items:
+        push('QDockTitleBar {')
+        push_item('title_bar_background')
+        push('}')
+    if 'title_bar_foreground' in items or 'title_bar_font' in items:
+        push('QDockTitleBar > QTextLabel {')
+        push_item_if('title_bar_foreground')
+        # push_item_if('title_bar_font')
+        push('}')
+    push(dedent("""\
+        /* Correct a bug in the pane size when using system styling */
+        QDockTabWidget::pane {
+        }
+        QDockTabBar::close-button {
+            margin-bottom: 2px;
+            image: url(:dock_images/closebtn_s.png);
+        }
+        QDockTabBar::close-button:selected {
+            image: url(:dock_images/closebtn_b.png);
+        }
+        QDockTabBar::close-button:hover,
+        QDockTabBar::close-button:selected:hover {
+            image: url(:dock_images/closebtn_h.png);
+        }
+        QDockTabBar::close-button:pressed,
+        QDockTabBar::close-button:selected:pressed {
+            image: url(:dock_images/closebtn_p.png);
+        }"""))
+    if 'tab_background' in items or 'tab_foreground' in items:
+        push('QDockTabBar::tab {')
+        push_item_if('tab_background')
+        push_item_if('tab_foreground')
+        push('}')
+    push(dedent("""\
+        QDockTabBar::tab:top, QDockTabBar::tab:bottom {
+            margin-right: 1px;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 2px;
+            height: 17px;
+        }
+
+        QDockTabBar::tab:left, QDockTabBar::tab:right {
+            margin-bottom: 1px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            width: 20px;
+        }"""))
+    if 'tab_hover_background' in items or 'tab_hover_foreground' in items:
+        push('QDockTabBar::tab:hover {')
+        push_item_if('tab_hover_background')
+        push_item_if('tab_hover_foreground')
+        push('}')
+    if 'tab_selected_background' in items or 'tab_selected_foreground' in items:
+        push('QDockTabBar::tab:selected {')
+        push_item_if('tab_selected_background')
+        push_item_if('tab_selected_foreground')
+        push('}')
+    print '\n'.join(parts)
+    return '\n'.join(parts)
 
 class DockFilter(QObject):
     """ A simple event filter used by the QtDockArea.
@@ -89,7 +212,9 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         super(QtDockArea, self).init_widget()
-        self.set_tab_position(self.declaration.tab_position)
+        d = self.declaration
+        self.set_tab_position(d.tab_position)
+        self.set_style(d.style)
 
     def init_layout(self):
         """ Initialize the layout of the underlying control.
@@ -158,6 +283,12 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         self.widget.setTabPosition(TAB_POSITIONS[position])
+
+    def set_style(self, style):
+        """ Set the style for the underlying widget.
+
+        """
+        self.widget.setStyleSheet(make_style_sheet(style))
 
     def save_layout(self):
         """ Save the current layout on the underlying widget.
