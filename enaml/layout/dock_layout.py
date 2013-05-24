@@ -51,6 +51,17 @@ class dockitem(Atom):
         """
         super(dockitem, self).__init__(name=name, **kwargs)
 
+    def traverse(self):
+        """ Traverse the layout in a top-down fashion.
+
+        Returns
+        -------
+        result : generator
+            A generator which will yields the dockitem.
+
+        """
+        yield self
+
 
 def _coerce_item(thing):
     """ A function for coercing a thing into a dockitem.
@@ -91,6 +102,21 @@ class docktabs(Atom):
 
         """
         super(docktabs, self).__init__(children=list(children), **kwargs)
+
+    def traverse(self):
+        """ Traverse the layout in a top-down fashion.
+
+        Returns
+        -------
+        result : generator
+            A generator which will yield all of the layout nodes in
+            the docktabs.
+
+        """
+        yield self
+        for child in self.children:
+            for item in child.traverse():
+                yield item
 
 
 class _splitnode(object):
@@ -139,6 +165,21 @@ class docksplit(Atom):
 
         """
         super(docksplit, self).__init__(children=list(children), **kwargs)
+
+    def traverse(self):
+        """ Traverse the layout in a top-down fashion.
+
+        Returns
+        -------
+        result : generator
+            A generator which will yield all of the layout nodes in
+            the docksplit.
+
+        """
+        yield self
+        for child in self.children:
+            for item in child.traverse():
+                yield item
 
 
 def hdocksplit(*args, **kwargs):
@@ -207,8 +248,42 @@ class dockarea(Atom):
         """
         super(dockarea, self).__init__(child=child, **kwargs)
 
+    def traverse(self):
+        """ Traverse the layout in a top-down fashion.
 
-class _layoutnode(object):
+        Returns
+        -------
+        result : generator
+            A generator which will yield all of the layout nodes in
+            the dockarea.
+
+        """
+        yield self
+        for item in self.child.traverse():
+            yield item
+
+
+class _primarynode(object):
+    """ A typeclass which implements type checking for dock layouts.
+
+    This class is a private implementation detail.
+
+    """
+    class __metaclass__(type):
+
+        def __instancecheck__(cls, instance):
+            return isinstance(instance, (type(None), dockarea, dockitem))
+
+        def __call__(cls, item):
+            if isinstance(item, basestring):
+                return dockitem(item)
+            if isinstance(item, (docksplit, docktabs)):
+                return dockarea(item)
+            msg = "cannot coerce '%s' to a primary 'docklayout' child"
+            raise TypeError(msg % type(item).__name__)
+
+
+class _secondarynode(object):
     """ A typeclass which implements type checking for dock layouts.
 
     This class is a private implementation detail.
@@ -222,7 +297,9 @@ class _layoutnode(object):
         def __call__(cls, item):
             if isinstance(item, basestring):
                 return dockitem(item)
-            msg = "cannot coerce '%s' to a 'docklayout' child"
+            if isinstance(item, (docksplit, docktabs)):
+                return dockarea(item)
+            msg = "cannot coerce '%s' to a secondary 'docklayout' child"
             raise TypeError(msg % type(item).__name__)
 
 
@@ -231,10 +308,10 @@ class docklayout(Atom):
 
     """
     #: The primary, non-floating dock layout node.
-    primary = Coerced(_layoutnode)
+    primary = Coerced(_primarynode)
 
     #: The secondary, floating dock layout nodes.
-    secondary = List(Coerced(_layoutnode))
+    secondary = List(Coerced(_secondarynode))
 
     def __init__(self, primary, *secondary, **kwargs):
         """ Initialize a docklayout.
@@ -254,3 +331,21 @@ class docklayout(Atom):
         """
         sup = super(docklayout, self)
         sup.__init__(primary=primary, secondary=list(secondary), **kwargs)
+
+    def traverse(self):
+        """ Traverse the layout in a top-down fashion.
+
+        Returns
+        -------
+        result : generator
+            A generator which will yield all of the layout nodes in
+            the docklayout.
+
+        """
+        yield self
+        if self.primary is not None:
+            for item in self.primary.traverse():
+                yield item
+        for secondary in self.secondary:
+            for item in secondary.traverse():
+                yield item
