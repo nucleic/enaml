@@ -62,6 +62,7 @@ def make_style_sheet(style):
     get('tab_hover_background', bg)
     get('tab_selected_background', bg)
     get('tab_foreground', fg)
+    get('tab_hover_foreground', fg)
     get('tab_selected_foreground', fg)
     push('QDockArea {')
     push('    padding: 5px;')
@@ -146,8 +147,8 @@ def make_style_sheet(style):
         push_item_if('tab_selected_background')
         push_item_if('tab_selected_foreground')
         push('}')
-    print '\n'.join(parts)
     return '\n'.join(parts)
+
 
 class DockFilter(QObject):
     """ A simple event filter used by the QtDockArea.
