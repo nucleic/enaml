@@ -5,112 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import (
-    Atom, Coerced, Enum, Typed, ForwardTyped, observe, set_default
-)
+from atom.api import Coerced, Enum, Typed, ForwardTyped, observe, set_default
 
-from enaml.colors import ColorMember, Color
 from enaml.core.declarative import d_
-from enaml.fonts import FontMember
 from enaml.layout.dock_layout import (
     docklayout, dockarea, dockitem, docksplit, docktabs
 )
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
+from .dock_area_style import DockAreaStyle, vs_2010_style
 from .dock_item import DockItem
 
-
-class DockAreaStyle(Atom):
-    """ A class used to define the style to apply to the dock area.
-
-    """
-    #: The background color of a dock area.
-    dock_area_background = ColorMember()
-
-    #: The background color of a splitter handle.
-    splitter_handle_background = ColorMember()
-
-    #: The background color of a dock windows.
-    dock_window_background = ColorMember()
-
-    #: The border color of a dock window.
-    dock_window_border = ColorMember()
-
-    #: The background color of a dock container.
-    dock_container_background = ColorMember()
-
-    #: The border color of a floating dock container.
-    dock_container_border = ColorMember()
-
-    #: The background color of a dock item.
-    dock_item_background = ColorMember()
-
-    #: The background color of a dock item title bar.
-    title_bar_background = ColorMember()
-
-    #: The foreground color of a dock item title bar.
-    title_bar_foreground = ColorMember()
-
-    #: The font of a dock item title bar.
-    title_bar_font = FontMember()
-
-    #: The background color of a tab in a dock tab bar.
-    tab_background = ColorMember()
-
-    #: The background color of a hovered tab in a dock tab bar.
-    tab_hover_background = ColorMember()
-
-    #: The background color of a selected tab in a dock tab bar.
-    tab_selected_background = ColorMember()
-
-    #: The foreground color of a tab in the dock tab bar.
-    tab_foreground = ColorMember()
-
-    #: The foreground color of a hovered tab in a dock tab bar.
-    tab_hover_foreground = ColorMember()
-
-    #: The foreground color of a selected tab in a dock tab bar.
-    tab_selected_foreground = ColorMember()
-
-
-#: A dock area style which resembles Visual Studio 2010
-VS_2010_STYLE = DockAreaStyle(
-    dock_area_background = Color(49, 67, 98),
-    splitter_handle_background = Color(0, 0, 0, 0),
-    dock_window_background = Color(53, 73, 106),
-    dock_window_border = Color(40, 60, 90),
-    dock_container_background = Color(53, 73, 106),
-    dock_container_border = Color(40, 60, 90),
-    dock_item_background = Color(237, 237, 237),
-    title_bar_background = Color(77, 96, 130),
-    title_bar_foreground = Color(250, 251, 254),
-    title_bar_font = '9pt "Segoe UI"',
-    tab_background = Color(255, 255, 255, 15),
-    tab_hover_background = Color(76, 105, 153),
-    tab_selected_background = Color(237, 237, 237),
-    tab_foreground = Color(250, 251, 254),
-    tab_selected_foreground = Color(0, 0, 0),
-)
-
-
-#: A dock area style which has a nice contrasting gray style.
-GRAY_STYLE = DockAreaStyle(
-    dock_area_background = Color(184, 185, 188),
-    splitter_handle_background = Color(0, 0, 0, 0),
-    dock_window_background = Color(194, 195, 198),
-    dock_window_border = Color(128, 128, 128),
-    dock_container_background = Color(194, 195, 198),
-    dock_container_border = Color(138, 138, 138),
-    dock_item_background = Color(237, 237, 237),
-    title_bar_background = Color(135, 135, 145),
-    title_bar_foreground = Color(250, 251, 254),
-    title_bar_font = '9pt "Segoe UI"',
-    tab_background = Color(255, 255, 255, 35),
-    tab_hover_background = Color(155, 155, 165),
-    tab_selected_background = Color(237, 237, 237),
-    tab_foreground = Color(0, 0, 0),
-    tab_selected_foreground = Color(0, 0, 0),
-)
 
 def coerce_layout(thing):
     """ Coerce a variety of objects into a docklayout.
@@ -143,6 +48,9 @@ class ProxyDockArea(ProxyConstraintsWidget):
     def set_tab_position(self, position):
         raise NotImplementedError
 
+    def set_style(self, style):
+        raise NotImplementedError
+
     def save_layout(self):
         raise NotImplementedError
 
@@ -168,9 +76,8 @@ class DockArea(ConstraintsWidget):
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
 
     #: The style to apply to the dock area. The default style resembles
-    #: the Visual Studio 2010 color scheme.
-    style = d_(Typed(DockAreaStyle, factory=lambda: GRAY_STYLE))
-    #style = d_(Typed(DockAreaStyle, factory=lambda: VS_2010_STYLE))
+    #: Visual Studio 2010 color.
+    style = d_(Typed(DockAreaStyle, factory=vs_2010_style))
 
     #: A Stack expands freely in height and width by default
     hug_width = set_default('ignore')
@@ -295,7 +202,7 @@ class DockArea(ConstraintsWidget):
         if change['type'] == 'update':
             self.apply_layout(change['value'])
 
-    @observe('tab_position')
+    @observe(('tab_position', 'style'))
     def _update_proxy(self, change):
         """ Update the proxy when the area state changes.
 
