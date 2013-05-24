@@ -21,11 +21,9 @@ from enaml.layout.api import (
     hbox, vbox, spacer, vdocksplit, hdocksplit, docktabs, docklayout, dockarea
 )
 from enaml.widgets.api import (
-    Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider, ObjectCombo
-)
-
-from enaml.widgets.dock_area_style import (
-    vs_2010_style, grey_wind_style, new_moon_style, daydreamer_style
+    Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
+    ObjectCombo, vs_2010_style, grey_wind_style, new_moon_style,
+    daydreamer_style, metro_style
 )
 
 
@@ -108,32 +106,33 @@ enamldef Main(Window):
         attr stored = None
         padding = (0, 0, 0, 10)
         constraints = [
-            hbox(vbox(10, save, restore, cmb, newitem, spacer), area)
+            hbox(vbox(10, save_b, restore_b, add_b, style_c, spacer), area)
         ]
-        PushButton: save:
+        PushButton: save_b:
             text = 'Save Layout'
             clicked ::
                 layout = area.save_layout()
-                parent.stored = cPickle.dumps(layout, -1)  # or write to file
-        PushButton: restore:
+                parent.stored = cPickle.dumps(layout, -1)
+        PushButton: restore_b:
             text = 'Restore Layout'
             enabled << stored is not None
             clicked ::
-                layout = cPickle.loads(stored)  # or load from file
+                layout = cPickle.loads(stored)
                 area.apply_layout(layout)
-        ObjectCombo: cmb:
-            items = [vs_2010_style, grey_wind_style, new_moon_style, daydreamer_style]
+        PushButton: add_b:
+            text = 'Add Items'
+            clicked ::
+                names = []
+                for _ in xrange(3):
+                    name = 'Item %d' % (len(area.children) + 1)
+                    MyItem(area, name=name)
+                    names.append(name)
+                area.find('Item 1').split('left', *names)
+        ObjectCombo: style_c:
+            items = [
+                vs_2010_style, grey_wind_style, new_moon_style,
+                daydreamer_style, metro_style,
+            ]
             to_string = lambda func: func.__name__.replace('_', ' ')
-        PushButton: newitem:
-            text = 'New item'
-            #clicked ::
-            #    cs = []
-            #    for _ in xrange(3):
-            #        name = 'Item %d' % (len(area.children) + 1)
-            #        MyItem(area, name=name)
-            #        cs.append(name)
-            #    dr = cmb.selected
-            #    area.find('Item 1').split(dr, *cs)
         MyDockArea: area:
-            pass
-            style << cmb.selected()
+            style << style_c.selected()
