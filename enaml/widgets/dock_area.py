@@ -76,7 +76,7 @@ class DockArea(ConstraintsWidget):
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
 
     #: The style to apply to the dock area. The default style resembles
-    #: Visual Studio 2010 color.
+    #: Visual Studio 2010.
     style = d_(Typed(DockAreaStyle, factory=vs_2010_style))
 
     #: A Stack expands freely in height and width by default
