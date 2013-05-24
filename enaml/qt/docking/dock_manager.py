@@ -102,6 +102,10 @@ class QDockAreaFilter(QObject):
                         frames = manager.dock_frames
                         frames.remove(widget)
                         frames.insert(-1, widget)
+                # Hide before closing, or the window will steal mouse
+                # events from the container being dragged, event though
+                # the container has grabbed the mouse.
+                window.hide()
                 # Invoke the close slot later since it would remove this
                 # event filter from the dock area while the event is in
                 # process resulting in a segfault.
