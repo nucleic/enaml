@@ -18,7 +18,7 @@ key while dragging a tab.
 import cPickle
 
 from enaml.layout.api import (
-    hbox, vbox, spacer, vdocksplit, hdocksplit, docktabs, docklayout, dockarea
+    hbox, vbox, spacer, vdocksplit, hdocksplit, docktabs
 )
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
