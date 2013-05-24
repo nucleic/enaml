@@ -168,3 +168,27 @@ def daydreamer_style():
         tab_selected_background=Color(244, 244, 244),
         tab_selected_foreground=Color(6, 16, 19),
     )
+
+
+def metro_style():
+    """ A style which is inspired by Windows Metro UIs.
+
+    """
+    return DockAreaStyle(
+        dock_area_background=Color(0xca, 0xca, 0xca),
+        splitter_handle_background=Color(0, 0, 0, 0),
+        dock_window_background=Color(255, 255, 255),
+        dock_window_border=Color(0x66, 0x66, 0x66),
+        dock_container_background=Color(0xca, 0xca, 0xca),
+        dock_container_border=Color(0x66, 0x66, 0x66),
+        dock_item_background=Color(240, 240, 240),
+        title_bar_background=Color(53, 139, 202),
+        title_bar_foreground=Color(240, 240, 240),
+        title_bar_font='9pt "Segoe UI"',
+        tab_background=Color(0x66, 0x66, 0x66),
+        tab_foreground=Color(240, 240, 240),
+        tab_hover_background=Color(0xff, 0xfb, 0x85, 200),
+        tab_hover_foreground=Color(0x33, 0x33, 0x33),
+        tab_selected_background=Color(240, 240, 240),
+        tab_selected_foreground=Color(0x33, 0x33, 0x33),
+    )
