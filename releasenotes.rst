@@ -1,5 +1,15 @@
 Enaml Release Notes
 ===================
+0.7.9 - 05/24/2013
+------------------
+- Make the close button on dock items configurable. d839fb0c2b_
+- Expose a public api for manipulating the dock layout. e269adbdb2_
+- Expose user configurable dock area styles. 4c05d5953f_
+
+.. _4c05d5953f: https://github.com/nucleic/enaml/commit/4c05d5953fd0cbefdb66ca502ff662d259955ee1
+.. _e269adbdb2: https://github.com/nucleic/enaml/commit/e269adbdb23ecfd6c6728af3ca8857e20d40415f
+.. _d839fb0c2b: https://github.com/nucleic/enaml/commit/d839fb0c2bd096a6580d8ab887dfc6787928bcd5
+
 0.7.8 - 05/20/2013
 ------------------
 - Add support for maximizing a docked item within a DockArea. a051862ce5_
