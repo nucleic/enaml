@@ -87,6 +87,7 @@ class Form(Container):
         if odd_child is not None:
             push_col1(odd_child)
             push_col2(odd_child)
+            push(horizontal(left, b_flx, odd_child, b_flx, right))
         else:
             column1.pop()
             column2.pop()

@@ -13,6 +13,7 @@ from atom.api import Typed, Bool
 from .q_dock_area import QDockArea
 from .q_dock_frame import QDockFrame
 from .q_dock_frame_layout import QDockFrameLayout
+from .q_dock_tab_widget import QDockTabWidget
 from .utils import repolish
 
 
@@ -311,6 +312,22 @@ class QDockContainer(QDockFrame):
                 return parent
             parent = parent.parent()
 
+    def parentDockTabWidget(self):
+        """ Get the parent dock area of the container.
+
+        Returns
+        -------
+        result : QDockTabWidget or None
+            The nearest ancestor which is an instance of QDockTabWidget,
+            or None if no such ancestor exists.
+
+        """
+        parent = self.parent()
+        while parent is not None:
+            if isinstance(parent, QDockTabWidget):
+                return parent
+            parent = parent.parent()
+
     def unplug(self):
         """ Unplug the container from its containing dock area.
 
@@ -323,13 +340,7 @@ class QDockContainer(QDockFrame):
             True if the container was unplugged, False otherwise.
 
         """
-        dock_area = None
-        parent = self.parent()
-        while parent is not None:
-            if isinstance(parent, QDockArea):
-                dock_area = parent
-                break
-            parent = parent.parent()
+        dock_area = self.parentDockArea()
         if dock_area is None:
             return False
         # avoid a circular import
@@ -363,10 +374,10 @@ class QDockContainer(QDockFrame):
         self.float()
         self.raiseFrame()
         title_bar = self.dockItem().titleBarWidget()
-        pos = QPoint(title_bar.width() / 2, title_bar.height() / 2)
+        title_pos = QPoint(title_bar.width() / 2, title_bar.height() / 2)
         margins = self.layout().contentsMargins()
         offset = QPoint(margins.left(), margins.top())
-        state.press_pos = title_bar.mapTo(self, pos) + offset
+        state.press_pos = title_bar.mapTo(self, title_pos) + offset
         self.move(pos - state.press_pos)
         self.show()
         self.grabMouse()
