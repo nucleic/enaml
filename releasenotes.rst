@@ -1,5 +1,12 @@
 Enaml Release Notes
 ===================
+0.7.10 - 05/26/2013
+-------------------
+- Expose the Qt stylesheet directly for the dock area. 5877335bcf_
+- Add the ability to style the various dock area buttons. 5877335bcf_
+
+.. _5877335bcf: https://github.com/nucleic/enaml/commit/5877335bcf8fd09c9d066a17905b4d92ca24de8d
+
 0.7.9 - 05/24/2013
 ------------------
 - Make the close button on dock items configurable. d839fb0c2b_
