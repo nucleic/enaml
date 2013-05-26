@@ -6,14 +6,12 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import QSize, QMargins, pyqtSignal
-from PyQt4.QtGui import QWidget, QFrame, QHBoxLayout, QIcon
+from PyQt4.QtGui import QWidget, QFrame, QHBoxLayout
 
-from .q_icon_button import QIconButton
+from .q_bitmap_button import QBitmapButton
 from .q_icon_widget import QIconWidget
 from .q_text_label import QTextLabel
-
-# Make sure the resources get registered.
-from . import dock_resources
+from .xbms import CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON
 
 
 class IDockTitleBar(QWidget):
@@ -163,35 +161,23 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         title_label = self._title_label = QTextLabel(self)
 
-        max_icon = QIcon()
-        max_icon.addFile(':dock_images/maxbtn_s.png')
-        max_icon.addFile(':dock_images/maxbtn_h.png', mode=QIcon.Active)
-        max_icon.addFile(':dock_images/maxbtn_p.png', mode=QIcon.Selected)
-
-        restore_icon = QIcon()
-        restore_icon.addFile(':dock_images/rstrbtn_s.png')
-        restore_icon.addFile(':dock_images/rstrbtn_h.png', mode=QIcon.Active)
-        restore_icon.addFile(':dock_images/rstrbtn_p.png', mode=QIcon.Selected)
-
-        close_icon = QIcon()
-        close_icon.addFile(':dock_images/closebtn_s.png')
-        close_icon.addFile(':dock_images/closebtn_h.png', mode=QIcon.Active)
-        close_icon.addFile(':dock_images/closebtn_p.png', mode=QIcon.Selected)
-
         btn_size = QSize(14, 13)
 
-        max_button = self._max_button = QIconButton(self)
-        max_button.setIcon(max_icon)
+        max_button = self._max_button = QBitmapButton(self)
+        max_button.setObjectName('docktitlebar-maximize-button')
+        max_button.setBitmap(MAXIMIZE_BUTTON.toBitmap())
         max_button.setIconSize(btn_size)
         max_button.setVisible(self._buttons & self.MaximizeButton)
 
-        restore_button = self._restore_button = QIconButton(self)
-        restore_button.setIcon(restore_icon)
+        restore_button = self._restore_button = QBitmapButton(self)
+        restore_button.setObjectName('docktitlebar-restore-button')
+        restore_button.setBitmap(RESTORE_BUTTON.toBitmap())
         restore_button.setIconSize(btn_size)
         restore_button.setVisible(self._buttons & self.RestoreButton)
 
-        close_button = self._close_button = QIconButton(self)
-        close_button.setIcon(close_icon)
+        close_button = self._close_button = QBitmapButton(self)
+        close_button.setObjectName('docktitlebar-close-button')
+        close_button.setBitmap(CLOSE_BUTTON.toBitmap())
         close_button.setIconSize(btn_size)
         close_button.setVisible(self._buttons & self.CloseButton)
 
