@@ -5,7 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Coerced, Enum, Typed, ForwardTyped, observe, set_default
+from atom.api import (
+    Coerced, Enum, Typed, ForwardTyped, Unicode, observe, set_default
+)
 
 from enaml.core.declarative import d_
 from enaml.layout.dock_layout import (
@@ -13,7 +15,7 @@ from enaml.layout.dock_layout import (
 )
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
-from .dock_area_style import DockAreaStyle, vs_2010_style
+from .dock_area_styles import VS_2010_STYLE
 from .dock_item import DockItem
 
 
@@ -48,7 +50,7 @@ class ProxyDockArea(ProxyConstraintsWidget):
     def set_tab_position(self, position):
         raise NotImplementedError
 
-    def set_style(self, style):
+    def set_style_sheet(self, style_sheet):
         raise NotImplementedError
 
     def save_layout(self):
@@ -77,7 +79,7 @@ class DockArea(ConstraintsWidget):
 
     #: The style to apply to the dock area. The default style resembles
     #: Visual Studio 2010.
-    style = d_(Typed(DockAreaStyle, factory=vs_2010_style))
+    style_sheet = d_(Unicode(VS_2010_STYLE))
 
     #: A Stack expands freely in height and width by default
     hug_width = set_default('ignore')
@@ -202,7 +204,7 @@ class DockArea(ConstraintsWidget):
         if change['type'] == 'update':
             self.apply_layout(change['value'])
 
-    @observe(('tab_position', 'style'))
+    @observe(('tab_position', 'style_sheet'))
     def _update_proxy(self, change):
         """ Update the proxy when the area state changes.
 
