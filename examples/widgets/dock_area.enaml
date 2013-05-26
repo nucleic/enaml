@@ -22,9 +22,16 @@ from enaml.layout.api import (
 )
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
-    ObjectCombo, vs_2010_style, grey_wind_style, new_moon_style,
-    daydreamer_style, metro_style
+    ObjectCombo, VS_2010_STYLE, GREY_WIND_STYLE, NEW_MOON_STYLE, METRO_STYLE
 )
+
+
+STYLES = {
+    'VS 2010': VS_2010_STYLE,
+    'Grey Wind': GREY_WIND_STYLE,
+    'New Moon': NEW_MOON_STYLE,
+    'Metro': METRO_STYLE,
+}
 
 
 enamldef MyDockArea(DockArea):
@@ -129,10 +136,7 @@ enamldef Main(Window):
                     names.append(name)
                 area.find('Item 1').split('left', *names)
         ObjectCombo: style_c:
-            items = [
-                vs_2010_style, grey_wind_style, new_moon_style,
-                daydreamer_style, metro_style,
-            ]
-            to_string = lambda func: func.__name__.replace('_', ' ')
+            items = STYLES.keys()
+            selected = 'VS 2010'
         MyDockArea: area:
-            style << style_c.selected()
+            style_sheet << STYLES[style_c.selected]

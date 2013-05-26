@@ -5,18 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QMargins, QPoint, QRect, pyqtSignal
-from PyQt4.QtGui import QFrame, QHBoxLayout, QIcon, QLayout
+from PyQt4.QtCore import Qt, QMargins, QPoint, QRect, QSize, pyqtSignal
+from PyQt4.QtGui import QFrame, QHBoxLayout, QLayout
 
 from atom.api import Bool, Typed
 
+from .q_bitmap_button import QBitmapButton
 from .q_dock_area import QDockArea
 from .q_dock_frame import QDockFrame
 from .q_dock_frame_layout import QDockFrameLayout
-from .q_icon_button import QIconButton
-
-# Make sure the resources get registered.
-from . import dock_resources
+from .xbms import CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON
 
 
 #: The maximum number of free windows to keep in the free list.
@@ -64,37 +62,22 @@ class QDockWindowButtons(QFrame):
         super(QDockWindowButtons, self).__init__(parent)
         self._buttons = self.CloseButton | self.MaximizeButton
 
-        hovered = QIcon.Active
-        pressed = QIcon.Selected
-
-        max_icon = QIcon()
-        max_icon.addFile(':dock_images/maxbtn_large_s.png')
-        max_icon.addFile(':dock_images/maxbtn_large_h.png', mode=hovered)
-        max_icon.addFile(':dock_images/maxbtn_large_p.png', mode=pressed)
-
-        restore_icon = QIcon()
-        restore_icon.addFile(':dock_images/rstrbtn_large_s.png')
-        restore_icon.addFile(':dock_images/rstrbtn_large_h.png', mode=hovered)
-        restore_icon.addFile(':dock_images/rstrbtn_large_p.png', mode=pressed)
-
-        close_icon = QIcon()
-        close_icon.addFile(':dock_images/closebtn_large_s.png')
-        close_icon.addFile(':dock_images/closebtn_large_h.png', mode=hovered)
-        close_icon.addFile(':dock_images/closebtn_large_p.png', mode=pressed)
-
-        max_button = self._max_button = QIconButton(self)
-        max_button.setIcon(max_icon)
-        max_button.setIconSize(max_icon.availableSizes()[0])
+        max_button = self._max_button = QBitmapButton(self)
+        max_button.setObjectName("dockwindow-maximize-button")
+        max_button.setBitmap(MAXIMIZE_BUTTON.toBitmap())
+        max_button.setIconSize(QSize(20, 15))
         max_button.setVisible(self._buttons & self.MaximizeButton)
 
-        restore_button = self._restore_button = QIconButton(self)
-        restore_button.setIcon(restore_icon)
-        restore_button.setIconSize(restore_icon.availableSizes()[0])
+        restore_button = self._restore_button = QBitmapButton(self)
+        restore_button.setObjectName("dockwindow-restore-button")
+        restore_button.setBitmap(RESTORE_BUTTON.toBitmap())
+        restore_button.setIconSize(QSize(20, 15))
         restore_button.setVisible(self._buttons & self.RestoreButton)
 
-        close_button = self._close_button = QIconButton()
-        close_button.setIcon(close_icon)
-        close_button.setIconSize(close_icon.availableSizes()[0])
+        close_button = self._close_button = QBitmapButton(self)
+        close_button.setObjectName("dockwindow-close-button")
+        close_button.setBitmap(CLOSE_BUTTON.toBitmap())
+        close_button.setIconSize(QSize(34, 15))
         close_button.setVisible(self._buttons & self.CloseButton)
 
         layout = QHBoxLayout()

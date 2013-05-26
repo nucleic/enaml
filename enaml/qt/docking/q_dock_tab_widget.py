@@ -5,10 +5,35 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QPoint, QMetaObject, QEvent
+from PyQt4.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent
 from PyQt4.QtGui import (
-    QApplication, QTabBar, QTabWidget, QMouseEvent, QResizeEvent
+    QApplication, QTabBar, QTabWidget, QMouseEvent, QResizeEvent, QStyle
 )
+
+from .q_bitmap_button import QBitmapButton
+from .xbms import CLOSE_BUTTON
+
+
+class QDockTabCloseButton(QBitmapButton):
+    """ A bitmap button subclass used as a dock tab close button.
+
+    """
+    def styleOption(self):
+        """ Get a filled style option for the button.
+
+        Returns
+        -------
+        result : QStyleOption
+            A style option initialized for the current button state.
+
+        """
+        opt = super(QDockTabCloseButton, self).styleOption()
+        parent = self.parent()
+        if isinstance(parent, QDockTabBar):
+            index = parent.currentIndex()
+            if parent.tabButton(index, QTabBar.RightSide) is self:
+                opt.state |= QStyle.State_Selected
+        return opt
 
 
 class QDockTabBar(QTabBar):
@@ -59,13 +84,28 @@ class QDockTabBar(QTabBar):
                 # A workaround is to send a dummy resize event.
                 button.setVisible(visible)
                 if not visible:
-                   button.resize(0, 0)
+                    button.resize(0, 0)
                 else:
-                   button.resize(button.sizeHint())
+                    button.resize(button.sizeHint())
                 size = self.size()
                 event = QResizeEvent(size, size)
                 QApplication.sendEvent(self, event)
                 self.update()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _onCloseButtonClicked(self):
+        """ Handle the 'clicked' signal on the tab close buttons.
+
+        This handler will find the tab index for the clicked button
+        and emit the 'tabCloseRequested' signal with that index.
+
+        """
+        button = self.sender()
+        for index in xrange(self.count()):
+            if self.tabButton(index, QTabBar.RightSide) is button:
+                self.tabCloseRequested.emit(index)
 
     #--------------------------------------------------------------------------
     # Reimplementations
@@ -73,11 +113,18 @@ class QDockTabBar(QTabBar):
     def tabInserted(self, index):
         """ Handle a tab insertion in the tab bar.
 
-        This handler will update the visibilty of close button for
-        the inserted tab. This method assumes that this tab bar is
-        properly parented by a QDockTabWidget.
+        This handler will create the close button for the tab and then
+        update its visibilty depending on whether or not the dock item
+        is closable. This method assumes that this tab bar is parented
+        by a QDockTabWidget.
 
         """
+        button = QDockTabCloseButton(self)
+        button.setObjectName("docktab-close-button")
+        button.setBitmap(CLOSE_BUTTON.toBitmap())
+        button.setIconSize(QSize(14, 13))
+        button.clicked.connect(self._onCloseButtonClicked)
+        self.setTabButton(index, QTabBar.RightSide, button)
         visible = self.parent().widget(index).closable()
         self.setCloseButtonVisible(index, visible)
 

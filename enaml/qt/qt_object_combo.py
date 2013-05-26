@@ -137,7 +137,7 @@ class QtObjectCombo(QtControl, ProxyObjectCombo):
                     widget.addItem(text)
                 else:
                     widget.addItem(qicon, text)
-                if item is selected:
+                if item == selected:
                     target_index = index
             widget.setCurrentIndex(target_index)
         finally:
