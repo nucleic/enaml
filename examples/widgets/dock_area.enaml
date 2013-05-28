@@ -22,15 +22,15 @@ from enaml.layout.api import (
 )
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
-    ObjectCombo, VS_2010_STYLE, GREY_WIND_STYLE, NEW_MOON_STYLE, METRO_STYLE
+    ObjectCombo
 )
 
 
 STYLES = {
-    'VS 2010': VS_2010_STYLE,
-    'Grey Wind': GREY_WIND_STYLE,
-    'New Moon': NEW_MOON_STYLE,
-    'Metro': METRO_STYLE,
+    'VS 2010': 'vs-2010',
+    'Grey Wind': 'grey-wind',
+    'New Moon': 'new-moon',
+    'Metro': 'metro',
 }
 
 
@@ -139,4 +139,4 @@ enamldef Main(Window):
             items = STYLES.keys()
             selected = 'VS 2010'
         MyDockArea: area:
-            style_sheet << STYLES[style_c.selected]
+            style << STYLES[style_c.selected]

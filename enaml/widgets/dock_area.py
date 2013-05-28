@@ -15,7 +15,6 @@ from enaml.layout.dock_layout import (
 )
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
-from .dock_area_styles import VS_2010_STYLE
 from .dock_item import DockItem
 
 
@@ -50,7 +49,7 @@ class ProxyDockArea(ProxyConstraintsWidget):
     def set_tab_position(self, position):
         raise NotImplementedError
 
-    def set_style_sheet(self, style_sheet):
+    def set_style(self, style):
         raise NotImplementedError
 
     def save_layout(self):
@@ -78,8 +77,9 @@ class DockArea(ConstraintsWidget):
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
 
     #: The style to apply to the dock area. The default style resembles
-    #: Visual Studio 2010.
-    style_sheet = d_(Unicode(VS_2010_STYLE))
+    #: Visual Studio 2010. The builtin styles are: 'vs-2010', 'grey-wind',
+    #: 'new-moon', and 'metro'.
+    style = d_(Unicode('vs-2010'))
 
     #: A Stack expands freely in height and width by default
     hug_width = set_default('ignore')
@@ -204,7 +204,7 @@ class DockArea(ConstraintsWidget):
         if change['type'] == 'update':
             self.apply_layout(change['value'])
 
-    @observe(('tab_position', 'style_sheet'))
+    @observe(('tab_position', 'style'))
     def _update_proxy(self, change):
         """ Update the proxy when the area state changes.
 

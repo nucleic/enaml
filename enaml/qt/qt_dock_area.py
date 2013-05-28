@@ -14,6 +14,7 @@ from enaml.widgets.dock_area import ProxyDockArea
 
 from .docking.dock_manager import DockManager
 from .docking.q_dock_area import QDockArea
+from .docking.style_sheets import get_style_sheet
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_dock_item import QtDockItem
 
@@ -91,8 +92,8 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         super(QtDockArea, self).init_widget()
         d = self.declaration
         self.set_tab_position(d.tab_position)
-        if d.style_sheet:
-            self.set_style_sheet(d.style_sheet)
+        if d.style:
+            self.set_style(d.style)
 
     def init_layout(self):
         """ Initialize the layout of the underlying control.
@@ -162,11 +163,11 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         self.widget.setTabPosition(TAB_POSITIONS[position])
 
-    def set_style_sheet(self, style_sheet):
-        """ Set the style sheet for the underlying widget.
+    def set_style(self, style):
+        """ Set the style for the underlying widget.
 
         """
-        self.widget.setStyleSheet(style_sheet)
+        self.widget.setStyleSheet(get_style_sheet(style))
 
     def save_layout(self):
         """ Save the current layout on the underlying widget.

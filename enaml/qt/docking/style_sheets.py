@@ -7,8 +7,61 @@
 #------------------------------------------------------------------------------
 
 
+#: The global dict of registered stylesheets. This dict should never be
+#: modified directly. Use the functions 'register_style_sheet' and
+#: 'get_style_sheet' instead.
+_style_sheets = {}
+
+
+def get_style_sheet(name):
+    """ Get the style sheet for the given style id.
+
+    Parameters
+    ----------
+    name : basestring
+        The string name of the style previously registered with the
+        'register_style_sheet' function.
+
+    Returns
+    -------
+    result : unicode
+        The unicode stylesheet for the style name, or an empty string
+        if the style is not found.
+
+    """
+    return _style_sheets.get(name, u'')
+
+
+def register_style_sheet(name, sheet):
+    """ Register a dock area style sheet.
+
+    Parameters
+    ----------
+    name : basestring
+        The name to associate with the stylesheet for later lookup.
+
+    sheet : unicode
+        A unicode string containing the style sheet for the dock area.
+
+    Raises
+    ------
+    ValueError
+        If the given name is already registered, a value error will be
+        raised.
+
+    """
+    assert isinstance(sheet, unicode), 'style sheet must a unicode string'
+    if name in _style_sheets:
+        raise ValueError("'%s' style is already registered" % name)
+    _style_sheets[name] = sheet
+
+
+#: A null stylesheet.
+register_style_sheet(u'', u'')
+
+
 #: A stylesheet inspired by Visual Studio 2010
-VS_2010_STYLE = u"""
+register_style_sheet(u'vs-2010', u"""
     QDockArea {
         padding: 5px;
         background: rgb(49, 67, 98);
@@ -125,11 +178,12 @@ VS_2010_STYLE = u"""
     QBitmapButton#docktab-close-button:selected {
         color: black;
     }
-"""
+""")
+
 
 #: A mild grey and brown stylesheet.
 #: Inspired by http://www.colourlovers.com/palette/2866138/Grey_Wind
-GREY_WIND_STYLE = u"""
+register_style_sheet(u'grey-wind', u"""
     QDockArea {
         padding: 5px;
         background: rgb(175, 178, 183);
@@ -247,12 +301,12 @@ GREY_WIND_STYLE = u"""
     QBitmapButton#dockwindow-restore-button:pressed {
         background: rgb(144, 144, 152);
     }
-"""
+""")
 
 
 #: A yellow, brown, and grey stylesheet.
 #: Inspired by http://www.colourlovers.com/palette/90734/Newly_Risen_Moon
-NEW_MOON_STYLE = u"""
+register_style_sheet(u'new-moon', u"""
     QDockArea {
         padding: 5px;
         background: rgb(54, 57, 59);
@@ -370,11 +424,11 @@ NEW_MOON_STYLE = u"""
     QBitmapButton#dockwindow-restore-button:pressed {
         background: rgb(105, 103, 88);
     }
-"""
+""")
 
 
 #: A stylesheet inspired by Windows Metro.
-METRO_STYLE = u"""
+register_style_sheet(u'metro', u"""
     QDockArea {
         padding: 5px;
         background: #C0C0C0;
@@ -490,4 +544,4 @@ METRO_STYLE = u"""
     QBitmapButton#dockwindow-restore-button:pressed {
         background: #3D6099;
     }
-"""
+""")

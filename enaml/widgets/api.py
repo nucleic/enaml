@@ -14,9 +14,6 @@ from .container import Container, Border
 from .date_selector import DateSelector
 from .datetime_selector import DatetimeSelector
 from .dock_area import DockArea
-from .dock_area_styles import (
-    VS_2010_STYLE, GREY_WIND_STYLE, NEW_MOON_STYLE, METRO_STYLE
-)
 from .dock_item import DockItem
 from .dock_pane import DockPane
 from .dual_slider import DualSlider
