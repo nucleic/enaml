@@ -1,5 +1,11 @@
 Enaml Release Notes
 ===================
+0.7.11 - 05/28/2013
+-------------------
+- Claw back the direct exposure of the Qt stylesheets. 947760ebcd_
+
+.. _947760ebcd: https://github.com/nucleic/enaml/commit/947760ebcd68f351f268913ebbd396a6da24f06d
+
 0.7.10 - 05/26/2013
 -------------------
 - Expose the Qt stylesheet directly for the dock area. 5877335bcf_
