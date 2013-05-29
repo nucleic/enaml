@@ -133,14 +133,17 @@ class QDockContainer(QDockFrame):
         """ Handle the show maximized request for the dock container.
 
         """
-        def update_buttons(bar):
+        def update_buttons(bar, link=False):
             buttons = bar.buttons()
             buttons |= bar.RestoreButton
             buttons &= ~bar.MaximizeButton
+            if link:
+                buttons &= ~bar.LinkButton
             bar.setButtons(buttons)
         if self.isWindow():
             super(QDockContainer, self).showMaximized()
-            update_buttons(self.dockItem().titleBarWidget())
+            self.setLinked(False)
+            update_buttons(self.dockItem().titleBarWidget(), link=True)
         else:
             area = self.parentDockArea()
             if area is not None:
@@ -154,14 +157,17 @@ class QDockContainer(QDockFrame):
         """ Handle the show normal request for the dock container.
 
         """
-        def update_buttons(bar):
+        def update_buttons(bar, link=False):
             buttons = bar.buttons()
             buttons |= bar.MaximizeButton
             buttons &= ~bar.RestoreButton
+            if link:
+                buttons |= bar.LinkButton
             bar.setButtons(buttons)
         if self.isWindow():
             super(QDockContainer, self).showNormal()
-            update_buttons(self.dockItem().titleBarWidget())
+            self.setLinked(False)
+            update_buttons(self.dockItem().titleBarWidget(), link=True)
         elif self.frame_state.item_is_maximized:
             item = self.dockItem()
             update_buttons(item.titleBarWidget())
@@ -238,6 +244,27 @@ class QDockContainer(QDockFrame):
             return item.closable()
         return True
 
+    def isLinked(self):
+        """ Get whether or not the container is linked.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            return item.isLinked()
+        return False
+
+    def setLinked(self, linked):
+        """ Set whether or not the container should be linked.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            item.setLinked(linked)
+
     def showTitleBar(self):
         """ Show the title bar for the container.
 
@@ -258,6 +285,24 @@ class QDockContainer(QDockFrame):
         if item is not None:
             item.titleBarWidget().hide()
 
+    def showLinkButton(self):
+        """ Show the link button on the title bar.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            bar = item.titleBarWidget()
+            bar.setButtons(bar.buttons() | bar.LinkButton)
+
+    def hideLinkButton(self):
+        """ Show the link button on the title bar.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            bar = item.titleBarWidget()
+            bar.setButtons(bar.buttons() & ~bar.LinkButton)
+
     def reset(self):
         """ Reset the container to the initial pre-docked state.
 
@@ -267,6 +312,8 @@ class QDockContainer(QDockFrame):
         state.press_pos = None
         self.showNormal()
         self.unfloat()
+        self.hideLinkButton()
+        self.setLinked(False)
         self.showTitleBar()
         self.setAttribute(Qt.WA_WState_ExplicitShowHide, False)
         self.setAttribute(Qt.WA_WState_Hidden, False)
@@ -281,6 +328,8 @@ class QDockContainer(QDockFrame):
         self.setParent(self.manager().dock_area(), flags)
         self.layout().setContentsMargins(QMargins(5, 5, 5, 5))
         self.setProperty('floating', True)
+        self.setLinked(False)
+        self.showLinkButton()
         repolish(self)
 
     def unfloat(self):
@@ -294,6 +343,8 @@ class QDockContainer(QDockFrame):
         self.layout().setContentsMargins(QMargins(0, 0, 0, 0))
         self.unsetCursor()
         self.setProperty('floating', False)
+        self.setLinked(False)
+        self.hideLinkButton()
         repolish(self)
 
     def parentDockArea(self):
@@ -473,11 +524,8 @@ class QDockContainer(QDockFrame):
         global_pos = event.globalPos()
         if state.dragging:
             if self.isWindow():
-                manager = self.manager()
-                pos = global_pos - state.press_pos
-                pos = manager.snap_adjust(self, pos)
-                self.move(pos)
-                self.manager().frame_moved(self, global_pos)
+                target_pos = global_pos - state.press_pos
+                self.manager().drag_move_frame(self, target_pos, global_pos)
             return True
 
         # Ensure the drag has crossed the app drag threshold.
@@ -534,7 +582,7 @@ class QDockContainer(QDockFrame):
             if state.press_pos is not None:
                 self.releaseMouse()
                 if self.isWindow():
-                    self.manager().frame_released(self, event.globalPos())
+                    self.manager().drag_release_frame(self, event.globalPos())
                 state.dragging = False
                 state.press_pos = None
                 return True
