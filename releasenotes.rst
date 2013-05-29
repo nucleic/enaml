@@ -1,5 +1,11 @@
 Enaml Release Notes
 ===================
+0.7.12 - 05/29/2013
+-------------------
+- Make floating dock windows snappable and linkable. de3ced381e_
+
+.. _de3ced381e: https://github.com/nucleic/enaml/commit/de3ced381e3b4dde88bb59fdab5399eb7173ceba
+
 0.7.11 - 05/28/2013
 -------------------
 - Claw back the direct exposure of the Qt stylesheets. 947760ebcd_
