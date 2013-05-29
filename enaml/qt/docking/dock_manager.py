@@ -405,91 +405,42 @@ class DockManager(Atom):
         frames.remove(frame)
         frames.insert(-1, frame)
 
-    def snap_adjust(self, frame, pos):
-        """ Adjust the snap position for a dock frame.
+    def drag_move_frame(self, frame, target_pos, mouse_pos):
+        """ Move the floating frame to the target position.
 
-        This method computes a target move position given a potential
-        move position for a free floating dock frame. It takes into
-        account the other floating windows in the neighborhood and
-        computes a snap position if there is a window within range.
-
-        Parameters
-        ----------
-        frame : QDockFrame
-            The free floating dock frame being dragged by the user.
-
-        pos : QPoint
-            The global proposed new position of the frame.
-
-        Returns
-        -------
-        result : QPoint
-            The adjusted global position to use as the goal for the
-            move operation.
-
-        """
-        dist = self._snap_dist
-        frame_pos = QPoint(pos)
-        frame_size = frame.frameGeometry().size()
-        for other in self._floating_frames():
-            if other is not frame:
-                frame_geo = QRect(frame_pos, frame_size)
-                other_geo = other.frameGeometry()
-                boundary = other_geo.adjusted(-dist, -dist, dist, dist)
-                if frame_geo.intersects(boundary):
-                    dx = other_geo.left() - (frame_geo.right() + 1)
-                    if dx > -dist:
-                        frame_pos.setX(frame_pos.x() + dx)
-                    else:
-                        dx = frame_geo.left() - (other_geo.right() + 1)
-                        if dx > -dist:
-                            frame_pos.setX(frame_pos.x() - dx)
-                    dy = other_geo.top() - (frame_geo.bottom() + 1)
-                    if dy > -dist:
-                        frame_pos.setY(frame_pos.y() + dy)
-                    else:
-                        dy = frame_geo.top() - (other_geo.bottom() + 1)
-                        if dy > -dist:
-                            frame_pos.setY(frame_pos.y() - dy)
-        return frame_pos
-
-    def frame_moved(self, frame, pos):
-        """ Handle a dock frame being moved by the user.
-
-        This method is called by the framework at the appropriate times
-        and should not be called directly by user code. It ensures that
-        the dock overlay guides are shown and hidden appropriately.
+        This method is called by a floating frame in response to a user
+        moving it by dragging on it's title bar. It takes into account
+        neighboring windows and will snap the frame edge to another
+        window if it comes close to the boundary. It also ensures that
+        the guide overlays are shown at the proper position. This
+        methos should not be called by user code.
 
         Parameters
         ----------
         frame : QDockFrame
-            The dock frame being dragged by the user.
+            The floating QDockFrame which should be moved.
 
-        pos : QPoint
-            The global coordinates of the mouse position.
+        target_pos : QPoint
+            The global position which is the target of the move.
+
+        mouse_pos : QPoint
+            The global mouse position.
 
         """
-        overlay = self._overlay
-        target = self._dock_target(frame, pos)
-        if isinstance(target, QDockContainer):
-            local = target.mapFromGlobal(pos)
-            overlay.mouse_over_widget(target, local)
-        elif isinstance(target, QDockArea):
-            # Disallow docking onto an area with a maximized widget.
-            # This prevents a non-intuitive user experience.
-            if target.maximizedWidget() is not None:
-                overlay.hide()
-                return
-            local = target.mapFromGlobal(pos)
-            if target.layoutWidget() is None:
-                overlay.mouse_over_widget(target, local, empty=True)
-            else:
-                widget = layout_hit_test(target, local)
-                overlay.mouse_over_area(target, widget, local)
-        else:
-            overlay.hide()
+        # If the frame is unlinked, the target position is adjusted to
+        # snap to nearby neighbors. If the frame is linked, all other
+        # linked frames are moved by the same delta distance.
+        if not frame.isLinked():
+            target_pos = self._snap_adjust(frame, target_pos)
+        delta = target_pos - frame.pos()
+        frame.move(target_pos)
+        if frame.isLinked():
+            for other in self._floating_frames():
+                if other is not frame and other.isLinked():
+                    other.move(other.pos() + delta)
+        self._update_drag_overlay(frame, mouse_pos)
 
-    def frame_released(self, frame, pos):
+    def drag_release_frame(self, frame, pos):
         """ Handle the dock frame being released by the user.
 
         This method is called by the framework at the appropriate times
@@ -748,6 +699,86 @@ class DockManager(Atom):
             local = target.mapFromGlobal(pos)
             if target.rect().contains(local):
                 return target
+
+    def _snap_adjust(self, frame, pos):
+        """ Adjust the snap position for a dock frame.
+
+        This method computes a target move position given a potential
+        move position for a free floating dock frame. It takes into
+        account the other floating windows in the neighborhood and
+        computes a snap position if there is a window within range.
+
+        Parameters
+        ----------
+        frame : QDockFrame
+            The free floating dock frame being dragged by the user.
+
+        pos : QPoint
+            The global target position of the frame.
+
+        Returns
+        -------
+        result : QPoint
+            The adjusted global position to use as the goal for the
+            move operation.
+
+        """
+        dist = self._snap_dist
+        frame_pos = QPoint(pos)
+        frame_size = frame.frameGeometry().size()
+        for other in self._floating_frames():
+            if other is not frame:
+                frame_geo = QRect(frame_pos, frame_size)
+                other_geo = other.frameGeometry()
+                boundary = other_geo.adjusted(-dist, -dist, dist, dist)
+                if frame_geo.intersects(boundary):
+                    dx = other_geo.left() - (frame_geo.right() + 1)
+                    if dx > -dist:
+                        frame_pos.setX(frame_pos.x() + dx)
+                    else:
+                        dx = frame_geo.left() - (other_geo.right() + 1)
+                        if dx > -dist:
+                            frame_pos.setX(frame_pos.x() - dx)
+                    dy = other_geo.top() - (frame_geo.bottom() + 1)
+                    if dy > -dist:
+                        frame_pos.setY(frame_pos.y() + dy)
+                    else:
+                        dy = frame_geo.top() - (other_geo.bottom() + 1)
+                        if dy > -dist:
+                            frame_pos.setY(frame_pos.y() - dy)
+        return frame_pos
+
+    def _update_drag_overlay(self, frame, pos):
+        """ Update the overlay for a dragged frame.
+
+        Parameters
+        ----------
+        frame : QDockFrame
+            The dock frame being dragged by the user.
+
+        pos : QPoint
+            The global coordinates of the mouse position.
+
+        """
+        overlay = self._overlay
+        target = self._dock_target(frame, pos)
+        if isinstance(target, QDockContainer):
+            local = target.mapFromGlobal(pos)
+            overlay.mouse_over_widget(target, local)
+        elif isinstance(target, QDockArea):
+            # Disallow docking onto an area with a maximized widget.
+            # This prevents a non-intuitive user experience.
+            if target.maximizedWidget() is not None:
+                overlay.hide()
+                return
+            local = target.mapFromGlobal(pos)
+            if target.layoutWidget() is None:
+                overlay.mouse_over_widget(target, local, empty=True)
+            else:
+                widget = layout_hit_test(target, local)
+                overlay.mouse_over_area(target, widget, local)
+        else:
+            overlay.hide()
 
     @contextmanager
     def _dock_context(self, container):
