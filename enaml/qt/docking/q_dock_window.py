@@ -10,11 +10,14 @@ from PyQt4.QtGui import QFrame, QHBoxLayout, QLayout
 
 from atom.api import Bool, Typed
 
-from .q_bitmap_button import QBitmapButton
+from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_dock_area import QDockArea
 from .q_dock_frame import QDockFrame
 from .q_dock_frame_layout import QDockFrameLayout
-from .xbms import CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON
+from .xbms import (
+    CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON, LINKED_BUTTON,
+    UNLINKED_BUTTON
+)
 
 
 #: The maximum number of free windows to keep in the free list.
@@ -30,13 +33,16 @@ class QDockWindowButtons(QFrame):
 
     """
     #: A signal emitted when the maximize button is clicked.
-    maximizeButtonClicked = pyqtSignal()
+    maximizeButtonClicked = pyqtSignal(bool)
 
     #: A signal emitted when the restore button is clicked.
-    restoreButtonClicked = pyqtSignal()
+    restoreButtonClicked = pyqtSignal(bool)
 
     #: A signal emitted when the close button is closed.
-    closeButtonClicked = pyqtSignal()
+    closeButtonClicked = pyqtSignal(bool)
+
+    #: A signal emitted when the link button is toggled.
+    linkButtonToggled = pyqtSignal(bool)
 
     #: Do not show any buttons in the widget.
     NoButtons = 0x0
@@ -50,6 +56,9 @@ class QDockWindowButtons(QFrame):
     #: Show the close button in the widget.
     CloseButton = 0x4
 
+    #: Show the link button in the widget.
+    LinkButton = 0x8
+
     def __init__(self, parent=None):
         """ Initialize a QDockWindowButtons instance.
 
@@ -60,30 +69,40 @@ class QDockWindowButtons(QFrame):
 
         """
         super(QDockWindowButtons, self).__init__(parent)
-        self._buttons = self.CloseButton | self.MaximizeButton
+        self._buttons = (
+            self.CloseButton | self.MaximizeButton | self.LinkButton
+        )
 
         max_button = self._max_button = QBitmapButton(self)
-        max_button.setObjectName("dockwindow-maximize-button")
+        max_button.setObjectName('dockwindow-maximize-button')
         max_button.setBitmap(MAXIMIZE_BUTTON.toBitmap())
         max_button.setIconSize(QSize(20, 15))
         max_button.setVisible(self._buttons & self.MaximizeButton)
 
         restore_button = self._restore_button = QBitmapButton(self)
-        restore_button.setObjectName("dockwindow-restore-button")
+        restore_button.setObjectName('dockwindow-restore-button')
         restore_button.setBitmap(RESTORE_BUTTON.toBitmap())
         restore_button.setIconSize(QSize(20, 15))
         restore_button.setVisible(self._buttons & self.RestoreButton)
 
         close_button = self._close_button = QBitmapButton(self)
-        close_button.setObjectName("dockwindow-close-button")
+        close_button.setObjectName('dockwindow-close-button')
         close_button.setBitmap(CLOSE_BUTTON.toBitmap())
         close_button.setIconSize(QSize(34, 15))
         close_button.setVisible(self._buttons & self.CloseButton)
+
+        link_button = self._link_button = QCheckedBitmapButton(self)
+        link_button.setObjectName('dockwindow-link-button')
+        link_button.setBitmap(UNLINKED_BUTTON.toBitmap())
+        link_button.setCheckedBitmap(LINKED_BUTTON.toBitmap())
+        link_button.setIconSize(QSize(20, 15))
+        link_button.setVisible(self._buttons & self.LinkButton)
 
         layout = QHBoxLayout()
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.setSpacing(1)
 
+        layout.addWidget(link_button)
         layout.addWidget(max_button)
         layout.addWidget(restore_button)
         layout.addWidget(close_button)
@@ -93,6 +112,7 @@ class QDockWindowButtons(QFrame):
         max_button.clicked.connect(self.maximizeButtonClicked)
         restore_button.clicked.connect(self.restoreButtonClicked)
         close_button.clicked.connect(self.closeButtonClicked)
+        link_button.toggled.connect(self.linkButtonToggled)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -121,6 +141,29 @@ class QDockWindowButtons(QFrame):
         self._max_button.setVisible(buttons & self.MaximizeButton)
         self._restore_button.setVisible(buttons & self.RestoreButton)
         self._close_button.setVisible(buttons & self.CloseButton)
+        self._link_button.setVisible(buttons & self.LinkButton)
+
+    def isLinked(self):
+        """ Get whether the link button is checked.
+
+        Returns
+        -------
+        result : bool
+            True if the link button is checked, False otherwise.
+
+        """
+        return self._link_button.isChecked()
+
+    def setLinked(self, linked):
+        """ Set whether or not the link button is checked.
+
+        Parameters
+        ----------
+        linked : bool
+            True if the link button should be checked, False otherwise.
+
+        """
+        self._link_button.setChecked(linked)
 
 
 class QDockWindow(QDockFrame):
@@ -226,7 +269,10 @@ class QDockWindow(QDockFrame):
         buttons = title_buttons.buttons()
         buttons |= title_buttons.RestoreButton
         buttons &= ~title_buttons.MaximizeButton
+        buttons &= ~title_buttons.LinkButton
         title_buttons.setButtons(buttons)
+        title_buttons.setLinked(False)
+        self._updateButtonGeometry()
 
     def showNormal(self):
         """ Handle a show normal request for the window.
@@ -234,6 +280,7 @@ class QDockWindow(QDockFrame):
         """
         super(QDockWindow, self).showNormal()
         self.applyNormalState()
+        self._updateButtonGeometry()
 
     def applyNormalState(self):
         """ Apply the proper state for normal window geometry.
@@ -243,8 +290,10 @@ class QDockWindow(QDockFrame):
         title_buttons = self._title_buttons
         buttons = title_buttons.buttons()
         buttons |= title_buttons.MaximizeButton
+        buttons |= title_buttons.LinkButton
         buttons &= ~title_buttons.RestoreButton
         title_buttons.setButtons(buttons)
+        title_buttons.setLinked(False)
 
     def titleBarGeometry(self):
         """ Get the geometry rect for the title bar.
@@ -304,6 +353,12 @@ class QDockWindow(QDockFrame):
         """
         self.layout().setWidget(dock_area)
 
+    def isLinked(self):
+        """ Get whether or not the window is linked.
+
+        """
+        return self._title_buttons.isLinked()
+
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
@@ -318,13 +373,7 @@ class QDockWindow(QDockFrame):
 
         """
         super(QDockWindow, self).resizeEvent(event)
-        title_buttons = self._title_buttons
-        size = title_buttons.minimumSizeHint()
-        margins = self.layout().contentsMargins()
-        offset = max(self.MinButtonOffset, margins.right())
-        x = self.width() - size.width() - offset
-        rect = QRect(x, 1, size.width(), size.height())
-        title_buttons.setGeometry(rect)
+        self._updateButtonGeometry()
 
     def hoverMoveEvent(self, event):
         """ Handle the hover move event for the dock window.
@@ -376,11 +425,8 @@ class QDockWindow(QDockFrame):
                 new_x = max(5, min(test_x, max_x))
                 state.press_pos.setX(new_x)
                 state.press_pos.setY(margins.top() / 2)
-            manager = self.manager()
-            pos = global_pos - state.press_pos
-            pos = manager.snap_adjust(self, pos)
-            self.move(pos)
-            manager.frame_moved(self, global_pos)
+            target_pos = global_pos - state.press_pos
+            self.manager().drag_move_frame(self, target_pos, global_pos)
             return True
         return False
 
@@ -396,8 +442,26 @@ class QDockWindow(QDockFrame):
         if event.button() == Qt.LeftButton:
             state = self.frame_state
             if state.press_pos is not None:
-                self.manager().frame_released(self, event.globalPos())
+                self.manager().drag_release_frame(self, event.globalPos())
                 state.dragging = False
                 state.press_pos = None
                 return True
         return False
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _updateButtonGeometry(self):
+        """ Update the geometry of the window buttons.
+
+        This method will set the geometry of the window buttons
+        according to the current window size.
+
+        """
+        title_buttons = self._title_buttons
+        size = title_buttons.minimumSizeHint()
+        margins = self.layout().contentsMargins()
+        offset = max(self.MinButtonOffset, margins.right())
+        x = self.width() - size.width() - offset
+        rect = QRect(x, 1, size.width(), size.height())
+        title_buttons.setGeometry(rect)
