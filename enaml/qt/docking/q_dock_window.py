@@ -311,7 +311,7 @@ class QDockWindow(QDockFrame):
         """ Handle a close event for the window.
 
         """
-        self.manager()._close_window(self, event)
+        self.manager().close_window(self, event)
 
     def resizeEvent(self, event):
         """ Handle the resize event for the dock window.
@@ -377,7 +377,7 @@ class QDockWindow(QDockFrame):
                 state.press_pos.setX(new_x)
                 state.press_pos.setY(margins.top() / 2)
             self.move(global_pos - state.press_pos)
-            self.manager()._frame_moved(self, global_pos)
+            self.manager().frame_moved(self, global_pos)
             return True
         return False
 
@@ -393,7 +393,7 @@ class QDockWindow(QDockFrame):
         if event.button() == Qt.LeftButton:
             state = self.frame_state
             if state.press_pos is not None:
-                self.manager()._frame_released(self, event.globalPos())
+                self.manager().frame_released(self, event.globalPos())
                 state.dragging = False
                 state.press_pos = None
                 return True

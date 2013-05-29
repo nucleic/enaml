@@ -278,7 +278,7 @@ class QDockContainer(QDockFrame):
         self.hide()
         self.setAttribute(Qt.WA_Hover, True)
         flags = Qt.Tool | Qt.FramelessWindowHint
-        self.setParent(self.manager().dock_area, flags)
+        self.setParent(self.manager().dock_area(), flags)
         self.layout().setContentsMargins(QMargins(5, 5, 5, 5))
         self.setProperty('floating', True)
         repolish(self)
@@ -290,7 +290,7 @@ class QDockContainer(QDockFrame):
         self.hide()
         self.setAttribute(Qt.WA_Hover, False)
         flags = Qt.Widget
-        self.setParent(self.manager().dock_area, flags)
+        self.setParent(self.manager().dock_area(), flags)
         self.layout().setContentsMargins(QMargins(0, 0, 0, 0))
         self.unsetCursor()
         self.setProperty('floating', False)
@@ -436,7 +436,7 @@ class QDockContainer(QDockFrame):
         """ Handle the close event for the dock container.
 
         """
-        self.manager()._close_container(self, event)
+        self.manager().close_container(self, event)
 
     def titleBarMousePressEvent(self, event):
         """ Handle a mouse press event on the title bar.
@@ -474,7 +474,7 @@ class QDockContainer(QDockFrame):
         if state.dragging:
             if self.isWindow():
                 self.move(global_pos - state.press_pos)
-                self.manager()._frame_moved(self, global_pos)
+                self.manager().frame_moved(self, global_pos)
             return True
 
         # Ensure the drag has crossed the app drag threshold.
@@ -531,7 +531,7 @@ class QDockContainer(QDockFrame):
             if state.press_pos is not None:
                 self.releaseMouse()
                 if self.isWindow():
-                    self.manager()._frame_released(self, event.globalPos())
+                    self.manager().frame_released(self, event.globalPos())
                 state.dragging = False
                 state.press_pos = None
                 return True
