@@ -154,12 +154,14 @@ register_style_sheet(u'vs-2010', u"""
     }
 
     QBitmapButton#dockwindow-maximize-button:hover,
-    QBitmapButton#dockwindow-restore-button:hover {
+    QBitmapButton#dockwindow-restore-button:hover,
+    QBitmapButton#dockwindow-link-button:hover {
         background: #3665B3;
     }
 
     QBitmapButton#dockwindow-maximize-button:pressed,
-    QBitmapButton#dockwindow-restore-button:pressed {
+    QBitmapButton#dockwindow-restore-button:pressed,
+    QBitmapButton#dockwindow-link-button:pressed {
         background: #3D6099;
     }
 
@@ -293,12 +295,14 @@ register_style_sheet(u'grey-wind', u"""
     }
 
     QBitmapButton#dockwindow-maximize-button:hover,
-    QBitmapButton#dockwindow-restore-button:hover {
+    QBitmapButton#dockwindow-restore-button:hover,
+    QBitmapButton#dockwindow-link-button:hover {
         background: rgb(175, 178, 183);
     }
 
     QBitmapButton#dockwindow-maximize-button:pressed,
-    QBitmapButton#dockwindow-restore-button:pressed {
+    QBitmapButton#dockwindow-restore-button:pressed,
+    QBitmapButton#dockwindow-link-button:pressed {
         background: rgb(144, 144, 152);
     }
 """)
@@ -416,12 +420,14 @@ register_style_sheet(u'new-moon', u"""
     }
 
     QBitmapButton#dockwindow-maximize-button:hover,
-    QBitmapButton#dockwindow-restore-button:hover {
+    QBitmapButton#dockwindow-restore-button:hover,
+    QBitmapButton#dockwindow-link-button:hover {
         background: #9E935D;
     }
 
     QBitmapButton#dockwindow-maximize-button:pressed,
-    QBitmapButton#dockwindow-restore-button:pressed {
+    QBitmapButton#dockwindow-restore-button:pressed,
+    QBitmapButton#dockwindow-link-button:pressed {
         background: rgb(105, 103, 88);
     }
 """)
@@ -535,13 +541,15 @@ register_style_sheet(u'metro', u"""
     }
 
     QBitmapButton#dockwindow-maximize-button:hover,
-    QBitmapButton#dockwindow-restore-button:hover {
+    QBitmapButton#dockwindow-restore-button:hover,
+    QBitmapButton#dockwindow-link-button:hover {
         background: #3665B3;
         color: white;
     }
 
     QBitmapButton#dockwindow-maximize-button:pressed,
-    QBitmapButton#dockwindow-restore-button:pressed {
+    QBitmapButton#dockwindow-restore-button:pressed,
+    QBitmapButton#dockwindow-link-button:pressed {
         background: #3D6099;
     }
 """)
