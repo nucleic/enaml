@@ -6,14 +6,16 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Coerced, Enum, Range, Int, Typed, ForwardTyped, observe, set_default
+    Bool, Coerced, Enum, Range, Int, List, Typed, ForwardTyped, observe,
+    set_default
 )
 
+from enaml.application import ScheduledTask, schedule
 from enaml.core.declarative import d_
 from enaml.layout.geometry import Size
 
 from .control import Control, ProxyControl
-from .item import ItemModel
+from .item import Item, ItemModel
 
 
 class ProxyListControl(ProxyControl):
@@ -63,6 +65,38 @@ class ProxyListControl(ProxyControl):
         raise NotImplementedError
 
 
+class ListControlItemModel(ItemModel):
+    """ A simple item model for use with the ListControl.
+
+    This model provides a simplistic default model implementation for
+    the list control which uses the items declared as children of the
+    control. For complex use cases, the developer should implement
+    their own item model.
+
+    """
+    #: The list of items being handled by the model.
+    items = List()
+
+    def row_count(self):
+        """ Get the row count of the model.
+
+        """
+        return len(self.items)
+
+    def column_count(self):
+        """ Get the column count of the model.
+
+        """
+        return 1
+
+    def item(self, row, column):
+        """ Get the item for the given row and column.
+
+        """
+        if column == 0:
+            return self.items[row]
+
+
 class ListControl(Control):
     """ A control for displaying a list of Item instances.
 
@@ -70,6 +104,9 @@ class ListControl(Control):
     #: The item model to use for the list. If not explicitly given,
     #: one will be created using any given Item children.
     item_model = d_(Typed(ItemModel))
+
+    def _default_item_model(self):
+        return ListControlItemModel(items=list(self.items()))
 
     #: The column index to use for pulling items from the model.
     model_column = d_(Int(0))
@@ -129,6 +166,24 @@ class ListControl(Control):
     #: A reference to the ProxyListControl object.
     proxy = Typed(ProxyListControl)
 
+    #: A private scheduled task which collapses refresh requests when
+    #: the children change and the default list model is in use.
+    _refresh_task = Typed(ScheduledTask)
+
+    def items(self):
+        """ Get the items defined as children of this control.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields the children which are instances
+            of Item.
+
+        """
+        for child in self.children:
+            if isinstance(child, Item):
+                yield child
+
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
@@ -151,3 +206,52 @@ class ListControl(Control):
         """
         if self.proxy_is_active:
             self.proxy.refresh_items_layout()
+
+    def refresh_default_model(self):
+        """ Refresh the default item model.
+
+        This method is called automatically at the appropriate times.
+        It should rarely need to be called by user code.
+
+        """
+        model = self.item_model
+        if isinstance(model, ListControlItemModel):
+            model.items = list(self.items())
+            model.model_reset.emit()
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def child_added(self, child):
+        """ Handle the child added event.
+
+        This will trigger an items refresh if the default item model
+        is in use. The refresh is collapsed using a scheduled task.
+
+        """
+        super(ListControl, self).child_added(child)
+        self._refresh_if_needed()
+
+    def child_removed(self, child):
+        """ Handle the child added event.
+
+        This will trigger an items refresh if the default item model
+        is in use. The refresh is collapsed using a scheduled task.
+
+        """
+        super(ListControl, self).child_removed(child)
+        self._refresh_if_needed()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _refresh_if_needed(self):
+        """ Trigger a refresh the default item model if needed.
+
+        """
+        if self.is_initialized:
+            if isinstance(self.item_model, ListControlItemModel):
+                if self._refresh_task is None:
+                    task = schedule(self.refresh_default_model)
+                    task.notify(lambda res: delattr(self, '_refresh_task'))
+                    self._refresh_task = task
