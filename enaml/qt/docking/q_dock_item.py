@@ -353,6 +353,28 @@ class QDockItem(QFrame):
         """
         self.titleBarWidget().setIconSize(size)
 
+    def isLinked(self):
+        """ Get whether or not this dock item is linked.
+
+        Returns
+        -------
+        result : bool
+            True if the item is linked, False otherwise.
+
+        """
+        return self.titleBarWidget().isLinked()
+
+    def setLinked(self, linked):
+        """ Set whether or not the dock item is linked.
+
+        Parameters
+        ----------
+        linked : bool
+            True if the dock item should be linked, False otherwise.
+
+        """
+        self.titleBarWidget().setLinked(linked)
+
     def closable(self):
         """ Get whether or not the dock item is closable.
 

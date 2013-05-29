@@ -89,7 +89,7 @@ class QBitmapButton(QAbstractButton):
             opt.state |= QStyle.State_Sunken
         return opt
 
-    def drawBitmap(self, opt, painter):
+    def drawBitmap(self, bmp, opt, painter):
         """ Draw the bitmap for the button.
 
         The bitmap will be drawn with the foreground color set by
@@ -97,6 +97,9 @@ class QBitmapButton(QAbstractButton):
 
         Parameters
         ----------
+        bmp : QBitmap
+            The bitmap to draw.
+
         opt : QStyleOption
             The style option to use for drawing.
 
@@ -104,20 +107,18 @@ class QBitmapButton(QAbstractButton):
             The painter to use for drawing.
 
         """
-        bmp = self._bitmap
-        if bmp is not None:
-            # hack to get the current stylesheet foreground color
-            hint = QStyle.SH_GroupBox_TextLabelColor
-            fg = self.style().styleHint(hint, opt, self)
-            # mask signed to unsigned which 'fromRgba' requires
-            painter.setPen(QColor.fromRgba(0xffffffff & fg))
-            size = self.size()
-            im_size = bmp.size()
-            x = size.width() / 2 - im_size.width() / 2
-            y = size.height() / 2 - im_size.height() / 2
-            source = QRect(QPoint(0, 0), im_size)
-            dest = QRect(QPoint(x, y), im_size)
-            painter.drawPixmap(dest, bmp, source)
+        # hack to get the current stylesheet foreground color
+        hint = QStyle.SH_GroupBox_TextLabelColor
+        fg = self.style().styleHint(hint, opt, self)
+        # mask signed to unsigned which 'fromRgba' requires
+        painter.setPen(QColor.fromRgba(0xffffffff & fg))
+        size = self.size()
+        im_size = bmp.size()
+        x = size.width() / 2 - im_size.width() / 2
+        y = size.height() / 2 - im_size.height() / 2
+        source = QRect(QPoint(0, 0), im_size)
+        dest = QRect(QPoint(x, y), im_size)
+        painter.drawPixmap(dest, bmp, source)
 
     def paintEvent(self, event):
         """ Handle the paint event for the button.
@@ -126,4 +127,52 @@ class QBitmapButton(QAbstractButton):
         painter = QPainter(self)
         opt = self.styleOption()
         self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
-        self.drawBitmap(opt, painter)
+        bmp = self._bitmap
+        if bmp is not None:
+            self.drawBitmap(bmp, opt, painter)
+
+
+class QCheckedBitmapButton(QBitmapButton):
+    """ A bitmap button subclass which supports a checked bitmap.
+
+    """
+    _checked_bitmap = None
+
+    def __init__(self, parent=None):
+        """ Initialize a QCheckedBitmapButton.
+
+        Parameters
+        ----------
+        parent : QWidget or None
+            The parent widget of the button.
+
+        """
+        super(QCheckedBitmapButton, self).__init__(parent)
+        self.setCheckable(True)
+
+    def checkedBitmap(self):
+        """ Get the bitmap associated with the button checked state.
+
+        """
+        return self._checked_bitmap
+
+    def setCheckedBitmap(self, bitmap):
+        """ Set the bitmap associate with the button checked state.
+
+        """
+        self._checked_bitmap = bitmap
+        self.update()
+
+    def paintEvent(self, event):
+        """ Handle the paint event for the button.
+
+        """
+        painter = QPainter(self)
+        opt = self.styleOption()
+        self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
+        if self.isChecked():
+            bmp = self._checked_bitmap or self._bitmap
+        else:
+            bmp = self._bitmap
+        if bmp is not None:
+            self.drawBitmap(bmp, opt, painter)

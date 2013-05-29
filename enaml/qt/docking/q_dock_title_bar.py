@@ -8,10 +8,13 @@
 from PyQt4.QtCore import QSize, QMargins, pyqtSignal
 from PyQt4.QtGui import QWidget, QFrame, QHBoxLayout
 
-from .q_bitmap_button import QBitmapButton
+from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_icon_widget import QIconWidget
 from .q_text_label import QTextLabel
-from .xbms import CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON
+from .xbms import (
+    CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON, LINKED_BUTTON,
+    UNLINKED_BUTTON
+)
 
 
 class IDockTitleBar(QWidget):
@@ -19,13 +22,16 @@ class IDockTitleBar(QWidget):
 
     """
     #: A signal emitted when the maximize button is clicked.
-    maximizeButtonClicked = pyqtSignal()
+    maximizeButtonClicked = pyqtSignal(bool)
 
     #: A signal emitted when the restore button is clicked.
-    restoreButtonClicked = pyqtSignal()
+    restoreButtonClicked = pyqtSignal(bool)
 
     #: A signal emitted when the close button is clicked.
-    closeButtonClicked = pyqtSignal()
+    closeButtonClicked = pyqtSignal(bool)
+
+    #: A signal emitted when the link button is toggled.
+    linkButtonToggled = pyqtSignal(bool)
 
     #: Do not show any buttons in the title bar.
     NoButtons = 0x0
@@ -38,6 +44,9 @@ class IDockTitleBar(QWidget):
 
     #: Show the close button in the title bar.
     CloseButton = 0x4
+
+    #: Show the link button in the title bar.
+    LinkButton = 0x8
 
     def buttons(self):
         """ Get the buttons to show in the title bar.
@@ -128,6 +137,28 @@ class IDockTitleBar(QWidget):
         """
         raise NotImplementedError
 
+    def isLinked(self):
+        """ Get whether the link button is checked.
+
+        Returns
+        -------
+        result : bool
+            True if the link button is checked, False otherwise.
+
+        """
+        raise NotImplementedError
+
+    def setLinked(self, linked):
+        """ Set whether or not the link button is checked.
+
+        Parameters
+        ----------
+        linked : bool
+            True if the link button should be checked, False otherwise.
+
+        """
+        raise NotImplementedError
+
 
 class QDockTitleBar(QFrame, IDockTitleBar):
     """ A concrete implementation of IDockTitleBar.
@@ -136,13 +167,16 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
     """
     #: A signal emitted when the maximize button is clicked.
-    maximizeButtonClicked = pyqtSignal()
+    maximizeButtonClicked = pyqtSignal(bool)
 
     #: A signal emitted when the restore button is clicked.
-    restoreButtonClicked = pyqtSignal()
+    restoreButtonClicked = pyqtSignal(bool)
 
     #: A signal emitted when the close button is clicked.
-    closeButtonClicked = pyqtSignal()
+    closeButtonClicked = pyqtSignal(bool)
+
+    #: A signal emitted when the link button is toggled.
+    linkButtonToggled = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         """ Initialize a QDockTitleBar.
@@ -181,6 +215,13 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         close_button.setIconSize(btn_size)
         close_button.setVisible(self._buttons & self.CloseButton)
 
+        link_button = self._link_button = QCheckedBitmapButton(self)
+        link_button.setObjectName('docktitlebar-link-button')
+        link_button.setBitmap(UNLINKED_BUTTON.toBitmap())
+        link_button.setCheckedBitmap(LINKED_BUTTON.toBitmap())
+        link_button.setIconSize(btn_size)
+        link_button.setVisible(self._buttons & self.LinkButton)
+
         layout = QHBoxLayout()
         layout.setContentsMargins(QMargins(5, 2, 5, 2))
         layout.setSpacing(1)
@@ -188,6 +229,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         layout.addSpacing(0)
         layout.addWidget(title_label, 1)
         layout.addSpacing(4)
+        layout.addWidget(link_button)
         layout.addWidget(max_button)
         layout.addWidget(restore_button)
         layout.addWidget(close_button)
@@ -197,6 +239,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         max_button.clicked.connect(self.maximizeButtonClicked)
         restore_button.clicked.connect(self.restoreButtonClicked)
         close_button.clicked.connect(self.closeButtonClicked)
+        link_button.toggled.connect(self.linkButtonToggled)
 
     #--------------------------------------------------------------------------
     # IDockItemTitleBar API
@@ -225,6 +268,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         self._max_button.setVisible(buttons & self.MaximizeButton)
         self._restore_button.setVisible(buttons & self.RestoreButton)
         self._close_button.setVisible(buttons & self.CloseButton)
+        self._link_button.setVisible(buttons & self.LinkButton)
 
     def title(self):
         """ Get the title string of the title bar.
@@ -298,3 +342,25 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         """
         self._title_icon.setIconSize(size)
+
+    def isLinked(self):
+        """ Get whether the link button is checked.
+
+        Returns
+        -------
+        result : bool
+            True if the link button is checked, False otherwise.
+
+        """
+        return self._link_button.isChecked()
+
+    def setLinked(self, linked):
+        """ Set whether or not the link button is checked.
+
+        Parameters
+        ----------
+        linked : bool
+            True if the link button should be checked, False otherwise.
+
+        """
+        self._link_button.setChecked(linked)

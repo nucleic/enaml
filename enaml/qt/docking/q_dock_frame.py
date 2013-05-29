@@ -115,9 +115,7 @@ class QDockFrame(QFrame):
         """
         manager = self._manager
         if manager is not None:
-            frames = manager.dock_frames
-            frames.remove(self)
-            frames.append(self)
+            manager.raise_frame(self)
 
     def titleBarGeometry(self):
         """ Get the geometry rect for the title bar.
