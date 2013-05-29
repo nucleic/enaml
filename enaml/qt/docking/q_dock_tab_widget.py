@@ -120,7 +120,7 @@ class QDockTabBar(QTabBar):
 
         """
         button = QDockTabCloseButton(self)
-        button.setObjectName("docktab-close-button")
+        button.setObjectName('docktab-close-button')
         button.setBitmap(CLOSE_BUTTON.toBitmap())
         button.setIconSize(QSize(14, 13))
         button.clicked.connect(self._onCloseButtonClicked)
