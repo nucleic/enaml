@@ -473,7 +473,10 @@ class QDockContainer(QDockFrame):
         global_pos = event.globalPos()
         if state.dragging:
             if self.isWindow():
-                self.move(global_pos - state.press_pos)
+                manager = self.manager()
+                pos = global_pos - state.press_pos
+                pos = manager.snap_adjust(self, pos)
+                self.move(pos)
                 self.manager().frame_moved(self, global_pos)
             return True
 

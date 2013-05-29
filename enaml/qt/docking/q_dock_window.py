@@ -376,8 +376,11 @@ class QDockWindow(QDockFrame):
                 new_x = max(5, min(test_x, max_x))
                 state.press_pos.setX(new_x)
                 state.press_pos.setY(margins.top() / 2)
-            self.move(global_pos - state.press_pos)
-            self.manager().frame_moved(self, global_pos)
+            manager = self.manager()
+            pos = global_pos - state.press_pos
+            pos = manager.snap_adjust(self, pos)
+            self.move(pos)
+            manager.frame_moved(self, global_pos)
             return True
         return False
 

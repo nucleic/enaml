@@ -11,7 +11,7 @@ import warnings
 from PyQt4.QtCore import Qt, QPoint, QRect, QObject, QMetaObject
 from PyQt4.QtGui import QApplication
 
-from atom.api import Atom, Typed, List
+from atom.api import Atom, Int, Typed, List
 
 from enaml.layout.dock_layout import docklayout, dockarea, dockitem
 
@@ -112,10 +112,6 @@ class DockAreaFilter(QObject):
 class DockManager(Atom):
     """ A class which manages the docking behavior of a dock area.
 
-    The manager is used by attaching it to a QDockArea and then adding
-    dock items via the 'add_item' method and then setting a layout via
-    the 'apply_layout' method. See the docstring  of the public api methods for more functionality.
-
     """
     #: The handler which holds the primary dock area.
     _dock_area = Typed(QDockArea)
@@ -132,6 +128,9 @@ class DockManager(Atom):
 
     #: The set of QDockItem instances added to the manager.
     _dock_items = Typed(set, ())
+
+    #: The distance to use for snapping floating dock frames.
+    _snap_dist = Int(factory=lambda: QApplication.startDragDistance() * 2)
 
     def __init__(self, dock_area):
         """ Initialize a DockingManager.
@@ -406,6 +405,54 @@ class DockManager(Atom):
         frames.remove(frame)
         frames.insert(-1, frame)
 
+    def snap_adjust(self, frame, pos):
+        """ Adjust the snap position for a dock frame.
+
+        This method computes a target move position given a potential
+        move position for a free floating dock frame. It takes into
+        account the other floating windows in the neighborhood and
+        computes a snap position if there is a window within range.
+
+        Parameters
+        ----------
+        frame : QDockFrame
+            The free floating dock frame being dragged by the user.
+
+        pos : QPoint
+            The global proposed new position of the frame.
+
+        Returns
+        -------
+        result : QPoint
+            The adjusted global position to use as the goal for the
+            move operation.
+
+        """
+        dist = self._snap_dist
+        frame_pos = QPoint(pos)
+        frame_size = frame.frameGeometry().size()
+        for other in self._floating_frames():
+            if other is not frame:
+                frame_geo = QRect(frame_pos, frame_size)
+                other_geo = other.frameGeometry()
+                boundary = other_geo.adjusted(-dist, -dist, dist, dist)
+                if frame_geo.intersects(boundary):
+                    dx = other_geo.left() - (frame_geo.right() + 1)
+                    if dx > -dist:
+                        frame_pos.setX(frame_pos.x() + dx)
+                    else:
+                        dx = frame_geo.left() - (other_geo.right() + 1)
+                        if dx > -dist:
+                            frame_pos.setX(frame_pos.x() - dx)
+                    dy = other_geo.top() - (frame_geo.bottom() + 1)
+                    if dy > -dist:
+                        frame_pos.setY(frame_pos.y() + dy)
+                    else:
+                        dy = frame_geo.top() - (other_geo.bottom() + 1)
+                        if dy > -dist:
+                            frame_pos.setY(frame_pos.y() - dy)
+        return frame_pos
+
     def frame_moved(self, frame, pos):
         """ Handle a dock frame being moved by the user.
 
@@ -657,9 +704,14 @@ class DockManager(Atom):
                 missing(name)
         return res
 
-    def _iter_dock_targets(self):
+    def _iter_dock_targets(self, frame):
         """ Get an iterable of potential dock targets.
 
+        Parameters
+        ----------
+        frame : QDockFrame
+            The frame which is being docked, and therefore excluded
+            from the target search.
         Returns
         -------
         result : generator
@@ -668,7 +720,7 @@ class DockManager(Atom):
 
         """
         for target in reversed(self._dock_frames):
-            if target.isWindow():
+            if target is not frame and target.isWindow():
                 if isinstance(target, QDockContainer):
                     yield target
                 elif isinstance(target, QDockWindow):
@@ -692,11 +744,10 @@ class DockManager(Atom):
             The potential dock target for the frame and position.
 
         """
-        for target in self._iter_dock_targets():
-            if target is not frame:
-                local = target.mapFromGlobal(pos)
-                if target.rect().contains(local):
-                    return target
+        for target in self._iter_dock_targets(frame):
+            local = target.mapFromGlobal(pos)
+            if target.rect().contains(local):
+                return target
 
     @contextmanager
     def _dock_context(self, container):
