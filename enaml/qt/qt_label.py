@@ -56,6 +56,16 @@ class QtLabel(QtControl, ProxyLabel):
         self.set_text(d.text, sh_guard=False)
         self.set_align(d.align)
         self.set_vertical_align(d.vertical_align)
+        self.widget.linkActivated.connect(self.on_link_activated)
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def on_link_activated(self, link):
+        """ Handle the link activated signal.
+
+        """
+        self.declaration.link_activated(link)
 
     #--------------------------------------------------------------------------
     # ProxyLabel API

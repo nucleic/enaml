@@ -5,7 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, ForwardTyped, Unicode, Enum, observe, set_default
+from atom.api import (
+    Typed, ForwardTyped, Unicode, Enum, Event, observe, set_default
+)
 
 from enaml.core.declarative import d_
 
@@ -41,6 +43,10 @@ class Label(Control):
 
     #: The vertical alignment of the text in the widget area.
     vertical_align = d_(Enum('center', 'top', 'bottom'))
+
+    #: An event emitted when the user clicks a link in the label.
+    #: The payload will be the link that was clicked.
+    link_activated = d_(Event(), writable=False)
 
     #: Labels hug their width weakly by default.
     hug_width = set_default('weak')
