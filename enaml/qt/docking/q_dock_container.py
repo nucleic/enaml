@@ -204,10 +204,12 @@ class QDockContainer(QDockFrame):
             old.maximizeButtonClicked.disconnect(self.showMaximized)
             old.restoreButtonClicked.disconnect(self.showNormal)
             old.closeButtonClicked.disconnect(self.close)
+            old.linkButtonToggled.disconnect(self.linkButtonToggled)
         if dock_item is not None:
             dock_item.maximizeButtonClicked.connect(self.showMaximized)
             dock_item.restoreButtonClicked.connect(self.showNormal)
             dock_item.closeButtonClicked.connect(self.close)
+            dock_item.linkButtonToggled.connect(self.linkButtonToggled)
         layout.setWidget(dock_item)
         self._dock_item = dock_item
 
@@ -330,6 +332,7 @@ class QDockContainer(QDockFrame):
         self.setProperty('floating', True)
         self.setLinked(False)
         self.showLinkButton()
+        self.manager()._proximity_handler.addFrame(self)
         repolish(self)
 
     def unfloat(self):
@@ -345,6 +348,7 @@ class QDockContainer(QDockFrame):
         self.setProperty('floating', False)
         self.setLinked(False)
         self.hideLinkButton()
+        self.manager()._proximity_handler.removeFrame(self)
         repolish(self)
 
     def parentDockArea(self):

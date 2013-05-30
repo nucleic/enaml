@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from collections import defaultdict
 from contextlib import contextmanager
 import warnings
 
@@ -20,6 +21,7 @@ from .event_types import DockAreaContentsChanged
 from .layout_handling import (
     build_layout, save_layout, layout_hit_test, plug_frame, iter_containers
 )
+from .proximity_handler import ProximityHandler
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
 from .q_dock_window import QDockWindow
@@ -131,6 +133,12 @@ class DockManager(Atom):
 
     #: The distance to use for snapping floating dock frames.
     _snap_dist = Int(factory=lambda: QApplication.startDragDistance() * 2)
+
+    #: A mapping of floating frame to linked neighbors.
+    _snap_groups = Typed(defaultdict, factory=lambda: defaultdict(set))
+
+    #: A proximity handler which manages proximal floating frames.
+    _proximity_handler = Typed(ProximityHandler, ())
 
     def __init__(self, dock_area):
         """ Initialize a DockingManager.
@@ -373,6 +381,27 @@ class DockManager(Atom):
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
+    def frame_resized(self, frame):
+        """ Handle the post-process for a resized floating frame.
+
+        This method is called by the framework at the appropriate times
+        and should not be called directly by user code.
+
+        Parameters
+        ----------
+        frame : QDockFrame
+            The frame which has been resized.
+
+        """
+        # If the frame is linked, the resize may have changed the frame
+        # geometry such that the existing links are no longer valid.
+        # The links are refreshed and the link button state is updated.
+        if frame.isLinked():
+            handler = self._proximity_handler
+            handler.updateLinks(frame)
+            if not handler.hasLinkedFrames(frame):
+                frame.setLinked(False)
+
     def raise_frame(self, frame):
         """ Raise a frame to the top of the Z-order.
 
@@ -386,6 +415,17 @@ class DockManager(Atom):
 
         """
         frames = self._dock_frames
+        # others = []
+        # for other in self._snap_tree.linked_frames(frame):
+        #     idx = frames.index(other)
+        #     others.append((idx, other))
+        # if len(others) > 0:
+        #     others.sort()
+        #     for ignored, other in others:
+        #         frames.remove(other)
+        #         frames.append(other)
+        #         other.raise_()
+        #     frame.raise_()
         frames.remove(frame)
         frames.append(frame)
 
@@ -427,18 +467,51 @@ class DockManager(Atom):
             The global mouse position.
 
         """
-        # If the frame is unlinked, the target position is adjusted to
-        # snap to nearby neighbors. If the frame is linked, all other
-        # linked frames are moved by the same delta distance.
-        if not frame.isLinked():
-            target_pos = self._snap_adjust(frame, target_pos)
-        delta = target_pos - frame.pos()
-        frame.move(target_pos)
+        # If the frame is linked, it and any of its linked frames are
+        # moved the same amount with no snapping. An unlinked window
+        # is free to move and will snap to any other floating window
+        # that has an opposite edge lying within the snap distance.
+        # The overlay is hidden when the frame has proximal frames
+        # since such a frame is not allowed to be docked.
+        show_drag_overlay = True
+        handler = self._proximity_handler
         if frame.isLinked():
-            for other in self._floating_frames():
-                if other is not frame and other.isLinked():
+            delta = target_pos - frame.pos()
+            frame.move(target_pos)
+            if handler.hasLinkedFrames(frame):
+                show_drag_overlay = False
+                for other in handler.linkedFrames(frame):
                     other.move(other.pos() + delta)
-        self._update_drag_overlay(frame, mouse_pos)
+        else:
+            f_size = frame.frameGeometry().size()
+            f_rect = QRect(target_pos, f_size)
+            f_x = target_pos.x()
+            f_y = target_pos.y()
+            f_w = f_size.width()
+            f_h = f_size.height()
+            dist = self._snap_dist
+            for other in handler.proximalFrames(f_rect, dist):
+                if other is not frame:
+                    o_geo = other.frameGeometry()
+                    dx = o_geo.left() - (f_x + f_w)
+                    if dx > -dist:
+                        f_x += dx
+                    else:
+                        dx = f_x - (o_geo.right() + 1)
+                        if dx > -dist:
+                            f_x -= dx
+                    dy = o_geo.top() - (f_y + f_h)
+                    if dy > -dist:
+                        f_y += dy
+                    else:
+                        dy = f_y - (o_geo.bottom() + 1)
+                        if dy > -dist:
+                            f_y -= dy
+            frame.move(f_x, f_y)
+        if show_drag_overlay:
+            self._update_drag_overlay(frame, mouse_pos)
+        else:
+            self._overlay.hide()
 
     def drag_release_frame(self, frame, pos):
         """ Handle the dock frame being released by the user.
@@ -456,15 +529,19 @@ class DockManager(Atom):
             The global coordinates of the mouse position.
 
         """
+        # Docking is disallowed for frames which have linked proximal
+        # frames, or if the target dock area has a maximized widget.
+        # This prevents a situation where the docking logic would be
+        # non-sensical and maintains a consistent user experience.
         overlay = self._overlay
         overlay.hide()
         guide = overlay.guide_at(pos)
         if guide == QGuideRose.Guide.NoGuide:
             return
+        if self._proximity_handler.hasLinkedFrames(frame):
+            return
         target = self._dock_target(frame, pos)
         if isinstance(target, QDockArea):
-            # Disallow docking onto an area with a maximized widget.
-            # This prevents a non-intuitive user experience.
             if target.maximizedWidget() is not None:
                 return
             with self._drop_window_context(frame):
@@ -553,6 +630,7 @@ class DockManager(Atom):
         container._manager = None
         self._dock_items.discard(item)
         self._dock_frames.remove(container)
+        self._proximity_handler.removeFrame(container)
 
     def _free_window(self, window):
         """ Free the resources attached to the window.
@@ -567,6 +645,7 @@ class DockManager(Atom):
         window.setDockArea(None)
         window._manager = None
         self._dock_frames.remove(window)
+        self._proximity_handler.removeFrame(window)
         QDockWindow.free(window)
 
     def _dock_containers(self):
@@ -805,6 +884,7 @@ class DockManager(Atom):
                 container.showNormal()
             window = QDockWindow.create(self, self._dock_area)
             self._dock_frames.append(window)
+            self._proximity_handler.addFrame(window)
             window.setGeometry(container.geometry())
             win_area = window.dockArea()
             plug_frame(win_area, None, container, QGuideRose.Guide.AreaCenter)

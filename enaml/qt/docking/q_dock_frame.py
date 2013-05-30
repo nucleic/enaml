@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QEvent, QRect, QPoint, QMargins
+from PyQt4.QtCore import Qt, QEvent, QRect, QPoint, QMargins, pyqtSignal
 from PyQt4.QtGui import QApplication, QFrame
 
 from atom.api import Atom, Bool, Int, Typed
@@ -68,6 +68,10 @@ class QDockFrame(QFrame):
 
     #: The size of the extra space for hit testing a resize corner.
     ResizeCornerExtra = 8
+
+    #: A signal emitted when the linked button is toggled. This should
+    #: be emitted at the appropriate times by a subclass.
+    linkButtonToggled = pyqtSignal(bool)
 
     class FrameState(Atom):
         """ A private class for tracking dock frame state.
@@ -142,6 +146,32 @@ class QDockFrame(QFrame):
         """
         return QMargins()
 
+    def isLinked(self):
+        """ Get whether or not the frame is linked.
+
+        This method should be reimplemented by a subclass.
+
+        Returns
+        -------
+        result : bool
+            True if the frame is considered linked, False otherwise.
+
+        """
+        return False
+
+    def setLinked(self, linked):
+        """ Set whether or not the frame is linked.
+
+        This method should be reimplemented by a subclass.
+
+        Parameters
+        ----------
+        linked : bool
+            True if the frame is considered linked, False otherwise.
+
+        """
+        pass
+
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
@@ -211,9 +241,12 @@ class QDockFrame(QFrame):
                 state.mouse_title = False
                 return
         if self.isWindow() and event.button() == Qt.LeftButton:
+            resized = state.resize_border != self.NoBorder
             state.resize_border = self.NoBorder
             state.resize_offset = None
             event.accept()
+            if resized:
+                self.manager().frame_resized(self)
 
     def hoverMoveEvent(self, event):
         """ Handle the hover move event for the frame.
