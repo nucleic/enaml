@@ -13,24 +13,5 @@
      <file>dock_images/guide_box.png</file>
      <file>dock_images/split_horizontal.png</file>
      <file>dock_images/split_vertical.png</file>
-     <file>dock_images/closebtn_b.png</file>
-     <file>dock_images/closebtn_s.png</file>
-     <file>dock_images/closebtn_h.png</file>
-     <file>dock_images/closebtn_p.png</file>
-     <file>dock_images/maxbtn_s.png</file>
-     <file>dock_images/maxbtn_h.png</file>
-     <file>dock_images/maxbtn_p.png</file>
-     <file>dock_images/rstrbtn_s.png</file>
-     <file>dock_images/rstrbtn_h.png</file>
-     <file>dock_images/rstrbtn_p.png</file>
-     <file>dock_images/closebtn_large_s.png</file>
-     <file>dock_images/closebtn_large_h.png</file>
-     <file>dock_images/closebtn_large_p.png</file>
-     <file>dock_images/maxbtn_large_s.png</file>
-     <file>dock_images/maxbtn_large_h.png</file>
-     <file>dock_images/maxbtn_large_p.png</file>
-     <file>dock_images/rstrbtn_large_s.png</file>
-     <file>dock_images/rstrbtn_large_h.png</file>
-     <file>dock_images/rstrbtn_large_p.png</file>
  </qresource>
  </RCC>
