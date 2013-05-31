@@ -185,6 +185,7 @@ class DockManager(Atom):
         """
         assert dock_area is not None
         self._dock_area = dock_area
+        self._overlay = DockOverlay(dock_area)
 
     #--------------------------------------------------------------------------
     # Public API

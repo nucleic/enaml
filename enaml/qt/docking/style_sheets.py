@@ -77,6 +77,11 @@ register_style_sheet(u'vs-2010', u"""
         border: 1px solid rgb(40, 60, 90);
     }
 
+    QDockRubberBand {
+        background: rgba(69, 147, 209, 130);
+        border: 2px solid rgb(40, 60, 90);
+    }
+
     QDockContainer {
         background: rgb(53, 73, 106);
     }
@@ -205,6 +210,11 @@ register_style_sheet(u'grey-wind', u"""
         border: 1px solid rgb(129, 121, 119);
     }
 
+    QDockRubberBand {
+        background: rgba(175, 178, 183, 130);
+        border: 2px solid rgb(100, 100, 100);
+    }
+
     QDockContainer {
         background: rgb(175, 178, 183);
     }
@@ -330,6 +340,11 @@ register_style_sheet(u'new-moon', u"""
         border: 1px solid #9E935D;
     }
 
+    QDockRubberBand {
+        background: rgba(197, 188, 142, 130);
+        border: 2px solid rgb(45, 45, 45);
+    }
+
     QDockContainer {
         background: rgb(54, 57, 59);
     }
@@ -448,6 +463,11 @@ register_style_sheet(u'metro', u"""
     QDockWindow {
         background: white;
         border: 1px solid #B0B0B0;
+    }
+
+    QDockRubberBand {
+        background: rgba(255, 255, 255, 130);
+        border: 2px solid #666666;
     }
 
     QDockContainer {

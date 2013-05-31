@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
-from PyQt4.QtGui import QRubberBand
+from PyQt4.QtGui import QWidget, QStyle, QStyleOption, QPainter
 
 from atom.api import Atom, Bool, Int, Float, Typed
 
@@ -14,6 +14,35 @@ from .q_guide_rose import QGuideRose
 from .q_dock_container import QDockContainer
 from .q_dock_splitter import QDockSplitterHandle
 from .q_dock_tab_widget import QDockTabWidget
+
+
+class QDockRubberBand(QWidget):
+    """ A custom rubber band widget for use with the dock overlay.
+
+    This class is stylable from Qt style sheets.
+
+    """
+    def __init__(self, parent=None):
+        """ Initialize a QDockRubberBand.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent of the dock rubber band.
+
+        """
+        super(QDockRubberBand, self).__init__(parent)
+        self.setWindowFlags(Qt.ToolTip | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+    def paintEvent(self, event):
+        """ Handle the paint event for the dock rubber band.
+
+        """
+        painter = QPainter(self)
+        opt = QStyleOption()
+        opt.initFrom(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
 
 
 class DockOverlay(Atom):
@@ -34,7 +63,7 @@ class DockOverlay(Atom):
     band_delay = Int(50)
 
     #: The target opacity to use when making the band visible.
-    band_target_opacity = Float(0.6)
+    band_target_opacity = Float(1.0)
 
     #: The duration of the band visibilty animation, in ms.
     band_vis_duration = Int(100)
@@ -46,7 +75,7 @@ class DockOverlay(Atom):
     _rose = Typed(QGuideRose, ())
 
     #: The overlayed rubber band.
-    _band = Typed(QRubberBand, (QRubberBand.Rectangle,))
+    _band = Typed(QDockRubberBand, ())
 
     #: The property animator for the rubber band geometry.
     _geo_animator = Typed(QPropertyAnimation)
@@ -74,6 +103,19 @@ class DockOverlay(Atom):
 
     #: The timer for changing the state of the band.
     _band_timer = Typed(QTimer)
+
+    def __init__(self, parent=None):
+        """ Initialize a DockOverlay.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent of the overlay. This will be used as the parent
+            widget for the dock rubber band. The overlay guides do not
+            have a parent.
+
+        """
+        self._band = QDockRubberBand(parent)
 
     #--------------------------------------------------------------------------
     # Default Value Methods
@@ -168,9 +210,7 @@ class DockOverlay(Atom):
         geo = self._target_band_geo
         if geo.isValid() and self._show_band:
             # If the band is already hidden, the geometry animation can
-            # be bypassed since the band can be located anywhere. The
-            # rose must be raised because QRubberBand raises itself
-            # when it receives a showEvent.
+            # be bypassed since the band can be located anywhere.
             if band.isHidden():
                 band.setGeometry(geo)
                 self._start_vis_animator(self.band_target_opacity)
