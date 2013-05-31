@@ -224,15 +224,19 @@ class QDockItem(QFrame):
     """
     #: A signal emitted when the maximize button is clicked. This
     #: signal is proxied from the current dock item title bar.
-    maximizeButtonClicked = pyqtSignal()
+    maximizeButtonClicked = pyqtSignal(bool)
 
     #: A signal emitted when the restore button is clicked. This
     #: signal is proxied from the current dock item title bar.
-    restoreButtonClicked = pyqtSignal()
+    restoreButtonClicked = pyqtSignal(bool)
 
     #: A signal emitted when the close button is clicked. This
     #: signal is proxied from the current dock item title bar.
-    closeButtonClicked = pyqtSignal()
+    closeButtonClicked = pyqtSignal(bool)
+
+    #: A signal emitted when the link button is toggled. This
+    #: signal is proxied from the current dock item title bar.
+    linkButtonToggled = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
@@ -452,10 +456,12 @@ class QDockItem(QFrame):
             old.maximizeButtonClicked.disconnect(self.maximizeButtonClicked)
             old.restoreButtonClicked.disconnect(self.restoreButtonClicked)
             old.closeButtonClicked.disconnect(self.closeButtonClicked)
+            old.linkButtonToggled.disconnect(self.linkButtonToggled)
         title_bar = title_bar or QDockTitleBar()
         title_bar.maximizeButtonClicked.connect(self.maximizeButtonClicked)
         title_bar.restoreButtonClicked.connect(self.restoreButtonClicked)
         title_bar.closeButtonClicked.connect(self.closeButtonClicked)
+        title_bar.linkButtonToggled.connect(self.linkButtonToggled)
         layout.setTitleBarWidget(title_bar)
 
     def dockWidget(self):
