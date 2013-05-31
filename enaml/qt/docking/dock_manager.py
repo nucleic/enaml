@@ -822,54 +822,6 @@ class DockManager(Atom):
             if target.rect().contains(local):
                 return target
 
-    def _snap_adjust(self, frame, pos):
-        """ Adjust the snap position for a dock frame.
-
-        This method computes a target move position given a potential
-        move position for a free floating dock frame. It takes into
-        account the other floating windows in the neighborhood and
-        computes a snap position if there is a window within range.
-
-        Parameters
-        ----------
-        frame : QDockFrame
-            The free floating dock frame being dragged by the user.
-
-        pos : QPoint
-            The global target position of the frame.
-
-        Returns
-        -------
-        result : QPoint
-            The adjusted global position to use as the goal for the
-            move operation.
-
-        """
-        dist = self._snap_dist
-        frame_pos = QPoint(pos)
-        frame_size = frame.frameGeometry().size()
-        for other in self._floating_frames():
-            if other is not frame:
-                frame_geo = QRect(frame_pos, frame_size)
-                other_geo = other.frameGeometry()
-                boundary = other_geo.adjusted(-dist, -dist, dist, dist)
-                if frame_geo.intersects(boundary):
-                    dx = other_geo.left() - (frame_geo.right() + 1)
-                    if dx > -dist:
-                        frame_pos.setX(frame_pos.x() + dx)
-                    else:
-                        dx = frame_geo.left() - (other_geo.right() + 1)
-                        if dx > -dist:
-                            frame_pos.setX(frame_pos.x() - dx)
-                    dy = other_geo.top() - (frame_geo.bottom() + 1)
-                    if dy > -dist:
-                        frame_pos.setY(frame_pos.y() + dy)
-                    else:
-                        dy = frame_geo.top() - (other_geo.bottom() + 1)
-                        if dy > -dist:
-                            frame_pos.setY(frame_pos.y() - dy)
-        return frame_pos
-
     def _update_drag_overlay(self, frame, pos):
         """ Update the overlay for a dragged frame.
 
