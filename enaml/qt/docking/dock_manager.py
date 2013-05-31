@@ -490,23 +490,30 @@ class DockManager(Atom):
             f_w = f_size.width()
             f_h = f_size.height()
             dist = self._snap_dist
+            filt = lambda n: -dist < n < dist
             for other in handler.proximalFrames(f_rect, dist):
                 if other is not frame:
                     o_geo = other.frameGeometry()
-                    dx = o_geo.left() - (f_x + f_w)
-                    if dx > -dist:
-                        f_x += dx
-                    else:
-                        dx = f_x - (o_geo.right() + 1)
-                        if dx > -dist:
-                            f_x -= dx
-                    dy = o_geo.top() - (f_y + f_h)
-                    if dy > -dist:
-                        f_y += dy
-                    else:
-                        dy = f_y - (o_geo.bottom() + 1)
-                        if dy > -dist:
-                            f_y -= dy
+                    o_x = o_geo.left()
+                    o_y = o_geo.top()
+                    o_right = o_x + o_geo.width()
+                    o_bottom = o_y + o_geo.height()
+                    dx = filter(filt, (
+                        o_x - f_x,
+                        o_x - (f_x + f_w),
+                        o_right - f_x,
+                        o_right - (f_x + f_w),
+                    ))
+                    if dx:
+                        f_x += min(dx)
+                    dy = filter(filt, (
+                        o_y - f_y,
+                        o_y - (f_y + f_h),
+                        o_bottom - f_y,
+                        o_bottom - (f_y + f_h),
+                    ))
+                    if dy:
+                        f_y += min(dy)
             frame.move(f_x, f_y)
         if show_drag_overlay:
             self._update_drag_overlay(frame, mouse_pos)
