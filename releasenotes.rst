@@ -1,5 +1,13 @@
 Enaml Release Notes
 ===================
+0.7.13 - 05/31/2013
+-------------------
+- Feature improvements and fixes to snappable dock frames. 693a6f363a_
+- Add a 'link_activated' event to the Label widget. 269b386639_
+
+.. _693a6f363a: https://github.com/nucleic/enaml/commit/693a6f363a6be6751734c64e1e1c0454dcdc1325
+.. _269b386639: https://github.com/nucleic/enaml/commit/269b3866397ed126dd11083f1be99ba6296d5892
+
 0.7.12 - 05/29/2013
 -------------------
 - Make floating dock windows snappable and linkable. de3ced381e_
