@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QMargins, QPoint, QRect, QEvent
+from PyQt4.QtCore import Qt, QMargins, QPoint, QRect, QEvent, pyqtSignal
 from PyQt4.QtGui import QApplication, QLayout, QIcon
 
 from atom.api import Typed, Bool
@@ -63,6 +63,9 @@ class QDockContainer(QDockFrame):
     is a floating top level window versus docked in a dock area.
 
     """
+    #: A signal emitted when the container changes its toplevel state.
+    topLevelChanged = pyqtSignal(bool)
+
     class FrameState(QDockFrame.FrameState):
         """ A private class for managing container drag state.
 
@@ -332,8 +335,8 @@ class QDockContainer(QDockFrame):
         self.setProperty('floating', True)
         self.setLinked(False)
         self.showLinkButton()
-        self.manager()._proximity_handler.addFrame(self)
         repolish(self)
+        self.topLevelChanged.emit(True)
 
     def unfloat(self):
         """ Set the window state to be non-floating window.
@@ -341,15 +344,14 @@ class QDockContainer(QDockFrame):
         """
         self.hide()
         self.setAttribute(Qt.WA_Hover, False)
-        flags = Qt.Widget
-        self.setParent(self.manager().dock_area(), flags)
+        self.setParent(self.manager().dock_area(), Qt.Widget)
         self.layout().setContentsMargins(QMargins(0, 0, 0, 0))
         self.unsetCursor()
         self.setProperty('floating', False)
         self.setLinked(False)
         self.hideLinkButton()
-        self.manager()._proximity_handler.removeFrame(self)
         repolish(self)
+        self.topLevelChanged.emit(False)
 
     def parentDockArea(self):
         """ Get the parent dock area of the container.

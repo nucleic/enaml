@@ -11,7 +11,7 @@ import warnings
 from PyQt4.QtCore import Qt, QPoint, QRect, QObject, QMetaObject
 from PyQt4.QtGui import QApplication
 
-from atom.api import Atom, Int, Typed, List
+from atom.api import Atom, Int, Typed, List, atomref
 
 from enaml.layout.dock_layout import docklayout, dockarea, dockitem
 
@@ -110,6 +110,36 @@ class DockAreaFilter(QObject):
                 QMetaObject.invokeMethod(window, 'close', Qt.QueuedConnection)
 
 
+class DockContainerMonitor(QObject):
+    """ A QObject class which monitors dock container toplevel changes.
+
+    """
+    def __init__(self, manager):
+        """ Initialize a DockContainerMonitor.
+
+        Parameters
+        ----------
+        mananger : DockManager
+            The manager which owns this monitor. Only an atomref will
+            be maintained to the manager.
+
+        """
+        super(DockContainerMonitor, self).__init__()
+        self._manager = atomref(manager)
+
+    def onTopLevelChanged(self, toplevel):
+        """ Handle the 'topLevelChanged' signal from a dock container.
+
+        """
+        if self._manager:
+            handler = self._manager()._proximity_handler
+            container = self.sender()
+            if toplevel:
+                handler.addFrame(container)
+            else:
+                handler.removeFrame(container)
+
+
 class DockManager(Atom):
     """ A class which manages the docking behavior of a dock area.
 
@@ -135,6 +165,12 @@ class DockManager(Atom):
 
     #: A proximity handler which manages proximal floating frames.
     _proximity_handler = Typed(ProximityHandler, ())
+
+    #: A container monitor which tracks toplevel container changes.
+    _container_monitor = Typed(DockContainerMonitor)
+
+    def _default__container_monitor(self):
+        return DockContainerMonitor(self)
 
     def __init__(self, dock_area):
         """ Initialize a DockingManager.
@@ -183,6 +219,8 @@ class DockManager(Atom):
         container = QDockContainer(self, self._dock_area)
         container.setDockItem(item)
         container.setObjectName(item.objectName())
+        monitor = self._container_monitor
+        container.topLevelChanged.connect(monitor.onTopLevelChanged)
         self._dock_frames.append(container)
 
     def remove_item(self, item):
