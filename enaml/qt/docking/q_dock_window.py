@@ -255,6 +255,7 @@ class QDockWindow(QDockFrame):
         buttons.maximizeButtonClicked.connect(self.showMaximized)
         buttons.restoreButtonClicked.connect(self.showNormal)
         buttons.closeButtonClicked.connect(self.close)
+        buttons.linkButtonToggled.connect(self.linkButtonToggled)
 
     #--------------------------------------------------------------------------
     # Reimplementations
@@ -358,6 +359,19 @@ class QDockWindow(QDockFrame):
 
         """
         return self._title_buttons.isLinked()
+
+    def setLinked(self, linked):
+        """ Set whether or not the window is linked.
+
+        This method should be reimplemented by a subclass.
+
+        Parameters
+        ----------
+        linked : bool
+            True if the window is considered linked, False otherwise.
+
+        """
+        self._title_buttons.setLinked(linked)
 
     #--------------------------------------------------------------------------
     # Event Handlers
