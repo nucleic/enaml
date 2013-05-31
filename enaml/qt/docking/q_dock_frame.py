@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QEvent, QRect, QPoint, QMargins, pyqtSignal
+from PyQt4.QtCore import Qt, QEvent, QRect, QSize, QPoint, QMargins, pyqtSignal
 from PyQt4.QtGui import QApplication, QFrame
 
 from atom.api import Atom, Bool, Int, Typed
@@ -82,6 +82,9 @@ class QDockFrame(QFrame):
 
         #: The resize border based on the mouse hover position.
         resize_border = Int(0)
+
+        #: The last size of the frame before a resize.
+        last_size = Typed(QSize)
 
         #: The offset point of the cursor during a resize press.
         resize_offset = Typed(QPoint)
@@ -210,6 +213,7 @@ class QDockFrame(QFrame):
             if border != self.NoBorder:
                 state.resize_border = border
                 state.resize_offset = offset
+                state.last_size = self.size()
                 event.accept()
 
     def mouseMoveEvent(self, event):
@@ -241,12 +245,13 @@ class QDockFrame(QFrame):
                 state.mouse_title = False
                 return
         if self.isWindow() and event.button() == Qt.LeftButton:
-            resized = state.resize_border != self.NoBorder
             state.resize_border = self.NoBorder
             state.resize_offset = None
+            if state.last_size is not None:
+                if state.last_size != self.size():
+                    self.manager().frame_resized(self)
+                del state.last_size
             event.accept()
-            if resized:
-                self.manager().frame_resized(self)
 
     def hoverMoveEvent(self, event):
         """ Handle the hover move event for the frame.
