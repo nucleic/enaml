@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import QObject
 
-from atom.api import Atom, Typed
+from atom.api import Atom, Typed, Value
 
 from .q_dock_frame import QDockFrame
 
@@ -28,6 +28,9 @@ class ProximityHandler(QObject):
 
         #: The set of bi-direction vertices linked to this node.
         vertices = Typed(set, ())
+
+        #: The tag value used for marking a node during a traversal.
+        tag = Value()
 
         def link(self, node):
             """ Link this node with another vertex.
@@ -140,14 +143,14 @@ class ProximityHandler(QObject):
             node = nodes[frame]
             vertices = node.vertices
             if len(vertices) > 0:
-                seen = set()
-                seen.add(node)
+                tag = object()
+                node.tag = tag
                 stack = list(vertices)
                 while stack:
                     node = stack.pop()
-                    if node in seen:
+                    if node.tag is tag:
                         continue
-                    seen.add(node)
+                    node.tag = tag
                     yield node.frame
                     stack.extend(node.vertices)
 
