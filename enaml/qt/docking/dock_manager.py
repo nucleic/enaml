@@ -5,7 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from collections import defaultdict
 from contextlib import contextmanager
 import warnings
 
@@ -133,9 +132,6 @@ class DockManager(Atom):
 
     #: The distance to use for snapping floating dock frames.
     _snap_dist = Int(factory=lambda: QApplication.startDragDistance() * 2)
-
-    #: A mapping of floating frame to linked neighbors.
-    _snap_groups = Typed(defaultdict, factory=lambda: defaultdict(set))
 
     #: A proximity handler which manages proximal floating frames.
     _proximity_handler = Typed(ProximityHandler, ())
@@ -415,17 +411,19 @@ class DockManager(Atom):
 
         """
         frames = self._dock_frames
-        # others = []
-        # for other in self._snap_tree.linked_frames(frame):
-        #     idx = frames.index(other)
-        #     others.append((idx, other))
-        # if len(others) > 0:
-        #     others.sort()
-        #     for ignored, other in others:
-        #         frames.remove(other)
-        #         frames.append(other)
-        #         other.raise_()
-        #     frame.raise_()
+        handler = self._proximity_handler
+        if handler.hasLinkedFrames(frame):
+            linked = set(handler.linkedFrames(frame))
+            ordered = []
+            for index, other in enumerate(frames):
+                if other in linked:
+                    ordered.append((index, other))
+            ordered.sort()
+            for ignored, other in ordered:
+                frames.remove(other)
+                frames.append(other)
+                other.raise_()
+            frame.raise_()
         frames.remove(frame)
         frames.append(frame)
 
