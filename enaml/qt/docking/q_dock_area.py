@@ -249,7 +249,8 @@ class QDockArea(QFrame):
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
-        self._tab_position = QTabWidget.North
+        self._tab_position = None
+        self._opaque_resize = None
 
     def layoutWidget(self):
         """ Get the widget implementing the layout for the area.
@@ -305,8 +306,26 @@ class QDockArea(QFrame):
     def tabPosition(self):
         """ Get the default position for newly created tab widgets.
 
+        The tab position is inherited from an ancestor dock area unless
+        it is explicitly set by the user.
+
+        Returns
+        -------
+        result : QTabWidget.TabPosition
+            The position for dock area tabs. If the value has not been
+            set by the user and there is no ancestor dock area, the
+            default is QTabWidget.North.
+
         """
-        return self._tab_position
+        pos = self._tab_position
+        if pos is not None:
+            return pos
+        p = self.parent()
+        while p is not None:
+            if isinstance(p, QDockArea):
+                return p.tabPosition()
+            p = p.parent()
+        return QTabWidget.North
 
     def setTabPosition(self, position):
         """ Set the default position for newly created tab widget.
@@ -318,3 +337,44 @@ class QDockArea(QFrame):
 
         """
         self._tab_position = position
+
+    def opaqueItemResize(self):
+        """ Get whether opaque item resize is enabled.
+
+        The tab position is inherited from an ancestor dock area unless
+        it is explicitly set by the user.
+
+        Returns
+        -------
+        result : bool
+            True if item resizing is opaque, False otherwise. If the
+            value has not been set by the user and there is no ancestor
+            dock area, the default is True.
+
+        """
+        opaque = self._opaque_resize
+        if opaque is not None:
+            return opaque
+        p = self.parent()
+        while p is not None:
+            if isinstance(p, QDockArea):
+                return p.opaqueItemResize()
+            p = p.parent()
+        return True
+
+    def setOpaqueItemResize(self, opaque):
+        """ Set whether opaque item resize is enabled.
+
+        Parameters
+        ----------
+        opaque : bool
+            True if item resizing should be opaque, False otherwise.
+
+        """
+        is_different = opaque != self.opaqueItemResize()
+        self._opaque_resize = opaque
+        if is_different:
+            # Avoid a circular import
+            from .q_dock_splitter import QDockSplitter
+            for sp in self.findChildren(QDockSplitter):
+                sp.inheritOpaqueResize()

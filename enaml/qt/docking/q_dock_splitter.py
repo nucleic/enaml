@@ -7,6 +7,8 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtGui import QSplitter, QSplitterHandle
 
+from .q_dock_area import QDockArea
+
 
 class QDockSplitterHandle(QSplitterHandle):
     """ A sentinel subclass for dock splitter handles.
@@ -20,7 +22,7 @@ class QDockSplitterHandle(QSplitterHandle):
 
 
 class QDockSplitter(QSplitter):
-    """ A sentinel subclass for distinguishing dock splitters.
+    """ A splitter subclass for distinguishing dock splitters.
 
     This subclass allows selecting the dock splitter in a stylesheet
     and otherwise distinguishing dock splitters from standard QSplitter
@@ -28,4 +30,23 @@ class QDockSplitter(QSplitter):
 
     """
     def createHandle(self):
+        """ Create a sentinel dock splitter handle.
+
+        """
         return QDockSplitterHandle(self.orientation(), self)
+
+    def inheritOpaqueResize(self):
+        """ Inherit the opaque resize state.
+
+        This method traverses the ancestor hierarchy and updates its
+        opaque resize state based on the first QDockArea it finds. If
+        no such ancestor exists, the setting is unchanged. This method
+        is called by the framework at the appropriate times.
+
+        """
+        p = self.parent()
+        while p is not None:
+            if isinstance(p, QDockArea):
+                self.setOpaqueResize(p.opaqueItemResize())
+                return
+            p = p.parent()

@@ -92,6 +92,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         super(QtDockArea, self).init_widget()
         d = self.declaration
         self.set_tab_position(d.tab_position)
+        self.set_live_drag(d.live_drag)
         if d.style:
             self.set_style(d.style)
 
@@ -162,6 +163,12 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         self.widget.setTabPosition(TAB_POSITIONS[position])
+
+    def set_live_drag(self, live_drag):
+        """ Set the live drag state for the underlying widget.
+
+        """
+        self.widget.setOpaqueItemResize(live_drag)
 
     def set_style(self, style):
         """ Set the style for the underlying widget.

@@ -527,6 +527,7 @@ def _split_root_helper(area, orientation, frame, append):
     if not is_splitter or widget.orientation() != orientation:
         new = QDockSplitter(orientation)
         area.setLayoutWidget(new)
+        new.inheritOpaqueResize()
         new.addWidget(widget)
         widget.show()
         widget = new
@@ -551,6 +552,7 @@ def _split_widget_helper(orientation, widget, frame, append):
     new = QDockSplitter(orientation)
     new.addWidget(widget)
     splitter.insertWidget(index, new)
+    new.inheritOpaqueResize()
     index = new.count() if append else 0
     _splitter_insert_frame(new, index, frame)
     splitter.setSizes(sizes)
