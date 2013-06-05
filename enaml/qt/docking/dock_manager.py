@@ -786,6 +786,7 @@ class DockManager(Atom):
         frame : QDockFrame
             The frame which is being docked, and therefore excluded
             from the target search.
+
         Returns
         -------
         result : generator
