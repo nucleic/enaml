@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Coerced, Enum, Typed, ForwardTyped, Unicode, observe, set_default
+    Bool, Coerced, Enum, Typed, ForwardTyped, Unicode, observe, set_default
 )
 
 from enaml.core.declarative import d_
@@ -49,6 +49,9 @@ class ProxyDockArea(ProxyConstraintsWidget):
     def set_tab_position(self, position):
         raise NotImplementedError
 
+    def set_live_drag(self, live_drag):
+        raise NotImplementedError
+
     def set_style(self, style):
         raise NotImplementedError
 
@@ -75,6 +78,11 @@ class DockArea(ConstraintsWidget):
 
     #: The default tab position for newly created dock tabs.
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
+
+    #: Whether the dock items resize as a dock splitter is being dragged
+    #: (True), or if a simple indicator is drawn until the drag handle
+    #: is released (False). The default is True.
+    live_drag = d_(Bool(True))
 
     #: The style to apply to the dock area. The default style resembles
     #: Visual Studio 2010. The builtin styles are: 'vs-2010', 'grey-wind',
@@ -204,7 +212,7 @@ class DockArea(ConstraintsWidget):
         if change['type'] == 'update':
             self.apply_layout(change['value'])
 
-    @observe(('tab_position', 'style'))
+    @observe(('tab_position', 'live_drag', 'style'))
     def _update_proxy(self, change):
         """ Update the proxy when the area state changes.
 
