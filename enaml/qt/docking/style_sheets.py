@@ -79,7 +79,7 @@ register_style_sheet(u'vs-2010', u"""
 
     QDockRubberBand {
         background: rgba(69, 147, 209, 130);
-        border: 2px solid rgb(40, 60, 90);
+        border: 2px solid rgb(69, 147, 209);
     }
 
     QDockContainer {
@@ -342,7 +342,7 @@ register_style_sheet(u'new-moon', u"""
 
     QDockRubberBand {
         background: rgba(197, 188, 142, 130);
-        border: 2px solid rgb(45, 45, 45);
+        border: 2px solid rgb(197, 188, 142);
     }
 
     QDockContainer {
