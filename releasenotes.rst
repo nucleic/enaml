@@ -1,5 +1,13 @@
 Enaml Release Notes
 ===================
+0.7.14 - 06/05/2013
+-------------------
+- Make the translucent background of PopupView configurable. 0731314117_
+- Add a 'live_drag' flag to the DockArea. 0cd6889b2c_
+
+.. _0731314117: https://github.com/nucleic/enaml/commit/0731314117c2c9cbd29f7e285b487f6cb30754e0
+.. _0cd6889b2c: https://github.com/nucleic/enaml/commit/0cd6889b2c0b9c086605fce5322c07c7ee92e448
+
 0.7.13 - 05/31/2013
 -------------------
 - Feature improvements and fixes to snappable dock frames. 693a6f363a_
