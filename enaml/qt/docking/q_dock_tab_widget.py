@@ -220,6 +220,9 @@ class QDockTabWidget(QTabWidget):
         container = self.widget(index)
         QMetaObject.invokeMethod(container, 'close', Qt.QueuedConnection)
 
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
     def setCloseButtonVisible(self, index, visible):
         """ Set the close button visibility for the given tab index.
 
