@@ -6,7 +6,8 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Coerced, Enum, Float, Event, Int, Typed, ForwardTyped, observe, set_default
+    Bool, Coerced, Enum, Float, Event, Int, Typed, ForwardTyped, observe,
+    set_default
 )
 
 from enaml.application import deferred_call
@@ -141,6 +142,13 @@ class PopupView(Widget):
     #: The duration of the fade-out, in milliseconds. A value less than
     #: or equal to zero means no fade.
     fade_out_duration = d_(Int(100))
+
+    #: Whether or not the background of the popup view is translucent.
+    #: This must be True in order to use background colors with alpha
+    #: and for the fade in and out animation to have effect. This value
+    #: must be set before the popup view is shown. Changes to this value
+    #: after the popup is shown will have no effect.
+    translucent_background = d_(Bool(True))
 
     #: An event emitted when the view is closed. After this event is
     #: fired, the view will be destroyed and should not be used.

@@ -43,8 +43,11 @@ class QtPopupView(QtWidget, ProxyPopupView):
         """ Create the QPopupView widget.
 
         """
-        flags = WINDOW_TYPES[self.declaration.window_type]
+        d = self.declaration
+        flags = WINDOW_TYPES[d.window_type]
         self.widget = QPopupView(self.parent_widget(), flags)
+        if d.translucent_background:
+            self.widget.setAttribute(Qt.WA_TranslucentBackground)
 
     def init_widget(self):
         """ Initialize the widget.

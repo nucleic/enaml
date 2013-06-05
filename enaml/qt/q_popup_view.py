@@ -10,7 +10,7 @@ from PyQt4.QtCore import (
     pyqtSignal
 )
 from PyQt4.QtGui import (
-    QApplication, QFrame, QLayout, QPainter, QPainterPath, QRegion, QPen
+    QApplication, QWidget, QLayout, QPainter, QPainterPath, QRegion, QPen
 )
 
 from atom.api import Atom, Typed, Float, Int
@@ -18,8 +18,8 @@ from atom.api import Atom, Typed, Float, Int
 from .q_single_widget_layout import QSingleWidgetLayout
 
 
-class QPopupView(QFrame):
-    """ A custom QFrame which implements a framless popup widget.
+class QPopupView(QWidget):
+    """ A custom QWidget which implements a framless popup widget.
 
     It is useful for showing transient configuration dialogs as well
     as temporary notification windows.
@@ -115,7 +115,6 @@ class QPopupView(QFrame):
         """
         super(QPopupView, self).__init__(parent)
         self.setWindowFlags(flags | Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_DeleteOnClose)
         layout = QSingleWidgetLayout()
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
@@ -473,7 +472,6 @@ class QPopupView(QFrame):
         """ Handle the paint event for the popup view.
 
         """
-        super(QPopupView, self).paintEvent(event)
         palette = self.palette()
         fill_color = palette.window().color()
         stroke_color = palette.windowText().color()
