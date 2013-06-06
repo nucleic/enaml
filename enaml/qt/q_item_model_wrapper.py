@@ -17,27 +17,107 @@ from .q_resource_helpers import (
 #------------------------------------------------------------------------------
 # Role Handlers
 #------------------------------------------------------------------------------
-def _display_data(item):
+def display_data(item):
+    """ Retrieve the display data for an Item.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the display data.
+
+    Returns
+    -------
+    result : object
+        The display data value for the item.
+
+    """
     return item.get_data()
 
 
-def _edit_data(item):
+def edit_data(item):
+    """ Retrieve the edit data for an Item.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the edit data.
+
+    Returns
+    -------
+    result : object
+        The edit data value for the item.
+
+    """
     return item.get_data()
 
 
-def _check_state(item):
+def check_state(item):
+    """ Retrieve the check state for an Item.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the check state.
+
+    Returns
+    -------
+    result : CheckState
+        The integer check state for the item.
+
+    """
     return item.check_state
 
 
-def _tool_tip(item):
+def tool_tip(item):
+    """ Retrieve the tool tip for an Item.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the tool tip.
+
+    Returns
+    -------
+    result : unicode
+        The tool tip for the item.
+
+    """
     return item.tool_tip
 
 
-def _status_tip(item):
+def status_tip(item):
+    """ Retrieve the status tip for an Item.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the status tip.
+
+    Returns
+    -------
+    result : unicode
+        The status tip for the item.
+
+    """
     return item.status_tip
 
 
-def _background(item):
+def background(item):
+    """ Retrieve the background color for the item.
+
+    The color is cached on the item the first time it is retrieved.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the background color.
+
+    Returns
+    -------
+    result : QColor or None
+        The background color for the item, or None.
+
+    """
     style = item.style
     if style is not None:
         color = style.background
@@ -48,7 +128,22 @@ def _background(item):
             return tk
 
 
-def _foreground(item):
+def foreground(item):
+    """ Retrieve the foreground color for the item.
+
+    The color is cached on the item the first time it is retrieved.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the foreground color.
+
+    Returns
+    -------
+    result : QColor or None
+        The foreground color for the item, or None.
+
+    """
     style = item.style
     if style is not None:
         color = style.foreground
@@ -59,7 +154,22 @@ def _foreground(item):
             return tk
 
 
-def _font(item):
+def font(item):
+    """ Retrieve the font for the item.
+
+    The font is cached on the item the first time it is retrieved.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the font.
+
+    Returns
+    -------
+    result : QFont or None
+        The font for the item, or None.
+
+    """
     style = item.style
     if style is not None:
         font = style.font
@@ -70,7 +180,22 @@ def _font(item):
             return tk
 
 
-def _decoration(item):
+def decoration(item):
+    """ Retrieve the decoration for the item.
+
+    The icon is cached on the item the first time it is retrieved.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the decoration.
+
+    Returns
+    -------
+    result : QIcon or None
+        The decoration for the item, or None.
+
+    """
     style = item.style
     if style is not None:
         icon = style.icon
@@ -81,23 +206,37 @@ def _decoration(item):
             return tk
 
 
-def _text_alignment(item):
+def text_alignment(item):
+    """ Retrieve the text alignment for an Item.
+
+    Parameters
+    ----------
+    item : Item
+        The Enaml Item for which to retrieve the text alignment.
+
+    Returns
+    -------
+    result : TextAlignment
+        The integer text alignment for the item.
+
+    """
     style = item.style
     if style is not None:
         return style.text_alignment
 
 
+#: A mapping of data roles to item role handler functions.
 ROLE_HANDLERS = {
-    Qt.DisplayRole: _display_data,
-    Qt.EditRole: _edit_data,
-    Qt.CheckStateRole: _check_state,
-    Qt.ToolTipRole: _tool_tip,
-    Qt.StatusTipRole: _status_tip,
-    Qt.BackgroundRole: _background,
-    Qt.ForegroundRole: _foreground,
-    Qt.FontRole: _font,
-    Qt.DecorationRole: _decoration,
-    Qt.TextAlignmentRole: _text_alignment,
+    Qt.DisplayRole: display_data,
+    Qt.EditRole: edit_data,
+    Qt.CheckStateRole: check_state,
+    Qt.ToolTipRole: tool_tip,
+    Qt.StatusTipRole: status_tip,
+    Qt.BackgroundRole: background,
+    Qt.ForegroundRole: foreground,
+    Qt.FontRole: font,
+    Qt.DecorationRole: decoration,
+    Qt.TextAlignmentRole: text_alignment,
 }
 
 
