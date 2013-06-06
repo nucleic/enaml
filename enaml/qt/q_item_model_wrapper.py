@@ -17,7 +17,7 @@ from .q_resource_helpers import (
 #------------------------------------------------------------------------------
 # Role Handlers
 #------------------------------------------------------------------------------
-def display_data(item):
+def item_display_data(item):
     """ Retrieve the display data for an Item.
 
     Parameters
@@ -34,7 +34,7 @@ def display_data(item):
     return item.get_data()
 
 
-def edit_data(item):
+def item_edit_data(item):
     """ Retrieve the edit data for an Item.
 
     Parameters
@@ -51,7 +51,7 @@ def edit_data(item):
     return item.get_data()
 
 
-def check_state(item):
+def item_check_state(item):
     """ Retrieve the check state for an Item.
 
     Parameters
@@ -68,7 +68,7 @@ def check_state(item):
     return item.check_state
 
 
-def tool_tip(item):
+def item_tool_tip(item):
     """ Retrieve the tool tip for an Item.
 
     Parameters
@@ -85,7 +85,7 @@ def tool_tip(item):
     return item.tool_tip
 
 
-def status_tip(item):
+def item_status_tip(item):
     """ Retrieve the status tip for an Item.
 
     Parameters
@@ -102,7 +102,7 @@ def status_tip(item):
     return item.status_tip
 
 
-def background(item):
+def item_background(item):
     """ Retrieve the background color for the item.
 
     The color is cached on the item the first time it is retrieved.
@@ -128,7 +128,7 @@ def background(item):
             return tk
 
 
-def foreground(item):
+def item_foreground(item):
     """ Retrieve the foreground color for the item.
 
     The color is cached on the item the first time it is retrieved.
@@ -154,7 +154,7 @@ def foreground(item):
             return tk
 
 
-def font(item):
+def item_font(item):
     """ Retrieve the font for the item.
 
     The font is cached on the item the first time it is retrieved.
@@ -180,7 +180,7 @@ def font(item):
             return tk
 
 
-def decoration(item):
+def item_decoration(item):
     """ Retrieve the decoration for the item.
 
     The icon is cached on the item the first time it is retrieved.
@@ -206,7 +206,7 @@ def decoration(item):
             return tk
 
 
-def text_alignment(item):
+def item_text_alignment(item):
     """ Retrieve the text alignment for an Item.
 
     Parameters
@@ -227,16 +227,16 @@ def text_alignment(item):
 
 #: A mapping of data roles to item role handler functions.
 ROLE_HANDLERS = {
-    Qt.DisplayRole: display_data,
-    Qt.EditRole: edit_data,
-    Qt.CheckStateRole: check_state,
-    Qt.ToolTipRole: tool_tip,
-    Qt.StatusTipRole: status_tip,
-    Qt.BackgroundRole: background,
-    Qt.ForegroundRole: foreground,
-    Qt.FontRole: font,
-    Qt.DecorationRole: decoration,
-    Qt.TextAlignmentRole: text_alignment,
+    Qt.DisplayRole: item_display_data,
+    Qt.EditRole: item_edit_data,
+    Qt.CheckStateRole: item_check_state,
+    Qt.ToolTipRole: item_tool_tip,
+    Qt.StatusTipRole: item_status_tip,
+    Qt.BackgroundRole: item_background,
+    Qt.ForegroundRole: item_foreground,
+    Qt.FontRole: item_font,
+    Qt.DecorationRole: item_decoration,
+    Qt.TextAlignmentRole: item_text_alignment,
 }
 
 
