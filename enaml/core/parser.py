@@ -1217,7 +1217,7 @@ def p_if_stmt4(p):
 
 
 def p_elif_stmts1(p):
-    ''' elif_stmts : elif_stmts elif_stmt '''
+    ''' elif_stmts : elif_stmt elif_stmts '''
     elif_stmt = p[1]
     elif_stmt.orelse = [p[2]]
     p[0] = elif_stmt
