@@ -1,5 +1,11 @@
 Enaml Release Notes
 ===================
+0.7.15 - 06/12/2013
+-------------------
+- Fix a bug in parsing elif blocks. e25363b005_
+
+.. _e25363b005: https://github.com/nucleic/enaml/commit/e25363b00581ece64aad02fee369119e8393b5ce
+
 0.7.14 - 06/05/2013
 -------------------
 - Make the translucent background of PopupView configurable. 0731314117_
