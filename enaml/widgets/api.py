@@ -40,6 +40,7 @@ from .popup_view import PopupView
 from .progress_bar import ProgressBar
 from .push_button import PushButton
 from .radio_button import RadioButton
+from .raw_widget import RawWidget
 from .scroll_area import ScrollArea
 from .separator import Separator
 from .slider import Slider
