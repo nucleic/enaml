@@ -115,11 +115,6 @@ def label_factory():
     return QtLabel
 
 
-def list_control_factory():
-    from .qt_list_control import QtListControl
-    return QtListControl
-
-
 def main_window_factory():
     from .qt_main_window import QtMainWindow
     return QtMainWindow
@@ -255,11 +250,6 @@ def tool_bar_factory():
     return QtToolBar
 
 
-def view_table_factory():
-    from .qt_view_table import QtViewTable
-    return QtViewTable
-
-
 def web_view_factory():
     from .qt_web_view import QtWebView
     return QtWebView
@@ -292,7 +282,6 @@ QT_FACTORIES = {
     'Image': image_factory,
     'ImageView': image_view_factory,
     'Label': label_factory,
-    'ListControl': list_control_factory,
     'MainWindow': main_window_factory,
     'MdiArea': mdi_area_factory,
     'MdiWindow': mdi_window_factory,
@@ -319,7 +308,6 @@ QT_FACTORIES = {
     'StatusItem': status_item_factory,
     'TimeSelector': time_selector_factory,
     'ToolBar': tool_bar_factory,
-    'ViewTable': view_table_factory,
     'WebView': web_view_factory,
     'Window': window_factory,
 }
