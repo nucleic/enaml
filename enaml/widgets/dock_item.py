@@ -28,6 +28,12 @@ class ProxyDockItem(ProxyWidget):
     def set_title(self, title):
         raise NotImplementedError
 
+    def set_title_editable(self, editable):
+        raise NotImplementedError
+
+    def set_title_bar_visible(self, visible):
+        raise NotImplementedError
+
     def set_icon(self, icon):
         raise NotImplementedError
 
@@ -50,6 +56,12 @@ class DockItem(Widget):
     """
     #: The title to use in the title bar.
     title = d_(Unicode())
+
+    #: Whether or the not the title is user editable.
+    title_editable = d_(Bool(False))
+
+    #: Whether or not the title bar is visible.
+    title_bar_visible = d_(Bool(True))
 
     #: The icon to use in the title bar.
     icon = d_(Typed(Icon))
@@ -105,7 +117,8 @@ class DockItem(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'icon', 'icon_size', 'stretch', 'closable'))
+    @observe(('title', 'title_editable', 'title_bar_visible', 'icon',
+        'icon_size', 'stretch', 'closable'))
     def _update_proxy(self, change):
         """ Update the proxy when the item state changes.
 
