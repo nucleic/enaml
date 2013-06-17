@@ -373,6 +373,15 @@ class QDockWindow(QDockFrame):
         """
         self._title_buttons.setLinked(linked)
 
+    def toggleMaximized(self):
+        """ Toggle the maximized state of the window.
+
+        """
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
@@ -388,6 +397,21 @@ class QDockWindow(QDockFrame):
         """
         super(QDockWindow, self).resizeEvent(event)
         self._updateButtonGeometry()
+
+    def mouseDoubleClickEvent(self, event):
+        """ Handle the mouse double click event for the dock window.
+
+        This handler will toggle the maximization of the window if the
+        click occurs within the title bar.
+
+        """
+        event.ignore()
+        if event.button() == Qt.LeftButton:
+            geo = self.titleBarGeometry()
+            geo.setRight(self._title_buttons.geometry().left())
+            if geo.contains(event.pos()):
+                self.toggleMaximized()
+                event.accept()
 
     def hoverMoveEvent(self, event):
         """ Handle the hover move event for the dock window.
