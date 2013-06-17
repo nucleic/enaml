@@ -23,6 +23,7 @@ class QTextLabel(QFrame):
 
         """
         super(QTextLabel, self).__init__(parent)
+        self._min_text_size = QSize()
         self._text_size = QSize()
         self._text = u''
 
@@ -62,6 +63,7 @@ class QTextLabel(QFrame):
             The unicode string to use for the text label.
 
         """
+        self._min_text_size = QSize()
         self._text_size = QSize()
         self._text = text
         self.updateGeometry()
@@ -74,18 +76,24 @@ class QTextLabel(QFrame):
         """ Get the size hint for the text label.
 
         """
-        return self.minimumSizeHint()
+        base = self._text_size
+        if not base.isValid():
+            metrics = self.fontMetrics()
+            base = QSize(metrics.width(self._text), metrics.height())
+            self._text_size = base
+        left, top, right, bottom = self.getContentsMargins()
+        return base + QSize(left + right, top + bottom)
 
     def minimumSizeHint(self):
         """ Get the minimum size hint for the text label.
 
         """
-        base = self._text_size
+        base = self._min_text_size
         if not base.isValid():
             metrics = self.fontMetrics()
             text = self._computeElidedText(self._text)
             base = QSize(metrics.width(text), metrics.height())
-            self._text_size = base
+            self._min_text_size = base
         left, top, right, bottom = self.getContentsMargins()
         return base + QSize(left + right, top + bottom)
 
