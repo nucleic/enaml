@@ -7,7 +7,8 @@
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent
 from PyQt4.QtGui import (
-    QApplication, QTabBar, QTabWidget, QMouseEvent, QResizeEvent, QStyle
+    QApplication, QTabBar, QTabWidget, QMouseEvent, QResizeEvent, QStyle,
+    QCursor
 )
 
 from .q_bitmap_button import QBitmapButton
@@ -140,6 +141,22 @@ class QDockTabBar(QTabBar):
         if event.button() == Qt.LeftButton:
             if self.tabAt(event.pos()) != -1:
                 self._has_mouse = True
+        elif event.button() == Qt.RightButton:
+            index = self.tabAt(event.pos())
+            if index != -1:
+                button = self.tabButton(index, QTabBar.RightSide)
+                if button.geometry().contains(event.pos()):
+                    return
+                item = self.parent().widget(index).dockItem()
+                item.titleBarRightClicked.emit(event.globalPos())
+                # Emitting the clicked signal may have caused a popup
+                # menu to open, which will have grabbed the mouse. When
+                # this happens, the hover leave event is not sent and
+                # the tab bar will be stuck in the hovered paint state.
+                # Manual checking as 'underMouse' yields False negatives.
+                p = self.mapFromGlobal(QCursor.pos())
+                if not self.rect().contains(p):
+                    QApplication.sendEvent(self, QEvent(QEvent.HoverLeave))
 
     def mouseMoveEvent(self, event):
         """ Handle the mouse move event for the tab bar.
