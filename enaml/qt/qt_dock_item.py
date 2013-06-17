@@ -85,6 +85,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         # Use a queued connection so the dock manager can finish
         # closing the dock item before the signal handler runs.
         widget.titleEdited.connect(self.on_title_edited)
+        widget.titleBarRightClicked.connect(self.on_title_bar_right_clicked)
         widget.closed.connect(self.on_closed, Qt.QueuedConnection)
 
     #--------------------------------------------------------------------------
@@ -112,6 +113,14 @@ class QtDockItem(QtWidget, ProxyDockItem):
                 d.title = text
             finally:
                 self._guard &= ~TITLE_GUARD
+
+    def on_title_bar_right_clicked(self, pos):
+        """ Handle the 'titleBarRightClicked' signal on the dock item.
+
+        """
+        d = self.declaration
+        if d is not None:
+            d.title_bar_right_clicked()
 
     def on_closed(self):
         """ Handle the closed signal from the dock item.
@@ -164,7 +173,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         """ Set the visibility of the widget's title bar.
 
         """
-        self.widget.titleBarWidget().setForceHidden(not visible)
+        self.widget.setTitleBarForceHidden(not visible)
 
     def set_icon(self, icon):
         """ Set the icon on the underlying widget.

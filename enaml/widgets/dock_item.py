@@ -75,6 +75,9 @@ class DockItem(Widget):
     #: Whether or not the dock item is closable via a close button.
     closable = d_(Bool(True))
 
+    #: An event emitted when the title bar is right clicked.
+    title_bar_right_clicked = d_(Event(), writable=False)
+
     #: An event emitted when the dock item is closed. The item will be
     #: destroyed after this event has completed.
     closed = d_(Event(), writable=False)
