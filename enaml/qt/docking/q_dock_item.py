@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QRect, QSize, pyqtSignal
+from PyQt4.QtCore import QRect, QSize, QPoint, pyqtSignal
 from PyQt4.QtGui import QFrame, QLayout
 
 from .q_dock_tab_widget import QDockTabWidget
@@ -238,6 +238,18 @@ class QDockItem(QFrame):
     #: signal is proxied from the current dock item title bar.
     linkButtonToggled = pyqtSignal(bool)
 
+    #: A signal emitted when the title is edited by the user. This
+    #: signal is proxied from the current dock item title bar.
+    titleEdited = pyqtSignal(unicode)
+
+    #: A signal emitted when the empty area is left double clicked.
+    #: This signal is proxied from the current dock item title bar.
+    titleBarLeftDoubleClicked = pyqtSignal(QPoint)
+
+    #: A signal emitted when the empty area is right clicked. This
+    #: signal is proxied from the current dock item title bar.
+    titleBarRightClicked = pyqtSignal(QPoint)
+
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
 
@@ -379,6 +391,28 @@ class QDockItem(QFrame):
         """
         self.titleBarWidget().setLinked(linked)
 
+    def titleEditable(self):
+        """ Get whether the title is user editable.
+
+        Returns
+        -------
+        result : bool
+            True if the title is user editable, False otherwise.
+
+        """
+        return self.titleBarWidget().isEditable()
+
+    def setTitleEditable(self, editable):
+        """ Set whether or not the title is user editable.
+
+        Parameters
+        ----------
+        editable : bool
+            True if the title is user editable, False otherwise.
+
+        """
+        self.titleBarWidget().setEditable(editable)
+
     def closable(self):
         """ Get whether or not the dock item is closable.
 
@@ -457,11 +491,17 @@ class QDockItem(QFrame):
             old.restoreButtonClicked.disconnect(self.restoreButtonClicked)
             old.closeButtonClicked.disconnect(self.closeButtonClicked)
             old.linkButtonToggled.disconnect(self.linkButtonToggled)
+            old.titleEdited.disconnect(self.titleEdited)
+            old.leftDoubleClicked.disconnect(self.titleBarLeftDoubleClicked)
+            old.rightClicked.disconnect(self.titleBarRightClicked)
         title_bar = title_bar or QDockTitleBar()
         title_bar.maximizeButtonClicked.connect(self.maximizeButtonClicked)
         title_bar.restoreButtonClicked.connect(self.restoreButtonClicked)
         title_bar.closeButtonClicked.connect(self.closeButtonClicked)
         title_bar.linkButtonToggled.connect(self.linkButtonToggled)
+        title_bar.titleEdited.connect(self.titleEdited)
+        title_bar.leftDoubleClicked.connect(self.titleBarLeftDoubleClicked)
+        title_bar.rightClicked.connect(self.titleBarRightClicked)
         layout.setTitleBarWidget(title_bar)
 
     def dockWidget(self):
