@@ -37,6 +37,10 @@ class dockitem(Atom):
     #: if the dock item is a floating item.
     maximized = Bool(False)
 
+    #: Whether or not the item is linked with its proximal neighbors.
+    #: This only has an effect if the dock item is a floating item.
+    linked = Bool(False)
+
     def __init__(self, name, **kwargs):
         """ Initialize an item.
 
@@ -230,6 +234,10 @@ class dockarea(Atom):
 
     #: The name of the dock item that is maximized in the dock area.
     maximized_item = Unicode()
+
+    #: Whether or not the area is linked with its proximal neighbors.
+    #: This only has an effect if the dock area is a floating area.
+    linked = Bool(False)
 
     #: The child layout node for the area.
     child = Coerced(_areanode)

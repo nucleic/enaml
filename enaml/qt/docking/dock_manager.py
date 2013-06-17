@@ -290,6 +290,7 @@ class DockManager(Atom):
                     item.maximized_item = maxed.objectName()
             else:
                 item = save_layout(frame)
+            item.linked = frame.isLinked()
             item.maximized = frame.isMaximized()
             if frame.isMaximized():
                 geo = frame.normalGeometry()
@@ -380,6 +381,7 @@ class DockManager(Atom):
             popuplate_area(win_area, item)
             win_area.installEventFilter(self._area_filter)
             self._dock_frames.append(target)
+            self._proximity_handler.addFrame(target)
             targets.append((target, item))
 
         for target, item in targets:
@@ -388,6 +390,8 @@ class DockManager(Atom):
                 rect = ensure_on_screen(rect)
                 target.setGeometry(rect)
             target.show()
+            if item.linked:
+                target.setLinked(True)
             if item.maximized:
                 target.showMaximized()
 
