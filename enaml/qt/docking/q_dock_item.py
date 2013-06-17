@@ -413,6 +413,28 @@ class QDockItem(QFrame):
         """
         self.titleBarWidget().setEditable(editable)
 
+    def titleBarForceHidden(self):
+        """ Get whether or not the title bar is force hidden.
+
+        Returns
+        -------
+        result : bool
+            Whether or not the title bar is force hidden.
+
+        """
+        return self.titleBarWidget().isForceHidden()
+
+    def setTitleBarForceHidden(self, hidden):
+        """ Set the force hidden state of the title bar.
+
+        Parameters
+        ----------
+        hidden : bool
+            True if the title bar should be hidden, False otherwise.
+
+        """
+        self.titleBarWidget().setForceHidden(hidden)
+
     def closable(self):
         """ Get whether or not the dock item is closable.
 
