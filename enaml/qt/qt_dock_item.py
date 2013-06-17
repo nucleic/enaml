@@ -8,7 +8,7 @@
 from PyQt4.QtCore import Qt, QSize, pyqtSignal
 from PyQt4.QtGui import QIcon
 
-from atom.api import Typed
+from atom.api import Int, Typed
 
 from enaml.widgets.dock_item import ProxyDockItem
 
@@ -34,12 +34,19 @@ class QCustomDockItem(QDockItem):
             self.closed.emit()
 
 
+# Guard flags
+TITLE_GUARD = 0x1
+
+
 class QtDockItem(QtWidget, ProxyDockItem):
     """ A Qt implementation of an Enaml ProxyDockItem.
 
     """
     #: A reference to the widget created by the proxy.
     widget = Typed(QCustomDockItem)
+
+    #: Cyclic notification guard. This a bitfield of multiple guards.
+    _guard = Int(0)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -58,6 +65,9 @@ class QtDockItem(QtWidget, ProxyDockItem):
         d = self.declaration
         self.set_name(d.name)
         self.set_title(d.title)
+        self.set_title_editable(d.title_editable)
+        if not d.title_bar_visible:
+            self.set_title_bar_visible(d.title_bar_visible)
         if d.icon is not None:
             self.set_icon(d.icon)
         if -1 not in d.icon_size:
@@ -74,6 +84,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         widget.setDockWidget(self.dock_widget())
         # Use a queued connection so the dock manager can finish
         # closing the dock item before the signal handler runs.
+        widget.titleEdited.connect(self.on_title_edited)
         widget.closed.connect(self.on_closed, Qt.QueuedConnection)
 
     #--------------------------------------------------------------------------
@@ -90,6 +101,18 @@ class QtDockItem(QtWidget, ProxyDockItem):
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
+    def on_title_edited(self, text):
+        """ Handle the 'titleEdited' signal on the dock item.
+
+        """
+        d = self.declaration
+        if d is not None:
+            self._guard |= TITLE_GUARD
+            try:
+                d.title = text
+            finally:
+                self._guard &= ~TITLE_GUARD
+
     def on_closed(self):
         """ Handle the closed signal from the dock item.
 
@@ -128,7 +151,20 @@ class QtDockItem(QtWidget, ProxyDockItem):
         """ Set the title on the underlying widget.
 
         """
-        self.widget.setTitle(title)
+        if not self._guard & TITLE_GUARD:
+            self.widget.setTitle(title)
+
+    def set_title_editable(self, editable):
+        """ Set the title editable state on the underlying widget.
+
+        """
+        self.widget.setTitleEditable(editable)
+
+    def set_title_bar_visible(self, visible):
+        """ Set the visibility of the widget's title bar.
+
+        """
+        self.widget.titleBarWidget().setForceHidden(not visible)
 
     def set_icon(self, icon):
         """ Set the icon on the underlying widget.
