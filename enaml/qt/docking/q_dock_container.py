@@ -175,7 +175,7 @@ class QDockContainer(QDockFrame):
             item = self.dockItem()
             update_buttons(item.titleBarWidget())
             self.layout().setWidget(item)
-            self.item_is_maximized = False
+            self.frame_state.item_is_maximized = False
             item.removeEventFilter(self)
 
     #--------------------------------------------------------------------------
@@ -208,11 +208,13 @@ class QDockContainer(QDockFrame):
             old.restoreButtonClicked.disconnect(self.showNormal)
             old.closeButtonClicked.disconnect(self.close)
             old.linkButtonToggled.disconnect(self.linkButtonToggled)
+            old.titleBarLeftDoubleClicked.disconnect(self.toggleMaximized)
         if dock_item is not None:
             dock_item.maximizeButtonClicked.connect(self.showMaximized)
             dock_item.restoreButtonClicked.connect(self.showNormal)
             dock_item.closeButtonClicked.connect(self.close)
             dock_item.linkButtonToggled.connect(self.linkButtonToggled)
+            dock_item.titleBarLeftDoubleClicked.connect(self.toggleMaximized)
         layout.setWidget(dock_item)
         self._dock_item = dock_item
 
@@ -307,6 +309,18 @@ class QDockContainer(QDockFrame):
         if item is not None:
             bar = item.titleBarWidget()
             bar.setButtons(bar.buttons() & ~bar.LinkButton)
+
+    def toggleMaximized(self):
+        """ Toggle the maximized state of the container.
+
+        """
+        is_win = self.isWindow()
+        is_maxed = self.isMaximized()
+        item_maxed = self.frame_state.item_is_maximized
+        if is_win and is_maxed or item_maxed:
+            self.showNormal()
+        else:
+            self.showMaximized()
 
     def reset(self):
         """ Reset the container to the initial pre-docked state.
