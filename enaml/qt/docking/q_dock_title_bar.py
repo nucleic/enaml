@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QSize, QMargins, pyqtSignal
-from PyQt4.QtGui import QWidget, QFrame, QHBoxLayout
+from PyQt4.QtCore import Qt, QSize, QPoint, QMargins, pyqtSignal
+from PyQt4.QtGui import QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
 
 from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_icon_widget import QIconWidget
@@ -32,6 +32,15 @@ class IDockTitleBar(QWidget):
 
     #: A signal emitted when the link button is toggled.
     linkButtonToggled = pyqtSignal(bool)
+
+    #: A signal emitted when the title is edited by the user.
+    titleEdited = pyqtSignal(unicode)
+
+    #: A signal emitted when the title bar is left double clicked.
+    leftDoubleClicked = pyqtSignal(QPoint)
+
+    #: A signal emitted when the title bar is right clicked.
+    rightClicked = pyqtSignal(QPoint)
 
     #: Do not show any buttons in the title bar.
     NoButtons = 0x0
@@ -159,6 +168,50 @@ class IDockTitleBar(QWidget):
         """
         raise NotImplementedError
 
+    def isEditable(self):
+        """ Get whether the title is user editable.
+
+        Returns
+        -------
+        result : bool
+            True if the title is user editable, False otherwise.
+
+        """
+        raise NotImplementedError
+
+    def setEditable(self, editable):
+        """ Set whether or not the title is user editable.
+
+        Parameters
+        ----------
+        editable : bool
+            True if the title is user editable, False otherwise.
+
+        """
+        raise NotImplementedError
+
+    def isForceHidden(self):
+        """ Get whether or not the title bar is force hidden.
+
+        Returns
+        -------
+        result : bool
+            Whether or not the title bar is force hidden.
+
+        """
+        raise NotImplementedError
+
+    def setForceHidden(self, hidden):
+        """ Set the force hidden state of the title bar.
+
+        Parameters
+        ----------
+        hidden : bool
+            True if the title bar should be hidden, False otherwise.
+
+        """
+        raise NotImplementedError
+
 
 class QDockTitleBar(QFrame, IDockTitleBar):
     """ A concrete implementation of IDockTitleBar.
@@ -178,6 +231,15 @@ class QDockTitleBar(QFrame, IDockTitleBar):
     #: A signal emitted when the link button is toggled.
     linkButtonToggled = pyqtSignal(bool)
 
+    #: A signal emitted when the title is edited by the user.
+    titleEdited = pyqtSignal(unicode)
+
+    #: A signal emitted when the empty area is left double clicked.
+    leftDoubleClicked = pyqtSignal(QPoint)
+
+    #: A signal emitted when the empty area is right clicked.
+    rightClicked = pyqtSignal(QPoint)
+
     def __init__(self, parent=None):
         """ Initialize a QDockTitleBar.
 
@@ -189,11 +251,20 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         """
         super(QDockTitleBar, self).__init__(parent)
         self._buttons = self.CloseButton | self.MaximizeButton
+        self._is_editable = False
+        self._force_hidden = False
+        self._last_visible = True
+        self._line_edit = None
 
         title_icon = self._title_icon = QIconWidget(self)
         title_icon.setVisible(False)
 
         title_label = self._title_label = QTextLabel(self)
+
+        spacer = self._spacer = QWidget(self)
+        policy = spacer.sizePolicy()
+        policy.setHorizontalPolicy(QSizePolicy.Expanding)
+        spacer.setSizePolicy(policy)
 
         btn_size = QSize(14, 13)
 
@@ -227,7 +298,8 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         layout.setSpacing(1)
         layout.addWidget(title_icon)
         layout.addSpacing(0)
-        layout.addWidget(title_label, 1)
+        layout.addWidget(title_label)
+        layout.addWidget(spacer)
         layout.addSpacing(4)
         layout.addWidget(link_button)
         layout.addWidget(max_button)
@@ -240,6 +312,142 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         restore_button.clicked.connect(self.restoreButtonClicked)
         close_button.clicked.connect(self.closeButtonClicked)
         link_button.toggled.connect(self.linkButtonToggled)
+
+    #--------------------------------------------------------------------------
+    # Event Handlers
+    #--------------------------------------------------------------------------
+    def mouseDoubleClickEvent(self, event):
+        """ Handle the mouse double click event for the title bar.
+
+        """
+        event.ignore()
+        if event.button() == Qt.LeftButton:
+            pos = event.pos()
+            is_editable = self._is_editable
+            if self._adjustedLabelGeometry().contains(pos) and is_editable:
+                self._showTitleLineEdit()
+                event.accept()
+                return
+            if self._clickableGeometry().contains(pos):
+                self.leftDoubleClicked.emit(event.globalPos())
+                event.accept()
+                return
+
+    def mousePressEvent(self, event):
+        """ Handle the mouse press event for the title bar.
+
+        """
+        event.ignore()
+        if event.button() == Qt.RightButton:
+            if self._clickableGeometry().contains(event.pos()):
+                self.rightClicked.emit(event.globalPos())
+                event.accept()
+                return
+
+    #--------------------------------------------------------------------------
+    # Overrides
+    #--------------------------------------------------------------------------
+    def show(self):
+        """ An overridden visibility setter.
+
+        This handler enforces the force-hidden setting.
+
+        """
+        self.setVisible(True)
+
+    def hide(self):
+        """ An overridden visibility setter.
+
+        This handler enforces the force-hidden setting.
+
+        """
+        self.setVisible(False)
+
+    def setVisible(self, visible):
+        """ An overridden visibility setter.
+
+        This handler enforces the force-hidden setting.
+
+        """
+        self._last_visible = visible
+        if visible and self._force_hidden:
+            return
+        super(QDockTitleBar, self).setVisible(visible)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _adjustedLabelGeometry(self):
+        """ Get the adjust label geometry.
+
+        Returns
+        -------
+        result : QRect
+            A rectangle representing the label geometry which has been
+            adjusted for potentially empty text. This rect can be used
+            for a usable hit-testing rect for the label text.
+
+        """
+        label = self._title_label
+        label_geo = label.geometry()
+        if not label.text():
+            label_geo = label_geo.adjusted(0, 0, 10, 0)
+        return label_geo
+
+    def _clickableGeometry(self):
+        """ Get the geometry rect which represents clickable area.
+
+        Returns
+        -------
+        result : QRect
+            A rectangle adjusted for the clickable geometry.
+
+        """
+        rect = self.rect().adjusted(5, 2, -5, -2)
+        rect.setRight(self._spacer.geometry().right())
+        return rect
+
+    def _showTitleLineEdit(self):
+        """ Setup the line edit widget for editing the title.
+
+        """
+        old_line_edit = self._line_edit
+        if old_line_edit is not None:
+            old_line_edit.hide()
+            old_line_edit.deleteLater()
+        line_edit = self._line_edit = QLineEdit(self)
+        line_edit.setFrame(False)
+        line_edit.setText(self._title_label.text())
+        line_edit.selectAll()
+        h = self._title_label.height()
+        line_edit.setMinimumHeight(h)
+        line_edit.setMaximumHeight(h)
+        line_edit.editingFinished.connect(self._onEditingFinished)
+        layout = self.layout()
+        idx = layout.indexOf(self._spacer)
+        layout.insertWidget(idx, line_edit)
+        self._spacer.hide()
+        self._title_label.hide()
+        line_edit.show()
+        line_edit.setFocus(Qt.MouseFocusReason)
+
+    def _onEditingFinished(self):
+        """ Handle the 'editingFinished' signal for title line edit.
+
+        """
+        line_edit = self._line_edit
+        if line_edit is not None:
+            text = line_edit.text()
+            line_edit.hide()
+            line_edit.deleteLater()
+            self._line_edit = None
+            changed = self._title_label.text() != text
+            if changed:
+                self._title_label.setText(text)
+            self._title_label.show()
+            self._spacer.show()
+            if changed:
+                self.titleEdited.emit(text)
 
     #--------------------------------------------------------------------------
     # IDockItemTitleBar API
@@ -364,3 +572,51 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         """
         self._link_button.setChecked(linked)
+
+    def isEditable(self):
+        """ Get whether the title is user editable.
+
+        Returns
+        -------
+        result : bool
+            True if the title is user editable, False otherwise.
+
+        """
+        return self._is_editable
+
+    def setEditable(self, editable):
+        """ Set whether or not the title is user editable.
+
+        Parameters
+        ----------
+        editable : bool
+            True if the title is user editable, False otherwise.
+
+        """
+        self._is_editable = editable
+
+    def isForceHidden(self):
+        """ Get whether or not the title bar is force hidden.
+
+        Returns
+        -------
+        result : bool
+            Whether or not the title bar is always hidden.
+
+        """
+        return self._force_hidden
+
+    def setForceHidden(self, hidden):
+        """ Set the force hidden state of the title bar.
+
+        Parameters
+        ----------
+        hidden : bool
+            True if the title bar should be hidden, False otherwise.
+
+        """
+        self._force_hidden = hidden
+        if not hidden and self._last_visible:
+            super(QDockTitleBar, self).setVisible(True)
+        elif hidden:
+            super(QDockTitleBar, self).setVisible(False)
