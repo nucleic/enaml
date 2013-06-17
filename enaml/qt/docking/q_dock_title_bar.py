@@ -347,24 +347,8 @@ class QDockTitleBar(QFrame, IDockTitleBar):
     #--------------------------------------------------------------------------
     # Overrides
     #--------------------------------------------------------------------------
-    def show(self):
-        """ An overridden visibility setter.
-
-        This handler enforces the force-hidden setting.
-
-        """
-        self.setVisible(True)
-
-    def hide(self):
-        """ An overridden visibility setter.
-
-        This handler enforces the force-hidden setting.
-
-        """
-        self.setVisible(False)
-
     def setVisible(self, visible):
-        """ An overridden visibility setter.
+        """ An overridden virtual visibility setter.
 
         This handler enforces the force-hidden setting.
 
