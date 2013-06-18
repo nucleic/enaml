@@ -25,6 +25,11 @@ def check_box_factory():
     return QtCheckBox
 
 
+def color_dialog_factory():
+    from .qt_color_dialog import QtColorDialog
+    return QtColorDialog
+
+
 def combo_box_factory():
     from .qt_combo_box import QtComboBox
     return QtComboBox
@@ -270,6 +275,7 @@ QT_FACTORIES = {
     'ActionGroup': action_group_factory,
     'Calendar': calendar_factory,
     'CheckBox': check_box_factory,
+    'ColorDialog': color_dialog_factory,
     'ComboBox': combo_box_factory,
     'Container': container_factory,
     'DateSelector': date_selector_factory,
