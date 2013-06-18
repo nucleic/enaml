@@ -281,6 +281,32 @@ class Application(Atom):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
+    def resolve_proxy_class(self, declaration_class):
+        """ Resolve the proxy implementation class for a declaration.
+
+        This can be reimplemented by Application subclasses if more
+        control is needed.
+
+        Parameters
+        ----------
+        declaration_class : type
+            A ToolkitObject subclass for which the proxy implementation
+            class should be resolved.
+
+        Returns
+        -------
+        result : type
+            A ProxyToolkitObject subclass for the given class, or None
+            if one could not be resolved.
+
+        """
+        resolver = self.resolver
+        for base in declaration_class.mro():
+            name = base.__name__
+            cls = resolver.resolve(name)
+            if cls is not None:
+                return cls
+
     def create_proxy(self, declaration):
         """ Create the proxy object for the given declaration.
 
@@ -299,12 +325,9 @@ class Application(Atom):
             be create for the given declaration object.
 
         """
-        resolver = self.resolver
-        for base in type(declaration).mro():
-            name = base.__name__
-            cls = resolver.resolve(name)
-            if cls is not None:
-                return cls(declaration=declaration)
+        cls = self.resolve_proxy_class(type(declaration))
+        if cls is not None:
+            return cls(declaration=declaration)
         msg = "could not resolve a toolkit implementation for the '%s' "
         msg += "component when running under a '%s'"
         d_name = type(declaration).__name__
