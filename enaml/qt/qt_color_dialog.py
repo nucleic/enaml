@@ -116,6 +116,28 @@ class QtColorDialog(QtToolkitDialog, ProxyColorDialog):
     #--------------------------------------------------------------------------
     # ProxyColorDialog API
     #--------------------------------------------------------------------------
+    @staticmethod
+    def custom_count():
+        """ Get the number of available custom colors.
+
+        """
+        return QColorDialog.customCount()
+
+    @staticmethod
+    def custom_color(index):
+        """ Get the custom color for the given index.
+
+        """
+        qrgb = QColorDialog.customColor(index)
+        return color_from_qcolor(QColor.fromRgba(qrgb))
+
+    @staticmethod
+    def set_custom_color(index, color):
+        """ Set the custom color for the given index.
+
+        """
+        QColorDialog.setCustomColor(index, color.argb)
+
     def set_current_color(self, color):
         """ Set the current color for the underlying widget.
 

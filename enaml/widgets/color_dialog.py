@@ -7,7 +7,8 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, Typed, ForwardTyped, observe
 
-from enaml.colors import ColorMember
+from enaml.application import Application
+from enaml.colors import ColorMember, Color
 from enaml.core.declarative import d_
 
 from .toolkit_dialog import ToolkitDialog, ProxyToolkitDialog
@@ -19,6 +20,18 @@ class ProxyColorDialog(ProxyToolkitDialog):
     """
     #: A reference to the ColorDialog declaration.
     declaration = ForwardTyped(lambda: ColorDialog)
+
+    @staticmethod
+    def custom_count():
+        raise NotImplementedError
+
+    @staticmethod
+    def custom_color(index):
+        raise NotImplementedError
+
+    @staticmethod
+    def set_custom_color(index, color):
+        raise NotImplementedError
 
     def set_current_color(self, color):
         raise NotImplementedError
@@ -72,6 +85,82 @@ class ColorDialog(ToolkitDialog):
         dialog.exec_()
         if dialog.result:
             return dialog.selected_color
+
+    @staticmethod
+    def custom_count():
+        """ Get the number of available custom colors.
+
+        The custom colors are shared among all color dialogs.
+
+        Returns
+        -------
+        result : int
+            The number of available custom colors.
+
+        Notes
+        -----
+        The Application object must exist before calling this method.
+
+        """
+        app = Application.instance()
+        assert app is not None, 'the application object does not exist'
+        proxy_cls = app.resolve_proxy_class(ColorDialog)
+        if proxy_cls is not None:
+            return proxy_cls.custom_count()
+        return 0
+
+    @staticmethod
+    def custom_color(index):
+        """ Get the custom color for the given index.
+
+        The custom colors are shared among all color dialogs.
+
+        Parameters
+        ----------
+        index : int
+            The integer index of the custom color.
+
+        Returns
+        -------
+        result : Color
+            The custom color for the index.
+
+        Notes
+        -----
+        The Application object must exist before calling this method.
+
+        """
+        app = Application.instance()
+        assert app is not None, 'the application object does not exist'
+        proxy_cls = app.resolve_proxy_class(ColorDialog)
+        if proxy_cls is not None:
+            return proxy_cls.custom_color(index)
+        return Color(255, 255, 255)
+
+    @staticmethod
+    def set_custom_color(index, color):
+        """ Set the custom color for the given index.
+
+        The custom colors are shared among all color dialogs.
+
+        Parameters
+        ----------
+        index : int
+            The integer index of the custom color.
+
+        color : Color
+            The custom color to set for the index
+
+        Notes
+        -----
+        The Application object must exist before calling this method.
+
+        """
+        app = Application.instance()
+        assert app is not None, 'the application object does not exist'
+        proxy_cls = app.resolve_proxy_class(ColorDialog)
+        if proxy_cls is not None:
+            proxy_cls.set_custom_color(index, color)
 
     #--------------------------------------------------------------------------
     # Observers
