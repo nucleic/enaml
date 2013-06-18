@@ -81,8 +81,7 @@ class FileDialog(ToolkitObject):
     #: An event fired when the dialog is rejected. It has no payload.
     rejected = d_(Event(), writable=False)
 
-    #: An event fired when the dialog is closed. This is deprecated,
-    #: use 'accepted' or 'rejected' intead.
+    #: An event fired when the dialog is closed. It has no payload.
     closed = d_(Event(), writable=False)
 
     #: Whether to destroy the dialog widget on close. The default is
