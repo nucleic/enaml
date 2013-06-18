@@ -81,22 +81,22 @@ class ToolkitDialog(ToolkitObject):
         """ Open the dialog as a non modal dialog.
 
         """
-        self.result = False
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
             self.activate_proxy()
+        self._prepare()
         self.proxy.show()
 
     def open(self):
         """ Open the dialog as a window modal dialog.
 
         """
-        self.result = False
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
             self.activate_proxy()
+        self._prepare()
         self.proxy.open()
 
     def exec_(self):
@@ -108,11 +108,11 @@ class ToolkitDialog(ToolkitObject):
             Whether or not the dialog was accepted.
 
         """
-        self.result = False
         if not self.is_initialized:
             self.initialize()
         if not self.proxy_is_active:
             self.activate_proxy()
+        self._prepare()
         self.proxy.exec_()
         return self.result
 
@@ -173,3 +173,11 @@ class ToolkitDialog(ToolkitObject):
             self.callback(self)
         if self.destroy_on_close:
             deferred_call(self.destroy)
+
+    def _prepare(self):
+        """ Prepare the dialog to be shown.
+
+        This method can be reimplemented by subclasses.
+
+        """
+        self.result = False
