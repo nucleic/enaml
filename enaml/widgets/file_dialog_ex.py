@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Enum, List, Unicode, Typed, ForwardTyped, observe
+from atom.api import Bool, Enum, List, Unicode, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
@@ -18,6 +18,15 @@ class ProxyFileDialogEx(ProxyToolkitDialog):
     """
     #: A reference to the FileDialog declaration.
     declaration = ForwardTyped(lambda: FileDialogEx)
+
+    def set_accept_mode(self, accept_mode):
+        raise NotImplementedError
+
+    def set_file_mode(self, file_mode):
+        raise NotImplementedError
+
+    def set_show_dirs_only(self, show):
+        raise NotImplementedError
 
     def set_current_path(self, path):
         raise NotImplementedError
@@ -39,10 +48,18 @@ class FileDialogEx(ToolkitDialog):
     use this dialog in lieu of the older version.
 
     """
-    #: The mode of the dialog. This must be set before opening.
-    mode = d_(Enum('open_file', 'open_files', 'save_file', 'directory'))
+    #: The accept mode of the dialog.
+    accept_mode = d_(Enum('open', 'save'))
 
-    #: The current path in the dialog.
+    #: The file mode of the dialog.
+    file_mode = d_(Enum(
+        'any_file', 'existing_file', 'existing_files', 'directory'))
+
+    #: Whether or not to only show directories. This is only valid when
+    #: the file_mode is set to 'directory'.
+    show_dirs_only = d_(Bool(False))
+
+    #: The currently selected path in the dialog.
     current_path = d_(Unicode())
 
     #: The paths selected by the user when the dialog is accepted.
@@ -77,11 +94,13 @@ class FileDialogEx(ToolkitDialog):
             string if no directory was selected.
 
         """
-        kwargs['mode'] = 'directory'
+        kwargs['accept_mode'] = 'open'
+        kwargs['file_mode'] = 'directory'
+        kwargs['show_dirs_only'] = True
         dialog = FileDialogEx(parent, **kwargs)
-        dialog.exec_native()
-        if dialog.result and dialog.selected_paths:
-            return dialog.selected_paths[0]
+        if dialog.exec_native():
+            if dialog.selected_paths:
+                return dialog.selected_paths[0]
         return u''
 
     @staticmethod
@@ -103,11 +122,12 @@ class FileDialogEx(ToolkitDialog):
             string if no file name was selected.
 
         """
-        kwargs['mode'] = 'open_file'
+        kwargs['accept_mode'] = 'open'
+        kwargs['file_mode'] = 'existing_file'
         dialog = FileDialogEx(parent, **kwargs)
-        dialog.exec_native()
-        if dialog.result and dialog.selected_paths:
-            return dialog.selected_paths[0]
+        if dialog.exec_native():
+            if dialog.selected_paths:
+                return dialog.selected_paths[0]
         return u''
 
     @staticmethod
@@ -129,10 +149,10 @@ class FileDialogEx(ToolkitDialog):
             list if no file names were selected.
 
         """
-        kwargs['mode'] = 'open_files'
+        kwargs['accept_mode'] = 'open'
+        kwargs['file_mode'] = 'existing_files'
         dialog = FileDialogEx(parent, **kwargs)
-        dialog.exec_native()
-        if dialog.result:
+        if dialog.exec_native():
             return dialog.selected_paths
         return []
 
@@ -155,11 +175,12 @@ class FileDialogEx(ToolkitDialog):
             string if no file name was selected.
 
         """
-        kwargs['mode'] = 'save_file'
+        kwargs['accept_mode'] = 'save'
+        kwargs['file_mode'] = 'any_file'
         dialog = FileDialogEx(parent, **kwargs)
-        dialog.exec_native()
-        if dialog.result and dialog.selected_paths:
-            return dialog.selected_paths[0]
+        if dialog.exec_native():
+            if dialog.selected_paths:
+                return dialog.selected_paths[0]
         return u''
 
     def exec_native(self):
@@ -182,7 +203,8 @@ class FileDialogEx(ToolkitDialog):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('mode', 'current_path', 'name_filters', 'selected_name_filter'))
+    @observe(('accept_mode', 'file_mode', 'show_dirs_only', 'current_path',
+        'name_filters', 'selected_name_filter'))
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the data changes.
 
