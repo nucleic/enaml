@@ -19,6 +19,7 @@ from .dock_pane import DockPane
 from .dual_slider import DualSlider
 from .field import Field
 from .file_dialog import FileDialog
+from .file_dialog_ex import FileDialogEx
 from .flow_area import FlowArea
 from .flow_item import FlowItem
 from .form import Form

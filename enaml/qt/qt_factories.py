@@ -85,6 +85,11 @@ def file_dialog_factory():
     return QtFileDialog
 
 
+def file_dialog_ex_factory():
+    from .qt_file_dialog_ex import QtFileDialogEx
+    return QtFileDialogEx
+
+
 def flow_area_factory():
     from .qt_flow_area import QtFlowArea
     return QtFlowArea
@@ -286,6 +291,7 @@ QT_FACTORIES = {
     'DualSlider': dual_slider_factory,
     'Field': field_factory,
     'FileDialog': file_dialog_factory,
+    'FileDialogEx': file_dialog_ex_factory,
     'FlowArea': flow_area_factory,
     'FlowItem': flow_item_factory,
     'GroupBox': group_box_factory,
