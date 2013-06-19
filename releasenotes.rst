@@ -1,5 +1,25 @@
 Enaml Release Notes
 ===================
+
+0.7.16 - 06/19/2013
+-------------------
+- Add a more useful file dialog as FileDialogEx. 390868cccb_
+- Add a color selection dialog as ColorDialog. d722a876e9_
+- Persist the linked state of floating dock items in a saved layout. adc9dec8db_
+- Add a right click event to the dock item title bar. 812e97aebcf_
+- Make the dock item title user editable. 54b68881529_
+- Make the visibility of the dock item title bar configurable. 54b68881529_
+- Toggle the maximized state of a dock item on title bar double click. 4ffe9d6b68e_
+- Add a RawWidget widget to easily embed external widgets into Enaml. e9d25a29e77_
+
+.. _390868cccb: https://github.com/nucleic/enaml/commit/390868cccb718dc33b48d2943d7150826daf0886
+.. _d722a876e9: https://github.com/nucleic/enaml/commit/d722a876e9309bff81b78324c6553e73a4b5c6ab
+.. _adc9dec8db: https://github.com/nucleic/enaml/commit/adc9dec8dbf562f1e365573739532ca7bdd1dda4
+.. _812e97aebcf: https://github.com/nucleic/enaml/commit/812e97aebcf2e06142b516383097d5fb51d8872b
+.. _54b68881529: https://github.com/nucleic/enaml/commit/54b688815295b3d1181986a6b91784ff68e9ae72
+.. _4ffe9d6b68e: https://github.com/nucleic/enaml/commit/4ffe9d6b68ed55496ef9491aa13d62805aa59543
+.. _e9d25a29e77: https://github.com/nucleic/enaml/commit/e9d25a29e77c7177cef3dd85733867faddb6eac1
+
 0.7.15 - 06/12/2013
 -------------------
 - Fix a bug in parsing elif blocks. e25363b005_
