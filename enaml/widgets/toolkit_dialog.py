@@ -34,7 +34,10 @@ class ProxyToolkitDialog(ProxyToolkitObject):
     def exec_(self):
         raise NotImplementedError
 
-    def done(self, result):
+    def accept(self):
+        raise NotImplementedError
+
+    def reject(self):
         raise NotImplementedError
 
 
@@ -120,25 +123,15 @@ class ToolkitDialog(ToolkitObject):
         """ Accept the current state and close the dialog.
 
         """
-        self.done(True)
+        if self.proxy_is_active:
+            self.proxy.accept()
 
     def reject(self):
         """ Reject the current state and close the dialog.
 
         """
-        self.done(False)
-
-    def done(self, result):
-        """ Close the dialog with the given result.
-
-        Parameters
-        ----------
-        result : bool
-            True to accept the dialog or False to reject it.
-
-        """
         if self.proxy_is_active:
-            self.proxy.done(result)
+            self.proxy.reject()
 
     #--------------------------------------------------------------------------
     # Observers

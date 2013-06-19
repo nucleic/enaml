@@ -73,8 +73,14 @@ class QtToolkitDialog(QtToolkitObject, ProxyToolkitDialog):
         """
         self.widget.exec_()
 
-    def done(self, result):
-        """ Close the dialog with the given result.
+    def accept(self):
+        """ Accept the current state and close the dialog.
 
         """
-        self.widget.done(int(result))
+        self.widget.accept()
+
+    def reject(self):
+        """ Reject the current state and close the dialog.
+
+        """
+        self.widget.reject()
