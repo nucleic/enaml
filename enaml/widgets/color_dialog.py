@@ -82,8 +82,7 @@ class ColorDialog(ToolkitDialog):
 
         """
         dialog = ColorDialog(parent, **kwargs)
-        dialog.exec_()
-        if dialog.result:
+        if dialog.exec_():
             return dialog.selected_color
 
     @staticmethod
