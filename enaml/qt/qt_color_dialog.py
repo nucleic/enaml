@@ -91,6 +91,15 @@ class QtColorDialog(QtToolkitDialog, ProxyColorDialog):
         widget.reallyFinished.connect(self.on_finished)
 
     #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def get_default_title(self):
+        """ Get the default window title for the color dialog.
+
+        """
+        return u'Select Color'
+
+    #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
     def on_current_color_changed(self, qcolor):
