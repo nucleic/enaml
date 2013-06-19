@@ -36,6 +36,18 @@ class QtToolkitDialog(QtToolkitObject, ProxyToolkitDialog):
         self.widget.finished.connect(self.on_finished)
 
     #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def get_default_title(self):
+        """ Get the default window title for the dialog.
+
+        This can be reimplemented by subclass to provide a default
+        window title. The base implementation returns an empty string.
+
+        """
+        return u''
+
+    #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
     def on_finished(self, result):
@@ -53,7 +65,7 @@ class QtToolkitDialog(QtToolkitObject, ProxyToolkitDialog):
         """ Set the window title for the underlying widget.
 
         """
-        self.widget.setWindowTitle(title)
+        self.widget.setWindowTitle(title or self.get_default_title())
 
     def show(self):
         """ Open the dialog as non modal.
