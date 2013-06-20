@@ -192,6 +192,7 @@ class QPopupView(QWidget):
         -------
         result : int
             An enum value describing the anchor mode of the popup.
+
         """
         return self._state.anchor_mode
 
@@ -643,11 +644,11 @@ class QPopupView(QWidget):
 
         """
         state = self._state
-        parent = self.parent()
-        if (state.anchor_mode == QPopupView.AnchorCursor):
+        if state.anchor_mode == QPopupView.AnchorCursor:
             origin = QCursor.pos()
             size = QSize()
         else:
+            parent = self.parent()
             if parent is None:
                 # FIXME expose something other than the primary screen.
                 desktop = QApplication.desktop()
