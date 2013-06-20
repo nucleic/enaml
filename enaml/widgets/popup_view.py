@@ -52,6 +52,9 @@ class ProxyPopupView(ProxyWidget):
     def set_anchor(self, anchor):
         raise NotImplementedError
 
+    def set_anchor_mode(self, mode):
+        raise NotImplementedError
+
     def set_parent_anchor(self, anchor):
         raise NotImplementedError
 
@@ -108,6 +111,10 @@ class PopupView(Widget):
     #: The default anchors will position the popup just below the
     #: center of the parent widget.
     anchor = d_(Coerced(PosF, (0.5, 0.0), coercer=coerce_posf))
+
+    #: If a parent is not specified, the popup can either be anchored
+    #: to the screen or the current cursor position
+    anchor_mode = d_(Enum('screen', 'cursor'))
 
     #: The relative position on the parent to use as the anchor. This
     #: anchor will be aligned with the view anchor to position the
@@ -201,9 +208,9 @@ class PopupView(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('anchor', 'parent_anchor', 'arrow_size', 'arrow_edge',
-        'arrow_position', 'offset', 'timeout', 'fade_in_duration',
-        'fade_out_duration'))
+    @observe(('anchor', 'anchor_mode', 'parent_anchor', 'arrow_size',
+        'arrow_edge', 'arrow_position', 'offset', 'timeout',
+        'fade_in_duration', 'fade_out_duration'))
     def _update_proxy(self, change):
         """ Update the proxy when the PopupView data changes.
 

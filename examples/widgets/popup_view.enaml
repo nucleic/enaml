@@ -128,3 +128,6 @@ enamldef Main(Window): win:
         PushButton:
             text = 'Show Desktop Notification'
             clicked :: NotificationPopup().show()
+        PushButton:
+            text = 'Show Mouse Notification'
+            clicked :: NotificationPopup(anchor_mode='cursor').show()

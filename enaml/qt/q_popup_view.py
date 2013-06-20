@@ -6,11 +6,12 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import (
-    Qt, QPoint, QPointF, QMargins, QPropertyAnimation, QTimer, QEvent,
+    Qt, QPoint, QPointF, QSize, QMargins, QPropertyAnimation, QTimer, QEvent,
     pyqtSignal
 )
 from PyQt4.QtGui import (
-    QApplication, QWidget, QLayout, QPainter, QPainterPath, QRegion, QPen
+    QApplication, QWidget, QLayout, QPainter, QPainterPath, QRegion, QPen,
+    QCursor
 )
 
 from atom.api import Atom, Typed, Float, Int
@@ -40,6 +41,12 @@ class QPopupView(QWidget):
     #: The bottom edge of the popup view.
     BottomEdge = 3
 
+    #: Anchor to screen
+    AnchorScreen = 0
+
+    #: Anchor to mouse
+    AnchorCursor = 1
+
     class ViewState(Atom):
         """ A private class used to manage the state of a popup view.
 
@@ -51,6 +58,9 @@ class QPopupView(QWidget):
         #: The anchor location on the parent. The default anchors
         #: the top center of the view to the center of the parent.
         parent_anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.5))
+
+        #: Anchor to parent or cursor
+        anchor_mode = Int(0)  # AnchorScreen
 
         #: The size of the arrow for the view.
         arrow_size = Int(0)
@@ -173,6 +183,30 @@ class QPopupView(QWidget):
         state = self._state
         if anchor != state.anchor:
             state.anchor = anchor
+            self._updatePosition()
+
+    def anchorMode(self):
+        """ Get the anchor mode for the popup view
+
+        Returns
+        -------
+        result : int
+            An enum value describing the anchor mode of the popup.
+        """
+        return self._state.anchor_mode
+
+    def setAnchorMode(self, mode):
+        """ Set the anchor mode for the popup view
+
+        Parameters
+        ----------
+        mode : int
+            The anchor mode (can be AnchorScreen or AnchorCursor)
+
+        """
+        state = self._state
+        if mode != state.anchor_mode:
+            state.anchor_mode = mode
             self._updatePosition()
 
     def parentAnchor(self):
@@ -611,11 +645,15 @@ class QPopupView(QWidget):
         state = self._state
         parent = self.parent()
         if parent is None:
-            # FIXME expose something other than the primary screen.
-            desktop = QApplication.desktop()
-            geo = desktop.availableGeometry()
-            origin = geo.topLeft()
-            size = geo.size()
+            if (state.anchor_mode == QPopupView.AnchorScreen):
+                # FIXME expose something other than the primary screen.
+                desktop = QApplication.desktop()
+                geo = desktop.availableGeometry()
+                origin = geo.topLeft()
+                size = geo.size()
+            else:
+                origin = QCursor.pos()
+                size = QSize()
         else:
             origin = parent.mapToGlobal(QPoint(0, 0))
             size = parent.size()

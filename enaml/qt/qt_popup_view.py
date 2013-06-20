@@ -28,6 +28,11 @@ WINDOW_TYPES = {
     'tool_tip': Qt.ToolTip,
 }
 
+ANCHOR_MODE = {
+    'screen': QPopupView.AnchorScreen,
+    'cursor': QPopupView.AnchorCursor,
+}
+
 
 class QtPopupView(QtWidget, ProxyPopupView):
     """ A Qt implementation of an Enaml ProxyPopupView.
@@ -56,6 +61,7 @@ class QtPopupView(QtWidget, ProxyPopupView):
         super(QtPopupView, self).init_widget()
         d = self.declaration
         self.set_anchor(d.anchor)
+        self.set_anchor_mode(d.anchor_mode)
         self.set_parent_anchor(d.parent_anchor)
         self.set_arrow_size(d.arrow_size)
         self.set_arrow_edge(d.arrow_edge)
@@ -112,6 +118,12 @@ class QtPopupView(QtWidget, ProxyPopupView):
 
         """
         self.widget.setAnchor(QPointF(*anchor))
+
+    def set_anchor_mode(self, mode):
+        """ Set the anchor mode on the underlying widget.
+
+        """
+        self.widget.setAnchorMode(ANCHOR_MODE[mode])
 
     def set_parent_anchor(self, anchor):
         """ Set the parent anchor location on the underlying widget.
