@@ -29,7 +29,7 @@ WINDOW_TYPES = {
 }
 
 ANCHOR_MODE = {
-    'screen': QPopupView.AnchorScreen,
+    'parent': QPopupView.AnchorParent,
     'cursor': QPopupView.AnchorCursor,
 }
 

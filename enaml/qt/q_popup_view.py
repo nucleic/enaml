@@ -41,8 +41,8 @@ class QPopupView(QWidget):
     #: The bottom edge of the popup view.
     BottomEdge = 3
 
-    #: Anchor to screen
-    AnchorScreen = 0
+    #: Anchor to parent (which can be None)
+    AnchorParent = 0
 
     #: Anchor to mouse
     AnchorCursor = 1
@@ -60,7 +60,7 @@ class QPopupView(QWidget):
         parent_anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.5))
 
         #: Anchor to parent or cursor
-        anchor_mode = Int(0)  # AnchorScreen
+        anchor_mode = Int(0)  # AnchorParent
 
         #: The size of the arrow for the view.
         arrow_size = Int(0)
@@ -201,7 +201,7 @@ class QPopupView(QWidget):
         Parameters
         ----------
         mode : int
-            The anchor mode (can be AnchorScreen or AnchorCursor)
+            The anchor mode (can be AnchorParent or AnchorCursor)
 
         """
         state = self._state
@@ -644,19 +644,19 @@ class QPopupView(QWidget):
         """
         state = self._state
         parent = self.parent()
-        if parent is None:
-            if (state.anchor_mode == QPopupView.AnchorScreen):
+        if (state.anchor_mode == QPopupView.AnchorCursor):
+            origin = QCursor.pos()
+            size = QSize()
+        else:
+            if parent is None:
                 # FIXME expose something other than the primary screen.
                 desktop = QApplication.desktop()
                 geo = desktop.availableGeometry()
                 origin = geo.topLeft()
                 size = geo.size()
             else:
-                origin = QCursor.pos()
-                size = QSize()
-        else:
-            origin = parent.mapToGlobal(QPoint(0, 0))
-            size = parent.size()
+                origin = parent.mapToGlobal(QPoint(0, 0))
+                size = parent.size()
         anchor = state.parent_anchor
         px = int(anchor.x() * size.width())
         py = int(anchor.y() * size.height())

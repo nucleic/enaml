@@ -112,9 +112,9 @@ class PopupView(Widget):
     #: center of the parent widget.
     anchor = d_(Coerced(PosF, (0.5, 0.0), coercer=coerce_posf))
 
-    #: If a parent is not specified, the popup can either be anchored
-    #: to the screen or the current cursor position
-    anchor_mode = d_(Enum('screen', 'cursor'))
+    #: If the anchor mode is cursor, ignore the parent and use the cursor
+    #: position for the popup
+    anchor_mode = d_(Enum('parent', 'cursor'))
 
     #: The relative position on the parent to use as the anchor. This
     #: anchor will be aligned with the view anchor to position the
