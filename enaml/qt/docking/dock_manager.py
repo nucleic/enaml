@@ -395,6 +395,32 @@ class DockManager(Atom):
             if item.maximized:
                 target.showMaximized()
 
+        a = self._dock_area.findChildren(QDockContainer, "Item 1")[0]
+        a.unplug()
+        from .q_dock_bar import QDockBar
+
+        self._dock_area.pinContainer(a, QDockBar.North)
+
+        b = self._dock_area.findChildren(QDockContainer, "Item 8")[0]
+        b.unplug()
+        from .q_dock_bar import QDockBar
+
+        self._dock_area.pinContainer(b, QDockBar.North)
+
+        c = self._dock_area.findChildren(QDockContainer, "Item 9")[0]
+        c.unplug()
+        from .q_dock_bar import QDockBar
+
+        self._dock_area.pinContainer(c, QDockBar.North)
+        # from .q_dock_pin_bar import QDockPinBar
+        # bar = QDockPinBar()
+        # bar.addContainer(a)
+        # self._dock_area.setPinBar(bar)
+
+        #bar = QDockPinBar()
+        #bar.addContainer(a)
+        #self._dock_area.setPinBar(bar)
+
     def apply_layout_op(self, op, direction, *item_names):
         """ Apply a layout operation to the managed items.
 
