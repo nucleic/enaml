@@ -185,6 +185,22 @@ register_style_sheet(u'vs-2010', u"""
     QBitmapButton#docktab-close-button:selected {
         color: black;
     }
+
+    QDockBarButton {
+        border: 1px solid white;
+        background: rgba(255, 255, 255, 25);
+        color: white;
+    }
+
+    QDockBarButton::hover {
+        background: rgba(255, 255, 255, 75);
+    }
+
+    QDockBarButton::checked {
+        background: white;
+        color: black;
+    }
+
 """)
 
 

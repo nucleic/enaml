@@ -10,6 +10,8 @@ from enaml.qt.QtGui import (
     QFrame, QLayout, QTabWidget, QGridLayout, QStackedLayout, QWidget
 )
 
+from .q_dock_bar import QDockBarManager
+
 
 class QDockAreaLayout(QStackedLayout):
     """ A custom stacked layout for the QDockArea.
@@ -58,9 +60,12 @@ class QDockArea(QFrame):
 
         """
         super(QDockArea, self).__init__(parent)
+        self._dock_bar_manager = QDockBarManager(self)
         self._pane = pane = QWidget(self)
+
         self._tab_position = None
         self._opaque_resize = None
+        self._pinned = {}
 
         grid = QGridLayout()
         grid.setRowStretch(0, 0)
@@ -80,6 +85,23 @@ class QDockArea(QFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         layout.insertWidget(0, pane)
         self.setLayout(layout)
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def layoutPane(self):
+        """ Get the layout pane widget for the dock area.
+
+        This method is used the dock bar manager to access the main
+        layout pane. It should not normally be called by user code.
+
+        Returns
+        -------
+        result : QWidget
+            The primary layout pane for the dock area.
+
+        """
+        return self._pane
 
     def layoutWidget(self):
         """ Get the widget implementing the layout for the area.
@@ -153,6 +175,32 @@ class QDockArea(QFrame):
             layout.insertWidget(1, widget)
             layout.setCurrentIndex(1)
             widget.show()
+
+    def pinContainer(self, container, position):
+        """ Pin the container to the given dock bar position.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container to pin to a dock bar.
+
+        position : QDockBar.Position
+            The enum value specifying the dock bar to which the
+            container should be pinned.
+
+        """
+        self._dock_bar_manager.addContainer(container, position)
+
+    def unpinContainer(self, container):
+        """ Unpin a container previously pinned to a dock bar.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container to unpin from the dock bar.
+
+        """
+        self._dock_bar_manager.removeContainer(container)
 
     def tabPosition(self):
         """ Get the default position for newly created tab widgets.
