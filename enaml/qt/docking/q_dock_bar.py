@@ -6,69 +6,18 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from PyQt4.QtCore import (
-    Qt, QSize, QPoint, QRect, QMargins, QEvent, QObject, QPropertyAnimation
+    QSize, QPoint, QRect, QMargins, QEvent, QObject, QPropertyAnimation
 )
 from PyQt4.QtGui import (
-    QBoxLayout, QPainter, QSizePolicy, QFrame, QAbstractButton, QStyle,
-    QStyleOption, QWidget, QColor, QGraphicsDropShadowEffect
+    QBoxLayout, QSizePolicy, QFrame, QPushButton, QStyle, QStyleOption,
+    QGraphicsDropShadowEffect, QStylePainter, QStyleOptionButton
 )
 
-from atom.api import Atom, Enum, IntEnum, Typed
-
-
-class QDockBarButton(QAbstractButton):
-    """
-
-    """
-    def __init__(self, parent=None):
-        """
-
-        """
-        super(QDockBarButton, self).__init__(parent)
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
-        self.setCheckable(True)
-
-    def sizeHint(self):
-        """
-
-        """
-        return self.minimumSizeHint()
-
-    def minimumSizeHint(self):
-        """
-
-        """
-        return QSize(50, 20)
-
-    def paintEvent(self, event):
-        """
-
-        """
-        opt = QStyleOption()
-        opt.initFrom(self)
-        opt.state |= QStyle.State_AutoRaise
-        is_down = self.isDown()
-        is_enabled = self.isEnabled()
-        is_checked = self.isChecked()
-        under_mouse = self.underMouse()
-        if is_enabled and under_mouse and not is_checked and not is_down:
-            opt.state |= QStyle.State_Raised
-        if is_checked:
-            opt.state |= QStyle.State_On
-        if is_down:
-            opt.state |= QStyle.State_Sunken
-        painter = QPainter(self)
-        self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
-        # hack to get the current stylesheet foreground color
-        hint = QStyle.SH_GroupBox_TextLabelColor
-        fg = self.style().styleHint(hint, opt, self)
-        # mask signed to unsigned which 'fromRgba' requires
-        painter.setPen(QColor.fromRgba(0xffffffff & fg))
-        painter.drawText(self.rect(), Qt.AlignCenter, self.text())
+from atom.api import IntEnum
 
 
 class QDockBar(QFrame):
-    """
+    """ A QFrame which acts as a container for QDockBarButtons.
 
     """
     class Position(IntEnum):
@@ -102,10 +51,21 @@ class QDockBar(QFrame):
     ]
 
     def __init__(self, parent=None, position=Position.North):
-        """
+        """ Initialize a QDockBar.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent widget of the dock bar.
+
+        position : QDockBar.Position, optional
+            The position enum value for the dock bar. This dictates the
+            layout and orientation of the contained dock buttons. The
+            default position is QDockBar.North.
 
         """
         super(QDockBar, self).__init__(parent)
+        assert isinstance(position, QDockBar.Position)
         self.setProperty('position', int(position))
         layout = QBoxLayout(self.LayoutPositions[position])
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
@@ -117,7 +77,7 @@ class QDockBar(QFrame):
     # Protected API
     #--------------------------------------------------------------------------
     def event(self, event):
-        """
+        """ A generic event handler for the dock bar.
 
         """
         if event.type() == QEvent.StyleChange:
@@ -128,23 +88,38 @@ class QDockBar(QFrame):
     # Public API
     #--------------------------------------------------------------------------
     def updateSpacing(self):
-        """
+        """ Update the layout spacing for the dock bar.
+
+        This method will extract spacing value defined in the style
+        sheet for the dock area and apply it to the spacing between
+        the dock bars and the central widget.
 
         """
         opt = QStyleOption()
         opt.initFrom(self)
         style = self.style()
+        # hack to get the style sheet 'spacing' property.
         spacing = style.pixelMetric(QStyle.PM_ToolBarItemSpacing, opt, self)
         self.layout().setSpacing(spacing)
 
     def position(self):
-        """
+        """ Get the position of the dock bar.
+
+        Returns
+        -------
+        result : QDockBar.Position
+            The position enum value for the dock bar.
 
         """
         return self.Position(self.property('position'))
 
     def isEmpty(self):
-        """
+        """ Get whether or not the dock bar is empty.
+
+        Returns
+        -------
+        result : bool
+            True if the dock bar has dock buttons, False otherwise.
 
         """
         layout = self.layout()
@@ -155,13 +130,26 @@ class QDockBar(QFrame):
         return True
 
     def addButton(self, button):
-        """
+        """ Add a dock button to the dock bar.
+
+        Parameters
+        ----------
+        button : QDockBarButton
+            The dock button to add to the dock bar.
 
         """
         return self.insertButton(-1, button)
 
     def insertButton(self, index, button):
-        """
+        """ Insert a dock button into the dock bar.
+
+        Parameters
+        ----------
+        index : int
+            The index at which to insert the button.
+
+        button : QDockBarButton
+            The dock button to insert into the dock bar.
 
         """
         assert isinstance(button, QDockBarButton)
@@ -173,25 +161,98 @@ class QDockBar(QFrame):
         layout.insertWidget(index, button)
 
 
-class QDockBarManager(QObject):
+class QDockBarButton(QPushButton):
+    """ A custom QPushButton for use in a QDockBar.
+
     """
+    def __init__(self, parent=None):
+        """ Initialize a QDockBarButton.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent widget of the dock bar button.
+
+        """
+        super(QDockBarButton, self).__init__(parent)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+        self.setCheckable(True)
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def position(self):
+        """ Get the position for the dock bar button.
+
+        Returns
+        -------
+        result : QDockBar.Position
+            The position of the dock bar in which this button resides.
+
+        """
+        parent = self.parent()
+        if isinstance(parent, QDockBar):
+            return parent.position()
+        return QDockBar.North
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def sizeHint(self):
+        """ Get the size hint for the button.
+
+        """
+        hint = super(QDockBarButton, self).sizeHint()
+        p = self.position()
+        if p == QDockBar.East or p == QDockBar.West:
+            hint.transpose()
+        return hint
+
+    def paintEvent(self, event):
+        """ Handle the paint event for the button.
+
+        """
+        painter = QStylePainter(self)
+        opt = QStyleOptionButton()
+        self.initStyleOption(opt)
+        p = self.position()
+        if p == QDockBar.East:
+            size = opt.rect.size()
+            size.transpose()
+            opt.rect.setSize(size)
+            painter.rotate(90)
+            painter.translate(0, -size.height())
+        elif p == QDockBar.West:
+            size = opt.rect.size()
+            size.transpose()
+            opt.rect.setSize(size)
+            painter.rotate(-90)
+            painter.translate(-size.width(), 0)
+        painter.drawControl(QStyle.CE_PushButton, opt);
+
+
+class QDockBarManager(QObject):
+    """ An object which manages the dock bars for a QDockArea.
 
     """
     def __init__(self, parent):
+        """ Initialize a QDockBarManager.
+
+        Parameters
+        ----------
+        parent : QDockArea
+            The parent dock area on which this manager should operate.
+
+        """
         super(QDockBarManager, self).__init__(parent)
-        self._mask = QWidget(parent)
-        self._out_animator = QPropertyAnimation()
-        self._in_animator = QPropertyAnimation()
-        self._out_animator.setPropertyName('geometry')
-        self._in_animator.setPropertyName('geometry')
-        self._in_animator.finished.connect(self._onSlideInFinished)
         self._dock_bars = [None, None, None, None]
-        self._on_button = None
+        self._animations = {}
         self._buttons = {}
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    #: A static mapping of dock position to drop shadow offset.
     _shadow_offsets = [
         (0, 4),   # QDockBar.North
         (-4, 0),  # QDockBar.East
@@ -199,9 +260,27 @@ class QDockBarManager(QObject):
         (4, 0),   # QDockBar.West
     ]
 
+    #: A static mapping of dock position to grid layout coordinates.
+    _layout_coords = [
+        (0, 1, 1, 1),  # QDockBar.North
+        (1, 2, 1, 1),  # QDockBar.East
+        (2, 1, 1, 1),  # QDockBar.South
+        (1, 0, 1, 1),  # QDockBar.West
+    ]
+
     @classmethod
     def _createDropShadowEffect(cls, position):
-        """
+        """ Create a drop shadow effect for the given position.
+
+        Parameters
+        ----------
+        position : QDockBar.Position
+            The dock position for which to create the effect.
+
+        Returns
+        -------
+        result : QGraphicsDropShadowEffect
+            A drop shadow effect configured for the given position.
 
         """
         effect = QGraphicsDropShadowEffect()
@@ -210,15 +289,21 @@ class QDockBarManager(QObject):
         effect.setOffset(dx, dy)
         return effect
 
-    _layout_coords = [
-        (0, 1, 1, 1),  # QDockBar.North
-        (0, 2, 3, 1),  # QDockBar.East
-        (2, 1, 1, 1),  # QDockBar.South
-        (0, 0, 3, 1),  # QDockBar.West
-    ]
-
     def _getDockBar(self, position):
-        """
+        """ Get the dock bar for a given position.
+
+        If a dock bar does not exist for the given position, one will
+        be created automatically.
+
+        Parameters
+        ----------
+        position : QDockBar.Position
+            The dock position of interest.
+
+        Returns
+        -------
+        result : QDockBar
+            The dock bar instance for the given position.
 
         """
         dock_bar = self._dock_bars[position]
@@ -226,12 +311,17 @@ class QDockBarManager(QObject):
             return dock_bar
         dock_bar = self._dock_bars[position] = QDockBar(position=position)
         coords = self._layout_coords[position]
-        layout = self.parent().layoutPane().layout()
+        layout = self.parent().primaryPane().layout()
         layout.addWidget(dock_bar, *coords)
         return dock_bar
 
     def _maybeReleaseDockBar(self, dock_bar):
-        """
+        """ Release the given dock bar if has not dock buttons.
+
+        Parameters
+        ----------
+        dock_bar : QDockBar
+            The dock bar which should be released if empty.
 
         """
         if dock_bar.isEmpty():
@@ -240,154 +330,250 @@ class QDockBarManager(QObject):
             dock_bar.setParent(None)
 
     def _createButton(self, container):
-        """
+        """ Create a dock button for the given container and position.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container for which to create the button.
+
+        Returns
+        -------
+        result : QDockButton
+            The dock button for the given container.
 
         """
         button = QDockBarButton()
         button.setText(container.title())
         button.setIcon(container.icon())
-        self._buttons[container] = button
-        self._buttons[button] = container
         button.toggled.connect(self._onButtonToggled)
+        self._buttons[button] = container
         return button
 
-    def _releaseButton(self, button):
-        """
+    def _findButton(self, container):
+        """ Find the dock button for the given container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container for which to find the associated button.
+
+        Returns
+        -------
+        result : QDockButton or None
+            The dock button created for the container, or None if one
+            has not been created.
 
         """
-        dock_bar = button.parent()
+        for button, other in self._buttons.iteritems():
+            if other is container:
+                return button
+
+    def _releaseButton(self, button):
+        """ Release a previously created dock button.
+
+        Parameters
+        ----------
+        button : QDockButton
+            The dock button created by a call to '_createButton'.
+
+        """
         button.toggled.disconnect(self._onButtonToggled)
         button.hide()
         button.setParent(None)
-        self._maybeReleaseDockBar(dock_bar)
+        self._buttons.pop(button)
 
-    def _onButtonToggled(self, checked):
-        """
+    def _toggleCheckedButtons(self, allowed):
+        """ Toggle off the checked buttons.
+
+        Parameters
+        ----------
+        allowed : QDockButton
+            The dock button which should be allowed to remain checked.
 
         """
-        button = self.sender()
-        container = self._buttons.get(button)
-        if container is not None:
-            position = button.parent().position()
-            if checked:
-                on_btn = self._on_button
-                if on_btn is not None:
-                    self._on_button = None
-                    if on_btn is not button:
-                        on_btn.setChecked(False)
-                self._on_button = button
-                self._slideOut(container, position)
-            else:
-                self._slideIn(container, position)
+        for button in self._buttons:
+            if button is not allowed and button.isChecked():
+                button.setChecked(False)
 
     def _slideOut(self, container, position):
-        in_anim = self._in_animator
-        if in_anim.targetObject() is container:
-            in_anim.stop()
-            in_anim.setTargetObject(None)
-        out_anim = self._out_animator
-        out_target = out_anim.targetObject()
-        if out_target is container:
-            return
-        out_anim.stop()
-        out_anim.setTargetObject(container)
-        if out_target is not None:
-            self._slideIn(out_target, QDockBar.North)
-        start, end, mask = self._getAnimGeometries(container, position)
-        if container.isVisibleTo(self._mask):
-            start = container.geometry()
+        """ Animate the slide out for the container and position.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container which should be slide out animated.
+
+        position : QDockBar.Position
+            The dock position at which to animate.
+
+        """
+        animation = self._animations.get(container, None)
+        if animation is not None:
+            animation.stop()
+            animation.finished.disconnect()
         else:
-            container.setGeometry(start)
+            animation = QPropertyAnimation(container, 'geometry')
+            self._animations[container] = animation
+        animation.finished.connect(self._onSlideOutFinished)
+        start_geo, end_geo = self._animationGeo(container, position)
+        if container.isVisible():
+            start_geo = container.geometry()
+        else:
+            container.setGeometry(start_geo)
             container.show()
-        out_anim.setStartValue(start)
-        out_anim.setEndValue(end)
-        self._mask.setGeometry(mask)
-        self._mask.raise_()
         container.raise_()
-        out_anim.start()
+        animation.setStartValue(start_geo)
+        animation.setEndValue(end_geo)
+        animation.start()
 
     def _slideIn(self, container, position):
-        if not container.isVisibleTo(self._mask):
+        """ Animate the slide in for the container and position.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container which should be slide in animated.
+
+        position : QDockBar.Position
+            The dock position at which to animate.
+
+        """
+        if not container.isVisible():
             return
-        in_anim = self._in_animator
-        in_target = in_anim.targetObject()
-        if in_target is container:
-            return
-        in_anim.stop()
-        in_anim.setTargetObject(container)
-        if in_target is not None:
-            in_target.hide()
-        end, ignr_1, ignr_2 = self._getAnimGeometries(container, position)
-        start = container.geometry()
-        in_anim.setStartValue(start)
-        in_anim.setEndValue(end)
-        container.lower()
-        in_anim.start()
+        animation = self._animations.get(container, None)
+        if animation is not None:
+            animation.stop()
+            animation.finished.disconnect()
+        else:
+            animation = QPropertyAnimation(container, 'geometry')
+            self._animations[container] = animation
+        animation.finished.connect(self._onSlideInFinished)
+        start_geo = container.geometry()
+        end_geo, ignored = self._animationGeo(container, position)
+        animation.setStartValue(start_geo)
+        animation.setEndValue(end_geo)
+        animation.start()
 
-    def _onSlideInFinished(self):
-        in_anim = self._in_animator
-        in_obj = in_anim.targetObject()
-        in_anim.setTargetObject(None)
-        in_obj.hide()
-        if in_obj is self._out_animator.targetObject():
-            self._out_animator.setTargetObject(None)
-            self._mask.lower()
+    def _animationGeo(self, container, position):
+        """ Get the animation geometry for the container and position.
 
-    def _centerGeometry(self):
-        area = self.parent()
-        pane = area.layoutPane()
-        layout = pane.layout()
-        cell = layout.cellRect(1, 1)
-        pos = pane.mapTo(area, cell.topLeft())
-        return QRect(pos, cell.size())
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container to be animated.
 
-    def _getAnimGeometries(self, container, position):
-        area = self.parent()
-        pane = area.layoutPane()
-        layout = pane.layout()
-        cell = layout.cellRect(1, 1)
+        position : QDockBar.Position
+            The dock position at which to animate.
+
+        Returns
+        -------
+        result : tuple
+            A 2-tuple of QRect objects representing the start and end
+            geometries for the animation assuming a slide out effect.
+
+        """
+        pane = self.parent().centralPane()
         hint = container.sizeHint()
         if position == QDockBar.North:
             start_pos = QPoint(0, -hint.height())
             end_pos = QPoint(0, 0)
-            size = QSize(cell.width(), hint.height())
-            adjust = (0, 0, 0, 10)
+            size = QSize(pane.width(), hint.height())
         elif position == QDockBar.East:
-            start_pos = QPoint(cell.width(), 0)
-            end_pos = QPoint(cell.width() - hint.width(), 0)
-            size = QSize(hint.width(), cell.height())
-            adjust = (-10, 0, 0, 0)
+            start_pos = QPoint(pane.width(), 0)
+            end_pos = QPoint(pane.width() - hint.width(), 0)
+            size = QSize(hint.width(), pane.height())
         elif position == QDockBar.South:
-            start_pos = QPoint(0, cell.height())
-            end_pos = QPoint(0, cell.height() - hint.height())
-            size = QSize(cell.width(), hint.height())
-            adjust = (0, -10, 0, 0)
+            start_pos = QPoint(0, pane.height())
+            end_pos = QPoint(0, pane.height() - hint.height())
+            size = QSize(pane.width(), hint.height())
         else:
             start_pos = QPoint(-hint.width(), 0)
             end_pos = QPoint(0, 0)
-            size = QSize(hint.width(), cell.height())
-            adjust = (0, 0, 10, 0)
+            size = QSize(hint.width(), pane.height())
         start_geo = QRect(start_pos, size)
         end_geo = QRect(end_pos, size)
-        mask_geo = end_geo.adjusted(*adjust)
-        origin = pane.mapTo(area, cell.topLeft())
-        mask_geo.moveTopLeft(origin + mask_geo.topLeft())
-        return start_geo, end_geo, mask_geo
+        return start_geo, end_geo
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def _onButtonToggled(self, checked):
+        """ Handle the 'toggled' signal from a QDockButton.
+
+        """
+        button = self.sender()
+        if checked:
+            self._toggleCheckedButtons(button)
+        container = self._buttons.get(button)
+        if container is not None:
+            position = button.parent().position()
+            if checked:
+                self._slideOut(container, position)
+            else:
+                self._slideIn(container, position)
+
+    def _onSlideOutFinished(self):
+        """ Handle the 'finished' signal from a slide out animation.
+
+        """
+        animation = self.sender()
+        for container, other in self._animations.items():
+            if other is animation:
+                animation.setTargetObject(None)
+                del self._animations[container]
+                return
+
+    def _onSlideInFinished(self):
+        """ Handle the 'finished' signal from a slide in animation.
+
+        """
+        animation = self.sender()
+        for container, other in self._animations.items():
+            if other is animation:
+                animation.setTargetObject(None)
+                del self._animations[container]
+                container.hide()
+                return
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
     def addContainer(self, container, position):
+        """ Add a container to the specified dock bar.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container to add to the dock bar. It should already be
+            unplugged from a layout or other dock manager before being
+            added to this manager.
+
+        position : QDockBar.Position
+            The position of the dock bar to which the container should
+            be added.
+
+        """
         assert isinstance(position, QDockBar.Position)
         self.removeContainer(container)
         dock_bar = self._getDockBar(position)
         button = self._createButton(container)
         dock_bar.addButton(button)
-        container.setParent(self._mask)
+        container.setParent(self.parent().centralPane())
         container.setGraphicsEffect(self._createDropShadowEffect(position))
 
     def removeContainer(self, container):
-        button = self._buttons.get(container, None)
+        """ Remove a container from its dock bar.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container to remove from the dock bars.
+
+        """
+        button = self._findButton(container)
         if button is not None:
+            dock_bar = self._getDockBar(button.position())
             self._releaseButton(button)
+            self._maybeReleaseDockBar(dock_bar)
             container.setGraphicsEffect(None)
