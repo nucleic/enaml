@@ -5,9 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QMargins, QSize
+from PyQt4.QtCore import QMargins, QSize, QEvent
 from PyQt4.QtGui import (
-    QFrame, QLayout, QTabWidget, QGridLayout, QStackedLayout, QWidget
+    QFrame, QLayout, QTabWidget, QGridLayout, QStackedLayout, QVBoxLayout,
+    QWidget, QStyle, QStyleOption
 )
 
 from .q_dock_bar import QDockBarManager
@@ -61,50 +62,96 @@ class QDockArea(QFrame):
         """
         super(QDockArea, self).__init__(parent)
         self._dock_bar_manager = QDockBarManager(self)
-        self._pane = pane = QWidget(self)
-
-        self._tab_position = None
+        self._primary_pane = primary_pane = QWidget(self)
+        self._central_pane = central_pane = QWidget(primary_pane)
         self._opaque_resize = None
-        self._pinned = {}
+        self._tab_position = None
 
-        grid = QGridLayout()
-        grid.setRowStretch(0, 0)
-        grid.setRowStretch(1, 1)
-        grid.setRowStretch(2, 0)
-        grid.setColumnStretch(0, 0)
-        grid.setColumnStretch(1, 1)
-        grid.setColumnStretch(2, 0)
-        grid.setVerticalSpacing(5)
-        grid.setHorizontalSpacing(5)
-        grid.setContentsMargins(QMargins(0, 0, 0, 0))
-        grid.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        pane.setLayout(grid)
+        central_layout = QVBoxLayout()
+        central_layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        central_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        central_pane.setLayout(central_layout)
 
-        layout = QDockAreaLayout()
-        layout.setContentsMargins(QMargins(0, 0, 0, 0))
-        layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        layout.insertWidget(0, pane)
-        self.setLayout(layout)
+        grid_layout = QGridLayout()
+        grid_layout.setRowStretch(0, 0)
+        grid_layout.setRowStretch(1, 1)
+        grid_layout.setRowStretch(2, 0)
+        grid_layout.setColumnStretch(0, 0)
+        grid_layout.setColumnStretch(1, 1)
+        grid_layout.setColumnStretch(2, 0)
+        grid_layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        grid_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        grid_layout.addWidget(central_pane, 1, 1)
+        primary_pane.setLayout(grid_layout)
+
+        area_layout = QDockAreaLayout()
+        area_layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        area_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        area_layout.insertWidget(0, primary_pane)
+        self.setLayout(area_layout)
+        self.updateSpacing()
+
+    #--------------------------------------------------------------------------
+    # Protected API
+    #--------------------------------------------------------------------------
+    def event(self, event):
+        """ A generic event handler for the dock area.
+
+        """
+        if event.type() == QEvent.StyleChange:
+            self.updateSpacing()
+        return super(QDockArea, self).event(event)
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def layoutPane(self):
-        """ Get the layout pane widget for the dock area.
+    def updateSpacing(self):
+        """ Update the primary layout spacing for the dock area.
 
-        This method is used the dock bar manager to access the main
+        This method will extract spacing value defined in the style
+        sheet for the dock area and apply it to the spacing between
+        the dock bars and the central widget.
+
+        """
+        opt = QStyleOption()
+        opt.initFrom(self)
+        style = self.style()
+        # hack to get the style sheet 'spacing' property.
+        spacing = style.pixelMetric(QStyle.PM_ToolBarItemSpacing, opt, self)
+        grid_layout = self._primary_pane.layout()
+        grid_layout.setVerticalSpacing(spacing)
+        grid_layout.setHorizontalSpacing(spacing)
+
+    def centralPane(self):
+        """ Get the central pane for the dock area.
+
+        This method is used the dock bar manager to access the central
         layout pane. It should not normally be called by user code.
 
         Returns
         -------
         result : QWidget
-            The primary layout pane for the dock area.
+            The central pane for the dock area.
 
         """
-        return self._pane
+        return self._central_pane
 
-    def layoutWidget(self):
-        """ Get the widget implementing the layout for the area.
+    def primaryPane(self):
+        """ Get the primary pane for the dock area.
+
+        This method is used the dock bar manager to access the primary
+        layout pane. It should not normally be called by user code.
+
+        Returns
+        -------
+        result : QWidget
+            The primary pane for the dock area.
+
+        """
+        return self._primary_pane
+
+    def centralWidget(self):
+        """ Get the central dock widget for the area.
 
         This method is called by the dock manager which handles the
         dock area. It should not normally be called by user code.
@@ -112,16 +159,16 @@ class QDockArea(QFrame):
         Returns
         -------
         result : QWidget or None
-            The widget implementing the area, or None if no widget is
-            installed.
+            The central dock widget for the area, or None if no widget
+            is installed.
 
         """
-        item = self._pane.layout().itemAtPosition(1, 1)
+        item = self._central_pane.layout().itemAt(0)
         if item is not None:
             return item.widget()
 
-    def setLayoutWidget(self, widget):
-        """ Set the layout widget for the dock area.
+    def setCentralWidget(self, widget):
+        """ Set the central widget for the dock area.
 
         This method is called by the dock manager which handles the
         dock area. It should not normally be called by user code.
@@ -129,11 +176,11 @@ class QDockArea(QFrame):
         Parameters
         ----------
         widget : QWidget
-            The widget which implements the dock area layout.
+            The central widget for the dock area.
 
         """
-        grid = self._pane.layout()
-        item = grid.itemAtPosition(1, 1)
+        layout = self._central_pane.layout()
+        item = layout.itemAt(0)
         if item is not None:
             old = item.widget()
             if old is widget:
@@ -141,7 +188,7 @@ class QDockArea(QFrame):
             old.hide()
             old.setParent(None)
         if widget is not None:
-            grid.addWidget(widget, 1, 1)
+            layout.addWidget(widget)
             widget.show()
 
     def maximizedWidget(self):
