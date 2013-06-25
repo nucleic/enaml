@@ -63,7 +63,8 @@ register_style_sheet(u'', u'')
 #: A stylesheet inspired by Visual Studio 2010
 register_style_sheet(u'vs-2010', u"""
     QDockArea {
-        padding: 5px;
+        padding: 4px;
+        spacing: 5px;
         background: rgb(49, 67, 98);
         border: 1px solid rgb(40, 60, 90);
     }
@@ -186,18 +187,24 @@ register_style_sheet(u'vs-2010', u"""
         color: black;
     }
 
+    QDockBar {
+        spacing: 3px;
+    }
+
     QDockBarButton {
-        border: 1px solid white;
-        background: rgba(255, 255, 255, 25);
-        color: white;
+        padding: 1px 5px 2px 5px;
+        border: none;
+        background: rgb(77, 96, 130);
+        color: rgb(250, 251, 254);
     }
 
     QDockBarButton::hover {
-        background: rgba(255, 255, 255, 75);
+        background: rgb(250, 251, 254);
+        color: black;
     }
 
     QDockBarButton::checked {
-        background: white;
+        background: rgb(255, 229, 128);
         color: black;
     }
 
@@ -208,7 +215,8 @@ register_style_sheet(u'vs-2010', u"""
 #: Inspired by http://www.colourlovers.com/palette/2866138/Grey_Wind
 register_style_sheet(u'grey-wind', u"""
     QDockArea {
-        padding: 5px;
+        padding: 4px;
+        spacing: 5px;
         background: rgb(175, 178, 183);
         border: 1px solid rgb(161, 164, 168);
     }
@@ -338,7 +346,8 @@ register_style_sheet(u'grey-wind', u"""
 #: Inspired by http://www.colourlovers.com/palette/90734/Newly_Risen_Moon
 register_style_sheet(u'new-moon', u"""
     QDockArea {
-        padding: 5px;
+        padding: 4px;
+        spacing: 5px;
         background: rgb(54, 57, 59);
         border: 1px solid rgb(45, 45, 45);
     }
@@ -467,7 +476,8 @@ register_style_sheet(u'new-moon', u"""
 #: A stylesheet inspired by Windows Metro.
 register_style_sheet(u'metro', u"""
     QDockArea {
-        padding: 5px;
+        padding: 4px;
+        spacing: 5px;
         background: #C0C0C0;
         border: 1px solid #B0B0B0;
     }
