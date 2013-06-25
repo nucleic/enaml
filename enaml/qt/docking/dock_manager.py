@@ -83,12 +83,12 @@ class DockAreaFilter(QObject):
         """
         window = area.parent()
         if isinstance(window, QDockWindow):
-            widget = area.layoutWidget()
+            widget = area.centralWidget()
             if widget is None or isinstance(widget, QDockContainer):
                 if window.isMaximized():
                     window.showNormal()
                 geo = window.geometry()
-                area.setLayoutWidget(None)
+                area.setCentralWidget(None)
                 if widget is not None:
                     widget.float()
                     widget.setGeometry(geo)
@@ -258,7 +258,7 @@ class DockManager(Atom):
             else:
                 self._free_window(frame)
         del self._dock_frames
-        self._dock_area.setLayoutWidget(None)
+        self._dock_area.setCentralWidget(None)
 
     def save_layout(self):
         """ Get the current layout of the dock area.
@@ -274,7 +274,7 @@ class DockManager(Atom):
         secondary = []
 
         area = self._dock_area
-        widget = area.layoutWidget()
+        widget = area.centralWidget()
         if widget is not None:
             primary = dockarea(save_layout(widget))
             maxed = area.maximizedWidget()
@@ -284,7 +284,7 @@ class DockManager(Atom):
         for frame in self._floating_frames():
             if isinstance(frame, QDockWindow):
                 area = frame.dockArea()
-                item = dockarea(save_layout(area.layoutWidget()))
+                item = dockarea(save_layout(area.centralWidget()))
                 maxed = area.maximizedWidget()
                 if maxed is not None:
                     item.maximized_item = maxed.objectName()
@@ -312,11 +312,11 @@ class DockManager(Atom):
         """
         # Remove the layout widget before resetting the handlers. This
         # prevents a re-used container from being hidden by the call to
-        # setLayoutWidget after it has already been reset. The reference
+        # setCentralWidget after it has already been reset. The reference
         # is held to the old widget so the containers are not destroyed
         # before they are reset.
-        widget = self._dock_area.layoutWidget()
-        self._dock_area.setLayoutWidget(None)
+        widget = self._dock_area.centralWidget()
+        self._dock_area.setCentralWidget(None)
         containers = list(self._dock_containers())
         for container in containers:
             container.reset()
@@ -335,7 +335,7 @@ class DockManager(Atom):
         # A convenience closure for populating a dock area.
         def popuplate_area(area, layout):
             widget = build_layout(layout.child, containers)
-            area.setLayoutWidget(widget)
+            area.setCentralWidget(widget)
             if layout.maximized_item:
                 maxed = self._find_container(layout.maximized_item)
                 if maxed is not None:
@@ -348,7 +348,7 @@ class DockManager(Atom):
                 popuplate_area(self._dock_area, primary)
             else:
                 widget = build_layout(primary, containers)
-                self._dock_area.setLayoutWidget(widget)
+                self._dock_area.setCentralWidget(widget)
 
         # Setup the layout for the secondary floating dock area. This
         # classifies the secondary items according to their type as
@@ -399,27 +399,26 @@ class DockManager(Atom):
         a.unplug()
         from .q_dock_bar import QDockBar
 
-        self._dock_area.pinContainer(a, QDockBar.North)
+        self._dock_area.pinContainer(a, QDockBar.East)
 
         b = self._dock_area.findChildren(QDockContainer, "Item 8")[0]
         b.unplug()
         from .q_dock_bar import QDockBar
 
-        self._dock_area.pinContainer(b, QDockBar.North)
+        self._dock_area.pinContainer(b, QDockBar.East)
 
         c = self._dock_area.findChildren(QDockContainer, "Item 9")[0]
         c.unplug()
         from .q_dock_bar import QDockBar
 
-        self._dock_area.pinContainer(c, QDockBar.North)
-        # from .q_dock_pin_bar import QDockPinBar
-        # bar = QDockPinBar()
-        # bar.addContainer(a)
-        # self._dock_area.setPinBar(bar)
+        self._dock_area.pinContainer(c, QDockBar.West)
 
-        #bar = QDockPinBar()
-        #bar.addContainer(a)
-        #self._dock_area.setPinBar(bar)
+        d = self._dock_area.findChildren(QDockContainer, "Item 7")[0]
+        d.unplug()
+        from .q_dock_bar import QDockBar
+
+        self._dock_area.pinContainer(d, QDockBar.South)
+
 
     def apply_layout_op(self, op, direction, *item_names):
         """ Apply a layout operation to the managed items.
@@ -878,7 +877,7 @@ class DockManager(Atom):
                 overlay.hide()
                 return
             local = target.mapFromGlobal(pos)
-            if target.layoutWidget() is None:
+            if target.centralWidget() is None:
                 overlay.mouse_over_widget(target, local, empty=True)
             else:
                 widget = layout_hit_test(target, local)
@@ -1080,7 +1079,7 @@ class DockManager(Atom):
         area = self._dock_area
         for container in containers:
             container.unplug()
-            if area.layoutWidget() is None:
+            if area.centralWidget() is None:
                 plug_frame(area, None, container, QGuideRose.Guide.AreaCenter)
             else:
                 plug_frame(area, None, container, guide)

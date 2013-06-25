@@ -102,20 +102,20 @@ def unplug_container(area, container):
         True on success, False otherwise.
 
     """
-    root = area.layoutWidget()
+    root = area.centralWidget()
     if root is None:
         return False
     if root is container:
         root.hide()
         root.setParent(None)
-        area.setLayoutWidget(None)
+        area.setCentralWidget(None)
         QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
         return True
     success, replace = _unplug(root, container)
     if not success:
         return False
     if replace is not None:
-        area.setLayoutWidget(replace)
+        area.setCentralWidget(replace)
     QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
     return True
 
@@ -169,7 +169,7 @@ def iter_handles(area):
         contained within the dock area layout.
 
     """
-    stack = [area.layoutWidget()]
+    stack = [area.centralWidget()]
     while stack:
         widget = stack.pop()
         if isinstance(widget, QDockSplitter):
@@ -194,7 +194,7 @@ def iter_tabs(area):
         within the dock area layout.
 
     """
-    stack = [area.layoutWidget()]
+    stack = [area.centralWidget()]
     while stack:
         widget = stack.pop()
         if isinstance(widget, QDockTabWidget):
@@ -219,7 +219,7 @@ def iter_containers(area):
         contained within the dock area layout.
 
     """
-    stack = [area.layoutWidget()]
+    stack = [area.centralWidget()]
     while stack:
         widget = stack.pop()
         if isinstance(widget, QDockContainer):
@@ -505,8 +505,8 @@ def _splitter_insert_frame(splitter, index, frame):
     """
     if isinstance(frame, QDockWindow):
         area = frame.dockArea()
-        widget = area.layoutWidget()
-        area.setLayoutWidget(None)
+        widget = area.centralWidget()
+        area.setCentralWidget(None)
         if isinstance(widget, QDockSplitter):
             _merge_splitter(splitter, index, widget)
         else:
@@ -522,11 +522,11 @@ def _split_root_helper(area, orientation, frame, append):
     """ Split the root layout widget according the orientation.
 
     """
-    widget = area.layoutWidget()
+    widget = area.centralWidget()
     is_splitter = isinstance(widget, QDockSplitter)
     if not is_splitter or widget.orientation() != orientation:
         new = QDockSplitter(orientation)
-        area.setLayoutWidget(new)
+        area.setCentralWidget(new)
         new.inheritOpaqueResize()
         new.addWidget(widget)
         widget.show()
@@ -601,14 +601,14 @@ def _tabify_helper(area, widget, frame, tab_pos):
         return True
     if not isinstance(widget, QDockContainer):
         return False
-    root = area.layoutWidget()
+    root = area.centralWidget()
     if widget is not root:
         if not isinstance(widget.parent(), QDockSplitter):
             return False
     tabs = QDockTabWidget()
     tabs.setTabPosition(tab_pos)
     if widget is root:
-        area.setLayoutWidget(tabs)
+        area.setCentralWidget(tabs)
         _tabs_add_frame(tabs, widget)
         _tabs_add_frame(tabs, frame)
     else:
@@ -654,7 +654,7 @@ def _plug_compass_north(area, widget, frame, guide):
     """ Plug the frame to the north of the widget.
 
     """
-    root = area.layoutWidget()
+    root = area.centralWidget()
     if widget is root:
         return _split_root_helper(area, Qt.Vertical, frame, False)
     return _split_widget_helper(Qt.Vertical, widget, frame, False)
@@ -664,7 +664,7 @@ def _plug_compass_east(area, widget, frame, guide):
     """ Plug the frame to the east of the widget.
 
     """
-    root = area.layoutWidget()
+    root = area.centralWidget()
     if widget is root:
         return _split_root_helper(area, Qt.Horizontal, frame, True)
     return _split_widget_helper(Qt.Horizontal, widget, frame, True)
@@ -674,7 +674,7 @@ def _plug_compass_south(area, widget, frame, guide):
     """ Plug the frame to the south of the widget.
 
     """
-    root = area.layoutWidget()
+    root = area.centralWidget()
     if widget is root:
         return _split_root_helper(area, Qt.Vertical, frame, True)
     return _split_widget_helper(Qt.Vertical, widget, frame, True)
@@ -684,7 +684,7 @@ def _plug_compass_west(area, widget, frame, guide):
     """ Plug the frame to the west of the widget.
 
     """
-    root = area.layoutWidget()
+    root = area.centralWidget()
     if widget is root:
         return _split_root_helper(area, Qt.Horizontal, frame, False)
     return _split_widget_helper(Qt.Horizontal, widget, frame, False)
@@ -757,13 +757,13 @@ def _plug_area_center(area, widget, frame, guide):
         return False
     if isinstance(frame, QDockWindow):
         other_area = frame.dockArea()
-        other_widget = other_area.layoutWidget()
-        other_area.setLayoutWidget(None)
-        area.setLayoutWidget(other_widget)
+        other_widget = other_area.centralWidget()
+        other_area.setCentralWidget(None)
+        area.setCentralWidget(other_widget)
         other_widget.show()
     else:
         frame.unfloat()
-        area.setLayoutWidget(frame)
+        area.setCentralWidget(frame)
         frame.show()
     return True
 
