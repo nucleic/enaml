@@ -50,7 +50,7 @@ http://github.com/nucleic. The current team consists of:
 
 Previous contributors include:
 
-* Ioannix Tziakos
+* Ioannis Tziakos
 * Robert Kern
 * Corran Webster
 * David Wyde
