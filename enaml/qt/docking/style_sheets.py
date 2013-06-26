@@ -192,7 +192,7 @@ register_style_sheet(u'vs-2010', u"""
     }
 
     QDockBarButton {
-        padding: 1px 5px 2px 5px;
+        padding: 1px 10px 2px 10px;
         border: none;
         background: rgb(77, 96, 130);
         color: rgb(250, 251, 254);
@@ -207,7 +207,6 @@ register_style_sheet(u'vs-2010', u"""
         background: rgb(255, 229, 128);
         color: black;
     }
-
 """)
 
 
@@ -338,6 +337,27 @@ register_style_sheet(u'grey-wind', u"""
     QBitmapButton#dockwindow-restore-button:pressed,
     QBitmapButton#dockwindow-link-button:pressed {
         background: rgb(144, 144, 152);
+    }
+
+    QDockBar {
+        spacing: 3px;
+    }
+
+    QDockBarButton {
+        padding: 1px 10px 2px 10px;
+        border: none;
+        background: rgb(144, 144, 152);
+        color: rgb(244, 244, 244);
+    }
+
+    QDockBarButton::hover {
+        background: rgb(139, 131, 129);
+        background: rgb(115, 115, 115);
+    }
+
+    QDockBarButton::checked {
+        background: rgb(129, 121, 119);
+        background: rgb(80, 80, 80);
     }
 """)
 
