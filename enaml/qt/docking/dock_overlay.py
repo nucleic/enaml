@@ -479,6 +479,7 @@ class DockOverlay(Atom):
 
         # Hit test the rose and update the target geometry for the
         # rubber band if the target guide has changed.
+        rose.setCenterPoint(center)
         guide = rose.guideAt(pos, target_mode)
         if dirty or guide != self._last_guide:
             self._last_guide = guide
@@ -489,8 +490,7 @@ class DockOverlay(Atom):
             self._target_band_geo = band_geo
             self._band_timer.start(self.band_delay)
 
-        # Set the center point of the rose and make it visible. Issue
-        # a mouseover command so that the guides are highlighted.
-        rose.setCenterPoint(center)
+        # Finally, make the rose visible and issue a mouseover command 
+        # so that the guides are highlighted.
         rose.mouseOver(pos)
         rose.show()
