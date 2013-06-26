@@ -518,8 +518,8 @@ class DockManager(Atom):
         moving it by dragging on it's title bar. It takes into account
         neighboring windows and will snap the frame edge to another
         window if it comes close to the boundary. It also ensures that
-        the guide overlays are shown at the proper position. This
-        methos should not be called by user code.
+        the guide overlays are shown at the proper position. This method
+        should not be called by user code.
 
         Parameters
         ----------
@@ -849,9 +849,17 @@ class DockManager(Atom):
 
         """
         for target in self._iter_dock_targets(frame):
-            local = target.mapFromGlobal(pos)
-            if target.rect().contains(local):
-                return target
+            # Hit test the central pane instead of the entire dock area
+            # so that mouse movement over the dock bars is ignored.
+            if isinstance(target, QDockArea):
+                pane = target.centralPane()
+                local = pane.mapFromGlobal(pos)
+                if pane.rect().contains(local):
+                    return target
+            else:
+                local = target.mapFromGlobal(pos)
+                if target.rect().contains(local):
+                    return target
 
     def _update_drag_overlay(self, frame, pos):
         """ Update the overlay for a dragged frame.
@@ -876,12 +884,14 @@ class DockManager(Atom):
             if target.maximizedWidget() is not None:
                 overlay.hide()
                 return
-            local = target.mapFromGlobal(pos)
+            pane = target.centralPane()
+            pane_local = pane.mapFromGlobal(pos)
             if target.centralWidget() is None:
-                overlay.mouse_over_widget(target, local, empty=True)
+                overlay.mouse_over_widget(pane, pane_local, empty=True)
             else:
-                widget = layout_hit_test(target, local)
-                overlay.mouse_over_area(target, widget, local)
+                area_local = target.mapFromGlobal(pos)
+                widget = layout_hit_test(target, area_local)
+                overlay.mouse_over_area(pane, widget, pane_local)
         else:
             overlay.hide()
 
