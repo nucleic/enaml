@@ -69,7 +69,7 @@ class QDockArea(QFrame):
 
         central_layout = QVBoxLayout()
         central_layout.setContentsMargins(QMargins(0, 0, 0, 0))
-        central_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        central_layout.setSizeConstraint(QLayout.SetMinimumSize)
         central_pane.setLayout(central_layout)
 
         grid_layout = QGridLayout()
@@ -80,13 +80,13 @@ class QDockArea(QFrame):
         grid_layout.setColumnStretch(1, 1)
         grid_layout.setColumnStretch(2, 0)
         grid_layout.setContentsMargins(QMargins(0, 0, 0, 0))
-        grid_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        grid_layout.setSizeConstraint(QLayout.SetMinimumSize)
         grid_layout.addWidget(central_pane, 1, 1)
         primary_pane.setLayout(grid_layout)
 
         area_layout = QDockAreaLayout()
         area_layout.setContentsMargins(QMargins(0, 0, 0, 0))
-        area_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        area_layout.setSizeConstraint(QLayout.SetMinimumSize)
         area_layout.insertWidget(0, primary_pane)
         self.setLayout(area_layout)
         self.updateSpacing()
@@ -189,6 +189,9 @@ class QDockArea(QFrame):
             old.setParent(None)
         if widget is not None:
             layout.addWidget(widget)
+            # lower the widget to keep it stacked behind any pinned
+            # containers which are in the slide-out position.
+            widget.lower()
             widget.show()
 
     def maximizedWidget(self):
