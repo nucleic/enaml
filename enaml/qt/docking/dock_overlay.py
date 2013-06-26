@@ -418,8 +418,9 @@ class DockOverlay(Atom):
 
         Parameters
         ----------
-        area : QDockArea
-            The dock area being overlayed.
+        area : QWidget
+            The widget which contains the dock items onto which the
+            overlay will be displayed.
 
         widget : QWidget
             The dock widget in the area which is under the mouse, or
