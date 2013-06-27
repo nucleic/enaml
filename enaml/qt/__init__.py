@@ -34,7 +34,7 @@ if not QT_API:
         except ImportError:
             raise ImportError('Cannot import PyQt4 or PySide')
 elif QT_API == 'pyqt':
-    prepare_pyqt4()
+    prepare_pyqt()
 elif QT_API != 'pyside':
     msg = "Invalid Qt API %r, valid values are: 'pyqt' or 'pyside'"
     raise ValueError(msg % QT_API)
