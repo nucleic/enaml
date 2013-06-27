@@ -66,10 +66,13 @@ class QtAction(QtToolkitObject, ProxyAction):
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
-    def on_triggered(self, checked):
+    def on_triggered(self):
         """ The signal handler for the 'triggered' signal.
 
         """
+        # PySide does pass the 'checked' arg to the slot like PyQt, so
+        # grab the checked attribute directly, which works on both.
+        checked = self.widget.isChecked()
         if not self._guard & CHECKED_GUARD:
             self.declaration.checked = checked
             self.declaration.triggered(checked)

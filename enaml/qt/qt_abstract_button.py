@@ -65,10 +65,13 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
-    def on_clicked(self, checked):
+    def on_clicked(self):
         """ The signal handler for the 'clicked' signal.
 
         """
+        # PySide does pass the 'checked' arg to the slot like PyQt, so
+        # grab the checked attribute directly, which works on both.
+        checked = self.widget.isChecked()
         if not self._guard & CHECKED_GUARD:
             self.declaration.checked = checked
             self.declaration.clicked(checked)
