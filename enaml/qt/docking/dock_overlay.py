@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, Bool, Int, Float, Typed
 
+from enaml.qt import QT_API
 from enaml.qt.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
 from enaml.qt.QtGui import QWidget, QStyle, QStyleOption, QPainter
 
@@ -53,6 +54,10 @@ class DockOverlay(Atom):
     a more fluid user interaction experience.
 
     """
+    # PySide requires weakrefs for using bound methods as slots
+    if QT_API == 'pyside':
+        __slots__ = '__weakref__' 
+
     #: The size of the rubber band when docking on the border, in px.
     border_size = Int(60)
 
