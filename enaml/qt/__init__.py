@@ -19,10 +19,10 @@ def prepare_pyqt():
     sip.setapi('QVariant', 2)
 
 
-QT_API = os.environ.get('QT_API').lower().strip()
+QT_API = os.environ.get('QT_API', '').lower().strip()
 
 
-if QT_API is None:
+if not QT_API:
     try:
         import PyQt4
         prepare_pyqt()
