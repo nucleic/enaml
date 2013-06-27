@@ -52,7 +52,7 @@ class QtDateSelector(QtBoundedDate, ProxyDateSelector):
             The current control date as a date object.
 
         """
-        return self.widget.date().toPyDate()
+        return self.widget.date().toPython()
 
     def set_minimum(self, date):
         """ Set the widget's minimum date.

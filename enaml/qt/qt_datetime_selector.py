@@ -52,7 +52,7 @@ class QtDatetimeSelector(QtBoundedDatetime, ProxyDatetimeSelector):
             The current control datetime as a datetime object.
 
         """
-        return self.widget.dateTime().toPyDateTime()
+        return self.widget.dateTime().toPython()
 
     def set_minimum(self, datetime):
         """ Set the widget's minimum datetime.

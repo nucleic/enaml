@@ -51,7 +51,7 @@ class QtTimeSelector(QtBoundedTime, ProxyTimeSelector):
             The current control time as a time object.
 
         """
-        return self.widget.time().toPyTime()
+        return self.widget.time().toPython()
 
     def set_minimum(self, time):
         """ Set the widget's minimum time.

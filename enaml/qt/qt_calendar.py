@@ -49,7 +49,7 @@ class QtCalendar(QtBoundedDate, ProxyCalendar):
             The current control date as a Python date object.
 
         """
-        return self.widget.selectedDate().toPyDate()
+        return self.widget.selectedDate().toPython()
 
     def set_minimum(self, date):
         """ Set the widget's minimum date.
