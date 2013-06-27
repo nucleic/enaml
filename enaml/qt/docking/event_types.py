@@ -9,4 +9,4 @@ from enaml.qt.QtCore import QEvent
 
 
 #: An event type which indicates the contents of a dock area changed.
-DockAreaContentsChanged = QEvent.registerEventType()
+DockAreaContentsChanged = QEvent.Type(QEvent.registerEventType())
