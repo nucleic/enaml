@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
-from PyQt4.QtGui import QWidget, QStyle, QStyleOption, QPainter
-
 from atom.api import Atom, Bool, Int, Float, Typed
+
+from enaml.qt.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
+from enaml.qt.QtGui import QWidget, QStyle, QStyleOption, QPainter
 
 from .q_guide_rose import QGuideRose
 from .q_dock_container import QDockContainer

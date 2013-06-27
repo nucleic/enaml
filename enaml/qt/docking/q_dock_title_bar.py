@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize, QPoint, QMargins, pyqtSignal
-from PyQt4.QtGui import QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
+from enaml.qt.QtCore import Qt, QSize, QPoint, QMargins, Signal
+from enaml.qt.QtGui import QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
 
 from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_icon_widget import QIconWidget
@@ -22,25 +22,25 @@ class IDockTitleBar(QWidget):
 
     """
     #: A signal emitted when the maximize button is clicked.
-    maximizeButtonClicked = pyqtSignal(bool)
+    maximizeButtonClicked = Signal(bool)
 
     #: A signal emitted when the restore button is clicked.
-    restoreButtonClicked = pyqtSignal(bool)
+    restoreButtonClicked = Signal(bool)
 
     #: A signal emitted when the close button is clicked.
-    closeButtonClicked = pyqtSignal(bool)
+    closeButtonClicked = Signal(bool)
 
     #: A signal emitted when the link button is toggled.
-    linkButtonToggled = pyqtSignal(bool)
+    linkButtonToggled = Signal(bool)
 
     #: A signal emitted when the title is edited by the user.
-    titleEdited = pyqtSignal(unicode)
+    titleEdited = Signal(unicode)
 
     #: A signal emitted when the title bar is left double clicked.
-    leftDoubleClicked = pyqtSignal(QPoint)
+    leftDoubleClicked = Signal(QPoint)
 
     #: A signal emitted when the title bar is right clicked.
-    rightClicked = pyqtSignal(QPoint)
+    rightClicked = Signal(QPoint)
 
     #: Do not show any buttons in the title bar.
     NoButtons = 0x0
@@ -220,25 +220,25 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
     """
     #: A signal emitted when the maximize button is clicked.
-    maximizeButtonClicked = pyqtSignal(bool)
+    maximizeButtonClicked = Signal(bool)
 
     #: A signal emitted when the restore button is clicked.
-    restoreButtonClicked = pyqtSignal(bool)
+    restoreButtonClicked = Signal(bool)
 
     #: A signal emitted when the close button is clicked.
-    closeButtonClicked = pyqtSignal(bool)
+    closeButtonClicked = Signal(bool)
 
     #: A signal emitted when the link button is toggled.
-    linkButtonToggled = pyqtSignal(bool)
+    linkButtonToggled = Signal(bool)
 
     #: A signal emitted when the title is edited by the user.
-    titleEdited = pyqtSignal(unicode)
+    titleEdited = Signal(unicode)
 
     #: A signal emitted when the empty area is left double clicked.
-    leftDoubleClicked = pyqtSignal(QPoint)
+    leftDoubleClicked = Signal(QPoint)
 
     #: A signal emitted when the empty area is right clicked.
-    rightClicked = pyqtSignal(QPoint)
+    rightClicked = Signal(QPoint)
 
     def __init__(self, parent=None):
         """ Initialize a QDockTitleBar.

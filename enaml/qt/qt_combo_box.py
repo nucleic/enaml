@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QComboBox
-
 from atom.api import Int, Typed
 
 from enaml.widgets.combo_box import ProxyComboBox
+
+from .QtGui import QComboBox
 
 from .qt_control import QtControl
 

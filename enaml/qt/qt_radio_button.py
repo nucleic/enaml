@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QRadioButton
-
 from atom.api import Typed
 
 from enaml.widgets.radio_button import ProxyRadioButton
+
+from .QtGui import QRadioButton
 
 from .qt_abstract_button import QtAbstractButton
 

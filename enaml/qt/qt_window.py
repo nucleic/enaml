@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize, pyqtSignal
-from PyQt4.QtGui import QFrame, QLayout, QIcon
-
 from atom.api import Typed
 
 from enaml.widgets.window import ProxyWindow
+
+from .QtCore import Qt, QSize, Signal
+from .QtGui import QFrame, QLayout, QIcon
 
 from .q_resource_helpers import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
@@ -68,7 +68,7 @@ class QWindow(QFrame):
 
     """
     #: A signal emitted when the window is closed.
-    closed = pyqtSignal()
+    closed = Signal()
 
     def __init__(self, parent=None):
         """ Initialize a QWindow.

@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QCalendarWidget
-
 from atom.api import Typed
 
 from enaml.widgets.calendar import ProxyCalendar
+
+from .QtGui import QCalendarWidget
 
 from .qt_bounded_date import QtBoundedDate, CHANGED_GUARD
 

@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QMargins, QSize
-from PyQt4.QtGui import (
+from enaml.qt.QtCore import QMargins, QSize
+from enaml.qt.QtGui import (
     QFrame, QLayout, QTabWidget, QGridLayout, QStackedLayout, QWidget
 )
 

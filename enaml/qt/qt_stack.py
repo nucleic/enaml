@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QTimer, QEvent, pyqtSignal
-from PyQt4.QtGui import QStackedWidget, QPixmap
-
 from atom.api import Int, Typed
 
 from enaml.widgets.stack import ProxyStack
+
+from .QtCore import QTimer, QEvent, Signal
+from .QtGui import QStackedWidget, QPixmap
 
 from .q_pixmap_painter import QPixmapPainter
 from .q_pixmap_transition import (
@@ -66,7 +66,7 @@ class QStack(QStackedWidget):
     #: A signal emitted when a LayoutRequest event is posted to the
     #: stack widget. This will typically occur when the size hint of
     #: the stack is no longer valid.
-    layoutRequested = pyqtSignal()
+    layoutRequested = Signal()
 
     def __init__(self, *args, **kwargs):
         """ Initialize a QStack.

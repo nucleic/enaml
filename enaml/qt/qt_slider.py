@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QSlider
-
 from atom.api import Int, Typed
 
 from enaml.widgets.slider import ProxySlider
+
+from .QtCore import Qt
+from .QtGui import QSlider
 
 from .qt_control import QtControl
 

@@ -8,12 +8,12 @@
 import sys
 from weakref import WeakKeyDictionary
 
-from PyQt4.QtCore import Qt, QEvent, pyqtSignal
-from PyQt4.QtGui import QTabWidget, QTabBar, QResizeEvent, QApplication
-
 from atom.api import Typed
 
 from enaml.widgets.notebook import ProxyNotebook
+
+from .QtCore import Qt, QEvent, Signal
+from .QtGui import QTabWidget, QTabBar, QResizeEvent, QApplication
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_page import QtPage
@@ -40,7 +40,7 @@ class QNotebook(QTabWidget):
     #: A signal emitted when a LayoutRequest event is posted to the
     #: notebook widget. This will typically occur when the size hint
     #: of the notebook is no longer valid.
-    layoutRequested = pyqtSignal()
+    layoutRequested = Signal()
 
     def __init__(self, *args, **kwargs):
         """ Initialize a QNotebook.

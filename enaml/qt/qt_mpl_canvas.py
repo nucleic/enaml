@@ -5,15 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QFrame, QVBoxLayout
+from atom.api import Typed
+
+from enaml.widgets.mpl_canvas import ProxyMPLCanvas
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
 
-from atom.api import Typed
-
-from enaml.widgets.mpl_canvas import ProxyMPLCanvas
+from .QtCore import Qt
+from .QtGui import QFrame, QVBoxLayout
 
 from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl

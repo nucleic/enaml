@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize
-from PyQt4.QtGui import QFrame, QPainter
+from enaml.qt.QtCore import Qt, QSize
+from enaml.qt.QtGui import QFrame, QPainter
 
 
 class QTextLabel(QFrame):

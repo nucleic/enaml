@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize
-from PyQt4.QtGui import QColor, QFont, QImage, QIcon, QPixmap
+from .QtCore import Qt, QSize
+from .QtGui import QColor, QFont, QImage, QIcon, QPixmap
 
 
 ASPECT_RATIO_MODE = {

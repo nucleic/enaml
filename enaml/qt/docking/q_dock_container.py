@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QMargins, QPoint, QRect, QEvent, pyqtSignal
-from PyQt4.QtGui import QApplication, QLayout, QIcon
-
 from atom.api import Typed, Bool
+
+from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
+from enaml.qt.QtGui import QApplication, QLayout, QIcon
 
 from .q_dock_area import QDockArea
 from .q_dock_frame import QDockFrame
@@ -64,7 +64,7 @@ class QDockContainer(QDockFrame):
 
     """
     #: A signal emitted when the container changes its toplevel state.
-    topLevelChanged = pyqtSignal(bool)
+    topLevelChanged = Signal(bool)
 
     class FrameState(QDockFrame.FrameState):
         """ A private class for managing container drag state.

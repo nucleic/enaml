@@ -7,12 +7,12 @@
 #------------------------------------------------------------------------------
 import sys
 
-from PyQt4.QtCore import Qt, pyqtSignal
-from PyQt4.QtGui import QMainWindow
-
 from atom.api import Typed
 
 from enaml.widgets.main_window import ProxyMainWindow
+
+from .QtCore import Qt, Signal
+from .QtGui import QMainWindow
 
 from .q_deferred_caller import deferredCall
 from .qt_container import QtContainer
@@ -28,7 +28,7 @@ class QCustomMainWindow(QMainWindow):
 
     """
     #: A signal emitted when the window is closed by the user
-    closed = pyqtSignal()
+    closed = Signal()
 
     #--------------------------------------------------------------------------
     # Private API

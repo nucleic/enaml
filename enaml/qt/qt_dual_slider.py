@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, pyqtSignal
-from PyQt4.QtGui import QSlider, QStyle, QStyleOptionSlider, QPainter
-
 from atom.api import Int, Typed
 
 from enaml.widgets.dual_slider import ProxyDualSlider
+
+from .QtCore import Qt, Signal
+from .QtGui import QSlider, QStyle, QStyleOptionSlider, QPainter
 
 from .qt_control import QtControl
 
@@ -49,10 +49,10 @@ class QDualSlider(QSlider):
 
     """
     #: A signal emitted when the low value of the slider changes.
-    lowValueChanged = pyqtSignal(int)
+    lowValueChanged = Signal(int)
 
     #: A signal emitted when the high value of the slider changes.
-    highValueChanged = pyqtSignal(int)
+    highValueChanged = Signal(int)
 
     #: Enums identifier the active slider thumb.
     BothThumbs = -1

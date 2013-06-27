@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, pyqtSignal
-from PyQt4.QtGui import QDockWidget, QWidget
-
 from atom.api import Int, Typed
 
 from enaml.widgets.dock_pane import ProxyDockPane
+
+from .QtCore import Qt, Signal 
+from .QtGui import QDockWidget, QWidget
 
 from .qt_container import QtContainer
 from .qt_widget import QtWidget
@@ -41,14 +41,14 @@ class QCustomDockWidget(QDockWidget):
 
     """
     #: A signal emitted when the dock widget is closed by the user.
-    closed = pyqtSignal()
+    closed = Signal()
 
     #: A signal emitted when the dock widget is floated.
-    floated = pyqtSignal()
+    floated = Signal()
 
     #: A signal emitted when the dock widget is docked. The payload
     #: will be the new dock area.
-    docked = pyqtSignal(object)
+    docked = Signal(object)
 
     def __init__(self, parent=None):
         """ Initialize a QCustomDockWidget.

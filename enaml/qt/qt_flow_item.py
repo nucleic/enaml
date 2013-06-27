@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QSize, QEvent
-from PyQt4.QtGui import QFrame, QLayout
-
 from atom.api import Typed
 
 from enaml.widgets.flow_item import ProxyFlowItem
+
+from .QtCore import QSize, QEvent
+from .QtGui import QFrame, QLayout
 
 from .q_flow_layout import QFlowLayout, AbstractFlowWidget, FlowLayoutData
 from .q_single_widget_layout import QSingleWidgetLayout

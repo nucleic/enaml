@@ -5,9 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QObject
-
 from atom.api import Atom, Typed, Value
+
+from enaml.qt.QtCore import QObject
 
 from .q_dock_frame import QDockFrame
 

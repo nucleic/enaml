@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QPoint, QPointF, QRect, QVariantAnimation, pyqtSignal
-from PyQt4.QtGui import QPainter, QPixmap, QPainterPath
+from .QtCore import QPoint, QPointF, QRect, QVariantAnimation, Signal
+from .QtGui import QPainter, QPixmap, QPainterPath
 
 
 class QPixmapTransition(QVariantAnimation):
@@ -20,7 +20,7 @@ class QPixmapTransition(QVariantAnimation):
     #: A signal emmitted when the output pixmap has been updated with
     #: a new frame in the transition animation. The paylod will be the
     #: output pixmap of the transition.
-    pixmapUpdated = pyqtSignal(QPixmap)
+    pixmapUpdated = Signal(QPixmap)
 
     def __init__(self):
         """ Initialize a QPixmapTransition.

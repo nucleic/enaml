@@ -7,12 +7,12 @@
 #------------------------------------------------------------------------------
 import sys
 
-from PyQt4.QtCore import Qt, QSize
-from PyQt4.QtGui import QFont, QWidget, QWidgetItem, QApplication
-
 from atom.api import Typed
 
 from enaml.widgets.widget import ProxyWidget
+
+from .QtCore import Qt, QSize
+from .QtGui import QFont, QWidget, QWidgetItem, QApplication
 
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject

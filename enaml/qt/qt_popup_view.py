@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QPointF, QPoint
-
 from atom.api import Typed
 
 from enaml.widgets.popup_view import ProxyPopupView
+
+from .QtCore import Qt, QPointF, QPoint
 
 from .q_popup_view import QPopupView
 from .qt_widget import QtWidget

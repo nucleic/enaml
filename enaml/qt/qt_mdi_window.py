@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QMdiSubWindow, QLayout, QIcon
-
 from atom.api import Typed
 
 from enaml.widgets.mdi_window import ProxyMdiWindow
+
+from .QtGui import QMdiSubWindow, QLayout, QIcon
 
 from .q_resource_helpers import get_cached_qicon
 from .qt_widget import QtWidget

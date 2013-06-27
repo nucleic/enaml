@@ -5,16 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import (
+from atom.api import Atom, Typed, Float, Int
+
+from .QtCore import (
     Qt, QPoint, QPointF, QSize, QMargins, QPropertyAnimation, QTimer, QEvent,
-    pyqtSignal
+    Signal
 )
-from PyQt4.QtGui import (
+from .QtGui import (
     QApplication, QWidget, QLayout, QPainter, QPainterPath, QRegion, QPen,
     QCursor
 )
-
-from atom.api import Atom, Typed, Float, Int
 
 from .q_single_widget_layout import QSingleWidgetLayout
 
@@ -27,7 +27,7 @@ class QPopupView(QWidget):
 
     """
     #: A signal emitted when the popup is fully closed.
-    closed = pyqtSignal()
+    closed = Signal()
 
     #: The left edge of the popup view.
     LeftEdge = 0

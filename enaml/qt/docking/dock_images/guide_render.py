@@ -1,8 +1,8 @@
 """ An extremely hack script that was used to render the dock guide icons.
 
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from enaml.qt.QtCore import *
+from enaml.qt.QtGui import *
 
 
 class GuidePad(object):

@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QEvent
+from enaml.qt.QtCore import QEvent
 
 
 #: An event type which indicates the contents of a dock area changed.

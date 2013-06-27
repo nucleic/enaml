@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QRect, QSize, QPoint, pyqtSignal
-from PyQt4.QtGui import QFrame, QLayout
+from enaml.qt.QtCore import QRect, QSize, QPoint, Signal
+from enaml.qt.QtGui import QFrame, QLayout
 
 from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_title_bar import QDockTitleBar
@@ -224,31 +224,31 @@ class QDockItem(QFrame):
     """
     #: A signal emitted when the maximize button is clicked. This
     #: signal is proxied from the current dock item title bar.
-    maximizeButtonClicked = pyqtSignal(bool)
+    maximizeButtonClicked = Signal(bool)
 
     #: A signal emitted when the restore button is clicked. This
     #: signal is proxied from the current dock item title bar.
-    restoreButtonClicked = pyqtSignal(bool)
+    restoreButtonClicked = Signal(bool)
 
     #: A signal emitted when the close button is clicked. This
     #: signal is proxied from the current dock item title bar.
-    closeButtonClicked = pyqtSignal(bool)
+    closeButtonClicked = Signal(bool)
 
     #: A signal emitted when the link button is toggled. This
     #: signal is proxied from the current dock item title bar.
-    linkButtonToggled = pyqtSignal(bool)
+    linkButtonToggled = Signal(bool)
 
     #: A signal emitted when the title is edited by the user. This
     #: signal is proxied from the current dock item title bar.
-    titleEdited = pyqtSignal(unicode)
+    titleEdited = Signal(unicode)
 
     #: A signal emitted when the empty area is left double clicked.
     #: This signal is proxied from the current dock item title bar.
-    titleBarLeftDoubleClicked = pyqtSignal(QPoint)
+    titleBarLeftDoubleClicked = Signal(QPoint)
 
     #: A signal emitted when the empty area is right clicked. This
     #: signal is proxied from the current dock item title bar.
-    titleBarRightClicked = pyqtSignal(QPoint)
+    titleBarRightClicked = Signal(QPoint)
 
     def __init__(self, parent=None):
         """ Initialize a QDockItem.

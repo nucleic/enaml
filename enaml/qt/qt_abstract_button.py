@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QSize
-from PyQt4.QtGui import QAbstractButton, QIcon
-
 from atom.api import Int, Typed
 
 from enaml.widgets.abstract_button import ProxyAbstractButton
+
+from .QtCore import QSize
+from .QtGui import QAbstractButton, QIcon
 
 from .q_resource_helpers import get_cached_qicon
 from .qt_constraints_widget import size_hint_guard

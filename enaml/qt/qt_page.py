@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QFrame, QIcon
-
 from atom.api import Typed
 
 from enaml.widgets.page import ProxyPage
+
+from .QtCore import Signal
+from .QtGui import QFrame, QIcon
 
 from .q_resource_helpers import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
@@ -23,7 +23,7 @@ class QPage(QFrame):
 
     """
     #: A signal emitted when the page has been closed by the user.
-    pageClosed = pyqtSignal()
+    pageClosed = Signal()
 
     def __init__(self, *args, **kwargs):
         """ Initialize a QPage.

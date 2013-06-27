@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QScrollArea, QFrame
-
 from atom.api import Typed
 
 from enaml.widgets.flow_area import ProxyFlowArea
+
+from .QtGui import QScrollArea, QFrame
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_flow_item import QtFlowItem

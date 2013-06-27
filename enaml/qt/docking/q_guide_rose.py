@@ -7,10 +7,10 @@
 #------------------------------------------------------------------------------
 import sys
 
-from PyQt4.QtCore import Qt, QRect, QPoint
-from PyQt4.QtGui import QFrame, QImage, QPainter
-
 from atom.api import Atom, Float, Int, Str, Typed, Value, set_default
+
+from enaml.qt.QtCore import Qt, QRect, QPoint
+from enaml.qt.QtGui import QFrame, QImage, QPainter
 
 # Make sure the resources get registered.
 from . import dock_resources

@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QMenu, QCursor
-
 from atom.api import Typed
 
 from enaml.widgets.menu import ProxyMenu
+
+from .QtCore import Qt
+from .QtGui import QMenu, QCursor
 
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup

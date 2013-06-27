@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QEvent, QRect, QSize, QPoint, QMargins, pyqtSignal
-from PyQt4.QtGui import QApplication, QFrame
-
 from atom.api import Atom, Bool, Int, Typed
+
+from enaml.qt.QtCore import Qt, QEvent, QRect, QSize, QPoint, QMargins, Signal
+from enaml.qt.QtGui import QApplication, QFrame
 
 
 class QDockFrame(QFrame):
@@ -71,7 +71,7 @@ class QDockFrame(QFrame):
 
     #: A signal emitted when the linked button is toggled. This should
     #: be emitted at the appropriate times by a subclass.
-    linkButtonToggled = pyqtSignal(bool)
+    linkButtonToggled = Signal(bool)
 
     class FrameState(Atom):
         """ A private class for tracking dock frame state.

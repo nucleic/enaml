@@ -5,14 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QSize, pyqtSignal
-from PyQt4.QtGui import QIcon
-
 from atom.api import Int, Typed
 
 from enaml.widgets.dock_item import ProxyDockItem
 
+from .QtCore import Qt, QSize, Signal
+from .QtGui import QIcon
+
 from .docking.q_dock_item import QDockItem
+
 from .q_resource_helpers import get_cached_qicon
 from .qt_widget import QtWidget
 
@@ -23,7 +24,7 @@ class QCustomDockItem(QDockItem):
     """
     #: A signal emitted if the close event is accepted. It it emitted
     #: before the close event handler returns.
-    closed = pyqtSignal()
+    closed = Signal()
 
     def closeEvent(self, event):
         """ Handle the close event for the dock item.

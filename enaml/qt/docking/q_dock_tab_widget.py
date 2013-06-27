@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent
-from PyQt4.QtGui import (
+from enaml.qt.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent
+from enaml.qt.QtGui import (
     QApplication, QTabBar, QTabWidget, QMouseEvent, QResizeEvent, QStyle,
     QCursor
 )

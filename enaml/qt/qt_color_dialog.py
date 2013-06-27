@@ -5,13 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QColor, QColorDialog
-
 from atom.api import Int, Typed
 
 from enaml.colors import Color
 from enaml.widgets.color_dialog import ProxyColorDialog
+
+from .QtCore import Signal
+from .QtGui import QColor, QColorDialog
 
 from .qt_toolkit_dialog import QtToolkitDialog
 
@@ -46,7 +46,7 @@ class QColorDialogEx(QColorDialog):
     #: A signal emitted at the end of the 'done' method. This works
     #: around the standard QColorDialog behavior which emits the
     #: 'colorSelected' signal *after* the 'finished' signal.
-    reallyFinished = pyqtSignal(int)
+    reallyFinished = Signal(int)
 
     def done(self, result):
         """ A reimplemented done method.

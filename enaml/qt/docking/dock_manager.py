@@ -8,12 +8,12 @@
 from contextlib import contextmanager
 import warnings
 
-from PyQt4.QtCore import Qt, QPoint, QRect, QObject, QMetaObject
-from PyQt4.QtGui import QApplication
-
 from atom.api import Atom, Int, Typed, List, atomref
 
 from enaml.layout.dock_layout import docklayout, dockarea, dockitem
+
+from enaml.qt.QtCore import Qt, QPoint, QRect, QObject, QMetaObject
+from enaml.qt.QtGui import QApplication
 
 from .dock_overlay import DockOverlay
 from .event_types import DockAreaContentsChanged

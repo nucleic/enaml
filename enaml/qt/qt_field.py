@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QLineEdit
-from PyQt4.QtCore import pyqtSignal
-
 from atom.api import Int, Typed
 
 from enaml.widgets.field import ProxyField
+
+from .QtCore import Signal
+from .QtGui import QLineEdit
 
 from .qt_control import QtControl
 
@@ -26,7 +26,7 @@ class QFocusLineEdit(QLineEdit):
     """ A QLineEdit which converts a lost focus event into a signal.
 
     """
-    lostFocus = pyqtSignal()
+    lostFocus = Signal()
 
     def focusOutEvent(self, event):
         self.lostFocus.emit()

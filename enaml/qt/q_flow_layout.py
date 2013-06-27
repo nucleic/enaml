@@ -7,8 +7,8 @@
 #------------------------------------------------------------------------------
 from abc import ABCMeta, abstractmethod
 
-from PyQt4.QtCore import Qt, QSize, QRect
-from PyQt4.QtGui import QLayout, QWidgetItem
+from .QtCore import Qt, QSize, QRect
+from .QtGui import QLayout, QWidgetItem
 
 
 class AbstractFlowWidget(object):

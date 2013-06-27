@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QMargins, QPoint, QRect, QSize, pyqtSignal
-from PyQt4.QtGui import QFrame, QHBoxLayout, QLayout
-
 from atom.api import Bool, Typed
+
+from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QSize, Signal
+from enaml.qt.QtGui import QFrame, QHBoxLayout, QLayout
 
 from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_dock_area import QDockArea
@@ -33,16 +33,16 @@ class QDockWindowButtons(QFrame):
 
     """
     #: A signal emitted when the maximize button is clicked.
-    maximizeButtonClicked = pyqtSignal(bool)
+    maximizeButtonClicked = Signal(bool)
 
     #: A signal emitted when the restore button is clicked.
-    restoreButtonClicked = pyqtSignal(bool)
+    restoreButtonClicked = Signal(bool)
 
     #: A signal emitted when the close button is closed.
-    closeButtonClicked = pyqtSignal(bool)
+    closeButtonClicked = Signal(bool)
 
     #: A signal emitted when the link button is toggled.
-    linkButtonToggled = pyqtSignal(bool)
+    linkButtonToggled = Signal(bool)
 
     #: Do not show any buttons in the widget.
     NoButtons = 0x0

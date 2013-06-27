@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QLabel
-
 from atom.api import Typed
 
 from enaml.widgets.label import ProxyLabel
+
+from .QtCore import Qt
+from .QtGui import QLabel
 
 from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl

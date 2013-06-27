@@ -7,6 +7,9 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, Int, Str
 
+from enaml.qt.QtCore import QSize
+from enaml.qt.QtGui import QBitmap, QImage
+
 
 class XBM(Atom):
     """ A simple class representing an XMB image.
@@ -55,8 +58,6 @@ class XBM(Atom):
         self.data = ''.join(bytes)
 
     def toBitmap(self):
-        from PyQt4.QtCore import QSize
-        from PyQt4.QtGui import QBitmap, QImage
         size = QSize(self.width, self.height)
         return QBitmap.fromData(size, self.data, QImage.Format_Mono)
 

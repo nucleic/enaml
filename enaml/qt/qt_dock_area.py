@@ -5,16 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QObject, QEvent, QSize, QTimer
-from PyQt4.QtGui import QTabWidget
-
 from atom.api import Typed
 
 from enaml.widgets.dock_area import ProxyDockArea
 
+from .QtCore import QObject, QEvent, QSize, QTimer
+from .QtGui import QTabWidget
+
 from .docking.dock_manager import DockManager
 from .docking.q_dock_area import QDockArea
 from .docking.style_sheets import get_style_sheet
+
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_dock_item import QtDockItem
 

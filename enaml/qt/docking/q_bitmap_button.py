@@ -5,8 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QPoint, QRect
-from PyQt4.QtGui import QAbstractButton, QColor, QPainter, QStyle, QStyleOption
+from enaml.qt.QtCore import QPoint, QRect
+from enaml.qt.QtGui import (
+    QAbstractButton, QColor, QPainter, QStyle, QStyleOption
+)
 
 
 class QBitmapButton(QAbstractButton):

@@ -7,12 +7,12 @@
 #------------------------------------------------------------------------------
 import sys
 
-from PyQt4.QtCore import Qt, pyqtSignal
-from PyQt4.QtGui import QToolBar, QMainWindow
-
 from atom.api import Int, Typed
 
 from enaml.widgets.tool_bar import ProxyToolBar
+
+from .QtCore import Qt, Signal
+from .QtGui import QToolBar, QMainWindow
 
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup
@@ -51,11 +51,11 @@ class QCustomToolBar(QToolBar):
 
     """
     #: A signal emitted when the dock widget is floated.
-    floated = pyqtSignal()
+    floated = Signal()
 
     #: A signal emitted when the dock widget is docked. The payload
     #: will be the new dock area.
-    docked = pyqtSignal(object)
+    docked = Signal(object)
 
     def __init__(self, *args, **kwargs):
         """ Initialize a QCustomToolBar.

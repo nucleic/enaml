@@ -5,8 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QObject, QEvent, pyqtSlot
-from PyQt4.QtGui import QPainter, QPixmap
+from .QtCore import QObject, QEvent, Slot
+from .QtGui import QPainter, QPixmap
 
 
 class QPixmapPainter(QObject):
@@ -24,7 +24,7 @@ class QPixmapPainter(QObject):
     #--------------------------------------------------------------------------
     # Slots
     #--------------------------------------------------------------------------
-    @pyqtSlot(QPixmap)
+    @Slot(QPixmap)
     def drawPixmap(self, pixmap):
         """ Draw the given pixmap onto the parent widget.
 

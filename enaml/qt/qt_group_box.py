@@ -7,12 +7,12 @@
 #------------------------------------------------------------------------------
 import sys
 
-from PyQt4.QtCore import Qt, QSize, pyqtSignal
-from PyQt4.QtGui import QGroupBox
-
 from atom.api import Typed
 
 from enaml.widgets.group_box import ProxyGroupBox
+
+from .QtCore import Qt, QSize, Signal
+from .QtGui import QGroupBox
 
 from .qt_container import QtContainer
 
@@ -29,7 +29,7 @@ class QResizingGroupBox(QGroupBox):
 
     """
     #: A signal which is emitted on a resize event.
-    resized = pyqtSignal()
+    resized = Signal()
 
     #: The internally cached size hint.
     _size_hint = QSize()

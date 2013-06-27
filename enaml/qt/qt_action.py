@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QAction, QKeySequence, QIcon
-
 from atom.api import Int, Typed
 
 from enaml.widgets.action import ProxyAction
+
+from .QtGui import QAction, QKeySequence, QIcon
 
 from .q_resource_helpers import get_cached_qicon
 from .qt_toolkit_object import QtToolkitObject

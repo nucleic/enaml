@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QSplitter, QSplitterHandle
+from enaml.qt.QtGui import QSplitter, QSplitterHandle
 
 from .q_dock_area import QDockArea
 

@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QEvent
-from PyQt4.QtGui import QApplication, QTabWidget
-
 from enaml.layout.dock_layout import dockitem, docksplit, docktabs
+
+from enaml.qt.QtCore import Qt, QEvent
+from enaml.qt.QtGui import QApplication, QTabWidget
 
 from .event_types import DockAreaContentsChanged
 from .q_dock_container import QDockContainer

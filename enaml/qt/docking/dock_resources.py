@@ -7,7 +7,8 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore
+# this line is manually edited to point to the enaml qt api
+from enaml.qt import QtCore
 
 qt_resource_data = "\
 \x00\x00\x02\x61\

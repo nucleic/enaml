@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QFrame
-
 from atom.api import Typed
 
 from enaml.widgets.stack_item import ProxyStackItem
+
+from .QtGui import QFrame
 
 from .q_single_widget_layout import QSingleWidgetLayout
 from .qt_container import QtContainer

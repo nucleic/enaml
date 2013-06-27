@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QFileDialog
-
 from atom.api import Int, Typed
 
 from enaml.widgets.file_dialog_ex import ProxyFileDialogEx
+
+from .QtGui import QFileDialog
 
 from .qt_toolkit_dialog import QtToolkitDialog
 

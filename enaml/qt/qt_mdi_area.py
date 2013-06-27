@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QMdiArea
-
 from atom.api import Typed
 
 from enaml.widgets.mdi_area import ProxyMdiArea
+
+from .QtGui import QMdiArea
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_mdi_window import QtMdiWindow

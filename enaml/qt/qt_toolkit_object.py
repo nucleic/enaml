@@ -5,17 +5,22 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QObject
-
 from atom.api import Typed
 
 from enaml.widgets.toolkit_object import ProxyToolkitObject
+
+from .QtCore import QObject
+from . import QT_API
 
 
 class QtToolkitObject(ProxyToolkitObject):
     """ A Qt implementation of an Enaml ProxyToolkitObject.
 
     """
+    # PySide requires weakrefs for using bound methods as slots
+    if QT_API == 'pyside':
+        __slots__ = '__weakref__' 
+    
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QObject)
 

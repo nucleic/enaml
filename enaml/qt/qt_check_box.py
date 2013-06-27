@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QCheckBox
-
 from atom.api import Typed
 
 from enaml.widgets.check_box import ProxyCheckBox
+
+from .QtGui import QCheckBox
 
 from .qt_abstract_button import QtAbstractButton
 

@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QPushButton
-
 from atom.api import Typed
 
 from enaml.widgets.push_button import ProxyPushButton
+
+from .QtGui import QPushButton
 
 from .qt_abstract_button import QtAbstractButton
 from .qt_menu import QtMenu

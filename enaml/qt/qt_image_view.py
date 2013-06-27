@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QFrame, QPainter, QPixmap
-
 from atom.api import Typed
 
 from enaml.widgets.image_view import ProxyImageView
+
+from .QtGui import QFrame, QPainter, QPixmap
 
 from .q_resource_helpers import get_cached_qimage
 from .qt_constraints_widget import size_hint_guard

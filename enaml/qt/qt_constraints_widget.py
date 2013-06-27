@@ -7,11 +7,11 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from PyQt4.QtCore import QRect, QTimer
-
 from atom.api import List, Typed
 
 from enaml.widgets.constraints_widget import ProxyConstraintsWidget
+
+from .QtCore import QRect, QTimer
 
 from .qt_widget import QtWidget
 

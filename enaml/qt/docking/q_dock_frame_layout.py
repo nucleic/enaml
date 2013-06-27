@@ -5,8 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QSize
-
+from enaml.qt.QtCore import QSize
 from enaml.qt.q_single_widget_layout import QSingleWidgetLayout
 
 

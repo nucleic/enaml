@@ -5,9 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QFileDialog
-
 from enaml.widgets.file_dialog import ProxyFileDialog
+
+from .QtGui import QFileDialog
 
 from .q_deferred_caller import deferredCall
 from .qt_toolkit_object import QtToolkitObject

@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QProgressBar
-
 from atom.api import Typed
 
 from enaml.widgets.progress_bar import ProxyProgressBar
+
+from .QtGui import QProgressBar
 
 from .qt_control import QtControl
 

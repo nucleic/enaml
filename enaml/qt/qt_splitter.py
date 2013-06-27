@@ -7,14 +7,14 @@
 #------------------------------------------------------------------------------
 import sys
 
-from PyQt4.QtCore import Qt, QEvent, pyqtSignal
-from PyQt4.QtGui import (
-    QSplitter, QSplitterHandle, QVBoxLayout, QFrame, QApplication
-)
-
 from atom.api import Typed
 
 from enaml.widgets.splitter import ProxySplitter
+
+from .QtCore import Qt, QEvent, Signal
+from .QtGui import (
+    QSplitter, QSplitterHandle, QVBoxLayout, QFrame, QApplication
+)
 
 from .qt_constraints_widget import QtConstraintsWidget, size_hint_guard
 from .qt_split_item import QtSplitItem
@@ -61,7 +61,7 @@ class QCustomSplitter(QSplitter):
     #: A signal emitted when a LayoutRequest event is posted to the
     #: splitter widget. This will typically occur when the size hint
     #: of the splitter is no longer valid.
-    layoutRequested = pyqtSignal()
+    layoutRequested = Signal()
 
     def createHandle(self):
         """ A reimplemented virtual method to create splitter handles.

@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import QUrl
-from PyQt4.QtWebKit import QWebView
-
 from atom.api import Typed
 
 from enaml.widgets.web_view import ProxyWebView
+
+from .QtCore import QUrl
+from .QtWebKit import QWebView
 
 from .qt_control import QtControl
 

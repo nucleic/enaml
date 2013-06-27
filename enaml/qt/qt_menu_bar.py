@@ -7,11 +7,11 @@
 #------------------------------------------------------------------------------
 import sys
 
-from PyQt4.QtGui import QMainWindow, QMenuBar
-
 from atom.api import Typed
 
 from enaml.widgets.menu_bar import ProxyMenuBar
+
+from .QtGui import QMainWindow, QMenuBar
 
 from .qt_menu import QtMenu
 from .qt_toolkit_object import QtToolkitObject

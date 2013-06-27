@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtGui import QTextEdit
-from PyQt4.QtCore import pyqtSignal, QTimer
-
 from atom.api import Int, Typed
 
 from enaml.widgets.multiline_field import ProxyMultilineField
+
+from .QtCore import QTimer, Signal
+from .QtGui import QTextEdit
 
 from .qt_control import QtControl
 
@@ -21,7 +21,7 @@ class QMultilineEdit(QTextEdit):
     """
     #: A signal emitted on a collapsing timer. Delayed text must be
     #: enabled for this signal to be fired.
-    delayedTextChanged = pyqtSignal()
+    delayedTextChanged = Signal()
 
     #: Internal storage for the timer object.
     _dtimer = None

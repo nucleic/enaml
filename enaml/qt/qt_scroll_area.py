@@ -5,12 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import Qt, QEvent, QSize, pyqtSignal
-from PyQt4.QtGui import QScrollArea
-
 from atom.api import Typed, Value
 
 from enaml.widgets.scroll_area import ProxyScrollArea
+
+from .QtCore import Qt, QEvent, QSize, Signal
+from .QtGui import QScrollArea
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_container import QtContainer
@@ -32,7 +32,7 @@ class QCustomScrollArea(QScrollArea):
     #: A signal emitted when a LayoutRequest event is posted to the
     #: scroll area. This will typically occur when the size hint of
     #: the scroll area is no longer valid.
-    layoutRequested = pyqtSignal()
+    layoutRequested = Signal()
 
     #: A private internally cached size hint.
     _size_hint = QSize()

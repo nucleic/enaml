@@ -7,9 +7,6 @@
 #------------------------------------------------------------------------------
 from collections import deque
 
-from PyQt4.QtCore import QSize, pyqtSignal
-from PyQt4.QtGui import QFrame
-
 from atom.api import Bool, List, Callable, Value, Typed
 
 from casuarius import weak
@@ -17,6 +14,9 @@ from casuarius import weak
 from enaml.layout.layout_helpers import expand_constraints
 from enaml.layout.layout_manager import LayoutManager
 from enaml.widgets.container import ProxyContainer
+
+from .QtCore import QSize, Signal
+from .QtGui import QFrame
 
 from .qt_constraints_widget import QtConstraintsWidget, size_hint_guard
 
@@ -40,7 +40,7 @@ class QContainer(QFrame):
 
     """
     #: A signal which is emitted on a resize event.
-    resized = pyqtSignal()
+    resized = Signal()
 
     #: The internally cached size hint.
     _size_hint = QSize()
