@@ -5,15 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from PyQt4.QtCore import (
+from atom.api import IntEnum
+
+from enaml.qt.QtCore import (
     QSize, QPoint, QRect, QMargins, QEvent, QObject, QPropertyAnimation
 )
-from PyQt4.QtGui import (
+from enaml.qt.QtGui import (
     QBoxLayout, QSizePolicy, QFrame, QPushButton, QStyle, QStyleOption,
     QGraphicsDropShadowEffect, QStylePainter, QStyleOptionButton
 )
-
-from atom.api import IntEnum
 
 
 class QDockBar(QFrame):
