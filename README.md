@@ -31,7 +31,7 @@ Prerequisites
 -------------
 * Python >= 2.6 (not Python 3)
 * Atom (https://github.com/nucleic/atom)
-* PyQt4
+* PyQt4 or PySide
 * Casuarius (https://github.com/enthought/casuarius)
 * PLY (Python Lex-Yacc)
 * Sphinx (only if building the docs)
