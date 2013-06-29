@@ -8,7 +8,7 @@ from enaml.qt.qt_application import QtApplication
 
 def main():
     with enaml.imports():
-        from examples.tutorial.hello_world.hello_world_view import Main
+        from hello_world_view import Main
 
     app = QtApplication()
 
@@ -17,3 +17,6 @@ def main():
 
     # Start the application event loop
     app.start()
+
+if __name__ == "__main__":
+    main()
