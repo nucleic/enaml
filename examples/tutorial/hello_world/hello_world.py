@@ -12,7 +12,7 @@ def main():
 
     app = QtApplication()
 
-    view = Main()
+    view = Main(message="Hello World, from Python!")
     view.show()
 
     # Start the application event loop
