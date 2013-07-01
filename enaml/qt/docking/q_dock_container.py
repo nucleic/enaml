@@ -7,7 +7,9 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed, Bool
 
-from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
+from enaml.qt.QtCore import (
+    Qt, QMargins, QPoint, QRect, QEvent, QPropertyAnimation, Signal
+)
 from enaml.qt.QtGui import QApplication, QLayout, QIcon
 
 from .q_dock_area import QDockArea
@@ -78,6 +80,9 @@ class QDockContainer(QDockFrame):
 
         #: Whether the dock item is maximized in the dock area.
         item_is_maximized = Bool(False)
+
+        #: Storage for the dock bar animation used by the framework.
+        dock_bar_animation = Typed(QPropertyAnimation)
 
     def __init__(self, manager, parent=None):
         """ Initialize a QDockContainer.
