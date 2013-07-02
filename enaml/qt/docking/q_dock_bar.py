@@ -12,8 +12,11 @@ from enaml.qt.QtCore import (
 )
 from enaml.qt.QtGui import (
     QBoxLayout, QSizePolicy, QFrame, QPushButton, QStyle, QStyleOption,
-    QGraphicsDropShadowEffect, QStylePainter, QStyleOptionButton
+    QGraphicsDropShadowEffect, QStylePainter, QStyleOptionButton,
+    QApplication
 )
+
+from .event_types import DockAreaContentsChanged
 
 
 class QDockBar(QFrame):
@@ -566,6 +569,8 @@ class QDockBarManager(QObject):
         container.setParent(self.parent().centralPane())
         container.setGraphicsEffect(self._createDropShadowEffect(position))
         container.frame_state.in_dock_bar = True
+        area = self.parent()
+        QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
 
     def removeContainer(self, container):
         """ Remove a container from its dock bar.
@@ -589,6 +594,8 @@ class QDockBarManager(QObject):
             if dock_bar.isEmpty():
                 self._dock_bars[dock_bar.position()] = None
                 dock_bar.setParent(None)
+            area = self.parent()
+            QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
 
     def dockBarGeometry(self, position):
         """ Get the geometry of the dock bar at the given position.
@@ -611,6 +618,32 @@ class QDockBarManager(QObject):
             return QRect()
         pos = bar.mapTo(self.parent(), QPoint(0, 0))
         return QRect(pos, bar.size())
+
+    def dockBarContainers(self):
+        """ Get the containers held in the dock bars.
+
+        Returns
+        -------
+        result : list
+            A list of tuples of the form (container, position).
+
+        """
+        res = []
+        for key, value in self._button_map.iteritems():
+            if isinstance(key, QDockBarButton):
+                res.append((value, key.position()))
+        return res
+
+    def isEmpty(self):
+        """ Get whether or not the dock bars are empty.
+
+        Returns
+        -------
+        result : bool
+            True if the dock bars are empty, False otherwise.
+
+        """
+        return len(self._button_map) == 0
 
     #--------------------------------------------------------------------------
     # Protected API
