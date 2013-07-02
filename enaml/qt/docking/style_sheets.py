@@ -232,6 +232,7 @@ register_style_sheet(u'grey-wind', u"""
 
     QDockWindow {
         background: rgb(139, 131, 129);
+        background: rgb(149, 141, 139);
         border: 1px solid rgb(129, 121, 119);
     }
 
@@ -347,19 +348,20 @@ register_style_sheet(u'grey-wind', u"""
 
     QDockBarButton {
         padding: 1px 10px 2px 10px;
-        border: none;
+        border: 1px solid rgba(0, 0, 0, 0);
         background: rgb(144, 144, 152);
         color: rgb(244, 244, 244);
     }
 
     QDockBarButton::hover {
-        background: rgb(139, 131, 129);
-        background: rgb(115, 115, 115);
+        background: rgb(149, 141, 139);
+        border: 1px solid rgb(129, 121, 119);
     }
 
     QDockBarButton::checked {
-        background: rgb(129, 121, 119);
-        background: rgb(80, 80, 80);
+        background: rgb(149, 141, 139);
+        border: 1px solid rgb(129, 121, 119);
+        color: black;
     }
 """)
 
