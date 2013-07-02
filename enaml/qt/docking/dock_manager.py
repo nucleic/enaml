@@ -12,11 +12,10 @@ from atom.api import Atom, Int, Typed, List, atomref
 
 from enaml.layout.dock_layout import docklayout, dockarea, dockitem
 
-from enaml.qt.QtCore import Qt, QPoint, QRect, QObject, QMetaObject
+from enaml.qt.QtCore import QPoint, QRect, QObject
 from enaml.qt.QtGui import QApplication
 
 from .dock_overlay import DockOverlay
-from .event_types import DockAreaContentsChanged
 from .layout_handling import (
     build_layout, save_layout, layout_hit_test, plug_frame, iter_containers
 )
@@ -55,59 +54,6 @@ def ensure_on_screen(rect):
             y = max(drect.y(), drect.y() + dh)
         rect = QRect(x, y, rect.width(), rect.height())
     return rect
-
-
-class DockAreaFilter(QObject):
-    """ An event filter to listen for content changes in a dock area.
-
-    """
-    def eventFilter(self, obj, event):
-        """ Filter the events for dock area.
-
-        """
-        if event.type() == DockAreaContentsChanged:
-            self.processArea(obj)
-        return False
-
-    def processArea(self, area):
-        """ Process the contents change of a dock area.
-
-        This will close the dock window if there is only one remaining
-        container in the dock area.
-
-        Parameters
-        ----------
-        area : QDockArea
-            The dock area whose contents have changed.
-
-        """
-        window = area.parent()
-        if isinstance(window, QDockWindow):
-            widget = area.centralWidget()
-            if widget is None or isinstance(widget, QDockContainer):
-                if window.isMaximized():
-                    window.showNormal()
-                geo = window.geometry()
-                area.setCentralWidget(None)
-                if widget is not None:
-                    widget.float()
-                    widget.setGeometry(geo)
-                    attr = Qt.WA_ShowWithoutActivating
-                    old = widget.testAttribute(attr)
-                    widget.setAttribute(attr, True)
-                    widget.show()
-                    widget.setAttribute(attr, old)
-                    manager = widget.manager()
-                    if manager is not None:
-                        manager.stack_under_top(widget)
-                # Hide before closing, or the window will steal mouse
-                # events from the container being dragged, event though
-                # the container has grabbed the mouse.
-                window.hide()
-                # Invoke the close slot later since it would remove this
-                # event filter from the dock area while the event is in
-                # process resulting in a segfault.
-                QMetaObject.invokeMethod(window, 'close', Qt.QueuedConnection)
 
 
 class DockContainerMonitor(QObject):
@@ -149,9 +95,6 @@ class DockManager(Atom):
 
     #: The overlay used when hovering over a dock area.
     _overlay = Typed(DockOverlay, ())
-
-    #: The dock area filter installed on floating dock windows.
-    _area_filter = Typed(DockAreaFilter, ())
 
     #: The list of QDockFrame instances maintained by the manager. The
     #: QDockFrame class maintains this list in proper Z-order.
@@ -377,9 +320,7 @@ class DockManager(Atom):
                 targets.append((target, item))
         for item in multi_areas:
             target = QDockWindow.create(self, self._dock_area)
-            win_area = target.dockArea()
-            popuplate_area(win_area, item)
-            win_area.installEventFilter(self._area_filter)
+            popuplate_area(target.dockArea(), item)
             self._dock_frames.append(target)
             self._proximity_handler.addFrame(target)
             targets.append((target, item))
@@ -643,13 +584,16 @@ class DockManager(Atom):
         """
         area = window.dockArea()
         if area is not None:
-            area.removeEventFilter(self._area_filter)
             containers = list(iter_containers(area))
             geometries = {}
             for container in containers:
                 pos = container.mapToGlobal(QPoint(0, 0))
                 size = container.size()
                 geometries[container] = QRect(pos, size)
+            for container, ignored in area.dockBarContainers():
+                containers.append(container)
+                size = container.sizeHint()
+                geometries[container] = QRect(window.pos(), size)
             for container in containers:
                 if not container.close():
                     container.unplug()
@@ -896,7 +840,6 @@ class DockManager(Atom):
             plug_frame(win_area, None, container, QGuideRose.Guide.AreaCenter)
         yield
         if is_window:
-            win_area.installEventFilter(self._area_filter)
             window.show()
             if is_maxed:
                 window.showMaximized()

@@ -7,9 +7,12 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, Typed
 
-from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QSize, Signal
+from enaml.qt.QtCore import (
+    Qt, QMetaObject, QMargins, QPoint, QRect, QSize, Signal
+)
 from enaml.qt.QtGui import QFrame, QHBoxLayout, QLayout
 
+from .event_types import DockAreaContentsChanged
 from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_dock_area import QDockArea
 from .q_dock_frame import QDockFrame
@@ -192,6 +195,9 @@ class QDockWindow(QDockFrame):
         #: Whether or not the window is being dragged by the user.
         dragging = Bool(False)
 
+        #: Whether the window is inside it's close event.
+        in_close_event = Bool(False)
+
     @classmethod
     def create(cls, manager, parent=None):
         """ A classmethod to create a new QDockWindow.
@@ -352,7 +358,12 @@ class QDockWindow(QDockFrame):
             The dock area to use in the container.
 
         """
+        old = self.dockArea()
+        if old is not None:
+            old.removeEventFilter(self)
         self.layout().setWidget(dock_area)
+        if dock_area is not None:
+            dock_area.installEventFilter(self)
 
     def isLinked(self):
         """ Get whether or not the window is linked.
@@ -382,6 +393,22 @@ class QDockWindow(QDockFrame):
         else:
             self.showMaximized()
 
+    def eventFilter(self, area, event):
+        """ Filter the events on the dock area.
+
+        This filter listens for contents changes on the dock area and
+        will close the window when the dock area is empty.
+
+        """
+        if event.type() == DockAreaContentsChanged and area.isEmpty():
+            # Hide the window so that it doesn't steal events from
+            # the floating window when this window is closed.
+            self.hide()
+            # Close the window later so that the event filter can
+            # return before the child dock area is destroyed.
+            QMetaObject.invokeMethod(self, 'close', Qt.QueuedConnection)
+        return False
+
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
@@ -389,7 +416,17 @@ class QDockWindow(QDockFrame):
         """ Handle a close event for the window.
 
         """
-        self.manager().close_window(self, event)
+        # Protect against reentrency and posted contents events which
+        # get delivered after the manager has already been removed.
+        state = self.frame_state
+        if state.in_close_event:
+            return
+        manager = self.manager()
+        if manager is None:
+            return
+        state.in_close_event = True
+        manager.close_window(self, event)
+        state.in_close_event = False
 
     def resizeEvent(self, event):
         """ Handle the resize event for the dock window.
