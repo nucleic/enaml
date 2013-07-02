@@ -11,6 +11,7 @@ from enaml.qt.QtCore import Qt, QEvent
 from enaml.qt.QtGui import QApplication, QTabWidget
 
 from .event_types import DockAreaContentsChanged
+from .q_dock_bar import QDockBar
 from .q_dock_container import QDockContainer
 from .q_dock_splitter import QDockSplitter, QDockSplitterHandle
 from .q_dock_tab_widget import QDockTabWidget
@@ -768,6 +769,51 @@ def _plug_area_center(area, widget, frame, guide):
     return True
 
 
+def _plug_border_ex(area, frame, dock_bar_pos):
+    """ Plug the frame into the specified dock bar.
+
+    """
+    containers = []
+    if isinstance(frame, QDockWindow):
+        temp_area = frame.dockArea()
+        frame.setDockArea(None)
+        containers.extend(iter_containers(temp_area))
+    else:
+        containers.append(frame)
+    for container in containers:
+        container.unfloat()
+        container.showTitleBar()
+        area.addToDockBar(container, dock_bar_pos)
+
+
+def _plug_border_ex_north(area, widget, frame, guide):
+    """ Plug the frame into the north dock bar.
+
+    """
+    _plug_border_ex(area, frame, QDockBar.North)
+
+
+def _plug_border_ex_east(area, widget, frame, guide):
+    """ Plug the frame into the east dock bar.
+
+    """
+    _plug_border_ex(area, frame, QDockBar.East)
+
+
+def _plug_border_ex_south(area, widget, frame, guide):
+    """ Plug the frame into the south dock bar.
+
+    """
+    _plug_border_ex(area, frame, QDockBar.South)
+
+
+def _plug_border_ex_west(area, widget, frame, guide):
+    """ Plug the frame into the west dock bar.
+
+    """
+    _plug_border_ex(area, frame, QDockBar.West)
+
+
 _PLUG_HANDLERS = [
     lambda a, w, f, g: False,   # Guide.NoGuide
     _plug_border_north,         # Guide.BorderNorth
@@ -786,4 +832,8 @@ _PLUG_HANDLERS = [
     _plug_split_vertical,       # Guide.SplitVertical
     _plug_split_horizontal,     # Guide.SplitHorizontal
     _plug_area_center,          # Guide.AreaCenter
+    _plug_border_ex_north,      # Guide.BorderExNorth
+    _plug_border_ex_east,       # Guide.BorderExEast
+    _plug_border_ex_south,      # Guide.BorderExSouth
+    _plug_border_ex_west,       # Guide.BorderExWest
 ]
