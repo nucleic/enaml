@@ -243,6 +243,17 @@ class QDockArea(QFrame):
         """
         self._dock_bar_manager.addContainer(container, position)
 
+    def removeFromDockBar(self, container):
+        """ Remove a container previously added to a dock bar.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container to remove from the dock bar.
+
+        """
+        self._dock_bar_manager.removeContainer(container)
+
     def dockBarGeometry(self, position):
         """ Get the geometry of the dock bar at the given position.
 
@@ -261,16 +272,31 @@ class QDockArea(QFrame):
         """
         return self._dock_bar_manager.dockBarGeometry(position)
 
-    def removeFromDockBar(self, container):
-        """ Remove a container previously added to a dock bar.
+    def dockBarContainers(self):
+        """ Get the containers held in the dock bars.
 
-        Parameters
-        ----------
-        container : QDockContainer
-            The dock container to remove from the dock bar.
+        Returns
+        -------
+        result : list
+            A list of tuples of the form (container, position).
 
         """
-        self._dock_bar_manager.removeContainer(container)
+        return self._dock_bar_manager.dockBarContainers()
+
+    def isEmpty(self):
+        """ Get whether or not the dock area is empty.
+
+        Returns
+        -------
+        result : bool
+            True if the dock area is empty, False otherwise.
+
+        """
+        if self.centralWidget() is not None:
+            return False
+        if self.maximizedWidget() is not None:
+            return False
+        return self._dock_bar_manager.isEmpty()
 
     def tabPosition(self):
         """ Get the default position for newly created tab widgets.
