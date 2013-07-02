@@ -13,5 +13,7 @@
      <file>dock_images/guide_box.png</file>
      <file>dock_images/split_horizontal.png</file>
      <file>dock_images/split_vertical.png</file>
+     <file>dock_images/thin_horizontal.png</file>
+     <file>dock_images/thin_vertical.png</file>
  </qresource>
  </RCC>
