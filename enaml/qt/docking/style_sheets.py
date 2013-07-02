@@ -494,6 +494,28 @@ register_style_sheet(u'new-moon', u"""
     QBitmapButton#dockwindow-link-button:pressed {
         background: rgb(105, 103, 88);
     }
+
+    QDockBar {
+        spacing: 3px;
+    }
+
+    QDockBarButton {
+        padding: 1px 10px 2px 10px;
+        border: 1px solid rgba(0, 0, 0, 0);
+        background: rgb(105, 103, 88);
+        color: rgb(240, 240, 240);
+    }
+
+    QDockBarButton::hover {
+        background: rgba(197, 188, 142, 170);
+        border: 1px solid #9E935D;
+    }
+
+    QDockBarButton::checked {
+        background: rgb(197, 188, 142);
+        border: 1px solid #9E935D;
+        color: black;
+    }
 """)
 
 
@@ -549,7 +571,6 @@ register_style_sheet(u'metro', u"""
     }
 
     QDockTabBar::tab {
-        background: #666666;
         background: #838587;
         color: rgb(240, 240, 240);
     }
@@ -571,7 +592,7 @@ register_style_sheet(u'metro', u"""
     }
 
     QDockTabBar::tab:hover {
-        background: rgb(53, 139, 202);
+        background: #959799;
     }
 
     QDockTabBar::tab:selected {
@@ -621,5 +642,26 @@ register_style_sheet(u'metro', u"""
     QBitmapButton#dockwindow-restore-button:pressed,
     QBitmapButton#dockwindow-link-button:pressed {
         background: #3D6099;
+    }
+
+    QDockBar {
+        spacing: 3px;
+    }
+
+    QDockBarButton {
+        padding: 1px 10px 2px 10px;
+        border: 1px solid rgba(0, 0, 0, 0);
+        background: rgb(53, 139, 202);
+        color: rgb(240, 240, 240);
+    }
+
+    QDockBarButton::hover {
+        background: #838587;
+    }
+
+    QDockBarButton::checked {
+        background: white;
+        border: 1px solid #838587;
+        color: black;
     }
 """)
