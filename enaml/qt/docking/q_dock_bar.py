@@ -561,6 +561,7 @@ class QDockBarManager(QObject):
         dock_bar.addButton(button)
         container.setParent(self.parent().centralPane())
         container.setGraphicsEffect(self._createDropShadowEffect(position))
+        container.frame_state.in_dock_bar = True
 
     def removeContainer(self, container):
         """ Remove a container from its dock bar.
@@ -576,6 +577,8 @@ class QDockBarManager(QObject):
             del self._button_map[button]
             container.setParent(None)
             container.setGraphicsEffect(None)
+            container.frame_state.in_dock_bar = False
+            self._untrackForResize(container)
             dock_bar = self._getDockBar(button.position())
             button.toggled.disconnect(self._onButtonToggled)
             button.setParent(None)

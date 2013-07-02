@@ -226,28 +226,30 @@ class QDockArea(QFrame):
             layout.setCurrentIndex(1)
             widget.show()
 
-    def pinContainer(self, container, position):
-        """ Pin the container to the given dock bar position.
+    def addToDockBar(self, container, position):
+        """ Add a container to the dock bar at the given position.
 
         Parameters
         ----------
         container : QDockContainer
-            The dock container to pin to a dock bar.
+            The dock container to add to the dock bar. The container
+            should be unplugged from any other layout before calling
+            this method.
 
         position : QDockBar.Position
             The enum value specifying the dock bar to which the
-            container should be pinned.
+            container should be added.
 
         """
         self._dock_bar_manager.addContainer(container, position)
 
-    def unpinContainer(self, container):
-        """ Unpin a container previously pinned to a dock bar.
+    def removeFromDockBar(self, container):
+        """ Remove a container previously added to a dock bar.
 
         Parameters
         ----------
         container : QDockContainer
-            The dock container to unpin from the dock bar.
+            The dock container to remove from the dock bar.
 
         """
         self._dock_bar_manager.removeContainer(container)

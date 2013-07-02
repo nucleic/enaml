@@ -81,6 +81,10 @@ class QDockContainer(QDockFrame):
         #: Whether the dock item is maximized in the dock area.
         item_is_maximized = Bool(False)
 
+        #: Whether or not the container is stored in a dock bar. This
+        #: value is manipulated directly by the QDockBarManager.
+        in_dock_bar = Bool(False)
+
         #: Storage for the dock bar animation used by the framework.
         dock_bar_animation = Typed(QPropertyAnimation)
 
@@ -267,6 +271,12 @@ class QDockContainer(QDockFrame):
             return item.isLinked()
         return False
 
+    def isInDockBar(self):
+        """ Get whether the container is held in a dock bar.
+
+        """
+        return self.frame_state.in_dock_bar
+
     def setLinked(self, linked):
         """ Set whether or not the container should be linked.
 
@@ -419,6 +429,9 @@ class QDockContainer(QDockFrame):
         dock_area = self.parentDockArea()
         if dock_area is None:
             return False
+        if self.isInDockBar():
+            dock_area.removeFromDockBar(self)
+            return True
         # avoid a circular import
         from .layout_handling import unplug_container
         return unplug_container(dock_area, self)
