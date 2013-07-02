@@ -395,31 +395,6 @@ class DockManager(Atom):
             if item.maximized:
                 target.showMaximized()
 
-        a = self._dock_area.findChildren(QDockContainer, "Item 1")[0]
-        a.unplug()
-        from .q_dock_bar import QDockBar
-
-        self._dock_area.addToDockBar(a, QDockBar.East)
-
-        b = self._dock_area.findChildren(QDockContainer, "Item 8")[0]
-        b.unplug()
-        from .q_dock_bar import QDockBar
-
-        self._dock_area.addToDockBar(b, QDockBar.East)
-
-        c = self._dock_area.findChildren(QDockContainer, "Item 9")[0]
-        c.unplug()
-        from .q_dock_bar import QDockBar
-
-        self._dock_area.addToDockBar(c, QDockBar.West)
-
-        d = self._dock_area.findChildren(QDockContainer, "Item 7")[0]
-        d.unplug()
-        from .q_dock_bar import QDockBar
-
-        self._dock_area.addToDockBar(d, QDockBar.North)
-
-
     def apply_layout_op(self, op, direction, *item_names):
         """ Apply a layout operation to the managed items.
 
@@ -884,14 +859,9 @@ class DockManager(Atom):
             if target.maximizedWidget() is not None:
                 overlay.hide()
                 return
-            pane = target.centralPane()
-            pane_local = pane.mapFromGlobal(pos)
-            if target.centralWidget() is None:
-                overlay.mouse_over_widget(pane, pane_local, empty=True)
-            else:
-                area_local = target.mapFromGlobal(pos)
-                widget = layout_hit_test(target, area_local)
-                overlay.mouse_over_area(pane, widget, pane_local)
+            local = target.mapFromGlobal(pos)
+            widget = layout_hit_test(target, local)
+            overlay.mouse_over_area(target, widget, local)
         else:
             overlay.hide()
 
