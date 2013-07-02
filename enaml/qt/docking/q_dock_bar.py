@@ -466,7 +466,7 @@ class QDockBarManager(QObject):
 
         """
         pane = self.parent().centralPane()
-        hint = container.sizeHint()
+        hint = container.sizeHint().boundedTo(pane.size())
         if position == QDockBar.North:
             start_pos = QPoint(0, -hint.height())
             end_pos = QPoint(0, 0)
