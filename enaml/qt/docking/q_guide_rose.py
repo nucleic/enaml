@@ -79,6 +79,18 @@ class QGuideRose(QFrame):
         #: The area center guide.
         AreaCenter = 16
 
+        #: The extended border north guide.
+        BorderExNorth = 17
+
+        #: The extended border east guide.
+        BorderExEast = 18
+
+        #: The extended border south guide.
+        BorderExSouth = 19
+
+        #: The extended border west guide.
+        BorderExWest = 20
+
     class Mode(object):
         """ An enum class for defining the mode for the guide rose.
 
@@ -491,10 +503,14 @@ class BorderGuide(GuideHandler):
 
     """
     _guides = Value(factory=lambda: {
-        QGuideRose.Guide.BorderNorth: GuideImage('arrow_north'),
-        QGuideRose.Guide.BorderEast: GuideImage('arrow_east'),
-        QGuideRose.Guide.BorderSouth: GuideImage('arrow_south'),
-        QGuideRose.Guide.BorderWest: GuideImage('arrow_west'),
+        QGuideRose.Guide.BorderNorth: GuideImage('thin_horizontal'),
+        QGuideRose.Guide.BorderExNorth: GuideImage('bar_horizontal'),
+        QGuideRose.Guide.BorderEast: GuideImage('thin_vertical'),
+        QGuideRose.Guide.BorderExEast: GuideImage('bar_vertical'),
+        QGuideRose.Guide.BorderSouth: GuideImage('thin_horizontal'),
+        QGuideRose.Guide.BorderExSouth: GuideImage('bar_horizontal'),
+        QGuideRose.Guide.BorderWest: GuideImage('thin_vertical'),
+        QGuideRose.Guide.BorderExWest: GuideImage('bar_vertical'),
     })
 
     _boxes = Value(factory=lambda: {
@@ -544,13 +560,17 @@ class BorderGuide(GuideHandler):
         cx = rect.left() + w / 2
         cy = rect.top() + h / 2
         Guide = QGuideRose.Guide
-        guides[Guide.BorderNorth].rect = QRect(cx - 15, 15, 31, 31)
+        guides[Guide.BorderNorth].rect = QRect(cx - 15, 27, 31, 19)
+        guides[Guide.BorderExNorth].rect = QRect(cx - 15, 15, 31, 10)
         boxes[Guide.BorderNorth].rect = QRect(cx - 20, 10, 41, 41)
-        guides[Guide.BorderEast].rect = QRect(w - 45, cy - 15, 31, 31)
+        guides[Guide.BorderEast].rect = QRect(w - 45, cy - 15, 19, 31)
+        guides[Guide.BorderExEast].rect = QRect(w - 24, cy - 15, 10, 31)
         boxes[Guide.BorderEast].rect = QRect(w - 50, cy - 20, 41, 41)
-        guides[Guide.BorderSouth].rect = QRect(cx - 15, h - 45, 31, 31)
+        guides[Guide.BorderSouth].rect = QRect(cx - 15, h - 45, 31, 19)
+        guides[Guide.BorderExSouth].rect = QRect(cx - 15, h - 24, 31, 10)
         boxes[Guide.BorderSouth].rect = QRect(cx - 20, h - 50, 41, 41)
-        guides[Guide.BorderWest].rect = QRect(15, cy - 15, 31, 31)
+        guides[Guide.BorderWest].rect = QRect(27, cy - 15, 19, 31)
+        guides[Guide.BorderExWest].rect = QRect(15, cy - 15, 10, 31)
         boxes[Guide.BorderWest].rect = QRect(10, cy - 20, 41, 41)
 
 
