@@ -149,6 +149,10 @@ def plug_frame(area, widget, frame, guide):
     """
     if not isinstance(frame, (QDockContainer, QDockWindow)):
         return False
+    if isinstance(frame, QDockWindow):
+        for container, pos in frame.dockArea().dockBarContainers():
+            container.unplug()
+            area.addToDockBar(container, pos)
     res = _PLUG_HANDLERS[guide](area, widget, frame, guide)
     if res:
         QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
