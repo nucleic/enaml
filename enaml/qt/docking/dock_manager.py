@@ -399,25 +399,25 @@ class DockManager(Atom):
         a.unplug()
         from .q_dock_bar import QDockBar
 
-        self._dock_area.pinContainer(a, QDockBar.East)
+        self._dock_area.addToDockBar(a, QDockBar.East)
 
         b = self._dock_area.findChildren(QDockContainer, "Item 8")[0]
         b.unplug()
         from .q_dock_bar import QDockBar
 
-        self._dock_area.pinContainer(b, QDockBar.East)
+        self._dock_area.addToDockBar(b, QDockBar.East)
 
         c = self._dock_area.findChildren(QDockContainer, "Item 9")[0]
         c.unplug()
         from .q_dock_bar import QDockBar
 
-        self._dock_area.pinContainer(c, QDockBar.West)
+        self._dock_area.addToDockBar(c, QDockBar.West)
 
         d = self._dock_area.findChildren(QDockContainer, "Item 7")[0]
         d.unplug()
         from .q_dock_bar import QDockBar
 
-        self._dock_area.pinContainer(d, QDockBar.South)
+        self._dock_area.addToDockBar(d, QDockBar.North)
 
 
     def apply_layout_op(self, op, direction, *item_names):
