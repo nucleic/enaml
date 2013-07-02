@@ -215,6 +215,7 @@ class QDockBarButton(QPushButton):
         painter = QStylePainter(self)
         opt = QStyleOptionButton()
         self.initStyleOption(opt)
+        opt.state &= ~QStyle.State_HasFocus  # don't draw the focus rect
         p = self.position()
         if p == QDockBar.East:
             size = opt.rect.size()
@@ -308,31 +309,34 @@ class QDockBarManager(QObject):
             container.frame_state.dock_bar_animation = animation
         return animation
 
-    def _getDockBar(self, position):
+    def _getDockBar(self, position, create=True):
         """ Get the dock bar for a given position.
-
-        If a dock bar does not exist for the given position, one will
-        be created automatically.
 
         Parameters
         ----------
         position : QDockBar.Position
             The dock position of interest.
 
+        create : bool, optional
+            Whether to force create the bar if one does not exist. The
+            default is True.
+
         Returns
         -------
-        result : QDockBar
-            The dock bar instance for the given position.
+        result : QDockBar or None
+            The dock bar instance for the given position. If no dock
+            bar exists, and `create` is False None will be returned.
 
         """
         dock_bar = self._dock_bars[position]
         if dock_bar is not None:
             return dock_bar
-        dock_bar = self._dock_bars[position] = QDockBar(position=position)
-        coords = self._layout_coords[position]
-        layout = self.parent().primaryPane().layout()
-        layout.addWidget(dock_bar, *coords)
-        return dock_bar
+        if create:
+            dock_bar = self._dock_bars[position] = QDockBar(position=position)
+            coords = self._layout_coords[position]
+            layout = self.parent().primaryPane().layout()
+            layout.addWidget(dock_bar, *coords)
+            return dock_bar
 
     def _createButton(self, container):
         """ Create a dock button for the given container and position.
@@ -585,6 +589,28 @@ class QDockBarManager(QObject):
             if dock_bar.isEmpty():
                 self._dock_bars[dock_bar.position()] = None
                 dock_bar.setParent(None)
+
+    def dockBarGeometry(self, position):
+        """ Get the geometry of the dock bar at the given position.
+
+        Parameters
+        ----------
+        position : QDockBar.Position
+            The enum value specifying the dock bar of interest.
+
+        Returns
+        -------
+        result : QRect
+            The geometry of the given dock bar expressed in area
+            coordinates. If no dock bar exists at the given position,
+            an invalid QRect will be returned.
+
+        """
+        bar = self._getDockBar(position, create=False)
+        if bar is None:
+            return QRect()
+        pos = bar.mapTo(self.parent(), QPoint(0, 0))
+        return QRect(pos, bar.size())
 
     #--------------------------------------------------------------------------
     # Protected API

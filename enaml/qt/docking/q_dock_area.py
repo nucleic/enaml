@@ -243,6 +243,24 @@ class QDockArea(QFrame):
         """
         self._dock_bar_manager.addContainer(container, position)
 
+    def dockBarGeometry(self, position):
+        """ Get the geometry of the dock bar at the given position.
+
+        Parameters
+        ----------
+        position : QDockBar.Position
+            The enum value specifying the dock bar of interest.
+
+        Returns
+        -------
+        result : QRect
+            The geometry of the given dock bar expressed in area
+            coordinates. If no dock bar exists at the given position,
+            an invalid QRect will be returned.
+
+        """
+        return self._dock_bar_manager.dockBarGeometry(position)
+
     def removeFromDockBar(self, container):
         """ Remove a container previously added to a dock bar.
 
