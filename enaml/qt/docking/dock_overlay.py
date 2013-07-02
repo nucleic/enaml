@@ -12,6 +12,7 @@ from enaml.qt.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
 from enaml.qt.QtGui import QWidget, QStyle, QStyleOption, QPainter
 
 from .q_guide_rose import QGuideRose
+from .q_dock_bar import QDockBar
 from .q_dock_container import QDockContainer
 from .q_dock_splitter import QDockSplitterHandle
 from .q_dock_tab_widget import QDockTabWidget
@@ -56,7 +57,7 @@ class DockOverlay(Atom):
     """
     # PySide requires weakrefs for using bound methods as slots
     if QT_API == 'pyside':
-        __slots__ = '__weakref__' 
+        __slots__ = '__weakref__'
 
     #: The size of the rubber band when docking on the border, in px.
     border_size = Int(60)
@@ -291,6 +292,31 @@ class DockOverlay(Atom):
             rect.setTop(rect.bottom() + 1 - border_size)
         elif guide == Guide.BorderWest:
             rect.setWidth(border_size)
+        # For the next 4 conditions `widget` will be a QDockArea
+        elif guide == Guide.BorderExNorth:
+            bar_rect = widget.dockBarGeometry(QDockBar.North)
+            if bar_rect.isValid():
+                rect = bar_rect
+            else:
+                rect.setHeight(border_size / 2)
+        elif guide == Guide.BorderExEast:
+            bar_rect = widget.dockBarGeometry(QDockBar.East)
+            if bar_rect.isValid():
+                rect = bar_rect
+            else:
+                rect.setLeft(rect.right() + 1 - border_size / 2)
+        elif guide == Guide.BorderExSouth:
+            bar_rect = widget.dockBarGeometry(QDockBar.South)
+            if bar_rect.isValid():
+                rect = bar_rect
+            else:
+                rect.setTop(rect.bottom() + 1 - border_size / 2)
+        elif guide == Guide.BorderExWest:
+            bar_rect = widget.dockBarGeometry(QDockBar.West)
+            if bar_rect.isValid():
+                rect = bar_rect
+            else:
+                rect.setWidth(border_size / 2)
 
         # compass hits
         elif guide == Guide.CompassNorth:
@@ -418,13 +444,13 @@ class DockOverlay(Atom):
 
         Parameters
         ----------
-        area : QWidget
-            The widget which contains the dock items onto which the
-            overlay will be displayed.
+        area : QDockArea
+            The dock area which contains the dock items onto which
+            the overlay will be displayed.
 
         widget : QWidget
             The dock widget in the area which is under the mouse, or
-            None if there is no such relevant widget.
+            None if there is no relevant widget.
 
         pos : QPoint
             The hover position, expressed in the local coordinates of
@@ -433,6 +459,13 @@ class DockOverlay(Atom):
         """
         Mode = QGuideRose.Mode
         Guide = QGuideRose.Guide
+        pane = area.centralPane()
+        pos = pane.mapFrom(area, pos)
+
+        if widget is None:
+            if area.centralWidget() is None:
+                self.mouse_over_widget(pane, pos, empty=True)
+            return
 
         # Compute the target mode for the guide rose based on the dock
         # widget which lies under the mouse position.
@@ -448,11 +481,8 @@ class DockOverlay(Atom):
                 target_mode |= Mode.SplitVertical
 
         # Get the local area coordinates for the center of the widget.
-        if widget is not None:
-            center = widget.mapTo(area, QPoint(0, 0))
-            center += QPoint(widget.width() / 2, widget.height() / 2)
-        else:
-            center = QPoint(area.width() / 2, area.height() / 2)
+        center = widget.mapTo(pane, QPoint(0, 0))
+        center += QPoint(widget.width() / 2, widget.height() / 2)
 
         # Update the state of the rose. If it is to be hidden, it is
         # done so immediately. If the target mode is different from
@@ -469,8 +499,8 @@ class DockOverlay(Atom):
 
         # Update the geometry of the rose if needed. This ensures that
         # the rose does not change geometry while visible.
-        origin = area.mapToGlobal(QPoint(0, 0))
-        geo = QRect(origin, area.size())
+        origin = pane.mapToGlobal(QPoint(0, 0))
+        geo = QRect(origin, pane.size())
         dirty = rose.geometry() != geo
         if dirty:
             rose.hide()
@@ -484,13 +514,15 @@ class DockOverlay(Atom):
         if dirty or guide != self._last_guide:
             self._last_guide = guide
             if guide >= Guide.BorderNorth and guide <= Guide.BorderWest:
+                band_geo = self._band_geometry(pane, guide)
+            elif guide >= Guide.BorderExNorth and guide <= Guide.BorderExWest:
                 band_geo = self._band_geometry(area, guide)
             else:
                 band_geo = self._band_geometry(widget, guide)
             self._target_band_geo = band_geo
             self._band_timer.start(self.band_delay)
 
-        # Finally, make the rose visible and issue a mouseover command 
+        # Finally, make the rose visible and issue a mouseover command
         # so that the guides are highlighted.
         rose.mouseOver(pos)
         rose.show()
