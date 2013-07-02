@@ -193,17 +193,19 @@ register_style_sheet(u'vs-2010', u"""
 
     QDockBarButton {
         padding: 1px 10px 2px 10px;
-        border: none;
+        border: 1px solid rgba(0, 0, 0, 0);
         background: rgb(77, 96, 130);
         color: rgb(250, 251, 254);
     }
 
     QDockBarButton::hover {
+        border: 1px solid rgb(229, 195, 101);
         background: rgb(250, 251, 254);
         color: black;
     }
 
     QDockBarButton::checked {
+        border: 1px solid rgb(229, 195, 101);
         background: rgb(255, 229, 128);
         color: black;
     }
