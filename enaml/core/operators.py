@@ -535,7 +535,7 @@ __operator_stack = []
 
 
 @contextmanager
-def operator_context(ops):
+def operator_context(ops, union=False):
     """ Push operators onto the stack for the duration of the context.
 
     Parameters
@@ -543,7 +543,15 @@ def operator_context(ops):
     ops : dict
         The dictionary of operators to push onto the stack.
 
+    union : bool, optional
+        Whether or to union the operators with the existing operators
+        on the top of the stack. The default is False.
+
     """
+    if union:
+        new = dict(__get_operators())
+        new.update(ops)
+        ops = new
     __operator_stack.append(ops)
     yield
     __operator_stack.pop()
