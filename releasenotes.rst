@@ -1,6 +1,17 @@
 Enaml Release Notes
 ===================
 
+0.7.17 - 07/03/2013
+-------------------
+- Added easier to use operator hooks. 2aaf3c96fc_
+- Added support for PySide. 0d18a21754e_
+- Add cursor anchor mode to PopupView. 74ddd47197e_
+- Initial feedback release of dock area toolbars.
+
+.. _2aaf3c96fc: https://github.com/nucleic/enaml/commit/2aaf3c96fc89bc064e52a83ef416c752a5bbedf5
+.. _0d18a21754e: https://github.com/nucleic/enaml/commit/0d18a21754ee9b071b0986289ddfdb380ab016fc
+.. _74ddd47197e: https://github.com/nucleic/enaml/commit/74ddd47197ef9330e69cf9cb137aeb45a0204d07
+
 0.7.16 - 06/19/2013
 -------------------
 - Add a more useful file dialog as FileDialogEx. 390868cccb_
