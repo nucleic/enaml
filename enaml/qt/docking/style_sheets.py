@@ -508,12 +508,10 @@ register_style_sheet(u'new-moon', u"""
 
     QDockBarButton::hover {
         background: rgba(197, 188, 142, 170);
-        border: 1px solid #9E935D;
     }
 
     QDockBarButton::checked {
         background: rgb(197, 188, 142);
-        border: 1px solid #9E935D;
         color: black;
     }
 """)
@@ -656,12 +654,10 @@ register_style_sheet(u'metro', u"""
     }
 
     QDockBarButton::hover {
-        background: #838587;
+        background: rgb(61, 159, 229);
     }
 
     QDockBarButton::checked {
-        background: white;
-        border: 1px solid #838587;
-        color: black;
+        background: #838587;
     }
 """)
