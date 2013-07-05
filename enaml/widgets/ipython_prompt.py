@@ -39,7 +39,7 @@ class IPythonPrompt(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('context'))
+    @observe('context')
     def _update_proxy(self, change):
         """ An observer which sends the state change to the proxy.
 
