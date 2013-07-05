@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import os
+
 from atom.api import Int, Typed
 
 from enaml.widgets.file_dialog_ex import ProxyFileDialogEx
@@ -169,18 +171,33 @@ class QtFileDialogEx(QtToolkitDialog, ProxyFileDialogEx):
             path = QFileDialog.getExistingDirectory(parent, caption, path)
             paths = [path] if path else []
         elif d.accept_mode == 'save':
-            path, selected_filter = QFileDialog.getSaveFileNameAndFilter(
-                parent, caption, path, filters, selected_filter
-            )
+            if os.environ['QT_API'] == 'pyqt':
+                path, selected_filter = QFileDialog.getSaveFileNameAndFilter(
+                    parent, caption, path, filters, selected_filter
+                )
+            else:
+                path, selected_filter = QFileDialog.getSaveFileName(
+                    parent, caption, path, filters, selected_filter
+                )
             paths = [path] if path else []
         elif d.file_mode == 'existing_files':
-            paths, selected_filter = QFileDialog.getOpenFileNamesAndFilter(
-                parent, caption, path, filters, selected_filter
-            )
+            if os.environ['QT_API'] == 'pyqt':
+                paths, selected_filter = QFileDialog.getOpenFileNamesandFilter(
+                    parent, caption, path, filters, selected_filter
+                )
+            else:
+                paths, selected_filter = QFileDialog.getOpenFileNames(
+                    parent, caption, path, filters, selected_filter
+                )
         else:
-            path, selected_filter = QFileDialog.getOpenFileNameAndFilter(
-                parent, caption, path, filters, selected_filter
-            )
+            if os.environ['QT_API'] == 'pyqt':
+                path, selected_filter = QFileDialog.getOpenFileName(
+                    parent, caption, path, filters, selected_filter
+                )
+            else:
+                path, selected_filter = QFileDialog.getOpenFileName(
+                    parent, caption, path, filters, selected_filter
+                )
             paths = [path] if path else []
         if paths:
             self.on_current_changed(paths[0])
