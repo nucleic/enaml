@@ -125,6 +125,7 @@ class QDockTabBar(QTabBar):
         button.setBitmap(CLOSE_BUTTON.toBitmap())
         button.setIconSize(QSize(14, 13))
         button.clicked.connect(self._onCloseButtonClicked)
+        self.setTabButton(index, QTabBar.LeftSide, None)
         self.setTabButton(index, QTabBar.RightSide, button)
         visible = self.parent().widget(index).closable()
         self.setCloseButtonVisible(index, visible)
