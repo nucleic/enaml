@@ -6,70 +6,39 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Atom, Bool, Constant, Coerced, Enum, Range, ForwardTyped, Typed, observe,
-    set_default
+    Bool, Constant, Coerced, ForwardTyped, Typed, observe, set_default
 )
 
 from enaml.core.declarative import d_
 from enaml.layout.geometry import Box
 from enaml.layout.layout_helpers import vbox
 
-from .constraints_widget import (
-    ConstraintsWidget, ProxyConstraintsWidget, ConstraintMember
-)
+from .constraints_widget import ConstraintsWidget, ConstraintMember
+from .frame import Frame, ProxyFrame
 
 
-class Border(Atom):
-    """ A class for defining a border on a Container.
-
-    Border instances should be treated as read-only once created.
-
-    """
-    #: The style of the border.
-    style = Enum('box', 'panel', 'styled_panel')
-
-    #: The showdow style applied to the border.
-    line_style = Enum('plain', 'sunken', 'raised')
-
-    #: The thickness of the outer border line.
-    line_width = Range(low=0, value=1)
-
-    #: The thickness of the inner border line. This only has an effect
-    #: for the 'sunken' and 'raised' line styles.
-    midline_width = Range(low=0, value=0)
-
-
-class ProxyContainer(ProxyConstraintsWidget):
+class ProxyContainer(ProxyFrame):
     """ The abstract definition of a proxy Container object.
 
     """
     #: A reference to the Container declaration.
     declaration = ForwardTyped(lambda: Container)
 
-    def set_border(self, border):
-        raise NotImplementedError
 
-
-class Container(ConstraintsWidget):
-    """ A ConstraintsWidget subclass that provides functionality for
-    laying out constrainable children according to their system of
-    constraints.
+class Container(Frame):
+    """ A Frame subclass which provides child layout functionality.
 
     The Container is the canonical component used to arrange child
-    widgets using constraints-based layout. Given a heierarchy of
-    components, the top-most Container will be charged with the actual
-    layout of the decendents. This allows constraints to cross the
-    boundaries of Containers, enabling powerful and flexible layouts.
+    widgets using constraints-based layout. The developer can supply
+    a list of constraints on the container which specify how to layout
+    it's child widgets.
 
     There are widgets whose boundaries constraints may not cross. Some
-    examples of these would be a ScrollArea or a TabGroup. See the
-    documentation of a given container component as to whether or not
-    constraints may cross its boundaries.
+    examples of these would be a ScrollArea or a Notebook. See the
+    documentation of a given widget as to whether or not constraints
+    may cross its boundaries.
 
     """
-    #: An optional border to apply around the container.
-    border = d_(Typed(Border))
-
     #: A boolean which indicates whether or not to allow the layout
     #: ownership of this container to be transferred to an ancestor.
     #: This is False by default, which means that every container
@@ -178,14 +147,6 @@ class Container(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe('border')
-    def _update_proxy(self, change):
-        """ An observer which updates the proxy when the border changes.
-
-        """
-        # The superclass handler is sufficient
-        super(Container, self)._update_proxy(change)
-
     @observe(('share_layout', 'padding'))
     def _layout_invalidated(self, change):
         """ A private observer which invalidates the layout.
