@@ -1,4 +1,3 @@
-
 import sys
 import traceback
 import types
@@ -66,7 +65,7 @@ if __name__ == '__main__':
     import enaml
     from enaml.qt.qt_application import QtApplication
     with enaml.imports():
-        from enaml_gui_builder_view import Main
+        from enaml.stdlib.gui_builder_view import Main
 
     app = QtApplication()
     model = GuiBuilderModel( input_text=HEADER )
