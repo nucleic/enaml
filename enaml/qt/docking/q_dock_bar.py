@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import sys
+
 from atom.api import IntEnum
 
 from enaml.qt.QtCore import (
@@ -232,7 +234,7 @@ class QDockBarButton(QPushButton):
             opt.rect.setSize(size)
             painter.rotate(-90)
             painter.translate(-size.width(), 0)
-        painter.drawControl(QStyle.CE_PushButton, opt);
+        painter.drawControl(QStyle.CE_PushButton, opt)
 
 
 class QDockBarManager(QObject):
@@ -567,7 +569,17 @@ class QDockBarManager(QObject):
         dock_bar = self._getDockBar(position)
         dock_bar.addButton(button)
         container.setParent(self.parent().centralPane())
-        container.setGraphicsEffect(self._createDropShadowEffect(position))
+
+        # The dropshadow effect segfaults on OSX.
+        # https://bugreports.qt-project.org/browse/QTBUG-24792
+        if sys.platform == 'darwin':
+            margins = [0, 0, 0, 0]
+            margins[position] = 5
+            s, w, n, e = margins
+            container.setContentsMargins(w, n, e, s)
+        else:
+            container.setGraphicsEffect(self._createDropShadowEffect(position))
+
         container.frame_state.in_dock_bar = True
         area = self.parent()
         QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
@@ -585,7 +597,14 @@ class QDockBarManager(QObject):
         if button is not None:
             del self._button_map[button]
             container.setParent(None)
-            container.setGraphicsEffect(None)
+
+            # The dropshadow effect segfaults on OSX.
+            # https://bugreports.qt-project.org/browse/QTBUG-24792
+            if sys.platform == 'darwin':
+                container.setContentsMargins(0, 0, 0, 0)
+            else:
+                container.setGraphicsEffect(None)
+
             container.frame_state.in_dock_bar = False
             self._untrackForResize(container)
             dock_bar = self._getDockBar(button.position())

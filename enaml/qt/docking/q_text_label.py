@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.qt.QtCore import Qt, QSize
+from enaml.qt.QtCore import Qt, QSize, QEvent
 from enaml.qt.QtGui import QFrame, QPainter
 
 
@@ -72,6 +72,18 @@ class QTextLabel(QFrame):
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
+    def event(self, event):
+        """ The generic event handler for the text label.
+
+        This handler ensures the size hint caches are invalidated when
+        the widget style changes.
+
+        """
+        if event.type() == QEvent.StyleChange:
+            self._min_text_size = QSize()
+            self._text_size = QSize()
+        return super(QTextLabel, self).event(event)
+
     def sizeHint(self):
         """ Get the size hint for the text label.
 
@@ -106,5 +118,7 @@ class QTextLabel(QFrame):
         super(QTextLabel, self).paintEvent(event)
         rect = self.contentsRect()
         metrics = self.fontMetrics()
-        text = metrics.elidedText(self._text, Qt.ElideRight, rect.width())
+        # The +1 is to fix a seeming off-by-one error in elidedText.
+        # https://github.com/nucleic/enaml/issues/38
+        text = metrics.elidedText(self._text, Qt.ElideRight, rect.width() + 1)
         QPainter(self).drawText(rect, Qt.AlignLeft | Qt.AlignVCenter, text)
