@@ -11,8 +11,8 @@ from atom.api import Typed
 
 from enaml.widgets.scroll_area import ProxyScrollArea
 
-from .wx_constraints_widget import WxConstraintsWidget
 from .wx_container import WxContainer
+from .wx_frame import WxFrame
 from .wx_single_widget_sizer import wxSingleWidgetSizer
 
 
@@ -120,7 +120,7 @@ class wxScrollArea(wx.ScrolledWindow):
         self.GetSizer().Add(widget)
 
 
-class WxScrollArea(WxConstraintsWidget, ProxyScrollArea):
+class WxScrollArea(WxFrame, ProxyScrollArea):
     """ A Wx implementation of an Enaml ScrollArea.
 
     """

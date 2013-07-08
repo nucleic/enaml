@@ -12,8 +12,8 @@ from enaml.widgets.scroll_area import ProxyScrollArea
 from .QtCore import Qt, QEvent, QSize, Signal
 from .QtGui import QScrollArea
 
-from .qt_constraints_widget import QtConstraintsWidget
 from .qt_container import QtContainer
+from .qt_frame import QtFrame
 
 
 POLICIES = {
@@ -100,7 +100,7 @@ class QCustomScrollArea(QScrollArea):
         return QSize(hint)
 
 
-class QtScrollArea(QtConstraintsWidget, ProxyScrollArea):
+class QtScrollArea(QtFrame, ProxyScrollArea):
     """ A Qt implementation of an Enaml ProxyScrollArea.
 
     """
