@@ -12,7 +12,7 @@ from enaml.widgets.flow_area import ProxyFlowArea
 from .QtCore import QEvent, QPoint, QRect
 from .QtGui import QScrollArea, QWidget, QPainter, QPalette, QApplication
 
-from .qt_constraints_widget import QtConstraintsWidget
+from .qt_frame import QtFrame
 from .qt_flow_item import QtFlowItem
 from .q_flow_layout import QFlowLayout
 
@@ -66,7 +66,8 @@ class QFlowArea(QScrollArea):
             # Fill in the empty corner area with the app window color.
             color = QApplication.palette().color(QPalette.Window)
             tl = self.viewport().geometry().bottomRight()
-            br = self.rect().bottomRight() - QPoint(1, 1)
+            fw = self.frameWidth()
+            br = self.rect().bottomRight() - QPoint(fw, fw)
             QPainter(self).fillRect(QRect(tl, br), color)
         return res
 
@@ -92,7 +93,7 @@ class QFlowArea(QScrollArea):
         raise TypeError("Cannot set layout on a QFlowArea.")
 
 
-class QtFlowArea(QtConstraintsWidget, ProxyFlowArea):
+class QtFlowArea(QtFrame, ProxyFlowArea):
     """ A Qt implementation of an Enaml ProxyFlowArea.
 
     """

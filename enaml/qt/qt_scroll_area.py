@@ -50,7 +50,8 @@ class QCustomScrollArea(QScrollArea):
             # Fill in the empty corner area with the app window color.
             color = QApplication.palette().color(QPalette.Window)
             tl = self.viewport().geometry().bottomRight()
-            br = self.rect().bottomRight() - QPoint(1, 1)
+            fw = self.frameWidth()
+            br = self.rect().bottomRight() - QPoint(fw, fw)
             QPainter(self).fillRect(QRect(tl, br), color)
         elif event_t == QEvent.LayoutRequest:
             self._size_hint = QSize()

@@ -12,11 +12,11 @@ from atom.api import (
 from enaml.core.declarative import d_
 from enaml.layout.geometry import Box
 
-from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
+from .frame import Frame, ProxyFrame, Border
 from .flow_item import FlowItem
 
 
-class ProxyFlowArea(ProxyConstraintsWidget):
+class ProxyFlowArea(ProxyFrame):
     """ The abstract definition of a proxy FlowArea object.
 
     """
@@ -39,7 +39,7 @@ class ProxyFlowArea(ProxyConstraintsWidget):
         raise NotImplementedError
 
 
-class FlowArea(ConstraintsWidget):
+class FlowArea(Frame):
     """ A widget which lays out its children in flowing manner, wrapping
     around at the end of the available space.
 
@@ -73,6 +73,17 @@ class FlowArea(ConstraintsWidget):
 
         """
         return [c for c in self.children if isinstance(c, FlowItem)]
+
+    #--------------------------------------------------------------------------
+    # Default Handlers
+    #--------------------------------------------------------------------------
+    def _default_border(self):
+        """ Get the default border for the flow area.
+
+        The default value matches the default for Qt's QScrollArea.
+
+        """
+        return Border(style='styled_panel', line_style='sunken')
 
     #--------------------------------------------------------------------------
     # Observers
