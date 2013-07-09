@@ -9,7 +9,7 @@ from atom.api import Typed
 
 from enaml.widgets.flow_area import ProxyFlowArea
 
-from .QtGui import QScrollArea, QFrame
+from .QtGui import QScrollArea, QFrame, QWidget
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_flow_item import QtFlowItem
@@ -46,11 +46,12 @@ class QFlowArea(QScrollArea):
 
         """
         super(QFlowArea, self).__init__(parent)
-        self._widget = QFrame(self)
+        self._widget = QWidget(self)
         self._layout = QFlowLayout()
         self._widget.setLayout(self._layout)
         self.setWidgetResizable(True)
         self.setWidget(self._widget)
+        self._widget.setAutoFillBackground(False)
 
     def layout(self):
         """ Get the layout for this flow area.
@@ -136,6 +137,28 @@ class QtFlowArea(QtConstraintsWidget, ProxyFlowArea):
     #--------------------------------------------------------------------------
     # ProxyFlowArea API
     #--------------------------------------------------------------------------
+    # def set_background(self, background):
+    #     """ Set the background color of the widget.
+
+    #     """
+    #     super(QtFlowArea, self).set_background(background)
+    #     return
+    #     from .q_resource_helpers import get_cached_qcolor
+    #     from .QtGui import QApplication, QPalette
+    #     widget = self.widget.widget()
+    #     widget.setBackgroundRole(QPalette.Window)
+    #     role = widget.backgroundRole()
+    #     if background is not None:
+    #         qcolor = get_cached_qcolor(background)
+    #         widget.setAutoFillBackground(True)
+    #     else:
+    #         app_palette = QApplication.instance().palette(widget)
+    #         qcolor = app_palette.color(role)
+    #         widget.setAutoFillBackground(False)
+    #     palette = widget.palette()
+    #     palette.setColor(role, qcolor)
+    #     widget.setPalette(palette)
+
     def set_direction(self, direction):
         """ Set the direction for the underlying control.
 

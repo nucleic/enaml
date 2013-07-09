@@ -10,10 +10,11 @@ from atom.api import Typed, Value
 from enaml.widgets.scroll_area import ProxyScrollArea
 
 from .QtCore import Qt, QEvent, QSize, Signal
-from .QtGui import QScrollArea
+from .QtGui import QApplication, QScrollArea, QWidget
 
 from .qt_container import QtContainer
 from .qt_frame import QtFrame
+from .q_resource_helpers import get_cached_qcolor
 
 
 POLICIES = {
@@ -21,6 +22,33 @@ POLICIES = {
     'always_off': Qt.ScrollBarAlwaysOff,
     'always_on': Qt.ScrollBarAlwaysOn
 }
+
+
+class QCustomViewport(QWidget):
+    """ A custom viewport widget for the QCustomScrollArea
+
+    """
+    #: A cached palette which is reapplied when the style is changed.
+    #: Qt stylesheets clobber the palette of a scroll area viewport,
+    #: so it is reapplied whenever the style changes.
+    _palette = None
+
+    def event(self, event):
+        """ A generic viewport event handler.
+
+        """
+        if event.type() == QEvent.StyleChange:
+            self.setAutoFillBackground(True)
+            if self._palette:
+                self.setPalette(self._palette)
+        return super(QCustomViewport, self).event(event)
+
+    def setPalette(self, palette):
+        """ Set the palette for the viewport.
+
+        """
+        super(QCustomViewport, self).setPalette(palette)
+        self._palette = palette
 
 
 class QCustomScrollArea(QScrollArea):
@@ -46,7 +74,8 @@ class QCustomScrollArea(QScrollArea):
 
         """
         res = super(QCustomScrollArea, self).event(event)
-        if event.type() == QEvent.LayoutRequest:
+        t = event.type()
+        if t == QEvent.LayoutRequest:
             self._size_hint = QSize()
             self.layoutRequested.emit()
         return res
@@ -118,6 +147,9 @@ class QtScrollArea(QtFrame, ProxyScrollArea):
 
         """
         self.widget = QCustomScrollArea(self.parent_widget())
+        viewport = QCustomViewport()
+        viewport.setAutoFillBackground(True)
+        self.widget.setViewport(viewport)
 
     def init_widget(self):
         """ Initialize the underlying widget.
@@ -195,6 +227,32 @@ class QtScrollArea(QtFrame, ProxyScrollArea):
     #--------------------------------------------------------------------------
     # ProxyScrollArea API
     #--------------------------------------------------------------------------
+    def set_background(self, background):
+        """ A reimplemented background color setter.
+
+        """
+        # Set the background of the QScrollArea to the application
+        # window color since it fills the corner area between the
+        # scroll bars. The viewport gets the specified background.
+        widget = self.widget
+        role = widget.backgroundRole()
+        widget.setAutoFillBackground(background is not None)
+        color = QApplication.instance().palette(widget).color(role)
+        palette = widget.palette()
+        palette.setColor(role, color)
+        widget.setPalette(palette)
+
+        viewport = widget.viewport()
+        role = viewport.backgroundRole()
+        if background is not None:
+            color = get_cached_qcolor(background)
+        else:
+            color = QApplication.instance().palette(viewport).color(role)
+        palette = viewport.palette()
+        palette.setColor(role, color)
+        viewport.setPalette(palette)
+        print viewport
+
     def set_horizontal_policy(self, policy):
         """ Set the horizontal scrollbar policy of the widget.
 
