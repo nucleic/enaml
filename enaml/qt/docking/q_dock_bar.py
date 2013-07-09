@@ -5,17 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import sys
-
 from atom.api import IntEnum
 
 from enaml.qt.QtCore import (
-    QSize, QPoint, QRect, QMargins, QEvent, QObject, QPropertyAnimation
+    Qt, QSize, QPoint, QRect, QMargins, QEvent, QObject, QPropertyAnimation,
+    Signal
 )
 from enaml.qt.QtGui import (
     QBoxLayout, QSizePolicy, QFrame, QPushButton, QStyle, QStyleOption,
-    QGraphicsDropShadowEffect, QStylePainter, QStyleOptionButton,
-    QApplication
+    QStylePainter, QStyleOptionButton, QApplication, QVBoxLayout, QHBoxLayout,
+    QLayout
 )
 
 from .event_types import DockAreaContentsChanged
@@ -47,7 +46,7 @@ class QDockBar(QFrame):
     South = Position.South
     West = Position.West
 
-    #: A mapping from PinPosition to layout direction.
+    #: A mapping from Position to layout direction.
     LayoutPositions = [
         QBoxLayout.LeftToRight,  # PinPosition.North
         QBoxLayout.TopToBottom,  # PinPosition.East
@@ -116,7 +115,7 @@ class QDockBar(QFrame):
             The position enum value for the dock bar.
 
         """
-        return self.Position(self.property('position'))
+        return QDockBar.Position(self.property('position'))
 
     def isEmpty(self):
         """ Get whether or not the dock bar is empty.
@@ -237,6 +236,213 @@ class QDockBarButton(QPushButton):
         painter.drawControl(QStyle.CE_PushButton, opt)
 
 
+class QDockBarItemHandle(QFrame):
+    """ A frame which provides a resize border for a QDockBarItem.
+
+    """
+    #: A signal emitted when the handle is moved. The payload is a
+    #: QPoint which represents the delta drag distance.
+    handleMoved = Signal(QPoint)
+
+    def __init__(self, parent=None):
+        """ Initialize a QDockBarItemHandle.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent widget of the handle.
+
+        """
+        super(QDockBarItemHandle, self).__init__(parent)
+        policy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.setSizePolicy(policy)
+        self._press_pos = QPoint()
+        self._size_hint = QSize(5, 5)
+
+    def sizeHint(self):
+        """ Get the size hint for the widget.
+
+        """
+        return self._size_hint
+
+    def mousePressEvent(self, event):
+        """ Handle the mouse press event for the widget.
+
+        """
+        event.ignore()
+        if event.button() == Qt.LeftButton:
+            self._press_pos = event.pos()
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        """ Handle the mouse release event for the widget.
+
+        """
+        event.ignore()
+        if event.button() == Qt.LeftButton:
+            self._press_pos = QPoint()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        """ Handle the mouse move event for the widget.
+
+        """
+        event.ignore()
+        if not self._press_pos.isNull():
+            self.handleMoved.emit(event.pos() - self._press_pos)
+            event.accept()
+
+
+class QDockBarItem(QFrame):
+    """ A QFrame which holds an item for a QDockBar.
+
+    This class serves as a container which holds the dock widget of
+    interest and a resize handle which permits resizing of the item.
+
+    """
+    def __init__(self, parent=None, position=QDockBar.North):
+        """ Initialize a QDockBarItem.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            The parent of the dock bar item.
+
+        position : QDockBar.Position, optional
+            The position of the dock bar for the item.
+
+        """
+        super(QDockBarItem, self).__init__(parent)
+        assert isinstance(position, QDockBar.Position)
+        self.setProperty('position', int(position))
+        self._user_size = QSize()
+        self._animation = None
+        self._widget = None
+        handle = QDockBarItemHandle()
+        handle.handleMoved.connect(self._onHandleMoved)
+        if position == QDockBar.North or position == QDockBar.South:
+            layout = QVBoxLayout()
+            handle.setCursor(Qt.SizeVerCursor)
+        else:
+            layout = QHBoxLayout()
+            handle.setCursor(Qt.SizeHorCursor)
+        layout.addWidget(handle, 0)
+        layout.setSpacing(0)
+        layout.setContentsMargins(QMargins(0, 0, 0, 0))
+        layout.setSizeConstraint(QLayout.SetMinimumSize)
+        self.setLayout(layout)
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def _onHandleMoved(self, delta):
+        """ Handle the 'handleMoved' signal on the item handle.
+
+        This handler resizes the item by the delta and then updates
+        the internal user size. The resize is bounded by the limits
+        of the widget and the parent dock area size.
+
+        Resizing is disabled if an animation is running.
+
+        """
+        animation = self._animation
+        if animation and animation.state() == animation.Running:
+            return
+        p = self.position()
+        if p == QDockBar.North:
+            delta = QSize(0, delta.y())
+        elif p == QDockBar.East:
+            delta = QSize(-delta.x(), 0)
+        elif p == QDockBar.South:
+            delta = QSize(0, -delta.y())
+        else:
+            delta = QSize(delta.x(), 0)
+        user_size = self.size() + delta
+        user_size = user_size.expandedTo(self.minimumSize())
+        parent = self.parent()
+        if parent is not None:
+            user_size = user_size.boundedTo(parent.size())
+        self._user_size = user_size
+        if p == QDockBar.East or p == QDockBar.South:
+            d = user_size - self.size()
+            p = self.pos() - QPoint(d.width(), d.height())
+            self.setGeometry(QRect(p, user_size))
+        else:
+            self.resize(user_size)
+
+    def widget(self):
+        """ Get the primary widget for the dock bar item.
+
+        Returns
+        -------
+        result : QWidget or None
+            The primary dock widget installed on the item.
+
+        """
+        return self._widget
+
+    def setWidget(self, widget):
+        """ Set the primary widget for the dock bar item.
+
+        Parameters
+        ----------
+        widget : QWidget or None
+            The primary dock widget to install on the item. Any old
+            widget will be unparented, but not destroyed.
+
+        """
+        old = self._widget
+        if old is not None:
+            old.setParent(None)
+        self._widget = widget
+        if widget is not None:
+            index = (0, 1, 1, 0)[self.position()]
+            layout = self.layout()
+            layout.insertWidget(index, widget, 1)
+
+    def position(self):
+        """ Get the position of the dock bar item.
+
+        Returns
+        -------
+        result : QDockBar.Position
+            The position of the dock bar item.
+
+        """
+        return QDockBar.Position(self.property('position'))
+
+    def animation(self):
+        """ Get the animation object associated with the item.
+
+        Returns
+        -------
+        result : QPropertyAnimation or None
+            The property animation installed on the item.
+
+        """
+        return self._animation
+
+    def setAnimation(self, animation):
+        """ Set the animation object associated with the item.
+
+        Parameters
+        ----------
+        animation : QPropertyAnimation or None
+            The animation object to associate with this item.
+
+        """
+        self._animation = animation
+
+    def sizeHint(self):
+        """ Get the size hint for the item.
+
+        """
+        user = self._user_size
+        if user.isValid():
+            return user
+        return super(QDockBarItem, self).sizeHint()
+
+
 class QDockBarManager(QObject):
     """ An object which manages the dock bars for a QDockArea.
 
@@ -252,20 +458,12 @@ class QDockBarManager(QObject):
         """
         super(QDockBarManager, self).__init__(parent)
         self._dock_bars = [None, None, None, None]
-        self._active_containers = {}
-        self._button_map = {}
+        self._active_items = {}
+        self._widgets = {}
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    #: A static mapping of dock position to drop shadow offset.
-    _shadow_offsets = [
-        (0, 4),   # QDockBar.North
-        (-4, 0),  # QDockBar.East
-        (0, -4),  # QDockBar.South
-        (4, 0),   # QDockBar.West
-    ]
-
     #: A static mapping of dock position to grid layout coordinates.
     _layout_coords = [
         (0, 1, 1, 1),  # QDockBar.North
@@ -274,44 +472,23 @@ class QDockBarManager(QObject):
         (1, 0, 1, 1),  # QDockBar.West
     ]
 
-    @classmethod
-    def _createDropShadowEffect(cls, position):
-        """ Create a drop shadow effect for the given position.
-
-        Parameters
-        ----------
-        position : QDockBar.Position
-            The dock position for which to create the effect.
-
-        Returns
-        -------
-        result : QGraphicsDropShadowEffect
-            A drop shadow effect configured for the given position.
-
-        """
-        effect = QGraphicsDropShadowEffect()
-        effect.setBlurRadius(10)
-        dx, dy = cls._shadow_offsets[position]
-        effect.setOffset(dx, dy)
-        return effect
-
     @staticmethod
-    def _prepareAnimation(container):
+    def _prepareAnimation(item):
         """ Prepare the animation object for a dock container.
 
         Parameters
         ----------
-        container : QDockContainer
-            The container for which to resolve the animation.
+        item : QDockBarItem
+            The item which should have an animation prepared.
 
         """
-        animation = container.frame_state.dock_bar_animation
+        animation = item.animation()
         if animation is not None:
             animation.stop()
             animation.finished.disconnect()
         else:
-            animation = QPropertyAnimation(container, 'geometry')
-            container.frame_state.dock_bar_animation = animation
+            animation = QPropertyAnimation(item, 'geometry')
+            item.setAnimation(animation)
         return animation
 
     def _getDockBar(self, position, create=True):
@@ -343,122 +520,88 @@ class QDockBarManager(QObject):
             layout.addWidget(dock_bar, *coords)
             return dock_bar
 
-    def _createButton(self, container):
-        """ Create a dock button for the given container and position.
-
-        Parameters
-        ----------
-        container : QDockContainer
-            The container for which to create the button.
-
-        Returns
-        -------
-        result : QDockBarButton
-            The dock bar button for the given container.
-
-        """
-        button = QDockBarButton()
-        button.setText(container.title())
-        button.setIcon(container.icon())
-        button.toggled.connect(self._onButtonToggled)
-        self._button_map[button] = container
-        self._button_map[container] = button
-        return button
-
-    def _trackForResize(self, container, position, slide_out):
+    def _trackForResize(self, item, slide_out):
         """ Track the given container for resize events on the pane.
 
         Parameters
         ----------
-        container : QDockContainer
-            The dock container which should track pane resizes.
-
-        position : QDockBar.Position
-            The dock position of the container.
+        item : QDockBarItem
+            The dock bar item which should track pane resizes.
 
         slide_out : bool
-            Whether the container is in the slide out position.
+            Whether the item is in the slide out position.
 
         """
-        active = self._active_containers
+        active = self._active_items
         install = len(active) == 0
-        active[container] = (position, slide_out)
+        active[item] = slide_out
         if install:
             self.parent().centralPane().installEventFilter(self)
 
-    def _untrackForResize(self, container):
-        """ Untrack the given container for resize events on the pane.
+    def _untrackForResize(self, item):
+        """ Untrack the given item for resize events on the pane.
 
         Parameters
         ----------
-        container : QDockContainer
-            The dock container which should untrack pane resizes.
+        item : QDockBarItem
+            The dock bar item which should untrack pane resizes.
 
         """
-        active = self._active_containers
-        active.pop(container, None)
+        active = self._active_items
+        active.pop(item, None)
         if len(active) == 0:
             self.parent().centralPane().removeEventFilter(self)
 
-    def _slideOut(self, container, position):
-        """ Animate the slide out for the container and position.
+    def _slideOut(self, item):
+        """ Animate the slide out for the given item.
 
         Parameters
         ----------
-        container : QDockContainer
-            The dock container which should be slide out animated.
-
-        position : QDockBar.Position
-            The dock position at which to animate.
+        item : QDockBarItem
+            The dock bar item which should be slid out.
 
         """
-        self._trackForResize(container, position, True)
-        animation = self._prepareAnimation(container)
+        self._trackForResize(item, True)
+        animation = self._prepareAnimation(item)
         animation.finished.connect(self._onSlideOutFinished)
-        start_geo, end_geo = self._animationGeo(container, position)
-        if container.isVisible():
-            start_geo = container.geometry()
+        start_geo, end_geo = self._animationGeo(item)
+        if item.isVisible():
+            start_geo = item.geometry()
         else:
-            container.setGeometry(start_geo)
-            container.show()
-        container.raise_()
+            item.setGeometry(start_geo)
+            item.show()
+        item.raise_()
         animation.setStartValue(start_geo)
         animation.setEndValue(end_geo)
         animation.start()
 
-    def _slideIn(self, container, position):
-        """ Animate the slide in for the container and position.
+    def _slideIn(self, item):
+        """ Animate the slide in for the given item.
 
         Parameters
         ----------
-        container : QDockContainer
-            The dock container which should be slide in animated.
-
-        position : QDockBar.Position
-            The dock position at which to animate.
+        item : QDockBarItem
+            The dock bar item which should be slide in.
 
         """
-        if not container.isVisible():
+        if not item.isVisible():
             return
-        self._trackForResize(container, position, False)
-        animation = self._prepareAnimation(container)
+        self._trackForResize(item, False)
+        animation = self._prepareAnimation(item)
         animation.finished.connect(self._onSlideInFinished)
-        start_geo = container.geometry()
-        end_geo, ignored = self._animationGeo(container, position)
+        start_geo = item.geometry()
+        end_geo, ignored = self._animationGeo(item)
         animation.setStartValue(start_geo)
         animation.setEndValue(end_geo)
         animation.start()
 
-    def _animationGeo(self, container, position):
-        """ Get the animation geometry for the container and position.
+    def _animationGeo(self, item):
+        """ Get the animation geometry for the given item.
 
         Parameters
         ----------
-        container : QDockContainer
-            The dock container to be animated.
-
-        position : QDockBar.Position
-            The dock position at which to animate.
+        item : QDockBarItem
+            The dock bar item to be animated.
 
         Returns
         -------
@@ -468,7 +611,8 @@ class QDockBarManager(QObject):
 
         """
         pane = self.parent().centralPane()
-        hint = container.sizeHint().boundedTo(pane.size())
+        hint = item.sizeHint().boundedTo(pane.size())
+        position = item.position()
         if position == QDockBar.North:
             start_pos = QPoint(0, -hint.height())
             end_pos = QPoint(0, 0)
@@ -498,7 +642,7 @@ class QDockBarManager(QObject):
             The dock button which should be allowed to remain checked.
 
         """
-        for key in self._button_map:
+        for key in self._widgets:
             if isinstance(key, QDockBarButton):
                 if key is not allowed and key.isChecked():
                     key.setChecked(False)
@@ -513,32 +657,28 @@ class QDockBarManager(QObject):
         button = self.sender()
         if checked:
             self._toggleCheckedButtons(button)
-        container = self._button_map.get(button)
-        if container is not None:
-            position = button.parent().position()
+        item = self._widgets.get(button)
+        if item is not None:
             if checked:
-                self._slideOut(container, position)
+                self._slideOut(item)
             else:
-                self._slideIn(container, position)
+                self._slideIn(item)
 
     def _onSlideOutFinished(self):
         """ Handle the 'finished' signal from a slide out animation.
 
         """
-        animation = self.sender()
-        container = animation.targetObject()
-        container.frame_state.dock_bar_animation = None
-        self.parent().centralPane().installEventFilter(self)
+        item = self.sender().targetObject()
+        item.setAnimation(None)
 
     def _onSlideInFinished(self):
         """ Handle the 'finished' signal from a slide in animation.
 
         """
-        animation = self.sender()
-        container = animation.targetObject()
-        container.frame_state.dock_bar_animation = None
-        container.hide()
-        self._untrackForResize(container)
+        item = self.sender().targetObject()
+        item.setAnimation(None)
+        item.hide()
+        self._untrackForResize(item)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -560,29 +700,26 @@ class QDockBarManager(QObject):
         """
         assert isinstance(position, QDockBar.Position)
         self.removeContainer(container)
+
         button = QDockBarButton()
         button.setText(container.title())
         button.setIcon(container.icon())
         button.toggled.connect(self._onButtonToggled)
-        self._button_map[button] = container
-        self._button_map[container] = button
+
         dock_bar = self._getDockBar(position)
         dock_bar.addButton(button)
-        container.setParent(self.parent().centralPane())
 
-        # The dropshadow effect segfaults on OSX.
-        # https://bugreports.qt-project.org/browse/QTBUG-24792
-        if sys.platform == 'darwin':
-            margins = [0, 0, 0, 0]
-            margins[position] = 5
-            s, w, n, e = margins
-            container.setContentsMargins(w, n, e, s)
-        else:
-            container.setGraphicsEffect(self._createDropShadowEffect(position))
+        item = QDockBarItem(self.parent().centralPane(), position=position)
+        item.hide()
+        item.setWidget(container)
+        container.show()
+
+        self._widgets[button] = item
+        self._widgets[container] = button
 
         container.frame_state.in_dock_bar = True
-        area = self.parent()
-        QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
+        event = QEvent(DockAreaContentsChanged)
+        QApplication.sendEvent(self.parent(), event)
 
     def removeContainer(self, container):
         """ Remove a container from its dock bar.
@@ -593,28 +730,24 @@ class QDockBarManager(QObject):
             The container to remove from the dock bars.
 
         """
-        button = self._button_map.pop(container, None)
+        button = self._widgets.pop(container, None)
         if button is not None:
-            del self._button_map[button]
             container.setParent(None)
-
-            # The dropshadow effect segfaults on OSX.
-            # https://bugreports.qt-project.org/browse/QTBUG-24792
-            if sys.platform == 'darwin':
-                container.setContentsMargins(0, 0, 0, 0)
-            else:
-                container.setGraphicsEffect(None)
-
             container.frame_state.in_dock_bar = False
-            self._untrackForResize(container)
+
+            item = self._widgets.pop(button)
+            item.setParent(None)
+            self._untrackForResize(item)
+
             dock_bar = self._getDockBar(button.position())
             button.toggled.disconnect(self._onButtonToggled)
             button.setParent(None)
             if dock_bar.isEmpty():
                 self._dock_bars[dock_bar.position()] = None
                 dock_bar.setParent(None)
-            area = self.parent()
-            QApplication.sendEvent(area, QEvent(DockAreaContentsChanged))
+
+            event = QEvent(DockAreaContentsChanged)
+            QApplication.sendEvent(self.parent(), event)
 
     def dockBarGeometry(self, position):
         """ Get the geometry of the dock bar at the given position.
@@ -648,9 +781,9 @@ class QDockBarManager(QObject):
 
         """
         res = []
-        for key, value in self._button_map.iteritems():
-            if isinstance(key, QDockBarButton):
-                res.append((value, key.position()))
+        for value in self._widgets.itervalues():
+            if isinstance(value, QDockBarItem):
+                res.append((value.widget(), value.position()))
         return res
 
     def isEmpty(self):
@@ -662,7 +795,7 @@ class QDockBarManager(QObject):
             True if the dock bars are empty, False otherwise.
 
         """
-        return len(self._button_map) == 0
+        return len(self._widgets) == 0
 
     #--------------------------------------------------------------------------
     # Protected API
@@ -676,13 +809,13 @@ class QDockBarManager(QObject):
 
         """
         if event.type() == QEvent.Resize:
-            active = self._active_containers
-            for container, (position, slide_out) in active.iteritems():
-                start, end = self._animationGeo(container, position)
-                animation = container.frame_state.dock_bar_animation
+            active = self._active_items
+            for item, slide_out in active.iteritems():
+                start, end = self._animationGeo(item)
+                animation = item.animation()
                 if slide_out:
                     if animation is None:
-                        container.setGeometry(end)
+                        item.setGeometry(end)
                     else:
                         animation.pause()
                         animation.setStartValue(start)
