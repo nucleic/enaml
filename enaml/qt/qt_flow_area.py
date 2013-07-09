@@ -9,7 +9,8 @@ from atom.api import Typed
 
 from enaml.widgets.flow_area import ProxyFlowArea
 
-from .QtGui import QScrollArea, QFrame, QWidget
+from .QtCore import QEvent, QPoint, QRect
+from .QtGui import QScrollArea, QWidget, QPainter, QPalette, QApplication
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_flow_item import QtFlowItem
@@ -51,7 +52,23 @@ class QFlowArea(QScrollArea):
         self._widget.setLayout(self._layout)
         self.setWidgetResizable(True)
         self.setWidget(self._widget)
+        # setWidget sets autoFillBackground to True
         self._widget.setAutoFillBackground(False)
+
+    def event(self, event):
+        """ A custom event handler for the flow area.
+
+        This handler paints the empty corner between the scroll bars.
+
+        """
+        res = super(QFlowArea, self).event(event)
+        if event.type() == QEvent.Paint:
+            # Fill in the empty corner area with the app window color.
+            color = QApplication.palette().color(QPalette.Window)
+            tl = self.viewport().geometry().bottomRight()
+            br = self.rect().bottomRight() - QPoint(1, 1)
+            QPainter(self).fillRect(QRect(tl, br), color)
+        return res
 
     def layout(self):
         """ Get the layout for this flow area.
@@ -137,28 +154,6 @@ class QtFlowArea(QtConstraintsWidget, ProxyFlowArea):
     #--------------------------------------------------------------------------
     # ProxyFlowArea API
     #--------------------------------------------------------------------------
-    # def set_background(self, background):
-    #     """ Set the background color of the widget.
-
-    #     """
-    #     super(QtFlowArea, self).set_background(background)
-    #     return
-    #     from .q_resource_helpers import get_cached_qcolor
-    #     from .QtGui import QApplication, QPalette
-    #     widget = self.widget.widget()
-    #     widget.setBackgroundRole(QPalette.Window)
-    #     role = widget.backgroundRole()
-    #     if background is not None:
-    #         qcolor = get_cached_qcolor(background)
-    #         widget.setAutoFillBackground(True)
-    #     else:
-    #         app_palette = QApplication.instance().palette(widget)
-    #         qcolor = app_palette.color(role)
-    #         widget.setAutoFillBackground(False)
-    #     palette = widget.palette()
-    #     palette.setColor(role, qcolor)
-    #     widget.setPalette(palette)
-
     def set_direction(self, direction):
         """ Set the direction for the underlying control.
 
