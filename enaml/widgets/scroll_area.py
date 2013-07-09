@@ -9,11 +9,11 @@ from atom.api import Enum, Bool, Typed, ForwardTyped, observe, set_default
 
 from enaml.core.declarative import d_
 
-from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .container import Container
+from .frame import Frame, ProxyFrame, Border
 
 
-class ProxyScrollArea(ProxyConstraintsWidget):
+class ProxyScrollArea(ProxyFrame):
     """ The abstract definition of a proxy ScrollArea object.
 
     """
@@ -30,8 +30,8 @@ class ProxyScrollArea(ProxyConstraintsWidget):
         raise NotImplementedError
 
 
-class ScrollArea(ConstraintsWidget):
-    """ A widget which displays a single child in a scrollable area.
+class ScrollArea(Frame):
+    """ A Frame which displays a single child in a scrollable area.
 
     A ScrollArea has at most a single child Container widget.
 
@@ -62,6 +62,17 @@ class ScrollArea(ConstraintsWidget):
         for child in reversed(self.children):
             if isinstance(child, Container):
                 return child
+
+    #--------------------------------------------------------------------------
+    # Default Handlers
+    #--------------------------------------------------------------------------
+    def _default_border(self):
+        """ Get the default border for the scroll area.
+
+        The default value matches the default for Qt's QScrollArea.
+
+        """
+        return Border(style='styled_panel', line_style='sunken')
 
     #--------------------------------------------------------------------------
     # Observers

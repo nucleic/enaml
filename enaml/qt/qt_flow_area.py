@@ -9,9 +9,10 @@ from atom.api import Typed
 
 from enaml.widgets.flow_area import ProxyFlowArea
 
-from .QtGui import QScrollArea, QFrame
+from .QtCore import QEvent, QPoint, QRect
+from .QtGui import QScrollArea, QWidget, QPainter, QPalette, QApplication
 
-from .qt_constraints_widget import QtConstraintsWidget
+from .qt_frame import QtFrame
 from .qt_flow_item import QtFlowItem
 from .q_flow_layout import QFlowLayout
 
@@ -46,11 +47,29 @@ class QFlowArea(QScrollArea):
 
         """
         super(QFlowArea, self).__init__(parent)
-        self._widget = QFrame(self)
+        self._widget = QWidget(self)
         self._layout = QFlowLayout()
         self._widget.setLayout(self._layout)
         self.setWidgetResizable(True)
         self.setWidget(self._widget)
+        # setWidget sets autoFillBackground to True
+        self._widget.setAutoFillBackground(False)
+
+    def event(self, event):
+        """ A custom event handler for the flow area.
+
+        This handler paints the empty corner between the scroll bars.
+
+        """
+        res = super(QFlowArea, self).event(event)
+        if event.type() == QEvent.Paint:
+            # Fill in the empty corner area with the app window color.
+            color = QApplication.palette().color(QPalette.Window)
+            tl = self.viewport().geometry().bottomRight()
+            fw = self.frameWidth()
+            br = self.rect().bottomRight() - QPoint(fw, fw)
+            QPainter(self).fillRect(QRect(tl, br), color)
+        return res
 
     def layout(self):
         """ Get the layout for this flow area.
@@ -74,7 +93,7 @@ class QFlowArea(QScrollArea):
         raise TypeError("Cannot set layout on a QFlowArea.")
 
 
-class QtFlowArea(QtConstraintsWidget, ProxyFlowArea):
+class QtFlowArea(QtFrame, ProxyFlowArea):
     """ A Qt implementation of an Enaml ProxyFlowArea.
 
     """

@@ -1,0 +1,24 @@
+from enaml.widgets.api import *
+from enaml.layout.api import *
+
+
+enamldef Main(Window):
+    Container:
+        DockArea:
+            layout = 'foo'
+            DockItem:
+                name = 'foo'
+        Container:
+            background = 'yellow'
+            ScrollArea:
+                background = 'lightskyblue'
+                widget_resizable = False
+                Container:
+                    background = 'orange'
+                    constraints = [
+                        vbox(lbl),
+                        width == 500,
+                        height == 500,
+                    ]
+                    Label: lbl:
+                        text = 'foo'

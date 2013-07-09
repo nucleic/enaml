@@ -18,6 +18,7 @@ from enaml.layout.layout_manager import LayoutManager
 from enaml.widgets.container import ProxyContainer
 
 from .wx_constraints_widget import WxConstraintsWidget, size_hint_guard
+from .wx_frame import WxFrame
 
 
 class wxContainer(wx.PyPanel):
@@ -60,7 +61,7 @@ def hard_constraints(d):
     return [d.left >= 0, d.top >= 0, d.width >= 0, d.height >= 0]
 
 
-class WxContainer(WxConstraintsWidget, ProxyContainer):
+class WxContainer(WxFrame, ProxyContainer):
     """ A Wx implementation of an Enaml ProxyContainer.
 
     """
@@ -195,17 +196,6 @@ class WxContainer(WxConstraintsWidget, ProxyContainer):
         self._is_shown = shown = event.GetShow()
         if shown:
             self._refresh()
-
-    #--------------------------------------------------------------------------
-    # ProxyContainer API
-    #--------------------------------------------------------------------------
-    def set_border(self, border):
-        """ Set the border for the widget.
-
-        This is not supported on Wx.
-
-        """
-        pass
 
     #--------------------------------------------------------------------------
     # Public Layout Handling

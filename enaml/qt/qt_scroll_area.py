@@ -9,11 +9,11 @@ from atom.api import Typed, Value
 
 from enaml.widgets.scroll_area import ProxyScrollArea
 
-from .QtCore import Qt, QEvent, QSize, Signal
-from .QtGui import QScrollArea
+from .QtCore import Qt, QEvent, QSize, QRect, QPoint, Signal
+from .QtGui import QApplication, QScrollArea, QPainter, QPalette
 
-from .qt_constraints_widget import QtConstraintsWidget
 from .qt_container import QtContainer
+from .qt_frame import QtFrame
 
 
 POLICIES = {
@@ -38,15 +38,22 @@ class QCustomScrollArea(QScrollArea):
     _size_hint = QSize()
 
     def event(self, event):
-        """ A custom event handler which handles LayoutRequest events.
+        """ A custom event handler for the scroll area.
 
-        When a LayoutRequest event is posted to this widget, it will
-        emit the `layoutRequested` signal. This allows an external
-        consumer of this widget to update their external layout.
+        This handler dispatches layout requests and paints the empty
+        corner between the scroll bars.
 
         """
         res = super(QCustomScrollArea, self).event(event)
-        if event.type() == QEvent.LayoutRequest:
+        event_t = event.type()
+        if event_t == QEvent.Paint:
+            # Fill in the empty corner area with the app window color.
+            color = QApplication.palette().color(QPalette.Window)
+            tl = self.viewport().geometry().bottomRight()
+            fw = self.frameWidth()
+            br = self.rect().bottomRight() - QPoint(fw, fw)
+            QPainter(self).fillRect(QRect(tl, br), color)
+        elif event_t == QEvent.LayoutRequest:
             self._size_hint = QSize()
             self.layoutRequested.emit()
         return res
@@ -100,7 +107,7 @@ class QCustomScrollArea(QScrollArea):
         return QSize(hint)
 
 
-class QtScrollArea(QtConstraintsWidget, ProxyScrollArea):
+class QtScrollArea(QtFrame, ProxyScrollArea):
     """ A Qt implementation of an Enaml ProxyScrollArea.
 
     """

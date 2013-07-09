@@ -10,7 +10,7 @@ from .action_group import ActionGroup
 from .calendar import Calendar
 from .check_box import CheckBox
 from .combo_box import ComboBox
-from .container import Container, Border
+from .container import Container
 from .date_selector import DateSelector
 from .datetime_selector import DatetimeSelector
 from .dock_area import DockArea
@@ -23,6 +23,7 @@ from .file_dialog_ex import FileDialogEx
 from .flow_area import FlowArea
 from .flow_item import FlowItem
 from .form import Form
+from .frame import Border
 from .group_box import GroupBox
 from .html import Html
 from .image_view import ImageView
