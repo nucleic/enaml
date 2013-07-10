@@ -13,7 +13,7 @@ from .q_icon_widget import QIconWidget
 from .q_text_label import QTextLabel
 from .xbms import (
     CLOSE_BUTTON, MAXIMIZE_BUTTON, RESTORE_BUTTON, LINKED_BUTTON,
-    UNLINKED_BUTTON
+    UNLINKED_BUTTON, PIN_BUTTON, UNPIN_BUTTON
 )
 
 
@@ -32,6 +32,9 @@ class IDockTitleBar(QWidget):
 
     #: A signal emitted when the link button is toggled.
     linkButtonToggled = Signal(bool)
+
+    #: A signal emitted when the pin button is toggled.
+    pinButtonToggled = Signal(bool)
 
     #: A signal emitted when the title is edited by the user.
     titleEdited = Signal(unicode)
@@ -56,6 +59,9 @@ class IDockTitleBar(QWidget):
 
     #: Show the link button in the title bar.
     LinkButton = 0x8
+
+    #: Show the pin button in the title bar.
+    PinButton = 0x10
 
     def buttons(self):
         """ Get the buttons to show in the title bar.
@@ -168,6 +174,32 @@ class IDockTitleBar(QWidget):
         """
         raise NotImplementedError
 
+    def isPinned(self):
+        """ Get whether the pin button is checked.
+
+        Returns
+        -------
+        result : bool
+            True if the pin button is checked, False otherwise.
+
+        """
+        raise NotImplementedError
+
+    def setPinned(self, pinned, quiet=False):
+        """ Set whether or not the pin button is checked.
+
+        Parameters
+        ----------
+        pinned : bool
+            True if the pin button should be checked, False otherwise.
+
+        quiet : bool, optional
+            True if the state should be set without emitted the toggled
+            signal. The default is False.
+
+        """
+        raise NotImplementedError
+
     def isEditable(self):
         """ Get whether the title is user editable.
 
@@ -231,6 +263,9 @@ class QDockTitleBar(QFrame, IDockTitleBar):
     #: A signal emitted when the link button is toggled.
     linkButtonToggled = Signal(bool)
 
+    #: A signal emitted when the pin button is toggled.
+    pinButtonToggled = Signal(bool)
+
     #: A signal emitted when the title is edited by the user.
     titleEdited = Signal(unicode)
 
@@ -250,7 +285,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         """
         super(QDockTitleBar, self).__init__(parent)
-        self._buttons = self.CloseButton | self.MaximizeButton
+        self._buttons = self.CloseButton | self.MaximizeButton | self.PinButton
         self._is_editable = False
         self._force_hidden = False
         self._last_visible = True
@@ -273,18 +308,21 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         max_button.setBitmap(MAXIMIZE_BUTTON.toBitmap())
         max_button.setIconSize(btn_size)
         max_button.setVisible(self._buttons & self.MaximizeButton)
+        max_button.setToolTip('Maximize')
 
         restore_button = self._restore_button = QBitmapButton(self)
         restore_button.setObjectName('docktitlebar-restore-button')
         restore_button.setBitmap(RESTORE_BUTTON.toBitmap())
         restore_button.setIconSize(btn_size)
         restore_button.setVisible(self._buttons & self.RestoreButton)
+        restore_button.setToolTip('Restore Down')
 
         close_button = self._close_button = QBitmapButton(self)
         close_button.setObjectName('docktitlebar-close-button')
         close_button.setBitmap(CLOSE_BUTTON.toBitmap())
         close_button.setIconSize(btn_size)
         close_button.setVisible(self._buttons & self.CloseButton)
+        close_button.setToolTip('Close')
 
         link_button = self._link_button = QCheckedBitmapButton(self)
         link_button.setObjectName('docktitlebar-link-button')
@@ -292,6 +330,17 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         link_button.setCheckedBitmap(LINKED_BUTTON.toBitmap())
         link_button.setIconSize(btn_size)
         link_button.setVisible(self._buttons & self.LinkButton)
+        link_button.setToolTip('Link Window')
+        link_button.setCheckedToolTip('Unlink Window')
+
+        pin_button = self._pin_button = QCheckedBitmapButton(self)
+        pin_button.setObjectName('docktitlebar-pin-button')
+        pin_button.setBitmap(PIN_BUTTON.toBitmap())
+        pin_button.setCheckedBitmap(UNPIN_BUTTON.toBitmap())
+        pin_button.setIconSize(QSize(13, 13))
+        pin_button.setVisible(self._buttons & self.PinButton)
+        pin_button.setToolTip('Pin Window')
+        pin_button.setCheckedToolTip('Unpin Window')
 
         layout = QHBoxLayout()
         layout.setContentsMargins(QMargins(5, 2, 5, 2))
@@ -301,6 +350,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         layout.addWidget(title_label)
         layout.addWidget(spacer)
         layout.addSpacing(4)
+        layout.addWidget(pin_button)
         layout.addWidget(link_button)
         layout.addWidget(max_button)
         layout.addWidget(restore_button)
@@ -312,6 +362,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         restore_button.clicked.connect(self.restoreButtonClicked)
         close_button.clicked.connect(self.closeButtonClicked)
         link_button.toggled.connect(self.linkButtonToggled)
+        pin_button.toggled.connect(self.pinButtonToggled)
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -461,6 +512,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         self._restore_button.setVisible(buttons & self.RestoreButton)
         self._close_button.setVisible(buttons & self.CloseButton)
         self._link_button.setVisible(buttons & self.LinkButton)
+        self._pin_button.setVisible(buttons & self.PinButton)
 
     def title(self):
         """ Get the title string of the title bar.
@@ -556,6 +608,34 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         """
         self._link_button.setChecked(linked)
+
+    def isPinned(self):
+        """ Get whether the pin button is checked.
+
+        Returns
+        -------
+        result : bool
+            True if the pin button is checked, False otherwise.
+
+        """
+        return self._pin_button.isChecked()
+
+    def setPinned(self, pinned, quiet=False):
+        """ Set whether or not the pin button is checked.
+
+        Parameters
+        ----------
+        pinned : bool
+            True if the pin button should be checked, False otherwise.
+
+        quiet : bool, optional
+            True if the state should be set without emitted the toggled
+            signal. The default is False.
+
+        """
+        old = self._pin_button.blockSignals(quiet)
+        self._pin_button.setChecked(pinned)
+        self._pin_button.blockSignals(old)
 
     def isEditable(self):
         """ Get whether the title is user editable.
