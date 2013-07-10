@@ -209,6 +209,30 @@ register_style_sheet(u'vs-2010', u"""
         background: rgb(255, 229, 128);
         color: black;
     }
+
+    QDockBarItem[position="0"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="1"] QDockBarItemHandle {
+        background: qlineargradient(x1:1, y1:0, x2:0, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="2"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="3"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
 """)
 
 
@@ -363,6 +387,30 @@ register_style_sheet(u'grey-wind', u"""
         border: 1px solid rgb(129, 121, 119);
         color: black;
     }
+
+    QDockBarItem[position="0"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="1"] QDockBarItemHandle {
+        background: qlineargradient(x1:1, y1:0, x2:0, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="2"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="3"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
 """)
 
 
@@ -514,6 +562,30 @@ register_style_sheet(u'new-moon', u"""
         background: rgb(197, 188, 142);
         color: black;
     }
+
+    QDockBarItem[position="0"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="1"] QDockBarItemHandle {
+        background: qlineargradient(x1:1, y1:0, x2:0, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="2"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="3"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
 """)
 
 
@@ -659,5 +731,29 @@ register_style_sheet(u'metro', u"""
 
     QDockBarButton::checked {
         background: #838587;
+    }
+
+    QDockBarItem[position="0"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="1"] QDockBarItemHandle {
+        background: qlineargradient(x1:1, y1:0, x2:0, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="2"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:1, x2:0, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
+    }
+
+    QDockBarItem[position="3"] QDockBarItemHandle {
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(50, 50, 50, 175),
+                    stop:1 rgba(50, 50, 50, 0));
     }
 """)

@@ -7,9 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed, Bool
 
-from enaml.qt.QtCore import (
-    Qt, QMargins, QPoint, QRect, QEvent, QPropertyAnimation, Signal
-)
+from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
 from enaml.qt.QtGui import QApplication, QLayout, QIcon
 
 from .q_dock_area import QDockArea
@@ -84,9 +82,6 @@ class QDockContainer(QDockFrame):
         #: Whether or not the container is stored in a dock bar. This
         #: value is manipulated directly by the QDockBarManager.
         in_dock_bar = Bool(False)
-
-        #: Storage for the dock bar animation used by the framework.
-        dock_bar_animation = Typed(QPropertyAnimation)
 
     def __init__(self, manager, parent=None):
         """ Initialize a QDockContainer.
