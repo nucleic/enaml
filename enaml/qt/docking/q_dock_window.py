@@ -81,18 +81,21 @@ class QDockWindowButtons(QFrame):
         max_button.setBitmap(MAXIMIZE_BUTTON.toBitmap())
         max_button.setIconSize(QSize(20, 15))
         max_button.setVisible(self._buttons & self.MaximizeButton)
+        max_button.setToolTip('Maximize')
 
         restore_button = self._restore_button = QBitmapButton(self)
         restore_button.setObjectName('dockwindow-restore-button')
         restore_button.setBitmap(RESTORE_BUTTON.toBitmap())
         restore_button.setIconSize(QSize(20, 15))
         restore_button.setVisible(self._buttons & self.RestoreButton)
+        restore_button.setToolTip('Restore Down')
 
         close_button = self._close_button = QBitmapButton(self)
         close_button.setObjectName('dockwindow-close-button')
         close_button.setBitmap(CLOSE_BUTTON.toBitmap())
         close_button.setIconSize(QSize(34, 15))
         close_button.setVisible(self._buttons & self.CloseButton)
+        close_button.setToolTip('Close')
 
         link_button = self._link_button = QCheckedBitmapButton(self)
         link_button.setObjectName('dockwindow-link-button')
@@ -100,6 +103,8 @@ class QDockWindowButtons(QFrame):
         link_button.setCheckedBitmap(LINKED_BUTTON.toBitmap())
         link_button.setIconSize(QSize(20, 15))
         link_button.setVisible(self._buttons & self.LinkButton)
+        link_button.setToolTip('Link Window')
+        link_button.setCheckedToolTip('Unlink Window')
 
         layout = QHBoxLayout()
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
