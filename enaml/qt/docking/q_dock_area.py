@@ -283,6 +283,23 @@ class QDockArea(QFrame):
         """
         return self._dock_bar_manager.dockBarContainers()
 
+    def dockBarPosition(self, container):
+        """ Get the dock bar position of the given container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container of interest.
+
+        Returns
+        -------
+        result : QDockBar.Position or None
+            The position of the container, or None if the container
+            does not exist in the manager.
+
+        """
+        return self._dock_bar_manager.dockBarPosition(container)
+
     def isEmpty(self):
         """ Get whether or not the dock area is empty.
 

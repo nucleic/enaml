@@ -700,6 +700,8 @@ class QDockBarManager(QObject):
         """
         assert isinstance(position, QDockBar.Position)
         self.removeContainer(container)
+        container.setPinned(True, quiet=True)
+        container.frame_state.in_dock_bar = True
 
         button = QDockBarButton()
         button.setText(container.title())
@@ -717,7 +719,6 @@ class QDockBarManager(QObject):
         self._widgets[button] = item
         self._widgets[container] = button
 
-        container.frame_state.in_dock_bar = True
         event = QEvent(DockAreaContentsChanged)
         QApplication.sendEvent(self.parent(), event)
 
@@ -733,6 +734,7 @@ class QDockBarManager(QObject):
         button = self._widgets.pop(container, None)
         if button is not None:
             container.setParent(None)
+            container.setPinned(False, quiet=True)
             container.frame_state.in_dock_bar = False
 
             item = self._widgets.pop(button)
@@ -785,6 +787,25 @@ class QDockBarManager(QObject):
             if isinstance(value, QDockBarItem):
                 res.append((value.widget(), value.position()))
         return res
+
+    def dockBarPosition(self, container):
+        """ Get the dock bar position of the given container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container of interest.
+
+        Returns
+        -------
+        result : QDockBar.Position or None
+            The position of the container, or None if the container
+            does not exist in the manager.
+
+        """
+        button = self._widgets.get(container)
+        if button is not None:
+            return button.position()
 
     def isEmpty(self):
         """ Get whether or not the dock bars are empty.
