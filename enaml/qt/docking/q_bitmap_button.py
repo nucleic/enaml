@@ -138,6 +138,8 @@ class QCheckedBitmapButton(QBitmapButton):
     """ A bitmap button subclass which supports a checked bitmap.
 
     """
+    _tool_tip = u''
+    _checked_tool_tip = u''
     _checked_bitmap = None
 
     def __init__(self, parent=None):
@@ -151,6 +153,48 @@ class QCheckedBitmapButton(QBitmapButton):
         """
         super(QCheckedBitmapButton, self).__init__(parent)
         self.setCheckable(True)
+        self.toggled.connect(self._updateToolTip)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _updateToolTip(self):
+        """ Refresh the state of the tool tip.
+
+        """
+        if not self._checked_tool_tip:
+            self._checked_tool_tip = self._tool_tip
+        tip = self._checked_tool_tip if self.isChecked() else self._tool_tip
+        super(QCheckedBitmapButton, self).setToolTip(tip)
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
+    def toolTip(self):
+        """ Get the tool tip for the button.
+
+        """
+        return self._tool_tip
+
+    def setToolTip(self, tool_tip):
+        """ Set the tool tip for the button.
+
+        """
+        self._tool_tip = tool_tip
+        self._updateToolTip()
+
+    def checkedToolTip(self):
+        """ Get the checked tool tip for the button.
+
+        """
+        return self._checked_tool_tip
+
+    def setCheckedToolTip(self, tool_tip):
+        """ Set the checked tool tip for the button.
+
+        """
+        self._checked_tool_tip = tool_tip
+        self._updateToolTip()
 
     def checkedBitmap(self):
         """ Get the bitmap associated with the button checked state.
