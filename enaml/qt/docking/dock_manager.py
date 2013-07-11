@@ -21,6 +21,7 @@ from .layout_handling import (
 )
 from .proximity_handler import ProximityHandler
 from .q_dock_area import QDockArea
+from .q_dock_bar import QDockBar
 from .q_dock_container import QDockContainer
 from .q_dock_window import QDockWindow
 from .q_guide_rose import QGuideRose
@@ -213,35 +214,37 @@ class DockManager(Atom):
             state.
 
         """
-        primary = None
-        secondary = []
-
-        area = self._dock_area
-        widget = area.centralWidget()
-        if widget is not None:
-            primary = dockarea(save_layout(widget))
+        def make_area_node(area):
+            widget = area.centralWidget()
+            if widget is None:
+                node = dockarea(None)
+            else:
+                node = dockarea(save_layout(widget))
             maxed = area.maximizedWidget()
             if maxed is not None:
-                primary.maximized_item = maxed.objectName()
+                node.maximized_item = maxed.objectName()
+            bars = ('top_bar', 'right_bar', 'bottom_bar', 'left_bar')
+            for container, position in area.dockBarContainers():
+                bar = getattr(node, bars[position])
+                bar.append(container.objectName())
+            return node
 
-        for frame in self._floating_frames():
+        def make_frame_node(frame):
             if isinstance(frame, QDockWindow):
-                area = frame.dockArea()
-                item = dockarea(save_layout(area.centralWidget()))
-                maxed = area.maximizedWidget()
-                if maxed is not None:
-                    item.maximized_item = maxed.objectName()
+                node = make_area_node(frame.dockArea())
             else:
-                item = save_layout(frame)
-            item.linked = frame.isLinked()
-            item.maximized = frame.isMaximized()
+                node = save_layout(frame)
+            node.linked = frame.isLinked()
+            node.maximized = frame.isMaximized()
             if frame.isMaximized():
                 geo = frame.normalGeometry()
             else:
                 geo = frame.geometry()
-            item.geometry = (geo.x(), geo.y(), geo.width(), geo.height())
-            secondary.append(item)
+            node.geometry = (geo.x(), geo.y(), geo.width(), geo.height())
+            return node
 
+        primary = make_area_node(self._dock_area)
+        secondary = map(make_frame_node, self._floating_frames())
         return docklayout(primary, *secondary)
 
     def apply_layout(self, layout):
@@ -265,22 +268,38 @@ class DockManager(Atom):
             container.reset()
         for window in list(self._dock_windows()):
             window.close()
+        self._dock_area.clearDockBars()
+        available = dict((c.objectName(), c) for c in containers)
 
-        # Emit a warning for an item referenced in the layout which
-        # has not been added to the dock manager.
-        names = set(container.objectName() for container in containers)
-        filter_func = lambda item: isinstance(item, dockitem)
-        for item in filter(filter_func, layout.traverse()):
-            if item.name not in names:
+        # Sanity check the layout name references.
+        seen = set()
+        f = lambda node: isinstance(node, dockitem)
+        for item in filter(f, layout.traverse()):
+            name = item.name
+            if name in seen:
+                msg = "repeated use of dock item '%s' in docklayout"
+                warnings.warn(msg % name, stacklevel=2)
+            seen.add(name)
+            if name not in available:
                 msg = "dock item '%s' was not found in the dock manager"
-                warnings.warn(msg % item.name, stacklevel=2)
+                warnings.warn(msg % name, stacklevel=2)
 
-        # A convenience closure for populating a dock area.
-        def popuplate_area(area, layout):
-            widget = build_layout(layout.child, containers)
-            area.setCentralWidget(widget)
+        def populate_dock_bar(area, items, position):
+            for item in items:
+                container = available.get(item.name)
+                if container is not None:
+                    area.addToDockBar(container, position)
+
+        def populate_area(area, layout):
+            populate_dock_bar(area, layout.top_bar, QDockBar.North)
+            populate_dock_bar(area, layout.right_bar, QDockBar.East)
+            populate_dock_bar(area, layout.bottom_bar, QDockBar.South)
+            populate_dock_bar(area, layout.left_bar, QDockBar.West)
+            if layout.child is not None:
+                widget = build_layout(layout.child, containers)
+                area.setCentralWidget(widget)
             if layout.maximized_item:
-                maxed = self._find_container(layout.maximized_item)
+                maxed = available.get(layout.maximized_item)
                 if maxed is not None:
                     maxed.showMaximized()
 
@@ -288,39 +307,29 @@ class DockManager(Atom):
         primary = layout.primary
         if primary is not None:
             if isinstance(primary, dockarea):
-                popuplate_area(self._dock_area, primary)
+                populate_area(self._dock_area, primary)
             else:
                 widget = build_layout(primary, containers)
                 self._dock_area.setCentralWidget(widget)
 
-        # Setup the layout for the secondary floating dock area. This
-        # classifies the secondary items according to their type as
-        # each type has subtle differences in how they area handled.
-        single_items = []
-        single_areas = []
-        multi_areas = []
+        # Setup the layout for the floating dock areas and items.
+        floating_items = []
+        floating_areas = []
         for secondary in layout.secondary:
             if isinstance(secondary, dockitem):
-                single_items.append(secondary)
-            elif isinstance(secondary.child, dockitem):
-                single_areas.append(secondary)
-            else:
-                multi_areas.append(secondary)
+                floating_items.append(secondary)
+            elif isinstance(secondary, dockarea):
+                floating_areas.append(secondary)
 
         targets = []
-        for item in single_items:
-            target = self._find_container(item.name)
+        for item in floating_items:
+            target = available.get(item.name)
             if target is not None:
                 target.float()
                 targets.append((target, item))
-        for item in single_areas:
-            target = self._find_container(item.child.name)
-            if target is not None:
-                target.float()
-                targets.append((target, item))
-        for item in multi_areas:
+        for item in floating_areas:
             target = QDockWindow.create(self, self._dock_area)
-            popuplate_area(target.dockArea(), item)
+            populate_area(target.dockArea(), item)
             self._dock_frames.append(target)
             self._proximity_handler.addFrame(target)
             targets.append((target, item))
