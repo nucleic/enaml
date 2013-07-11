@@ -5,9 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.qt.QtCore import QPoint, QRect
+from enaml.qt.QtCore import QPoint, QRect, QEvent
 from enaml.qt.QtGui import (
-    QAbstractButton, QColor, QPainter, QStyle, QStyleOption
+    QAbstractButton, QColor, QPainter, QStyle, QStyleOption, QToolTip
 )
 
 
@@ -153,19 +153,19 @@ class QCheckedBitmapButton(QBitmapButton):
         """
         super(QCheckedBitmapButton, self).__init__(parent)
         self.setCheckable(True)
-        self.toggled.connect(self._updateToolTip)
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _updateToolTip(self):
-        """ Refresh the state of the tool tip.
+    def _effectiveToolTip(self):
+        """ Get the current effective tool tip for the button.
 
         """
-        if not self._checked_tool_tip:
-            self._checked_tool_tip = self._tool_tip
-        tip = self._checked_tool_tip if self.isChecked() else self._tool_tip
-        super(QCheckedBitmapButton, self).setToolTip(tip)
+        if self.isChecked():
+            tool_tip = self._checked_tool_tip or self._tool_tip
+        else:
+            tool_tip = self._tool_tip
+        return tool_tip
 
     #--------------------------------------------------------------------------
     # Public API
@@ -181,7 +181,6 @@ class QCheckedBitmapButton(QBitmapButton):
 
         """
         self._tool_tip = tool_tip
-        self._updateToolTip()
 
     def checkedToolTip(self):
         """ Get the checked tool tip for the button.
@@ -194,7 +193,6 @@ class QCheckedBitmapButton(QBitmapButton):
 
         """
         self._checked_tool_tip = tool_tip
-        self._updateToolTip()
 
     def checkedBitmap(self):
         """ Get the bitmap associated with the button checked state.
@@ -208,6 +206,19 @@ class QCheckedBitmapButton(QBitmapButton):
         """
         self._checked_bitmap = bitmap
         self.update()
+
+    def event(self, event):
+        """ A generic event handler for the button.
+
+        This handler shows the effective tool tip on a tool tip event.
+
+        """
+        if event.type() == QEvent.ToolTip:
+            tool_tip = self._effectiveToolTip()
+            if tool_tip:
+                QToolTip.showText(event.globalPos(), tool_tip, self)
+            return True
+        return super(QCheckedBitmapButton, self).event(event)
 
     def paintEvent(self, event):
         """ Handle the paint event for the button.
