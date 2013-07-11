@@ -250,11 +250,6 @@ def status_item_factory():
     return QtStatusItem
 
 
-#def text_editor_factory():
-#    from .qt_text_editor import QtTextEditor
-#    return QtTextEditor
-
-
 def time_selector_factory():
     from .qt_time_selector import QtTimeSelector
     return QtTimeSelector
