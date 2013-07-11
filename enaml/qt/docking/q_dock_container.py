@@ -418,6 +418,7 @@ class QDockContainer(QDockFrame):
         state = self.frame_state
         state.dragging = False
         state.press_pos = None
+        state.in_dock_bar = False
         self.showNormal()
         self.unfloat()
         self.hideLinkButton()
