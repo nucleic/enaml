@@ -283,10 +283,15 @@ register_style_sheet(u'grey-wind', u"""
 
     QDockTitleBar > QTextLabel {
         color: rgb(244, 244, 244);
+        font: 9pt "Segoe UI";
     }
 
     /* Correct a bug in the default pane sizing on Windows 7 */
     QDockTabWidget::pane {}
+
+    QDockTabBar {
+        font: 9pt "Segoe UI";
+    }
 
     QDockTabBar::tab {
         background: rgba(0, 0, 0, 20);
@@ -460,10 +465,15 @@ register_style_sheet(u'new-moon', u"""
 
     QDockTitleBar > QTextLabel {
         color: rgb(240, 240, 240);
+        font: 9pt "Segoe UI";
     }
 
     /* Correct a bug in the default pane sizing on Windows 7 */
     QDockTabWidget::pane {}
+
+    QDockTabBar {
+        font: 9pt "Segoe UI";
+    }
 
     QDockTabBar::tab {
         background: rgba(255, 255, 255, 30);
