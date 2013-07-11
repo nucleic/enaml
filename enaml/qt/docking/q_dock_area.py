@@ -300,6 +300,15 @@ class QDockArea(QFrame):
         """
         return self._dock_bar_manager.dockBarPosition(container)
 
+    def clearDockBars(self):
+        """ Clear the dock bars from the dock area.
+
+        This method is called by the dock manager when the dock area
+        is reset. It should not be called directly by user code.
+
+        """
+        self._dock_bar_manager.clearDockBars()
+
     def isEmpty(self):
         """ Get whether or not the dock area is empty.
 

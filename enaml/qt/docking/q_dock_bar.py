@@ -807,6 +807,21 @@ class QDockBarManager(QObject):
         if button is not None:
             return button.position()
 
+    def clearDockBars(self):
+        """ Clear all of the items from the dock bars.
+
+        This method can be called to unconditionally remove all of the
+        dock bars and reset the internal state of the manager. It is
+        used by the framework and should not be called by user code.
+
+        """
+        for bar in self._dock_bars:
+            if bar is not None:
+                bar.setParent(None)
+        self._dock_bars = [None, None, None, None]
+        self._active_items = {}
+        self._widgets = {}
+
     def isEmpty(self):
         """ Get whether or not the dock bars are empty.
 
