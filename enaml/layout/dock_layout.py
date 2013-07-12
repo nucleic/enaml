@@ -211,7 +211,8 @@ class _areanode(object):
     class __metaclass__(type):
 
         def __instancecheck__(cls, instance):
-            return isinstance(instance, (dockitem, docktabs, docksplit))
+            allowed = (type(None), dockitem, docktabs, docksplit)
+            return isinstance(instance, allowed)
 
         def __call__(cls, item):
             if isinstance(item, basestring):
@@ -239,15 +240,27 @@ class dockarea(Atom):
     #: This only has an effect if the dock area is a floating area.
     linked = Bool(False)
 
-    #: The child layout node for the area.
+    #: The primary child layout node for the area.
     child = Coerced(_areanode)
+
+    #: The dock items to place in the left dock bar.
+    left_bar = List(Coerced(dockitem, coercer=_coerce_item))
+
+    #: The dock items to place in the top dock bar.
+    top_bar = List(Coerced(dockitem, coercer=_coerce_item))
+
+    #: The dock items to place in the right dock bar.
+    right_bar = List(Coerced(dockitem, coercer=_coerce_item))
+
+    #: The dock items to place in the bottom dock bar.
+    bottom_bar = List(Coerced(dockitem, coercer=_coerce_item))
 
     def __init__(self, child, **kwargs):
         """ Initialize a floatarea.
 
         Parameters
         ----------
-        child : basestring, docksplit, docktabs, or dockitem
+        child : basestring, docksplit, docktabs, dockitem or None
             The primary child layout to use for the float area.
 
         **kwargs
@@ -267,8 +280,13 @@ class dockarea(Atom):
 
         """
         yield self
-        for item in self.child.traverse():
-            yield item
+        if self.child is not None:
+            for item in self.child.traverse():
+                yield item
+        bar_attrs = ('left_bar', 'top_bar', 'right_bar', 'bottom_bar')
+        for bar in (getattr(self, attr) for attr in bar_attrs):
+            for item in bar:
+                yield item
 
 
 class _primarynode(object):
@@ -326,7 +344,7 @@ class docklayout(Atom):
 
         Parameters
         ----------
-        primary : dockarea, dockitem, or basetring
+        primary : dockarea, dockitem, basetring, or None
             The primary non-floating dock layout node.
 
         *floating
