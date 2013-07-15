@@ -14,8 +14,7 @@ if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
 else:
     from .dock_layout import (
         ItemLayout, TabLayout, SplitLayout, HSplitLayout, VSplitLayout,
-        DockBarLayout, AreaLayout, DockLayout, DockLayoutVisitor,
-        DockLayoutWarning, DockLayoutValidator
+        DockBarLayout, AreaLayout, DockLayout, DockLayoutWarning
     )
 from .layout_helpers import (
     align, hbox, vbox, horizontal, vertical, grid, spacer,
