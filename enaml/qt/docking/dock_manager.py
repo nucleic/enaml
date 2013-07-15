@@ -5,19 +5,22 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from collections import defaultdict
 from contextlib import contextmanager
 import warnings
 
 from atom.api import Atom, Int, Typed, List, atomref
 
-from enaml.layout.dock_layout import AreaLayout, DockBarLayout
+from enaml.layout.dock_layout import (
+    DockLayout, AreaLayout, DockBarLayout, ItemLayout
+)
 
 from enaml.qt.QtCore import QPoint, QRect, QObject
 from enaml.qt.QtGui import QApplication
 
 from .dock_overlay import DockOverlay
 from .layout_handling import (
-    LayoutWidgetBuilder, save_layout, layout_hit_test, plug_frame,
+    LayoutWidgetBuilder, LayoutWidgetSaver, layout_hit_test, plug_frame,
     iter_containers
 )
 from .proximity_handler import ProximityHandler
@@ -215,26 +218,40 @@ class DockManager(Atom):
             state.
 
         """
+        layout_saver = LayoutWidgetSaver()
+        bar_positions = {
+            QDockBar.North: 'top',
+            QDockBar.East: 'right',
+            QDockBar.South: 'bottom',
+            QDockBar.West: 'left',
+        }
+
         def make_area_node(area):
             widget = area.centralWidget()
             if widget is None:
                 node = AreaLayout()
             else:
-                node = AreaLayout(save_layout(widget))
+                node = AreaLayout(layout_saver(widget))
+            bar_data = defaultdict(list)
+            for container, position in area.dockBarContainers():
+                bar_data[position].append(container.objectName())
+            for bar_pos, names in bar_data.iteritems():
+                bar = DockBarLayout(*names, position=bar_positions[bar_pos])
+                node.dock_bars.append(bar)
             maxed = area.maximizedWidget()
-            #if maxed is not None:
-            #    node.maximized_item = maxed.objectName()
-            #bars = ('top_bar', 'right_bar', 'bottom_bar', 'left_bar')
-            #for container, position in area.dockBarContainers():
-            #    bar = getattr(node, bars[position])
-            #    bar.append(container.objectName())
+            if maxed is not None:
+                name = maxed.objectName()
+                for item in node.find_all(ItemLayout):
+                    if item.name == name:
+                        item.maximized = True
+                        break
             return node
 
         def make_frame_node(frame):
             if isinstance(frame, QDockWindow):
                 node = make_area_node(frame.dockArea())
             else:
-                node = save_layout(frame)
+                node = layout_saver(frame)
             node.linked = frame.isLinked()
             node.maximized = frame.isMaximized()
             if frame.isMaximized():
@@ -246,7 +263,8 @@ class DockManager(Atom):
 
         primary = make_area_node(self._dock_area)
         secondary = map(make_frame_node, self._floating_frames())
-        return docklayout(primary, *secondary)
+        items = [primary] + secondary
+        return DockLayout(*items)
 
     def apply_layout(self, layout):
         """ Apply a layout to the dock area.
@@ -257,12 +275,13 @@ class DockManager(Atom):
             The DockLayout to apply to the managed area.
 
         """
+        assert isinstance(layout, DockLayout)
         # Remove the layout widget before resetting the handlers. This
         # prevents a re-used container from being hidden by the call to
         # setCentralWidget after it has already been reset. The reference
         # is held to the old widget so the containers are not destroyed
         # before they are reset.
-        widget = self._dock_area.centralWidget()
+        ignored = self._dock_area.centralWidget()
         self._dock_area.setCentralWidget(None)
         containers = list(self._dock_containers())
         for container in containers:
@@ -272,7 +291,8 @@ class DockManager(Atom):
         self._dock_area.clearDockBars()
         available = dict((c.objectName(), c) for c in containers)
 
-        positions = {
+        layout_builder = LayoutWidgetBuilder(available)
+        bar_positions = {
             'top': QDockBar.North,
             'right': QDockBar.East,
             'bottom': QDockBar.South,
@@ -281,18 +301,19 @@ class DockManager(Atom):
 
         def populate_area(area, layout):
             if layout.item is not None:
-                widget = LayoutWidgetBuilder(available)(layout.item)
-                area.setCentralWidget(widget)
+                area.setCentralWidget(layout_builder(layout.item))
             for bar_layout in layout.dock_bars:
-                position = positions[bar_layout.position]
+                position = bar_positions[bar_layout.position]
                 for item in bar_layout.items:
                     container = available.get(item.name)
                     if container is not None:
                         area.addToDockBar(container, position)
-            #if layout.maximized_item:
-            #    maxed = available.get(layout.maximized_item)
-            #    if maxed is not None:
-            #        maxed.showMaximized()
+            for item in layout.find_all(ItemLayout):
+                if item.maximized:
+                    container = available.get(item.name)
+                    if container is not None:
+                        container.showMaximized()
+                        break
 
         primary_area = None
         floating_frames = []
@@ -327,22 +348,7 @@ class DockManager(Atom):
                 frame.showMaximized()
 
     def apply_layout_op(self, op, direction, *item_names):
-        """ Apply a layout operation to the managed items.
-
-        Parameters
-        ----------
-        op : str
-            The operation to peform. This must be one of 'split_item',
-            'tabify_item', or 'split_area'.
-
-        direction : str
-            The direction to peform the operation. This must be one of
-            'left', 'right', 'top', or 'bottom'.
-
-        *item_names
-            The list of string names of the dock items to include in
-            the operation. See the notes about the requirements for
-            the item names for a given layout operation.
+        """ This method is deprecated.
 
         """
         handler_name = '_apply_op_' + op
@@ -523,16 +529,18 @@ class DockManager(Atom):
         if isinstance(target, QDockArea):
             if target.maximizedWidget() is not None:
                 return
-            with self._drop_window_context(frame):
+            with self._drop_window_context(frame) as ctxt:
                 local = target.mapFromGlobal(pos)
                 widget = layout_hit_test(target, local)
-                plug_frame(target, widget, frame, guide)
+                success = plug_frame(target, widget, frame, guide)
+                ctxt['success'] = success
         elif isinstance(target, QDockContainer):
             with self._dock_context(target):
-                with self._drop_window_context(frame):
+                with self._drop_window_context(frame) as ctxt:
                     area = target.parentDockArea()
                     if area is not None:
-                        plug_frame(area, target, frame, guide)
+                        success = plug_frame(area, target, frame, guide)
+                        ctxt['success'] = success
 
     def close_container(self, container, event):
         """ Handle a close request for a QDockContainer.
@@ -857,8 +865,9 @@ class DockManager(Atom):
                 container = self._find_container(maxed.objectName())
                 if container is not None:
                     container.showNormal()
-        yield
-        if is_window:
+        ctxt = {'success': False}
+        yield ctxt
+        if is_window and ctxt['success']:
             window.close()
 
     # A mapping of direction to split item layout metadata.
@@ -870,17 +879,7 @@ class DockManager(Atom):
     }
 
     def _apply_op_split_item(self, direction, *item_names):
-        """ Handle the 'split_item' layout operation.
-
-        Parameters
-        ----------
-        direction : LayoutDirection
-            The direction in which to perform the split.
-
-        *item_names
-            The item names which take part in the operation. There must
-            be 2 or more names and they must refer to items which have
-            been added to the manager.
+        """ This method is deprecated.
 
         """
         def missing(name):
@@ -920,17 +919,7 @@ class DockManager(Atom):
     }
 
     def _apply_op_tabify_item(self, direction, *item_names):
-        """ Handle the 'tabify_item' layout operation.
-
-        Parameters
-        ----------
-        direction : LayoutDirection
-            The direction in which to perform the split.
-
-        *item_names
-            The item names which take part in the operation. There must
-            be 2 or more names and they must refer to items which have
-            been added to the manager.
+        """ This method is deprecated.
 
         """
         def missing(name):
@@ -965,17 +954,7 @@ class DockManager(Atom):
     }
 
     def _apply_op_split_area(self, direction, *item_names):
-        """ Handle the 'split_area' layout operation.
-
-        Parameters
-        ----------
-        direction : LayoutDirection
-            The direction in which to perform the split.
-
-        *item_names
-            The item names which take part in the operation. There must
-            be 1 or more names and they must refer to items which have
-            been added to the manager.
+        """ This method is deprecated.
 
         """
         def missing(name):
