@@ -5,7 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.layout.dock_layout import dockitem, docksplit, docktabs
+from enaml.layout.dock_layout import (
+    TabLayout, SplitLayout, ItemLayout, DockLayoutVisitor
+)
 
 from enaml.qt.QtCore import Qt, QEvent
 from enaml.qt.QtGui import QApplication, QTabWidget
@@ -43,30 +45,6 @@ TAB_POSITION = {
 #------------------------------------------------------------------------------
 # Public API
 #------------------------------------------------------------------------------
-def build_layout(layout, containers):
-    """ Build the root layout widget for the layout description.
-
-    Parameters
-    ----------
-    layout : docktabs, docksplit, or dockitem
-        The layout node which describes the widget to be built.
-
-    containers : iterable
-        An iterable of QDockContainer instances to use as the
-        available containers for the layout.
-
-    Returns
-    -------
-    result : QDockTabWidget, QDockSplitter, or QDockContainer
-        A widget which implements the dock area.
-
-    """
-    types = (docktabs, docksplit, dockitem)
-    assert isinstance(layout, types), "build_layout() called with invalid type"
-    mapping = dict((c.objectName(), c) for c in containers)
-    return _build_layout(layout, mapping)
-
-
 def save_layout(widget):
     """ Save the layout contained in the dock area.
 
@@ -280,75 +258,108 @@ def layout_hit_test(area, pos):
                 return dock_container
 
 
-#------------------------------------------------------------------------------
-# Layout Building
-#------------------------------------------------------------------------------
-def _build_layout(layout, containers):
-    """ The main layout builder dispatch method.
+class LayoutWidgetBuilder(DockLayoutVisitor):
+    """ A DockLayout visitor which builds a central layout widget.
 
-    This method dispatches to the widget-specific handlers.
+    This visitor supports ItemLayout, SplitLayout and TabLayout nodes.
 
     """
-    if isinstance(layout, dockitem):
-        return _build_dockitem(layout, containers)
-    if isinstance(layout, docksplit):
-        return _build_docksplit(layout, containers)
-    if isinstance(layout, docktabs):
-        return _build_docktabs(layout, containers)
-    raise TypeError("unhandled layout type '%s'" % type(layout).__name__)
+    def __init__(self, containers):
+        """ Initialize a _LayoutBuilder.
 
+        Parameters
+        ----------
+        containers : dict
+            A dict mapping container name to container.
 
-def _build_dockitem(layout, containers):
-    """ The handler method for a dockitem layout description.
+        """
+        self._containers = containers.copy()
 
-    This handler will pop and return the named container.
+    def setup(self, node):
+        """ Set the the layout builder.
 
-    """
-    return containers.pop(layout.name, None)
+        """
+        self._stack = []
 
+    def result(self, node):
+        """ Get the results of the visitor.
 
-def _build_docksplit(layout, containers):
-    """ The handler method for a split layout description.
+        This returns the last item pushed onto the stack.
 
-    This handler will build and populate a QDockSplitter which holds
-    the items declared in the layout.
+        """
+        return self._stack[-1]
 
-    """
-    children = (_build_layout(child, containers) for child in layout.children)
-    children = filter(None, children)
-    if len(children) == 0:
-        return None
-    if len(children) == 1:
-        return children[0]
-    splitter = QDockSplitter(ORIENTATION[layout.orientation])
-    for child in children:
-        splitter.addWidget(child)
-    sizes = layout.sizes
-    if sizes and len(sizes) >= len(children):
-        splitter.setSizes(sizes)
-    return splitter
+    def teardown(self, node):
+        """ Teardown the layout builder.
 
+        """
+        del self._stack
 
-def _build_docktabs(layout, containers):
-    """ The handler method for a tabbed layout description.
+    def visit_ItemLayout(self, node):
+        """ Visit the ItemLayout node.
 
-    This handler will build and populate a QDockTabWidget which holds
-    the items declared in the layout.
+        This visitor pushes the named container onto the stack. If the
+        name is not valid, None is pushed instead.
 
-    """
-    children = (_build_layout(child, containers) for child in layout.children)
-    children = filter(None, children)
-    if len(children) == 0:
-        return None
-    if len(children) == 1:
-        return children[0]
-    tab_widget = QDockTabWidget()
-    tab_widget.setTabPosition(TAB_POSITION[layout.tab_position])
-    for child in children:
-        child.hideTitleBar()
-        tab_widget.addTab(child, child.icon(), child.title())
-    tab_widget.setCurrentIndex(layout.index)
-    return tab_widget
+        """
+        container = self._containers.pop(node.name, None)
+        self._stack.append(container)
+
+    def visit_TabLayout(self, node):
+        """ Visit a TabLayout node.
+
+        This visitor visits its children, pops them from the stack, and
+        adds them to a tab widget. The completed tab widget is pushed
+        onto the stack as the return value. If there are no children,
+        None is pushed. If there is a single child, it is pushed.
+
+        """
+        children = []
+        for item in node.items:
+            self.visit(item)
+            children.append(self._stack.pop())
+        children = filter(None, children)
+        if len(children) == 0:
+            self._stack.append(None)
+            return
+        if len(children) == 1:
+            self._stack.append(children[0])
+            return
+        tab_widget = QDockTabWidget()
+        tab_widget.setTabPosition(TAB_POSITION[node.tab_position])
+        for child in children:
+            child.hideTitleBar()
+            tab_widget.addTab(child, child.icon(), child.title())
+        tab_widget.setCurrentIndex(node.index)
+        self._stack.append(tab_widget)
+
+    def visit_SplitLayout(self, node):
+        """ Visit a SplitLayout node.
+
+        This visitor visits its children, pops them from the stack, and
+        adds them to a split widget. The completed tab widget is pushed
+        onto the stack as the return value. If there are no children,
+        None is pushed. If there is a single child, it is pushed.
+
+        """
+        children = []
+        for item in node.items:
+            self.visit(item)
+            children.append(self._stack.pop())
+        children = filter(None, children)
+        if len(children) == 0:
+            self._stack.append(None)
+            return
+        if len(children) == 1:
+            self._stack.append(children[0])
+            return
+        splitter = QDockSplitter(ORIENTATION[node.orientation])
+        for child in children:
+            splitter.addWidget(child)
+        sizes = node.sizes
+        if sizes and len(sizes) >= len(children):
+            splitter.setSizes(sizes)
+        self._stack.append(splitter)
 
 
 #------------------------------------------------------------------------------
@@ -373,7 +384,7 @@ def _save_container(widget):
     """ The save handler for a QDockContainer layout widget.
 
     """
-    return dockitem(widget.objectName())
+    return ItemLayout(widget.objectName())
 
 
 def _save_tabs(widget):
@@ -383,7 +394,7 @@ def _save_tabs(widget):
     children = []
     for index in xrange(widget.count()):
         children.append(_save_layout(widget.widget(index)))
-    layout = docktabs(*children)
+    layout = TabLayout(*children)
     layout.index = widget.currentIndex()
     layout.tab_position = TAB_POSITION[widget.tabPosition()]
     return layout
@@ -396,7 +407,7 @@ def _save_split(widget):
     children = []
     for index in xrange(widget.count()):
         children.append(_save_layout(widget.widget(index)))
-    layout = docksplit(*children)
+    layout = SplitLayout(*children)
     layout.orientation = ORIENTATION[widget.orientation()]
     layout.sizes = widget.sizes()
     return layout
