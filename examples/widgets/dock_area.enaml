@@ -41,7 +41,7 @@ if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
         docktabs('Item 6', 'Item 7', 'Item 8', 'Item 9'),
     )
 else:
-    from enaml.layout.api import HSplitLayout, VSplitLayout, TabLayout, DockBarLayout, AreaLayout
+    from enaml.layout.api import ItemLayout, HSplitLayout, VSplitLayout, TabLayout, DockBarLayout, AreaLayout
     THE_LAYOUT = HSplitLayout(
         VSplitLayout('Item 1', 'Item 3', 'Item 5'),
         VSplitLayout('Item 4', 'Item 2'),
@@ -145,7 +145,14 @@ enamldef Main(Window):
                     name = 'Item %d' % (len(area.children) + 1)
                     MyItem(area, name=name)
                     names.append(name)
-                area.find('Item 1').split('left', *names)
+                layout = area.save_layout()
+                for parent, node in layout.traverse():
+                    if isinstance(node, ItemLayout) and node.name == 'Item 1':
+                        hsplit = HSplitLayout('Item 1', *names)
+                        idx = parent.items.index(node)
+                        parent.items[idx] = hsplit
+                        break
+                area.apply_layout(layout)
         ObjectCombo: style_c:
             items = STYLES.keys()
             selected = 'VS 2010'
