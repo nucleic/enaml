@@ -5,10 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from collections import deque
 import sys
 import warnings
 
 from atom.api import Atom, Int, Bool, Coerced, Enum, List, Unicode
+
+from enaml.nodevisitor import NodeVisitor
 
 from .geometry import Rect
 
@@ -25,7 +28,95 @@ def _coerce_rect(value):
     raise TypeError(msg % type(value).__name__)
 
 
-class ItemLayout(Atom):
+class LayoutNode(Atom):
+    """ A base class for defining layout nodes.
+
+    This class provides basic traversal functionality.
+
+    """
+    def children(self):
+        """ Get the children of the node.
+
+        Returns
+        -------
+        result : list
+            The list of LayoutNode children of the node. The default
+            implementation returns an empty list.
+
+        """
+        return []
+
+    def traverse(self, depth_first=False):
+        """ Yield all of the nodes in the layout, from this node down.
+
+        Parameters
+        ----------
+        depth_first : bool, optional
+            If True, yield the nodes in depth first order. If False,
+            yield the nodes in breadth first order. Defaults to False.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields 2-tuples of (parent, node) for all
+            nodes in the layout.
+
+        """
+        if depth_first:
+            stack = [(None, self)]
+            stack_pop = stack.pop
+            stack_extend = stack.extend
+        else:
+            stack = deque([(None, self)])
+            stack_pop = stack.popleft
+            stack_extend = stack.extend
+        while stack:
+            parent, node = stack_pop()
+            yield parent, node
+            stack_extend((node, child) for child in node.children())
+
+    def find(self, kind):
+        """ Find the first layout node of the given kind.
+
+        Parameters
+        ----------
+        kind : type or tuple of types
+            The type of the layout node to find.
+
+        Returns
+        -------
+        result : LayoutNode or None
+            The first layout node of the given type in the tree. The
+            search is performed breadth-first.
+
+        """
+        for parent, node in self.traverse():
+            if isinstance(node, kind):
+                return node
+
+    def find_all(self, kind):
+        """ Find the layout nodes of the given kind.
+
+        Parameters
+        ----------
+        kind : type or tuple of types
+            The type of the layout nodes to find.
+
+        Returns
+        -------
+        result : list
+            The list of the layout nodes in the tree which are of the
+            request type. They are ordered breadth-first.
+
+        """
+        res = []
+        for parent, node in self.traverse():
+            if isinstance(node, kind):
+                res.append(node)
+        return res
+
+
+class ItemLayout(LayoutNode):
     """ A layout object for defining an item layout.
 
     """
@@ -52,7 +143,7 @@ class ItemLayout(Atom):
         super(ItemLayout, self).__init__(name=name, **kwargs)
 
 
-class TabLayout(Atom):
+class TabLayout(LayoutNode):
     """ A layout object for defining tabbed dock layouts.
 
     """
@@ -67,6 +158,12 @@ class TabLayout(Atom):
 
     def __init__(self, *items, **kwargs):
         super(TabLayout, self).__init__(items=list(items), **kwargs)
+
+    def children(self):
+        """ Get the list of children of the tab layout.
+
+        """
+        return self.items[:]
 
 
 class _SplitLayoutItem(object):
@@ -85,7 +182,7 @@ class _SplitLayoutItem(object):
             raise TypeError(msg % type(item).__name__)
 
 
-class SplitLayout(Atom):
+class SplitLayout(LayoutNode):
     """ A layout object for defining split dock layouts.
 
     """
@@ -101,6 +198,12 @@ class SplitLayout(Atom):
 
     def __init__(self, *items, **kwargs):
         super(SplitLayout, self).__init__(items=list(items), **kwargs)
+
+    def children(self):
+        """ Get the list of children of the split layout.
+
+        """
+        return self.items[:]
 
 
 class HSplitLayout(SplitLayout):
@@ -121,7 +224,7 @@ class VSplitLayout(SplitLayout):
         super(VSplitLayout, self).__init__(*items, **kwargs)
 
 
-class DockBarLayout(Atom):
+class DockBarLayout(LayoutNode):
     """ A layout object for defining a dock bar layout.
 
     """
@@ -134,6 +237,12 @@ class DockBarLayout(Atom):
 
     def __init__(self, *items, **kwargs):
         super(DockBarLayout, self).__init__(items=list(items), **kwargs)
+
+    def children(self):
+        """ Get the list of children of the dock bar layout.
+
+        """
+        return self.items[:]
 
 
 class _AreaLayoutItem(object):
@@ -153,7 +262,7 @@ class _AreaLayoutItem(object):
             raise TypeError(msg % type(item).__name__)
 
 
-class AreaLayout(Atom):
+class AreaLayout(LayoutNode):
     """ A layout object for defining a dock area layout.
 
     """
@@ -182,6 +291,12 @@ class AreaLayout(Atom):
     def __init__(self, item=None, **kwargs):
         super(AreaLayout, self).__init__(item=item, **kwargs)
 
+    def children(self):
+        """ Get the list of children of the area layout.
+
+        """
+        return [self.item] + self.dock_bars
+
 
 class _DockLayoutItem(object):
     """ A private class which performs type checking for dock layouts.
@@ -201,7 +316,7 @@ class _DockLayoutItem(object):
             raise TypeError(msg % type(item).__name__)
 
 
-class DockLayout(Atom):
+class DockLayout(LayoutNode):
     """ The layout object for defining toplevel dock layouts.
 
     """
@@ -211,117 +326,11 @@ class DockLayout(Atom):
     def __init__(self, *items, **kwargs):
         super(DockLayout, self).__init__(items=list(items), **kwargs)
 
-
-class DockLayoutVisitor(object):
-    """ A base class for implementing dock layout visitors.
-
-    Subclasses should implement visitor methods using the naming
-    scheme 'visit_<name>' where `<name>` is the class name of the
-    node of interest.
-
-    """
-    def __call__(self, node):
-        """ The main entry point of the visitor class.
-
-        This method should be called to execute the logic of the
-        visitor. It will call the setup and teardown methods before
-        and after invoking the visit method on the node.
-
-        Parameter
-        ---------
-        node : object
-            An instance of one of the dock layout classes over which
-            the visitor should be run.
-
-        Returns
-        -------
-        result : object
-            The return value from the result() method.
+    def children(self):
+        """ Get the list of children of the dock layout.
 
         """
-        self.setup(node)
-        self.visit(node)
-        result = self.result(node)
-        self.teardown(node)
-        return result
-
-    def setup(self, node):
-        """ Perform any necessary setup before running the visitor.
-
-        This method is invoked before the visitor is executed over
-        a particular node. The default implementation does nothing.
-
-        Parameters
-        ----------
-        node : object
-            The dock layout node passed to the visitor.
-
-        """
-        pass
-
-    def result(self, node):
-        """ Get the results for the visitor.
-
-        This method is invoked after the visitor is executed over a
-        particular node and the result() method has been called. The
-        default implementation returns None.
-
-        Parameters
-        ----------
-        node : object
-            The dock layout node passed to the visitor.
-
-        Returns
-        -------
-        result : object
-            The results of the visitor.
-
-        """
-        return None
-
-    def teardown(self, node):
-        """ Perform any necessary cleanup when the visitor is finished.
-
-        This method is invoked after the visitor is executed over a
-        particular node and the result() method has been called. The
-        default implementation does nothing.
-
-        Parameters
-        ----------
-        node : object
-            The dock layout node passed to visitor.
-
-        """
-        pass
-
-    def visit(self, node):
-        """ The main visitor dispatch method.
-
-        Parameters
-        ----------
-        node : object
-            An instance of a dock layout class.
-
-        """
-        for cls in type(node).mro():
-            visitor_name = 'visit_' + cls.__name__
-            visitor = getattr(self, visitor_name, None)
-            if visitor is not None:
-                visitor(node)
-                return
-        self.default_visit(node)
-
-    def default_visit(self, node):
-        """ The default node visitor method.
-
-        This method is invoked when no named visitor method is found
-        for a given node. This default behavior raises an exception
-        for the missing handler. Subclasses may reimplement this
-        method for custom default behavior.
-
-        """
-        msg = "no visitor found for node of type `%s`"
-        raise TypeError(msg % type(node).__name__)
+        return self.items[:]
 
 
 class DockLayoutWarning(UserWarning):
@@ -331,12 +340,12 @@ class DockLayoutWarning(UserWarning):
     pass
 
 
-class DockLayoutValidator(DockLayoutVisitor):
-    """ A layout visitor which validates a layout.
+class DockLayoutValidator(NodeVisitor):
+    """ A node visitor which validates a layout.
 
     If an irregularity or invalid condition is found in the layout, a
-    warning is emitted. These warnings should be heeded, since the
-    condition can lead to undefined layout behavior.
+    warning is emitted. Such conditions can result in undefined layout
+    behavior.
 
     """
     def __init__(self, available):
@@ -646,3 +655,132 @@ if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
             for secondary in self.secondary:
                 for item in secondary.traverse():
                     yield item
+
+
+    def convert_to_new_docklayout(layout):
+        """ A function which converts a 'docklayout' to a 'DockLayout'.
+
+        """
+        assert isinstance(layout, docklayout)
+
+        def h_generic(item):
+            if isinstance(item, dockitem):
+                return h_dockitem(item)
+            if isinstance(item, docktabs):
+                return h_docktabs(item)
+            if isinstance(item, docksplit):
+                return h_docksplit(item)
+            if isinstance(item, dockarea):
+                return h_dockarea(item)
+            return h_docklayout(item)
+
+        def h_dockitem(item):
+            n_item = ItemLayout(item.name)
+            n_item.geometry = item.geometry
+            n_item.maximized = item.maximized
+            n_item.linked = item.linked
+            return n_item
+
+        def h_docktabs(tabs):
+            n_tabs = TabLayout()
+            n_tabs.items = [h_dockitem(i) for i in tabs.children]
+            n_tabs.tab_position = tabs.tab_position
+            n_tabs.index = tabs.index
+            return n_tabs
+
+        def h_docksplit(split):
+            n_split = SplitLayout()
+            n_split.items = [h_generic(i) for i in split.children]
+            n_split.orientation = split.orientation
+            n_split.sizes = split.sizes
+            return n_split
+
+        def h_dockarea(area):
+            h_area = AreaLayout()
+            h_area.item = h_generic(area.child)
+            h_area.geometry = area.geometry
+            h_area.linked = area.linked
+            h_area.maximized = area.maximized
+            if area.maximized_item:
+                for item in h_area.find_all(ItemLayout):
+                    if item.name == area.maximized_item:
+                        item.maximized = True
+                        break
+            return h_area
+
+        def h_docklayout(layout):
+            h_layout = DockLayout()
+            if layout.primary is not None:
+                h_layout.items.append(h_generic(layout.primary))
+            for other in layout.secondary:
+                h_item = h_generic(other)
+                h_item.floating = True
+                h_layout.items.append(h_item)
+            return h_layout
+
+        return h_generic(layout)
+
+    def convert_to_old_docklayout(layout):
+        """ A function which converts a 'DockLayout' to a 'docklayout'.
+
+        """
+        assert isinstance(layout, DockLayout)
+
+        def h_generic(item):
+            if isinstance(item, ItemLayout):
+                return h_ItemLayout(item)
+            if isinstance(item, TabLayout):
+                return h_TabLayout(item)
+            if isinstance(item, SplitLayout):
+                return h_SplitLayout(item)
+            if isinstance(item, AreaLayout):
+                return h_AreaLayout(item)
+            return h_DockLayout(item)
+
+        def h_ItemLayout(item):
+            n_item = dockitem(item.name)
+            n_item.geometry = item.geometry
+            n_item.maximized = item.maximized
+            n_item.linked = item.linked
+            return n_item
+
+        def h_TabLayout(tabs):
+            n_tabs = docktabs()
+            n_tabs.children = [h_ItemLayout(i) for i in tabs.items]
+            n_tabs.tab_position = tabs.tab_position
+            n_tabs.index = tabs.index
+            return n_tabs
+
+        def h_SplitLayout(split):
+            n_split = docksplit()
+            n_split.children = [h_generic(i) for i in split.items]
+            n_split.orientation = split.orientation
+            n_split.sizes = split.sizes
+            return n_split
+
+        def h_AreaLayout(area):
+            if area.item is None:
+                n_area = dockarea(None)
+            else:
+                n_area = dockarea(h_generic(area.item))
+            n_area.geometry = area.geometry
+            n_area.linked = area.linked
+            n_area.maximized = area.maximized
+            for item in area.find_all(ItemLayout):
+                if item.maximized:
+                    n_area.maximized_item = item.name
+                    break
+            return n_area
+
+        def h_DockLayout(layout):
+            primary = None
+            secondary = []
+            for item in layout.items:
+                n_item = h_generic(item)
+                if item.floating or primary is not None:
+                    secondary.append(n_item)
+                else:
+                    primary = n_item
+            return docklayout(primary, *secondary)
+
+        return h_generic(layout)
