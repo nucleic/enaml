@@ -432,7 +432,7 @@ class DockLayoutValidator(NodeVisitor):
 
         """
         if len(node.sizes) > 0:
-            if len(node.size) != len(node.items):
+            if len(node.sizes) != len(node.items):
                 self.warn("SplitLayout sizes length != items length")
         for item in node.items:
             self.visit(item)
