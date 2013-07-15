@@ -435,6 +435,10 @@ class DockLayoutValidator(NodeVisitor):
             if len(node.sizes) != len(node.items):
                 self.warn("SplitLayout sizes length != items length")
         for item in node.items:
+            if isinstance(item, SplitLayout):
+                if item.orientation == node.orientation:
+                    msg = "child SplitLayout has same orientation as parent"
+                    self.warn(msg)
             self.visit(item)
 
     def visit_DockBarLayout(self, node):
