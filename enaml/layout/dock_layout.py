@@ -487,6 +487,46 @@ class DockLayoutValidator(NodeVisitor):
             self.visit(item)
 
 
+class DockLayoutOp(Atom):
+    """ A sentinel base class for defining dock layout operations.
+
+    """
+    pass
+
+
+class InsertItem(DockLayoutOp):
+    """ A layout operation which inserts an item into a layout.
+
+    """
+    #: The name of the item to insert into the layout.
+    item = Unicode()
+
+    #: The name of the item to use as the target location.
+    target = Unicode()
+
+    #: The direction to insert the item.
+    direction = Enum('left', 'top', 'right', 'bottom')
+
+
+class TabifyItems(DockLayoutOp):
+    """ A layout operation which creates a tab group from two items.
+
+    """
+    #: The name of item to tabify onto the target.
+    item = Unicode()
+
+    #: The name of the item to use as the target location.
+    target = Unicode()
+
+    #: The position of the tabs for the newly created tab group.
+    tab_position = Enum('top', 'bottom', 'left', 'right')
+
+
+class InsertTab(DockLayoutOp):
+    """ A layout operation which inserts a tab into a tab group.
+
+    """
+
 #------------------------------------------------------------------------------
 # Deprecated Layout Classes
 #------------------------------------------------------------------------------
