@@ -149,6 +149,8 @@ class DockArea(ConstraintsWidget):
             assert isinstance(layout, docklayout), 'layout must be a docklayout'
         else:
             assert isinstance(layout, DockLayout), 'layout must be a DockLayout'
+            available = (i.name for i in self.dock_items())
+            DockLayoutValidator(available)(layout)
         if self.proxy_is_active:
             return self.proxy.apply_layout(layout)
 
