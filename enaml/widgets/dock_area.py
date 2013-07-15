@@ -93,7 +93,7 @@ class DockArea(ConstraintsWidget):
             """ Post validate the layout using the DockLayoutValidator.
 
             """
-            available = set(i.name for i in self.dock_items())
+            available = (i.name for i in self.dock_items())
             DockLayoutValidator(available)(new)
             return new
 
@@ -145,7 +145,10 @@ class DockArea(ConstraintsWidget):
             The docklayout to apply to the dock area.
 
         """
-        assert isinstance(layout, docklayout), 'layout must be a docklayout'
+        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+            assert isinstance(layout, docklayout), 'layout must be a docklayout'
+        else:
+            assert isinstance(layout, DockLayout), 'layout must be a DockLayout'
         if self.proxy_is_active:
             return self.proxy.apply_layout(layout)
 
