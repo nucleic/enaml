@@ -5,38 +5,44 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import os
+
 from atom.api import (
     Bool, Coerced, Enum, Typed, ForwardTyped, Unicode, observe, set_default
 )
 
 from enaml.core.declarative import d_
-from enaml.layout.dock_layout import (
-    docklayout, dockarea, dockitem, docksplit, docktabs
-)
+from enaml.layout.dock_layout import DockLayout, DockLayoutValidator
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .dock_item import DockItem
 
 
-def coerce_layout(thing):
-    """ Coerce a variety of objects into a docklayout.
+if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
 
-    Parameters
-    ----------
-    thing : dict, basetring, dockitem, dockarea, split, or tabs
-        Something that can be coerced into a dock layout.
+    from enaml.layout.dock_layout import (
+        docklayout, dockarea, dockitem, docksplit, docktabs
+    )
 
-    """
-    if thing is None:
-        return docklayout(None)
-    if isinstance(thing, basestring):
-        thing = dockitem(thing)
-    if isinstance(thing, (dockitem, docksplit, docktabs)):
-        return docklayout(dockarea(thing))
-    if isinstance(thing, dockarea):
-        return docklayout(thing)
-    msg = "cannot coerce '%s' to a 'docklayout'"
-    raise TypeError(msg % type(thing).__name__)
+    def coerce_layout(thing):
+        """ Coerce a variety of objects into a docklayout.
+
+        Parameters
+        ----------
+        thing : dict, basetring, dockitem, dockarea, split, or tabs
+            Something that can be coerced into a dock layout.
+
+        """
+        if thing is None:
+            return docklayout(None)
+        if isinstance(thing, basestring):
+            thing = dockitem(thing)
+        if isinstance(thing, (dockitem, docksplit, docktabs)):
+            return docklayout(dockarea(thing))
+        if isinstance(thing, dockarea):
+            return docklayout(thing)
+        msg = "cannot coerce '%s' to a 'docklayout'"
+        raise TypeError(msg % type(thing).__name__)
 
 
 class ProxyDockArea(ProxyConstraintsWidget):
@@ -61,20 +67,35 @@ class ProxyDockArea(ProxyConstraintsWidget):
     def apply_layout(self, layout):
         raise NotImplementedError
 
-    def apply_layout_op(self, op, direction, *item_names):
-        raise NotImplementedError
+    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+
+        def apply_layout_op(self, op, direction, *item_names):
+            raise NotImplementedError
 
 
 class DockArea(ConstraintsWidget):
     """ A component which aranges dock item children.
 
     """
-    #: The layout of dock items for the area. The layout can also be
-    #: changed at runtime with the 'apply_layout' and 'apply_layout_op'
-    #: methods. This attribute is *not* kept in sync with the layout
-    #: state of the widget at runtime. The 'save_layout' method should
-    #: be called to retrieve the current layout state.
-    layout = d_(Coerced(docklayout, (None,), coercer=coerce_layout))
+    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+
+        layout = d_(Coerced(docklayout, (None,), coercer=coerce_layout))
+
+    else:
+
+        #: The layout of dock items for the area. This attribute is *not*
+        #: kept in sync with the layout state of the widget at runtime. The
+        #: 'save_layout' method should be called to retrieve the current
+        #: layout state.
+        layout = d_(Coerced(DockLayout, ()))
+
+        def _post_validate_layout(self, old, new):
+            """ Post validate the layout using the DockLayoutValidator.
+
+            """
+            available = set(i.name for i in self.dock_items())
+            DockLayoutValidator(available)(new)
+            return new
 
     #: The default tab position for newly created dock tabs.
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
@@ -128,78 +149,22 @@ class DockArea(ConstraintsWidget):
         if self.proxy_is_active:
             return self.proxy.apply_layout(layout)
 
-    def apply_layout_op(self, op, direction, *item_names):
-        """ Apply a layout operation to the dock area.
+    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
 
-        Parameters
-        ----------
-        op : str
-            The operation to peform. This must be one of 'split_item',
-            'tabify_item', or 'split_area'.
+        def apply_layout_op(self, op, direction, *item_names):
+            """ This method is deprecated.
 
-        direction : str
-            The direction to peform the operation. This must be one of
-            'left', 'right', 'top', or 'bottom'.
+            """
+            assert op in ('split_item', 'tabify_item', 'split_area')
+            assert direction in ('left', 'right', 'top', 'bottom')
+            if self.proxy_is_active:
+                self.proxy.apply_layout_op(op, direction, *item_names)
 
-        *item_names
-            The list of string names of the dock items to include in
-            the operation. See the notes about the requirements for
-            the item names for a given layout operation.
+        def split(self, direction, *item_names):
+            """ This method is deprecated.
 
-        Notes
-        -----
-        The item names must meet for the following requirements for the
-        various layout operations:
-
-        split_item
-            There must be two or more names and they must reference
-            dock items which have already been parented by the dock
-            area. The first name is used as the item to which the
-            operation is applied. The following command will insert
-            the dock item 'bar' to the left of dock item 'foo':
-
-                apply_layout_op('split_item', 'left', 'foo', 'bar')
-
-        tabify_item
-            There must be two or more names and they must reference
-            dock items which have already been parented by the dock
-            area. The first name is used as the item to which the
-            operation is applied. The following command will create
-            a tabbed area out of 'foo' and 'bar' with the tabs at
-            the top of the tab widget.
-
-                apply_layout_op('tabify_item', 'top', 'foo', 'bar')
-
-        'split_area'
-            There must be one or more names and they must reference
-            dock items which have already been parented by the dock
-            area. The names are inserted into the dock area in the
-            specified direction. The following command will insert
-            'foo' and 'bar' to the left side of the dock area.
-
-                apply_layout_op('split_area', 'left', 'foo', 'bar')
-
-        In all cases, conflicting layout specifications will be resolved
-        using reasonable behavior. For example, attempting to split an
-        item which lives in a tabbed area, will instead tabify the items
-        into the existing tab widget.
-
-        Warnings will be emitted if the layout conditions do not hold.
-
-        """
-        assert op in ('split_item', 'tabify_item', 'split_area')
-        assert direction in ('left', 'right', 'top', 'bottom')
-        if self.proxy_is_active:
-            self.proxy.apply_layout_op(op, direction, *item_names)
-
-    def split(self, direction, *item_names):
-        """ Split the dock area in the given direction.
-
-        This is a convenience method for applying a 'split_area' layout
-        operation. See the 'apply_layout_op' method for more info.
-
-        """
-        self.apply_layout_op('split_area', direction, *item_names)
+            """
+            self.apply_layout_op('split_area', direction, *item_names)
 
     #--------------------------------------------------------------------------
     # Observers

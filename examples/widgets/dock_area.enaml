@@ -16,10 +16,9 @@ key while dragging a tab.
 
 """
 import cPickle
+import os
 
-from enaml.layout.api import (
-    hbox, vbox, spacer, vdocksplit, hdocksplit, docktabs
-)
+from enaml.layout.api import hbox, vbox, spacer
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
     ObjectCombo
@@ -34,12 +33,24 @@ STYLES = {
 }
 
 
-enamldef MyDockArea(DockArea):
-    layout = hdocksplit(
+if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+    from enaml.layout.api import vdocksplit, hdocksplit, docktabs
+    THE_LAYOUT = hdocksplit(
         vdocksplit('Item 1', 'Item 3', 'Item 5'),
         vdocksplit('Item 4', 'Item 2'),
         docktabs('Item 6', 'Item 7', 'Item 8', 'Item 9'),
     )
+else:
+    from enaml.layout.api import HSplitLayout, VSplitLayout, TabLayout, DockBarLayout, AreaLayout
+    THE_LAYOUT = HSplitLayout(
+        VSplitLayout('Item 1', 'Item 3', 'Item 5'),
+        VSplitLayout('Item 4', 'Item 2'),
+        TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
+    )
+
+
+enamldef MyDockArea(DockArea):
+    layout = THE_LAYOUT
     DockItem:
         name = 'Item 1'
         title = name

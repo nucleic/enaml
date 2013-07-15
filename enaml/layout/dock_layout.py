@@ -220,7 +220,7 @@ class DockLayoutVisitor(object):
     node of interest.
 
     """
-    def run(self, node):
+    def __call__(self, node):
         """ The main entry point of the visitor class.
 
         This method should be called to execute the logic of the
@@ -233,10 +233,17 @@ class DockLayoutVisitor(object):
             An instance of one of the dock layout classes over which
             the visitor should be run.
 
+        Returns
+        -------
+        result : object
+            The return value from the result() method.
+
         """
         self.setup(node)
         self.visit(node)
+        result = self.result(node)
         self.teardown(node)
+        return result
 
     def setup(self, node):
         """ Perform any necessary setup before running the visitor.
@@ -247,21 +254,42 @@ class DockLayoutVisitor(object):
         Parameters
         ----------
         node : object
-            The dock layout node passed to the 'run' method.
+            The dock layout node passed to the visitor.
 
         """
         pass
+
+    def result(self, node):
+        """ Get the results for the visitor.
+
+        This method is invoked after the visitor is executed over a
+        particular node and the result() method has been called. The
+        default implementation returns None.
+
+        Parameters
+        ----------
+        node : object
+            The dock layout node passed to the visitor.
+
+        Returns
+        -------
+        result : object
+            The results of the visitor.
+
+        """
+        return None
 
     def teardown(self, node):
         """ Perform any necessary cleanup when the visitor is finished.
 
         This method is invoked after the visitor is executed over a
-        particular node. The default implementation does nothing.
+        particular node and the result() method has been called. The
+        default implementation does nothing.
 
         Parameters
         ----------
         node : object
-            The dock layout node passed to the 'run' method.
+            The dock layout node passed to visitor.
 
         """
         pass
@@ -296,7 +324,7 @@ class DockLayoutVisitor(object):
         raise TypeError(msg % type(node).__name__)
 
 
-class DockLayoutWarning(warnings.UserWarning):
+class DockLayoutWarning(UserWarning):
     """ A custom user warning for use with dock layouts.
 
     """
@@ -311,20 +339,44 @@ class DockLayoutValidator(DockLayoutVisitor):
     condition can lead to undefined layout behavior.
 
     """
+    def __init__(self, available):
+        """ Initialize a DockLayoutValidator.
+
+        Parameters
+        ----------
+        available : iterable
+            An iterable of strings which represent the available dock
+            item names onto wich the layout will be applied. These are
+            used to validate the set of visited ItemLayout instances.
+
+        """
+        self._available = set(available)
+
     def warn(self, message):
         """ Emit a dock layout warning with the given message.
 
         """
-        code = self._caller.f_code
-        f_name = code.co_filename
-        f_lineno = code.co_firstlineno
-        warnings.warn_explicit(message, DockLayoutWarning, f_name, f_lineno)
+        f_globals = self._caller.f_globals
+        f_lineno = self._caller.f_lineno
+        f_mod = f_globals.get('__name__', '<string>')
+        f_name = f_globals.get('__file__')
+        if f_name:
+            if f_name.lower().endswith((".pyc", ".pyo")):
+                f_name = f_name[:-1]
+        else:
+            if f_mod == "__main__":
+                f_name = sys.argv[0]
+            if not f_name:
+                f_name = f_mod
+        warnings.warn_explicit(
+            message, DockLayoutWarning, f_name, f_lineno, f_mod, f_globals
+        )
 
     def setup(self, node):
         """ Setup the dock layout validator.
 
         """
-        self._caller = sys._getframe(3) # caller->run()->setup()
+        self._caller = sys._getframe(2)
         self._seen_items = set()
         self._cant_maximize = {}
 
@@ -332,6 +384,12 @@ class DockLayoutValidator(DockLayoutVisitor):
         """ Teardown the dock layout validator.
 
         """
+        for name in self._available - self._seen_items:
+            msg = "item '%s' is not referenced by the layout"
+            self.warn(msg % name)
+        for name in self._seen_items - self._available:
+            msg = "item '%s' is not an available layout item"
+            self.warn(msg % name)
         del self._caller
         del self._seen_items
         del self._cant_maximize
@@ -349,7 +407,7 @@ class DockLayoutValidator(DockLayoutVisitor):
             if node.linked:
                 self.warn("non-floating ItemLayout marked as linked")
             if node.maximized and node in self._cant_maximize:
-                msg = "ItemLayout used in %s but marked as maximized"
+                msg = "ItemLayout contained in %s marked as maximized"
                 self.warn(msg % self._cant_maximize[node])
 
     def visit_TabLayout(self, node):
@@ -375,7 +433,7 @@ class DockLayoutValidator(DockLayoutVisitor):
 
         """
         for item in node.items:
-            self._cant_maximize[node] = 'DockBarLayout'
+            self._cant_maximize[item] = 'DockBarLayout'
             self.visit(item)
 
     def visit_AreaLayout(self, node):
@@ -389,7 +447,8 @@ class DockLayoutValidator(DockLayoutVisitor):
                 self.warn("non-floating AreaLayout marked as linked")
             if node.maximized:
                 self.warn("non-floating AreaLayout marked as maximized")
-        self.visit(node.item)
+        if node.item is not None:
+            self.visit(node.item)
         seen_positions = set()
         for bar in node.dock_bars:
             if bar.position in seen_positions:
@@ -418,169 +477,172 @@ class DockLayoutValidator(DockLayoutVisitor):
 #------------------------------------------------------------------------------
 # Deprecated Layout Classes
 #------------------------------------------------------------------------------
-class dockitem(Atom):
-    """ This class is deprecated. Use ItemLayout instead.
+import os
+if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
 
-    """
-    name = Unicode()
-    geometry = Coerced(Rect, (-1, -1, -1, -1), coercer=_coerce_rect)
-    maximized = Bool(False)
-    linked = Bool(False)
-    def __init__(self, name, **kwargs):
-        super(dockitem, self).__init__(name=name, **kwargs)
-    def traverse(self):
-        yield self
+    class dockitem(Atom):
+        """ This class is deprecated. Use ItemLayout instead.
 
-
-def _coerce_item(thing):
-    """ This function is deprecated.
-
-    """
-    if isinstance(thing, basestring):
-        return dockitem(thing)
-    msg = "cannot coerce '%s' to a 'dockitem'"
-    raise TypeError(msg % type(thing).__name__)
+        """
+        name = Unicode()
+        geometry = Coerced(Rect, (-1, -1, -1, -1), coercer=_coerce_rect)
+        maximized = Bool(False)
+        linked = Bool(False)
+        def __init__(self, name, **kwargs):
+            super(dockitem, self).__init__(name=name, **kwargs)
+        def traverse(self):
+            yield self
 
 
-class docktabs(Atom):
-    """ This class is deprecated. Use TabLayout instead.
+    def _coerce_item(thing):
+        """ This function is deprecated.
 
-    """
-    tab_position = Enum('top', 'bottom', 'left', 'right')
-    index = Int(0)
-    children = List(Coerced(dockitem, coercer=_coerce_item))
-    def __init__(self, *children, **kwargs):
-        super(docktabs, self).__init__(children=list(children), **kwargs)
-    def traverse(self):
-        yield self
-        for child in self.children:
-            for item in child.traverse():
+        """
+        if isinstance(thing, basestring):
+            return dockitem(thing)
+        msg = "cannot coerce '%s' to a 'dockitem'"
+        raise TypeError(msg % type(thing).__name__)
+
+
+    class docktabs(Atom):
+        """ This class is deprecated. Use TabLayout instead.
+
+        """
+        tab_position = Enum('top', 'bottom', 'left', 'right')
+        index = Int(0)
+        children = List(Coerced(dockitem, coercer=_coerce_item))
+        def __init__(self, *children, **kwargs):
+            super(docktabs, self).__init__(children=list(children), **kwargs)
+        def traverse(self):
+            yield self
+            for child in self.children:
+                for item in child.traverse():
+                    yield item
+
+
+    class _splitnode(object):
+        """ This class is deprecated.
+
+        """
+        class __metaclass__(type):
+            def __instancecheck__(cls, instance):
+                return isinstance(instance, (dockitem, docktabs, docksplit))
+            def __call__(cls, item):
+                if isinstance(item, basestring):
+                    return dockitem(item)
+                msg = "cannot coerce '%s' to a 'docksplit' child"
+                raise TypeError(msg % type(item).__name__)
+
+
+    class docksplit(Atom):
+        """ This class is deprecated. Use SplitLayout instead.
+
+        """
+        orientation = Enum('horizontal', 'vertical')
+        sizes = List(int)
+        children = List(Coerced(_splitnode))
+        def __init__(self, *children, **kwargs):
+            super(docksplit, self).__init__(children=list(children), **kwargs)
+        def traverse(self):
+            yield self
+            for child in self.children:
+                for item in child.traverse():
+                    yield item
+
+
+    def hdocksplit(*args, **kwargs):
+        """ This function is deprecated.
+
+        """
+        kwargs.setdefault('orientation', 'horizontal')
+        return docksplit(*args, **kwargs)
+
+
+    def vdocksplit(*args, **kwargs):
+        """ This function is deprecated.
+
+        """
+        kwargs.setdefault('orientation', 'vertical')
+        return docksplit(*args, **kwargs)
+
+
+    class _areanode(object):
+        """ This class is deprecated.
+
+        """
+        class __metaclass__(type):
+            def __instancecheck__(cls, instance):
+                return isinstance(instance, (dockitem, docktabs, docksplit))
+            def __call__(cls, item):
+                if isinstance(item, basestring):
+                    return dockitem(item)
+                msg = "cannot coerce '%s' to a 'dockarea' child"
+                raise TypeError(msg % type(item).__name__)
+
+
+    class dockarea(Atom):
+        """ This class is deprecated. Use LayoutArea instead.
+
+        """
+        geometry = Coerced(Rect, (-1, -1, -1, -1), coercer=_coerce_rect)
+        maximized = Bool(False)
+        maximized_item = Unicode()
+        linked = Bool(False)
+        child = Coerced(_areanode)
+        def __init__(self, child, **kwargs):
+            super(dockarea, self).__init__(child=child, **kwargs)
+        def traverse(self):
+            yield self
+            for item in self.child.traverse():
                 yield item
 
 
-class _splitnode(object):
-    """ This class is deprecated.
+    class _primarynode(object):
+        """ This class is deprecated.
 
-    """
-    class __metaclass__(type):
-        def __instancecheck__(cls, instance):
-            return isinstance(instance, (dockitem, docktabs, docksplit))
-        def __call__(cls, item):
-            if isinstance(item, basestring):
-                return dockitem(item)
-            msg = "cannot coerce '%s' to a 'docksplit' child"
-            raise TypeError(msg % type(item).__name__)
-
-
-class docksplit(Atom):
-    """ This class is deprecated. Use SplitLayout instead.
-
-    """
-    orientation = Enum('horizontal', 'vertical')
-    sizes = List(int)
-    children = List(Coerced(_splitnode))
-    def __init__(self, *children, **kwargs):
-        super(docksplit, self).__init__(children=list(children), **kwargs)
-    def traverse(self):
-        yield self
-        for child in self.children:
-            for item in child.traverse():
-                yield item
+        """
+        class __metaclass__(type):
+            def __instancecheck__(cls, instance):
+                return isinstance(instance, (type(None), dockarea, dockitem))
+            def __call__(cls, item):
+                if isinstance(item, basestring):
+                    return dockitem(item)
+                if isinstance(item, (docksplit, docktabs)):
+                    return dockarea(item)
+                msg = "cannot coerce '%s' to a primary 'docklayout' child"
+                raise TypeError(msg % type(item).__name__)
 
 
-def hdocksplit(*args, **kwargs):
-    """ This function is deprecated.
+    class _secondarynode(object):
+        """ This class is deprecated.
 
-    """
-    kwargs.setdefault('orientation', 'horizontal')
-    return docksplit(*args, **kwargs)
-
-
-def vdocksplit(*args, **kwargs):
-    """ This function is deprecated.
-
-    """
-    kwargs.setdefault('orientation', 'vertical')
-    return docksplit(*args, **kwargs)
-
-
-class _areanode(object):
-    """ This class is deprecated.
-
-    """
-    class __metaclass__(type):
-        def __instancecheck__(cls, instance):
-            return isinstance(instance, (dockitem, docktabs, docksplit))
-        def __call__(cls, item):
-            if isinstance(item, basestring):
-                return dockitem(item)
-            msg = "cannot coerce '%s' to a 'dockarea' child"
-            raise TypeError(msg % type(item).__name__)
+        """
+        class __metaclass__(type):
+            def __instancecheck__(cls, instance):
+                return isinstance(instance, (dockarea, dockitem))
+            def __call__(cls, item):
+                if isinstance(item, basestring):
+                    return dockitem(item)
+                if isinstance(item, (docksplit, docktabs)):
+                    return dockarea(item)
+                msg = "cannot coerce '%s' to a secondary 'docklayout' child"
+                raise TypeError(msg % type(item).__name__)
 
 
-class dockarea(Atom):
-    """ This class is deprecated. Use LayoutArea instead.
+    class docklayout(Atom):
+        """ This class is deprecated. Use DockLayout instead.
 
-    """
-    geometry = Coerced(Rect, (-1, -1, -1, -1), coercer=_coerce_rect)
-    maximized = Bool(False)
-    maximized_item = Unicode()
-    linked = Bool(False)
-    child = Coerced(_areanode)
-    def __init__(self, child, **kwargs):
-        super(dockarea, self).__init__(child=child, **kwargs)
-    def traverse(self):
-        yield self
-        for item in self.child.traverse():
-            yield item
-
-
-class _primarynode(object):
-    """ This class is deprecated.
-
-    """
-    class __metaclass__(type):
-        def __instancecheck__(cls, instance):
-            return isinstance(instance, (type(None), dockarea, dockitem))
-        def __call__(cls, item):
-            if isinstance(item, basestring):
-                return dockitem(item)
-            if isinstance(item, (docksplit, docktabs)):
-                return dockarea(item)
-            msg = "cannot coerce '%s' to a primary 'docklayout' child"
-            raise TypeError(msg % type(item).__name__)
-
-
-class _secondarynode(object):
-    """ This class is deprecated.
-
-    """
-    class __metaclass__(type):
-        def __instancecheck__(cls, instance):
-            return isinstance(instance, (dockarea, dockitem))
-        def __call__(cls, item):
-            if isinstance(item, basestring):
-                return dockitem(item)
-            if isinstance(item, (docksplit, docktabs)):
-                return dockarea(item)
-            msg = "cannot coerce '%s' to a secondary 'docklayout' child"
-            raise TypeError(msg % type(item).__name__)
-
-
-class docklayout(Atom):
-    """ This class is deprecated. Use DockLayout instead.
-
-    """
-    primary = Coerced(_primarynode)
-    secondary = List(Coerced(_secondarynode))
-    def __init__(self, primary, *secondary, **kwargs):
-        sup = super(docklayout, self)
-        sup.__init__(primary=primary, secondary=list(secondary), **kwargs)
-    def traverse(self):
-        yield self
-        if self.primary is not None:
-            for item in self.primary.traverse():
-                yield item
-        for secondary in self.secondary:
-            for item in secondary.traverse():
-                yield item
+        """
+        primary = Coerced(_primarynode)
+        secondary = List(Coerced(_secondarynode))
+        def __init__(self, primary, *secondary, **kwargs):
+            sup = super(docklayout, self)
+            sup.__init__(primary=primary, secondary=list(secondary), **kwargs)
+        def traverse(self):
+            yield self
+            if self.primary is not None:
+                for item in self.primary.traverse():
+                    yield item
+            for secondary in self.secondary:
+                for item in secondary.traverse():
+                    yield item
