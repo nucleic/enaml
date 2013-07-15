@@ -790,6 +790,9 @@ def _plug_border_ex(area, frame, dock_bar_pos):
     """ Plug the frame into the specified dock bar.
 
     """
+    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+        return False
+
     containers = []
     if isinstance(frame, QDockWindow):
         temp_area = frame.dockArea()
@@ -802,34 +805,35 @@ def _plug_border_ex(area, frame, dock_bar_pos):
         container.unfloat()
         container.showTitleBar()
         area.addToDockBar(container, dock_bar_pos)
+    return True
 
 
 def _plug_border_ex_north(area, widget, frame, guide):
     """ Plug the frame into the north dock bar.
 
     """
-    _plug_border_ex(area, frame, QDockBar.North)
+    return _plug_border_ex(area, frame, QDockBar.North)
 
 
 def _plug_border_ex_east(area, widget, frame, guide):
     """ Plug the frame into the east dock bar.
 
     """
-    _plug_border_ex(area, frame, QDockBar.East)
+    return _plug_border_ex(area, frame, QDockBar.East)
 
 
 def _plug_border_ex_south(area, widget, frame, guide):
     """ Plug the frame into the south dock bar.
 
     """
-    _plug_border_ex(area, frame, QDockBar.South)
+    return _plug_border_ex(area, frame, QDockBar.South)
 
 
 def _plug_border_ex_west(area, widget, frame, guide):
     """ Plug the frame into the west dock bar.
 
     """
-    _plug_border_ex(area, frame, QDockBar.West)
+    return _plug_border_ex(area, frame, QDockBar.West)
 
 
 _PLUG_HANDLERS = [
