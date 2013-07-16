@@ -120,7 +120,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         self.widget.removeEventFilter(self.dock_filter)
         del self.dock_filter
-        self.manager.clear_items()
+        self.manager.destroy()
         super(QtDockArea, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -197,6 +197,12 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
             from enaml.layout.dock_layout import convert_to_new_docklayout
             layout = convert_to_new_docklayout(layout)
         self.manager.apply_layout(layout)
+
+    def update_layout(self, ops):
+        """ Update the layout from a list of layout operations.
+
+        """
+        self.manager.update_layout(ops)
 
     def apply_layout_op(self, op, direction, *item_names):
         """ Apply the layout operation to the underlying widget

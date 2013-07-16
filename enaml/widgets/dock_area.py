@@ -12,7 +12,9 @@ from atom.api import (
 )
 
 from enaml.core.declarative import d_
-from enaml.layout.dock_layout import DockLayout, DockLayoutValidator
+from enaml.layout.dock_layout import (
+    DockLayout, DockLayoutValidator, DockLayoutOp
+)
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .dock_item import DockItem
@@ -65,6 +67,9 @@ class ProxyDockArea(ProxyConstraintsWidget):
         raise NotImplementedError
 
     def apply_layout(self, layout):
+        raise NotImplementedError
+
+    def update_layout(self, ops):
         raise NotImplementedError
 
     if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
@@ -153,6 +158,22 @@ class DockArea(ConstraintsWidget):
             DockLayoutValidator(available)(layout)
         if self.proxy_is_active:
             return self.proxy.apply_layout(layout)
+
+    def update_layout(self, ops):
+        """ Update the layout configuration using layout operations.
+
+        Paramters
+        ---------
+        ops : DockLayoutOp or iterable
+            A single DockLayoutOp instance or an iterable of the same.
+            The operations will be executed in order. If a given op is
+            not valid for the current layout state, it will be skipped.
+
+        """
+        if isinstance(ops, DockLayoutOp):
+            ops = [ops]
+        if self.proxy_is_active:
+            self.proxy.update_layout(ops)
 
     if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
 
