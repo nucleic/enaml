@@ -487,6 +487,9 @@ class DockLayoutValidator(NodeVisitor):
             self.visit(item)
 
 
+#------------------------------------------------------------------------------
+# Dock Layout Operations
+#------------------------------------------------------------------------------
 class DockLayoutOp(Atom):
     """ A sentinel base class for defining dock layout operations.
 
@@ -497,9 +500,27 @@ class DockLayoutOp(Atom):
 class InsertItem(DockLayoutOp):
     """ A layout operation which inserts an item into a layout.
 
-    This layout operation will insert a splitter handle between the
-    item and the target according to the given direction. The target
-    may not exist in a dock bar.
+    This operation will remove an item from the current layout and
+    insert it next to a target item. If the item does not exist, the
+    operation is a no-op.
+
+    If the target -
+
+    - is a normally docked item
+        The item will be inserted as a new split item.
+
+    - is docked in a tab group
+        The item will be inserted as a neighbor of the tab group.
+
+    - is docked in a dock bar
+        The item will be appended to the dock bar.
+
+    - is a floating dock item
+        A new dock area will be created and the item will be inserted
+        as a new split item.
+
+    - does not exist
+        The item is inserted into the border of the primary dock area.
 
     """
     #: The name of the dock item to insert into the layout.
@@ -508,58 +529,118 @@ class InsertItem(DockLayoutOp):
     #: The name of the dock item to use as the target location.
     target = Unicode()
 
-    #: The direction to insert the item.
-    direction = Enum('left', 'top', 'right', 'bottom')
+    #: The position relative to the target at which to insert the item.
+    position = Enum('left', 'top', 'right', 'bottom')
 
 
-class InsertBorderItem(InsertItem):
-    """ A layout operation which inserts an item into a layout.
+class InsertBorderItem(DockLayoutOp):
+    """ A layout operation which inserts an item into an area border.
 
-    This is a specialization of InsertItem which inserts the item into
-    the border of the dock area. The 'target' attribute refers to a
-    dock item which exist in the dock area of interest. An empty target
-    refers to the primary dock area.
+    This operation will remove an item from the current layout and
+    insert it into the border of a dock area. If the item does not
+    exist, the operation is a no-op.
 
-    """
-    pass
+    If the target -
 
+    - is a normally docked item
+        The item is inserted into the border of the dock area containing
+        the target.
 
-class InsertDockBarItem(InsertItem):
-    """ A layout operation which inserts an item into a layout.
+    - is docked in a tab group
+        The item is inserted into the border of the dock area containing
+        the tab group.
 
-    This is a specialization of InsertItem which inserts the item into
-    the dock bar of the dock area. The 'target' attribute refers to a
-    dock item which exist in the dock area of interest. An empty target
-    refers to the primary dock area.
+    - is docked in a dock bar
+        The item is inserted into the border of the dock area containing
+        the dock bar.
 
-    """
-    #: The index at which to insert the dock bar item.
-    index = Int(-1)
+    - is a floating dock item
+        A new dock area will be created and the item will be inserted
+        into the border of the new dock area.
 
-
-class CreateTabs(DockLayoutOp):
-    """ A layout operation which creates a tab layout from two items.
-
-    This layout operation will replace the target with a tab layout
-    consisting of the target and the item. The target may not exist
-    in a tab group or a dock bar.
+    - does not exist
+        The item is inserted into the border of the primary dock area.
 
     """
-    #: The name of the dock item to tabify onto the target.
+    #: The name of the dock item to insert into the layout.
     item = Unicode()
 
     #: The name of the dock item to use as the target location.
     target = Unicode()
 
-    #: The position of the tabs for the newly created tab group.
-    tab_position = Enum('top', 'bottom', 'left', 'right')
+    #: The border position at which to insert the item.
+    position = Enum('left', 'top', 'right', 'bottom')
+
+
+class InsertDockBarItem(DockLayoutOp):
+    """ A layout operation which inserts an item into a dock bar.
+
+    This operation will remove an item from the current layout and
+    insert it into a dock bar in a dock area. If the item does not
+    exist, the operation is a no-op.
+
+    If the target -
+
+    - is a normally docked item
+        The item is inserted into the dock bar of the dock area
+        containing the target.
+
+    - is docked in a tab group
+        The item is inserted into the dock bar of the dock area
+        containing the tab group.
+
+    - is docked in a dock bar
+        The item is inserted into the dock bar of the dock area
+        containing the dock bar.
+
+    - is a floating dock item
+        A new dock area will be created and the item will be inserted
+        into the dock bar of the new dock area.
+
+    - does not exist
+        The item is inserted into the dock bar of the primary dock
+        area.
+
+    """
+    #: The name of the dock item to insert into the layout.
+    item = Unicode()
+
+    #: The name of the dock item to use as the target location.
+    target = Unicode()
+
+    #: The dock bar position at which to insert the item.
+    position = Enum('right', 'left', 'bottom', 'top')
+
+    #: The index at which to insert the dock bar item.
+    index = Int(-1)
 
 
 class InsertTab(DockLayoutOp):
     """ A layout operation which inserts a tab into a tab group.
 
-    This layout operation will insert the dock item into the tab group
-    specified by the target, which is an existing item in a tab group.
+    This operation will remove an item from the current layout and
+    insert it into a tab group in a dock area. If the item does not
+    exist, the operation is a no-op.
+
+    If the target -
+
+    - is a normally docked item
+        The target and item will be merged into a new tab group
+        using the default tab position.
+
+    - is docked in a tab group
+        The item will be inserted into the tab group.
+
+    - is docked in a dock bar
+        The item will be appended to the dock bar.
+
+    - is a floating dock item
+        A new dock area will be created and the target and item will
+        be merged into a new tab group.
+
+    - does not exist
+        The item is inserted into the left border of the primary dock
+        area.
 
     """
     #: The name of the dock item to insert into the tab group.
@@ -571,8 +652,23 @@ class InsertTab(DockLayoutOp):
     #: The index at which to insert the dock item.
     index = Int(-1)
 
+    #: The position of the tabs for a newly created tab group.
+    tab_position = Enum('default', 'top', 'bottom', 'left', 'right')
 
-class CreateArea(DockLayoutOp):
+
+class CreateFloatingItem(DockLayoutOp):
+    """ A layout operation which creates a floating dock item.
+
+    This operation will remove an item from the current layout and
+    insert convert it into a floating item. If the item does not
+    exist, the operation is a no-op.
+
+    """
+    #: The item layout to use when configuring the floating item.
+    item = Coerced(ItemLayout)
+
+
+class CreateFloatingArea(DockLayoutOp):
     """ A layout operation which creates a new floating dock area.
 
     This layout operation will create a new floating dock area using
@@ -580,21 +676,18 @@ class CreateArea(DockLayoutOp):
 
     """
     #: The area layout to use when building the new dock area.
-    layout = Coerced(AreaLayout)
+    area = Coerced(AreaLayout)
 
 
 class RemoveItem(DockLayoutOp):
-    """
+    """ A layout operation which will remove an item from the layout.
+
+    This layout operation will remove the dock item from the layout
+    and hide it. It can be added back to layout later with one of the
+    other layout operations.
 
     """
-    item = Unicode()
-
-
-# xxx name of this class? Unicode or Coerced(ItemLayout)?
-class UndockItem(DockLayoutOp):
-    """
-
-    """
+    #: The name of the dock item to remove from the layout.
     item = Unicode()
 
 
