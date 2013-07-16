@@ -96,6 +96,7 @@ def plug_frame(area, widget, frame, guide):
 
     frame : QDockContainer or QDockWindow
         The dock container or window to be plugged into the area.
+        This should already be unplugged from any other layout.
 
     guide : QGuideRose.Guide
         The guide rose guide which indicates how to perform
@@ -532,7 +533,8 @@ def _splitter_insert_frame(area, splitter, index, frame):
             splitter.insertWidget(index, widget)
             widget.show()
     else:
-        frame.unfloat()
+        if frame.isWindow():
+            frame.unfloat()
         splitter.insertWidget(index, frame)
         frame.show()
 
@@ -659,7 +661,8 @@ def _tabs_add_frame(area, tabs, frame):
     else:
         containers.append(frame)
     for container in containers:
-        container.unfloat()
+        if container.isWindow():
+            container.unfloat()
         container.hideTitleBar()
         tabs.addTab(container, container.icon(), container.title())
         container.show()
@@ -781,7 +784,8 @@ def _plug_area_center(area, widget, frame, guide):
         _merge_dock_bars(area, temp_area)
         area.setCentralWidget(temp_area.centralWidget())
     else:
-        frame.unfloat()
+        if frame.isWindow():
+            frame.unfloat()
         area.setCentralWidget(frame)
     return True
 
@@ -802,7 +806,8 @@ def _plug_border_ex(area, frame, dock_bar_pos):
     else:
         containers.append(frame)
     for container in containers:
-        container.unfloat()
+        if container.isWindow():
+            container.unfloat()
         container.showTitleBar()
         area.addToDockBar(container, dock_bar_pos)
     return True
