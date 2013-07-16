@@ -47,6 +47,7 @@ else:
         VSplitLayout('Item 4', 'Item 2'),
         TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
     )
+    from enaml.layout.dock_layout import *
 
 
 enamldef MyDockArea(DockArea):
@@ -119,7 +120,16 @@ enamldef MyItem(DockItem): owner:
         Field: text = owner.name
 
 
+def printer(area):
+    from enaml.qt.QtGui import QApplication
+    for idx, w in enumerate(QApplication.allWidgets()):
+        print idx, w, w.objectName()
+    #import pdb; pdb.set_trace()
+
 enamldef Main(Window):
+    closed ::
+        from enaml.application import timed_call
+        timed_call(100, printer, area)
     Container:
         attr stored = None
         padding = (0, 0, 0, 10)
@@ -145,14 +155,11 @@ enamldef Main(Window):
                     name = 'Item %d' % (len(area.children) + 1)
                     MyItem(area, name=name)
                     names.append(name)
-                layout = area.save_layout()
-                for parent, node in layout.traverse():
-                    if isinstance(node, ItemLayout) and node.name == 'Item 1':
-                        hsplit = HSplitLayout('Item 1', *names)
-                        idx = parent.items.index(node)
-                        parent.items[idx] = hsplit
-                        break
-                area.apply_layout(layout)
+                ops = []
+                for name in names:
+                    op = InsertTab(item=name, target='Item 1', index=0, tab_position='bottom')
+                    ops.append(op)
+                area.update_layout(ops)
         ObjectCombo: style_c:
             items = STYLES.keys()
             selected = 'VS 2010'
