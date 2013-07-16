@@ -497,25 +497,58 @@ class DockLayoutOp(Atom):
 class InsertItem(DockLayoutOp):
     """ A layout operation which inserts an item into a layout.
 
+    This layout operation will insert a splitter handle between the
+    item and the target according to the given direction. The target
+    may not exist in a dock bar.
+
     """
-    #: The name of the item to insert into the layout.
+    #: The name of the dock item to insert into the layout.
     item = Unicode()
 
-    #: The name of the item to use as the target location.
+    #: The name of the dock item to use as the target location.
     target = Unicode()
 
     #: The direction to insert the item.
     direction = Enum('left', 'top', 'right', 'bottom')
 
 
-class TabifyItems(DockLayoutOp):
-    """ A layout operation which creates a tab group from two items.
+class InsertBorderItem(InsertItem):
+    """ A layout operation which inserts an item into a layout.
+
+    This is a specialization of InsertItem which inserts the item into
+    the border of the dock area. The 'target' attribute refers to a
+    dock item which exist in the dock area of interest. An empty target
+    refers to the primary dock area.
 
     """
-    #: The name of item to tabify onto the target.
+    pass
+
+
+class InsertDockBarItem(InsertItem):
+    """ A layout operation which inserts an item into a layout.
+
+    This is a specialization of InsertItem which inserts the item into
+    the dock bar of the dock area. The 'target' attribute refers to a
+    dock item which exist in the dock area of interest. An empty target
+    refers to the primary dock area.
+
+    """
+    #: The index at which to insert the dock bar item.
+    index = Int(-1)
+
+
+class CreateTabs(DockLayoutOp):
+    """ A layout operation which creates a tab layout from two items.
+
+    This layout operation will replace the target with a tab layout
+    consisting of the target and the item. The target may not exist
+    in a tab group or a dock bar.
+
+    """
+    #: The name of the dock item to tabify onto the target.
     item = Unicode()
 
-    #: The name of the item to use as the target location.
+    #: The name of the dock item to use as the target location.
     target = Unicode()
 
     #: The position of the tabs for the newly created tab group.
@@ -525,7 +558,45 @@ class TabifyItems(DockLayoutOp):
 class InsertTab(DockLayoutOp):
     """ A layout operation which inserts a tab into a tab group.
 
+    This layout operation will insert the dock item into the tab group
+    specified by the target, which is an existing item in a tab group.
+
     """
+    #: The name of the dock item to insert into the tab group.
+    item = Unicode()
+
+    #: The name of an existing dock item in the tab group of interest.
+    target = Unicode()
+
+    #: The index at which to insert the dock item.
+    index = Int(-1)
+
+
+class CreateArea(DockLayoutOp):
+    """ A layout operation which creates a new floating dock area.
+
+    This layout operation will create a new floating dock area using
+    the given area layout specification.
+
+    """
+    #: The area layout to use when building the new dock area.
+    layout = Coerced(AreaLayout)
+
+
+class RemoveItem(DockLayoutOp):
+    """
+
+    """
+    item = Unicode()
+
+
+# xxx name of this class? Unicode or Coerced(ItemLayout)?
+class UndockItem(DockLayoutOp):
+    """
+
+    """
+    item = Unicode()
+
 
 #------------------------------------------------------------------------------
 # Deprecated Layout Classes
