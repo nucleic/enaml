@@ -226,7 +226,7 @@ class QDockArea(QFrame):
             layout.setCurrentIndex(1)
             widget.show()
 
-    def addToDockBar(self, container, position):
+    def addToDockBar(self, container, position, index=-1):
         """ Add a container to the dock bar at the given position.
 
         Parameters
@@ -240,8 +240,12 @@ class QDockArea(QFrame):
             The enum value specifying the dock bar to which the
             container should be added.
 
+        index : int, optional
+            The index at which to insert the item. The default is -1
+            and will append the item to the dock bar.
+
         """
-        self._dock_bar_manager.addContainer(container, position)
+        self._dock_bar_manager.addContainer(container, position, index)
 
     def removeFromDockBar(self, container):
         """ Remove a container previously added to a dock bar.

@@ -683,7 +683,7 @@ class QDockBarManager(QObject):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def addContainer(self, container, position):
+    def addContainer(self, container, position, index=-1):
         """ Add a container to the specified dock bar.
 
         Parameters
@@ -697,6 +697,10 @@ class QDockBarManager(QObject):
             The position of the dock bar to which the container should
             be added.
 
+        index : int, optional
+            The index at which to insert the item. The default is -1
+            and will append the item to the dock bar.
+
         """
         assert isinstance(position, QDockBar.Position)
         self.removeContainer(container)
@@ -709,7 +713,7 @@ class QDockBarManager(QObject):
         button.toggled.connect(self._onButtonToggled)
 
         dock_bar = self._getDockBar(position)
-        dock_bar.addButton(button)
+        dock_bar.insertButton(index, button)
 
         item = QDockBarItem(self.parent().centralPane(), position=position)
         item.hide()
