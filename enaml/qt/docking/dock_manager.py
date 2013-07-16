@@ -14,8 +14,9 @@ from atom.api import Atom, Int, Typed, List, atomref
 from enaml.layout.dock_layout import (
     DockLayout, AreaLayout, DockBarLayout, ItemLayout
 )
+from enaml.nodevisitor import NodeVisitor
 
-from enaml.qt.QtCore import QPoint, QRect, QObject
+from enaml.qt.QtCore import Qt, QPoint, QRect, QObject
 from enaml.qt.QtGui import QApplication
 
 from .dock_overlay import DockOverlay
@@ -89,6 +90,234 @@ class DockContainerMonitor(QObject):
                 handler.addFrame(container)
             else:
                 handler.removeFrame(container)
+
+
+class LayoutHandler(NodeVisitor):
+
+    BAR_POSITIONS = {
+        'top': QDockBar.North,
+        'right': QDockBar.East,
+        'bottom': QDockBar.South,
+        'left': QDockBar.West,
+    }
+
+    BORDER_GUIDES = {
+        'top': QGuideRose.Guide.BorderNorth,
+        'right': QGuideRose.Guide.BorderEast,
+        'bottom': QGuideRose.Guide.BorderSouth,
+        'left': QGuideRose.Guide.BorderWest,
+    }
+
+    ITEM_GUIDES = {
+        'top': QGuideRose.Guide.CompassNorth,
+        'right': QGuideRose.Guide.CompassEast,
+        'bottom': QGuideRose.Guide.CompassSouth,
+        'left': QGuideRose.Guide.CompassWest,
+    }
+
+    TAB_GUIDES = {
+        'default': QGuideRose.Guide.CompassCenter,
+        'top': QGuideRose.Guide.CompassExNorth,
+        'right': QGuideRose.Guide.CompassExEast,
+        'bottom': QGuideRose.Guide.CompassExSouth,
+        'left': QGuideRose.Guide.CompassExWest,
+    }
+
+    def __init__(self, manager):
+        containers = manager._dock_containers()
+        available = dict((c.objectName(), c) for c in containers)
+        self._manager = manager
+        self._available = available
+        self._widget_builder = LayoutWidgetBuilder(available)
+
+    #--------------------------------------------------------------------------
+    # DockLayoutOp Handlers
+    #--------------------------------------------------------------------------
+    def visit_InsertItem(self, op):
+        """ Handle the InsertItem dock layout operation.
+
+        """
+        item = self._available.get(op.item)
+        if item is None:
+            return
+        target = self._available.get(op.target)
+        if target is None:
+            self.visit_InsertBorderItem(op)  # duck typing
+            return
+
+        if not item.isWindow():
+            item.unplug()
+
+        area = target.parentDockArea()
+        bar_position = area.dockBarPosition(target)
+        if bar_position is not None:
+            if item.isWindow():
+                item.unfloat()
+            item.showTitleBar()
+            area.addToDockBar(item, bar_position)
+            return
+
+        with self._manager._dock_context(target):
+            area = target.parentDockArea()
+            widget = target.parentDockTabWidget() or target
+            plug_frame(area, widget, item, self.ITEM_GUIDES[op.position])
+
+    def visit_InsertBorderItem(self, op):
+        """ Handle the InsertBorderItem dock layout operation.
+
+        """
+        item = self._available.get(op.item)
+        if item is None:
+            return
+
+        if not item.isWindow():
+            item.unplug()
+
+        guide = self.BORDER_GUIDES[op.position]
+        target = self._available.get(op.target)
+        if target is None:
+            area = self._manager.dock_area
+            if area.centralWidget() is None:
+                guide = QGuideRose.Guide.AreaCenter
+            plug_frame(area, None, item, guide)
+        else:
+            with self._manager._dock_context(target):
+                area = target.parentDockArea()
+                if area.centralWidget() is None:
+                    guide = QGuideRose.Guide.AreaCenter
+                plug_frame(area, None, item, guide)
+
+    def visit_InsertDockBarItem(self, op):
+        """ Handle the InsertDockBarItem dock layout operation.
+
+        """
+        item = self._available.get(op.item)
+        if item is None:
+            return
+
+        if item.isWindow():
+            item.unfloat()
+        else:
+            item.unplug()
+        item.showTitleBar()
+
+        position = self.BAR_POSITIONS[op.position]
+        target = self._available.get(op.target)
+        if target is None:
+            area = self._manager.dock_area
+            area.addToDockBar(item, position, op.index)
+        else:
+            with self._manager._dock_context(target):
+                area = target.parentDockArea()
+                area.addToDockBar(item, position, op.index)
+
+    def visit_InsertTab(self, op):
+        """ Handle the InsertTab dock layout operation.
+
+        """
+        item = self._available.get(op.item)
+        if item is None:
+            return
+
+        if not item.isWindow():
+            item.unplug()
+
+        target = self._available.get(op.target)
+        if target is None:
+            area = self._manager.dock_area
+            if area.centralWidget() is None:
+                guide = QGuideRose.Guide.AreaCenter
+            else:
+                guide = QGuideRose.Guide.BorderWest
+            plug_frame(area, None, item, guide)
+            return
+
+        area = target.parentDockArea()
+        bar_position = area.dockBarPosition(target)
+        if bar_position is not None:
+            if item.isWindow():
+                item.unfloat()
+            item.showTitleBar()
+            area.addToDockBar(item, bar_position)
+            return
+
+        with self._manager._dock_context(target):
+            area = target.parentDockArea()
+            widget = target.parentDockTabWidget()
+            if widget is None:
+                widget = target
+                guide = self.TAB_GUIDES[op.tab_position]
+            else:
+                guide = QGuideRose.Guide.CompassCenter
+            plug_frame(area, widget, item, guide)
+            tabs = target.parentDockTabWidget()
+            index = tabs.indexOf(item)
+            tabs.tabBar().moveTab(index, op.index)
+
+    def visit_CreateFloatingItem(self, op):
+        """ Handle the CreateFloatingItem dock layout op.
+
+        """
+        layout = op.item
+        container = self._available.get(layout.name)
+        if container is None:
+            return
+        if not container.isWindow():
+            container.unplug()
+            container.float()
+        self.init_floating_frame(container, layout)
+
+    def visit_CreateFloatingArea(self, op):
+        manager = self._manager
+        frame = QDockWindow.create(manager, manager._dock_area)
+        self.init_dock_area(frame.dockArea(), op.area)
+        manager._dock_frames.append(frame)
+        manager._proximity_handler.addFrame(frame)
+        self.init_floating_frame(frame, op.area)
+
+    def visit_RemoveItem(self, op):
+        container = self._available.get(op.item)
+        if container is None:
+            return
+        if container.isWindow():
+            container.unfloat()
+        else:
+            container.unplug()
+        container.hide()
+
+    def default_visit(self, node):
+        pass
+
+    #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def init_dock_area(self, area, layout):
+        available = self._available
+        if layout.item is not None:
+            area.setCentralWidget(self._widget_builder(layout.item))
+        for bar_layout in layout.dock_bars:
+            position = self.BAR_POSITIONS[bar_layout.position]
+            for item in bar_layout.items:
+                container = available.get(item.name)
+                if container is not None:
+                    area.addToDockBar(container, position)
+        for item in layout.find_all(ItemLayout):
+            if item.maximized:
+                container = available.get(item.name)
+                if container is not None:
+                    container.showMaximized()
+                    break
+
+    def init_floating_frame(self, frame, layout):
+        rect = QRect(*layout.geometry)
+        if rect.isValid():
+            rect = ensure_on_screen(rect)
+            frame.setGeometry(rect)
+        frame.show()
+        if layout.linked:
+            frame.setLinked(True)
+        if layout.maximized:
+            frame.showMaximized()
 
 
 class DockManager(Atom):
@@ -193,20 +422,31 @@ class DockManager(Atom):
             container.hide()
             self._free_container(container)
 
-    def clear_items(self):
-        """ Clear the dock items from the dock manager.
+    def destroy(self):
+        """ Destroy the dock manager.
 
-        This method will hide and unparent all of the dock items that
-        were previously added to the dock manager.
+        This method will free all of the resources held by the dock
+        manager. The primary dock area and dock items will not be
+        destroyed.
 
         """
-        for frame in self._dock_frames[:]:
+        for frame in self._dock_frames:
             if isinstance(frame, QDockContainer):
-                self._free_container(frame)
-            else:
-                self._free_window(frame)
-        del self._dock_frames
+                frame.setDockItem(None)
+                frame.setParent(None, Qt.Widget)
+                frame.hide()
+        for frame in self._dock_frames:
+            if isinstance(frame, QDockWindow):
+                frame.setParent(None, Qt.Widget)
+                frame.hide()
         self._dock_area.setCentralWidget(None)
+        self._dock_area.setMaximizedWidget(None)
+        del self._dock_area
+        del self._dock_frames
+        del self._dock_items
+        del self._proximity_handler
+        del self._container_monitor
+        del self._overlay
 
     def save_layout(self):
         """ Get the current layout of the dock area.
@@ -346,6 +586,11 @@ class DockManager(Atom):
                 frame.setLinked(True)
             if item.maximized:
                 frame.showMaximized()
+
+    def update_layout(self, ops):
+        handler = LayoutHandler(self)
+        for op in ops:
+            handler(op)
 
     def apply_layout_op(self, op, direction, *item_names):
         """ This method is deprecated.
