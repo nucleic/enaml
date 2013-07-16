@@ -171,6 +171,17 @@ class QtContainer(QtFrame, ProxyContainer):
             self._refresh = self._build_refresher(manager)
             self._update_sizes()
 
+    def destroy(self):
+        """ An overridden destructor method.
+
+        This method breaks the internal reference cycles maintained
+        by the container.
+
+        """
+        del self._layout_table
+        del self._refresh
+        super(QtContainer, self).destroy()
+
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
