@@ -7,11 +7,8 @@
 #------------------------------------------------------------------------------
 import os
 
-from enaml.layout.dock_layout import TabLayout, SplitLayout, ItemLayout
-from enaml.nodevisitor import NodeVisitor
-
 from enaml.qt.QtCore import Qt, QEvent
-from enaml.qt.QtGui import QApplication, QTabWidget
+from enaml.qt.QtGui import QApplication
 
 from .event_types import DockAreaContentsChanged
 from .q_dock_bar import QDockBar
@@ -19,28 +16,6 @@ from .q_dock_container import QDockContainer
 from .q_dock_splitter import QDockSplitter, QDockSplitterHandle
 from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_window import QDockWindow
-
-
-#: A mapping of qt orientation to layout orientation.
-ORIENTATION = {
-    Qt.Horizontal: 'horizontal',
-    Qt.Vertical: 'vertical',
-    'horizontal': Qt.Horizontal,
-    'vertical': Qt.Vertical,
-}
-
-
-#: A mapping of qt tab position to layout tab position.
-TAB_POSITION = {
-    QTabWidget.North: 'top',
-    QTabWidget.South: 'bottom',
-    QTabWidget.West: 'left',
-    QTabWidget.East: 'right',
-    'top': QTabWidget.North,
-    'bottom': QTabWidget.South,
-    'left': QTabWidget.West,
-    'right': QTabWidget.East,
-}
 
 
 #------------------------------------------------------------------------------
@@ -239,176 +214,6 @@ def layout_hit_test(area, pos):
         if dock_container.rect().contains(pt):
             if not dock_container.isHidden():  # hidden tab
                 return dock_container
-
-
-class LayoutWidgetBuilder(NodeVisitor):
-    """ A node visitor which builds a central layout widget.
-
-    This visitor supports ItemLayout, SplitLayout and TabLayout nodes.
-
-    """
-    def __init__(self, containers):
-        """ Initialize a LayoutWidgetBuilder.
-
-        Parameters
-        ----------
-        containers : dict
-            A dict mapping container name to container.
-
-        """
-        self._containers = containers.copy()
-
-    def setup(self, node):
-        """ Setup the the layout builder.
-
-        """
-        self._stack = []
-
-    def result(self, node):
-        """ Get the results of the visitor.
-
-        This returns the last item pushed onto the stack.
-
-        """
-        return self._stack[-1]
-
-    def teardown(self, node):
-        """ Teardown the layout builder.
-
-        """
-        del self._stack
-
-    def visit_ItemLayout(self, node):
-        """ Visit an ItemLayout node.
-
-        This visitor pushes the named container onto the stack. If the
-        name is not valid, None is pushed instead.
-
-        """
-        self._stack.append(self._containers.get(node.name))
-
-    def visit_TabLayout(self, node):
-        """ Visit a TabLayout node.
-
-        This visitor visits its children, pops them from the stack, and
-        adds them to a tab widget. The completed tab widget is pushed
-        onto the stack as the return value. If there are no children,
-        None is pushed. If there is a single child, it is pushed.
-
-        """
-        children = []
-        for item in node.items:
-            self.visit(item)
-            children.append(self._stack.pop())
-        children = filter(None, children)
-        if len(children) == 0:
-            self._stack.append(None)
-            return
-        if len(children) == 1:
-            self._stack.append(children[0])
-            return
-        tab_widget = QDockTabWidget()
-        tab_widget.setTabPosition(TAB_POSITION[node.tab_position])
-        for child in children:
-            child.hideTitleBar()
-            tab_widget.addTab(child, child.icon(), child.title())
-        tab_widget.setCurrentIndex(node.index)
-        self._stack.append(tab_widget)
-
-    def visit_SplitLayout(self, node):
-        """ Visit a SplitLayout node.
-
-        This visitor visits its children, pops them from the stack, and
-        adds them to a split widget. The completed tab widget is pushed
-        onto the stack as the return value. If there are no children,
-        None is pushed. If there is a single child, it is pushed.
-
-        """
-        children = []
-        for item in node.items:
-            self.visit(item)
-            children.append(self._stack.pop())
-        children = filter(None, children)
-        if len(children) == 0:
-            self._stack.append(None)
-            return
-        if len(children) == 1:
-            self._stack.append(children[0])
-            return
-        splitter = QDockSplitter(ORIENTATION[node.orientation])
-        for child in children:
-            splitter.addWidget(child)
-        sizes = node.sizes
-        if sizes and len(sizes) >= len(children):
-            splitter.setSizes(sizes)
-        self._stack.append(splitter)
-
-
-class LayoutWidgetSaver(NodeVisitor):
-    """ A node visitor which builds a layout from a central widget.
-
-    """
-    def setup(self, node):
-        """ Setup the the layout saver.
-
-        """
-        self._stack = []
-
-    def result(self, node):
-        """ Get the results of the visitor.
-
-        This returns the last item pushed onto the stack.
-
-        """
-        return self._stack[-1]
-
-    def teardown(self, node):
-        """ Teardown the layout builder.
-
-        """
-        del self._stack
-
-    def visit_QDockContainer(self, widget):
-        """ Visit a QDockContainer node.
-
-        This visitor generates an ItemLayout for the container and
-        pushes it onto the stack.
-
-        """
-        layout = ItemLayout(widget.objectName())
-        self._stack.append(layout)
-
-    def visit_QDockTabWidget(self, widget):
-        """ Visit a QDockTabWidget node.
-
-        This visitor generates a TabLayout for the widget and pushes it
-        onto the stack.
-
-        """
-        children = []
-        for index in xrange(widget.count()):
-            self.visit(widget.widget(index))
-            children.append(self._stack.pop())
-        layout = TabLayout(*children)
-        layout.index = widget.currentIndex()
-        layout.tab_position = TAB_POSITION[widget.tabPosition()]
-        self._stack.append(layout)
-
-    def visit_QDockSplitter(self, widget):
-        """ Visit a QDockSplitter node.
-
-        This visitor generates a SplitLayout for the widget and pushes
-        it onto the stack.
-
-        """
-        children = []
-        for index in xrange(widget.count()):
-            self.visit(widget.widget(index))
-            children.append(self._stack.pop())
-        layout = SplitLayout(*children)
-        layout.orientation = ORIENTATION[widget.orientation()]
-        layout.sizes = widget.sizes()
-        self._stack.append(layout)
 
 
 #------------------------------------------------------------------------------
@@ -714,28 +519,28 @@ def _plug_compass_ex_north(area, widget, frame, guide):
     """ Create a north tab widget from the widget and frame.
 
     """
-    return _tabify_helper(area, widget, frame, QTabWidget.North)
+    return _tabify_helper(area, widget, frame, QDockTabWidget.North)
 
 
 def _plug_compass_ex_east(area, widget, frame, guide):
     """ Create a east tab widget from the widget and frame.
 
     """
-    return _tabify_helper(area, widget, frame, QTabWidget.East)
+    return _tabify_helper(area, widget, frame, QDockTabWidget.East)
 
 
 def _plug_compass_ex_south(area, widget, frame, guide):
     """ Create a south tab widget from the widget and frame.
 
     """
-    return _tabify_helper(area, widget, frame, QTabWidget.South)
+    return _tabify_helper(area, widget, frame, QDockTabWidget.South)
 
 
 def _plug_compass_ex_west(area, widget, frame, guide):
     """ Create a west tab widget from the widget and frame.
 
     """
-    return _tabify_helper(area, widget, frame, QTabWidget.West)
+    return _tabify_helper(area, widget, frame, QDockTabWidget.West)
 
 
 def _split_handle_helper(area, handle, frame):
