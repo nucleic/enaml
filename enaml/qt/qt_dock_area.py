@@ -203,9 +203,3 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         self.manager.update_layout(ops)
-
-    def apply_layout_op(self, op, direction, *item_names):
-        """ Apply the layout operation to the underlying widget
-
-        """
-        self.manager.apply_layout_op(op, direction, *item_names)
