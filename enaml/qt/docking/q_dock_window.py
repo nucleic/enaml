@@ -23,14 +23,6 @@ from .xbms import (
 )
 
 
-#: The maximum number of free windows to keep in the free list.
-FREE_WINDOWS_MAX = 10
-
-
-#: A free list of dock windows to help reduce flicker on window show.
-FREE_WINDOWS = []
-
-
 class QDockWindowButtons(QFrame):
     """ A custom QFrame which provides the buttons for a QDockWindow.
 
@@ -202,44 +194,6 @@ class QDockWindow(QDockFrame):
 
         #: Whether the window is inside it's close event.
         in_close_event = Bool(False)
-
-    @classmethod
-    def create(cls, manager, parent=None):
-        """ A classmethod to create a new QDockWindow.
-
-        This method will retrieve a window from the free list if one
-        is available. This can help to reduce flicker on window show.
-
-        Parameters
-        ----------
-        manager : DockManager
-            The dock manager which owns the dock window.
-
-        parent : QWidget or None
-            The parent of the dock window, or None.
-
-        """
-        if FREE_WINDOWS:
-            self = FREE_WINDOWS.pop()
-            self._manager = manager
-            self.setParent(parent, Qt.Tool | Qt.FramelessWindowHint)
-            self.setDockArea(QDockArea())
-            self.applyNormalState()
-            return self
-        return cls(manager, parent)
-
-    @classmethod
-    def free(cls, window):
-        """ A classmethod to free a QDockWindow.
-
-        This method can be called to return a dock window to the free
-        list if there is capacity. It is called by the dock manager at
-        the appropriate times.
-
-        """
-        if len(FREE_WINDOWS) < FREE_WINDOWS_MAX:
-            if window not in FREE_WINDOWS:
-                FREE_WINDOWS.append(window)
 
     def __init__(self, manager, parent=None):
         """ Initialize a QDockWindow.
