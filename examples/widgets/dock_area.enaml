@@ -16,9 +16,10 @@ key while dragging a tab.
 
 """
 import cPickle
-import os
 
-from enaml.layout.api import hbox, vbox, spacer
+from enaml.layout.api import (
+    HSplitLayout, VSplitLayout, TabLayout, InsertItem, hbox, vbox, spacer
+)
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
     ObjectCombo
@@ -33,25 +34,12 @@ STYLES = {
 }
 
 
-if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-    from enaml.layout.api import vdocksplit, hdocksplit, docktabs
-    THE_LAYOUT = hdocksplit(
-        vdocksplit('Item 1', 'Item 3', 'Item 5'),
-        vdocksplit('Item 4', 'Item 2'),
-        docktabs('Item 6', 'Item 7', 'Item 8', 'Item 9'),
-    )
-else:
-    from enaml.layout.api import ItemLayout, HSplitLayout, VSplitLayout, TabLayout, DockBarLayout, AreaLayout
-    THE_LAYOUT = HSplitLayout(
+enamldef MyDockArea(DockArea):
+    layout = HSplitLayout(
         VSplitLayout('Item 1', 'Item 3', 'Item 5'),
         VSplitLayout('Item 4', 'Item 2'),
         TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
     )
-    from enaml.layout.dock_layout import *
-
-
-enamldef MyDockArea(DockArea):
-    layout = THE_LAYOUT
     DockItem:
         name = 'Item 1'
         title = name
@@ -120,16 +108,7 @@ enamldef MyItem(DockItem): owner:
         Field: text = owner.name
 
 
-def printer(area):
-    from enaml.qt.QtGui import QApplication
-    for idx, w in enumerate(QApplication.allWidgets()):
-        print idx, w, w.objectName()
-    #import pdb; pdb.set_trace()
-
 enamldef Main(Window):
-    closed ::
-        from enaml.application import timed_call
-        timed_call(100, printer, area)
     Container:
         attr stored = None
         padding = (0, 0, 0, 10)
@@ -150,16 +129,11 @@ enamldef Main(Window):
         PushButton: add_b:
             text = 'Add Items'
             clicked ::
-                names = []
                 for _ in xrange(3):
                     name = 'Item %d' % (len(area.children) + 1)
                     MyItem(area, name=name)
-                    names.append(name)
-                ops = []
-                for name in names:
-                    op = InsertTab(item=name, target='Item 1', index=0, tab_position='bottom')
-                    ops.append(op)
-                area.update_layout(ops)
+                    op = InsertItem(item=name, target='Item 1')
+                    area.update_layout(op)
         ObjectCombo: style_c:
             items = STYLES.keys()
             selected = 'VS 2010'
