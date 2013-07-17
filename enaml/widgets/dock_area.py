@@ -72,11 +72,6 @@ class ProxyDockArea(ProxyConstraintsWidget):
     def update_layout(self, ops):
         raise NotImplementedError
 
-    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-
-        def apply_layout_op(self, op, direction, *item_names):
-            raise NotImplementedError
-
 
 class DockArea(ConstraintsWidget):
     """ A component which aranges dock item children.
@@ -172,6 +167,8 @@ class DockArea(ConstraintsWidget):
         """
         if isinstance(ops, DockLayoutOp):
             ops = [ops]
+        for op in ops:
+            assert isinstance(op, DockLayoutOp)
         if self.proxy_is_active:
             self.proxy.update_layout(ops)
 
@@ -183,8 +180,34 @@ class DockArea(ConstraintsWidget):
             """
             assert op in ('split_item', 'tabify_item', 'split_area')
             assert direction in ('left', 'right', 'top', 'bottom')
-            if self.proxy_is_active:
-                self.proxy.apply_layout_op(op, direction, *item_names)
+            if not self.proxy_is_active:
+                return
+
+            from enaml.layout.dock_layout import (
+                InsertItem, InsertBorderItem, InsertTab
+            )
+
+            ops = []
+            item_names = list(item_names)
+            if op == 'split_item':
+                target = item_names.pop(0)
+                for name in item_names:
+                    l_op = InsertItem(
+                        target=target, item=name, position=direction
+                    )
+                    ops.append(l_op)
+            elif op == 'split_area':
+                for name in item_names:
+                    l_op = InsertBorderItem(item=name, position=direction)
+                    ops.append(l_op)
+            else:
+                target = item_names.pop(0)
+                for name in item_names:
+                    l_op = InsertTab(
+                        target=target, item=name, tab_position=direction
+                    )
+                    ops.append(l_op)
+            self.proxy.update_layout(ops)
 
         def split(self, direction, *item_names):
             """ This method is deprecated.
