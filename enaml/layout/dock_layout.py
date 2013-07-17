@@ -355,7 +355,7 @@ class DockLayoutValidator(NodeVisitor):
         ----------
         available : iterable
             An iterable of strings which represent the available dock
-            item names onto wich the layout will be applied. These are
+            item names onto which the layout will be applied. These are
             used to validate the set of visited ItemLayout instances.
 
         """
@@ -656,7 +656,7 @@ class InsertTab(DockLayoutOp):
     tab_position = Enum('default', 'top', 'bottom', 'left', 'right')
 
 
-class CreateFloatingItem(DockLayoutOp):
+class FloatItem(DockLayoutOp):
     """ A layout operation which creates a floating dock item.
 
     This operation will remove an item from the current layout and
@@ -668,7 +668,7 @@ class CreateFloatingItem(DockLayoutOp):
     item = Coerced(ItemLayout)
 
 
-class CreateFloatingArea(DockLayoutOp):
+class FloatArea(DockLayoutOp):
     """ A layout operation which creates a new floating dock area.
 
     This layout operation will create a new floating dock area using
