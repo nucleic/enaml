@@ -24,8 +24,8 @@ QT_API = os.environ.get('QT_API', '').lower().strip()
 
 if not QT_API:
     try:
-        import PyQt4
         prepare_pyqt()
+        import PyQt4
         QT_API = os.environ['QT_API'] = 'pyqt'
     except ImportError:
         try:
