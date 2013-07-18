@@ -8,7 +8,8 @@
 import os
 
 from atom.api import (
-    Bool, Coerced, Enum, Typed, ForwardTyped, Unicode, observe, set_default
+    Bool, Coerced, Enum, Typed, ForwardTyped, Unicode, Event, observe,
+    set_default
 )
 
 from enaml.core.declarative import d_
@@ -17,7 +18,9 @@ from enaml.layout.dock_layout import (
 )
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
+from .dock_events import DockEvent
 from .dock_item import DockItem
+
 
 
 if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
@@ -61,6 +64,9 @@ class ProxyDockArea(ProxyConstraintsWidget):
         raise NotImplementedError
 
     def set_style(self, style):
+        raise NotImplementedError
+
+    def set_dock_events_enabled(self, enabled):
         raise NotImplementedError
 
     def save_layout(self):
@@ -109,6 +115,13 @@ class DockArea(ConstraintsWidget):
     #: Visual Studio 2010. The builtin styles are: 'vs-2010', 'grey-wind',
     #: 'new-moon', and 'metro'.
     style = d_(Unicode('vs-2010'))
+
+    #: Whether or not dock events are enabled for the area.
+    dock_events_enabled = d_(Bool(False))
+
+    #: An event emitted when a dock event occurs in the dock area.
+    #: `dock_events_enabled` must be True in order to recieve events.
+    dock_event = d_(Event(DockEvent), writable=False)
 
     #: A Stack expands freely in height and width by default
     hug_width = set_default('ignore')
@@ -226,7 +239,7 @@ class DockArea(ConstraintsWidget):
         if change['type'] == 'update':
             self.apply_layout(change['value'])
 
-    @observe(('tab_position', 'live_drag', 'style'))
+    @observe(('tab_position', 'live_drag', 'style', 'dock_events_enabled'))
     def _update_proxy(self, change):
         """ Update the proxy when the area state changes.
 
