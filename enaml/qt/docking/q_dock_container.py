@@ -11,9 +11,11 @@ from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
 from enaml.qt.QtGui import QApplication, QLayout, QIcon
 
 from .q_dock_area import QDockArea
+from .q_dock_bar import QDockBar
 from .q_dock_frame import QDockFrame
 from .q_dock_frame_layout import QDockFrameLayout
 from .q_dock_tab_widget import QDockTabWidget
+from .q_guide_rose import QGuideRose
 from .utils import repolish
 
 
@@ -53,6 +55,44 @@ def _computePressPos(container, coeff):
     title_height = title_bar.height() / 2
     mid_title = title_bar.mapTo(container, QPoint(0, title_height))
     return QPoint(new_x, mid_title.y())
+
+
+def _closestDockBar(container):
+    """ Get the closest dock bar position for the container.
+
+    This function computes the closest dock bar position by ranking
+    the edges of the container by their distance to the respective
+    dock area edge. Ties are broken first by relative edge weight and
+    then by an ordered heuristic of East, West, South, then North.
+
+    Returns
+    -------
+    result : QDockBar.Position
+        The closet dock bar position.
+
+    """
+    area = container.parentDockArea()
+    if area is None:
+        return QDockBar.North
+
+    pane = area.centralPane()
+    c_width = container.width()
+    c_height = container.height()
+    p_width = pane.width()
+    p_height = pane.height()
+
+    p1 = container.mapTo(pane, QPoint(0, 0))
+    p2 = container.mapTo(pane, QPoint(c_width, c_height))
+    edge_ranks = (p1.y(), p_width - p2.x(), p_height - p2.y(), p1.x())
+
+    f_width = 1.0 - float(c_width) / p_width
+    f_height = 1.0 - float(c_height) / p_height
+    edge_weights = (f_width, f_height) * 2
+
+    tie_breakers = (3, 0, 2, 1)
+    borders = (QDockBar.North, QDockBar.East, QDockBar.South, QDockBar.West)
+    values = zip(edge_ranks, edge_weights, tie_breakers, borders)
+    return sorted(values)[0][3]
 
 
 class QDockContainer(QDockFrame):
@@ -140,12 +180,14 @@ class QDockContainer(QDockFrame):
         """ Handle the show maximized request for the dock container.
 
         """
-        def update_buttons(bar, link=False):
+        def update_buttons(bar, link=False, pin=False):
             buttons = bar.buttons()
             buttons |= bar.RestoreButton
             buttons &= ~bar.MaximizeButton
             if link:
                 buttons &= ~bar.LinkButton
+            if pin:
+                buttons &= ~bar.PinButton
             bar.setButtons(buttons)
         if self.isWindow():
             super(QDockContainer, self).showMaximized()
@@ -155,7 +197,7 @@ class QDockContainer(QDockFrame):
             area = self.parentDockArea()
             if area is not None:
                 item = self.dockItem()
-                update_buttons(item.titleBarWidget())
+                update_buttons(item.titleBarWidget(), pin=True)
                 area.setMaximizedWidget(item)
                 self.frame_state.item_is_maximized = True
                 item.installEventFilter(self)
@@ -164,12 +206,14 @@ class QDockContainer(QDockFrame):
         """ Handle the show normal request for the dock container.
 
         """
-        def update_buttons(bar, link=False):
+        def update_buttons(bar, link=False, pin=False):
             buttons = bar.buttons()
             buttons |= bar.MaximizeButton
             buttons &= ~bar.RestoreButton
             if link:
                 buttons |= bar.LinkButton
+            if pin:
+                buttons |= bar.PinButton
             bar.setButtons(buttons)
         if self.isWindow():
             super(QDockContainer, self).showNormal()
@@ -177,7 +221,7 @@ class QDockContainer(QDockFrame):
             update_buttons(self.dockItem().titleBarWidget(), link=True)
         elif self.frame_state.item_is_maximized:
             item = self.dockItem()
-            update_buttons(item.titleBarWidget())
+            update_buttons(item.titleBarWidget(), pin=True)
             self.layout().setWidget(item)
             self.frame_state.item_is_maximized = False
             item.removeEventFilter(self)
@@ -212,12 +256,14 @@ class QDockContainer(QDockFrame):
             old.restoreButtonClicked.disconnect(self.showNormal)
             old.closeButtonClicked.disconnect(self.close)
             old.linkButtonToggled.disconnect(self.linkButtonToggled)
+            old.pinButtonToggled.disconnect(self.onPinButtonToggled)
             old.titleBarLeftDoubleClicked.disconnect(self.toggleMaximized)
         if dock_item is not None:
             dock_item.maximizeButtonClicked.connect(self.showMaximized)
             dock_item.restoreButtonClicked.connect(self.showNormal)
             dock_item.closeButtonClicked.connect(self.close)
             dock_item.linkButtonToggled.connect(self.linkButtonToggled)
+            dock_item.pinButtonToggled.connect(self.onPinButtonToggled)
             dock_item.titleBarLeftDoubleClicked.connect(self.toggleMaximized)
         layout.setWidget(dock_item)
         self._dock_item = dock_item
@@ -266,12 +312,6 @@ class QDockContainer(QDockFrame):
             return item.isLinked()
         return False
 
-    def isInDockBar(self):
-        """ Get whether the container is held in a dock bar.
-
-        """
-        return self.frame_state.in_dock_bar
-
     def setLinked(self, linked):
         """ Set whether or not the container should be linked.
 
@@ -281,6 +321,27 @@ class QDockContainer(QDockFrame):
         item = self.dockItem()
         if item is not None:
             item.setLinked(linked)
+
+    def isPinned(self):
+        """ Get whether or not the container is pinned.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            return item.isPinned()
+        return False
+
+    def setPinned(self, pinned, quiet=False):
+        """ Set whether or not the container should be pinned.
+
+        This proxies the call to the underlying dock item.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            item.setPinned(pinned, quiet)
 
     def showTitleBar(self):
         """ Show the title bar for the container.
@@ -312,13 +373,31 @@ class QDockContainer(QDockFrame):
             bar.setButtons(bar.buttons() | bar.LinkButton)
 
     def hideLinkButton(self):
-        """ Show the link button on the title bar.
+        """ Hide the link button on the title bar.
 
         """
         item = self.dockItem()
         if item is not None:
             bar = item.titleBarWidget()
             bar.setButtons(bar.buttons() & ~bar.LinkButton)
+
+    def showPinButton(self):
+        """ Show the pin button on the title bar.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            bar = item.titleBarWidget()
+            bar.setButtons(bar.buttons() | bar.PinButton)
+
+    def hidePinButton(self):
+        """ Hide the pin button on the title bar.
+
+        """
+        item = self.dockItem()
+        if item is not None:
+            bar = item.titleBarWidget()
+            bar.setButtons(bar.buttons() & ~bar.PinButton)
 
     def toggleMaximized(self):
         """ Toggle the maximized state of the container.
@@ -339,6 +418,7 @@ class QDockContainer(QDockFrame):
         state = self.frame_state
         state.dragging = False
         state.press_pos = None
+        state.in_dock_bar = False
         self.showNormal()
         self.unfloat()
         self.hideLinkButton()
@@ -359,6 +439,7 @@ class QDockContainer(QDockFrame):
         self.setProperty('floating', True)
         self.setLinked(False)
         self.showLinkButton()
+        self.hidePinButton()
         repolish(self)
         self.topLevelChanged.emit(True)
 
@@ -374,6 +455,7 @@ class QDockContainer(QDockFrame):
         self.setProperty('floating', False)
         self.setLinked(False)
         self.hideLinkButton()
+        self.showPinButton()
         repolish(self)
         self.topLevelChanged.emit(False)
 
@@ -424,7 +506,7 @@ class QDockContainer(QDockFrame):
         dock_area = self.parentDockArea()
         if dock_area is None:
             return False
-        if self.isInDockBar():
+        if self.frame_state.in_dock_bar:
             dock_area.removeFromDockBar(self)
             return True
         # avoid a circular import
@@ -467,6 +549,40 @@ class QDockContainer(QDockFrame):
         self.grabMouse()
         self.activateWindow()
         self.raise_()
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def onPinButtonToggled(self, pinned):
+        """ The signal handler for the 'pinButtonToggled' signal.
+
+        This handler will pin or unpin the container in response to the
+        user toggling the pin button.
+
+        """
+        area = self.parentDockArea()
+        if area is not None:
+            if pinned:
+                if not self.frame_state.in_dock_bar:
+                    position = _closestDockBar(self)
+                    self.unplug()
+                    area.addToDockBar(self, position)
+            else:
+                position = area.dockBarPosition(self)
+                if position is not None:
+                    # avoid a circular import
+                    from .layout_handling import plug_frame
+                    area.removeFromDockBar(self)
+                    if area.centralWidget() is None:
+                        guide = QGuideRose.Guide.AreaCenter
+                    else:
+                        guide = (
+                            QGuideRose.Guide.BorderNorth,
+                            QGuideRose.Guide.BorderEast,
+                            QGuideRose.Guide.BorderSouth,
+                            QGuideRose.Guide.BorderWest
+                        )[position]
+                    plug_frame(area, None, self, guide)
 
     #--------------------------------------------------------------------------
     # Event Handlers

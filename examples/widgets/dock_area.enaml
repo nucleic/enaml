@@ -18,7 +18,7 @@ key while dragging a tab.
 import cPickle
 
 from enaml.layout.api import (
-    hbox, vbox, spacer, vdocksplit, hdocksplit, docktabs
+    HSplitLayout, VSplitLayout, TabLayout, InsertItem, hbox, vbox, spacer
 )
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
@@ -35,10 +35,10 @@ STYLES = {
 
 
 enamldef MyDockArea(DockArea):
-    layout = hdocksplit(
-        vdocksplit('Item 1', 'Item 3', 'Item 5'),
-        vdocksplit('Item 4', 'Item 2'),
-        docktabs('Item 6', 'Item 7', 'Item 8', 'Item 9'),
+    layout = HSplitLayout(
+        VSplitLayout('Item 1', 'Item 3', 'Item 5'),
+        VSplitLayout('Item 4', 'Item 2'),
+        TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
     )
     DockItem:
         name = 'Item 1'
@@ -129,12 +129,11 @@ enamldef Main(Window):
         PushButton: add_b:
             text = 'Add Items'
             clicked ::
-                names = []
                 for _ in xrange(3):
                     name = 'Item %d' % (len(area.children) + 1)
                     MyItem(area, name=name)
-                    names.append(name)
-                area.find('Item 1').split('left', *names)
+                    op = InsertItem(item=name, target='Item 1')
+                    area.update_layout(op)
         ObjectCombo: style_c:
             items = STYLES.keys()
             selected = 'VS 2010'

@@ -238,6 +238,10 @@ class QDockItem(QFrame):
     #: signal is proxied from the current dock item title bar.
     linkButtonToggled = Signal(bool)
 
+    #: A signal emitted when the pin button is toggled. This
+    #: signal is proxied from the current dock item title bar.
+    pinButtonToggled = Signal(bool)
+
     #: A signal emitted when the title is edited by the user. This
     #: signal is proxied from the current dock item title bar.
     titleEdited = Signal(unicode)
@@ -391,6 +395,32 @@ class QDockItem(QFrame):
         """
         self.titleBarWidget().setLinked(linked)
 
+    def isPinned(self):
+        """ Get whether or not this dock item is pinned.
+
+        Returns
+        -------
+        result : bool
+            True if the item is pinned, False otherwise.
+
+        """
+        return self.titleBarWidget().isPinned()
+
+    def setPinned(self, pinned, quiet=False):
+        """ Set whether or not the dock item is pinned.
+
+        Parameters
+        ----------
+        pinned : bool
+            True if the dock item should be pinned, False otherwise.
+
+        quiet : bool, optional
+            True if the state should be set without emitted the toggled
+            signal. The default is False.
+
+        """
+        self.titleBarWidget().setPinned(pinned, quiet)
+
     def titleEditable(self):
         """ Get whether the title is user editable.
 
@@ -513,6 +543,7 @@ class QDockItem(QFrame):
             old.restoreButtonClicked.disconnect(self.restoreButtonClicked)
             old.closeButtonClicked.disconnect(self.closeButtonClicked)
             old.linkButtonToggled.disconnect(self.linkButtonToggled)
+            old.pinButtonToggled.disconnect(self.pinButtonToggled)
             old.titleEdited.disconnect(self.titleEdited)
             old.leftDoubleClicked.disconnect(self.titleBarLeftDoubleClicked)
             old.rightClicked.disconnect(self.titleBarRightClicked)
@@ -521,6 +552,7 @@ class QDockItem(QFrame):
         title_bar.restoreButtonClicked.connect(self.restoreButtonClicked)
         title_bar.closeButtonClicked.connect(self.closeButtonClicked)
         title_bar.linkButtonToggled.connect(self.linkButtonToggled)
+        title_bar.pinButtonToggled.connect(self.pinButtonToggled)
         title_bar.titleEdited.connect(self.titleEdited)
         title_bar.leftDoubleClicked.connect(self.titleBarLeftDoubleClicked)
         title_bar.rightClicked.connect(self.titleBarRightClicked)

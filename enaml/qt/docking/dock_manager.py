@@ -5,55 +5,22 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from contextlib import contextmanager
-import warnings
-
 from atom.api import Atom, Int, Typed, List, atomref
 
-from enaml.layout.dock_layout import docklayout, dockarea, dockitem
+from enaml.layout.dock_layout import DockLayout
 
-from enaml.qt.QtCore import QPoint, QRect, QObject
+from enaml.qt.QtCore import Qt, QPoint, QRect, QObject
 from enaml.qt.QtGui import QApplication
 
 from .dock_overlay import DockOverlay
-from .layout_handling import (
-    build_layout, save_layout, layout_hit_test, plug_frame, iter_containers
-)
+from .layout_handling import layout_hit_test, plug_frame, iter_containers
+from .layout_builder import LayoutBuilder
+from .layout_saver import LayoutSaver
 from .proximity_handler import ProximityHandler
 from .q_dock_area import QDockArea
 from .q_dock_container import QDockContainer
 from .q_dock_window import QDockWindow
 from .q_guide_rose import QGuideRose
-
-
-def ensure_on_screen(rect):
-    """ Ensure that the given rect is contained on screen.
-
-    If the origin of the rect is not contained within the closest
-    desktop screen, the rect will be moved so that it is fully on the
-    closest screen. If the rect is larger than the closest screen, the
-    origin will never be less than the screen origin.
-
-    Parameters
-    ----------
-    rect : QRect
-        The geometry rect of interest.
-
-    """
-    d = QApplication.desktop()
-    pos = rect.topLeft()
-    drect = d.screenGeometry(pos)
-    if not drect.contains(pos):
-        x = pos.x()
-        if x < drect.x() or x > drect.right():
-            dw = drect.width() - rect.width()
-            x = max(drect.x(), drect.x() + dw)
-        y = pos.y()
-        if x < drect.top() or y > drect.bottom():
-            dh = drect.height() - rect.height()
-            y = max(drect.y(), drect.y() + dh)
-        rect = QRect(x, y, rect.width(), rect.height())
-    return rect
 
 
 class DockContainerMonitor(QObject):
@@ -181,27 +148,13 @@ class DockManager(Atom):
         """
         if item not in self._dock_items:
             return
-        container = self._find_container(item.objectName())
-        if container is not None:
-            if container.isWindow():
-                container.unplug()
-            container.hide()
-            self._free_container(container)
-
-    def clear_items(self):
-        """ Clear the dock items from the dock manager.
-
-        This method will hide and unparent all of the dock items that
-        were previously added to the dock manager.
-
-        """
-        for frame in self._dock_frames[:]:
-            if isinstance(frame, QDockContainer):
-                self._free_container(frame)
-            else:
-                self._free_window(frame)
-        del self._dock_frames
-        self._dock_area.setCentralWidget(None)
+        for container in self.dock_containers():
+            if container.dockItem() is item:
+                if not container.isWindow():
+                    container.unplug()
+                container.hide()
+                self._free_container(container)
+                break
 
     def save_layout(self):
         """ Get the current layout of the dock area.
@@ -213,156 +166,210 @@ class DockManager(Atom):
             state.
 
         """
-        primary = None
-        secondary = []
-
-        area = self._dock_area
-        widget = area.centralWidget()
-        if widget is not None:
-            primary = dockarea(save_layout(widget))
-            maxed = area.maximizedWidget()
-            if maxed is not None:
-                primary.maximized_item = maxed.objectName()
-
-        for frame in self._floating_frames():
-            if isinstance(frame, QDockWindow):
-                area = frame.dockArea()
-                item = dockarea(save_layout(area.centralWidget()))
-                maxed = area.maximizedWidget()
-                if maxed is not None:
-                    item.maximized_item = maxed.objectName()
-            else:
-                item = save_layout(frame)
-            item.linked = frame.isLinked()
-            item.maximized = frame.isMaximized()
-            if frame.isMaximized():
-                geo = frame.normalGeometry()
-            else:
-                geo = frame.geometry()
-            item.geometry = (geo.x(), geo.y(), geo.width(), geo.height())
-            secondary.append(item)
-
-        return docklayout(primary, *secondary)
+        items = [self._dock_area] + self.floating_frames()
+        return DockLayout(*map(LayoutSaver(), items))
 
     def apply_layout(self, layout):
         """ Apply a layout to the dock area.
 
         Parameters
         ----------
-        layout : docklayout
-            The docklayout to apply to the managed area.
+        layout : DockLayout
+            The DockLayout to apply to the managed area.
 
         """
-        # Remove the layout widget before resetting the handlers. This
-        # prevents a re-used container from being hidden by the call to
-        # setCentralWidget after it has already been reset. The reference
-        # is held to the old widget so the containers are not destroyed
-        # before they are reset.
-        widget = self._dock_area.centralWidget()
-        self._dock_area.setCentralWidget(None)
-        containers = list(self._dock_containers())
-        for container in containers:
-            container.reset()
-        for window in list(self._dock_windows()):
-            window.close()
+        LayoutBuilder(self)(layout)
 
-        # Emit a warning for an item referenced in the layout which
-        # has not been added to the dock manager.
-        names = set(container.objectName() for container in containers)
-        filter_func = lambda item: isinstance(item, dockitem)
-        for item in filter(filter_func, layout.traverse()):
-            if item.name not in names:
-                msg = "dock item '%s' was not found in the dock manager"
-                warnings.warn(msg % item.name, stacklevel=2)
-
-        # A convenience closure for populating a dock area.
-        def popuplate_area(area, layout):
-            widget = build_layout(layout.child, containers)
-            area.setCentralWidget(widget)
-            if layout.maximized_item:
-                maxed = self._find_container(layout.maximized_item)
-                if maxed is not None:
-                    maxed.showMaximized()
-
-        # Setup the layout for the primary dock area widget.
-        primary = layout.primary
-        if primary is not None:
-            if isinstance(primary, dockarea):
-                popuplate_area(self._dock_area, primary)
-            else:
-                widget = build_layout(primary, containers)
-                self._dock_area.setCentralWidget(widget)
-
-        # Setup the layout for the secondary floating dock area. This
-        # classifies the secondary items according to their type as
-        # each type has subtle differences in how they area handled.
-        single_items = []
-        single_areas = []
-        multi_areas = []
-        for secondary in layout.secondary:
-            if isinstance(secondary, dockitem):
-                single_items.append(secondary)
-            elif isinstance(secondary.child, dockitem):
-                single_areas.append(secondary)
-            else:
-                multi_areas.append(secondary)
-
-        targets = []
-        for item in single_items:
-            target = self._find_container(item.name)
-            if target is not None:
-                target.float()
-                targets.append((target, item))
-        for item in single_areas:
-            target = self._find_container(item.child.name)
-            if target is not None:
-                target.float()
-                targets.append((target, item))
-        for item in multi_areas:
-            target = QDockWindow.create(self, self._dock_area)
-            popuplate_area(target.dockArea(), item)
-            self._dock_frames.append(target)
-            self._proximity_handler.addFrame(target)
-            targets.append((target, item))
-
-        for target, item in targets:
-            rect = QRect(*item.geometry)
-            if rect.isValid():
-                rect = ensure_on_screen(rect)
-                target.setGeometry(rect)
-            target.show()
-            if item.linked:
-                target.setLinked(True)
-            if item.maximized:
-                target.showMaximized()
-
-    def apply_layout_op(self, op, direction, *item_names):
-        """ Apply a layout operation to the managed items.
+    def update_layout(self, ops):
+        """ Update the layout for a list of layout operations.
 
         Parameters
         ----------
-        op : str
-            The operation to peform. This must be one of 'split_item',
-            'tabify_item', or 'split_area'.
-
-        direction : str
-            The direction to peform the operation. This must be one of
-            'left', 'right', 'top', or 'bottom'.
-
-        *item_names
-            The list of string names of the dock items to include in
-            the operation. See the notes about the requirements for
-            the item names for a given layout operation.
+        ops : list
+            A list of LayoutOp objects to use for updating the layout.
 
         """
-        handler_name = '_apply_op_' + op
-        getattr(self, handler_name)(direction, *item_names)
+        builder = LayoutBuilder(self)
+        for op in ops:
+            builder(op)
+
+    def destroy(self):
+        """ Destroy the dock manager.
+
+        This method will free all of the resources held by the dock
+        manager. The primary dock area and dock items will not be
+        destroyed. After the method is called, the dock manager is
+        invalid and should no longer be used.
+
+        """
+        for frame in self._dock_frames:
+            if isinstance(frame, QDockContainer):
+                frame.setDockItem(None)
+                frame.setParent(None, Qt.Widget)
+                frame.hide()
+        for frame in self._dock_frames:
+            if isinstance(frame, QDockWindow):
+                frame.setParent(None, Qt.Widget)
+                frame.hide()
+        self._dock_area.setCentralWidget(None)
+        self._dock_area.setMaximizedWidget(None)
+        del self._dock_area
+        del self._dock_frames
+        del self._dock_items
+        del self._proximity_handler
+        del self._container_monitor
+        del self._overlay
 
     #--------------------------------------------------------------------------
     # Framework API
     #--------------------------------------------------------------------------
+    def dock_containers(self):
+        """ Get an iterable of QDockContainer instances.
+
+        This method is called by the framework at the appropriate times
+        and should not be called directly by user code.
+
+        Returns
+        -------
+        result : list
+            A list of QDockContainer instances owned by this dock
+            manager.
+
+        """
+        f = lambda w: isinstance(w, QDockContainer)
+        return filter(f, self._dock_frames)
+
+    def dock_windows(self):
+        """ Get an iterable of QDockWindow instances.
+
+        This method is called by the framework at the appropriate times
+        and should not be called directly by user code.
+
+        Returns
+        -------
+        result : list
+            A list of QDockWindow instances owned by this dock manager.
+
+        """
+        f = lambda w: isinstance(w, QDockWindow)
+        return filter(f, self._dock_frames)
+
+    def floating_frames(self):
+        """ Get an iterable of floating dock frames.
+
+        This method is called by the framework at the appropriate times
+        and should not be called directly by user code.
+
+        Returns
+        -------
+        result : list
+            A list toplevel QDockFrame instances.
+
+        """
+        f = lambda w: w.isWindow()
+        return filter(f, self._dock_frames)
+
+    def add_window(self, window):
+        """ Add a floating QDockWindow to the dock manager.
+
+        This method is called by the framework at the appropriate times
+        and should not be called directly by user code.
+
+        Parameters
+        ----------
+        window : QDockWindow
+            A newly created dock window which should be tracked by
+            the dock manager.
+
+        """
+        self._dock_frames.append(window)
+        self._proximity_handler.addFrame(window)
+
+    def close_container(self, container, event):
+        """ Handle a close request for a QDockContainer.
+
+        This method is called by the framework at the appropriate times
+        and should not be called directly by user code.
+
+        Parameters
+        ----------
+        window : QDockContainer
+            The dock container to close.
+
+        event : QCloseEvent
+            The close event passed to the event handler.
+
+        """
+        item = container.dockItem()
+        if item is None or item.close():
+            if not container.isWindow():
+                container.unplug()
+            self._free_container(container)
+        else:
+            event.ignore()
+
+    def close_window(self, window, event):
+        """ Handle a close request for a QDockWindow.
+
+        This method is called by the framework at the appropriate times
+        and should not be called directly by user code.
+
+        Parameters
+        ----------
+        window : QDockWindow
+            The dock window to close.
+
+        event : QCloseEvent
+            The close event passed to the event handler.
+
+        """
+        area = window.dockArea()
+        if area is not None:
+            containers = list(iter_containers(area))
+            geometries = {}
+            for container in containers:
+                pos = container.mapToGlobal(QPoint(0, 0))
+                size = container.size()
+                geometries[container] = QRect(pos, size)
+            for container, ignored in area.dockBarContainers():
+                containers.append(container)
+                size = container.sizeHint()
+                geometries[container] = QRect(window.pos(), size)
+            for container in containers:
+                if not container.close():
+                    container.unplug()
+                    container.float()
+                    container.setGeometry(geometries[container])
+                    container.show()
+        self._free_window(window)
+
+    def raise_frame(self, frame):
+        """ Raise a frame to the top of the Z-order.
+
+        This method is called by the framework at the appropriate times
+        and should not be called directly by user code.
+
+        Parameters
+        ----------
+        frame : QDockFrame
+            The frame to raise to the top of the Z-order.
+
+        """
+        frames = self._dock_frames
+        handler = self._proximity_handler
+        if handler.hasLinkedFrames(frame):
+            linked = set(handler.linkedFrames(frame))
+            ordered = [f for f in frames if f in linked]
+            for other in ordered:
+                frames.remove(other)
+                frames.append(other)
+                other.raise_()
+            frame.raise_()
+        frames.remove(frame)
+        frames.append(frame)
+
     def frame_resized(self, frame):
-        """ Handle the post-process for a resized floating frame.
+        """ Handle the post-processing for a resized floating frame.
 
         This method is called by the framework at the appropriate times
         and should not be called directly by user code.
@@ -381,51 +388,6 @@ class DockManager(Atom):
             handler.updateLinks(frame)
             if not handler.hasLinkedFrames(frame):
                 frame.setLinked(False)
-
-    def raise_frame(self, frame):
-        """ Raise a frame to the top of the Z-order.
-
-        This method is called by the framework at the appropriate times
-        and should not be called directly by user code.
-
-        Parameters
-        ----------
-        frame : QDockFrame
-            The frame to raise to the top of the Z-order.
-
-        """
-        frames = self._dock_frames
-        handler = self._proximity_handler
-        if handler.hasLinkedFrames(frame):
-            linked = set(handler.linkedFrames(frame))
-            ordered = []
-            for index, other in enumerate(frames):
-                if other in linked:
-                    ordered.append((index, other))
-            ordered.sort()
-            for ignored, other in ordered:
-                frames.remove(other)
-                frames.append(other)
-                other.raise_()
-            frame.raise_()
-        frames.remove(frame)
-        frames.append(frame)
-
-    def stack_under_top(self, frame):
-        """ Stack the given frame under the top frame in the Z-order.
-
-        This method is called by the framework at the appropriate times
-        and should not be called directly by user code.
-
-        Parameters
-        ----------
-        frame : QDockFrame
-            The frame to stack under the top frame in the Z-order.
-
-        """
-        frames = self._dock_frames
-        frames.remove(frame)
-        frames.insert(-1, frame)
 
     def drag_move_frame(self, frame, target_pos, mouse_pos):
         """ Move the floating frame to the target position.
@@ -529,78 +491,21 @@ class DockManager(Atom):
             return
         if self._proximity_handler.hasLinkedFrames(frame):
             return
+        builder = LayoutBuilder(self)
         target = self._dock_target(frame, pos)
         if isinstance(target, QDockArea):
             if target.maximizedWidget() is not None:
                 return
-            with self._drop_window_context(frame):
+            with builder.drop_window(frame):
                 local = target.mapFromGlobal(pos)
                 widget = layout_hit_test(target, local)
                 plug_frame(target, widget, frame, guide)
         elif isinstance(target, QDockContainer):
-            with self._dock_context(target):
-                with self._drop_window_context(frame):
+            with builder.dock_context(target):
+                with builder.drop_window(frame):
                     area = target.parentDockArea()
                     if area is not None:
                         plug_frame(area, target, frame, guide)
-
-    def close_container(self, container, event):
-        """ Handle a close request for a QDockContainer.
-
-        This method is called by the framework at the appropriate times
-        and should not be called directly by user code.
-
-        Parameters
-        ----------
-        window : QDockContainer
-            The dock container to close.
-
-        event : QCloseEvent
-            The close event passed to the event handler.
-
-        """
-        item = container.dockItem()
-        if item is None or item.close():
-            if not container.isWindow():
-                container.unplug()
-            self._free_container(container)
-        else:
-            event.ignore()
-
-    def close_window(self, window, event):
-        """ Handle a close request for a QDockWindow.
-
-        This method is called by the framework at the appropriate times
-        and should not be called directly by user code.
-
-        Parameters
-        ----------
-        window : QDockWindow
-            The dock window to close.
-
-        event : QCloseEvent
-            The close event passed to the event handler.
-
-        """
-        area = window.dockArea()
-        if area is not None:
-            containers = list(iter_containers(area))
-            geometries = {}
-            for container in containers:
-                pos = container.mapToGlobal(QPoint(0, 0))
-                size = container.size()
-                geometries[container] = QRect(pos, size)
-            for container, ignored in area.dockBarContainers():
-                containers.append(container)
-                size = container.sizeHint()
-                geometries[container] = QRect(window.pos(), size)
-            for container in containers:
-                if not container.close():
-                    container.unplug()
-                    container.float()
-                    container.setGeometry(geometries[container])
-                    container.show()
-        self._free_window(window)
 
     #--------------------------------------------------------------------------
     # Private API
@@ -638,93 +543,6 @@ class DockManager(Atom):
         window._manager = None
         self._dock_frames.remove(window)
         self._proximity_handler.removeFrame(window)
-        QDockWindow.free(window)
-
-    def _dock_containers(self):
-        """ Get an iterable of QDockContainer instances.
-
-        Returns
-        -------
-        result : generator
-            A generator which yields the QDockContainer instances owned
-            by this dock manager.
-
-        """
-        for frame in self._dock_frames:
-            if isinstance(frame, QDockContainer):
-                yield frame
-
-    def _dock_windows(self):
-        """ Get an iterable of QDockWindow instances.
-
-        Returns
-        -------
-        result : generator
-            A generator which yields the QDockWindow instances owned
-            by this dock manager.
-
-        """
-        for frame in self._dock_frames:
-            if isinstance(frame, QDockWindow):
-                yield frame
-
-    def _floating_frames(self):
-        """ Get an iterable of floating dock frames.
-
-        Returns
-        -------
-        result : generator
-            A generator which yield toplevel QDockFrame instances.
-
-        """
-        for frame in self._dock_frames:
-            if frame.isWindow():
-                yield frame
-
-    def _find_container(self, name):
-        """ Find the dock container with the given object name.
-
-        Parameters
-        ----------
-        name : basestring
-            The object name of the dock container to locate.
-
-        Returns
-        -------
-        result : QDockContainer or None
-            The dock container for the given object name or None.
-
-        """
-        for container in self._dock_containers():
-            if container.objectName() == name:
-                return container
-
-    def _find_containers(self, names, missing=None):
-        """ Find the dock containers with the given names.
-
-        Parameters
-        ----------
-        names : iterable
-            An iterable of names of the containers to find.
-
-        missing : callable, optional
-            A callable which will be invoked with the name of any
-            container which is not found.
-
-        Returns
-        -------
-        result : list
-            The list of QDockContainers which were found.
-
-        """
-        cs = dict((c.objectName(), c) for c in self._dock_containers())
-        res = []
-        for name in names:
-            if name in cs:
-                res.append(cs[name])
-            elif missing is not None:
-                missing(name)
-        return res
 
     def _iter_dock_targets(self, frame):
         """ Get an iterable of potential dock targets.
@@ -808,201 +626,3 @@ class DockManager(Atom):
             overlay.mouse_over_area(target, widget, local)
         else:
             overlay.hide()
-
-    @contextmanager
-    def _dock_context(self, container):
-        """ Setup a dock context for a dock container.
-
-        This context manager ensures handled setting up the QDockWindow
-        for a floating dock container. It ensures that the container
-        will have a proper dock area for adding new items.
-
-        Parameters
-        ----------
-        container : QDockContainer
-            The dock container onto which another container is to
-            be docked.
-
-        """
-        window = None
-        win_area = None
-        is_maxed = False
-        is_window = container.isWindow()
-        if is_window:
-            is_maxed = container.isMaximized()
-            if is_maxed:
-                container.showNormal()
-            window = QDockWindow.create(self, self._dock_area)
-            self._dock_frames.append(window)
-            self._proximity_handler.addFrame(window)
-            window.setGeometry(container.geometry())
-            win_area = window.dockArea()
-            plug_frame(win_area, None, container, QGuideRose.Guide.AreaCenter)
-        yield
-        if is_window:
-            window.show()
-            if is_maxed:
-                window.showMaximized()
-
-    @contextmanager
-    def _drop_window_context(self, window):
-        """ Setup a drop contents for a dock window.
-
-        This context manager prepares a QDockWindow to be dropped onto
-        a dock area or dock container.
-
-        Parameters
-        ----------
-        window : object
-            The window of interest. The method will only operate on
-            instances of QDockWindow, but it is safe to pass any other
-            type.
-
-        """
-        is_window = isinstance(window, QDockWindow)
-        if is_window:
-            win_area = window.dockArea()
-            maxed = win_area.maximizedWidget()
-            if maxed is not None:
-                container = self._find_container(maxed.objectName())
-                if container is not None:
-                    container.showNormal()
-        yield
-        if is_window:
-            window.close()
-
-    # A mapping of direction to split item layout metadata.
-    _split_item_guides = {
-        'left': (QGuideRose.Guide.CompassWest, False),
-        'top': (QGuideRose.Guide.CompassNorth, False),
-        'right': (QGuideRose.Guide.CompassEast, True),
-        'bottom': (QGuideRose.Guide.CompassSouth, True),
-    }
-
-    def _apply_op_split_item(self, direction, *item_names):
-        """ Handle the 'split_item' layout operation.
-
-        Parameters
-        ----------
-        direction : LayoutDirection
-            The direction in which to perform the split.
-
-        *item_names
-            The item names which take part in the operation. There must
-            be 2 or more names and they must refer to items which have
-            been added to the manager.
-
-        """
-        def missing(name):
-            msg = "dock item '%s' was not found in the dock manager"
-            warnings.warn(msg % name, stacklevel=5)
-        containers = self._find_containers(item_names, missing)
-        if len(containers) < 2:
-            return
-
-        # The items are reversed before inserting to the right or
-        # to the bottom so that the net effect is a proper insert
-        # order for the entire group.
-        primary = containers.pop(0)
-        guide, reverse = self._split_item_guides[direction]
-        tabs = primary.parentDockTabWidget()
-        if tabs is not None:
-            guide = QGuideRose.Guide.CompassCenter
-        if reverse and tabs is None:
-            containers.reverse()
-
-        with self._dock_context(primary):
-            for container in containers:
-                if container is primary:
-                    continue
-                area = primary.parentDockArea()
-                if area is None:
-                    continue
-                container.unplug()
-                plug_frame(area, tabs or primary, container, guide)
-
-    # A mapping of direction to tabify item layout metadata.
-    _tabify_item_guides = {
-        'left': QGuideRose.Guide.CompassExWest,
-        'top': QGuideRose.Guide.CompassExNorth,
-        'right': QGuideRose.Guide.CompassExEast,
-        'bottom': QGuideRose.Guide.CompassExSouth,
-    }
-
-    def _apply_op_tabify_item(self, direction, *item_names):
-        """ Handle the 'tabify_item' layout operation.
-
-        Parameters
-        ----------
-        direction : LayoutDirection
-            The direction in which to perform the split.
-
-        *item_names
-            The item names which take part in the operation. There must
-            be 2 or more names and they must refer to items which have
-            been added to the manager.
-
-        """
-        def missing(name):
-            msg = "dock item '%s' was not found in the dock manager"
-            warnings.warn(msg % name, stacklevel=5)
-        containers = self._find_containers(item_names, missing)
-        if len(containers) < 2:
-            return
-
-        primary = containers.pop(0)
-        with self._dock_context(primary):
-            for container in containers:
-                if container is primary:
-                    continue
-                area = primary.parentDockArea()
-                if area is None:
-                    continue
-                container.unplug()
-                tabs = primary.parentDockTabWidget()
-                if tabs is not None:
-                    guide = QGuideRose.Guide.CompassCenter
-                    plug_frame(area, tabs, container, guide)
-                else:
-                    guide = self._tabify_item_guides[direction]
-                    plug_frame(area, primary, container, guide)
-
-    _split_area_guides = {
-        'left': (QGuideRose.Guide.BorderWest, True),
-        'top': (QGuideRose.Guide.BorderNorth, True),
-        'right': (QGuideRose.Guide.BorderEast, False),
-        'bottom': (QGuideRose.Guide.BorderSouth, False),
-    }
-
-    def _apply_op_split_area(self, direction, *item_names):
-        """ Handle the 'split_area' layout operation.
-
-        Parameters
-        ----------
-        direction : LayoutDirection
-            The direction in which to perform the split.
-
-        *item_names
-            The item names which take part in the operation. There must
-            be 1 or more names and they must refer to items which have
-            been added to the manager.
-
-        """
-        def missing(name):
-            msg = "dock item '%s' was not found in the dock manager"
-            warnings.warn(msg % name, stacklevel=5)
-        containers = self._find_containers(item_names, missing)
-        if len(containers) < 1:
-            return
-
-        guide, reverse = self._split_area_guides[direction]
-        if reverse:
-            containers.reverse()
-
-        area = self._dock_area
-        for container in containers:
-            container.unplug()
-            if area.centralWidget() is None:
-                plug_frame(area, None, container, QGuideRose.Guide.AreaCenter)
-            else:
-                plug_frame(area, None, container, guide)

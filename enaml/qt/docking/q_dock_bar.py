@@ -683,7 +683,7 @@ class QDockBarManager(QObject):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def addContainer(self, container, position):
+    def addContainer(self, container, position, index=-1):
         """ Add a container to the specified dock bar.
 
         Parameters
@@ -697,9 +697,15 @@ class QDockBarManager(QObject):
             The position of the dock bar to which the container should
             be added.
 
+        index : int, optional
+            The index at which to insert the item. The default is -1
+            and will append the item to the dock bar.
+
         """
         assert isinstance(position, QDockBar.Position)
         self.removeContainer(container)
+        container.setPinned(True, quiet=True)
+        container.frame_state.in_dock_bar = True
 
         button = QDockBarButton()
         button.setText(container.title())
@@ -707,7 +713,7 @@ class QDockBarManager(QObject):
         button.toggled.connect(self._onButtonToggled)
 
         dock_bar = self._getDockBar(position)
-        dock_bar.addButton(button)
+        dock_bar.insertButton(index, button)
 
         item = QDockBarItem(self.parent().centralPane(), position=position)
         item.hide()
@@ -717,7 +723,6 @@ class QDockBarManager(QObject):
         self._widgets[button] = item
         self._widgets[container] = button
 
-        container.frame_state.in_dock_bar = True
         event = QEvent(DockAreaContentsChanged)
         QApplication.sendEvent(self.parent(), event)
 
@@ -733,6 +738,7 @@ class QDockBarManager(QObject):
         button = self._widgets.pop(container, None)
         if button is not None:
             container.setParent(None)
+            container.setPinned(False, quiet=True)
             container.frame_state.in_dock_bar = False
 
             item = self._widgets.pop(button)
@@ -785,6 +791,40 @@ class QDockBarManager(QObject):
             if isinstance(value, QDockBarItem):
                 res.append((value.widget(), value.position()))
         return res
+
+    def dockBarPosition(self, container):
+        """ Get the dock bar position of the given container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container of interest.
+
+        Returns
+        -------
+        result : QDockBar.Position or None
+            The position of the container, or None if the container
+            does not exist in the manager.
+
+        """
+        button = self._widgets.get(container)
+        if button is not None:
+            return button.position()
+
+    def clearDockBars(self):
+        """ Clear all of the items from the dock bars.
+
+        This method can be called to unconditionally remove all of the
+        dock bars and reset the internal state of the manager. It is
+        used by the framework and should not be called by user code.
+
+        """
+        for bar in self._dock_bars:
+            if bar is not None:
+                bar.setParent(None)
+        self._dock_bars = [None, None, None, None]
+        self._active_items = {}
+        self._widgets = {}
 
     def isEmpty(self):
         """ Get whether or not the dock bars are empty.

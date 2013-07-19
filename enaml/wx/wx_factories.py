@@ -145,11 +145,6 @@ def splitter_factory():
     return WxSplitter
 
 
-# def text_editor_factory():
-#     from .wx_text_editor import WxTextEditor
-#     return WxTextEditor
-
-
 def tool_bar_factory():
     from .wx_tool_bar import WxToolBar
     return WxToolBar

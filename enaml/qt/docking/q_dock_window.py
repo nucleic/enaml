@@ -23,14 +23,6 @@ from .xbms import (
 )
 
 
-#: The maximum number of free windows to keep in the free list.
-FREE_WINDOWS_MAX = 10
-
-
-#: A free list of dock windows to help reduce flicker on window show.
-FREE_WINDOWS = []
-
-
 class QDockWindowButtons(QFrame):
     """ A custom QFrame which provides the buttons for a QDockWindow.
 
@@ -81,18 +73,21 @@ class QDockWindowButtons(QFrame):
         max_button.setBitmap(MAXIMIZE_BUTTON.toBitmap())
         max_button.setIconSize(QSize(20, 15))
         max_button.setVisible(self._buttons & self.MaximizeButton)
+        max_button.setToolTip('Maximize')
 
         restore_button = self._restore_button = QBitmapButton(self)
         restore_button.setObjectName('dockwindow-restore-button')
         restore_button.setBitmap(RESTORE_BUTTON.toBitmap())
         restore_button.setIconSize(QSize(20, 15))
         restore_button.setVisible(self._buttons & self.RestoreButton)
+        restore_button.setToolTip('Restore Down')
 
         close_button = self._close_button = QBitmapButton(self)
         close_button.setObjectName('dockwindow-close-button')
         close_button.setBitmap(CLOSE_BUTTON.toBitmap())
         close_button.setIconSize(QSize(34, 15))
         close_button.setVisible(self._buttons & self.CloseButton)
+        close_button.setToolTip('Close')
 
         link_button = self._link_button = QCheckedBitmapButton(self)
         link_button.setObjectName('dockwindow-link-button')
@@ -100,6 +95,8 @@ class QDockWindowButtons(QFrame):
         link_button.setCheckedBitmap(LINKED_BUTTON.toBitmap())
         link_button.setIconSize(QSize(20, 15))
         link_button.setVisible(self._buttons & self.LinkButton)
+        link_button.setToolTip('Link Window')
+        link_button.setCheckedToolTip('Unlink Window')
 
         layout = QHBoxLayout()
         layout.setContentsMargins(QMargins(0, 0, 0, 0))
@@ -197,44 +194,6 @@ class QDockWindow(QDockFrame):
 
         #: Whether the window is inside it's close event.
         in_close_event = Bool(False)
-
-    @classmethod
-    def create(cls, manager, parent=None):
-        """ A classmethod to create a new QDockWindow.
-
-        This method will retrieve a window from the free list if one
-        is available. This can help to reduce flicker on window show.
-
-        Parameters
-        ----------
-        manager : DockManager
-            The dock manager which owns the dock window.
-
-        parent : QWidget or None
-            The parent of the dock window, or None.
-
-        """
-        if FREE_WINDOWS:
-            self = FREE_WINDOWS.pop()
-            self._manager = manager
-            self.setParent(parent, Qt.Tool | Qt.FramelessWindowHint)
-            self.setDockArea(QDockArea())
-            self.applyNormalState()
-            return self
-        return cls(manager, parent)
-
-    @classmethod
-    def free(cls, window):
-        """ A classmethod to free a QDockWindow.
-
-        This method can be called to return a dock window to the free
-        list if there is capacity. It is called by the dock manager at
-        the appropriate times.
-
-        """
-        if len(FREE_WINDOWS) < FREE_WINDOWS_MAX:
-            if window not in FREE_WINDOWS:
-                FREE_WINDOWS.append(window)
 
     def __init__(self, manager, parent=None):
         """ Initialize a QDockWindow.

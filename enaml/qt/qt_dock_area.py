@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import os
+
 from atom.api import Typed
 
 from enaml.widgets.dock_area import ProxyDockArea
@@ -105,7 +107,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         manager = self.manager
         for item in self.dock_items():
             manager.add_item(item)
-        manager.apply_layout(self.declaration.layout)
+        self.apply_layout(self.declaration.layout)
         self.dock_filter = dock_filter = DockFilter(self)
         self.widget.installEventFilter(dock_filter)
 
@@ -118,7 +120,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         self.widget.removeEventFilter(self.dock_filter)
         del self.dock_filter
-        self.manager.clear_items()
+        self.manager.destroy()
         super(QtDockArea, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -181,16 +183,23 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """ Save the current layout on the underlying widget.
 
         """
-        return self.manager.save_layout()
+        layout = self.manager.save_layout()
+        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+            from enaml.layout.dock_layout import convert_to_old_docklayout
+            layout = convert_to_old_docklayout(layout)
+        return layout
 
     def apply_layout(self, layout):
         """ Apply a new layout to the underlying widget.
 
         """
+        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+            from enaml.layout.dock_layout import convert_to_new_docklayout
+            layout = convert_to_new_docklayout(layout)
         self.manager.apply_layout(layout)
 
-    def apply_layout_op(self, op, direction, *item_names):
-        """ Apply the layout operation to the underlying widget
+    def update_layout(self, ops):
+        """ Update the layout from a list of layout operations.
 
         """
-        self.manager.apply_layout_op(op, direction, *item_names)
+        self.manager.update_layout(ops)

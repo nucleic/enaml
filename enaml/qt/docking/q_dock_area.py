@@ -226,7 +226,7 @@ class QDockArea(QFrame):
             layout.setCurrentIndex(1)
             widget.show()
 
-    def addToDockBar(self, container, position):
+    def addToDockBar(self, container, position, index=-1):
         """ Add a container to the dock bar at the given position.
 
         Parameters
@@ -240,8 +240,12 @@ class QDockArea(QFrame):
             The enum value specifying the dock bar to which the
             container should be added.
 
+        index : int, optional
+            The index at which to insert the item. The default is -1
+            and will append the item to the dock bar.
+
         """
-        self._dock_bar_manager.addContainer(container, position)
+        self._dock_bar_manager.addContainer(container, position, index)
 
     def removeFromDockBar(self, container):
         """ Remove a container previously added to a dock bar.
@@ -282,6 +286,32 @@ class QDockArea(QFrame):
 
         """
         return self._dock_bar_manager.dockBarContainers()
+
+    def dockBarPosition(self, container):
+        """ Get the dock bar position of the given container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container of interest.
+
+        Returns
+        -------
+        result : QDockBar.Position or None
+            The position of the container, or None if the container
+            does not exist in the manager.
+
+        """
+        return self._dock_bar_manager.dockBarPosition(container)
+
+    def clearDockBars(self):
+        """ Clear the dock bars from the dock area.
+
+        This method is called by the dock manager when the dock area
+        is reset. It should not be called directly by user code.
+
+        """
+        self._dock_bar_manager.clearDockBars()
 
     def isEmpty(self):
         """ Get whether or not the dock area is empty.

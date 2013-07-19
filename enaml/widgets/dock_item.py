@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import os
+
 from atom.api import (
     Coerced, Event, Unicode, Bool, Range, Typed, ForwardTyped, observe
 )
@@ -95,27 +97,21 @@ class DockItem(Widget):
             if isinstance(child, Container):
                 return child
 
-    def split(self, direction, *names):
-        """ Split the dock item in the given direction.
+    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
 
-        This is a convenience method for applying a 'split_item' layout
-        operation to the parent dock area. See the 'apply_layout_op'
-        method of the 'DockArea' class for more info.
+        def split(self, direction, *names):
+            """ This method is deprecated.
 
-        """
-        args = ('split_item', direction, self.name) + names
-        self._call_parent('apply_layout_op', *args)
+            """
+            args = ('split_item', direction, self.name) + names
+            self._call_parent('apply_layout_op', *args)
 
-    def tabify(self, direction, *names):
-        """ Split the dock item in the given direction.
+        def tabify(self, direction, *names):
+            """ This method is deprecated.
 
-        This is a convenience method for applying a 'tabify_item' layout
-        operation to the parent dock area. See the 'apply_layout_op'
-        method of the 'DockArea' class for more info.
-
-        """
-        args = ('tabify_item', direction, self.name) + names
-        self._call_parent('apply_layout_op', *args)
+            """
+            args = ('tabify_item', direction, self.name) + names
+            self._call_parent('apply_layout_op', *args)
 
     #--------------------------------------------------------------------------
     # Observers
