@@ -15,6 +15,7 @@ from enaml.qt.QtGui import QApplication
 
 from enaml.layout.dock_layout import ItemLayout, AreaLayout
 
+from .event_types import QDockItemEvent, DockItemDocked
 from .layout_handling import plug_frame
 from .q_dock_bar import QDockBar
 from .q_dock_splitter import QDockSplitter
@@ -236,6 +237,7 @@ class LayoutBuilder(NodeVisitor):
             window.setGeometry(container.geometry())
             win_area = window.dockArea()
             plug_frame(win_area, None, container, QGuideRose.Guide.AreaCenter)
+            self.post_docked_event(container)
         yield
         if is_window:
             window.show()
@@ -243,32 +245,46 @@ class LayoutBuilder(NodeVisitor):
                 window.showMaximized()
 
     @contextmanager
-    def drop_window(self, window):
-        """ Setup a drop context for a QDockWindow.
+    def drop_frame(self, frame):
+        """ Setup a drop context for a QDockFrame.
 
-        This context manager prepares a QDockWindow to be dropped onto
-        a dock area or dock container. It ensures that the window is
-        cleaned up after the docking operation.
+        This context manager prepares a QDockFrame to be dropped onto
+        a dock area or dock container. It ensures that a dock window is
+        cleaned up after the docking operation and that the appropriate
+        event is emitted on the object.
 
         Parameters
         ----------
-        window : object
-            The window of interest. The method will only operate on
-            instances of QDockWindow, but it is safe to pass any other
-            type.
+        window : QDockFrame
+            The dock frame of interest.
 
         """
-        is_window = isinstance(window, QDockWindow)
-        if is_window:
-            win_area = window.dockArea()
+        if isinstance(frame, QDockWindow):
+            win_area = frame.dockArea()
             maxed = win_area.maximizedWidget()
             if maxed is not None:
                 container = self.containers.get(maxed.objectName())
                 if container is not None:
                     container.showNormal()
         yield
-        if is_window and window.dockArea() is None:
-            window.close()
+        if isinstance(frame, QDockWindow) and frame.dockArea() is None:
+            frame.close()
+        elif not frame.isWindow():  # QDockContainer was docked.
+            self.post_docked_event(frame)
+
+    def post_docked_event(self, container):
+        """ Post the docked event for the given container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container which was undocked.
+
+        """
+        root_area = container.manager().dock_area()
+        if root_area.dockEventsEnabled():
+            event = QDockItemEvent(DockItemDocked, container.objectName())
+            QApplication.postEvent(root_area, event)
 
     #--------------------------------------------------------------------------
     # LayoutNode Visitors
