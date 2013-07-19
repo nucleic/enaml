@@ -11,6 +11,7 @@ from enaml.qt.QtGui import (
     QCursor
 )
 
+from .event_types import QDockItemEvent, DockTabSelected
 from .q_bitmap_button import QBitmapButton
 from .xbms import CLOSE_BUTTON
 
@@ -226,6 +227,7 @@ class QDockTabWidget(QTabWidget):
         self.setMovable(True)
         self.tabBar().setDrawBase(False)
         self.tabCloseRequested.connect(self._onTabCloseRequested)
+        self.currentChanged.connect(self._onCurrentChanged)
 
     #--------------------------------------------------------------------------
     # Private API
@@ -237,6 +239,24 @@ class QDockTabWidget(QTabWidget):
         # Invoke the close slot later to allow the signal to return.
         container = self.widget(index)
         QMetaObject.invokeMethod(container, 'close', Qt.QueuedConnection)
+
+    def _onCurrentChanged(self, index):
+        """ Handle the 'currentChanged' signal for the tab widget.
+
+        """
+        # These checks protect against the signal firing during close.
+        container = self.widget(index)
+        if container is None:
+            return
+        manager = container.manager()
+        if manager is None:
+            return
+        area = manager.dock_area()
+        if area is None:
+            return
+        if area.dockEventsEnabled():
+            event = QDockItemEvent(DockTabSelected, container.objectName())
+            QApplication.postEvent(area, event)
 
     #--------------------------------------------------------------------------
     # Public API
