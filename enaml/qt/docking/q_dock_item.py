@@ -8,7 +8,9 @@
 from enaml.qt.QtCore import QRect, QSize, QPoint, QTimer, Signal
 from enaml.qt.QtGui import QApplication, QFrame, QLayout
 
-from .event_types import QDockItemEvent, DockItemShown, DockItemHidden
+from .event_types import (
+    QDockItemEvent, DockItemShown, DockItemHidden, DockItemClosed
+)
 from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_title_bar import QDockTitleBar
 
@@ -273,18 +275,34 @@ class QDockItem(QFrame):
         self._manager = None  # Set and cleared by the DockManager
         self._vis_changed = None
         self._closable = True
+        self._closing = False
 
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
+    def close(self):
+        """ Handle the close request for the dock item.
+
+        """
+        self._closing = True
+        try:
+            super(QDockItem, self).close()
+        finally:
+            self._closing = False
+
     def closeEvent(self, event):
         """ Handle the close event for the dock item.
 
         This handler will reject the event if the item is not closable.
 
         """
-        if not self._closable:
-            event.ignore()
+        event.ignore()
+        if self._closable:
+            event.accept()
+            area = self.rootDockArea()
+            if area is not None and area.dockEventsEnabled():
+                event = QDockItemEvent(DockItemClosed, self.objectName())
+                QApplication.postEvent(area, event)
 
     def showEvent(self, event):
         """ Handle the show event for the container.
@@ -302,7 +320,9 @@ class QDockItem(QFrame):
 
         """
         super(QDockItem, self).hideEvent(event)
-        self._postVisibilityChange(False)
+        # Don't post when closing; A closed event is posted instead.
+        if not self._closing:
+            self._postVisibilityChange(False)
 
     #--------------------------------------------------------------------------
     # Public API

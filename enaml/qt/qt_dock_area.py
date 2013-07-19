@@ -12,7 +12,7 @@ from atom.api import Typed
 from enaml.widgets.dock_area import ProxyDockArea
 from enaml.widgets.dock_events import (
     ItemDocked, ItemUndocked, ItemExtended, ItemRetracted, ItemShown,
-    ItemHidden, TabSelected
+    ItemHidden, ItemClosed, TabSelected
 )
 
 from .QtCore import QObject, QEvent, QSize, QTimer
@@ -21,9 +21,8 @@ from .QtGui import QTabWidget
 from .docking.dock_manager import DockManager
 from .docking.event_types import (
     DockItemDocked, DockItemUndocked, DockItemExtended, DockItemRetracted,
-    DockItemShown, DockItemHidden, DockTabSelected
+    DockItemShown, DockItemHidden, DockItemClosed, DockTabSelected
 )
-
 from .docking.q_dock_area import QDockArea
 from .docking.style_sheets import get_style_sheet
 
@@ -46,6 +45,7 @@ EVENT_CONVERTERS = {
     DockItemRetracted: lambda event: ItemRetracted(name=event.name()),
     DockItemShown: lambda event: ItemShown(name=event.name()),
     DockItemHidden: lambda event: ItemHidden(name=event.name()),
+    DockItemClosed: lambda event: ItemClosed(name=event.name()),
     DockTabSelected: lambda event: TabSelected(
         current=event.current(), previous=event.previous()),
 }
