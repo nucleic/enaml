@@ -10,11 +10,20 @@ import os
 from atom.api import Typed
 
 from enaml.widgets.dock_area import ProxyDockArea
+from enaml.widgets.dock_events import (
+    ItemDocked, ItemUndocked, ItemExtended, ItemRetracted, ItemShown,
+    ItemHidden, TabSelected
+)
 
 from .QtCore import QObject, QEvent, QSize, QTimer
 from .QtGui import QTabWidget
 
 from .docking.dock_manager import DockManager
+from .docking.event_types import (
+    DockItemDocked, DockItemUndocked, DockItemExtended, DockItemRetracted,
+    DockItemShown, DockItemHidden, DockTabSelected
+)
+
 from .docking.q_dock_area import QDockArea
 from .docking.style_sheets import get_style_sheet
 
@@ -30,20 +39,31 @@ TAB_POSITIONS = {
 }
 
 
-class DockFilter(QObject):
-    """ A simple event filter used by the QtDockArea.
+EVENT_CONVERTERS = {
+    DockItemDocked: lambda event: ItemDocked(name=event.name()),
+    DockItemUndocked: lambda event: ItemUndocked(name=event.name()),
+    DockItemExtended: lambda event: ItemExtended(name=event.name()),
+    DockItemRetracted: lambda event: ItemRetracted(name=event.name()),
+    DockItemShown: lambda event: ItemShown(name=event.name()),
+    DockItemHidden: lambda event: ItemHidden(name=event.name()),
+    DockTabSelected: lambda event: TabSelected(
+        current=event.current(), previous=event.previous()),
+}
+
+
+class DockLayoutFilter(QObject):
+    """ An event filter used by the QtDockArea.
 
     This event filter listens for LayoutRequest events on the dock
     area widget, and will send a size_hint_updated notification to
-    the constraints system when the dock area size hint changes.
-
-    The notifications are collapsed on a single shot timer so that
-    the dock area geometry can fully settle before being snapped
-    by the constraint layout engine.
+    the constraints system when the dock area size hint changes. The
+    notifications are collapsed on a single shot timer so that the
+    dock area geometry can fully settle before being snapped by the
+    constraints layout engine.
 
     """
     def __init__(self, owner):
-        super(DockFilter, self).__init__()
+        super(DockLayoutFilter, self).__init__()
         self._owner = owner
         self._size_hint = QSize()
         self._pending = False
@@ -65,6 +85,27 @@ class DockFilter(QObject):
         return False
 
 
+class DockEventFilter(QObject):
+    """ An event filter used by the QtDockArea.
+
+    This event filter listens for dock events on the dock area widget,
+    converts them to front-end events, and posts them to the front-end
+    declaration object.
+
+    """
+    def __init__(self, owner):
+        super(DockEventFilter, self).__init__()
+        self._owner = owner
+
+    def eventFilter(self, obj, event):
+        converter = EVENT_CONVERTERS.get(event.type())
+        if converter is not None:
+            d = self._owner.declaration
+            if d is not None:
+                d.dock_event(converter(event))
+        return False
+
+
 class QtDockArea(QtConstraintsWidget, ProxyDockArea):
     """ A Qt implementation of an Enaml DockArea.
 
@@ -76,7 +117,10 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
     manager = Typed(DockManager)
 
     #: The event filter which listens for layout requests.
-    dock_filter = Typed(DockFilter)
+    dock_layout_filter = Typed(DockLayoutFilter)
+
+    #: The event filter which listens for dock events.
+    dock_event_filter = Typed(DockEventFilter)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -87,6 +131,8 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         self.widget = QDockArea(self.parent_widget())
         self.manager = DockManager(self.widget)
+        self.dock_event_filter = DockEventFilter(self)
+        self.dock_layout_filter = DockLayoutFilter(self)
 
     def init_widget(self):
         """ Initialize the underlying widget.
@@ -98,6 +144,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         self.set_live_drag(d.live_drag)
         if d.style:
             self.set_style(d.style)
+        self.set_dock_events_enabled(d.dock_events_enabled)
 
     def init_layout(self):
         """ Initialize the layout of the underlying control.
@@ -107,9 +154,9 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         manager = self.manager
         for item in self.dock_items():
             manager.add_item(item)
-        self.apply_layout(self.declaration.layout)
-        self.dock_filter = dock_filter = DockFilter(self)
-        self.widget.installEventFilter(dock_filter)
+        d = self.declaration
+        self.apply_layout(d.layout)
+        self.widget.installEventFilter(self.dock_layout_filter)
 
     def destroy(self):
         """ A reimplemented destructor.
@@ -118,8 +165,10 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         the items from the dock manager.
 
         """
-        self.widget.removeEventFilter(self.dock_filter)
-        del self.dock_filter
+        self.widget.removeEventFilter(self.dock_layout_filter)
+        self.widget.removeEventFilter(self.dock_event_filter)
+        del self.dock_layout_filter
+        del self.dock_event_filter
         self.manager.destroy()
         super(QtDockArea, self).destroy()
 
@@ -178,6 +227,17 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         self.widget.setStyleSheet(get_style_sheet(style))
+
+    def set_dock_events_enabled(self, enabled):
+        """ Set whether or not dock events are enabled for the area.
+
+        """
+        widget = self.widget
+        widget.setDockEventsEnabled(enabled)
+        if enabled:
+            widget.installEventFilter(self.dock_event_filter)
+        else:
+            widget.removeEventFilter(self.dock_event_filter)
 
     def save_layout(self):
         """ Save the current layout on the underlying widget.
