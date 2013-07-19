@@ -48,7 +48,7 @@ class ItemRetracted(DockEvent):
 
 
 class ItemShown(DockEvent):
-    """ A dock even emitted when an item becomes visible on the screen.
+    """ A dock event emitted when an item becomes visible on the screen.
 
     """
     #: The name of the relevant dock item.
@@ -56,7 +56,15 @@ class ItemShown(DockEvent):
 
 
 class ItemHidden(DockEvent):
-    """ A dock even emitted when an item is hidden from the screen.
+    """ A dock event emitted when an item is hidden from the screen.
+
+    """
+    #: The name of the relevant dock item.
+    name = Unicode()
+
+
+class ItemClosed(DockEvent):
+    """ A dock event emitted when an item is closed.
 
     """
     #: The name of the relevant dock item.

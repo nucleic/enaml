@@ -36,6 +36,10 @@ DockItemShown = QEvent.Type(QEvent.registerEventType())
 DockItemHidden = QEvent.Type(QEvent.registerEventType())
 
 
+#: An event type which indicates the dock item was closed.
+DockItemClosed = QEvent.Type(QEvent.registerEventType())
+
+
 #: An event type which indicates a dock tab was selected.
 DockTabSelected = QEvent.Type(QEvent.registerEventType())
 
