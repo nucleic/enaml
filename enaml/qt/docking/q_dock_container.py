@@ -10,6 +10,7 @@ from atom.api import Typed, Bool
 from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
 from enaml.qt.QtGui import QApplication, QLayout, QIcon
 
+from .event_types import QDockItemEvent, DockItemUndocked
 from .q_dock_area import QDockArea
 from .q_dock_bar import QDockBar
 from .q_dock_frame import QDockFrame
@@ -531,6 +532,7 @@ class QDockContainer(QDockFrame):
         """
         if not self.unplug():
             return
+        self.postUndockedEvent()
         state = self.frame_state
         state.mouse_title = True
         state.dragging = True
@@ -546,6 +548,15 @@ class QDockContainer(QDockFrame):
         self.grabMouse()
         self.activateWindow()
         self.raise_()
+
+    def postUndockedEvent(self):
+        """ Post a DockItemUndocked event to the root dock area.
+
+        """
+        root_area = self.manager().dock_area()
+        if root_area.dockEventsEnabled():
+            event = QDockItemEvent(DockItemUndocked, self.objectName())
+            QApplication.postEvent(root_area, event)
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -700,6 +711,7 @@ class QDockContainer(QDockFrame):
         # that layout widgets can clean themselves up when empty.
         if not self.unplug():
             return False
+        self.postUndockedEvent()
 
         # Make the container a toplevel frame, update it's Z-order,
         # and grab the mouse to continue processing drag events.
