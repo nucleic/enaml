@@ -10,10 +10,7 @@ import os
 from atom.api import Typed
 
 from enaml.widgets.dock_area import ProxyDockArea
-from enaml.widgets.dock_events import (
-    ItemDocked, ItemUndocked, ItemExtended, ItemRetracted, ItemShown,
-    ItemHidden, ItemClosed, TabSelected
-)
+from enaml.widgets.dock_events import DockItemEvent
 
 from .QtCore import QObject, QEvent, QSize, QTimer
 from .QtGui import QTabWidget
@@ -38,16 +35,15 @@ TAB_POSITIONS = {
 }
 
 
-EVENT_CONVERTERS = {
-    DockItemDocked: lambda event: ItemDocked(name=event.name()),
-    DockItemUndocked: lambda event: ItemUndocked(name=event.name()),
-    DockItemExtended: lambda event: ItemExtended(name=event.name()),
-    DockItemRetracted: lambda event: ItemRetracted(name=event.name()),
-    DockItemShown: lambda event: ItemShown(name=event.name()),
-    DockItemHidden: lambda event: ItemHidden(name=event.name()),
-    DockItemClosed: lambda event: ItemClosed(name=event.name()),
-    DockTabSelected: lambda event: TabSelected(
-        current=event.current(), previous=event.previous()),
+EVENT_TYPES = {
+    DockItemDocked: DockItemEvent.Docked,
+    DockItemUndocked: DockItemEvent.Undocked,
+    DockItemExtended: DockItemEvent.Extended,
+    DockItemRetracted: DockItemEvent.Retracted,
+    DockItemShown: DockItemEvent.Shown,
+    DockItemHidden: DockItemEvent.Hidden,
+    DockItemClosed: DockItemEvent.Closed,
+    DockTabSelected: DockItemEvent.TabSelected,
 }
 
 
@@ -98,11 +94,11 @@ class DockEventFilter(QObject):
         self._owner = owner
 
     def eventFilter(self, obj, event):
-        converter = EVENT_CONVERTERS.get(event.type())
-        if converter is not None:
+        e_type = EVENT_TYPES.get(event.type())
+        if e_type is not None:
             d = self._owner.declaration
             if d is not None:
-                d.dock_event(converter(event))
+                d.dock_event(DockItemEvent(type=e_type, name=event.name()))
         return False
 
 
