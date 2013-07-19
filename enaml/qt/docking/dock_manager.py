@@ -500,13 +500,13 @@ class DockManager(Atom):
         if isinstance(target, QDockArea):
             if target.maximizedWidget() is not None:
                 return
-            with builder.drop_window(frame):
+            with builder.drop_frame(frame):
                 local = target.mapFromGlobal(pos)
                 widget = layout_hit_test(target, local)
                 plug_frame(target, widget, frame, guide)
         elif isinstance(target, QDockContainer):
             with builder.dock_context(target):
-                with builder.drop_window(frame):
+                with builder.drop_frame(frame):
                     area = target.parentDockArea()
                     if area is not None:
                         plug_frame(area, target, frame, guide)
