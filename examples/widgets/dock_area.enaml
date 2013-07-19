@@ -72,9 +72,18 @@ class LineCollector(Atom):
 
 enamldef MyDockArea(DockArea):
     layout = HSplitLayout(
-        VSplitLayout('Item 1', 'Item 3', 'Item 5'),
-        VSplitLayout('Item 4', 'Item 2', 'Logger'),
-        TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
+        VSplitLayout(
+            HSplitLayout(
+                VSplitLayout('Item 1', 'Item 3'),
+                'Item 4',
+            ),
+            'Logger',
+        ),
+        VSplitLayout(
+            TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
+            'Item 5',
+            'Item 2',
+        ),
     )
     DockItem:
         name = 'Item 1'
