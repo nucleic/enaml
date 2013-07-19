@@ -5,12 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, Bool, Tuple
+from atom.api import Typed, Bool
 
-from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, QTimer, Signal
+from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
 from enaml.qt.QtGui import QApplication, QLayout, QIcon
 
-from .event_types import QDockItemEvent, DockItemShown, DockItemHidden
 from .q_dock_area import QDockArea
 from .q_dock_bar import QDockBar
 from .q_dock_frame import QDockFrame
@@ -123,9 +122,6 @@ class QDockContainer(QDockFrame):
         #: Whether or not the container is stored in a dock bar. This
         #: value is manipulated directly by the QDockBarManager.
         in_dock_bar = Bool(False)
-
-        #: A tuple of (QTimer, bool) used to collapse visibility changes.
-        vis_changed = Tuple()
 
     def __init__(self, manager, parent=None):
         """ Initialize a QDockContainer.
@@ -639,24 +635,6 @@ class QDockContainer(QDockFrame):
         """
         self.manager().close_container(self, event)
 
-    def showEvent(self, event):
-        """ Handle the show event for the container.
-
-        This handler posts a visibility change event.
-
-        """
-        super(QDockContainer, self).showEvent(event)
-        self._postVisibilityChange(True)
-
-    def hideEvent(self, event):
-        """ Handle the hide event for the container.
-
-        This handler posts a visibility change event.
-
-        """
-        super(QDockContainer, self).hideEvent(event)
-        self._postVisibilityChange(False)
-
     def titleBarMousePressEvent(self, event):
         """ Handle a mouse press event on the title bar.
 
@@ -755,54 +733,3 @@ class QDockContainer(QDockFrame):
                 state.press_pos = None
                 return True
         return False
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _onVisibilityTimer(self):
-        """ Handle the visibility timer timeout.
-
-        This handler will post the dock item visibility event to the
-        root dock area.
-
-        """
-        # This timer event can occur after the container is released.
-        manager = self.manager()
-        if manager is None:
-            return
-        area = manager.dock_area()
-        if area is None:
-            return
-        if area.dockEventsEnabled():
-            timer, visible = self.frame_state.vis_changed
-            evt_type = DockItemShown if visible else DockItemHidden
-            event = QDockItemEvent(evt_type, self.objectName())
-            QApplication.postEvent(area, event)
-            del self.frame_state.vis_changed
-
-    def _postVisibilityChange(self, visible):
-        """ Post a visibility changed event for the dock item.
-
-        This method collapses the post on a timer and will not emit
-        the event when the visibility temporarily toggles bettwen
-        states.
-
-        Parameters
-        ----------
-        visible : bool
-            True if the item was show, False if the item was hidden.
-
-        """
-        if self.manager().dock_area().dockEventsEnabled():
-            vis_changed = self.frame_state.vis_changed
-            if not vis_changed:
-                timer = QTimer()
-                timer.setSingleShot(True)
-                timer.timeout.connect(self._onVisibilityTimer)
-                self.frame_state.vis_changed = (timer, visible)
-                timer.start()
-                return
-            timer, old_visible = vis_changed
-            if old_visible != visible:
-                timer.stop()
-                del self.frame_state.vis_changed

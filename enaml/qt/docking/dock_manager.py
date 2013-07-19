@@ -127,6 +127,7 @@ class DockManager(Atom):
         if item in self._dock_items:
             return
         self._dock_items.add(item)
+        item._manager = self
         container = QDockContainer(self, self._dock_area)
         container.setDockItem(item)
         container.setObjectName(item.objectName())
@@ -148,6 +149,7 @@ class DockManager(Atom):
         """
         if item not in self._dock_items:
             return
+        item._manager = None
         for container in self.dock_containers():
             if container.dockItem() is item:
                 if not container.isWindow():
@@ -211,6 +213,8 @@ class DockManager(Atom):
             if isinstance(frame, QDockWindow):
                 frame.setParent(None, Qt.Widget)
                 frame.hide()
+        for item in self._dock_items:
+            item._manager = None
         self._dock_area.setCentralWidget(None)
         self._dock_area.setMaximizedWidget(None)
         del self._dock_area
