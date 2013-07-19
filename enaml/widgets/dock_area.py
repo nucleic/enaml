@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from contextlib import contextmanager
 import os
 
 from atom.api import (
@@ -227,6 +228,19 @@ class DockArea(ConstraintsWidget):
 
             """
             self.apply_layout_op('split_area', direction, *item_names)
+
+    @contextmanager
+    def suppress_dock_events(self):
+        """ A context manager which supresses dock events.
+
+        This manager will disable dock events for the duration of the
+        context, and restore the old value upon exit.
+
+        """
+        enabled = self.dock_events_enabled
+        self.dock_events_enabled = False
+        yield
+        self.dock_events_enabled = enabled
 
     #--------------------------------------------------------------------------
     # Observers
