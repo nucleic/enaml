@@ -13,7 +13,7 @@ from atom.api import (
 from enaml.application import deferred_call
 from enaml.core.declarative import d_
 from enaml.icon import Icon
-from enaml.layout.geometry import Size
+from enaml.layout.geometry import Pos, Rect, Size
 
 from .container import Container
 from .widget import Widget, ProxyWidget
@@ -35,7 +35,25 @@ class ProxyWindow(ProxyWidget):
     def set_icon(self, icon):
         raise NotImplementedError
 
-    def close(self):
+    def position(self):
+        raise NotImplementedError
+
+    def set_position(self, pos):
+        raise NotImplementedError
+
+    def size(self):
+        raise NotImplementedError
+
+    def set_size(self, size):
+        raise NotImplementedError
+
+    def geometry(self):
+        raise NotImplementedError
+
+    def set_geometry(self, rect):
+        raise NotImplementedError
+
+    def frame_geometry(self):
         raise NotImplementedError
 
     def minimize(self):
@@ -51,6 +69,15 @@ class ProxyWindow(ProxyWidget):
         raise NotImplementedError
 
     def send_to_back(self):
+        raise NotImplementedError
+
+    def center_on_screen(self):
+        raise NotImplementedError
+
+    def center_on_widget(self, other):
+        raise NotImplementedError
+
+    def close(self):
         raise NotImplementedError
 
 
@@ -75,8 +102,12 @@ class Window(Widget):
     #: The titlebar text.
     title = d_(Unicode())
 
-    #: The initial size of the window. A value of (-1, -1) indicates
-    #: to let the toolkit choose the initial size.
+    #: The initial position of the window frame. A value of (-1, -1)
+    #: indicates that the toolkit should choose the initial position.
+    initial_position = d_(Coerced(Pos, (-1, -1)))
+
+    #: The initial size of the window client area. A value of (-1, -1)
+    #: indicates that the toolkit should choose the initial size.
     initial_size = d_(Coerced(Size, (-1, -1)))
 
     #: An enum which indicates the modality of the window. The default
@@ -134,12 +165,93 @@ class Window(Widget):
             if isinstance(child, Container):
                 return child
 
-    def close(self):
-        """ Send the 'close' action to the client widget.
+    def position(self):
+        """ Get the position of the window frame.
+
+        Returns
+        -------
+        result : Pos
+            The current position of the window frame.
 
         """
         if self.proxy_is_active:
-            self.proxy.close()
+            return self.proxy.position()
+        return Pos(-1, -1)
+
+    def set_position(self, pos):
+        """ Set the position of the window frame.
+
+        Parameters
+        ----------
+        pos : Pos
+            The desired position of the window the window frame.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.set_position(pos)
+
+    def size(self):
+        """ Get the size of the window client area.
+
+        Returns
+        -------
+        result : Size
+            The current size of the window client area.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.size()
+        return Size(-1, -1)
+
+    def set_size(self, size):
+        """ Set the size of the window client area.
+
+        Parameters
+        ----------
+        size : Size
+            The desired size of the window client area.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.set_size(size)
+
+    def geometry(self):
+        """ Get the geometry of the window client area.
+
+        Returns
+        -------
+        result : Rect
+            The current geometry of the window client area.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.geometry()
+        return Rect(-1, -1, -1, -1)
+
+    def set_geometry(self, rect):
+        """ Set the geometry of the window client area.
+
+        Parameters
+        ----------
+        rect : Rect
+            The desired geometry of the window client area.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.set_geometry(rect)
+
+    def frame_geometry(self):
+        """ Get the geometry of the window frame.
+
+        Returns
+        -------
+        result : Rect
+            The current geometry of the window frame.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.frame_geometry()
+        return Rect(-1, -1, -1, -1)
 
     def maximize(self):
         """ Send the 'maximize' action to the client widget.
@@ -175,6 +287,36 @@ class Window(Widget):
         """
         if self.proxy_is_active:
             self.proxy.send_to_back()
+
+    def center_on_screen(self):
+        """ Center the window on the screen.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.center_on_screen()
+
+    def center_on_widget(self, other):
+        """ Center this window on another widget.
+
+        Parameters
+        ----------
+        other : Widget
+            The widget onto which to center this window.
+
+        """
+        assert isinstance(other, Widget)
+        if self.proxy_is_active and other.proxy_is_active:
+            self.proxy.center_on_widget(other)
+
+    def close(self):
+        """ Close the window.
+
+        This will cause the window to be hidden, the 'closed' event
+        to be fired, and the window subsequently destroyed.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.close()
 
     def show(self):
         """ Show the window to the screen.
