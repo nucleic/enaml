@@ -107,7 +107,7 @@ class Widget(ToolkitObject):
     minimum_size = d_(Coerced(Size, (-1, -1)))
 
     #: The maximum size for the widget. The default means that the
-    #: client should determine and inteliigent maximum size.
+    #: client should determine an intelligent maximum size.
     maximum_size = d_(Coerced(Size, (-1, -1)))
 
     #: The tool tip to show when the user hovers over the widget.
