@@ -18,7 +18,24 @@ class BaseRect(tuple):
     """
     __slots__ = ()
 
-    def __new__(cls, x, y, width, height):
+    @staticmethod
+    def coerce_type(item):
+        return item
+
+    def __new__(cls, x=None, y=None, width=None, height=None):
+        if isinstance(x, (tuple, BaseRect)):
+            return cls(*x)
+        c = cls.coerce_type
+        x = c(x)
+        if y is None:
+            y = x
+        else:
+            y = c(y)
+        width = c(width)
+        if height is None:
+            height = width
+        else:
+            height = c(height)
         return super(BaseRect, cls).__new__(cls, (x, y, width, height))
 
     def __getnewargs__(self):
@@ -64,9 +81,9 @@ class Rect(BaseRect):
     """
     __slots__ = ()
 
-    def __new__(cls, x, y, width, height):
-        i = int
-        return super(Rect, cls).__new__(cls, i(x), i(y), i(width), i(height))
+    @staticmethod
+    def coerce_type(item):
+        return 0 if item is None else int(item)
 
     @property
     def box(self):
@@ -97,9 +114,9 @@ class RectF(BaseRect):
     """
     __slots__ = ()
 
-    def __new__(cls, x, y, width, height):
-        f = float
-        return super(RectF, cls).__new__(cls, f(x), f(y), f(width), f(height))
+    @staticmethod
+    def coerce_type(item):
+        return 0.0 if item is None else float(item)
 
     @property
     def box(self):
@@ -272,7 +289,19 @@ class BasePos(tuple):
     """
     __slots__ = ()
 
-    def __new__(cls, x, y):
+    @staticmethod
+    def coerce_type(item):
+        return item
+
+    def __new__(cls, x=None, y=None):
+        if isinstance(x, (tuple, BasePos)):
+            return cls(*x)
+        c = cls.coerce_type
+        x = c(x)
+        if y is None:
+            y = x
+        else:
+            y = c(y)
         return super(BasePos, cls).__new__(cls, (x, y))
 
     def __getnewargs__(self):
@@ -285,14 +314,14 @@ class BasePos(tuple):
 
     @property
     def x(self):
-        """ The 'x' component of the size.
+        """ The 'x' component of the position.
 
         """
         return self[0]
 
     @property
     def y(self):
-        """ The 'y' component of the size.
+        """ The 'y' component of the position.
 
         """
         return self[1]
@@ -304,9 +333,9 @@ class Pos(BasePos):
     """
     __slots__ = ()
 
-    def __new__(cls, x, y):
-        i = int
-        return super(Pos, cls).__new__(cls, i(x), i(y))
+    @staticmethod
+    def coerce_type(item):
+        return 0 if item is None else int(item)
 
 
 class PosF(BasePos):
@@ -315,9 +344,9 @@ class PosF(BasePos):
     """
     __slots__ = ()
 
-    def __new__(cls, x, y):
-        f = float
-        return super(PosF, cls).__new__(cls, f(x), f(y))
+    @staticmethod
+    def coerce_type(item):
+        return 0.0 if item is None else float(item)
 
 
 #------------------------------------------------------------------------------
@@ -388,4 +417,3 @@ class SizeF(BaseSize):
     @staticmethod
     def coerce_type(item):
         return 0.0 if item is None else float(item)
-
