@@ -1,6 +1,14 @@
 Enaml Release Notes
 ===================
 
+0.7.19 - 07/22/2013
+-------------------
+- Added dock layout ops for extending/retracting from dock bars. 00ee34a102f_
+- Added methods for manipulating window geometry. bebba0a82fa_
+
+.. _00ee34a102f: https://github.com/nucleic/enaml/commit/00ee34a102fd28c1861a82f784699844c5537c6c
+.. _bebba0a82fa: https://github.com/nucleic/enaml/commit/bebba0a82face4000a28bdff73e4df71fcbeb356
+
 0.7.18 - 07/20/2013
 -------------------
 - Production release of dock area toolbars.
