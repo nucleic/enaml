@@ -305,6 +305,32 @@ class QDockArea(QFrame):
         """
         return self._dock_bar_manager.dockBarPosition(container)
 
+    def extendFromDockBar(self, container):
+        """ Extend the given container from its dock bar.
+
+        If the container does not exist in a dock bar, this is a no-op.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container of interest.
+
+        """
+        self._dock_bar_manager.extendContainer(container)
+
+    def retractToDockBar(self, container):
+        """ Retract the given container into it's dock bar.
+
+        If the container does not exist in a dock bar, this is a no-op.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container of interest.
+
+        """
+        self._dock_bar_manager.retractContainer(container)
+
     def clearDockBars(self):
         """ Clear the dock bars from the dock area.
 

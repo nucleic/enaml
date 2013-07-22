@@ -850,6 +850,36 @@ class QDockBarManager(QObject):
         """
         return len(self._widgets) == 0
 
+    def extendContainer(self, container):
+        """ Extend the specified container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container to put in the extended position. If the
+            container does not exist in the manager, this method is
+            a no-op.
+
+        """
+        button = self._widgets.get(container)
+        if button is not None:
+            button.setChecked(True)
+
+    def retractContainer(self, container):
+        """ Retract the specified container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container to put in the retracted position. If the
+            container does not exist in the manager, this method is
+            a no-op.
+
+        """
+        button = self._widgets.get(container)
+        if button is not None:
+            button.setChecked(False)
+
     #--------------------------------------------------------------------------
     # Protected API
     #--------------------------------------------------------------------------

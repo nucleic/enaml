@@ -16,7 +16,7 @@ else:
         ItemLayout, TabLayout, SplitLayout, HSplitLayout, VSplitLayout,
         DockBarLayout, AreaLayout, DockLayout, DockLayoutWarning,
         InsertItem, InsertBorderItem, InsertDockBarItem, InsertTab,
-        FloatItem, FloatArea, RemoveItem
+        FloatItem, FloatArea, RemoveItem, ExtendItem, RetractItem
     )
 from .layout_helpers import (
     align, hbox, vbox, horizontal, vertical, grid, spacer,

@@ -575,3 +575,31 @@ class LayoutBuilder(NodeVisitor):
         else:
             container.unplug()
         container.hide()
+
+    def visit_ExtendItem(self, op):
+        """ Handle the ExtendItem dock layout op.
+
+        This visitor will extend the item provided it lives in a
+        dock bar.
+
+        """
+        container = self.containers.get(op.item)
+        if container is None:
+            return
+        area = container.parentDockArea()
+        if area is not None:
+            area.extendFromDockBar(container)
+
+    def visit_RetractItem(self, op):
+        """ Handle the RetractItem dock layout op.
+
+        This visitor will retract the item provided it lives in a
+        dock bar.
+
+        """
+        container = self.containers.get(op.item)
+        if container is None:
+            return
+        area = container.parentDockArea()
+        if area is not None:
+            area.retractToDockBar(container)
