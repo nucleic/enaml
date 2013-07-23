@@ -7,10 +7,11 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed
 
+from enaml.layout.geometry import Pos, Rect, Size
 from enaml.widgets.window import ProxyWindow
 
-from .QtCore import Qt, QSize, Signal
-from .QtGui import QFrame, QLayout, QIcon
+from .QtCore import Qt, QPoint, QRect, QSize, Signal
+from .QtGui import QApplication, QFrame, QLayout, QIcon
 
 from .q_resource_helpers import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout
@@ -215,7 +216,9 @@ class QtWindow(QtWidget, ProxyWindow):
         if d.title:
             self.set_title(d.title)
         if -1 not in d.initial_size:
-            self.set_initial_size(d.initial_size)
+            self.widget.resize(*d.initial_size)
+        if -1 not in d.initial_position:
+            self.widget.move(*d.initial_position)
         if d.modality != 'non_modal':
             self.set_modality(d.modality)
         if d.icon:
@@ -276,11 +279,77 @@ class QtWindow(QtWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # ProxyWindow API
     #--------------------------------------------------------------------------
-    def close(self):
-        """ Close the window
+    def set_title(self, title):
+        """ Set the title of the window.
 
         """
-        self.widget.close()
+        self.widget.setWindowTitle(title)
+
+    def set_modality(self, modality):
+        """ Set the modality of the window.
+
+        """
+        self.widget.setWindowModality(MODALITY[modality])
+
+    def set_icon(self, icon):
+        """ Set the window icon.
+
+        """
+        if icon:
+            qicon = get_cached_qicon(icon)
+        else:
+            qicon = QIcon()
+        self.widget.setWindowIcon(qicon)
+
+    def position(self):
+        """ Get the position of the of the window.
+
+        """
+        point = self.widget.pos()
+        return Pos(point.x(), point.y())
+
+    def set_position(self, pos):
+        """ Set the position of the window.
+
+        """
+        self.widget.move(*pos)
+
+    def size(self):
+        """ Get the size of the window.
+
+        """
+        size = self.widget.size()
+        return Size(size.width(), size.height())
+
+    def set_size(self, size):
+        """ Set the size of the window.
+
+        """
+        size = QSize(*size)
+        if size.isValid():
+            self.widget.resize(size)
+
+    def geometry(self):
+        """ Get the geometry of the window.
+
+        """
+        rect = self.widget.geometry()
+        return Rect(rect.x(), rect.y(), rect.width(), rect.height())
+
+    def set_geometry(self, rect):
+        """ Set the geometry of the window.
+
+        """
+        rect = QRect(*rect)
+        if rect.isValid():
+            self.widget.setGeometry(rect)
+
+    def frame_geometry(self):
+        """ Get the geometry of the window.
+
+        """
+        rect = self.widget.frameGeometry()
+        return Rect(rect.x(), rect.y(), rect.width(), rect.height())
 
     def maximize(self):
         """ Maximize the window.
@@ -312,32 +381,32 @@ class QtWindow(QtWidget, ProxyWindow):
         """
         self.widget.lower()
 
-    def set_icon(self, icon):
-        """ Set the window icon.
+    def center_on_screen(self):
+        """ Center the window on the screen.
 
         """
-        if icon:
-            qicon = get_cached_qicon(icon)
+        widget = self.widget
+        rect = QRect(QPoint(0, 0), widget.frameGeometry().size())
+        geo = QApplication.desktop().screenGeometry(widget)
+        widget.move(geo.center() - rect.center())
+
+    def center_on_widget(self, other):
+        """ Center the window on another widget.
+
+        """
+        widget = self.widget
+        rect = QRect(QPoint(0, 0), widget.frameGeometry().size())
+        other_widget = other.proxy.widget
+        if other_widget.isWindow():
+            geo = other_widget.frameGeometry()
         else:
-            qicon = QIcon()
-        self.widget.setWindowIcon(qicon)
+            size = other_widget.size()
+            point = other_widget.mapToGlobal(QPoint(0, 0))
+            geo = QRect(point, size)
+        widget.move(geo.center() - rect.center())
 
-    def set_title(self, title):
-        """ Set the title of the window.
-
-        """
-        self.widget.setWindowTitle(title)
-
-    def set_initial_size(self, size):
-        """ Set the initial size of the window.
+    def close(self):
+        """ Close the window.
 
         """
-        if -1 in size:
-            return
-        self.widget.resize(QSize(*size))
-
-    def set_modality(self, modality):
-        """ Set the modality of the window.
-
-        """
-        self.widget.setWindowModality(MODALITY[modality])
+        self.widget.close()

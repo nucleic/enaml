@@ -5,9 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.qt.QtCore import QRect, QSize, QPoint, Signal
-from enaml.qt.QtGui import QFrame, QLayout
+from enaml.qt.QtCore import QRect, QSize, QPoint, QTimer, Signal
+from enaml.qt.QtGui import QApplication, QFrame, QLayout
 
+from .event_types import (
+    QDockItemEvent, DockItemShown, DockItemHidden, DockItemClosed
+)
 from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_title_bar import QDockTitleBar
 
@@ -269,23 +272,85 @@ class QDockItem(QFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setTitleBarWidget(QDockTitleBar())
+        self._manager = None  # Set and cleared by the DockManager
+        self._vis_changed = None
         self._closable = True
+        self._closing = False
 
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
+    def close(self):
+        """ Handle the close request for the dock item.
+
+        """
+        self._closing = True
+        try:
+            super(QDockItem, self).close()
+        finally:
+            self._closing = False
+
     def closeEvent(self, event):
         """ Handle the close event for the dock item.
 
         This handler will reject the event if the item is not closable.
 
         """
-        if not self._closable:
-            event.ignore()
+        event.ignore()
+        if self._closable:
+            event.accept()
+            area = self.rootDockArea()
+            if area is not None and area.dockEventsEnabled():
+                event = QDockItemEvent(DockItemClosed, self.objectName())
+                QApplication.postEvent(area, event)
+
+    def showEvent(self, event):
+        """ Handle the show event for the container.
+
+        This handler posts a visibility change event.
+
+        """
+        super(QDockItem, self).showEvent(event)
+        self._postVisibilityChange(True)
+
+    def hideEvent(self, event):
+        """ Handle the hide event for the container.
+
+        This handler posts a visibility change event.
+
+        """
+        super(QDockItem, self).hideEvent(event)
+        # Don't post when closing; A closed event is posted instead.
+        if not self._closing:
+            self._postVisibilityChange(False)
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
+    def manager(self):
+        """ Get the dock manager for this dock item.
+
+        Returns
+        -------
+        result : DockManager or None
+            The dock manager which is managing this item.
+
+        """
+        return self._manager
+
+    def rootDockArea(self):
+        """ Get the root dock area for this dock item.
+
+        Returns
+        -------
+        result : QDockArea or None
+            The root dock area for this dock item.
+
+        """
+        manager = self._manager
+        if manager is not None:
+            return manager.dock_area()
+
     def title(self):
         """ Get the title for the dock item.
 
@@ -579,3 +644,49 @@ class QDockItem(QFrame):
 
         """
         self.layout().setDockWidget(widget)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _onVisibilityTimer(self):
+        """ Handle the visibility timer timeout.
+
+        This handler will post the dock item visibility event to the
+        root dock area.
+
+        """
+        area = self.rootDockArea()
+        if area is not None and area.dockEventsEnabled():
+            timer, visible = self._vis_changed
+            evt_type = DockItemShown if visible else DockItemHidden
+            event = QDockItemEvent(evt_type, self.objectName())
+            QApplication.postEvent(area, event)
+            self._vis_changed = None
+
+    def _postVisibilityChange(self, visible):
+        """ Post a visibility changed event for the dock item.
+
+        This method collapses the post on a timer and will not emit
+        the event when the visibility temporarily toggles bettwen
+        states.
+
+        Parameters
+        ----------
+        visible : bool
+            True if the item was show, False if the item was hidden.
+
+        """
+        area = self.rootDockArea()
+        if area is not None and area.dockEventsEnabled():
+            vis_changed = self._vis_changed
+            if vis_changed is None:
+                timer = QTimer()
+                timer.setSingleShot(True)
+                timer.timeout.connect(self._onVisibilityTimer)
+                self._vis_changed = (timer, visible)
+                timer.start()
+            else:
+                timer, old_visible = vis_changed
+                if old_visible != visible:
+                    self._vis_changed = None
+                    timer.stop()

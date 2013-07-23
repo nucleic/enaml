@@ -1,14 +1,35 @@
 Enaml Release Notes
 ===================
 
+0.7.19 - 07/22/2013
+-------------------
+- Added dock layout ops for extending/retracting from dock bars. 00ee34a102f_
+- Added methods for manipulating window geometry. bebba0a82fa_
+
+.. _00ee34a102f: https://github.com/nucleic/enaml/commit/00ee34a102fd28c1861a82f784699844c5537c6c
+.. _bebba0a82fa: https://github.com/nucleic/enaml/commit/bebba0a82face4000a28bdff73e4df71fcbeb356
+
+0.7.18 - 07/20/2013
+-------------------
+- Production release of dock area toolbars.
+- Updates to dock layout specification with compatibility env setting.
+- Resizable slide-out dock bar items.
+- Pin buttons on dock items.
+- Improved procedural dock layout modification api.
+- Added a base Frame class which supplies borders for subclasses. d1316f40248_
+- Fixed container ref-cycle issue on widget destruction. 03a5e53038f_
+
+.. _d1316f40248: https://github.com/nucleic/enaml/commit/d1316f40248eaef807705ccc9954f43eebece954
+.. _03a5e53038f: https://github.com/nucleic/enaml/commit/03a5e53038f2aac1d187d9bb2c27c86c2b1d9caf
+
 0.7.17 - 07/03/2013
 -------------------
-- Added easier to use operator hooks. 2aaf3c96fc_
+- Added easier to use operator hooks. 2aaf3c96fc8_
 - Added support for PySide. 0d18a21754e_
 - Add cursor anchor mode to PopupView. 74ddd47197e_
 - Initial feedback release of dock area toolbars.
 
-.. _2aaf3c96fc: https://github.com/nucleic/enaml/commit/2aaf3c96fc89bc064e52a83ef416c752a5bbedf5
+.. _2aaf3c96fc8: https://github.com/nucleic/enaml/commit/2aaf3c96fc89bc064e52a83ef416c752a5bbedf5
 .. _0d18a21754e: https://github.com/nucleic/enaml/commit/0d18a21754ee9b071b0986289ddfdb380ab016fc
 .. _74ddd47197e: https://github.com/nucleic/enaml/commit/74ddd47197ef9330e69cf9cb137aeb45a0204d07
 

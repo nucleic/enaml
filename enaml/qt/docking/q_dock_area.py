@@ -64,6 +64,7 @@ class QDockArea(QFrame):
         self._dock_bar_manager = QDockBarManager(self)
         self._primary_pane = primary_pane = QWidget(self)
         self._central_pane = central_pane = QWidget(primary_pane)
+        self._dock_events_enabled = False
         self._opaque_resize = None
         self._tab_position = None
 
@@ -304,6 +305,32 @@ class QDockArea(QFrame):
         """
         return self._dock_bar_manager.dockBarPosition(container)
 
+    def extendFromDockBar(self, container):
+        """ Extend the given container from its dock bar.
+
+        If the container does not exist in a dock bar, this is a no-op.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container of interest.
+
+        """
+        self._dock_bar_manager.extendContainer(container)
+
+    def retractToDockBar(self, container):
+        """ Retract the given container into it's dock bar.
+
+        If the container does not exist in a dock bar, this is a no-op.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The dock container of interest.
+
+        """
+        self._dock_bar_manager.retractContainer(container)
+
     def clearDockBars(self):
         """ Clear the dock bars from the dock area.
 
@@ -362,6 +389,33 @@ class QDockArea(QFrame):
 
         """
         self._tab_position = position
+
+    def dockEventsEnabled(self):
+        """ Get whether dock events are enabled for the area.
+
+        Returns
+        -------
+        result : bool
+            True if dock events are enabled, False otherwise.
+
+        """
+        return self._dock_events_enabled
+
+    def setDockEventsEnabled(self, enabled):
+        """ Set whether dock events are enabled for the area.
+
+        If events are enabled, then the various widgets involved with
+        the dock area will post events to the *root* dock area when the
+        various states have changed. If events are disabled, no such
+        events will be posted.
+
+        Parameters
+        ----------
+        enabled : bool
+            True if dock events should be enabled, False otherwise.
+
+        """
+        self._dock_events_enabled = enabled
 
     def opaqueItemResize(self):
         """ Get whether opaque item resize is enabled.

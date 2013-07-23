@@ -691,6 +691,30 @@ class RemoveItem(DockLayoutOp):
     item = Unicode()
 
 
+class ExtendItem(DockLayoutOp):
+    """ A layout operation which extends an item in a dock bar.
+
+    This layout operation will cause the named item to be extended to
+    from its dock bar. If the item does not exist in a dock bar, this
+    operation is a no-op.
+
+    """
+    #: The name of the dock item to extend from its dock bar.
+    item = Unicode()
+
+
+class RetractItem(DockLayoutOp):
+    """ A layout operation which retracts an item into a dock bar.
+
+    This layout operation will cause the named item to be retracted
+    into its dock bar. If the item does not exist in a dock bar, this
+    operation is a no-op.
+
+    """
+    #: The name of the dock item to retract into its dock bar.
+    item = Unicode()
+
+
 #------------------------------------------------------------------------------
 # Deprecated Layout Classes
 #------------------------------------------------------------------------------

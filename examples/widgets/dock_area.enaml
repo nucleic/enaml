@@ -17,12 +17,14 @@ key while dragging a tab.
 """
 import cPickle
 
+from atom.api import Atom, ContainerList, Unicode
+
 from enaml.layout.api import (
     HSplitLayout, VSplitLayout, TabLayout, InsertItem, hbox, vbox, spacer
 )
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
-    ObjectCombo
+    ObjectCombo, CheckBox, MultilineField
 )
 
 
@@ -34,11 +36,54 @@ STYLES = {
 }
 
 
+class LineCollector(Atom):
+    """ A simple class used to generate event logging text.
+
+    """
+    #: The header to use as the first lines of the text.
+    HEADER = u'#   Item     Event Type            \n'\
+             u'-----------------------------------'
+
+    #: The output text of the collector; updated when data changes.
+    text = Unicode(HEADER)
+
+    #: The data for the collector. This is a list of 2-tuples of
+    #: the form (unicode, DockItemEvent.Type).
+    data = ContainerList()
+
+    def _observe_data(self, change):
+        self.update_text()
+
+    def update_text(self):
+        """ Regenerate the output text from the current data.
+
+        """
+        parts = []
+        count = len(self.data)
+        for index, (evt_type, name) in enumerate(reversed(self.data)):
+            parts.append((count - index, evt_type, name))
+        lines = [self.HEADER]
+        for item in parts:
+            num, name, enum = item
+            line = u'{0!s: <4}{1: <9}{2: <19}'.format(num, name, enum.name)
+            lines.append(line)
+        self.text = u'\n'.join(lines)
+
+
 enamldef MyDockArea(DockArea):
     layout = HSplitLayout(
-        VSplitLayout('Item 1', 'Item 3', 'Item 5'),
-        VSplitLayout('Item 4', 'Item 2'),
-        TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
+        VSplitLayout(
+            HSplitLayout(
+                VSplitLayout('Item 1', 'Item 3'),
+                'Item 4',
+            ),
+            'Logger',
+        ),
+        VSplitLayout(
+            TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
+            'Item 5',
+            'Item 2',
+        ),
     )
     DockItem:
         name = 'Item 1'
@@ -97,6 +142,16 @@ enamldef MyDockArea(DockArea):
         title = name
         Container:
             Html: source = '<h1><center>Bonjour!</center></h1>'
+    DockItem:
+        name = 'Logger'
+        title = 'Event Logger'
+        Container:
+            MultilineField:
+                attr collector = LineCollector()
+                name = 'line-collector'
+                text << collector.text
+                font = '9pt Courier'
+                read_only = True
 
 
 enamldef MyItem(DockItem): owner:
@@ -113,7 +168,10 @@ enamldef Main(Window):
         attr stored = None
         padding = (0, 0, 0, 10)
         constraints = [
-            hbox(vbox(10, save_b, restore_b, add_b, style_c, spacer), area)
+            hbox(
+                vbox(10, save_b, restore_b, add_b, style_c, c_box, spacer),
+                area,
+            )
         ]
         PushButton: save_b:
             text = 'Save Layout'
@@ -125,7 +183,8 @@ enamldef Main(Window):
             enabled << stored is not None
             clicked ::
                 layout = cPickle.loads(stored)
-                area.apply_layout(layout)
+                with area.suppress_dock_events():
+                    area.apply_layout(layout)
         PushButton: add_b:
             text = 'Add Items'
             clicked ::
@@ -137,5 +196,12 @@ enamldef Main(Window):
         ObjectCombo: style_c:
             items = STYLES.keys()
             selected = 'VS 2010'
+        CheckBox: c_box:
+            text = 'Enable Dock Events'
+            checked := area.dock_events_enabled
         MyDockArea: area:
             style << STYLES[style_c.selected]
+            dock_event ::
+                event = change['value']
+                field = area.find('line-collector')
+                field.collector.data.append((event.name, event.type))

@@ -9,6 +9,7 @@ import wx
 
 from atom.api import Typed
 
+from enaml.layout.geometry import Pos, Rect, Size
 from enaml.widgets.window import ProxyWindow
 
 from .wx_action import wxAction
@@ -138,7 +139,9 @@ class WxWindow(WxWidget, ProxyWindow):
         if d.title:
             self.set_title(d.title)
         if -1 not in d.initial_size:
-            self.set_initial_size(d.initial_size)
+            self.widget.SetClientSize(wx.Size(*d.initial_size))
+        if -1 not in d.initial_position:
+            self.widget.Move(wx.Point(*d.initial_position))
         if d.icon:
             self.set_icon(d.icon)
         self.widget.Bind(wx.EVT_CLOSE, self.on_close)
@@ -210,11 +213,78 @@ class WxWindow(WxWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # ProxyWindow API
     #--------------------------------------------------------------------------
-    def close(self):
-        """ Close the window
+    def set_title(self, title):
+        """ Set the title of the window.
 
         """
-        self.widget.Close()
+        self.widget.SetTitle(title)
+
+    def set_modality(self, modality):
+        """ Set the modality of the window.
+
+        """
+        if modality == 'non_modal':
+            self.widget.MakeModal(False)
+        else:
+            self.widget.MakeModal(True)
+
+    def set_icon(self, icon):
+        """ This is not supported on Wx.
+
+        """
+        pass
+
+    def position(self):
+        """ Get the position of the of the window.
+
+        """
+        point = self.widget.GetPosition()
+        return Pos(point.x, point.y)
+
+    def set_position(self, pos):
+        """ Set the position of the window.
+
+        """
+        self.widget.SetPosition(wx.Point(*pos))
+
+    def size(self):
+        """ Get the size of the window.
+
+        """
+        size = self.widget.GetClientSize()
+        return Size(size.GetWidth(), size.GetHeight())
+
+    def set_size(self, size):
+        """ Set the size of the window.
+
+        """
+        size = wx.Size(*size)
+        if size.IsFullySpecified():
+            self.widget.SetClientSize(size)
+
+    def geometry(self):
+        """ Get the geometry of the window.
+
+        """
+        # Wx has no standard way of taking into account the size of
+        # the window frame. I'm not spending time on a workaround.
+        point = self.widget.GetPosition()
+        size = self.widget.GetClientSize()
+        return Rect(point.x, point.y, size.GetWidth(), size.GetHeight())
+
+    def set_geometry(self, rect):
+        """ Set the geometry of the window.
+
+        """
+        self.set_position(rect[:2])
+        self.set_size(rect[2:])
+
+    def frame_geometry(self):
+        """ Get the geometry of the window.
+
+        """
+        r = self.widget.GetRect()
+        return Rect(r.GetX(), r.GetY(), r.GetWidth(), r.GetHeight())
 
     def maximize(self):
         """ Maximize the window.
@@ -246,32 +316,26 @@ class WxWindow(WxWidget, ProxyWindow):
         """
         self.widget.Lower()
 
-    def set_icon(self, icon):
-        """ This is not supported on Wx.
+    def center_on_screen(self):
+        """ Center the window on the screen.
 
         """
-        pass
+        self.widget.CenterOnScreen()
 
-    def set_title(self, title):
-        """ Set the title of the window.
-
-        """
-        self.widget.SetTitle(title)
-
-    def set_initial_size(self, size):
-        """ Set the initial size of the window.
+    def center_on_widget(self, other):
+        """ Center the window on another widget.
 
         """
-        self.widget.SetSize(wx.Size(*size))
+        widget = self.widget
+        rect = widget.GetRect()
+        geo = other.proxy.widget.GetScreenRect()
+        widget.Move(rect.CenterIn(geo).GetPosition())
 
-    def set_modality(self, modality):
-        """ Set the modality of the window.
+    def close(self):
+        """ Close the window
 
         """
-        if modality == 'non_modal':
-            self.widget.MakeModal(False)
-        else:
-            self.widget.MakeModal(True)
+        self.widget.Close()
 
     #--------------------------------------------------------------------------
     # Overrides

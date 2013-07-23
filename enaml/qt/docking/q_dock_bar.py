@@ -17,7 +17,10 @@ from enaml.qt.QtGui import (
     QLayout
 )
 
-from .event_types import DockAreaContentsChanged
+from .event_types import (
+    QDockItemEvent, DockItemExtended, DockItemRetracted,
+    DockAreaContentsChanged
+)
 
 
 class QDockBar(QFrame):
@@ -670,6 +673,11 @@ class QDockBarManager(QObject):
         """
         item = self.sender().targetObject()
         item.setAnimation(None)
+        container = item.widget()
+        area = container.manager().dock_area()
+        if area.dockEventsEnabled():
+            event = QDockItemEvent(DockItemExtended, container.objectName())
+            QApplication.postEvent(area, event)
 
     def _onSlideInFinished(self):
         """ Handle the 'finished' signal from a slide in animation.
@@ -679,6 +687,11 @@ class QDockBarManager(QObject):
         item.setAnimation(None)
         item.hide()
         self._untrackForResize(item)
+        container = item.widget()
+        area = container.manager().dock_area()
+        if area.dockEventsEnabled():
+            event = QDockItemEvent(DockItemRetracted, container.objectName())
+            QApplication.postEvent(area, event)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -836,6 +849,36 @@ class QDockBarManager(QObject):
 
         """
         return len(self._widgets) == 0
+
+    def extendContainer(self, container):
+        """ Extend the specified container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container to put in the extended position. If the
+            container does not exist in the manager, this method is
+            a no-op.
+
+        """
+        button = self._widgets.get(container)
+        if button is not None:
+            button.setChecked(True)
+
+    def retractContainer(self, container):
+        """ Retract the specified container.
+
+        Parameters
+        ----------
+        container : QDockContainer
+            The container to put in the retracted position. If the
+            container does not exist in the manager, this method is
+            a no-op.
+
+        """
+        button = self._widgets.get(container)
+        if button is not None:
+            button.setChecked(False)
 
     #--------------------------------------------------------------------------
     # Protected API
