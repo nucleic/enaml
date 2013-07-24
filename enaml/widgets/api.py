@@ -43,6 +43,7 @@ from .progress_bar import ProgressBar
 from .push_button import PushButton
 from .radio_button import RadioButton
 from .raw_widget import RawWidget
+from .scintilla import Scintilla, ScintillaDocument
 from .scroll_area import ScrollArea
 from .separator import Separator
 from .slider import Slider
@@ -53,7 +54,6 @@ from .stack import Stack, Transition
 from .stack_item import StackItem
 from .status_bar import StatusBar
 from .status_item import StatusItem
-from .text_editor import TextEditor, TextDocument
 from .time_selector import TimeSelector
 from .timer import Timer
 from .tool_bar import ToolBar
