@@ -250,14 +250,19 @@ def status_item_factory():
     return QtStatusItem
 
 
+def text_editor_factory():
+    from .qt_text_editor import QtTextEditor
+    return QtTextEditor
+
+
 def time_selector_factory():
     from .qt_time_selector import QtTimeSelector
     return QtTimeSelector
 
 
-def text_editor_factory():
-    from .qt_text_editor import QtTextEditor
-    return QtTextEditor
+def timer_factory():
+    from .qt_timer import QtTimer
+    return QtTimer
 
 
 def tool_bar_factory():
@@ -324,8 +329,9 @@ QT_FACTORIES = {
     'StackItem': stack_item_factory,
     'StatusBar': status_bar_factory,
     'StatusItem': status_item_factory,
-    'TimeSelector': time_selector_factory,
     'TextEditor': text_editor_factory,
+    'TimeSelector': time_selector_factory,
+    'Timer': timer_factory,
     'ToolBar': tool_bar_factory,
     'WebView': web_view_factory,
     'Window': window_factory,

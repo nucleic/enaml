@@ -53,8 +53,9 @@ from .stack import Stack, Transition
 from .stack_item import StackItem
 from .status_bar import StatusBar
 from .status_item import StatusItem
-from .time_selector import TimeSelector
 from .text_editor import TextEditor, TextDocument
+from .time_selector import TimeSelector
+from .timer import Timer
 from .tool_bar import ToolBar
 from .web_view import WebView
 from .window import Window
