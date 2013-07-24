@@ -67,7 +67,7 @@ class QtTextEditor(QtControl, ProxyTextEditor):
 
     lexer = Typed(Qsci.QsciLexer)
 
-    font = Typed(QFont)
+    font = Typed(QFont, ())
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -77,7 +77,6 @@ class QtTextEditor(QtControl, ProxyTextEditor):
 
         """
         self.widget = Qsci.QsciScintilla(self.parent_widget())
-
 
     def init_widget(self):
         """ Initialize the underlying widget.
@@ -92,6 +91,7 @@ class QtTextEditor(QtControl, ProxyTextEditor):
         self.widget.setIndentationsUseTabs(False)
         self.widget.setTabWidth(4)
         self.widget.setTabIndents(True)
+        self.widget.setText(d.initial_text)
 
     #--------------------------------------------------------------------------
     # Signal Handlers

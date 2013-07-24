@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Atom, Enum, Event, Typed, ForwardTyped, Value, observe, set_default
+    Atom, Enum, Event, Typed, ForwardTyped, Value, observe, set_default, Unicode
 )
 
 from enaml.core.declarative import d_
@@ -86,6 +86,8 @@ class TextEditor(Control):
     """ A simple control for displaying read-only text.
 
     """
+    initial_text = d_(Unicode())
+
     #: An event emitted when the text is changed.
     text_changed = d_(Event(), writable=False)
 
