@@ -1,0 +1,57 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.layout.api import HSplitLayout, VSplitLayout
+from enaml.widgets.api import Window, Container, DockArea, DockItem
+from enaml.stdlib.live_editor_model import LiveEditorModel
+from enaml.stdlib.live_editor_view import (
+    LiveEditorPanel, LiveTracebackPanel, LiveViewPanel
+)
+
+
+INITIAL_TEXT = """\
+from enaml.widgets.api import *
+from enaml.layout.api import *
+
+
+enamldef DemoContainer(Container):
+    pass
+"""
+
+
+enamldef Main(Window):
+    title = 'Live Editor Demo'
+    attr editor_model = LiveEditorModel(
+        input_text=INITIAL_TEXT,
+        file_name='demo.enaml',
+        view_item='DemoContainer',
+    )
+    Container:
+        padding = 0
+        DockArea: area:
+            layout = HSplitLayout(
+                VSplitLayout('live-editor', 'live-traceback'),
+                'live-view'
+            )
+            DockItem:
+                name = 'live-editor'
+                title = 'Live Editor'
+                stretch = 1
+                LiveEditorPanel:
+                    model = editor_model
+            DockItem:
+                name = 'live-traceback'
+                title = 'Errors'
+                stretch = 0
+                LiveTracebackPanel:
+                    model = editor_model
+            DockItem:
+                name = 'live-view'
+                title = 'Live View'
+                stretch = 1
+                LiveViewPanel:
+                    model = editor_model
