@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Str, Event
+from atom.api import Unicode, Event
 
 from .declarative_meta import DeclarativeMeta
 from .object import Object, flag_generator, flag_property
@@ -59,7 +59,7 @@ class Declarative(Object):
     __metaclass__ = DeclarativeMeta
 
     #: Export the 'name' attribute as a declarative member.
-    name = d_(Str())
+    name = d_(Unicode())
 
     #: An event fired when an object is initialized. It is triggered
     #: once during the object lifetime, at the end of the initialize
