@@ -23,6 +23,7 @@ _perc = r'\s*((?:\+|\-)?[0-9]*(?:\.[0-9]+)?)%\s*'
 
 #: Regular expressions used by the parsing routines.
 _HEX_RE = re.compile(r'^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$', re.UNICODE)
+_HEXA_RE = re.compile(r'^#([A-Fa-f0-9]{4}|[A-Fa-f0-9]{8})$', re.UNICODE)
 _RGB_NUM_RE = re.compile(r'^rgb\(%s,%s,%s\)$' % (_int, _int, _int), re.UNICODE)
 _RGB_PER_RE = re.compile(r'^rgb\(%s,%s,%s\)$' % (_perc, _perc, _perc), re.UNICODE)
 _RGBA_NUM_RE = re.compile(r'^rgba\(%s,%s,%s,%s\)$' % (_int, _int, _int, _real), re.UNICODE)
@@ -203,6 +204,24 @@ def _parse_hex_color(color):
             g = int_(hex_str[2:4], 16)
             b = int_(hex_str[4:6], 16)
         return Color(r, g, b, 255)
+    match = _HEXA_RE.match(color)
+    if match is not None:
+        hex_str = match.group(1)
+        if len(hex_str) == 4:
+            r = int_(hex_str[0], 16)
+            r |= (r << 4)
+            g = int_(hex_str[1], 16)
+            g |= (g << 4)
+            b = int_(hex_str[2], 16)
+            b |= (b << 4)
+            a = int_(hex_str[3], 16)
+            a |= (a << 4)
+        else:
+            r = int_(hex_str[:2], 16)
+            g = int_(hex_str[2:4], 16)
+            b = int_(hex_str[4:6], 16)
+            a = int_(hex_str[6:8], 16)
+        return Color(r, g, b, a)
 
 
 def _parse_rgb_color(color):
