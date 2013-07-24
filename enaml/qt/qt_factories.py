@@ -255,6 +255,11 @@ def time_selector_factory():
     return QtTimeSelector
 
 
+def text_editor_factory():
+    from .qt_text_editor import QtTextEditor
+    return QtTextEditor
+
+
 def tool_bar_factory():
     from .qt_tool_bar import QtToolBar
     return QtToolBar
@@ -320,6 +325,7 @@ QT_FACTORIES = {
     'StatusBar': status_bar_factory,
     'StatusItem': status_item_factory,
     'TimeSelector': time_selector_factory,
+    'TextEditor': text_editor_factory,
     'ToolBar': tool_bar_factory,
     'WebView': web_view_factory,
     'Window': window_factory,
