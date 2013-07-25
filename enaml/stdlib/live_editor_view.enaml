@@ -8,11 +8,72 @@
 from enaml.core.api import Include
 from enaml.layout.api import vbox, hbox, align
 from enaml.widgets.api import (
-    Container, Label, Field, TextEditor, Timer, MdiArea, MdiWindow,
-    MultilineField, SpinBox
+    Container, Label, Field, Scintilla, Timer, MdiArea, MdiWindow, SpinBox,
+    MultilineField, PushButton
 )
 
 from .live_editor_model import LiveEditorModel
+
+class Foo(object):
+    def __init__(self):
+        pass
+THEME = """
+{
+    "settings": {
+        "color": "#F8F8F8",
+        "paper": "#141414",
+        "font": "13pt Consolas",
+        "caret": "#A7A7A7"
+    },
+    "enaml": {
+        "class_name": {
+            "color": "#9B703F"
+        },
+        "comment": {
+            "color": "#5F5A60",
+            "font": "italic 13pt Consolas"
+        },
+        "comment_block": {
+            "color": "#5F5A60",
+            "font": "italic 13pt Consolas"
+        },
+        "decorator": {
+            "color": "#DAD085"
+        },
+        "double_quoted_string": {
+            "color": "#8F9D6A"
+        },
+        "function_method_name": {
+            "color": "#DAD085"
+        },
+        "highlighted_identifier": {
+            "color": "#7587A6"
+        },
+        "keyword": {
+            "color": "#CDA869"
+        },
+        "number": {
+            "color": "#CF6A4C"
+        },
+        "operator": {
+            "color": "#CDA869"
+        },
+        "unclosed_string": {
+            "color": "#8F9D6A",
+            "paper": "#2D2D2D"
+        },
+        "single_quoted_string": {
+            "color": "#8F9D6A"
+        },
+        "triple_double_quoted_string": {
+            "color": "#8F9D6A"
+        },
+        "triple_single_quoted_string": {
+            "color": "#8F9D6A"
+        }
+    }
+}
+"""
 
 
 enamldef LiveEditorPanel(Container):
@@ -27,15 +88,17 @@ enamldef LiveEditorPanel(Container):
         text << model.view_item
         text :: model.view_item = str(text)
     Label: slabel:
-        text = 'Font Size'
+        text = 'Zoom'
     SpinBox: spin:
-        minimum = 10
+        minimum = -10
         maximum = 20
-        value = 11
-    TextEditor: editor:
-        initial_text = model.input_text
-        font << '%dpt Consolas' % spin.value
-        syntax = 'python'
+        value := editor.zoom
+    PushButton:
+        clicked :: editor.theme = ''
+    Scintilla: editor:
+        activated :: set_text(model.input_text)
+        syntax = 'enaml'
+        theme = THEME
         text_changed :: timer.start()
         Timer: timer:
             interval = 350

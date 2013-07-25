@@ -5,8 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import uuid
+
 from atom.api import (
-    Atom, IntEnum, Enum, Event, Typed, ForwardTyped, Value, observe, set_default, Unicode
+    Atom, Int, Constant, Enum, Event, Typed, ForwardTyped, Str, observe,
+    set_default
 )
 
 from enaml.core.declarative import d_
@@ -14,42 +17,8 @@ from enaml.core.declarative import d_
 from .control import Control, ProxyControl
 
 
-class Syntax(IntEnum):
-    """ An enum class which defines the available Scintilla lexers.
-
-    """
-    Bash = 0
-    Batch = 1
-    CMake = 2
-    CPP = 3
-    CSharp = 4
-    D = 5
-    Diff = 6
-    Fortran = 7
-    HTML = 8
-    IDL = 9
-    Java = 10
-    JavaScript = 11
-    Lua = 12
-    Makefile = 13
-    Matlab = 14
-    Octave = 15
-    POV = 16
-    Pascal = 17
-    Perl = 18
-    PostScript = 19
-    Python = 20
-    Ruby = 21
-    SQL = 22
-    Spice = 23
-    TCL = 24
-    TEX = 25
-    VHDL = 26
-    Verilog = 27
-    XML = 28
-    Yaml = 29
-
-SYNTAX_DEFS = (
+#: The syntax definitions available for syntax highlighting.
+SYNTAX = (
     '',
     'bash',
     'batch',
@@ -59,6 +28,7 @@ SYNTAX_DEFS = (
     'csharp',
     'd',
     'diff',
+    'enaml',
     'fortran',
     'fortran77',
     'html',
@@ -93,8 +63,8 @@ class ScintillaDocument(Atom):
     widgets to enable multiple editing views on the same buffer.
 
     """
-    #: Private storage for the toolkit document object.
-    _tkdata = Value()
+    #: A uuid which can be used as a handle by toolkit backends.
+    uuid = Constant(factory=lambda: uuid.uuid4().hex)
 
 
 class ProxyScintilla(ProxyControl):
@@ -104,10 +74,16 @@ class ProxyScintilla(ProxyControl):
     #: A reference to the Label declaration.
     declaration = ForwardTyped(lambda: Scintilla)
 
-    def set_document(self, document):
+    def set_syntax(self, syntax):
         raise NotImplementedError
 
-    def set_syntax(self, syntax):
+    def set_theme(self, theme):
+        raise NotImplementedError
+
+    def set_zoom(self, zoom):
+        raise NotImplementedError
+
+    def set_document(self, document):
         raise NotImplementedError
 
     def get_text(self):
@@ -120,24 +96,46 @@ class ProxyScintilla(ProxyControl):
 class Scintilla(Control):
     """ A Scintilla text editing control.
 
+    Notes
+    -----
+    The 'background', 'foreground', and 'font' attributes will only
+    have an effect if a syntax definition is not in use. If a syntax
+    definition is in use, the styling is supplied by the 'theme'. See
+    the 'scintilla_theme.rst' file for information about how to write
+    a syntax highlighting theme.
+
     """
-    initial_text = d_(Unicode())
+    #: The syntax definition to apply to the text editor.
+    syntax = d_(Enum(*SYNTAX))
+
+    #: The syntax highlighting them to apply to the editor. This will
+    #: only have an effect when a syntax definition is in use. See the
+    #: 'scintilla_theme.rst' file for information about how to write a
+    #: syntax highlighting theme.
+    theme = d_(Str())
+
+    #: The zoom factor for the editor. Values outside the range of
+    #: -10 to 20 will be clipped to that range.
+    zoom = d_(Int())
+
+    #: The scintilla document buffer to use in the editor. A default
+    #: document will be created automatically for each editor. This
+    #: value only needs to be supplied when swapping buffers or when
+    #: using a single buffer in multiple editors.
+    document = d_(Typed(ScintillaDocument, ()))
 
     #: An event emitted when the text is changed.
     text_changed = d_(Event(), writable=False)
 
-    #: The scintilla document to display in the text editor.
-    document = d_(Typed(ScintillaDocument, ()))
-
-    #: The syntax definition to apply to the text editor.
-    syntax = d_(Enum(*SYNTAX_DEFS))
+    #: An event emitted when the selection is changed.
+    selection_changed = d_(Event(), writable=False)
 
     #: Text Editors expand freely in height and width by default.
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 
-    #: A reference to the ProxyTextEditor object.
-    proxy = Typed(ProxyTextEditor)
+    #: A reference to the ProxyScintilla object.
+    proxy = Typed(ProxyScintilla)
 
     #--------------------------------------------------------------------------
     # Post Validators
@@ -145,31 +143,30 @@ class Scintilla(Control):
     def _post_validate_document(self, old, new):
         """ Post validate the text document.
 
-        A text document cannot be None. If it is set to None, then a
-        new TextDocument is created.
+        A new document is created when the existing document is set to
+        None. This ensures that the proxy object never receives a null
+        document and helps keep the state synchronized.
 
         """
-        if new is None:
-            new = TextDocument()
-        return new
+        return new or ScintillaDocument()
 
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('syntax'))
+    @observe(('syntax', 'theme', 'zoom'))
     def _update_proxy(self, change):
         """ An observer which sends the document change to the proxy.
 
         """
         # The superclass implementation is sufficient.
-        super(TextEditor, self)._update_proxy(change)
+        super(Scintilla, self)._update_proxy(change)
 
     @observe('document')
     def _refresh_document(self, change):
         """ An observer which sends the document change to the proxy.
 
         """
-        # _update_proxy doesn't handle deletion, this does.
+        # _update_proxy doesn't handle 'delete' changes; this does.
         if self.proxy_is_active:
             self.proxy.set_document(self.document)
 
@@ -179,6 +176,11 @@ class Scintilla(Control):
     def get_text(self):
         """ Get the text in the current document.
 
+        Returns
+        -------
+        result : unicode
+            The text in the current document.
+
         """
         if self.proxy_is_active:
             return self.proxy.get_text()
@@ -186,6 +188,11 @@ class Scintilla(Control):
 
     def set_text(self, text):
         """ Set the text in the current document.
+
+        Parameters
+        ----------
+        text : unicode
+            The text to apply to the current document.
 
         """
         if self.proxy_is_active:
