@@ -10,183 +10,17 @@ if QT_API != 'pyqt':
     msg = 'the Qt Scintilla widget is only available when using PyQt'
     raise ImportError(msg)
 
-import json
-import logging
-
 from atom.api import Atom, Int, Str, Typed
 
-from enaml.colors import parse_color
-from enaml.fonts import parse_font
 from enaml.widgets.scintilla import ProxyScintilla
 
 from PyQt4 import Qsci
 
 from .QtGui import QColor, QFont
 
-from .q_resource_helpers import QColor_from_Color, QFont_from_Font
 from .qt_control import QtControl
-
-
-#: The module-level logger
-logger = logging.getLogger(__name__)
-
-
-class CustomLexer(Qsci.QsciLexerCustom):
-
-    def styleText(self, start, end):
-        source = bytearray(end - start)
-        editor = self.editor()
-        editor.SendScintilla(editor.SCI_GETTEXTRANGE, start, end, source)
-        print source
-
-
-class PythonLexer(Qsci.QsciLexerPython):
-    """ A custom Python lexer which highlights certain identifiers.
-
-    """
-    kwds = "self object Exception" # list more of these
-
-    def keywords(self, s):
-        super_kwds = super(PythonLexer, self).keywords(s)
-        if s == self.HighlightedIdentifier:
-            return self.kwds + (super_kwds or "")
-        return super_kwds
-
-
-class EnamlLexer(PythonLexer):
-    """ A custom Python lexer which adds Enaml keywords.
-
-    """
-    def keywords(self, s):
-        keywords = super(EnamlLexer, self).keywords(s)
-        if keywords:
-            keywords += " enamldef attr event"
-        return keywords
-
-
-LEXERS = {
-    'bash': Qsci.QsciLexerBash,
-    'batch': Qsci.QsciLexerBatch,
-    'cmake': Qsci.QsciLexerCMake,
-    'cpp': Qsci.QsciLexerCPP,
-    'css': Qsci.QsciLexerCSS,
-    'csharp': Qsci.QsciLexerCSharp,
-    'd': Qsci.QsciLexerD,
-    'diff': Qsci.QsciLexerDiff,
-    'enaml': EnamlLexer,
-    'fortran': Qsci.QsciLexerFortran,
-    'fortran77': Qsci.QsciLexerFortran77,
-    'html': Qsci.QsciLexerHTML,
-    'idl': Qsci.QsciLexerIDL,
-    'java': Qsci.QsciLexerJava,
-    'javascript': Qsci.QsciLexerJavaScript,
-    'lua': Qsci.QsciLexerLua,
-    'makefile': Qsci.QsciLexerMakefile,
-    'matlab': Qsci.QsciLexerMatlab,
-    'octave': Qsci.QsciLexerOctave,
-    'pov': Qsci.QsciLexerPOV,
-    'pascal': Qsci.QsciLexerPascal,
-    'perl': Qsci.QsciLexerPerl,
-    'postscript': Qsci.QsciLexerPostScript,
-    'python': Qsci.QsciLexerPython,
-    'ruby': Qsci.QsciLexerRuby,
-    'sql': Qsci.QsciLexerSQL,
-    'spice': Qsci.QsciLexerSpice,
-    'tcl': Qsci.QsciLexerTCL,
-    'tex': Qsci.QsciLexerTeX,
-    'vhdl': Qsci.QsciLexerVHDL,
-    'verilog': Qsci.QsciLexerVerilog,
-    'xml': Qsci.QsciLexerXML,
-    'yaml': Qsci.QsciLexerYAML,
-}
-
-
-LEXERS_REV = {}
-for key, value in LEXERS.iteritems():
-    LEXERS_REV[value] = key
-
-
-TOKENS = {
-    'class_name': 'ClassName',
-    'comment': 'Comment',
-    'comment_block': 'CommentBlock',
-    'decorator': 'Decorator',
-    'default': 'Default',
-    'double_quoted_string': 'DoubleQuotedString',
-    'function_method_name': 'FunctionMethodName',
-    'highlighted_identifier': 'HighlightedIdentifier',
-    'identifier': 'Identifier',
-    'keyword': 'Keyword',
-    'number': 'Number',
-    'operator': 'Operator',
-    'unclosed_string': 'UnclosedString',
-    'single_quoted_string': 'SingleQuotedString',
-    'triple_double_quoted_string': 'TripleDoubleQuotedString',
-    'triple_single_quoted_string': 'TripleSingleQuotedString',
-}
-
-
-def make_color(color_str):
-    color = parse_color(color_str)
-    if color is not None:
-        return QColor_from_Color(color)
-    return QColor()
-
-
-def make_font(font_str):
-    font = parse_font(font_str)
-    if font is not None:
-        return QFont_from_Font(font)
-    return QFont()
-
-
-def parse_theme(theme):
-    try:
-        theme_dict = json.loads(theme)
-    except Exception as e:
-        msg = "error occured while parsing json theme: '%s'"
-        logger.error(msg % e.message)
-        print e
-        return {}
-
-    colorcache = {}
-    fontcache = {}
-
-    def get_color(color_str):
-        if color_str in colorcache:
-            return colorcache[color_str]
-        color = colorcache[color_str] = make_color(color_str)
-        return color
-
-    def get_font(font_str):
-        if font_str in fontcache:
-            return fontcache[font_str]
-        font = fontcache[font_str] = make_font(font_str)
-        return font
-
-    if 'settings' in theme_dict:
-        settings = theme_dict['settings']
-        if 'color' in settings:
-            settings['color'] = get_color(settings['color'])
-        if 'paper' in settings:
-            settings['paper'] = get_color(settings['paper'])
-        if 'font' in settings:
-            settings['font'] = get_font(settings['font'])
-        if 'caret' in settings:
-            settings['caret'] = get_color(settings['caret'])
-
-    for key, token_styles in theme_dict.iteritems():
-        if key == 'settings':
-            continue
-        for style in token_styles.itervalues():
-            if 'color' in style:
-                style['color'] = get_color(style['color'])
-            if 'paper' in style:
-                style['paper'] = get_color(style['paper'])
-            if 'font' in style:
-                style['font'] = get_font(style['font'])
-
-    return theme_dict
+from .scintilla_lexers import LEXERS, LEXERS_INV
+from .scintilla_tokens import TOKENS
 
 
 class QtSciDoc(Atom):
@@ -328,7 +162,7 @@ class QtScintilla(QtControl, ProxyScintilla):
 
         lexer = widget.lexer()
         if lexer is not None:
-            syntax = LEXERS_REV[type(lexer)]
+            syntax = LEXERS_INV[type(lexer)]
             syntax_theme = theme.get(syntax, {})
             defaults = syntax_theme.get('default', {})
             default_color = defaults.get('color', default_color)
@@ -348,6 +182,7 @@ class QtScintilla(QtControl, ProxyScintilla):
                     lexer.setFont(font, qtoken)
                 else:
                     print 'fail token', token
+
     #--------------------------------------------------------------------------
     # ProxyScintilla API
     #--------------------------------------------------------------------------
@@ -376,6 +211,7 @@ class QtScintilla(QtControl, ProxyScintilla):
         else:
             lexer = LEXERS[syntax](self.widget)
             self.widget.setLexer(lexer)
+            lexer.refreshProperties()
         self.syntax = syntax
         self._refresh_theme()
 
