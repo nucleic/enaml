@@ -13,11 +13,32 @@ if QT_API != 'pyqt':
 from PyQt4 import Qsci
 
 
+
 class PythonLexer(Qsci.QsciLexerPython):
     """ A custom Python lexer which highlights extra identifiers.
 
     """
-    py_kwds = "self"  # add all builtins to this list
+    py_kwds = (
+        'ArithmeticError AssertionError AttributeError BaseException '
+        'BufferError BytesWarning DeprecationWarning EOFErr Ellipsis '
+        'EnvironmentError Exception False FloatingPointError FutureWarning '
+        'GeneratorExit IOError ImportError ImportWarning IndentationError '
+        'IndexError KeyError KeyboardInterrupt LookupError MemoryError '
+        'NameError None NotImplemented NotImplementedError OSError '
+        'OverflowError PendingDeprecationWarning ReferenceError RuntimeError '
+        'RuntimeWarning StandardError StopIteration SyntaxError SyntaxWarning '
+        'SystemError SystemExit TabError True TypeError UnboundLocalError '
+        'UnicodeDecodeError UnicodeEncodeError UnicodeError '
+        'UnicodeTranslateError UnicodeWarning UserWarning ValueError Warning '
+        'WindowsError ZeroDivisionError abs all any apply basestring bin bool '
+        'buffer bytearray bytes callable chr classmethod cmp coerce compile '
+        'complex delattr dict dir divmod enumerate eval execfile file filter'
+        'float format frozenset getattr globals hasattr hash help hex id input'
+        'int intern isinstance issubclass iter len list locals long map max '
+        'memoryview min next object oct open ord pow print property range '
+        'raw_input reduce reload repr reversed round set setattr slice sorted'
+        'staticmethod str sum super tuple type unichr unicode vars xrange zip'
+    )
 
     def __init__(self, *args):
         super(PythonLexer, self).__init__(*args)
