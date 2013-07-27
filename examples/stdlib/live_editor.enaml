@@ -9,7 +9,7 @@ from enaml.layout.api import HSplitLayout, VSplitLayout
 from enaml.widgets.api import Window, Container, DockArea, DockItem
 from enaml.stdlib.live_editor_model import LiveEditorModel
 from enaml.stdlib.live_editor_view import (
-    LiveEditorPanel, LiveTracebackPanel, LiveViewPanel
+    EditorPanel, TracebackPanel, LiveViewPanel
 )
 
 
@@ -20,14 +20,16 @@ from enaml.layout.api import *
 
 enamldef DemoContainer(Container):
     pass
+
 """
 
 
 enamldef Main(Window):
     title = 'Live Editor Demo'
+    initial_size = (1024, 768)
     attr editor_model = LiveEditorModel(
-        input_text=INITIAL_TEXT,
-        file_name='demo.enaml',
+        module_text=INITIAL_TEXT,
+        filename='demo.enaml',
         view_item='DemoContainer',
     )
     Container:
@@ -41,13 +43,13 @@ enamldef Main(Window):
                 name = 'live-editor'
                 title = 'Live Editor'
                 stretch = 1
-                LiveEditorPanel:
+                EditorPanel:
                     model = editor_model
             DockItem:
                 name = 'live-traceback'
                 title = 'Errors'
                 stretch = 0
-                LiveTracebackPanel:
+                TracebackPanel:
                     model = editor_model
             DockItem:
                 name = 'live-view'

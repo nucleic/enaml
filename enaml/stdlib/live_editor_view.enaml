@@ -9,74 +9,69 @@ from enaml.core.api import Include
 from enaml.layout.api import vbox, hbox, align
 from enaml.widgets.api import (
     Container, Label, Field, Scintilla, Timer, MdiArea, MdiWindow, SpinBox,
-    MultilineField, PushButton
+    MultilineField
 )
 
 from .live_editor_model import LiveEditorModel
 
-class Foo(object):
-    def __init__(self):
-        pass
-THEME = """
+from enaml.widgets.scintilla import StringThemeLoader
+
+
+IDLE_THEME = StringThemeLoader(theme="""
 {
     "settings": {
-        "color": "#F8F8F8",
-        "paper": "#141414",
-        "font": "13pt Consolas",
-        "caret": "#A7A7A7"
+        "caret": "#000000",
+        "color": "#000000",
+        "paper": "#FFFFFF",
+        "font": "12pt Consolas"
     },
     "enaml": {
         "class_name": {
-            "color": "#9B703F"
+            "color": "#21439C"
         },
         "comment": {
-            "color": "#5F5A60",
-            "font": "italic 13pt Consolas"
+            "color": "#919191"
         },
         "comment_block": {
-            "color": "#5F5A60",
-            "font": "italic 13pt Consolas"
+            "color": "#919191"
         },
         "decorator": {
             "color": "#DAD085"
         },
         "double_quoted_string": {
-            "color": "#8F9D6A"
+            "color": "#00A33F"
         },
         "function_method_name": {
-            "color": "#DAD085"
+            "color": "#21439C"
         },
         "highlighted_identifier": {
-            "color": "#7587A6"
+            "color": "#A535AE"
         },
         "keyword": {
-            "color": "#CDA869"
-        },
-        "number": {
-            "color": "#CF6A4C"
+            "color": "#FF5600"
         },
         "operator": {
-            "color": "#CDA869"
+            "color": "#FF5600"
         },
         "unclosed_string": {
-            "color": "#8F9D6A",
-            "paper": "#2D2D2D"
+            "color": "#00A33F",
+            "paper": "#EECCCC"
         },
         "single_quoted_string": {
-            "color": "#8F9D6A"
+            "color": "#00A33F"
         },
         "triple_double_quoted_string": {
-            "color": "#8F9D6A"
+            "color": "#00A33F"
         },
         "triple_single_quoted_string": {
-            "color": "#8F9D6A"
+            "color": "#00A33F"
         }
     }
 }
-"""
+""")
 
 
-enamldef LiveEditorPanel(Container):
+enamldef EditorPanel(Container):
     attr model: LiveEditorModel
     constraints = [
         vbox(hbox(label, field, slabel, spin), editor),
@@ -85,7 +80,7 @@ enamldef LiveEditorPanel(Container):
     Label: label:
         text = 'View Item'
     Field: field:
-        text << model.view_item
+        text << model.view_item 
         text :: model.view_item = str(text)
     Label: slabel:
         text = 'Zoom'
@@ -93,20 +88,18 @@ enamldef LiveEditorPanel(Container):
         minimum = -10
         maximum = 20
         value := editor.zoom
-    PushButton:
-        clicked :: editor.theme = ''
     Scintilla: editor:
-        activated :: set_text(model.input_text)
-        syntax = 'enaml'
-        theme = THEME
+        activated :: set_text(model.module_text) 
+        lexer = 'enaml'
+        theme = IDLE_THEME
         text_changed :: timer.start()
         Timer: timer:
             interval = 350
             single_shot = True
-            timeout :: model.input_text = str(editor.get_text())
+            timeout :: model.module_text = str(editor.get_text())
 
 
-enamldef LiveTracebackPanel(Container):
+enamldef TracebackPanel(Container):
     attr model: LiveEditorModel
     padding = 0
     MultilineField:
@@ -134,4 +127,4 @@ enamldef LiveViewPanel(Container):
             Container:
                 padding = 0
                 Include:
-                    objects << prepare_item(model.output_item)
+                    objects << prepare_item(model.output_view)

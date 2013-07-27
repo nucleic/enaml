@@ -20,17 +20,17 @@ class LiveEditorModel(Atom):
     """ The model which supports the live editor views.
 
     """
-    #: The Enaml text to input into the model.
-    input_text = Str()
+    #: A strong reference to the current live view object.
+    output_view = Typed(Object)
 
-    #: The generated Enaml output object.
-    output_item = Typed(Object)
+    #: The Enaml text defining the view module.
+    module_text = Str()
 
     #: The string name of the enamldef to embed into the view.
     view_item = Str('Unknown')
 
-    #: An optional filename to use when compile the code.
-    file_name = Str('unknown.enaml')
+    #: An optional filename to use when compiling the view code.
+    filename = Str('unknown_view.enaml')
 
     #: A string with the most recent trackback.
     traceback = Str()
@@ -41,25 +41,25 @@ class LiveEditorModel(Atom):
     #--------------------------------------------------------------------------
     # Post Validators
     #--------------------------------------------------------------------------
-    def _post_validate_input_text(self, old, new):
+    def _post_validate_module_text(self, old, new):
         return new.replace('\r\n', '\n')
 
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('input_text', 'view_item'))
-    def _refresh_model(self, change):
-        self.refresh()
+    @observe(('module_text', 'view_item'))
+    def _refresh_view_trigger(self, change):
+        self.refresh_view()
 
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def refresh(self):
+    def refresh_view(self):
         try:
-            ast = parse(self.input_text, filename=self.file_name)
-            code = EnamlCompiler.compile(ast, self.file_name)
+            ast = parse(self.module_text, filename=self.filename)
+            code = EnamlCompiler.compile(ast, self.filename)
             module = ModuleType('__main__')
-            module.__file__ = self.file_name
+            module.__file__ = self.filename
             namespace = module.__dict__
             with enaml.imports():
                 exec code in namespace
@@ -68,4 +68,8 @@ class LiveEditorModel(Atom):
         else:
             self.traceback = ''
             self.module = module
-            self.output_item = namespace.get(self.view_item, lambda: None)()
+            view_class = namespace.get(self.view_item)
+            if view_class is not None:
+                self.output_view = view_class()
+            else:
+                self.output_view = None
