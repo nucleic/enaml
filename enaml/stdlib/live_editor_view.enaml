@@ -73,15 +73,18 @@ IDLE_THEME = StringThemeLoader(theme="""
 
 enamldef EditorPanel(Container):
     attr model: LiveEditorModel
+    attr text_attr: str
+    attr item_attr: str
+    attr item_label: str
     constraints = [
         vbox(hbox(label, field, slabel, spin), editor),
         align('v_center', label, field, slabel, spin),
     ]
     Label: label:
-        text = 'View Item'
+        text = item_label
     Field: field:
-        text << model.view_item 
-        text :: model.view_item = str(text)
+        text << getattr(model, item_attr) 
+        text :: setattr(model, item_attr, str(text))
     Label: slabel:
         text = 'Zoom'
     SpinBox: spin:
@@ -89,14 +92,28 @@ enamldef EditorPanel(Container):
         maximum = 20
         value := editor.zoom
     Scintilla: editor:
-        activated :: set_text(model.module_text) 
+        activated :: set_text(getattr(model, text_attr))
         lexer = 'enaml'
         theme = IDLE_THEME
         text_changed :: timer.start()
         Timer: timer:
             interval = 350
             single_shot = True
-            timeout :: model.module_text = str(editor.get_text())
+            timeout :: 
+                text = str(editor.get_text())
+                setattr(model, text_attr, text)
+
+
+enamldef ModelEditorPanel(EditorPanel):
+    text_attr = 'model_text'
+    item_attr = 'model_item'
+    item_label = 'Model Item'
+
+
+enamldef ViewEditorPanel(EditorPanel):
+    text_attr = 'view_text'
+    item_attr = 'view_item'
+    item_label = 'View Item'
 
 
 enamldef TracebackPanel(Container):
@@ -127,4 +144,5 @@ enamldef LiveViewPanel(Container):
             Container:
                 padding = 0
                 Include:
+                    destroy_old = False  # old destroyed by model
                     objects << prepare_item(model.output_view)
