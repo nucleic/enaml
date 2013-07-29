@@ -3,10 +3,10 @@ Scintilla Theme Specification
 This file describes how to create a syntax highlighting theme for the
 Enaml Scintilla editor widget.
 
-Enaml supports Scintilla themes defined as simple json files.
+Enaml supports Scintilla themes defined as simple JSON files.
 
 The toplevel item in the theme file is an object with keys which match
-one of the available langauge syntax definitions::
+one of the available lexer definitions. e.g.,
 
 ```javascript
 {
@@ -22,9 +22,9 @@ one of the available langauge syntax definitions::
 }
 ```
 
-The value for a given langauge key is an object which contain the styling
-data for that language. The keys of style object any of the syntax tokens
-available for the given language::
+The value for a given lexer key is an object which contain the styling
+data for that lexer. The keys of style object are any of the tokens
+defined by the lexer. e.g.,
 
 ```javascript
 {
@@ -42,24 +42,21 @@ available for the given language::
 }
 ```
 
-The value for a given language token is an object which defines the styling
-to apply to that text which matches the token. The following keys are
-allowed in a token styling object (and all are optional):
+The value for a given lexer token is an object which defines the styling
+to apply to that text which matches that token. The following keys are
+allowed in a token style object. All of them are optional.
 
-color
-    The color to apply to the text. This is a string which conforms to
-    the CSS color specification.
++ *color* - The color to apply to the text. This is a string which conforms
+  to the CSS color specification.
 
-paper
-    The color to apply to the "paper" background under the text. This is
-    a string which conforms to the CSS color specification.
++ *paper* - The color to apply to the "paper" background under the text. This
+  is a string which conforms to the CSS color specification.
 
-font
-    The font to apply to the text. This is a string which conforms to
-    the CSS shorthand font specification. Relative units and line height
-    are not supported.
++ *font* - The font to apply to the text. This is a string which conforms to
+  the CSS shorthand font specification. Relative units and line height are not
+  supported.
 
-A rule for a Python number token might then look like:
+Hence, a complete rule for a Python number token might look like:
 
 ```javascript
 {
@@ -73,21 +70,19 @@ A rule for a Python number token might then look like:
 }
 ```
 
-The toplevel object supports a special key name "settings". The value of
+The toplevel theme object supports a special key name "settings". The value of
 this key is an object which provides settings and other defaults for the
 editor. The following keys are supported:
 
-color
-    The default text color to use in the absence of a more specific rule.
++ *color* - The default text color to use in the absence of a more specific
+  rule.
 
-paper
-    The default paper color to use in the absence of a more specific rule.
++ *paper* - The default paper color to use in the absence of a more specific
+  rule.
 
-font
-    The default text font to use in the absence of a more specific rule.
++ *font* - The default text font to use in the absence of a more specific rule.
 
-caret
-    The foreground color of the cursor caret.
++ *caret* - The foreground color of the cursor caret.
 
 
 Syntax Tokens
