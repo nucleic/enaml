@@ -12,7 +12,7 @@ Enaml supports Scintilla themes defined as simple json files.
 The toplevel item in the theme file is an object with keys which match
 one of the available langauge syntax definitions::
 
-``` json
+```javascript
 {
     "cpp": {
 
