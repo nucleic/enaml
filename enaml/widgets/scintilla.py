@@ -60,7 +60,9 @@ class ThemeLoader(Atom):
     """ A base class for defining theme loader objects.
 
     A theme loader is responsible for providing a JSON string which
-    defines a Scintilla theme to the requestor.
+    defines a Scintilla theme to the requestor. Theme loading is done
+    through this layer of indirection so that themes can be loaded from
+    any source: files, strings, http requests, databases, etc...
 
     """
     def load(self):
@@ -106,7 +108,7 @@ class FileThemeLoader(ThemeLoader):
         This method loads and returns the data from the file.
 
         """
-        with open(path, 'r') as f:
+        with open(self.path, 'r') as f:
             data = f.read()
         return data
 
@@ -128,7 +130,7 @@ class ProxyScintilla(ProxyControl):
     """
     #: A reference to the Label declaration.
     declaration = ForwardTyped(lambda: Scintilla)
-    
+
     def set_document(self, document):
         raise NotImplementedError
 
@@ -156,8 +158,7 @@ class Scintilla(Control):
     The 'background', 'foreground', and 'font' attributes will only
     have an effect if a lexer is not applied to the editor. If a lexer
     is being used, the styling is supplied by the 'theme'. See the file
-    'scintilla_theme.rst' for information about how to write a syntax 
-    highlighting theme for the widget.
+    'scintilla_theme_spec.md' for how to write a theme file.
 
     """
     #: The scintilla document buffer to use in the editor. A default
@@ -171,7 +172,7 @@ class Scintilla(Control):
 
     #: The syntax highlighting theme to apply to the editor. This will
     #: only have an effect when a lexer is also applied. See the file
-    #: 'scintilla_theme.rst' for information on how to write a theme.
+    #: 'scintilla_theme_spec.md' for how to write a theme.
     theme = d_(Typed(ThemeLoader))
 
     #: The zoom factor for the editor. Values will be clamped to the
