@@ -84,7 +84,7 @@ editor. The following keys are supported:
 
 - **caret** - The foreground color of the cursor caret.
 
-An example of a complete theme for the "python" lexer is given below:
+An example of the IDLE theme for the **python** lexer is given below:
 
 ```javascript
 {
