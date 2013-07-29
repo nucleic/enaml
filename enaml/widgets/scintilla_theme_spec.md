@@ -46,13 +46,13 @@ The value for a given lexer token is an object which defines the styling
 to apply to that text which matches that token. The following keys are
 allowed in a token style object. All of them are optional.
 
-+ *color* - The color to apply to the text. This is a string which conforms
++ **color** - The color to apply to the text. This is a string which conforms
   to the CSS color specification.
 
-+ *paper* - The color to apply to the "paper" background under the text. This
++ **paper** - The color to apply to the "paper" background under the text. This
   is a string which conforms to the CSS color specification.
 
-+ *font* - The font to apply to the text. This is a string which conforms to
++ **font** - The font to apply to the text. This is a string which conforms to
   the CSS shorthand font specification. Relative units and line height are not
   supported.
 
@@ -74,15 +74,15 @@ The toplevel theme object supports a special key name "settings". The value of
 this key is an object which provides settings and other defaults for the
 editor. The following keys are supported:
 
-+ *color* - The default text color to use in the absence of a more specific
++ **color** - The default text color to use in the absence of a more specific
   rule.
 
-+ *paper* - The default paper color to use in the absence of a more specific
++ **paper** - The default paper color to use in the absence of a more specific
   rule.
 
-+ *font* - The default text font to use in the absence of a more specific rule.
++ **font** - The default text font to use in the absence of a more specific rule.
 
-+ *caret* - The foreground color of the cursor caret.
++ **caret** - The foreground color of the cursor caret.
 
 
 Syntax Tokens
