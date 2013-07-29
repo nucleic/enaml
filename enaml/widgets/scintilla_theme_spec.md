@@ -70,8 +70,8 @@ Hence, a complete rule for a Python number token might look like:
 }
 ```
 
-The toplevel theme object supports a special key name "settings". The value of
-this key is an object which provides settings and other defaults for the
+The toplevel theme object supports a special key name **settings**. The value
+of this key is an object which provides settings and other defaults for the
 editor. The following keys are supported:
 
 + **color** - The default text color to use in the absence of a more specific
@@ -85,33 +85,32 @@ editor. The following keys are supported:
 + **caret** - The foreground color of the cursor caret.
 
 
-Syntax Tokens
-=============
-Each syntax provides its own set of tokens which match the various structural
-parts of the language. The number and granularity of these tokens depends on
-the given syntax. The sections below enumerate the available tokens for each
-syntax available in the widget. Each syntax supports a common token:
+Lexer Tokens
+------------
+Each lexer provides its own set of tokens which match the various structural
+parts of a language. The number and granularity of these tokens depends on
+the given lexer. The sections below enumerate the available tokens for each
+of the available lexers. Each lexer has at least one token in common:
 
-default
-    The default style to apply in the absense of any matching token or
-    for any token which does not have a complete style definition.
++ **default** - The default style to apply in the absence of any matching
+  token or for any token which does not have a complete style definition.
 
 Python
 ------
 The following tokens are available for the "python" syntax:
 
-- class_name
-- comment
-- comment_block
-- decorator
-- double_quoted_string
-- function_method_name
-- highlighted_identifier
-- identifier
-- keyword
-- number
-- operator
-- unclosed_string
-- single_quoted_string
-- triple_double_quoted_string
-- triple_single_quoted_string
+- **class_name**
+- **comment**
+- **comment_block**
+- **decorator**
+- **double_quoted_string**
+- **function_method_name**
+- **highlighted_identifier**
+- **identifier**
+- **keyword**
+- **number**
+- **operator**
+- **unclosed_string**
+- **single_quoted_string**
+- **triple_double_quoted_string**
+- **triple_single_quoted_string**
