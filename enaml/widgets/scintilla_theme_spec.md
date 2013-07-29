@@ -1,6 +1,7 @@
-<!--- Copyright (c) 2013, Nucleic Development Team.
-   Distributed under the terms of the Modified BSD License.
-   The full license is in the file COPYING.txt, distributed with this software.
+<!---
+Copyright (c) 2013, Nucleic Development Team.
+Distributed under the terms of the Modified BSD License.
+The full license is in the file COPYING.txt, distributed with this software.
 --!>
 
 Scintilla Theme Specification
@@ -31,19 +32,21 @@ The value for a given langauge key is an object which contain the styling
 data for that language. The keys of style object any of the syntax tokens
 available for the given language::
 
-    {
-        "python": {
-            "default": {
+```javascript
+{
+    "python": {
+        "default": {
 
-            },
-            "comment": {
+        },
+        "comment": {
 
-            },
-            "number": {
+        },
+        "number": {
 
-            }
         }
     }
+}
+```
 
 The value for a given language token is an object which defines the styling
 to apply to that text which matches the token. The following keys are
@@ -64,15 +67,17 @@ font
 
 A rule for a Python number token might then look like:
 
-    {
-        "python": {
-            "number": {
-                "color": "#FFEE22",
-                "paper": "lightskyblue",
-                "font": "12pt Arial"
-            }
+```javascript
+{
+    "python": {
+        "number": {
+            "color": "#FFEE22",
+            "paper": "lightskyblue",
+            "font": "12pt Arial"
         }
     }
+}
+```
 
 The toplevel object supports a special key name "settings". The value of
 this key is an object which provides settings and other defaults for the
