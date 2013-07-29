@@ -94,7 +94,7 @@ An example of the IDLE theme for the **python** lexer is given below:
         "paper": "#FFFFFF",
         "font": "12pt Consolas"
     },
-    "enaml": {
+    "python": {
         "class_name": {
             "color": "#21439C"
         },
