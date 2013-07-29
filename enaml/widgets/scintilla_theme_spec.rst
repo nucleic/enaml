@@ -13,17 +13,17 @@ The toplevel item in the theme file is an object with keys which match
 one of the available langauge syntax definitions::
 
 ``` json
-    {
-        "cpp": {
+{
+    "cpp": {
 
-        },
-        "python": {
+    },
+    "python": {
 
-        },
-        "ruby": {
+    },
+    "ruby": {
 
-        },
-    }
+    },
+}
 ```
 
 The value for a given langauge key is an object which contain the styling
