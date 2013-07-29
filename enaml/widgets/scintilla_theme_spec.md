@@ -46,13 +46,13 @@ The value for a given lexer token is an object which defines the styling
 to apply to that text which matches that token. The following keys are
 allowed in a token style object. All of them are optional.
 
-+ **color** - The color to apply to the text. This is a string which conforms
+- **color** - The color to apply to the text. This is a string which conforms
   to the CSS color specification.
 
-+ **paper** - The color to apply to the "paper" background under the text. This
+- **paper** - The color to apply to the "paper" background under the text. This
   is a string which conforms to the CSS color specification.
 
-+ **font** - The font to apply to the text. This is a string which conforms to
+- **font** - The font to apply to the text. This is a string which conforms to
   the CSS shorthand font specification. Relative units and line height are not
   supported.
 
@@ -74,15 +74,15 @@ The toplevel theme object supports a special key name **settings**. The value
 of this key is an object which provides settings and other defaults for the
 editor. The following keys are supported:
 
-+ **color** - The default text color to use in the absence of a more specific
+- **color** - The default text color to use in the absence of a more specific
   rule.
 
-+ **paper** - The default paper color to use in the absence of a more specific
+- **paper** - The default paper color to use in the absence of a more specific
   rule.
 
-+ **font** - The default text font to use in the absence of a more specific rule.
+- **font** - The default text font to use in the absence of a more specific rule.
 
-+ **caret** - The foreground color of the cursor caret.
+- **caret** - The foreground color of the cursor caret.
 
 
 Lexer Tokens
@@ -92,11 +92,11 @@ parts of a language. The number and granularity of these tokens depends on
 the given lexer. The sections below enumerate the available tokens for each
 of the available lexers. Each lexer has at least one token in common:
 
-+ **default** - The default style to apply in the absence of any matching
+- **default** - The default style to apply in the absence of any matching
   token or for any token which does not have a complete style definition.
 
 
-Bash ("bash")
+Bash - "bash"
 -------------
 - **backticks**
 - **comment**
@@ -114,7 +114,7 @@ Bash ("bash")
 - **single_quoted_string**
 
 
-Batch ("batch")
+Batch - "batch"
 ---------------
 - **comment**
 - **default**
@@ -126,7 +126,7 @@ Batch ("batch")
 - **variable**
 
 
-CMake ("cmake")
+CMake - "cmake"
 ---------------
 - **block_foreach**
 - **block_if**
@@ -145,7 +145,7 @@ CMake ("cmake")
 - **variable**
 
 
-C++ ("cpp")
+C++ - "cpp"
 -----------
 - **comment**
 - **comment_doc**
@@ -197,12 +197,12 @@ C++ ("cpp")
 - **verbatim_string**
 
 
-C# ("csharp")
+C# - "csharp"
 -------------
-The "csharp" lexer uses the same token set as the "cpp" lexer.
+The **csharp** lexer uses the same token set as the **cpp** lexer.
 
 
-CSS ("css")
+CSS - "css"
 -----------
 - **at_rule**
 - **attribute**
@@ -230,7 +230,7 @@ CSS ("css")
 - **variable**
 
 
-D ("d")
+D - "d"
 -------
 - **backquote_string**
 - **character**
@@ -257,7 +257,7 @@ D ("d")
 - **unclosed_string**
 
 
-Diff ("diff")
+Diff - "diff"
 -------------
 - **command**
 - **comment**
@@ -269,17 +269,17 @@ Diff ("diff")
 - **position**
 
 
-Enaml ("enaml")
+Enaml - "enaml"
 ---------------
-The "enaml" lexer uses the same token set as the "python" lexer.
+The **enaml** lexer uses the same token set as the **python** lexer.
 
 
-Fortran ("fortran")
+Fortran - "fortran"
 -------------------
-The "fortran" lexer uses the same token set as the "fortran77" lexer.
+The **fortran** lexer uses the same token set as the **fortran77** lexer.
 
 
-Fortran77 ("fortran77")
+Fortran77 - "fortran77"
 -----------------------
 - **comment**
 - **continuation**
@@ -298,7 +298,7 @@ Fortran77 ("fortran77")
 - **unclosed_string**
 
 
-Html ("html")
+Html - "html"
 -------------
 - **asp_at_start**
 - **asp_java_script_comment**
@@ -412,22 +412,22 @@ Html ("html")
 - **xml_tag_end**
 
 
-IDL ("idl")
+IDL - "idl"
 -----------
-The "idl" lexer uses the same token set as the "cpp" lexer.
+The **idl** lexer uses the same token set as the **cpp** lexer.
 
 
-Java ("java")
+Java - "java"
 -------------
-The "java" lexer uses the same token set as the "cpp" lexer.
+The **java** lexer uses the same token set as the **cpp** lexer.
 
 
-Javascript ("javascript")
+Javascript - "javascript"
 -------------------------
-The "javascript" lexer uses the same token set as the "cpp" lexer.
+The **javascript** lexer uses the same token set as the **cpp** lexer.
 
 
-Lua ("lua")
+Lua - "lua"
 -----------
 - **basic_functions**
 - **character**
@@ -451,7 +451,7 @@ Lua ("lua")
 - **unclosed_string**
 
 
-Makefile ("makefile")
+Makefile - "makefile"
 ---------------------
 - **comment**
 - **default**
@@ -462,7 +462,7 @@ Makefile ("makefile")
 - **variable**
 
 
-Matlab ("matlab")
+Matlab - "matlab"
 -----------------
 - **command**
 - **comment**
@@ -475,12 +475,12 @@ Matlab ("matlab")
 - **single_quoted_string**
 
 
-Octave ("octave")
+Octave - "octave"
 -----------------
-The "octave" lexer uses the same token set as the "matlab" lexer.
+The **octave** lexer uses the same token set as the **matlab** lexer.
 
 
-Pascal ("pascal")
+Pascal - "pascal"
 -----------------
 - **asm**
 - **character**
@@ -499,7 +499,7 @@ Pascal ("pascal")
 - **unclosed_string**
 
 
-Perl ("perl")
+Perl - "perl"
 -------------
 - **array**
 - **backtick_here_document**
@@ -544,7 +544,7 @@ Perl ("perl")
 - **translation**
 
 
-Postscript ("postscript")
+Postscript - "postscript"
 -------------------------
 - **array_parenthesis**
 - **bad_string_character**
@@ -564,7 +564,7 @@ Postscript ("postscript")
 - **text**
 
 
-POV ("pov")
+POV - "pov"
 -----------
 - **bad_directive**
 - **comment**
@@ -585,7 +585,7 @@ POV ("pov")
 - **unclosed_string**
 
 
-Properties ("properties")
+Properties - "properties"
 -------------------------
 - **assignment**
 - **comment**
@@ -595,7 +595,7 @@ Properties ("properties")
 - **section**
 
 
-Python ("python")
+Python - "python"
 -----------------
 - **class_name**
 - **comment**
@@ -615,7 +615,7 @@ Python ("python")
 - **unclosed_string**
 
 
-Ruby ("ruby")
+Ruby - "ruby"
 -------------
 - **backticks**
 - **class_name**
@@ -650,7 +650,7 @@ Ruby ("ruby")
 - **symbol**
 
 
-Spice ("spice")
+Spice - "spice"
 ---------------
 - **command**
 - **comment**
@@ -663,7 +663,7 @@ Spice ("spice")
 - **value**
 
 
-SQL ("sql")
+SQL - "sql"
 -----------
 - **comment**
 - **comment_doc**
@@ -688,7 +688,7 @@ SQL ("sql")
 - **single_quoted_string**
 
 
-TCL ("tcl")
+TCL - "tcl"
 -----------
 - **comment**
 - **comment_block**
@@ -714,7 +714,7 @@ TCL ("tcl")
 - **tk_keyword**
 
 
-TEX ("tex")
+TEX - "tex"
 -----------
 - **command**
 - **default**
@@ -724,7 +724,7 @@ TEX ("tex")
 - **text**
 
 
-Verilog ("verilog")
+Verilog - "verilog"
 -------------------
 - **comment**
 - **comment_bang**
@@ -742,7 +742,7 @@ Verilog ("verilog")
 - **user_keyword_set**
 
 
-VHDL ("vhdl")
+VHDL - "vhdl"
 -------------
 - **attribute**
 - **comment**
@@ -761,12 +761,12 @@ VHDL ("vhdl")
 - **unclosed_string**
 
 
-XML ("xml")
+XML - "xml"
 -----------
-The "xml" lexer uses the same token set as the "html" lexer.
+The **xml** lexer uses the same token set as the **html** lexer.
 
 
-YAML ("yaml")
+YAML - "yaml"
 -------------
 - **comment**
 - **default**
