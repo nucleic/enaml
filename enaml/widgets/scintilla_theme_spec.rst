@@ -12,6 +12,7 @@ Enaml supports Scintilla themes defined as simple json files.
 The toplevel item in the theme file is an object with keys which match
 one of the available langauge syntax definitions::
 
+``` json
     {
         "cpp": {
 
@@ -23,6 +24,7 @@ one of the available langauge syntax definitions::
 
         },
     }
+```
 
 The value for a given langauge key is an object which contain the styling
 data for that language. The keys of style object any of the syntax tokens
