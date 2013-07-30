@@ -45,6 +45,13 @@ enamldef EditorPanel(Container):
         activated :: set_text(getattr(model, text_attr))
         syntax = 'enaml'  # this covers both Python and Enaml syntax
         theme = IDLE_THEME
+        settings = {
+            "tab_width": 4,
+            "use_tabs": False,
+            "indent": 4,
+            "tab_indents": True,
+            "backspace_unindents": True,
+        }
         text_changed :: timer.start()
         Timer: timer:
             interval = 350
