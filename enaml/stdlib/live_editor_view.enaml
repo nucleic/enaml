@@ -43,7 +43,7 @@ enamldef EditorPanel(Container):
         value := editor.zoom
     Scintilla: editor:
         activated :: set_text(getattr(model, text_attr))
-        syntax = 'enaml'
+        syntax = 'enaml'  # this covers both Python and Enaml syntax
         theme = IDLE_THEME
         text_changed :: timer.start()
         Timer: timer:
