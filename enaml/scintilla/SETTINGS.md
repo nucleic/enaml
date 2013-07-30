@@ -1,5 +1,5 @@
-Scintilla Theme Specification
-=============================
+Scintilla Settings Specification
+================================
 This file describes how to define settings for the Enaml Scintilla widget.
 
 Enaml supports Scintilla settings defined as simple Python dictionaries. The
