@@ -157,8 +157,7 @@ class Scintilla(Control):
     -----
     The 'background', 'foreground', and 'font' attributes will only
     have an effect if a lexer is not applied to the editor. If a lexer
-    is being used, the styling is supplied by the 'theme'. See the file
-    'scintilla_theme_spec.md' for how to write a theme file.
+    is being used, the styling is supplied by the 'theme'.
 
     """
     #: The scintilla document buffer to use in the editor. A default
@@ -171,8 +170,8 @@ class Scintilla(Control):
     lexer = d_(Enum(*LEXERS))
 
     #: The syntax highlighting theme to apply to the editor. This will
-    #: only have an effect when a lexer is also applied. See the file
-    #: 'scintilla_theme_spec.md' for how to write a theme.
+    #: only have an effect when a lexer is also applied. See 'HOWTO' in
+    #: './scintilla_themes' for how to write a theme.
     theme = d_(Typed(ThemeLoader))
 
     #: The zoom factor for the editor. Values will be clamped to the
