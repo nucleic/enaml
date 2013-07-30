@@ -10,8 +10,8 @@
 This is a library of Enaml components deriving from the builtin Field.
 
 """
-from enaml.widgets.api import Field
 from enaml.validator import RegexValidator, IntValidator, FloatValidator
+from enaml.widgets.field import Field
 
 
 enamldef RegexField(Field):

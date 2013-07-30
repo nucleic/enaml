@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from collections import Iterable
 
-from enaml.core.api import Include
+from enaml.core.include import Include
 
 
 def _mappedview_helper(model, typemap, kwargs, modelkey):

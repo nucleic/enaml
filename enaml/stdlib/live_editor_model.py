@@ -132,7 +132,7 @@ class LiveEditorModel(Atom):
         except Exception:
             self.traceback = traceback.format_exc()
             return
-            
+
         self.traceback = ''
         vc = namespace.get(self.view_item)
         if isinstance(vc, type) and issubclass(vc, Object):
