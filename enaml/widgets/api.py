@@ -43,7 +43,6 @@ from .progress_bar import ProgressBar
 from .push_button import PushButton
 from .radio_button import RadioButton
 from .raw_widget import RawWidget
-from .scintilla import Scintilla, ScintillaDocument
 from .scroll_area import ScrollArea
 from .separator import Separator
 from .slider import Slider
