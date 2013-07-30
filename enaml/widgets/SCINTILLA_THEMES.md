@@ -5,7 +5,7 @@ Enaml Scintilla editor widget.
 
 Enaml supports Scintilla themes defined as simple Python dictionaries.
 
-The keys of the theme dict are strings which name a syntax. e.g.,
+The keys of the theme dictionary are strings which refer to a syntax. e.g.,
 
 ```python
 {
@@ -21,9 +21,9 @@ The keys of the theme dict are strings which name a syntax. e.g.,
 }
 ```
 
-The value for a given lexer key is an object which contain the styling
-data for that lexer. The keys of style object are any of the tokens
-defined by the lexer. e.g.,
+The value for a given syntax key is a dictionary which contains the styling
+data for the tokens of that syntax. The keys of the dict are the token names
+specific to the syntax. e.g.,
 
 ```python
 {
@@ -41,15 +41,15 @@ defined by the lexer. e.g.,
 }
 ```
 
-The value for a given lexer token is an object which defines the styling
-to apply to that text which matches that token. The following keys are
-allowed in a token style object. All of them are optional.
+The value for a syntax token is a dictionary which defines the styling
+to apply to the text which matches that token. The following keys are
+allowed in a token style dictionary.
 
 - **color** - The color to apply to the text. This is a string which conforms
   to the CSS color specification.
 
-- **paper** - The color to apply to the "paper" background under the text. This
-  is a string which conforms to the CSS color specification.
+- **paper** - The color to apply to the "paper" background under the text.
+  This is a string which conforms to the CSS color specification.
 
 - **font** - The font to apply to the text. This is a string which conforms to
   the CSS shorthand font specification. Relative units and line height are not
@@ -69,9 +69,9 @@ Hence, a complete rule for a Python number token might look like:
 }
 ```
 
-The toplevel theme object supports a special key name **settings**. The value
-of this key is an object which provides settings and other defaults for the
-editor. The following keys are supported:
+The theme dictionary supports a special key named **settings**. The value
+of this key is a dictionary which provides settings and other style defaults
+for the editor. The following keys are supported:
 
 - **color** - The default text color to use in the absence of a more specific
   rule.
@@ -79,11 +79,12 @@ editor. The following keys are supported:
 - **paper** - The default paper color to use in the absence of a more specific
   rule.
 
-- **font** - The default text font to use in the absence of a more specific rule.
+- **font** - The default text font to use in the absence of a more specific
+  rule.
 
 - **caret** - The foreground color of the cursor caret.
 
-An example of the IDLE theme for the **python** lexer is given below:
+An example of the IDLE theme for the **python** syntax:
 
 ```python
 {
@@ -138,12 +139,13 @@ An example of the IDLE theme for the **python** lexer is given below:
 }
 ```
 
-Lexer Tokens
-------------
-Each lexer provides its own set of tokens which match the various structural
+Syntax Tokens
+-------------
+Each syntax provides its own set of tokens which match the various structural
 parts of a language. The number and granularity of these tokens depends on
-the given lexer. The sections below enumerate the available tokens for each
-of the available lexers. Each lexer has at least one token in common:
+the given syntax. The sections below enumerate the available tokens for each
+of the available syntax definitions along with the string name for the syntax.
+Each syntax has at least one token in common:
 
 - **default** - The default style to apply in the absence of any matching
   token or for any token which does not have a complete style definition.
@@ -252,7 +254,7 @@ C++ - "cpp"
 
 C# - "csharp"
 -------------
-The **csharp** lexer uses the same token set as the **cpp** lexer.
+The **csharp** syntax uses the same token set as the **cpp** syntax.
 
 
 CSS - "css"
@@ -324,12 +326,12 @@ Diff - "diff"
 
 Enaml - "enaml"
 ---------------
-The **enaml** lexer uses the same token set as the **python** lexer.
+The **enaml** syntax uses the same token set as the **python** syntax.
 
 
 Fortran - "fortran"
 -------------------
-The **fortran** lexer uses the same token set as the **fortran77** lexer.
+The **fortran** syntax uses the same token set as the **fortran77** syntax.
 
 
 Fortran77 - "fortran77"
@@ -467,17 +469,17 @@ Html - "html"
 
 IDL - "idl"
 -----------
-The **idl** lexer uses the same token set as the **cpp** lexer.
+The **idl** syntax uses the same token set as the **cpp** syntax.
 
 
 Java - "java"
 -------------
-The **java** lexer uses the same token set as the **cpp** lexer.
+The **java** syntax uses the same token set as the **cpp** syntax.
 
 
 Javascript - "javascript"
 -------------------------
-The **javascript** lexer uses the same token set as the **cpp** lexer.
+The **javascript** syntax uses the same token set as the **cpp** syntax.
 
 
 Lua - "lua"
@@ -530,7 +532,7 @@ Matlab - "matlab"
 
 Octave - "octave"
 -----------------
-The **octave** lexer uses the same token set as the **matlab** lexer.
+The **octave** syntax uses the same token set as the **matlab** syntax.
 
 
 Pascal - "pascal"
@@ -816,7 +818,7 @@ VHDL - "vhdl"
 
 XML - "xml"
 -----------
-The **xml** lexer uses the same token set as the **html** lexer.
+The **xml** syntax uses the same token set as the **html** syntax.
 
 
 YAML - "yaml"
