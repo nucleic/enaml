@@ -8,17 +8,15 @@
 import uuid
 
 from atom.api import (
-    Atom, Int, Constant, Enum, Event, Typed, ForwardTyped, Str, observe,
-    set_default
+    Atom, Int, Constant, Enum, Event, Typed, ForwardTyped, observe, set_default
 )
 
 from enaml.core.declarative import d_
+from enaml.widgets.control import Control, ProxyControl
 
-from .control import Control, ProxyControl
 
-
-#: The available lexers for syntax highlighting.
-LEXERS = (
+#: The available syntaxes for the Scintilla widget.
+SYNTAXES = (
     '',
     'bash',
     'batch',
@@ -56,63 +54,6 @@ LEXERS = (
 )
 
 
-class ThemeLoader(Atom):
-    """ A base class for defining theme loader objects.
-
-    A theme loader is responsible for providing a JSON string which
-    defines a Scintilla theme to the requestor. Theme loading is done
-    through this layer of indirection so that themes can be loaded from
-    any source: files, strings, http requests, databases, etc...
-
-    """
-    def load(self):
-        """ Load and return the theme to apply to the document.
-
-        This method must be implemented by subclasses.
-
-        Returns
-        -------
-        result : str
-            A JSON string which defines the theme.
-
-        """
-        raise NotImplementedError
-
-
-class StringThemeLoader(ThemeLoader):
-    """ A theme loader for themes which already exist as strings.
-
-    """
-    #: The JSON string which defines the Scintilla theme.
-    theme = Str()
-
-    def load(self):
-        """ Load and return the theme string.
-
-        This method simply returns the 'theme' string.
-
-        """
-        return self.theme
-
-
-class FileThemeLoader(ThemeLoader):
-    """ A theme loader for themes which live on the filesystem.
-
-    """
-    #: The full path to the theme file.
-    path = Str()
-
-    def load(self):
-        """ Load and return the theme string.
-
-        This method loads and returns the data from the file.
-
-        """
-        with open(self.path, 'r') as f:
-            data = f.read()
-        return data
-
-
 class ScintillaDocument(Atom):
     """ An opaque class which represents a Scintilla text document.
 
@@ -128,16 +69,19 @@ class ProxyScintilla(ProxyControl):
     """ The abstract definition of a proxy Scintilla object.
 
     """
-    #: A reference to the Label declaration.
+    #: A reference to the Scintilla declaration.
     declaration = ForwardTyped(lambda: Scintilla)
 
     def set_document(self, document):
         raise NotImplementedError
 
-    def set_lexer(self, lexer):
+    def set_syntax(self, lexer):
         raise NotImplementedError
 
     def set_theme(self, theme):
+        raise NotImplementedError
+
+    def set_settings(self, settings):
         raise NotImplementedError
 
     def set_zoom(self, zoom):
@@ -155,9 +99,8 @@ class Scintilla(Control):
 
     Notes
     -----
-    The 'background', 'foreground', and 'font' attributes will only
-    have an effect if a lexer is not applied to the editor. If a lexer
-    is being used, the styling is supplied by the 'theme'.
+    The 'background', 'foreground', and 'font' attributes have no effect
+    on this widget. All styling is supplied via the 'theme' attribute.
 
     """
     #: The scintilla document buffer to use in the editor. A default
@@ -166,16 +109,19 @@ class Scintilla(Control):
     #: using a single buffer in multiple editors.
     document = d_(Typed(ScintillaDocument, ()))
 
-    #: The language lexer to apply to the document.
-    lexer = d_(Enum(*LEXERS))
+    #: The language syntax to apply to the document.
+    syntax = d_(Enum(*SYNTAXES))
 
-    #: The syntax highlighting theme to apply to the editor. This will
-    #: only have an effect when a lexer is also applied. See 'HOWTO' in
-    #: './scintilla_themes' for how to write a theme.
-    theme = d_(Typed(ThemeLoader))
+    #: The theme to apply to the widget. See the './THEMES' document
+    #: for how to create a theme dict for the widget.
+    theme = d_(Typed(dict, ()))
 
-    #: The zoom factor for the editor. Values will be clamped to the
-    #: range -10 to 20.
+    #: The settings to apply to the widget. See the './SETTINGS'
+    #: document for how to create a settings dict for the widget.
+    settings = d_(Typed(dict, ()))
+
+    #: The zoom factor for the editor. The value is internally clamped
+    #: to the range -10 to 20, inclusive.
     zoom = d_(Int())
 
     #: An event emitted when the text is changed.
@@ -204,25 +150,32 @@ class Scintilla(Control):
         """
         return new or ScintillaDocument()
 
+    def _post_validate_theme(self, old, new):
+        """" Post validate the theme.
+
+        The theme is reset to an empty dictionary if set to None.
+
+        """
+        return new or {}
+
+    def _post_validate_settings(self, old, new):
+        """" Post validate the settings.
+
+        The settings are reset to an empty dictionary if set to None.
+
+        """
+        return new or {}
+
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('lexer', 'theme', 'zoom'))
+    @observe(('document', 'syntax', 'theme', 'settings', 'zoom'))
     def _update_proxy(self, change):
         """ An observer which sends the document change to the proxy.
 
         """
         # The superclass implementation is sufficient.
         super(Scintilla, self)._update_proxy(change)
-
-    @observe('document')
-    def _refresh_document(self, change):
-        """ An observer which sends the document change to the proxy.
-
-        """
-        # _update_proxy doesn't handle 'delete' changes; this does.
-        if self.proxy_is_active:
-            self.proxy.set_document(self.document)
 
     #--------------------------------------------------------------------------
     # Public API

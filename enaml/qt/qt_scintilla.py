@@ -10,15 +10,15 @@ if QT_API != 'pyqt':
     msg = 'the Qt Scintilla widget is only available when using PyQt'
     raise ImportError(msg)
 
-import json
 import logging
-import md5
+import sys
+import weakref
 
-from atom.api import Atom, Int, Str, Typed
+from atom.api import Typed
 
 from enaml.colors import parse_color
 from enaml.fonts import parse_font
-from enaml.widgets.scintilla import ProxyScintilla
+from enaml.scintilla.scintilla import ProxyScintilla
 
 from PyQt4 import Qsci
 
@@ -32,6 +32,46 @@ from .scintilla_tokens import TOKENS
 
 #: The module-level logger
 logger = logging.getLogger(__name__)
+
+
+Base = Qsci.QsciScintillaBase
+
+
+if sys.platform == 'win32':
+    DEFAULT_EOL = 'crlf'
+elif sys.platform == 'darwin':
+    DEFAULT_EOL = 'cr'
+else:
+    DEFAULT_EOL = 'lf'
+
+
+EOL_MODE = {
+    'crlf': Base.SC_EOL_CRLF,
+    'cr': Base.SC_EOL_CR,
+    'lf': Base.SC_EOL_LF,
+}
+
+
+EDGE_MODE = {
+    'none': Base.EDGE_NONE,
+    'line': Base.EDGE_LINE,
+    'background': Base.EDGE_BACKGROUND,
+}
+
+
+INDENTATION_GUIDES = {
+    'none': Base.SC_IV_NONE,
+    'real': Base.SC_IV_REAL,
+    'look_forward': Base.SC_IV_LOOKFORWARD,
+    'look_both': Base.SC_IV_LOOKBOTH,
+}
+
+
+WHITE_SPACE = {
+    'visible_always': Base.SCWS_VISIBLEALWAYS,
+    'visible_after_indent': Base.SCWS_VISIBLEAFTERINDENT,
+    'invisible': Base.SCWS_INVISIBLE,
+}
 
 
 def _make_color(color_str):
@@ -54,156 +94,18 @@ def _make_font(font_str):
     return QFont()
 
 
-#: A static cache of parsed themes. A key in the cache is the md5 hash
-#: of the json theme text. The value is the parsed theme. The number of
-#: themes will be finite and relatively small. Rather than re-parsing
-#: the theme for every file in every editor, they are cached and reused.
-_parsed_theme_cache = {}
-
-
-def parse_theme(theme):
-    """ Parse a json theme file into a theme dictionary.
-
-    If the given theme has already been parsed once, the cached parsed
-    theme will be returned.
-
-    Parameters
-    ----------
-    theme : str
-        A json string defining the theme.
-
-    Returns
-    -------
-    result : dict
-        The parsed them dict. Since this may be a cached value, it
-        should be considered read-only.
-
-    """
-    md5_sum = md5.new()
-    md5_sum.update(theme)
-    md5_hash = md5_sum.digest()
-    if md5_hash in _parsed_theme_cache:
-        return _parsed_theme_cache[md5_hash]
-
-    try:
-        theme_dict = json.loads(theme)
-    except Exception as e:
-        msg = "error occured while parsing the json theme: '%s'"
-        logger.error(msg % e.message)
-        return {}
-
-    colorcache = {}
-    fontcache = {}
-
-    def get_color(color_str):
-        if color_str in colorcache:
-            return colorcache[color_str]
-        color = colorcache[color_str] = _make_color(color_str)
-        return color
-
-    def get_font(font_str):
-        if font_str in fontcache:
-            return fontcache[font_str]
-        font = fontcache[font_str] = _make_font(font_str)
-        return font
-
-    style_conv = [
-        ('color', get_color),
-        ('paper', get_color),
-        ('font',  get_font),
-    ]
-
-    settings = theme_dict.get('settings')
-    if settings is not None:
-        if 'caret' in settings:
-            settings['caret'] = get_color(settings['caret'])
-        for key, func in style_conv:
-            if key in settings:
-                settings[key] = func(settings[key])
-
-    for key, token_styles in theme_dict.iteritems():
-        if key == 'settings':
-            continue
-        for style in token_styles.itervalues():
-            for key, func in style_conv:
-                if key in style:
-                    style[key] = func(style[key])
-
-    _parsed_theme_cache[md5_hash] = theme_dict
-
-    return theme_dict
-
-
-class QtSciDoc(Atom):
-    """ A helper class which manages references to a QsciDocument.
-
-    There are some subtle lifetime issues when dealing with instances
-    of QsciDocument. If a given document is garbage collected after
-    the last widget to reference it is destroyed, PyQt will segfault.
-    This class tracks a "refcount" of the document and allows it to
-    be garbage collected before the last widget is destroyed.
-
-    """
-    #: A static cache mapping uuid -> QtSciDoc instance.
-    doc_cache = {}
-
-    #: The actually document instance held by this handle.
-    qsci_doc = Typed(Qsci.QsciDocument)
-
-    #: The number of editors currently editing the assicated document.
-    ref_count = Int()
-
-    #: The uuid of the document as provided by Enaml.
-    doc_id = Str()
-
-    @classmethod
-    def get(cls, doc_id):
-        """ Get a QtSciDoc instance for the given doc_id.
-
-        This will return a shared instance of the handle, or create a
-        new handle if necessary. The caller is responsible for calling
-        incref() and decref() as needed.
-
-        """
-        if doc_id in cls.doc_cache:
-            return cls.doc_cache[doc_id]
-        self = cls(doc_id=doc_id)
-        self.qsci_doc = Qsci.QsciDocument()
-        cls.doc_cache[doc_id] = self
-        return self
-
-    def incref(self):
-        """ Increment the reference count of the document.
-
-        """
-        self.ref_count += 1
-
-    def decref(self):
-        """ Decrement the reference count of the document.
-
-        If the ref count reaches zero, all strong references to the
-        underlying QsciDocument will be removed, and the instance
-        removed from the cache.
-
-        """
-        self.ref_count -= 1
-        if self.ref_count == 0:
-            self.qsci_doc = None
-            self.doc_cache.pop(self.doc_id, None)
-
-
 class QtScintilla(QtControl, ProxyScintilla):
     """ A Qt implementation of an Enaml ProxyScintilla.
 
     """
+    #: A weak cache which maps uuid -> QsciDocument.
+    qsci_doc_cache = weakref.WeakValueDictionary()
+
     #: A reference to the widget created by the proxy.
     widget = Typed(Qsci.QsciScintilla)
 
-    #: Storage for the Qt document handle.
-    qt_doc = Typed(QtSciDoc)
-
-    #: The parsed theme to apply to the editor.
-    theme = Typed(dict, ())
+    #: A strong reference to the QsciDocument handle.
+    qsci_doc = Typed(Qsci.QsciDocument)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -221,16 +123,11 @@ class QtScintilla(QtControl, ProxyScintilla):
         super(QtScintilla, self).init_widget()
         d = self.declaration
         self.set_document(d.document)
-        self.set_lexer(d.lexer)
-        self.set_theme(d.theme)
+        self.set_syntax(d.syntax, refresh_style=False)
+        self.set_settings(d.settings)
         self.set_zoom(d.zoom)
+        self.refresh_style()
         self.widget.textChanged.connect(self.on_text_changed)
-
-        # TODO move these to declaration settings
-        self.widget.setIndentationWidth(4)
-        self.widget.setIndentationsUseTabs(False)
-        self.widget.setTabWidth(4)
-        self.widget.setTabIndents(True)
 
     def destroy(self):
         """ A reimplemented destructor.
@@ -239,10 +136,9 @@ class QtScintilla(QtControl, ProxyScintilla):
         superclass destructor. This prevents a segfault in PyQt.
 
         """
-        doc = self.qt_doc
-        if doc is not None:
-            doc.decref()
-            self.qt_doc = None
+        # Clear the strong reference to the document. It must be freed
+        # *before* the last widget using it is freed or PyQt segfaults.
+        del self.qsci_doc
         super(QtScintilla, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -266,6 +162,33 @@ class QtScintilla(QtControl, ProxyScintilla):
         current theme that was provided by the declaration object.
 
         """
+        colorcache = {}
+        fontcache = {}
+
+        def get_color(color_str):
+            if color_str in colorcache:
+                return colorcache[color_str]
+            color = colorcache[color_str] = _make_color(color_str)
+            return color
+
+        def get_font(font_str):
+            if font_str in fontcache:
+                return fontcache[font_str]
+            font = fontcache[font_str] = _make_font(font_str)
+            return font
+
+        def pull_color(dct, key, default):
+            color = dct.get(key)
+            if color is None:
+                return default
+            return get_color(color)
+
+        def pull_font(dct, key, default):
+            font = dct.get(key)
+            if font is None:
+                return default
+            return get_font(font)
+
         # Setup the various defaults.
         caret_color = QColor(0, 0, 0)
         default_color = QColor(0, 0, 0)
@@ -273,49 +196,56 @@ class QtScintilla(QtControl, ProxyScintilla):
         default_font = QFont()
 
         # Update the defaults from the theme's root 'settings' object.
-        theme = self.theme
+        theme = self.declaration.theme
         settings = theme.get('settings')
         if settings is not None:
-            caret_color = settings.get('caret', caret_color)
-            default_color = settings.get('color', default_color)
-            default_paper = settings.get('paper', default_paper)
-            default_font = settings.get('font', default_font)
+            caret_color = pull_color(settings, 'caret', caret_color)
+            default_color = pull_color(settings, 'color', default_color)
+            default_paper = pull_color(settings, 'paper', default_paper)
+            default_font = pull_font(settings, 'font', default_font)
 
-        # Apply the styling for the widget.
+        # Apply the default styling for the widget.
         widget = self.widget
         widget.setCaretForegroundColor(caret_color)
+        widget.setColor(default_color)
+        widget.setPaper(default_paper)
+        widget.setFont(default_font)
 
-        # Ensure the lexer and language def exist before continuing.
+        # Ensure the lexer and syntax tokens exist before continuing.
         lexer = widget.lexer()
         if lexer is None:
             return
-        lang = LEXERS_INV.get(type(lexer))
-        if lang is None:
+        syntax = LEXERS_INV.get(type(lexer))
+        if syntax is None:
             return
 
         # Resolve the default parameters and apply them for all lexer
         # styles. More specifc rules will override these defaults.
-        lang_style = theme.get(lang, {})
-        lang_tokens = TOKENS.get(lang, {})
-        lang_default = lang_style.get('default', {})
-        default_color = lang_default.get('color', default_color)
-        default_paper = lang_default.get('paper', default_paper)
-        default_font = lang_default.get('font', default_font)
+        syntax_rules = theme.get(syntax, {})
+        syntax_tokens = TOKENS.get(syntax, {})
+        syntax_default = syntax_rules.get('default', {})
+        default_color = pull_color(syntax_default, 'color', default_color)
+        default_paper = pull_color(syntax_default, 'paper', default_paper)
+        default_font = pull_font(syntax_default, 'font', default_font)
         lexer.setColor(default_color)
         lexer.setPaper(default_paper)
         lexer.setFont(default_font)
-        for token, style in lang_style.iteritems():
-            lexer_token = getattr(lexer, lang_tokens.get(token, ''), None)
-            if lexer_token is not None:
-                color = style.get('color', default_color)
-                paper = style.get('paper', default_paper)
-                font = style.get('font', default_font)
-                lexer.setColor(color, lexer_token)
-                lexer.setPaper(paper, lexer_token)
-                lexer.setFont(font, lexer_token)
+
+        # Override the defaults with more specific syntax rules.
+        for token, rule in syntax_rules.iteritems():
+            if token == 'default':
+                continue
+            qtoken = getattr(lexer, syntax_tokens.get(token, ''), None)
+            if qtoken is not None:
+                color = pull_color(rule, 'color', default_color)
+                paper = pull_color(rule, 'paper', default_paper)
+                font = pull_font(rule, 'font', default_font)
+                lexer.setColor(color, qtoken)
+                lexer.setPaper(paper, qtoken)
+                lexer.setFont(font, qtoken)
             else:
-                msg = "unknown lexer token '%s' defined for the '%s' theme"
-                logger.warn(msg % (token, lang))
+                msg = "unknown token '%s' given for the '%s' syntax"
+                logger.warn(msg % (token, syntax))
 
     #--------------------------------------------------------------------------
     # ProxyScintilla API
@@ -324,34 +254,87 @@ class QtScintilla(QtControl, ProxyScintilla):
         """ Set the document on the underlying widget.
 
         """
-        old = self.qt_doc
-        new = self.qt_doc = QtSciDoc.get(document.uuid)
-        new.incref()
-        if old is not None:
-            old.decref()
-        self.widget.setDocument(new.qsci_doc)
+        qdoc = self.qsci_doc_cache.get(document.uuid)
+        if qdoc is None:
+            qdoc = self.qsci_doc_cache[document.uuid] = Qsci.QsciDocument()
+        self.qsci_doc = qdoc  # take a strong ref since PyQt doesn't
+        self.widget.setDocument(qdoc)
 
-    def set_lexer(self, lexer):
-        """ Set the lexer on the underlying widget.
+    def set_syntax(self, syntax, refresh_style=True):
+        """ Set the syntax on the underlying widget.
 
         """
-        # The old lexer will live forever as a child unless deleted.
+        # The old lexer will remain as a child unless deleted.
         old = self.widget.lexer()
         if old is not None:
             old.deleteLater()
-        lexer_cls = LEXERS.get(lexer) or (lambda w: None)
+        lexer_cls = LEXERS.get(syntax) or (lambda w: None)
         self.widget.setLexer(lexer_cls(self.widget))
-        self.refresh_style()
+        if refresh_style:
+            self.refresh_style()
 
     def set_theme(self, theme):
-        """ Set the syntax highlighting theme for the widget.
+        """ Set the styling theme for the widget.
 
         """
-        if theme is None:
-            self.theme = {}
-        else:
-            self.theme = parse_theme(theme.load())
         self.refresh_style()
+
+    def set_settings(self, settings):
+        """ Set the settings for the widget.
+
+        """
+        w = self.widget
+        send = w.SendScintilla
+        get = settings.get
+
+        def pull(kind, name, default):
+            value = get(name, default)
+            if not isinstance(value, kind):
+                msg = 'invalid value "%s" for "%s" setting'
+                logger.warn(msg % (value, name))
+                value = default
+            return value
+
+        pull_int = lambda name, default: pull(int, name, default)
+        pull_bool = lambda name, default: pull(bool, name, default)
+        pull_str = lambda name, default: pull(str, name, default)
+
+        def pull_enum(options, name, default):
+            value = pull_str(name, default)
+            if value in options:
+                return options[value]
+            message = 'invalid value "%s" for "%s" setting'
+            logger.warn(message % (value, name))
+            return options[default]
+
+        def pull_color(name, default):
+            color = pull_str(name, default)
+            return _make_color(color)
+
+        # Line Endings
+        send(w.SCI_SETEOLMODE, pull_enum(EOL_MODE, 'eol_mode', DEFAULT_EOL))
+        send(w.SCI_SETVIEWEOL, pull_bool('view_eol', False))
+
+        # Long Lines
+        send(w.SCI_SETEDGEMODE, pull_enum(EDGE_MODE, 'edge_mode', 'none'))
+        send(w.SCI_SETEDGECOLUMN, pull_int('edge_column', 79))
+        send(w.SCI_SETEDGECOLOUR, pull_color('edge_color', ''))
+
+        # Tabs and Indentation
+        send(w.SCI_SETTABWIDTH, pull_int('tab_width', 8))
+        send(w.SCI_SETUSETABS, pull_bool('use_tabs', True))
+        send(w.SCI_SETINDENT, pull_int('indent', 0))
+        send(w.SCI_SETTABINDENTS, pull_bool('tab_indents', False))
+        send(w.SCI_SETBACKSPACEUNINDENTS,
+            pull_bool('backspace_unindents', False))
+        send(w.SCI_SETINDENTATIONGUIDES,
+            pull_enum(INDENTATION_GUIDES, 'indentation_guides', 'none'))
+
+        # White Space
+        send(w.SCI_SETVIEWWS, pull_enum(WHITE_SPACE, 'view_ws', 'invisible'))
+        send(w.SCI_SETWHITESPACESIZE, pull_int('white_space_size', 1))
+        send(w.SCI_SETEXTRAASCENT, pull_int('extra_ascent', 0))
+        send(w.SCI_SETEXTRADESCENT, pull_int('extra_descent', 0))
 
     def set_zoom(self, zoom):
         """ Set the zoom factor on the widget.
@@ -370,3 +353,38 @@ class QtScintilla(QtControl, ProxyScintilla):
 
         """
         self.widget.setText(text)
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def set_foreground(self, foreground):
+        """ Set the foreground color of the widget.
+
+        This reimplementation ignores the foreground setting. The
+        foreground color is set by the theme.
+
+        """
+        pass
+
+    def set_background(self, background):
+        """ Set the background color of the widget.
+
+        This reimplementation ignores the background setting. The
+        background color is set by the theme.
+
+        """
+        pass
+
+    def set_font(self, font):
+        """ Set the font of the widget.
+
+        This reimplementation ignores the font setting. The font is
+        set by the theme.
+
+        """
+        pass
+
+        self.widget.setIndentationWidth(4)
+        self.widget.setIndentationsUseTabs(False)
+        self.widget.setTabWidth(4)
+        self.widget.setTabIndents(True)
