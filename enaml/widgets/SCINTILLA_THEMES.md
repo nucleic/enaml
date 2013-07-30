@@ -3,12 +3,11 @@ Scintilla Theme Specification
 This file describes how to create a syntax highlighting theme for the
 Enaml Scintilla editor widget.
 
-Enaml supports Scintilla themes defined as simple JSON files.
+Enaml supports Scintilla themes defined as simple Python dictionaries.
 
-The toplevel item in the theme file is an object with keys which match
-one of the available lexer definitions. e.g.,
+The keys of the theme dict are strings which name a syntax. e.g.,
 
-```javascript
+```python
 {
     "cpp": {
 
@@ -26,7 +25,7 @@ The value for a given lexer key is an object which contain the styling
 data for that lexer. The keys of style object are any of the tokens
 defined by the lexer. e.g.,
 
-```javascript
+```python
 {
     "python": {
         "default": {
@@ -58,7 +57,7 @@ allowed in a token style object. All of them are optional.
 
 Hence, a complete rule for a Python number token might look like:
 
-```javascript
+```python
 {
     "python": {
         "number": {
@@ -86,7 +85,7 @@ editor. The following keys are supported:
 
 An example of the IDLE theme for the **python** lexer is given below:
 
-```javascript
+```python
 {
     "settings": {
         "caret": "#000000",
