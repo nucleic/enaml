@@ -9,10 +9,21 @@ The keys of the theme dictionary are strings and the values will be some
 form of Python primitive or builtin. The available keys and values are
 described below, categorized into related topic.
 
+An example of indentation settings for a Python session:
+
+```python
+{
+    "tab_width": 4,
+    "use_tabs": False,
+    "indent": 4,
+    "tab_indents": True,
+    "backspace_unindents": True,
+}
+```
 
 Tabs and Indentation
 --------------------
-- `"tab_width"` (int) - The width of the tab character as a multiple of the
+- **tab_width** (int) - The width of the tab character as a multiple of the
   size of a space character. The default is 8 characters.
 
 - **use_tabs** (bool) - Wether indention should be created with a mixture of
