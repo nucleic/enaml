@@ -22,7 +22,7 @@ from atom.api import Atom, Str, Int, List, Range, Value, observe
 from enaml.layout.api import vbox
 from enaml.stdlib.mapped_view import MappedView
 from enaml.widgets.api import (
-    Window, Form, Field, SpinBox, Label, ComboBox, Container
+    Window, Form, Field, SpinBox, Label, ObjectCombo, Container
 )
 
 
@@ -92,26 +92,18 @@ enamldef BarView(BaseView):
 
 class Model(Atom):
 
-    index = Range(high=2)
-
     objects = List(Base)
-
-    selected_object = Value()
-
-    @observe('index')
-    def _selected_object(self, val):
-        self.selected_object = self.objects[val['value']]
 
 
 enamldef Main(Window):
-    attr main_model = Model(index=0,
-        objects=[Base(name='Base'), Foo(name='Foo'), Bar(name='Bar')])
+    attr main_model = Model(objects=[
+        Base(name='Base'), Foo(name='Foo'), Bar(name='Bar')
+    ])
     Container:
         hug_height = 'strong'
-        ComboBox:
-            items << [obj.name for obj in main_model.objects]
-            index := main_model.index
+        ObjectCombo: combo:
+            items << main_model.objects
+            to_string = lambda obj: obj.name
         MappedView:
-            model << main_model.selected_object
+            model << combo.selected
             typemap = {Base: BaseView, Foo: FooView, Bar: BarView}
-
