@@ -295,7 +295,9 @@ class AreaLayout(LayoutNode):
         """ Get the list of children of the area layout.
 
         """
-        return [self.item] + self.dock_bars
+        item = self.item
+        base = [item] if item is not None else []
+        return base + self.dock_bars
 
 
 class _DockLayoutItem(object):
