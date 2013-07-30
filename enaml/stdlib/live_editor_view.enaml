@@ -83,7 +83,7 @@ enamldef EditorPanel(Container):
     Label: label:
         text = item_label
     Field: field:
-        text << getattr(model, item_attr) 
+        text << getattr(model, item_attr)
         text :: setattr(model, item_attr, str(text))
     Label: slabel:
         text = 'Zoom'
@@ -99,7 +99,7 @@ enamldef EditorPanel(Container):
         Timer: timer:
             interval = 350
             single_shot = True
-            timeout :: 
+            timeout ::
                 text = str(editor.get_text())
                 setattr(model, text_attr, text)
 
