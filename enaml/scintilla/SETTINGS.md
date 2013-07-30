@@ -21,24 +21,6 @@ An example of indentation settings for a Python session:
 }
 ```
 
-White Space
------------
-- **view_ws** (string) - The mode for viewing white space. Valid values are:
-
-    - **invisible** - the default mode with invisible white space characters
-
-    - **visible_always** - white space characters are drawn as dots and arrows
-
-    - **visible_after_indent** - white space is displayed normal for
-      indentation but shown with dots and arrows for everything else.
-
-- **white_space_size** (int) - The size of the dots used for white space
-  characters. The default is 1.
-
-- **extra_ascent** (int) - Extra space above a line. The default is 0.
-
-- **extra_descent** (int) - Extra space below a line. The default is 0.
-
 
 Line Endings
 ------------
@@ -54,6 +36,24 @@ Line Endings
 
 - **view_eol** (bool) - Whether to display the end of line characters. The
   default is False.
+
+
+Long Lines
+----------
+- **edge_mode** (string) - The mode for the edge marker. Valid values are:
+
+    - **none** - The default mode where no edge ruler is displayed.
+
+    - **line** - A vertical line is drawn at the "edge_column".
+
+    - **background** - The background color after "edge_column" is changed to
+      this color.
+
+- **edge_column** (int) - The column at which to display the long line marker.
+  The default is 79.
+
+- **edge_color** (string) - The color for the edge marker. This should conform
+  to CSS color syntax.
 
 
 Tabs and Indentation
@@ -87,3 +87,22 @@ Tabs and Indentation
 
     - **look_both** - guides are shown up to the nextnon-empty line or
       previous non-empty line whichever is greater.
+
+
+White Space
+-----------
+- **view_ws** (string) - The mode for viewing white space. Valid values are:
+
+    - **invisible** - the default mode with invisible white space characters
+
+    - **visible_always** - white space characters are drawn as dots and arrows
+
+    - **visible_after_indent** - white space is displayed normal for
+      indentation but shown with dots and arrows for everything else.
+
+- **white_space_size** (int) - The size of the dots used for white space
+  characters. The default is 1.
+
+- **extra_ascent** (int) - Extra space above a line. The default is 0.
+
+- **extra_descent** (int) - Extra space below a line. The default is 0.
