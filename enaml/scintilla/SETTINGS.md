@@ -21,6 +21,41 @@ An example of indentation settings for a Python session:
 }
 ```
 
+White Space
+-----------
+- **view_ws** (string) - The mode for viewing white space. Valid values are:
+
+    - **invisible** - the default mode with invisible white space characters
+
+    - **visible_always** - white space characters are drawn as dots and arrows
+
+    - **visible_after_indent** - white space is displayed normal for
+      indentation but shown with dots and arrows for everything else.
+
+- **white_space_size** (int) - The size of the dots used for white space
+  characters. The default is 1.
+
+- **extra_ascent** (int) - Extra space above a line. The default is 0.
+
+- **extra_descent** (int) - Extra space below a line. The default is 0.
+
+
+Line Endings
+------------
+- **eol_mode** (string) - The line ending convention. Valid values are:
+
+    - **crlf** - the Windows \r\n convention
+
+    - **cr** - the Mac \r convention
+
+    - **lf** - the Unix \n convention.
+
+  The default is chosen based on the current platform.
+
+- **view_eol** (bool) - Whether to display the end of line characters. The
+  default is False.
+
+
 Tabs and Indentation
 --------------------
 - **tab_width** (int) - The width of the tab character as a multiple of the
@@ -41,7 +76,14 @@ Tabs and Indentation
   The default is False.
 
 - **indentation_guides** (string) - The indentation guides to display. Valid
-  values are: `"real"` - guides are shown in real indentation whitespace,
-  `"look_forward"` - guides are show beyond the actual indentation up to the
-  next non-empty line, `"look_both"` - guides are shown up to the next non-empty
-  line or previous non-empty line whichever is greater.
+  values are:
+
+    - **none** - the default mode with no indentation guides
+
+    - **real** - guides are shown in real indentation whitespace
+
+    - **look_forward** - guides are show beyond the actual indentation up to
+      the next non-empty line
+
+    - **look_both** - guides are shown up to the nextnon-empty line or
+      previous non-empty line whichever is greater.
