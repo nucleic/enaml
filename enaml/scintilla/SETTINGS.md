@@ -12,7 +12,7 @@ described below, categorized into related topic.
 
 Tabs and Indentation
 --------------------
-- **tab_width** (int) - The width of the tab character as a multiple of the
+- `"tab_width"` (int) - The width of the tab character as a multiple of the
   size of a space character. The default is 8 characters.
 
 - **use_tabs** (bool) - Wether indention should be created with a mixture of
