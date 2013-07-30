@@ -383,8 +383,3 @@ class QtScintilla(QtControl, ProxyScintilla):
 
         """
         pass
-
-        self.widget.setIndentationWidth(4)
-        self.widget.setIndentationsUseTabs(False)
-        self.widget.setTabWidth(4)
-        self.widget.setTabIndents(True)
