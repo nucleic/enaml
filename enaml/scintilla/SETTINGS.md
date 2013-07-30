@@ -41,7 +41,7 @@ Tabs and Indentation
   The default is False.
 
 - **indentation_guides** (string) - The indentation guides to display. Valid
-  values are: "real" - guides are shown in real indentation whitespace,
-  "look_forward" - guides are show beyond the actual indentation up to the
-  next non-empty line, "look_both" - guides are shown up to the next non-empty
+  values are: `"real"` - guides are shown in real indentation whitespace,
+  `"look_forward"` - guides are show beyond the actual indentation up to the
+  next non-empty line, `"look_both"` - guides are shown up to the next non-empty
   line or previous non-empty line whichever is greater.
