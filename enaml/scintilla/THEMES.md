@@ -1,7 +1,7 @@
 Scintilla Theme Specification
 =============================
 This file describes how to create a syntax highlighting theme for the
-Enaml Scintilla editor widget.
+Enaml Scintilla widget.
 
 Enaml supports Scintilla themes defined as simple Python dictionaries. The
 format of the dictionary is amenable to being stored as a JSON file.
