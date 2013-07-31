@@ -9,6 +9,7 @@ from .mono_font import MONO_FONT
 
 
 #: A Scintilla highlight theme based on the Python IDLE environment.
+#: TODO add many more syntaxes to this theme.
 IDLE_THEME = {
     "settings": {
         "caret": "#000000",
@@ -16,7 +17,7 @@ IDLE_THEME = {
         "paper": "#FFFFFF",
         "font": MONO_FONT
     },
-    "enaml": {
+    "python": {
         "class_name": {
             "color": "#21439C"
         },
@@ -59,3 +60,6 @@ IDLE_THEME = {
         }
     }
 }
+
+
+IDLE_THEME["enaml"] = IDLE_THEME["python"]
