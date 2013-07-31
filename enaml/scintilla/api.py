@@ -5,5 +5,4 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .idle_theme import IDLE_THEME
 from .scintilla import Scintilla, ScintillaDocument
