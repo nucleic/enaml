@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Typed, ForwardTyped
+from atom.api import Atom, Event, Typed, ForwardTyped
 
 from enaml.application import Application
-from enaml.core.declarative import Declarative
+from enaml.core.declarative import Declarative, d_
 from enaml.core.object import flag_generator, flag_property
 
 
@@ -124,6 +124,11 @@ class ToolkitObject(Declarative):
     """ The base class of all toolkit objects in Enaml.
 
     """
+    #: An event fired when an object's proxy is activated. It is
+    #: triggered once during the object lifetime, at the end of the
+    #: activate_proxy method.
+    activated = d_(Event(), writable=False)
+
     #: A reference to the ProxyToolkitObject
     proxy = Typed(ProxyToolkitObject)
 
@@ -201,6 +206,7 @@ class ToolkitObject(Declarative):
                 child.activate_proxy()
         self.activate_bottom_up()
         self.proxy_is_active = True
+        self.activated()
 
     def activate_top_down(self):
         """ Initialize the proxy on the top-down activation pass.

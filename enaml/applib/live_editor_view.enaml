@@ -1,0 +1,132 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.core.include import Include
+from enaml.layout.layout_helpers import vbox, hbox, align
+from enaml.scintilla.scintilla import Scintilla
+from enaml.scintilla.idle_theme import IDLE_THEME
+from enaml.widgets.container import Container
+from enaml.widgets.field import Field
+from enaml.widgets.label import Label
+from enaml.widgets.mdi_area import MdiArea
+from enaml.widgets.mdi_window import MdiWindow
+from enaml.widgets.multiline_field import MultilineField
+from enaml.widgets.spin_box import SpinBox
+from enaml.widgets.timer import Timer
+
+from .live_editor_model import LiveEditorModel
+
+
+enamldef EditorPanel(Container):
+    """ A base enamldef for creating live editor panels.
+
+    Users will typically use one the derived classes 'ModelEditorPanel'
+    or 'ViewEditorPanel'.
+
+    """
+    attr model: LiveEditorModel
+    attr text_attr: str
+    attr item_attr: str
+    attr item_label: str
+    constraints = [
+        vbox(hbox(label, field, slabel, spin), editor),
+        align('v_center', label, field, slabel, spin),
+    ]
+    Label: label:
+        text = item_label
+    Field: field:
+        text << getattr(model, item_attr)
+        text :: setattr(model, item_attr, str(text))
+    Label: slabel:
+        text = 'Zoom'
+    SpinBox: spin:
+        minimum = -10
+        maximum = 20
+        value := editor.zoom
+    Scintilla: editor:
+        syntax = 'enaml'
+        theme = IDLE_THEME
+        settings = {
+            "tab_width": 4,
+            "use_tabs": False,
+            "indent": 4,
+            "tab_indents": True,
+            "backspace_unindents": True,
+        }
+        activated :: set_text(getattr(model, text_attr))
+        text_changed :: timer.start()
+        Timer: timer:
+            interval = 350
+            single_shot = True
+            timeout :: setattr(model, text_attr, str(editor.get_text()))
+
+
+enamldef ModelEditorPanel(EditorPanel):
+    """ An editor panel which is setup for editing a live model.
+
+    The user must assign a 'LiveEditorModel' instance to the 'model'
+    attribute.
+
+    """
+    text_attr = 'model_text'
+    item_attr = 'model_item'
+    item_label = 'Model Item'
+
+
+enamldef ViewEditorPanel(EditorPanel):
+    """ An editor panel which is setup for editing a live view.
+
+    The user must assign a 'LiveEditorModel' instance to the 'model'
+    attribute.
+
+    """
+    text_attr = 'view_text'
+    item_attr = 'view_item'
+    item_label = 'View Item'
+
+
+enamldef TracebackPanel(Container):
+    """ A panel for viewing the traceback of a 'LiveEditorModel'.
+
+    """
+    attr model: LiveEditorModel
+    padding = 0
+    MultilineField:
+        text << model.traceback
+        read_only = True
+
+
+def _prepare_item(item):
+    """ A private function for preparing a compiled view.
+
+    This function is used by the 'ViewPanel'.
+
+    """
+    if item is None:
+        return []
+    if isinstance(item, Container):
+        item.share_layout = True
+    return [item]
+
+
+enamldef ViewPanel(Container):
+    """ A panel for viewing the compiled view of a 'LiveEditorModel'.
+
+    """
+    attr model: LiveEditorModel
+    padding = 0
+    MdiArea:
+        resist_width = 'ignore'
+        resist_height = 'ignore'
+        constraints = [width >= 640, height >= 480]
+        MdiWindow:
+            title << model.view_item
+            Container:
+                padding = 0
+                Include:
+                    destroy_old = False  # old destroyed by model
+                    objects << _prepare_item(model.compiled_view)

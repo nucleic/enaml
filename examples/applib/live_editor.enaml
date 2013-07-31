@@ -1,0 +1,88 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.applib.live_editor_model import LiveEditorModel
+from enaml.applib.live_editor_view import (
+    ModelEditorPanel, ViewEditorPanel, TracebackPanel, ViewPanel
+)
+from enaml.layout.api import HSplitLayout, AreaLayout, DockBarLayout
+from enaml.widgets.api import Window, Container, DockArea, DockItem
+
+
+MODEL_TEXT = """\
+from atom.api import *
+
+
+class DemoModel(Atom):
+    pass
+
+"""
+
+
+VIEW_TEXT = """\
+from enaml.widgets.api import *
+from enaml.layout.api import *
+
+
+enamldef DemoContainer(Container):
+    pass
+
+"""
+
+
+enamldef Main(Window):
+    title = 'Live Editor Demo'
+    initial_size = (1024, 768)
+    attr editor_model = LiveEditorModel(
+        model_text=MODEL_TEXT,
+        model_item='DemoModel',
+        model_filename='demo.py',
+        view_text=VIEW_TEXT,
+        view_item='DemoContainer',
+        view_filename='demo.enaml',
+    )
+    Container:
+        padding = 0
+        DockArea:
+            layout = AreaLayout(
+                HSplitLayout(
+                    'view-editor-item',
+                    'view-item',
+                    sizes=[1, 3],
+                ),
+                dock_bars=[
+                    DockBarLayout(
+                        'model-editor-item',
+                        'traceback-item',
+                        position='left',
+                    ),
+                ],
+            )
+            DockItem:
+                name = 'model-editor-item'
+                title = 'Model Editor'
+                stretch = 1
+                ModelEditorPanel:
+                    model = editor_model
+            DockItem:
+                name = 'view-editor-item'
+                title = 'View Editor'
+                stretch = 1
+                ViewEditorPanel:
+                    model = editor_model
+            DockItem:
+                name = 'traceback-item'
+                title = 'Errors'
+                stretch = 1
+                TracebackPanel:
+                    model = editor_model
+            DockItem:
+                name = 'view-item'
+                title = 'Live View'
+                stretch = 4
+                ViewPanel:
+                    model = editor_model

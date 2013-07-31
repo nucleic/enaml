@@ -183,6 +183,20 @@ class QtContainer(QtFrame, ProxyContainer):
         super(QtContainer, self).destroy()
 
     #--------------------------------------------------------------------------
+    # Child Events
+    #--------------------------------------------------------------------------
+    def child_added(self, child):
+        """ Handle the child added event.
+
+        This handler will reparent the child if necessary.
+
+        """
+        super(QtContainer, self).child_added(child)
+        cw = child.widget
+        if cw is not None and cw.parent() != self.widget:
+            cw.setParent(self.widget)
+
+    #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
     def on_resized(self):

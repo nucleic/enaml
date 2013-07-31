@@ -205,6 +205,11 @@ def raw_widget_factory():
     return QtRawWidget
 
 
+def scintilla_factory():
+    from .qt_scintilla import QtScintilla
+    return QtScintilla
+
+
 def scroll_area_factory():
     from .qt_scroll_area import QtScrollArea
     return QtScrollArea
@@ -258,6 +263,11 @@ def status_item_factory():
 def time_selector_factory():
     from .qt_time_selector import QtTimeSelector
     return QtTimeSelector
+
+
+def timer_factory():
+    from .qt_timer import QtTimer
+    return QtTimer
 
 
 def tool_bar_factory():
@@ -315,6 +325,7 @@ QT_FACTORIES = {
     'ProgressBar': progress_bar_factory,
     'RadioButton': radio_button_factory,
     'RawWidget': raw_widget_factory,
+    'Scintilla': scintilla_factory,
     'ScrollArea': scroll_area_factory,
     'Separator': separator_factory,
     'Slider': slider_factory,
@@ -326,6 +337,7 @@ QT_FACTORIES = {
     'StatusBar': status_bar_factory,
     'StatusItem': status_item_factory,
     'TimeSelector': time_selector_factory,
+    'Timer': timer_factory,
     'ToolBar': tool_bar_factory,
     'WebView': web_view_factory,
     'Window': window_factory,

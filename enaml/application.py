@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Bool, Typed, Tuple, Dict, Callable, Value, List
-
 from heapq import heappush, heappop
 from itertools import count
 from threading import Lock
+
+from atom.api import Atom, Bool, Typed, Tuple, Dict, Callable, Value, List
 
 
 class ScheduledTask(Atom):
