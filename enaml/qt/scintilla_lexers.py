@@ -92,7 +92,7 @@ LEXERS = {
     'postscript': Qsci.QsciLexerPostScript,
     'pov': Qsci.QsciLexerPOV,
     'properties': Qsci.QsciLexerProperties,
-    'python': Qsci.QsciLexerPython,
+    'python': PythonLexer,
     'ruby': Qsci.QsciLexerRuby,
     'spice': Qsci.QsciLexerSpice,
     'sql': Qsci.QsciLexerSQL,
