@@ -58,10 +58,11 @@ class ScintillaDocument(Atom):
     """ An opaque class which represents a Scintilla text document.
 
     An instance of this class can be shared with multiple Scintilla
-    widgets to enable multiple editing views on the same buffer.
+    widgets to enable multiple editor views on the same buffer, or
+    to use multiple buffers with the same view.
 
     """
-    #: A uuid which can be used as a handle by toolkit backends.
+    #: A uuid which can be used as a handle by the toolkit backend.
     uuid = Constant(factory=lambda: uuid.uuid4().hex)
 
 
@@ -126,9 +127,6 @@ class Scintilla(Control):
 
     #: An event emitted when the text is changed.
     text_changed = d_(Event(), writable=False)
-
-    #: An event emitted when the selection is changed.
-    selection_changed = d_(Event(), writable=False)
 
     #: Text Editors expand freely in height and width by default.
     hug_width = set_default('ignore')
