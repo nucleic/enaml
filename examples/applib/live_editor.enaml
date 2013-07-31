@@ -5,15 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.applib.live_editor_model import LiveEditorModel
+from enaml.applib.live_editor_view import (
+    ModelEditorPanel, ViewEditorPanel, TracebackPanel, ViewPanel
+)
 from enaml.layout.api import HSplitLayout, AreaLayout, DockBarLayout
 from enaml.widgets.api import Window, Container, DockArea, DockItem
-from enaml.stdlib.live_editor_model import LiveEditorModel
-from enaml.stdlib.live_editor_view import (
-    ModelEditorPanel, ViewEditorPanel, TracebackPanel, LiveViewPanel
-)
 
 
-INITIAL_MODEL_TEXT = """\
+MODEL_TEXT = """\
 from atom.api import *
 
 
@@ -23,7 +23,7 @@ class DemoModel(Atom):
 """
 
 
-INITIAL_VIEW_TEXT = """\
+VIEW_TEXT = """\
 from enaml.widgets.api import *
 from enaml.layout.api import *
 
@@ -38,47 +38,51 @@ enamldef Main(Window):
     title = 'Live Editor Demo'
     initial_size = (1024, 768)
     attr editor_model = LiveEditorModel(
-        model_text=INITIAL_MODEL_TEXT,
+        model_text=MODEL_TEXT,
         model_item='DemoModel',
-        py_filename='demo.py',
-        view_text=INITIAL_VIEW_TEXT,
+        model_filename='demo.py',
+        view_text=VIEW_TEXT,
         view_item='DemoContainer',
-        enaml_filename='demo.enaml',
+        view_filename='demo.enaml',
     )
     Container:
         padding = 0
-        DockArea: area:
+        DockArea:
             layout = AreaLayout(
-                HSplitLayout('live-view-editor', 'live-view', sizes=[1, 3]),
+                HSplitLayout(
+                    'view-editor-item',
+                    'view-item',
+                    sizes=[1, 3],
+                ),
                 dock_bars=[
                     DockBarLayout(
-                        'live-model-editor',
-                        'live-traceback',
+                        'model-editor-item',
+                        'traceback-item',
                         position='left',
                     ),
                 ],
             )
             DockItem:
-                name = 'live-model-editor'
+                name = 'model-editor-item'
                 title = 'Model Editor'
                 stretch = 1
                 ModelEditorPanel:
                     model = editor_model
             DockItem:
-                name = 'live-view-editor'
+                name = 'view-editor-item'
                 title = 'View Editor'
                 stretch = 1
                 ViewEditorPanel:
                     model = editor_model
             DockItem:
-                name = 'live-traceback'
+                name = 'traceback-item'
                 title = 'Errors'
                 stretch = 1
                 TracebackPanel:
                     model = editor_model
             DockItem:
-                name = 'live-view'
+                name = 'view-item'
                 title = 'Live View'
                 stretch = 4
-                LiveViewPanel:
+                ViewPanel:
                     model = editor_model
