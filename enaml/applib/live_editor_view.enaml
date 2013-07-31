@@ -22,6 +22,12 @@ from .live_editor_model import LiveEditorModel
 
 
 enamldef EditorPanel(Container):
+    """ A base enamldef for creating live editor panels.
+
+    Users will typically use one the derived classes 'ModelEditorPanel'
+    or 'ViewEditorPanel'.
+
+    """
     attr model: LiveEditorModel
     attr text_attr: str
     attr item_attr: str
@@ -42,8 +48,7 @@ enamldef EditorPanel(Container):
         maximum = 20
         value := editor.zoom
     Scintilla: editor:
-        activated :: set_text(getattr(model, text_attr))
-        syntax = 'enaml'  # this covers both Python and Enaml syntax
+        syntax = 'enaml'
         theme = IDLE_THEME
         settings = {
             "tab_width": 4,
@@ -52,28 +57,42 @@ enamldef EditorPanel(Container):
             "tab_indents": True,
             "backspace_unindents": True,
         }
+        activated :: set_text(getattr(model, text_attr))
         text_changed :: timer.start()
         Timer: timer:
             interval = 350
             single_shot = True
-            timeout ::
-                text = str(editor.get_text())
-                setattr(model, text_attr, text)
+            timeout :: setattr(model, text_attr, str(editor.get_text()))
 
 
 enamldef ModelEditorPanel(EditorPanel):
+    """ An editor panel which is setup for editing a live model.
+
+    The user must assign a 'LiveEditorModel' instance to the 'model'
+    attribute.
+
+    """
     text_attr = 'model_text'
     item_attr = 'model_item'
     item_label = 'Model Item'
 
 
 enamldef ViewEditorPanel(EditorPanel):
+    """ An editor panel which is setup for editing a live view.
+
+    The user must assign a 'LiveEditorModel' instance to the 'model'
+    attribute.
+
+    """
     text_attr = 'view_text'
     item_attr = 'view_item'
     item_label = 'View Item'
 
 
 enamldef TracebackPanel(Container):
+    """ A panel for viewing the traceback of a 'LiveEditorModel'.
+
+    """
     attr model: LiveEditorModel
     padding = 0
     MultilineField:
@@ -81,7 +100,12 @@ enamldef TracebackPanel(Container):
         read_only = True
 
 
-def prepare_item(item):
+def _prepare_item(item):
+    """ A private function for preparing a compiled view.
+
+    This function is used by the 'ViewPanel'.
+
+    """
     if item is None:
         return []
     if isinstance(item, Container):
@@ -89,7 +113,10 @@ def prepare_item(item):
     return [item]
 
 
-enamldef LiveViewPanel(Container):
+enamldef ViewPanel(Container):
+    """ A panel for viewing the compiled view of a 'LiveEditorModel'.
+
+    """
     attr model: LiveEditorModel
     padding = 0
     MdiArea:
@@ -102,4 +129,4 @@ enamldef LiveViewPanel(Container):
                 padding = 0
                 Include:
                     destroy_old = False  # old destroyed by model
-                    objects << prepare_item(model.output_view)
+                    objects << _prepare_item(model.compiled_view)
