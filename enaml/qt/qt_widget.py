@@ -329,6 +329,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         content = {
             'data': event.mimeData().data(self.selected_type).data(),
             'pos': (event.pos().x(), event.pos().y()),
+            'type': self.selected_type,
         }
         self.declaration._handle_drop(content)
         event.acceptProposedAction()
