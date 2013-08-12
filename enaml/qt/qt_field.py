@@ -9,7 +9,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.field import ProxyField
 
-from .QtCore import Signal
+from .QtCore import QTimer, Signal
 from .QtGui import QLineEdit
 
 from .qt_control import QtControl
@@ -45,6 +45,9 @@ class QtField(QtControl, ProxyField):
     #: A reference to the widget created by the proxy.
     widget = Typed(QFocusLineEdit)
 
+    #: A collapsing timer for auto sync text.
+    _text_timer = Typed(QTimer)
+
     #: Cyclic notification guard. This a bitfield of multiple guards.
     _guard = Int(0)
 
@@ -72,10 +75,8 @@ class QtField(QtControl, ProxyField):
         self.set_echo_mode(d.echo_mode)
         self.set_max_length(d.max_length)
         self.set_read_only(d.read_only)
-        widget = self.widget
-        widget.lostFocus.connect(self.on_lost_focus)
-        widget.returnPressed.connect(self.on_return_pressed)
-        widget.textEdited.connect(self.on_text_edited)
+        self.set_submit_triggers(d.submit_triggers)
+        self.widget.textEdited.connect(self.on_text_edited)
 
     #--------------------------------------------------------------------------
     # Private API
@@ -115,27 +116,15 @@ class QtField(QtControl, ProxyField):
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
-    def on_lost_focus(self):
-        """ The signal handler for 'lostFocus' signal.
+    def on_submit_text(self):
+        """ The signal handler for the text submit triggers.
 
         """
-        if 'lost_focus' in self.declaration.submit_triggers:
-            self._guard |= TEXT_GUARD
-            try:
-                self._validate_and_apply()
-            finally:
-                self._guard &= ~TEXT_GUARD
-
-    def on_return_pressed(self):
-        """ The signal handler for 'returnPressed' signal.
-
-        """
-        if 'return_pressed' in self.declaration.submit_triggers:
-            self._guard |= TEXT_GUARD
-            try:
-                self._validate_and_apply()
-            finally:
-                self._guard &= ~TEXT_GUARD
+        self._guard |= TEXT_GUARD
+        try:
+            self._validate_and_apply()
+        finally:
+            self._guard &= ~TEXT_GUARD
 
     def on_text_edited(self):
         """ The signal handler for the 'textEdited' signal.
@@ -149,6 +138,8 @@ class QtField(QtControl, ProxyField):
         else:
             self._clear_error_state()
             self.widget.setToolTip(u'')
+        if self._text_timer is not None:
+            self._text_timer.start()
 
     #--------------------------------------------------------------------------
     # ProxyField API
@@ -166,6 +157,35 @@ class QtField(QtControl, ProxyField):
 
         """
         self.widget.setInputMask(mask)
+
+    def set_submit_triggers(self, triggers):
+        """ Set the submit triggers for the widget.
+
+        """
+        widget = self.widget
+        handler = self.on_submit_text
+        try:
+            widget.lostFocus.disconnect(handler)
+        except TypeError:  # was never connected
+            pass
+        try:
+            widget.returnPressed.disconnect()
+        except TypeError:  # was never connected
+            pass
+        if 'lost_focus' in triggers:
+            widget.lostFocus.connect(handler)
+        if 'return_pressed' in triggers:
+            widget.returnPressed.connect(handler)
+        if 'auto_sync' in triggers:
+            if self._text_timer is None:
+                timer = self._text_timer = QTimer()
+                timer.setSingleShot(True)
+                timer.setInterval(300)
+                timer.timeout.connect(handler)
+        else:
+            if self._text_timer is not None:
+                self._text_timer.stop()
+                self._text_timer = None
 
     def set_placeholder(self, text):
         """ Set the placeholder text of the widget.

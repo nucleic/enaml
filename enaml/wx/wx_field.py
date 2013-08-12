@@ -146,6 +146,9 @@ class WxField(WxControl, ProxyField):
     #: A reference to the widget created by the proxy.
     widget = Typed(wxLineEdit)
 
+    #: A collapsing timer for auto sync text.
+    _text_timer = Typed(wx.Timer)
+
     #: Cyclic notification guard. This a bitfield of multiple guards.
     _guard = Int(0)
 
@@ -186,10 +189,8 @@ class WxField(WxControl, ProxyField):
         self.set_echo_mode(d.echo_mode)
         self.set_max_length(d.max_length)
         self.set_read_only(d.read_only)
-        widget = self.widget
-        widget.Bind(wx.EVT_KILL_FOCUS, self.on_lost_focus)
-        widget.Bind(wx.EVT_TEXT_ENTER, self.on_return_pressed)
-        widget.Bind(wx.EVT_TEXT, self.on_text_edited)
+        self.set_submit_triggers(d.submit_triggers)
+        self.widget.Bind(wx.EVT_TEXT, self.on_text_edited)
 
     #--------------------------------------------------------------------------
     # Private API
@@ -228,32 +229,24 @@ class WxField(WxControl, ProxyField):
     #--------------------------------------------------------------------------
     # Event Handling
     #--------------------------------------------------------------------------
-    def on_lost_focus(self, event):
-        """ The event handler for EVT_KILL_FOCUS event.
+    def on_submit_text(self, event):
+        """ The event handler for the text submit triggers.
 
         """
-        event.Skip()
-        if 'lost_focus' in self.declaration.submit_triggers:
-            self._guard |= TEXT_GUARD
-            try:
-                self._validate_and_apply()
-            finally:
-                self._guard &= ~TEXT_GUARD
-
-    def on_return_pressed(self, event):
-        """ The event handler for EVT_TEXT_ENTER event.
-
-        """
-        # don't skip or Wx triggers the system beep, grrrrrrr.....
-        #event.Skip()
-        if 'return_pressed' in self.declaration.submit_triggers:
-            self._guard |= TEXT_GUARD
-            try:
-                self._validate_and_apply()
-            finally:
-                self._guard &= ~TEXT_GUARD
+        # Only skip the focus event: wx triggers the system beep if the
+        # enter event is skipped.
+        if isinstance(event, wx.FocusEvent):
+            event.Skip()
+        self._guard |= TEXT_GUARD
+        try:
+            self._validate_and_apply()
+        finally:
+            self._guard &= ~TEXT_GUARD
 
     def on_text_edited(self, event):
+        """ The event handler for the text edited event.
+
+        """
         # Temporary kludge until error style is fully implemented
         d = self.declaration
         if d.validator and not d.validator.validate(self.widget.GetValue()):
@@ -262,6 +255,8 @@ class WxField(WxControl, ProxyField):
         else:
             self._clear_error_state()
             self.widget.SetToolTip(wx.ToolTip(''))
+        if self._text_timer is not None:
+            self._text_timer.Start(300, oneShot=True)
 
     #--------------------------------------------------------------------------
     # ProxyField API
@@ -281,6 +276,27 @@ class WxField(WxControl, ProxyField):
 
         """
         pass
+
+    def set_submit_triggers(self, triggers):
+        """ Set the submit triggers for the widget.
+
+        """
+        widget = self.widget
+        handler = self.on_submit_text
+        widget.Unbind(wx.EVT_KILL_FOCUS, handler=handler)
+        widget.Unbind(wx.EVT_TEXT_ENTER, handler=handler)
+        if 'lost_focus' in triggers:
+            widget.Bind(wx.EVT_KILL_FOCUS, handler)
+        if 'return_pressed' in triggers:
+            widget.Bind(wx.EVT_TEXT_ENTER, handler)
+        if 'auto_sync' in triggers:
+            if self._text_timer is None:
+                timer = self._text_timer = wx.Timer()
+                timer.Bind(wx.EVT_TIMER, handler)
+        else:
+            if self._text_timer is not None:
+                self._text_timer.Stop()
+                self._text_timer = None
 
     def set_placeholder(self, placeholder):
         """ Sets the placeholder text in the widget.
