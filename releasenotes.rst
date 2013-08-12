@@ -1,6 +1,21 @@
 Enaml Release Notes
 ===================
 
+0.7.20 - 08/12/2013
+-------------------
+- Bugfix area layout traversal. 308164fd5134_
+- Allow alpha hex colors. d9605cc55bb5_
+- Add a declarative Timer object. 13259258e6fd_
+- Added a Scintilla widget.
+- Added the applib sub-package.
+- Added live editor components to the applib.
+- Added an 'auto_sync' submit trigger to Field. 1926cde5e64b_
+
+.. _308164fd5134: https://github.com/nucleic/enaml/commit/308164fd513416ffb52a38db9b5b7039942e32f2
+.. _d9605cc55bb5: https://github.com/nucleic/enaml/commit/d9605cc55bb546f1a2593df0865687678de182f1
+.. _13259258e6fd: https://github.com/nucleic/enaml/commit/13259258e6fdb62181a26b24cef9d69f70c37ac3
+.. _1926cde5e64b: https://github.com/nucleic/enaml/commit/1926cde5e64ba3b4227886268869b10e755d5c0b
+
 0.7.19 - 07/22/2013
 -------------------
 - Added dock layout ops for extending/retracting from dock bars. 00ee34a102f_
