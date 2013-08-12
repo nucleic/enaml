@@ -54,6 +54,7 @@ setup(
     install_requires=['distribute'],
     packages=find_packages(),
     package_data={
+        'enaml.applib': ['*.enaml'],
         'enaml.stdlib': ['*.enaml'],
         'enaml.qt.docking': [
             'dock_images/*.png',
