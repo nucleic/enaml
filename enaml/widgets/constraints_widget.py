@@ -13,7 +13,6 @@ from casuarius import ConstraintVariable
 
 from enaml.core.declarative import d_
 from enaml.layout.ab_constrainable import ABConstrainable
-from enaml.layout.layout_helpers import expand_constraints
 
 from .widget import Widget, ProxyWidget
 
