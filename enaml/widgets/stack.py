@@ -78,7 +78,7 @@ class Stack(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('index', 'transition'))
+    @observe('index', 'transition')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

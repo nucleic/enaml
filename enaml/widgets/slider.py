@@ -117,8 +117,8 @@ class Slider(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('minimum', 'maximum', 'value', 'single_step', 'page_step',
-        'tick_position', 'tick_interval', 'orientation', 'tracking'))
+    @observe('minimum', 'maximum', 'value', 'single_step', 'page_step',
+        'tick_position', 'tick_interval', 'orientation', 'tracking')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

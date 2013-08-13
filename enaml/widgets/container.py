@@ -147,7 +147,7 @@ class Container(Frame):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('share_layout', 'padding'))
+    @observe('share_layout', 'padding')
     def _layout_invalidated(self, change):
         """ A private observer which invalidates the layout.
 

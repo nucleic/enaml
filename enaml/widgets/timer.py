@@ -55,7 +55,7 @@ class Timer(ToolkitObject):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('single_shot', 'interval'))
+    @observe('single_shot', 'interval')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the state changes.
 

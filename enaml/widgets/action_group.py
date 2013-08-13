@@ -63,7 +63,7 @@ class ActionGroup(ToolkitObject):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('exclusive', 'enabled', 'visible'))
+    @observe('exclusive', 'enabled', 'visible')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the group changes.
 

@@ -50,7 +50,7 @@ class DatetimeSelector(BoundedDatetime):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('datetime_format', 'calendar_popup'))
+    @observe('datetime_format', 'calendar_popup')
     def _update_proxy(self, change):
         """ An observer which updates the proxy with state change.
 

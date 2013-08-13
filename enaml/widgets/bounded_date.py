@@ -60,7 +60,7 @@ class BoundedDate(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('minimum', 'maximum', 'date'))
+    @observe('minimum', 'maximum', 'date')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the data changes.
 

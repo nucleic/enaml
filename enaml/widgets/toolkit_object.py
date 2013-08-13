@@ -239,7 +239,7 @@ class ToolkitObject(Declarative):
         as a base observer handler
 
         """
-        if self.proxy_is_active and change['type'] == 'update':
+        if change['type'] == 'update' and self.proxy_is_active:
             handler = getattr(self.proxy, 'set_' + change['name'], None)
             if handler is not None:
                 handler(change['value'])

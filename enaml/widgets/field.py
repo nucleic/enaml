@@ -125,8 +125,8 @@ class Field(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('text', 'mask', 'submit_triggers', 'placeholder', 'echo_mode',
-        'max_length', 'read_only'))
+    @observe('text', 'mask', 'submit_triggers', 'placeholder', 'echo_mode',
+        'max_length', 'read_only')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

@@ -68,7 +68,7 @@ class Notebook(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('tab_style', 'tab_position', 'tabs_closable', 'tabs_movable'))
+    @observe('tab_style', 'tab_position', 'tabs_closable', 'tabs_movable')
     def _update_proxy(self, change):
         """ Send the state change to the proxy.
 

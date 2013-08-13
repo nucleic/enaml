@@ -93,7 +93,7 @@ class ProgressBar(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('minimum', 'maximum', 'value', 'text_visible'))
+    @observe('minimum', 'maximum', 'value', 'text_visible')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
@@ -103,12 +103,13 @@ class ProgressBar(Control):
         # The superclass handler implementation is sufficient.
         super(ProgressBar, self)._update_proxy(change)
 
-    @observe(('minimum', 'maximum', 'value'))
+    @observe('minimum', 'maximum', 'value')
     def _reset_percentage(self, change):
         """ An observer which resets the percentage property.
 
         """
-        self.get_member('percentage').reset(self)
+        if change['type'] == 'update':
+            self.get_member('percentage').reset(self)
 
     #--------------------------------------------------------------------------
     # PostSetAttr Handlers

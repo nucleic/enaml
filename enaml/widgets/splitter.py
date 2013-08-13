@@ -59,7 +59,7 @@ class Splitter(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('orientation', 'live_drag'))
+    @observe('orientation', 'live_drag')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

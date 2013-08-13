@@ -128,9 +128,9 @@ class Widget(ToolkitObject):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('enabled', 'visible', 'background', 'foreground', 'font',
+    @observe('enabled', 'visible', 'background', 'foreground', 'font',
         'minimum_size', 'maximum_size', 'show_focus_rect', 'tool_tip',
-        'status_tip'))
+        'status_tip')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
 

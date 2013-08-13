@@ -116,8 +116,8 @@ class DockItem(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'title_editable', 'title_bar_visible', 'icon',
-        'icon_size', 'stretch', 'closable'))
+    @observe('title', 'title_editable', 'title_bar_visible', 'icon',
+        'icon_size', 'stretch', 'closable')
     def _update_proxy(self, change):
         """ Update the proxy when the item state changes.
 

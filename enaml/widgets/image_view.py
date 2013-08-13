@@ -61,7 +61,7 @@ class ImageView(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('image', 'scale_to_fit', 'allow_upscaling', 'preserve_aspect_ratio'))
+    @observe('image', 'scale_to_fit', 'allow_upscaling', 'preserve_aspect_ratio')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

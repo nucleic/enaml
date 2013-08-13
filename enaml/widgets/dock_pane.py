@@ -109,9 +109,8 @@ class DockPane(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'title_bar_visible', 'title_bar_orientation',
-        'closable', 'movable', 'floatable', 'floating', 'dock_area',
-        'allowed_dock_areas'))
+    @observe('title', 'title_bar_visible', 'title_bar_orientation', 'closable',
+        'movable', 'floatable', 'floating', 'dock_area', 'allowed_dock_areas')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

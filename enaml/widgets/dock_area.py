@@ -253,7 +253,7 @@ class DockArea(ConstraintsWidget):
         if change['type'] == 'update':
             self.apply_layout(change['value'])
 
-    @observe(('tab_position', 'live_drag', 'style', 'dock_events_enabled'))
+    @observe('tab_position', 'live_drag', 'style', 'dock_events_enabled')
     def _update_proxy(self, change):
         """ Update the proxy when the area state changes.
 

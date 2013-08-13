@@ -143,13 +143,14 @@ class ConstraintsWidget(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('constraints', 'hug_width', 'hug_height', 'resist_width',
-        'resist_height'))
+    @observe('constraints', 'hug_width', 'hug_height', 'resist_width',
+        'resist_height')
     def _layout_invalidated(self, change):
         """ An observer which will relayout the proxy widget.
 
         """
-        self.request_relayout()
+        if change['type'] == 'update':
+            self.request_relayout()
 
     #--------------------------------------------------------------------------
     # Public API

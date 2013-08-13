@@ -68,7 +68,7 @@ class Menu(ToolkitObject):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'enabled', 'visible', 'context_menu'))
+    @observe('title', 'enabled', 'visible', 'context_menu')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the menu changes.
 

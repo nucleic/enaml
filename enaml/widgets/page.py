@@ -71,7 +71,7 @@ class Page(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'closable', 'icon'))
+    @observe('title', 'closable', 'icon')
     def _update_proxy(self, change):
         """ Send the member state change to the proxy.
 

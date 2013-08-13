@@ -55,7 +55,7 @@ class StatusItem(ToolkitObject):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('mode', 'stretch'))
+    @observe('mode', 'stretch')
     def _update_proxy(self, change):
         """ Update the proxy when the status item data changes.
 

@@ -77,7 +77,7 @@ class ScrollArea(Frame):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('horizontal_policy', 'vertical_policy', 'widget_resizable'))
+    @observe('horizontal_policy', 'vertical_policy', 'widget_resizable')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

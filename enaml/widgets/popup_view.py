@@ -208,9 +208,9 @@ class PopupView(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('anchor', 'anchor_mode', 'parent_anchor', 'arrow_size',
+    @observe('anchor', 'anchor_mode', 'parent_anchor', 'arrow_size',
         'arrow_edge', 'arrow_position', 'offset', 'timeout',
-        'fade_in_duration', 'fade_out_duration'))
+        'fade_in_duration', 'fade_out_duration')
     def _update_proxy(self, change):
         """ Update the proxy when the PopupView data changes.
 

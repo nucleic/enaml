@@ -98,8 +98,8 @@ class ToolBar(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('movable', 'floatable', 'floating', 'dock_area',
-        'allowed_dock_areas', 'orientation'))
+    @observe('movable', 'floatable', 'floating', 'dock_area',
+        'allowed_dock_areas', 'orientation')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

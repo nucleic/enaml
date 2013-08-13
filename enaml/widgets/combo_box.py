@@ -75,7 +75,7 @@ class ComboBox(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('index', 'items', 'editable'))
+    @observe('index', 'items', 'editable')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
@@ -83,9 +83,10 @@ class ComboBox(Control):
         # The superclass handler implementation is sufficient.
         super(ComboBox, self)._update_proxy(change)
 
-    @observe(('index', 'items'))
+    @observe('index', 'items')
     def _reset_selected_item(self, change):
         """ Reset the selected item when the index or items changes.
 
         """
-        self.get_member('selected_item').reset(self)
+        if change['type'] == 'update':
+            self.get_member('selected_item').reset(self)

@@ -334,7 +334,7 @@ class Window(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'modality', 'icon'))
+    @observe('title', 'modality', 'icon')
     def _update_proxy(self, change):
         """ Update the ProxyWindow when the Window data changes.
 

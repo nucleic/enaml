@@ -63,7 +63,7 @@ class SplitItem(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('stretch', 'collapsible'))
+    @observe('stretch', 'collapsible')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

@@ -53,7 +53,7 @@ class MPLCanvas(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('figure', 'toolbar_visible'))
+    @observe('figure', 'toolbar_visible')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
