@@ -5,9 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Unicode, Event
+from atom.api import Typed, Unicode, Event
 
 from .declarative_meta import DeclarativeMeta
+from .expression_engine import ExpressionEngine
 from .object import Object, flag_generator, flag_property
 
 
@@ -70,6 +71,10 @@ class Declarative(Object):
     #: not be manipulated directly by user code.
     is_initialized = flag_property(INITIALIZED_FLAG)
 
+    #: The engine used for the expressions bound to the this object.
+    #: This value should not be manipulated by user code.
+    _engine = Typed(ExpressionEngine)
+
     def initialize(self):
         """ Initialize this object all of its children recursively.
 
@@ -94,11 +99,7 @@ class Declarative(Object):
 
         """
         self.is_initialized = False
-        for op in type(self).__eval_operators__.itervalues():
-            op.release(self)
-        for oplist in type(self).__notify_operators__.itervalues():
-            for op in oplist:
-                op.release(self)
+        del self._engine
         super(Declarative, self).destroy()
 
     def child_added(self, child):
@@ -116,42 +117,42 @@ class Declarative(Object):
     #--------------------------------------------------------------------------
     # Private Framework API
     #--------------------------------------------------------------------------
-    def _run_eval_operator(self, name):
-        """ Run the eval operator attached to the given name.
+    # def _run_eval_operator(self, name):
+    #     """ Run the eval operator attached to the given name.
 
-        This method is used as a default value handler by the Enaml
-        operators when an eval operator is bound to the object.
+    #     This method is used as a default value handler by the Enaml
+    #     operators when an eval operator is bound to the object.
 
-        Parameters
-        ----------
-        name : string
-            The name to which the operator of interest is bound.
+    #     Parameters
+    #     ----------
+    #     name : string
+    #         The name to which the operator of interest is bound.
 
-        Returns
-        -------
-        result : object or NotImplemented
-            The result of the evaluated operator, or NotImplemented if
-            there is no eval operator bound for the given name.
+    #     Returns
+    #     -------
+    #     result : object or NotImplemented
+    #         The result of the evaluated operator, or NotImplemented if
+    #         there is no eval operator bound for the given name.
 
-        """
-        op = type(self).__eval_operators__.get(name)
-        if op is not None:
-            return op.eval(self)
-        return NotImplemented
+    #     """
+    #     op = type(self).__eval_operators__.get(name)
+    #     if op is not None:
+    #         return op.eval(self)
+    #     return NotImplemented
 
-    def _run_notify_operator(self, change):
-        """ Invoke a bound notify operator for the given change.
+    # def _run_notify_operator(self, change):
+    #     """ Invoke a bound notify operator for the given change.
 
-        This method is used as a static observer by the Enaml
-        operators when a notify operator is bound to the object.
+    #     This method is used as a static observer by the Enaml
+    #     operators when a notify operator is bound to the object.
 
-        Parameters
-        ----------
-        change : dict
-            The change dictionary for the notification.
+    #     Parameters
+    #     ----------
+    #     change : dict
+    #         The change dictionary for the notification.
 
-        """
-        oplist = type(self).__notify_operators__.get(change['name'])
-        if oplist is not None:
-            for op in oplist:
-                op.notify(change)
+    #     """
+    #     oplist = type(self).__notify_operators__.get(change['name'])
+    #     if oplist is not None:
+    #         for op in oplist:
+    #             op.notify(change)
