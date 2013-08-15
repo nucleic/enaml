@@ -38,6 +38,11 @@ ext_modules = [
         'enaml.fontext',
         ['enaml/src/fontext.cpp'],
         language='c++',
+    ),
+    Extension(
+        'enaml.core.dynamiclookup',
+        ['enaml/src/dynamiclookup.cpp'],
+        language='c++',
     )
 ]
 
