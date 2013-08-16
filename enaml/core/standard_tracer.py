@@ -8,7 +8,6 @@
 from atom.api import Atom
 
 from .code_tracing import CodeTracer
-from .dynamic_scope import AbstractScopeListener
 
 
 class StandardTracer(CodeTracer):
@@ -83,6 +82,3 @@ class StandardTracer(CodeTracer):
             obj, attr = argtuple[0], argtuple[1]
             if isinstance(obj, Atom) and isinstance(attr, basestring):
                 self._trace_atom(obj, attr)
-
-
-AbstractScopeListener.register(StandardTracer)
