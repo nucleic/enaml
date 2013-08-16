@@ -5,7 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from atom.api import Event, Instance
+
 from .construct_nodes import EnamlDefConstruct
+from .declarative import d_
 from .exceptions import DeclarativeException
 from .resolver import Resolver
 
@@ -42,3 +45,33 @@ def __make_enamldef_helper(dct, f_globals):
     cls = node.typeclass
     cls.__constructs__ += (node,)
     return cls
+
+
+def __add_user_storage(klass, name, storage_type, kind):
+    if storage_type is None:
+        storage_type = object
+    elif not isinstance(storage_type, type):
+        msg = "'%s' is not a type"
+        raise DeclarativeException(msg % type(storage_type).__name__)
+    members = klass.members()
+    m = members.get(name)
+    if m is not None:
+        if m.metadata is None or not m.metadata.get('d_member'):
+            msg = "cannot override non-declarative member '%s'"
+            raise DeclarativeException(msg % name)
+        if m.metadata.get('d_final'):
+            msg = "cannot override the final member '%s'"
+            raise DeclarativeException(msg % name)
+    if kind == 'event':
+        new = d_(Event(storage_type), writable=False, final=False)
+    else:
+        new = d_(Instance(storage_type), final=False)
+    if m is not None:
+        new.set_index(m.index)
+        new.copy_static_observers(m)
+    else:
+        new.set_index(len(members))
+    new.set_name(name)
+    members[name] = new
+    setattr(klass, name, new)
+    return klass

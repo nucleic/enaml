@@ -11,9 +11,9 @@ import types
 
 from .byteplay import (
     Code, LOAD_FAST, CALL_FUNCTION, LOAD_GLOBAL, STORE_FAST, LOAD_CONST,
-    RETURN_VALUE, STORE_NAME, LOAD_NAME, DELETE_NAME, DELETE_FAST, SetLineno
+    RETURN_VALUE, STORE_NAME, LOAD_NAME, DELETE_NAME, DELETE_FAST, DUP_TOP,
+    ROT_TWO, SetLineno
 )
-from .code_tracing import inject_tracing, inject_inversion
 
 
 # Increment this number whenever the compiler changes the code which it
@@ -102,11 +102,18 @@ COMPILER_VERSION = 14
 # Compiler Helpers
 #------------------------------------------------------------------------------
 # Code that will be executed at the top of every enaml module
-STARTUP = ['from enaml.core.compiler_helpers import __make_enamldef_helper']
+STARTUP = [
+    'from enaml.core.compiler_helpers import __make_enamldef_helper, __add_user_storage',
+    'from enaml.operators import __get_operators',
+]
 
 
 # Cleanup code that will be included in every compiled enaml module
-CLEANUP = ['del __make_enamldef_helper']
+CLEANUP = [
+    'del __make_enamldef_helper',
+    'del __add_use_storage',
+    'del __get_operators',
+]
 
 
 def update_firstlineno(code, firstlineno):
@@ -119,220 +126,6 @@ def update_firstlineno(code, firstlineno):
         code.co_filename, code.co_name, firstlineno, code.co_lnotab,
         code.co_freevars, code.co_cellvars,
     )
-
-
-#------------------------------------------------------------------------------
-# Expression Compilers
-#------------------------------------------------------------------------------
-def replace_global_loads(codelist, explicit=None):
-    """ A code transformer which rewrites LOAD_GLOBAL opcodes.
-
-    This transform will replace the LOAD_GLOBAL opcodes with LOAD_NAME
-    opcodes. The operation is performed in-place.
-
-    Parameters
-    ----------
-    codelist : list
-        The list of byteplay code ops to modify.
-
-    explicit : set or None
-        The set of global names declared explicitly and which should
-        remain untransformed.
-
-    """
-    # Replacing LOAD_GLOBAL with LOAD_NAME enables dynamic scoping by
-    # way of a custom locals mapping. The `call_func` function in the
-    # `funchelper` module enables passing a locals map to a function.
-    explicit = explicit or set()
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == LOAD_GLOBAL and op_arg not in explicit:
-            codelist[idx] = (LOAD_NAME, op_arg)
-
-
-def optimize_locals(codelist):
-    """ Optimize the given code object for fast locals access.
-
-    All STORE_NAME opcodes will be replaced with STORE_FAST. Names which
-    are stored and then loaded via LOAD_NAME are rewritten to LOAD_FAST
-    and DELETE_NAME is rewritten to DELETE_FAST. This transformation is
-    applied in-place.
-
-    Parameters
-    ----------
-    codelist : list
-        The list of byteplay code ops to modify.
-
-    """
-    fast_locals = set()
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == STORE_NAME:
-            fast_locals.add(op_arg)
-            codelist[idx] = (STORE_FAST, op_arg)
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == LOAD_NAME and op_arg in fast_locals:
-            codelist[idx] = (LOAD_FAST, op_arg)
-        elif op == DELETE_NAME and op_arg in fast_locals:
-            codelist[idx] = (DELETE_FAST, op_arg)
-
-
-def compile_simple(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `=`.
-
-    Parameters
-    ----------
-    py_ast : ast.Expression
-        A Python ast Expression node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : types.CodeType
-        A Python code object which implements the desired behavior.
-
-    """
-    code = compile(py_ast, filename, mode='eval')
-    code = update_firstlineno(code, py_ast.lineno)
-    bp_code = Code.from_code(code)
-    replace_global_loads(bp_code.code)
-    optimize_locals(bp_code.code)
-    bp_code.newlocals = False
-    return bp_code.to_code()
-
-
-def compile_notify(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `::`.
-
-    Parameters
-    ----------
-    py_ast : ast.Module
-        A Python ast Module node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : types.CodeType
-        A Python code object which implements the desired behavior.
-
-    """
-    explicit_globals = set()
-    for node in ast.walk(py_ast):
-        if isinstance(node, ast.Global):
-            explicit_globals.update(node.names)
-    code = compile(py_ast, filename, mode='exec')
-    bp_code = Code.from_code(code)
-    replace_global_loads(bp_code.code, explicit_globals)
-    optimize_locals(bp_code.code)
-    bp_code.newlocals = False
-    return bp_code.to_code()
-
-
-def compile_subscribe(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `<<`.
-
-    Parameters
-    ----------
-    py_ast : ast.Expression
-        A Python ast Expression node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : types.CodeType
-        A Python code object which implements the desired behavior.
-
-    """
-    code = compile(py_ast, filename, mode='eval')
-    code = update_firstlineno(code, py_ast.lineno)
-    bp_code = Code.from_code(code)
-    replace_global_loads(bp_code.code)
-    optimize_locals(bp_code.code)
-    bp_code.code = inject_tracing(bp_code.code)
-    bp_code.newlocals = False
-    bp_code.args = ('_[tracer]',) + bp_code.args
-    return bp_code.to_code()
-
-
-def compile_update(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `>>`.
-
-    Parameters
-    ----------
-    py_ast : ast.Expression
-        A Python ast Expression node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : types.CodeType
-        A Python code object which implements the desired behavior.
-
-    """
-    code = compile(py_ast, filename, mode='eval')
-    code = update_firstlineno(code, py_ast.lineno)
-    bp_code = Code.from_code(code)
-    replace_global_loads(bp_code.code)
-    optimize_locals(bp_code.code)
-    bp_code.code = inject_inversion(bp_code.code)
-    bp_code.newlocals = False
-    bp_code.args = ('_[inverter]', '_[value]') + bp_code.args
-    return bp_code.to_code()
-
-
-def compile_delegate(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `:=`.
-
-    This will generate two code objects: one which is equivalent to
-    operator `<<` and another which is equivalent to `>>`.
-
-    Parameters
-    ----------
-    py_ast : ast.Expression
-        A Python ast Expression node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : tuple
-        A 2-tuple of types.CodeType equivalent to operators `<<` and
-        `>>` respectively.
-
-    """
-    code = compile(py_ast, filename, mode='eval')
-    code = update_firstlineno(code, py_ast.lineno)
-    bp_code = Code.from_code(code)
-    bp_code.newlocals = False
-    codelist = bp_code.code[:]
-    bp_args = tuple(bp_code.args)
-    replace_global_loads(codelist)
-    optimize_locals(codelist)
-    sub_list = inject_tracing(codelist)
-    bp_code.code = sub_list
-    bp_code.args = ('_[tracer]',) + bp_args
-    sub_code = bp_code.to_code()
-    upd_list = inject_inversion(codelist)
-    bp_code.code = upd_list
-    bp_code.args = ('_[inverter]', '_[value]') + bp_args
-    upd_code = bp_code.to_code()
-    return (sub_code, upd_code)
-
-
-COMPILE_OP_MAP = {
-    '=': compile_simple,
-    '::': compile_notify,
-    '<<': compile_subscribe,
-    '>>': compile_update,
-    ':=': compile_delegate,
-}
 
 
 #------------------------------------------------------------------------------
@@ -407,31 +200,31 @@ class EnamlDefCompiler(_NodeVisitor):
 
     def __init__(self, filename):
         self.filename = filename
-        self.stack = []
+        self.ops = []
 
     def visit_EnamlDef(self, node):
-        obj = {
-            'filename': self.filename,
-            'lineno': node.lineno,
-            'typename': node.typename,
-            'base': node.base,
-            'identifier': node.identifier,
-            'docstring': node.docstring,
-            'storage_defs': [],
-            'bindings': [],
-            'child_defs': [],
-        }
-        self.stack.append(obj)
         for item in node.body:
             self.visit(item)
 
     def visit_StorageDef(self, node):
-        storage_def = {
-            'lineno': node.lineno,
-            'kind': node.kind,
-            'name': node.name,
-            'typename': node.typename,
-        }
+        self.ops.extend([                       # TOS == new class
+            (LOAD_GLOBAL, '__add_use_storage'), # class -> helper
+            (ROT_TWO, None),                    # helper -> class
+            (LOAD_CONST, node.name),            # helper -> class -> name
+        ])
+        if node.typename:
+            self.ops.append(
+                (LOAD_GLOBAL, node.typename)    # helper -> class -> name -> type
+            )
+        else:
+            self.ops.append(
+                (LOAD_CONST, None)              # helper -> class -> name -> None
+            )
+        self.ops.extend([
+            (LOAD_CONST, node.kind),            # helper -> class -> name -> type | None -> 'event' | 'attr'
+            (CALL_FUNCTION, 0x0004),
+        ])
+
         self.stack[-1]['storage_defs'].append(storage_def)
         if node.expr is not None:
             self.visit_Binding(node)
