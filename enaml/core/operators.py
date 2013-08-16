@@ -13,11 +13,6 @@ from .byteplay import (
     DELETE_FAST
 )
 from .code_tracing import inject_tracing, inject_inversion
-from .standard_factories import (
-    StandardReadScopeFactory, StandardWriteScopeFactory,
-    StandardTracedReadScopeFactory, StandardCodeTracerFactory,
-    StandardCodeInverterFactory
-)
 from .standard_handlers import (
     StandardReadHandler, StandardWriteHandler, StandardTracedReadHandler,
     StandardInvertedWriteHandler
@@ -59,8 +54,7 @@ def op_simple(code, scope_name, f_globals):
     bp_code.newlocals = False
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    scope_factory = StandardReadScopeFactory(scope_name, f_globals)
-    reader = StandardReadHandler(func, scope_factory)
+    reader = StandardReadHandler(func, scope_name)
     return (reader, None)
 
 
@@ -73,14 +67,8 @@ def op_notify(code, scope_name, f_globals):
     bp_code.newlocals = False
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    scope_factory = StandardWriteScopeFactory(scope_name, f_globals)
-    writer = StandardWriteHandler(func, scope_factory)
+    writer = StandardWriteHandler(func, scope_name)
     return (None, writer)
-
-
-# The standard code tracer factory requires no context, so a singleton
-# instance is sufficient to be used across all tracer handlers.
-_trace_f = StandardCodeTracerFactory()
 
 
 def op_subscribe(code, scope_name, f_globals):
@@ -94,14 +82,8 @@ def op_subscribe(code, scope_name, f_globals):
     bp_code.args = ('_[tracer]',) + bp_code.args
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    scope_factory = StandardTracedReadScopeFactory(scope_name, f_globals)
-    reader = StandardTracedReadHandler(func, scope_factory, _trace_f)
+    reader = StandardTracedReadHandler(func, scope_name)
     return (reader, None)
-
-
-# The standard code inverter factory requires no context, so a singleton
-# instance is sufficient to be used across all inverter handlers.
-_invert_f = StandardCodeInverterFactory()
 
 
 def op_update(code, scope_name, f_globals):
@@ -115,8 +97,7 @@ def op_update(code, scope_name, f_globals):
     bp_code.args = ('_[inverter]', '_[value]') + bp_code.args
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    scope_factory = StandardReadScopeFactory(scope_name, f_globals)
-    writer = StandardInvertedWriteHandler(func, scope_factory, _invert_f)
+    writer = StandardInvertedWriteHandler(func, scope_name)
     return (None, writer)
 
 

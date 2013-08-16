@@ -5,8 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from .dynamicscope import DynamicScope
 from .expression_engine import ReadHandler, WriteHandler
 from .funchelper import call_func
+from .standard_inverter import StandardInverter
+from .standard_tracer import StandardTracer
 
 
 class StandardReadHandler(ReadHandler):
@@ -15,30 +18,33 @@ class StandardReadHandler(ReadHandler):
     This handler is used in conjuction with the standard '=' operator.
 
     """
-    __slots__ = ('_func', '_scope_factory')
+    __slots__ = ('_func', '_scope_name')
 
-    def __init__(self, func, scope_factory):
-        """ Initialize a SimpleReadHandler.
+    def __init__(self, func, scope_name):
+        """ Initialize a StandardReadHandler.
 
         Parameters
         ----------
         func : FunctionType
             A function object which implements simple read semantics.
 
-        scope_factory: ReadScopeFactory
-            A factory which will be called to retrieve the read scope
-            for evaluation.
+        scope_name : str
+            The key for the local scope in the storage map.
 
         """
         self._func = func
-        self._scope_factory = scope_factory
+        self._scope_name = scope_name
 
     def __call__(self, owner, name, storage):
         """ Evaluate and return the expression value.
 
         """
-        scope = self._scope_factory(owner, storage)
-        return call_func(self._func, (), {}, scope)
+        func = self._func
+        f_globals = func.func_globals
+        f_builtins = f_globals['__builtins__']
+        f_locals = storage.get(self._scope_name) or {}
+        scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
+        return call_func(func, (), {}, scope)
 
 
 class StandardWriteHandler(WriteHandler):
@@ -47,99 +53,102 @@ class StandardWriteHandler(WriteHandler):
     This handler is used in conjuction with the standard '::' operator.
 
     """
-    __slots__ = ('_func', '_scope_factory')
+    __slots__ = ('_func', '_scope_name')
 
-    def __init__(self, func, scope_factory):
-        """ Initialize a SimpleWriteHandler.
+    def __init__(self, func, scope_name):
+        """ Initialize a StandardWriteHandler.
 
         Parameters
         ----------
         func : FunctionType
             A function object which implements simple write semantics.
 
-        scope_factory: WriteScopeFactory
-            A factory which will be called to retrieve the write scope
-            for evaluation.
+        scope_name : str
+            The key for the local scope in the storage map.
 
         """
         self._func = func
-        self._scope_factory = scope_factory
+        self._scope_name = scope_name
 
     def __call__(self, owner, name, storage, change):
         """ Write the change to the expression.
 
         """
-        scope = self._scope_factory(owner, storage, change)
-        call_func(self._func, (), {}, scope)
+        func = self._func
+        f_globals = func.func_globals
+        f_builtins = f_globals['__builtins__']
+        f_locals = storage.get(self._scope_name) or {}
+        scope = DynamicScope(owner, f_locals, f_globals, f_builtins, change)
+        call_func(func, (), {}, scope)
 
 
 class StandardTracedReadHandler(ReadHandler):
     """ An expression read handler which traces code execution.
 
-    """
-    __slots__ = ('_func', '_scope_factory', '_tracer_factory')
+    This handler is used in conjuction with the standard '<<' operator.
 
-    def __init__(self, func, scope_factory, tracer_factory):
-        """ Initialize a TracedReadHandler.
+    """
+    __slots__ = ('_func', '_scope_name')
+
+    def __init__(self, func, scope_name):
+        """ Initialize a StandardTracedReadHandler.
 
         Parameters
         ----------
         func : FunctionType
             A function object which implements traced read semantics.
 
-        scope_factory: TracedReadScopeFactory
-            A factory which will be called to retrieve the traced read
-            scope for evaluation.
-
-        tracer_factory : CodeTracerFactory
-            A factory which will be called to retrive a code tracer
-            for evaluation.
+        scope_name : str
+            The key for the local scope in the storage map.
 
         """
         self._func = func
-        self._scope_factory = scope_factory
-        self._tracer_factory = tracer_factory
+        self._scope_name = scope_name
 
     def __call__(self, owner, name, storage):
         """ Evaluate and return the expression value.
 
         """
-        tracer = self._tracer_factory(owner, name, storage)
-        scope = self._scope_factory(owner, storage, tracer)
-        return call_func(self._func, (tracer,), {}, scope)
+        func = self._func
+        f_globals = func.func_globals
+        f_builtins = f_globals['__builtins__']
+        f_locals = storage.get(self._scope_name) or {}
+        tr = StandardTracer(owner, name, storage)
+        scope = DynamicScope(owner, f_locals, f_globals, f_builtins, None, tr)
+        return call_func(func, (tr,), {}, scope)
 
 
 class StandardInvertedWriteHandler(WriteHandler):
     """ An expression writer which writes an expression value.
 
-    """
-    __slots__ = ('_func', '_scope_factory', '_inverter_factory')
+    This handler is used in conjuction with the standard '>>' operator.
 
-    def __init__(self, func, scope_factory, inverter_factory):
-        """ Initialize a TracedReadHandler.
+    """
+    __slots__ = ('_func', '_scope_name')
+
+    def __init__(self, func, scope_name):
+        """ Initialize a StandardInvertedWriteHandler.
 
         Parameters
         ----------
         func : FunctionType
-            A function object which implements traced read semantics.
+            A function object which implements inverted write semantics.
 
-        scope_factory: ReadScopeFactory
-            A factory which will be called to retrieve the read scope
-            for evaluation.
-
-        inverter_factory : CodeInverterFactory
-            A factory which will be called to retrive a code tracer
-            for evaluation.
+        scope_name : str
+            The key for the local scope in the storage map.
 
         """
         self._func = func
-        self._scope_factory = scope_factory
-        self._inverter_factory = inverter_factory
+        self._scope_name = scope_name
 
     def __call__(self, owner, name, storage, change):
         """ Write the change to the expression.
 
         """
-        inverter = self._inverter_factory(owner, name, storage)
-        scope = self._scope_factory(owner, storage)
-        return call_func(self._func, (inverter, change['value']), {}, scope)
+        func = self._func
+        f_globals = func.func_globals
+        f_builtins = f_globals['__builtins__']
+        f_locals = storage.get(self._scope_name) or {}
+        scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
+        inverter = StandardInverter(scope)
+        return call_func(func, (inverter, change['value']), {}, scope)
