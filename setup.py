@@ -40,8 +40,8 @@ ext_modules = [
         language='c++',
     ),
     Extension(
-        'enaml.core.dynamiclookup',
-        ['enaml/src/dynamiclookup.cpp'],
+        'enaml.core.dynamicscope',
+        ['enaml/src/dynamicscope.cpp'],
         language='c++',
     )
 ]
