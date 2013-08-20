@@ -8,7 +8,7 @@
 from atom.api import Event, Instance
 
 from .construct_nodes import EnamlDefConstruct
-from .declarative import d_
+from .declarative import Declarative, d_
 from .exceptions import DeclarativeException
 from .resolver import Resolver
 
@@ -47,7 +47,7 @@ def __make_enamldef_helper(dct, f_globals):
     return cls
 
 
-def __add_user_storage(klass, name, storage_type, kind):
+def __add_storage(klass, name, storage_type, kind):
     if storage_type is None:
         storage_type = object
     elif not isinstance(storage_type, type):
