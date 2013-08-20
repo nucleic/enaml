@@ -70,7 +70,7 @@ class ExpressionEngine(object):
     """ A class which manages reading and writing bound expressions.
 
     """
-    __slots__ = ('_read_handlers', '_write_handlers')
+    __slots__ = ('read_handlers', 'write_handlers')
 
     def __init__(self, read_handlers, write_handlers):
         """ Initialize an ExpressionEngine.
@@ -84,8 +84,8 @@ class ExpressionEngine(object):
             A mapping of expression name to list of WriteHandlers.
 
         """
-        self._read_handlers = read_handlers
-        self._write_handlers = write_handlers
+        self.read_handlers = read_handlers
+        self.write_handlers = write_handlers
 
     def read(self, name, owner, storage):
         """ Compute and return the value of an expression.
@@ -102,7 +102,7 @@ class ExpressionEngine(object):
             The shared storage map for the declarative.
 
         """
-        return self._read_handlers[name](name, owner, storage)
+        return self.read_handlers[name](name, owner, storage)
 
     def write(self, name, owner, storage, change):
         """ Write a change to an expression.
@@ -123,4 +123,4 @@ class ExpressionEngine(object):
             which owns the engine.
 
         """
-        self._write_handlers[name](name, owner, storage, change)
+        self.write_handlers[name](name, owner, storage, change)
