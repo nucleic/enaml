@@ -306,7 +306,7 @@ def p_enaml_module(p):
         if isinstance(item, enaml_ast.EnamlDef):
             if stmts:
                 mod = ast.Module(body=stmts)
-                python = enaml_ast.Python(ast=mod, lineno=stmts[0].lineno)
+                python = enaml_ast.PythonModule(ast=mod, lineno=stmts[0].lineno)
                 body.append(python)
                 stmts = []
             body.append(item)
@@ -314,7 +314,7 @@ def p_enaml_module(p):
             stmts.append(item)
     if stmts:
         mod = ast.Module(body=stmts)
-        python = enaml_ast.Python(ast=mod, lineno=stmts[0].lineno)
+        python = enaml_ast.PythonModule(ast=mod, lineno=stmts[0].lineno)
         body.append(python)
     p[0] = enaml_ast.Module(body=body)
 
@@ -342,7 +342,7 @@ def p_enaml_module_item2(p):
     for decnode in p[1]:
         expr = ast.Expression()
         expr.body = decnode
-        python = enaml_ast.Python(ast=expr, lineno=decnode.lineno)
+        python = enaml_ast.PythonExpression(ast=expr, lineno=decnode.lineno)
         decorators.append(python)
     enamldef.decorators = decorators
     p[0] = enamldef
@@ -653,7 +653,7 @@ def p_operator_expr1(p):
     expr = ast.Expression(body=p[2])
     expr.lineno = lineno
     ast.fix_missing_locations(expr)
-    python = enaml_ast.Python(ast=expr, lineno=lineno)
+    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
 
 
@@ -665,7 +665,7 @@ def p_operator_expr2(p):
     expr = ast.Expression(body=p[2])
     expr.lineno = lineno
     ast.fix_missing_locations(expr)
-    python = enaml_ast.Python(ast=expr, lineno=lineno)
+    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
 
 
@@ -679,7 +679,7 @@ def p_operator_expr3(p):
             msg = '%s not allowed in a notification block'
             msg = msg % notification_disallowed[type(item)]
             syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
-    python = enaml_ast.Python(ast=mod, lineno=lineno)
+    python = enaml_ast.PythonModule(ast=mod, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
 
 
