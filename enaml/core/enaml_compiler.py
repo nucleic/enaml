@@ -9,6 +9,7 @@ import sys
 import types
 
 from . import byteplay as bp
+from . import enaml_ast
 
 
 # Increment this number whenever the compiler changes the code which it
@@ -98,15 +99,16 @@ COMPILER_VERSION = 14
 #------------------------------------------------------------------------------
 # Code that will be executed at the top of every enaml module
 STARTUP = [
-    'from enaml.core.compiler_helpers import __add_storage, __construct_node',
-    'from enaml.core.declarative import Declarative as __Declarative',
-    'from enaml.operators import __get_operators',
+    'from enaml.core.compiler_helpers import '\
+        '__add_storage, __construct_node, __make_enamldef, '\
+        '__run_operator, __validate_type',
 ]
 
 
 # Cleanup code that will be included in every compiled enaml module
 CLEANUP = [
-    'del __add_storage, __construct_node, __Declarative, __get_operators'
+    'del __add_storage, __construct_node, __make_enamldef, '\
+    '__run_operator, __validate_type'
 ]
 
 
@@ -122,25 +124,45 @@ def update_firstlineno(code, firstlineno):
     )
 
 
-def needs_subclass(child_def):
-    """ Get whether or not a ChildDef node needs a subclass.
-
-    A ChildDef requires a subclass if it has storage or bindings.
+class VarPool(object):
+    """ A class for generating private variable names.
 
     """
-    child_t = type(child_def)
-    return any(not isinstance(item, child_t) for item in child_def.body)
+    def __init__(self):
+        """ Initialize a VarPool.
+
+        """
+        self._pool = set()
+
+    def new(self):
+        """ Get a new private variable name.
+
+        Returns
+        -------
+        result : str
+            An unused variable name.
+
+        """
+        var = '_[var_%d]' % len(self._pool)
+        self._pool.add(var)
+        return var
+
+    def release(self, name):
+        """ Return a variable name to the pool.
+
+        Parameters
+        ----------
+        name : str
+            The variable name which is free to be reused.
+
+        """
+        self._pool.discard(name)
 
 
-PY_26 = sys.version_info[:2] < (2, 7)
+class NodeVisitor(object):
+    """ A base class for defining node visitor classes.
 
-
-#------------------------------------------------------------------------------
-# Node Visitor
-#------------------------------------------------------------------------------
-class _NodeVisitor(object):
-    """ A node visitor class that is used as base class for the various
-    Enaml compilers.
+    This class is used as base class for the various Enaml compilers.
 
     """
     def visit(self, node):
@@ -168,128 +190,199 @@ class _NodeVisitor(object):
 #------------------------------------------------------------------------------
 # EnamlDef Compiler
 #------------------------------------------------------------------------------
-class VarPool(object):
+class EnamlDefCompiler(NodeVisitor):
+    """ A compiler class for compiling 'enamldef' blocks.
 
-    def __init__(self):
-        self._pool = set()
-
-    def new(self):
-        var = '_[var_%d]' % len(self._pool)
-        self.pool.add(var)
-        return var
-
-    def release(self, name):
-        self._pool.discard(name)
-
-
-class EnamlDefCompiler(_NodeVisitor):
-    """
+    This compiler is invoked by the main EnamlCompiler class when it
+    reaches an EnamlDef ast node. The main entry point is the 'compile'
+    classmethod.
 
     """
     @classmethod
     def compile(cls, node, filename):
-        """
+        """ Compile an EnamlDef node into a code object.
+
+        Parameters
+        ----------
+        node : EnamlDef
+            The enaml ast node representing the enamldef block.
+
+        filename : str
+            The full name of the file which contains the node.
+
+        Returns
+        -------
+        result : CodeType
+            A Python code object which implements the enamldef block.
 
         """
         compiler = cls(filename)
         compiler.visit(node)
         code = bp.Code(
-            compiler.code_ops, [], [], False, False, True, node.name,
+            compiler.code_ops, [], [], False, False, True, node.typename,
             filename, node.lineno, node.docstring or None
         )
         return code.to_code()
 
     def __init__(self, filename):
-        """
+        """ Initialize an EnamlDefCompiler.
+
+        Parameters
+        ----------
+        filename : str
+            The full name of the file of the node on which the compiler
+            is operating.
 
         """
         self.filename = filename
         self.var_pool = VarPool()
-        self.store_stack = []
         self.class_stack = []
         self.node_stack = []
+        self.name_stack = []
+        self.code_stack = []
         self.code_ops = []
 
     #--------------------------------------------------------------------------
     # Utility Methods
     #--------------------------------------------------------------------------
-    def assert_Declarative_TOS(self):
+    @classmethod
+    def needs_subclass(cls, child_def):
+        """ Get whether or not a ChildDef node needs to be subclassed.
+
+        A ChildDef must be subclassed if it requires storage or has
+        bound expressions.
+
+        Parameters
+        ----------
+        child_def : ChildDef
+            The child node of interest
+
+        Returns
+        -------
+        result : bool
+            True if the class for the node must be subclassed, False
+            otherwise.
+
         """
+        types = (enaml_ast.StorageDef, enaml_ast.Binding)
+        return any(isinstance(item, types) for item in child_def.body)
+
+    @classmethod
+    def try_squash_raise(cls, ops):
+        """ Wrap a sequence of ops in a try-except clause.
+
+        The exception handling code will squash the traceback for any
+        exception raised by the operations, and re-raise the exception
+        so that the traceback will appear to have originated from the
+        current line number.
+
+        Parameters
+        ----------
+        ops : list
+            A list of code ops to wrap in exception handling code.
+
+        Returns
+        -------
+        result : list
+            A new list of code ops.
 
         """
         exc_label = bp.Label()
         final_label = bp.Label()
-        self.code_ops.extend([                  # class
-            (bp.SETUP_EXCEPT, exc_label),       # class
-            (bp.DUP_TOP, None),                 # class -> class
-            (bp.LOAD_GLOBAL, '__valid_type'),   # class -> class -> helper
-            (bp.ROT_TWO, None),                 # class -> helper -> class
-            (bp.CALL_FUNCTION, 0x0001),         # class -> retval
-            (bp.POP_TOP, None),                 # class
-            (bp.POP_BLOCK, None),               # class
-            (bp.JUMP_FORWARD, final_label),     # class
-            (exc_label, None),                  # class -> tb -> val -> exc
-            (bp.ROT_THREE, None),               # class -> exc -> tb -> val
-            (bp.ROT_TWO, None),                 # class -> exc -> val -> tb
-            (bp.POP_TOP, None),                 # class -> exc -> val
-            (bp.RAISE_VARARGS, 0),              # class
-            (bp.JUMP_FORWARD, final_label),     # class
-            (bp.END_FINALLY, None),             # class
-            (final_label, None),                # class
+        new_ops = [
+            (bp.SETUP_EXCEPT, exc_label)        # TOS
+        ]
+        new_ops.extend(ops)
+        new_ops.extend([                        # TOS
+            (bp.POP_BLOCK, None),               # TOS
+            (bp.JUMP_FORWARD, final_label),     # TOS
+            (exc_label, None),                  # TOS -> tb -> val -> exc
+            (bp.ROT_THREE, None),               # TOS -> exc -> tb -> val
+            (bp.ROT_TWO, None),                 # TOS -> exc -> val -> tb
+            (bp.POP_TOP, None),                 # TOS -> exc -> val
+            (bp.RAISE_VARARGS, 0),              # TOS
+            (bp.JUMP_FORWARD, final_label),     # TOS
+            (bp.END_FINALLY, None),             # TOS
+            (final_label, None),                # TOS
         ])
+        return new_ops
 
-    def load_operator(self, op):
+    @classmethod
+    def validate_TOS(cls):
+        """ Generate code ops to validate the type of the TOS.
+
+        The ops will assert that the TOS is a subclass of Declarative.
+
+        Returns
+        -------
+        result : list
+            A list of code ops which validates the type of the TOS.
+
         """
-
-        """
-        jump_1 = bp.Label()
-        self.code_ops.extend([              # <empty>
-            (LOAD_CONST, op),               # op
-            (LOAD_FAST, '_[operators]'),    # op -> operators
-            (COMPARE_OP, 'in')              # retval
-        ])
-        if PY_26:
-            jump_26_1 = bp.Label()
-            self.code_ops.extend([
-
-            ])
+        ops = [                                     # class
+            (bp.DUP_TOP, None),                     # class -> class
+            (bp.LOAD_GLOBAL, '__validate_type'),    # class -> class -> helper
+            (bp.ROT_TWO, None),                     # class -> helper -> class
+            (bp.CALL_FUNCTION, 0x0001),             # class -> retval
+            (bp.POP_TOP, None),                     # class
+        ]
+        return cls.try_squash_raise(ops)
 
     #--------------------------------------------------------------------------
     # Visitors
     #--------------------------------------------------------------------------
     def visit_EnamlDef(self, node):
-        """
+        """ The compiler visitor for an EnamlDef node.
 
         """
-        # Claim the variables needed for the node
+        # Claim the variables needed for the class and construct node
         class_var = self.var_pool.new()
         node_var = self.var_pool.new()
 
-        # Build the enamldef class and construct node
-        self.code_ops.extend([                  # <empty>
-            (bp.SetLineno, node.lineno),        # <empty>
-            (bp.LOAD_CONST, node.typename),     # name
-            (bp.LOAD_GLOBAL, node.base),        # name -> base
-        ])
-        self.assert_Declarative_TOS()
+        # Store the globals as a local for fast access
         self.code_ops.extend([
-            (bp.BUILD_TUPLE, 1),                # name -> bases
-            (bp.BUILD_MAP, 0),                  # name -> bases -> dict
+            (bp.SetLineno, node.lineno),        # <empty>
+            (bp.LOAD_GLOBAL, 'globals'),        # func
+            (bp.CALL_FUNCTION, 0x0000),         # globals
+            (bp.STORE_FAST, '_[f_globals]'),    # <empty>
+        ])
+
+        # Create the local scope storage key
+        self.code_ops.extend([                  # <empty>
+            (bp.LOAD_GLOBAL, 'object'),         # object
+            (bp.CALL_FUNCTION, 0x0000),         # key
+            (bp.STORE_FAST, '_[scope_key]'),    # <empty>
+        ])
+
+        # Build the enamldef class and construct node
+        self.code_ops.extend([                      # <empty>
+            (bp.LOAD_GLOBAL, '__make_enamldef'),    # helper
+            (bp.LOAD_CONST, node.typename),         # helper -> name
+            (bp.LOAD_GLOBAL, node.base),            # helper -> name -> base
+        ])
+        self.code_ops.extend(self.validate_TOS())
+        self.code_ops.extend([
+            (bp.BUILD_TUPLE, 1),                    # helper -> name -> bases
+            (bp.BUILD_MAP, 0),                      # helper -> name -> bases -> dict
+            (bp.LOAD_GLOBAL, '__name__'),           # helper -> name -> bases -> dict -> __name__
+            (bp.LOAD_CONST, '__module__'),          # helper -> name -> bases -> dict -> __name__ -> '__module__'
+            (bp.STORE_MAP, None),                   # helper -> name -> bases -> dict
         ])
         if node.docstring:
             self.code_ops.extend([
-                (bp.LOAD_CONST, node.docstring),    # name -> bases -> dict -> docstring
-                (bp.LOAD_CONST, '__doc__'),         # name -> bases -> dict -> docstring -> '__doc__'
-                (bp.STORE_MAP, None),               # name -> bases -> dict
+                (bp.LOAD_CONST, node.docstring),    # helper -> name -> bases -> dict -> docstring
+                (bp.LOAD_CONST, '__doc__'),         # helper -> name -> bases -> dict -> docstring -> '__doc__'
+                (bp.STORE_MAP, None),               # helper -> name -> bases -> dict
             ])
         self.code_ops.extend([
-            (bp.BUILD_CLASS, None),                 # class
+            (bp.CALL_FUNCTION, 0x0003),             # class
             (bp.DUP_TOP, None),                     # class -> class
             (bp.STORE_FAST, class_var),             # class
-            (bp.LOAD_GLOBAL, '__construct_node')    # class -> helper
+            (bp.LOAD_GLOBAL, '__construct_node'),   # class -> helper
             (bp.ROT_TWO, None),                     # helper -> class
             (bp.LOAD_CONST, node.identifier),       # helper -> class -> identifier
-            (bp.CALL_FUNCTION, 0x0002),             # node
+            (bp.LOAD_FAST, '_[scope_key]'),         # helper -> class -> identifier -> key
+            (bp.CALL_FUNCTION, 0x0003),             # node
             (bp.STORE_FAST, node_var),              # <empty>
         ])
 
@@ -301,17 +394,13 @@ class EnamlDefCompiler(_NodeVisitor):
         self.class_stack.pop()
         self.node_stack.pop()
 
-        # Store the node on the enamldef
-        self.code_ops.extend([              # TOS == <empty>
+        # Store the node on the enamldef and return the class
+        self.code_ops.extend([              # <empty>
             (bp.LOAD_FAST, class_var),      # class
             (bp.DUP_TOP, None),             # class -> class
-            (bp.LOAD_ATTR, '__nodes__'),    # class -> node_tup
-            (bp.LOAD_FAST, node_var),       # class -> node_tup -> node
-            (bp.BUILD_TUPLE, 1),            # class -> node_tup -> node_tup
-            (bp.INPLACE_ADD, None),         # class -> node_tup
-            (bp.ROT_TWO, None),             # node_tup -> class
-            (bp.STORE_ATTR, '__nodes__'),   # <empty>
-            (bp.LOAD_FAST, class_var),      # class
+            (bp.LOAD_FAST, node_var),       # class -> class -> node
+            (bp.ROT_TWO, None),             # class -> node -> class
+            (bp.STORE_ATTR, '__node__'),    # class
             (bp.RETURN_VALUE, None),        # <return>
         ])
 
@@ -320,37 +409,48 @@ class EnamlDefCompiler(_NodeVisitor):
         self.var_pool.release(node_var)
 
     def visit_ChildDef(self, node):
-        """
+        """ The compiler visitor for a ChildDef node.
 
         """
-        # Claim the variables needed for the node
+        # Claim the variables needed for the class and construct node
         class_var = self.var_pool.new()
         node_var = self.var_pool.new()
 
-        # Load the child class and create a subclass if needed
-        self.code_ops.append(                   # TOS == <empty>
-            (bp.LOAD_GLOBAL, node.typename)     # class
-        )
-        self.assert_Declarative_TOS()
-        if needs_subclass(node):
+        # Load and validate the child class
+        self.code_ops.extend([                  # <empty>
+            (bp.SetLineno, node.lineno),        # <empty>
+            (bp.LOAD_GLOBAL, node.typename),    # class
+        ])
+        self.code_ops.extend(self.validate_TOS())
+
+        # Subclass the child class if needed
+        types = (enaml_ast.StorageDef, enaml_ast.Binding)
+        needs_subclass = any(isinstance(item, types) for item in node.body)
+        if needs_subclass:
             self.code_ops.extend([              # class
                 (bp.LOAD_CONST, node.typename), # class -> name
                 (bp.ROT_TWO, None),             # name -> class
                 (bp.BUILD_TUPLE, 1),            # name -> bases
                 (bp.BUILD_MAP, 0),              # name -> bases -> dict
+                (bp.LOAD_GLOBAL, '__name__'),   # name -> bases -> dict -> __name__
+                (bp.LOAD_CONST, '__module__'),  # name -> bases -> dict -> __name__ -> '__module__'
+                (bp.STORE_MAP, None),           # name -> bases -> dict
                 (bp.BUILD_CLASS, None),         # class
             ])
+
+        # Store the class as a local
         self.code_ops.extend([                  # class
             (bp.DUP_TOP, None),                 # class -> class
             (bp.STORE_FAST, class_var),         # class
         ])
 
-        # Build the construct node
+        # Build and store the construct node
         self.code_ops.extend([                      # class
             (bp.LOAD_GLOBAL, '__construct_node'),   # class -> helper
             (bp.ROT_TWO, None),                     # helper -> class
             (bp.LOAD_CONST, node.identifier),       # helper -> class -> identifier
-            (bp.CALL_FUNCTION, 0x0002),             # node
+            (bp.LOAD_FAST, '_[scope_key]'),         # helper -> class -> identifier -> key
+            (bp.CALL_FUNCTION, 0x0003),             # node
             (bp.STORE_FAST, node_var),              # <empty>
         ])
 
@@ -377,58 +477,81 @@ class EnamlDefCompiler(_NodeVisitor):
         self.var_pool.release(node_var)
 
     def visit_StorageDef(self, node):
-        """
+        """ The compiler visitor for a StorageDef node.
 
         """
         self.code_ops.extend([                      # <empty>
+            (bp.SetLineno, node.lineno),            # <empty>
             (bp.LOAD_GLOBAL, '__add_storage'),      # helper
-            (bp.LOAD_FAST, self.class_stack[-1])    # helper -> class
+            (bp.LOAD_FAST, self.class_stack[-1]),   # helper -> class
             (bp.LOAD_CONST, node.name),             # helper -> class -> name
         ])
         if node.typename:
             self.code_ops.append(
-                (bp.LOAD_GLOBAL, node.typename) # helper -> class -> name -> type
+                (bp.LOAD_GLOBAL, node.typename)     # helper -> class -> name -> type
             )
         else:
             self.code_ops.append(
-                (bp.LOAD_CONST, None)           # helper -> class -> name -> None
+                (bp.LOAD_CONST, None)               # helper -> class -> name -> None
             )
         self.code_ops.extend([
-            (bp.LOAD_CONST, node.kind),         # helper -> class -> name -> type -> kind
-            (bp.CALL_FUNCTION, 0x0004),         # retval
-            (bp.POP_TOP, None),                 # <empty>
+            (bp.LOAD_CONST, node.kind),             # helper -> class -> name -> type -> kind
+            (bp.CALL_FUNCTION, 0x0004),             # retval
+            (bp.POP_TOP, None),                     # <empty>
         ])
         if node.expr is not None:
-            self.store_stack.append(node.name)
+            self.name_stack.append(node.name)
             self.visit(node.expr)
-            self.store_stack.pop()
+            self.name_stack.pop()
 
     def visit_Binding(self, node):
-        """
+        """ The compiler visitor for a Binding node.
 
         """
-        self.store_stack.append(node.name)
+        self.name_stack.append(node.name)
         self.visit(node.expr)
-        self.store_stack.pop()
+        self.name_stack.pop()
 
     def visit_OperatorExpr(self, node):
-        """
+        """ The compiler visitor for an OperatorExpr node.
 
         """
-        self.code_ops.append([
-            (LOAD_GLOBAL, '__handle_ops'),
-            (LOAD_GLOBAL, '__get_operators'),
-            (CALL_FUNCTION, 0x0001),
-            (LOAD_CONST, node.operator),
-            (BINARY_SUBSCR, None),
-        ])
+        self.visit(node.value)
+        code = self.code_stack.pop()
+        self.code_ops.append((bp.SetLineno, node.lineno))
+        ops = [                                     # <empty>
+            (bp.LOAD_GLOBAL, '__run_operator'),     # helper
+            (bp.LOAD_FAST, self.node_stack[-1]),    # helper -> node
+            (bp.LOAD_CONST, self.name_stack[-1]),   # helper -> node -> name
+            (bp.LOAD_CONST, node.operator),         # helper -> node -> name -> op
+            (bp.LOAD_CONST, code),                  # helper -> node -> name -> op -> code
+            (bp.LOAD_FAST, '_[f_globals]'),         # helper -> node -> name -> op -> code -> globals
+            (bp.CALL_FUNCTION, 0x0005),             # retval
+            (bp.POP_TOP, None),                     # <empty>
+        ]
+        ops = self.try_squash_raise(ops)
+        self.code_ops.extend(ops)
 
-    def load_operator(self, op)
+    def visit_PythonExpression(self, node):
+        """ The compiler visitor for a PythonExpression node.
+
+        """
+        code = compile(node.ast, self.filename, mode='eval')
+        code = update_firstlineno(code, node.lineno)
+        self.code_stack.append(code)
+
+    def visit_PythonModule(self, node):
+        """ The compiler visitor for a PythonModule node.
+
+        """
+        code = compile(node.ast, self.filename, mode='exec')
+        self.code_stack.append(code)
+
 
 #------------------------------------------------------------------------------
 # Enaml Compiler
 #------------------------------------------------------------------------------
-class EnamlCompiler(_NodeVisitor):
+class EnamlCompiler(NodeVisitor):
     """ A visitor that will compile an enaml module ast node.
 
     The entry point is the `compile` classmethod which will compile
@@ -441,10 +564,10 @@ class EnamlCompiler(_NodeVisitor):
 
         Parameters
         ----------
-        module_ast : Instance(enaml_ast.Module)
+        module_ast : enaml_ast.Module
             The enaml module ast node that should be compiled.
 
-        filename : string
+        filename : str
             The string filename of the module ast being compiled.
 
         Returns
@@ -491,38 +614,55 @@ class EnamlCompiler(_NodeVisitor):
         return mod_code.to_code()
 
     def __init__(self, filename):
+        """ Initialize an EnamlCompiler.
+
+        Parameters
+        ----------
+        filename : str
+            The string filename of the module ast being compiled.
+
+        """
         self.filename = filename
         self.code_ops = []
 
     def visit_Module(self, node):
+        """ The compiler visitor for a Module node.
+
+        """
         for item in node.body:
             self.visit(item)
 
-    def visit_Python(self, node):
-        py_code = compile(node.ast, self.filename, mode='exec')
-        bp_code = bp.Code.from_code(py_code)
+    def visit_PythonModule(self, node):
+        """ The compiler visitor for a PythonModule node.
+
+        """
+        code = compile(node.ast, self.filename, mode='exec')
+        bp_code = bp.Code.from_code(code)
         # Skip the SetLineo and ReturnValue codes
         self.code_ops.extend(bp_code.code[1:-2])
 
     def visit_EnamlDef(self, node):
+        """ The compiler visitor for an EnamlDef node.
+
+        """
         # Load the decorators
         for decorator in node.decorators:
             code = compile(decorator.ast, self.filename, mode='eval')
             update_firstlineno(code, decorator.lineno)
-            bpcode = bp.Code.from_code(code).code
-            self.code_ops.extend(bpcode[:-1])  # skip the return value op
+            bp_code = bp.Code.from_code(code).code
+            self.code_ops.extend(bp_code[:-1])  # skip the return value op
 
-        # Generate the enamldef
+        # Generate the enamldef class
         code = EnamlDefCompiler.compile(node, self.filename)
-        self.code_ops.extend([                  # decorators
-            (bp.LOAD_CONST, code),                 # decorators -> code
-            (bp.MAKE_FUNCTION, 0),                 # decorators -> function
-            (bp.CALL_FUNCTION, 0x0000),            # decorators -> class
+        self.code_ops.extend([              # decorators
+            (bp.LOAD_CONST, code),          # decorators -> code
+            (bp.MAKE_FUNCTION, 0),          # decorators -> function
+            (bp.CALL_FUNCTION, 0x0000),     # decorators -> class
         ])
 
         # Invoke the decorators
         for decorator in node.decorators:
             self.code_ops.append((bp.CALL_FUNCTION, 0x0001))
 
-        # Store the resulting class into the namespace
+        # Store the result into the namespace
         self.code_ops.append((bp.STORE_NAME, node.typename))
