@@ -6,8 +6,8 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import Typed, Unicode, Event
+from atom.datastructures.api import sortedmap
 
-from .declarative_meta import DeclarativeMeta
 from .expression_engine import ExpressionEngine
 from .object import Object, flag_generator, flag_property
 
@@ -57,8 +57,6 @@ class Declarative(Object):
     visual representation; that functionality is added by subclasses.
 
     """
-    __metaclass__ = DeclarativeMeta
-
     #: Export the 'name' attribute as a declarative member.
     name = d_(Unicode())
 
@@ -74,6 +72,9 @@ class Declarative(Object):
     #: The engine used for the expressions bound to the this object.
     #: This value should not be manipulated by user code.
     _engine = Typed(ExpressionEngine)
+
+    #: Private storage for the item.
+    _storage = Typed(sortedmap, ())
 
     def initialize(self):
         """ Initialize this object all of its children recursively.
@@ -100,6 +101,7 @@ class Declarative(Object):
         """
         self.is_initialized = False
         del self._engine
+        del self._storage
         super(Declarative, self).destroy()
 
     def child_added(self, child):
@@ -114,45 +116,11 @@ class Declarative(Object):
             if self.is_initialized and not child.is_initialized:
                 child.initialize()
 
-    #--------------------------------------------------------------------------
-    # Private Framework API
-    #--------------------------------------------------------------------------
-    # def _run_eval_operator(self, name):
-    #     """ Run the eval operator attached to the given name.
-
-    #     This method is used as a default value handler by the Enaml
-    #     operators when an eval operator is bound to the object.
-
-    #     Parameters
-    #     ----------
-    #     name : string
-    #         The name to which the operator of interest is bound.
-
-    #     Returns
-    #     -------
-    #     result : object or NotImplemented
-    #         The result of the evaluated operator, or NotImplemented if
-    #         there is no eval operator bound for the given name.
-
-    #     """
-    #     op = type(self).__eval_operators__.get(name)
-    #     if op is not None:
-    #         return op.eval(self)
-    #     return NotImplemented
-
-    # def _run_notify_operator(self, change):
-    #     """ Invoke a bound notify operator for the given change.
-
-    #     This method is used as a static observer by the Enaml
-    #     operators when a notify operator is bound to the object.
-
-    #     Parameters
-    #     ----------
-    #     change : dict
-    #         The change dictionary for the notification.
-
-    #     """
-    #     oplist = type(self).__notify_operators__.get(change['name'])
-    #     if oplist is not None:
-    #         for op in oplist:
-    #             op.notify(change)
+    def build_subtree(self, child_node, f_locals):
+        child = child_node.klass()
+        if child_node.identifier:
+            f_locals[child_node.identifier] = child
+        child._storage[child_node.scope_key] = f_locals
+        for other_node in child_node.children:
+            child.build_subtree(other_node, f_locals)
+        child.set_parent(self)
