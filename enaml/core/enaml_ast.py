@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
-from atom.api import Atom, Enum, Int, List, Str, Typed
+from atom.api import Atom, Enum, Int, List, Str, Instance, Typed
 
 
 class ASTNode(Atom):
@@ -27,12 +27,20 @@ class Module(ASTNode):
     body = List()
 
 
-class Python(ASTNode):
-    """ An ASTNode representing a chunk of pure Python code.
+class PythonExpression(ASTNode):
+    """ An ASTNode representing a Python expression.
 
     """
     #: The python ast node for the given python code.
-    ast = Typed(ast.AST)
+    ast = Typed(ast.Expression)
+
+
+class PythonModule(ASTNode):
+    """ An ASTNode representing a chunk of Python code.
+
+    """
+    #: The python ast node for the given python code.
+    ast = Typed(ast.Module)
 
 
 class EnamlDef(ASTNode):
@@ -83,7 +91,7 @@ class OperatorExpr(ASTNode):
     operator = Str()
 
     #: The python ast node for the bound python code.
-    value = Typed(Python)
+    value = Instance((PythonExpression, PythonModule))
 
 
 class Binding(ASTNode):
