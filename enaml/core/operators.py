@@ -45,7 +45,7 @@ def optimize_locals(codelist):
             codelist[idx] = (DELETE_FAST, op_arg)
 
 
-def op_simple(code, scope_name, f_globals):
+def op_simple(code, scope_key, f_globals):
     """ The default Enaml operator function for the `=` operator.
 
     """
@@ -54,11 +54,11 @@ def op_simple(code, scope_name, f_globals):
     bp_code.newlocals = False
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    reader = StandardReadHandler(func, scope_name)
+    reader = StandardReadHandler(func, scope_key)
     return (reader, None)
 
 
-def op_notify(code, scope_name, f_globals):
+def op_notify(code, scope_key, f_globals):
     """ The default Enaml operator function for the `::` operator.
 
     """
@@ -67,11 +67,11 @@ def op_notify(code, scope_name, f_globals):
     bp_code.newlocals = False
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    writer = StandardWriteHandler(func, scope_name)
+    writer = StandardWriteHandler(func, scope_key)
     return (None, writer)
 
 
-def op_subscribe(code, scope_name, f_globals):
+def op_subscribe(code, scope_key, f_globals):
     """ The default Enaml operator function for the `<<` operator.
 
     """
@@ -82,11 +82,11 @@ def op_subscribe(code, scope_name, f_globals):
     bp_code.args = ('_[tracer]',) + bp_code.args
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    reader = StandardTracedReadHandler(func, scope_name)
+    reader = StandardTracedReadHandler(func, scope_key)
     return (reader, None)
 
 
-def op_update(code, scope_name, f_globals):
+def op_update(code, scope_key, f_globals):
     """ The default Enaml operator function for the `>>` operator.
 
     """
@@ -97,16 +97,16 @@ def op_update(code, scope_name, f_globals):
     bp_code.args = ('_[inverter]', '_[value]') + bp_code.args
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    writer = StandardInvertedWriteHandler(func, scope_name)
+    writer = StandardInvertedWriteHandler(func, scope_key)
     return (None, writer)
 
 
-def op_delegate(code, scope_name, f_globals):
+def op_delegate(code, scope_key, f_globals):
     """ The default Enaml operator function for the `:=` operator.
 
     """
-    reader = op_subscribe(code, scope_name, f_globals)[0]
-    writer = op_update(code, scope_name, f_globals)[1]
+    reader = op_subscribe(code, scope_key, f_globals)[0]
+    writer = op_update(code, scope_key, f_globals)[1]
     return (reader, writer)
 
 

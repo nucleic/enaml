@@ -18,9 +18,9 @@ class StandardReadHandler(ReadHandler):
     This handler is used in conjuction with the standard '=' operator.
 
     """
-    __slots__ = ('_func', '_scope_name')
+    __slots__ = ('_func', '_scope_key')
 
-    def __init__(self, func, scope_name):
+    def __init__(self, func, scope_key):
         """ Initialize a StandardReadHandler.
 
         Parameters
@@ -28,12 +28,12 @@ class StandardReadHandler(ReadHandler):
         func : FunctionType
             A function object which implements simple read semantics.
 
-        scope_name : str
+        scope_key : object
             The key for the local scope in the storage map.
 
         """
         self._func = func
-        self._scope_name = scope_name
+        self._scope_key = scope_key
 
     def __call__(self, owner, name, storage):
         """ Evaluate and return the expression value.
@@ -42,7 +42,7 @@ class StandardReadHandler(ReadHandler):
         func = self._func
         f_globals = func.func_globals
         f_builtins = f_globals['__builtins__']
-        f_locals = storage.get(self._scope_name) or {}
+        f_locals = storage.get(self._scope_key) or {}
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
         return call_func(func, (), {}, scope)
 
@@ -53,9 +53,9 @@ class StandardWriteHandler(WriteHandler):
     This handler is used in conjuction with the standard '::' operator.
 
     """
-    __slots__ = ('_func', '_scope_name')
+    __slots__ = ('_func', '_scope_key')
 
-    def __init__(self, func, scope_name):
+    def __init__(self, func, scope_key):
         """ Initialize a StandardWriteHandler.
 
         Parameters
@@ -63,12 +63,12 @@ class StandardWriteHandler(WriteHandler):
         func : FunctionType
             A function object which implements simple write semantics.
 
-        scope_name : str
+        scope_key : object
             The key for the local scope in the storage map.
 
         """
         self._func = func
-        self._scope_name = scope_name
+        self._scope_key = scope_key
 
     def __call__(self, owner, name, storage, change):
         """ Write the change to the expression.
@@ -77,7 +77,7 @@ class StandardWriteHandler(WriteHandler):
         func = self._func
         f_globals = func.func_globals
         f_builtins = f_globals['__builtins__']
-        f_locals = storage.get(self._scope_name) or {}
+        f_locals = storage.get(self._scope_key) or {}
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins, change)
         call_func(func, (), {}, scope)
 
@@ -88,9 +88,9 @@ class StandardTracedReadHandler(ReadHandler):
     This handler is used in conjuction with the standard '<<' operator.
 
     """
-    __slots__ = ('_func', '_scope_name')
+    __slots__ = ('_func', '_scope_key')
 
-    def __init__(self, func, scope_name):
+    def __init__(self, func, scope_key):
         """ Initialize a StandardTracedReadHandler.
 
         Parameters
@@ -98,12 +98,12 @@ class StandardTracedReadHandler(ReadHandler):
         func : FunctionType
             A function object which implements traced read semantics.
 
-        scope_name : str
+        scope_key : object
             The key for the local scope in the storage map.
 
         """
         self._func = func
-        self._scope_name = scope_name
+        self._scope_key = scope_key
 
     def __call__(self, owner, name, storage):
         """ Evaluate and return the expression value.
@@ -112,7 +112,7 @@ class StandardTracedReadHandler(ReadHandler):
         func = self._func
         f_globals = func.func_globals
         f_builtins = f_globals['__builtins__']
-        f_locals = storage.get(self._scope_name) or {}
+        f_locals = storage.get(self._scope_key) or {}
         tr = StandardTracer(owner, name, storage)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins, None, tr)
         return call_func(func, (tr,), {}, scope)
@@ -124,9 +124,9 @@ class StandardInvertedWriteHandler(WriteHandler):
     This handler is used in conjuction with the standard '>>' operator.
 
     """
-    __slots__ = ('_func', '_scope_name')
+    __slots__ = ('_func', '_scope_key')
 
-    def __init__(self, func, scope_name):
+    def __init__(self, func, scope_key):
         """ Initialize a StandardInvertedWriteHandler.
 
         Parameters
@@ -134,12 +134,12 @@ class StandardInvertedWriteHandler(WriteHandler):
         func : FunctionType
             A function object which implements inverted write semantics.
 
-        scope_name : str
+        scope_key : object
             The key for the local scope in the storage map.
 
         """
         self._func = func
-        self._scope_name = scope_name
+        self._scope_key = scope_key
 
     def __call__(self, owner, name, storage, change):
         """ Write the change to the expression.
@@ -148,7 +148,7 @@ class StandardInvertedWriteHandler(WriteHandler):
         func = self._func
         f_globals = func.func_globals
         f_builtins = f_globals['__builtins__']
-        f_locals = storage.get(self._scope_name) or {}
+        f_locals = storage.get(self._scope_key) or {}
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
         inverter = StandardInverter(scope)
         return call_func(func, (inverter, change['value']), {}, scope)
