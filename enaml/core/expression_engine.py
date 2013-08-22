@@ -68,6 +68,9 @@ class ExpressionEngine(Atom):
     #: A mapping of string name to list of write handlers.
     write_handlers = Typed(sortedmap, ())
 
+    #: A set which holds (owner, name) pairs as guard sentinels.
+    guards = Typed(set, ())
+
     def read(self, owner, name):
         """ Compute and return the value of an expression.
 
@@ -98,8 +101,43 @@ class ExpressionEngine(Atom):
             which owns the engine.
 
         """
-        for handler in self.write_handlers[name]:
-            handler(owner, name, change)
+        guards = self.guards
+        key = (owner, name)
+        if key in guards:
+            return
+        guards.add(key)
+        try:
+            for handler in self.write_handlers[name]:
+                handler(owner, name, change)
+        finally:
+            guards.remove(key)
+
+    def update(self, owner, name):
+        """ Update the named attribute of the owner.
+
+        This method will update the named attribute by re-reading the
+        expression provided that the attribute is not already guarded
+        by a cylic notification guard. If the attribute is guarded,
+        this method is a no-op.
+
+        Parameters
+        ----------
+        owner : Declarative
+            The declarative object which owns the engine.
+
+        name : str
+            The name of the relevant bound expression.
+
+        """
+        guards = self.guards
+        key = (owner, name)
+        if key in guards:
+            return
+        guards.add(key)
+        try:
+            setattr(owner, name, self.read(owner, name))
+        finally:
+            guards.remove(key)
 
     def copy(self):
         """ Create a copy of the expression engine.
