@@ -5,6 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from types import FunctionType
+
+from atom.api import Atom, Typed
+
 from .dynamicscope import DynamicScope
 from .expression_engine import ReadHandler, WriteHandler
 from .funchelper import call_func
@@ -12,143 +16,111 @@ from .standard_inverter import StandardInverter
 from .standard_tracer import StandardTracer
 
 
-class StandardReadHandler(ReadHandler):
+class HandlerMixin(Atom):
+    """ A mixin class which provides common handler functionality.
+
+    """
+    #: The function to invoke to execute the expression. This value is
+    #: provided by the standard operators, and will be appropriate for
+    #: the given handler type.
+    func = Typed(FunctionType)
+
+    #: The key for the local scope in the storage map. This value is
+    #: provided by the operators, and will be None if no local scope
+    #: is in use for the given expression.
+    scope_key = Typed(object)
+
+    def get_locals(self, owner):
+        """ Get a mapping of locals for expression evaluation.
+
+        Parameters
+        ----------
+        owner : Declarative
+            The object on which the handler is executing.
+
+        Returns
+        -------
+        result : mapping
+            A mapping object to use as the local scope. If no local
+            scope is needed for the handler (the scope key is None),
+            an empty dictionary will be returned.
+
+        """
+        key = self.scope_key
+        if key is None:
+            return {}
+        return owner._d_storage[key]
+
+
+class StandardReadHandler(ReadHandler, HandlerMixin):
     """ An expression read handler for simple read semantics.
 
     This handler is used in conjuction with the standard '=' operator.
 
     """
-    __slots__ = ('_func', '_scope_key')
-
-    def __init__(self, func, scope_key):
-        """ Initialize a StandardReadHandler.
-
-        Parameters
-        ----------
-        func : FunctionType
-            A function object which implements simple read semantics.
-
-        scope_key : object
-            The key for the local scope in the storage map.
-
-        """
-        self._func = func
-        self._scope_key = scope_key
-
-    def __call__(self, owner, name, storage):
+    def __call__(self, owner, name):
         """ Evaluate and return the expression value.
 
         """
-        func = self._func
+        func = self.func
         f_globals = func.func_globals
         f_builtins = f_globals['__builtins__']
-        f_locals = storage.get(self._scope_key) or {}
+        f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
         return call_func(func, (), {}, scope)
 
 
-class StandardWriteHandler(WriteHandler):
+class StandardWriteHandler(WriteHandler, HandlerMixin):
     """ An expression write handler for simple write semantics.
 
     This handler is used in conjuction with the standard '::' operator.
 
     """
-    __slots__ = ('_func', '_scope_key')
-
-    def __init__(self, func, scope_key):
-        """ Initialize a StandardWriteHandler.
-
-        Parameters
-        ----------
-        func : FunctionType
-            A function object which implements simple write semantics.
-
-        scope_key : object
-            The key for the local scope in the storage map.
-
-        """
-        self._func = func
-        self._scope_key = scope_key
-
-    def __call__(self, owner, name, storage, change):
+    def __call__(self, owner, name, change):
         """ Write the change to the expression.
 
         """
-        func = self._func
+        func = self.func
         f_globals = func.func_globals
         f_builtins = f_globals['__builtins__']
-        f_locals = storage.get(self._scope_key) or {}
+        f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins, change)
         call_func(func, (), {}, scope)
 
 
-class StandardTracedReadHandler(ReadHandler):
+class StandardTracedReadHandler(ReadHandler, HandlerMixin):
     """ An expression read handler which traces code execution.
 
     This handler is used in conjuction with the standard '<<' operator.
 
     """
-    __slots__ = ('_func', '_scope_key')
-
-    def __init__(self, func, scope_key):
-        """ Initialize a StandardTracedReadHandler.
-
-        Parameters
-        ----------
-        func : FunctionType
-            A function object which implements traced read semantics.
-
-        scope_key : object
-            The key for the local scope in the storage map.
-
-        """
-        self._func = func
-        self._scope_key = scope_key
-
-    def __call__(self, owner, name, storage):
+    def __call__(self, owner, name):
         """ Evaluate and return the expression value.
 
         """
-        func = self._func
+        func = self.func
         f_globals = func.func_globals
         f_builtins = f_globals['__builtins__']
-        f_locals = storage.get(self._scope_key) or {}
-        tr = StandardTracer(owner, name, storage)
+        f_locals = self.get_locals(owner)
+        tr = StandardTracer(owner, name)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins, None, tr)
         return call_func(func, (tr,), {}, scope)
 
 
-class StandardInvertedWriteHandler(WriteHandler):
+class StandardInvertedWriteHandler(WriteHandler, HandlerMixin):
     """ An expression writer which writes an expression value.
 
     This handler is used in conjuction with the standard '>>' operator.
 
     """
-    __slots__ = ('_func', '_scope_key')
-
-    def __init__(self, func, scope_key):
-        """ Initialize a StandardInvertedWriteHandler.
-
-        Parameters
-        ----------
-        func : FunctionType
-            A function object which implements inverted write semantics.
-
-        scope_key : object
-            The key for the local scope in the storage map.
-
-        """
-        self._func = func
-        self._scope_key = scope_key
-
-    def __call__(self, owner, name, storage, change):
+    def __call__(self, owner, name, change):
         """ Write the change to the expression.
 
         """
-        func = self._func
+        func = self.func
         f_globals = func.func_globals
         f_builtins = f_globals['__builtins__']
-        f_locals = storage.get(self._scope_key) or {}
+        f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
         inverter = StandardInverter(scope)
         return call_func(func, (inverter, change['value']), {}, scope)
