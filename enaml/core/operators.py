@@ -54,7 +54,7 @@ def op_simple(code, scope_key, f_globals):
     bp_code.newlocals = False
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    reader = StandardReadHandler(func, scope_key)
+    reader = StandardReadHandler(func=func, scope_key=scope_key)
     return (reader, None)
 
 
@@ -67,7 +67,7 @@ def op_notify(code, scope_key, f_globals):
     bp_code.newlocals = False
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    writer = StandardWriteHandler(func, scope_key)
+    writer = StandardWriteHandler(func=func, scope_key=scope_key)
     return (None, writer)
 
 
@@ -82,7 +82,7 @@ def op_subscribe(code, scope_key, f_globals):
     bp_code.args = ('_[tracer]',) + bp_code.args
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    reader = StandardTracedReadHandler(func, scope_key)
+    reader = StandardTracedReadHandler(func=func, scope_key=scope_key)
     return (reader, None)
 
 
@@ -97,7 +97,7 @@ def op_update(code, scope_key, f_globals):
     bp_code.args = ('_[inverter]', '_[value]') + bp_code.args
     new_code = bp_code.to_code()
     func = FunctionType(new_code, f_globals)
-    writer = StandardInvertedWriteHandler(func, scope_key)
+    writer = StandardInvertedWriteHandler(func=func, scope_key=scope_key)
     return (None, writer)
 
 
