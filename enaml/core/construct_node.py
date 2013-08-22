@@ -22,14 +22,21 @@ class ConstructNode(Atom):
     #: The declarative class object to instantiate.
     klass = Typed(type)
 
-    #: The local identifier to associate with the instances.
+    #: The local identifier to associate with the instances. An empty
+    #: string indicates the instances have no identifier.
     identifier = Str()
 
     #: The construct node children of this node.
     children = List(ForwardTyped(lambda: ConstructNode))
 
-    #: The engine to use for the created declarative instances.
-    engine = Typed(ExpressionEngine)
+    #: The construct nodes of the super classes. This will only contain
+    #: data for enamldef blocks which inherit from another enamldef.
+    #: The nodes will be in the reverse order of the type mro.
+    super_nodes = List(ForwardTyped(lambda: ConstructNode))
 
-    #: The key for the local scope in the local storage map.
+    #: The engine to use for the created declarative instances.
+    engine = Typed(ExpressionEngine, ())
+
+    #: The key for the local scope in the local storage map. This will
+    #: be None if no local scope is needed for the object.
     scope_key = Typed(object)
