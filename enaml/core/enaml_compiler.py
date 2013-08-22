@@ -246,7 +246,7 @@ class EnamlDefCompiler(NodeVisitor):
     # Utility Methods
     #--------------------------------------------------------------------------
     @classmethod
-    def needs_subclass(cls, child_def):
+    def needs_subclass(cls, node):
         """ Get whether or not a ChildDef node needs to be subclassed.
 
         A ChildDef must be subclassed if it requires storage or has
@@ -254,7 +254,7 @@ class EnamlDefCompiler(NodeVisitor):
 
         Parameters
         ----------
-        child_def : ChildDef
+        node : ChildDef
             The child node of interest
 
         Returns
@@ -265,7 +265,31 @@ class EnamlDefCompiler(NodeVisitor):
 
         """
         types = (enaml_ast.StorageDef, enaml_ast.Binding)
-        return any(isinstance(item, types) for item in child_def.body)
+        return any(isinstance(item, types) for item in node.body)
+
+    @classmethod
+    def needs_local_scope(cls, node):
+        """ Get whether or not an EnamlDef node needs a local scope.
+
+        An enamldef needs a local scope if widgets within the block
+        use identifiers.
+
+        Returns
+        -------
+        result : bool
+            True if the block needs local scope, False otherwise.
+
+        """
+        stack = [node]
+        while stack:
+            node = stack.pop()
+            if node.identifier:
+                return True
+            stack.extend(
+                item for item in node.body
+                if isinstance(item, enaml_ast.ChildDef)
+            )
+        return False
 
     @classmethod
     def try_squash_raise(cls, ops):
@@ -300,7 +324,7 @@ class EnamlDefCompiler(NodeVisitor):
             (bp.ROT_THREE, None),               # TOS -> exc -> tb -> val
             (bp.ROT_TWO, None),                 # TOS -> exc -> val -> tb
             (bp.POP_TOP, None),                 # TOS -> exc -> val
-            (bp.RAISE_VARARGS, 0),              # TOS
+            (bp.RAISE_VARARGS, 2),              # TOS
             (bp.JUMP_FORWARD, final_label),     # TOS
             (bp.END_FINALLY, None),             # TOS
             (final_label, None),                # TOS
@@ -348,11 +372,18 @@ class EnamlDefCompiler(NodeVisitor):
         ])
 
         # Create the local scope storage key
-        self.code_ops.extend([                  # <empty>
-            (bp.LOAD_GLOBAL, 'object'),         # object
-            (bp.CALL_FUNCTION, 0x0000),         # key
-            (bp.STORE_FAST, '_[scope_key]'),    # <empty>
-        ])
+        if self.needs_local_scope(node):
+            self.code_ops.extend([                  # <empty>
+                (bp.LOAD_GLOBAL, 'object'),         # object
+                (bp.CALL_FUNCTION, 0x0000),         # key
+            ])
+        else:
+            self.code_ops.append(                   # <empty>
+                (bp.LOAD_CONST, None),              # key
+            )
+        self.code_ops.append(
+            (bp.STORE_FAST, '_[scope_key]'),       # <empty>
+        )
 
         # Build the enamldef class and construct node
         self.code_ops.extend([                      # <empty>
@@ -480,25 +511,29 @@ class EnamlDefCompiler(NodeVisitor):
         """ The compiler visitor for a StorageDef node.
 
         """
-        self.code_ops.extend([                      # <empty>
+        self.code_ops.append(                       # <empty>
             (bp.SetLineno, node.lineno),            # <empty>
+        )
+        ops = [
             (bp.LOAD_GLOBAL, '__add_storage'),      # helper
             (bp.LOAD_FAST, self.class_stack[-1]),   # helper -> class
             (bp.LOAD_CONST, node.name),             # helper -> class -> name
-        ])
+        ]
         if node.typename:
-            self.code_ops.append(
+            ops.append(
                 (bp.LOAD_GLOBAL, node.typename)     # helper -> class -> name -> type
             )
         else:
-            self.code_ops.append(
+            ops.append(
                 (bp.LOAD_CONST, None)               # helper -> class -> name -> None
             )
-        self.code_ops.extend([
+        ops.extend([
             (bp.LOAD_CONST, node.kind),             # helper -> class -> name -> type -> kind
             (bp.CALL_FUNCTION, 0x0004),             # retval
             (bp.POP_TOP, None),                     # <empty>
         ])
+        ops = self.try_squash_raise(ops)
+        self.code_ops.extend(ops)
         if node.expr is not None:
             self.name_stack.append(node.name)
             self.visit(node.expr)
