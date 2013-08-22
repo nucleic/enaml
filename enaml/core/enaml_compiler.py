@@ -91,7 +91,13 @@ from . import enaml_ast
 #     for class creation when a module is imported. The serialized data
 #     which lives in the code object is unpacked into a construction
 #     tree which is then used for various transformations.
-COMPILER_VERSION = 14
+# 15 : Complete reimplementation of the expression engine - 22 August 2013
+#     This updates the compiler to generate the building logic so that
+#     all of the type resolution and type hierarchy building is performed
+#     at import time using native code instead of serialized dict and a
+#     runtime resolver object (I have no idea what I was thinking with
+#     with compiler version 14).
+COMPILER_VERSION = 15
 
 
 #------------------------------------------------------------------------------
@@ -101,14 +107,14 @@ COMPILER_VERSION = 14
 STARTUP = [
     'from enaml.core.compiler_helpers import '\
         '__add_storage, __construct_node, __make_enamldef, '\
-        '__run_operator, __validate_type',
+        '__make_engine, __run_operator, __validate_type',
 ]
 
 
 # Cleanup code that will be included in every compiled enaml module
 CLEANUP = [
     'del __add_storage, __construct_node, __make_enamldef, '\
-    '__run_operator, __validate_type'
+    '__make_engine, __run_operator, __validate_type'
 ]
 
 
@@ -246,28 +252,6 @@ class EnamlDefCompiler(NodeVisitor):
     # Utility Methods
     #--------------------------------------------------------------------------
     @classmethod
-    def needs_subclass(cls, node):
-        """ Get whether or not a ChildDef node needs to be subclassed.
-
-        A ChildDef must be subclassed if it requires storage or has
-        bound expressions.
-
-        Parameters
-        ----------
-        node : ChildDef
-            The child node of interest
-
-        Returns
-        -------
-        result : bool
-            True if the class for the node must be subclassed, False
-            otherwise.
-
-        """
-        types = (enaml_ast.StorageDef, enaml_ast.Binding)
-        return any(isinstance(item, types) for item in node.body)
-
-    @classmethod
     def needs_local_scope(cls, node):
         """ Get whether or not an EnamlDef node needs a local scope.
 
@@ -289,6 +273,52 @@ class EnamlDefCompiler(NodeVisitor):
                 item for item in node.body
                 if isinstance(item, enaml_ast.ChildDef)
             )
+        return False
+
+    @classmethod
+    def needs_subclass(cls, node):
+        """ Get whether or not a ChildDef node needs subclassing.
+
+        A child def class must be subclassed if it uses storage or
+        has attribute bindings.
+
+        Parameters
+        ----------
+        node : ChildDef
+            The child def node of interest.
+
+        Returns
+        -------
+        result : bool
+            True if the class must be subclassed, False otherwise.
+
+        """
+        types = (enaml_ast.StorageDef, enaml_ast.Binding)
+        return any(isinstance(item, types) for item in node.body)
+
+    @classmethod
+    def needs_engine(cls, node):
+        """ Get whether or not a node needs an expression engine.
+
+        A node requires an engine if it has attribute bindings.
+
+        Parameters
+        ----------
+        node : EnamlDef or ChildDef
+            The node of interest.
+
+        Returns
+        -------
+        result : bool
+            True if the class requires an engine, False otherwise.
+
+        """
+        for item in node.body:
+            if isinstance(item, enaml_ast.Binding):
+                return True
+            if isinstance(item, enaml_ast.StorageDef):
+                if item.expr is not None:
+                    return True
         return False
 
     @classmethod
@@ -417,6 +447,16 @@ class EnamlDefCompiler(NodeVisitor):
             (bp.STORE_FAST, node_var),              # <empty>
         ])
 
+        # Build an engine for the new class if needed.
+        if self.needs_engine(node):
+            self.code_ops.extend([                  # <empty>
+                (bp.LOAD_GLOBAL, '__make_engine'),  # helper
+                (bp.LOAD_FAST, class_var),          # helper -> class
+                (bp.CALL_FUNCTION, 0x0001),         # engine
+                (bp.LOAD_FAST, class_var),          # engine -> class
+                (bp.STORE_ATTR, '__engine__'),      # <empty>
+            ])
+
         # Popuplate the body of the class
         self.class_stack.append(class_var)
         self.node_stack.append(node_var)
@@ -455,9 +495,7 @@ class EnamlDefCompiler(NodeVisitor):
         self.code_ops.extend(self.validate_TOS())
 
         # Subclass the child class if needed
-        types = (enaml_ast.StorageDef, enaml_ast.Binding)
-        needs_subclass = any(isinstance(item, types) for item in node.body)
-        if needs_subclass:
+        if self.needs_subclass(node):
             self.code_ops.extend([              # class
                 (bp.LOAD_CONST, node.typename), # class -> name
                 (bp.ROT_TWO, None),             # name -> class
@@ -484,6 +522,16 @@ class EnamlDefCompiler(NodeVisitor):
             (bp.CALL_FUNCTION, 0x0003),             # node
             (bp.STORE_FAST, node_var),              # <empty>
         ])
+
+        # Build an engine for the new class if needed.
+        if self.needs_engine(node):
+            self.code_ops.extend([                  # <empty>
+                (bp.LOAD_GLOBAL, '__make_engine'),  # helper
+                (bp.LOAD_FAST, class_var),          # helper -> class
+                (bp.CALL_FUNCTION, 0x0001),         # engine
+                (bp.LOAD_FAST, class_var),          # engine -> class
+                (bp.STORE_ATTR, '__engine__'),      # <empty>
+            ])
 
         # Populate the body of the class
         self.class_stack.append(class_var)
