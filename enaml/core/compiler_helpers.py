@@ -10,16 +10,17 @@ from atom.api import DefaultValue, Event, Instance
 from .construct_node import ConstructNode
 from .declarative import Declarative, d_
 from .enamldef_meta import EnamlDefMeta
+from .expression_engine import ExpressionEngine
 from .operators import __get_operators
 
 
 def __add_storage(klass, name, store_type, kind):
-    """ A compiler helper which adds user storage to a class.
+    """ Add user storage to a Declarative subclass.
 
     Parameters
     ----------
     klass : type
-        The Declarative subclass to which storage is being added.
+        The Declarative subclass to which storage should be added.
 
     name : str
         The name of the attribute or event to add to the class.
@@ -34,25 +35,29 @@ def __add_storage(klass, name, store_type, kind):
     if store_type is None:
         store_type = object
     elif not isinstance(store_type, type):
-        raise TypeError("'%s' is not a type" % type(store_type).__name__)
+        raise TypeError("%s is not a type" % store_type)
+
     members = klass.members()
-    m = members.get(name)
-    if m is not None:
-        if m.metadata is None or not m.metadata.get('d_member'):
+    member = members.get(name)
+    if member is not None:
+        if member.metadata is None or not member.metadata.get('d_member'):
             msg = "cannot override non-declarative member '%s'"
             raise TypeError(msg % name)
-        if m.metadata.get('d_final'):
+        if member.metadata.get('d_final'):
             msg = "cannot override the final member '%s'"
             raise TypeError(msg % name)
+
     if kind == 'event':
         new = d_(Event(store_type), writable=False, final=False)
     else:
         new = d_(Instance(store_type), final=False)
-    if m is not None:
-        new.set_index(m.index)
-        new.copy_static_observers(m)
+
+    if member is not None:
+        new.set_index(member.index)
+        new.copy_static_observers(member)
     else:
         new.set_index(len(members))
+
     new.set_name(name)
     members[name] = new
     setattr(klass, name, new)
@@ -82,13 +87,10 @@ def __construct_node(klass, identifier, scope_key):
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
-
-    # Copy the info from the superclass node, if any.
-    super_node = getattr(klass, '__node__', None)
-    if super_node is not None:
-        node.supers = super_node.supers + [super_node]
-        node.engine = super_node.engine.copy()
-
+    # copy over the superclass nodes, if any
+    s_node = getattr(klass, '__node__', None)
+    if s_node is not None:
+        node.super_nodes = s_node.super_nodes + [s_node]
     return node
 
 
@@ -110,52 +112,37 @@ def __make_enamldef(name, bases, dct):
     return EnamlDefMeta(name, bases, dct)
 
 
-def __assert_d_member(klass, name, readable, writable):
-    """ Assert binding points to a valid declarative member.
+def __make_engine(klass):
+    """ Make the expression engine for the class.
 
     Parameters
     ----------
-    klass : Declarative
-        The declarative class which owns the binding.
-
-    name : str
-        The name of the member on the class.
-
-    readable : bool
-        Whether the member should have the 'd_readable' metadata flag.
-
-    writable : bool
-        Whether the member should have the 'd_writable' metadata flag.
+    klass : type
+        The Declarative class which should be given an engine.
 
     """
-    m = klass.members().get(name)
-    if m is None or m.metadata is None or not m.metadata.get('d_member'):
-        raise TypeError("'%s' is not a declarative member" % name)
-    if readable and not m.metadata.get('d_readable'):
-        raise TypeError("'%s' is not readable from enaml" % name)
-    if writable and not m.metadata.get('d_writable'):
-        raise TypeError("'%s' is not writable from enaml" % name)
+    engine = getattr(klass, '__engine__', None)
+    if engine is not None:
+        return engine.copy()
+    return ExpressionEngine()
 
 
 def __read_op_dispatcher(owner, name):
     """ A default value handler which reads from a declarative engine.
 
     """
-    return owner._d_engine.read(owner, name)
+    return type(owner).__engine__.read(owner, name)
 
 
 def __write_op_dispatcher(change):
     """ An observer which writes to a declarative engine.
 
     """
-    t = change['type']
-    if t == 'update' or t == 'event':
+    change_t = change['type']
+    if change_t == 'update' or change_t == 'event':
         owner = change['object']
-        name = change['name']
-        import time
-        t1 = time.clock()
-        owner._d_engine.write(owner, name, change)
-        print time.clock() - t1
+        type(owner).__engine__.write(owner, change['name'], change)
+
 
 def __run_operator(node, name, op, code, f_globals):
     """ Run the operator for a given node.
@@ -181,34 +168,45 @@ def __run_operator(node, name, op, code, f_globals):
     operators = __get_operators()
     if op not in operators:
         raise TypeError("failed to load operator '%s'" % op)
-    read, write = operators[op](code, node.scope_key, f_globals)
+    scope_key = node.scope_key
+    read, write = operators[op](code, scope_key, f_globals)
+
     # The read and write semantics are reversed here. In the context of
     # a declarative member, d_readable means that an attribute can be
-    # *read* and it's value *written* to the expression, d_writable means
-    # that an expression can be *read* and its value *written* to the
-    # declarative attribute. This means that a write handler attempt to
-    # read from the declarative attribute, and a read handler attempts to
-    # write to the declarative attribute.
-    __assert_d_member(node.klass, name, write is not None, read is not None)
-    member = node.klass.members()[name]
+    # *read* from enaml and it's value *written* to the expression,
+    # d_writable means that an expression can be *read* and its value
+    # *written* to the attribute attribute.
+    klass = node.klass
+    member = klass.members().get(name)
+    if (member is None or
+        member.metadata is None or
+        not member.metadata.get('d_member')):
+        raise TypeError("'%s' is not a declarative member" % name)
+    if write is not None and not member.metadata.get('d_readable'):
+        raise TypeError("'%s' is not readable from enaml" % name)
+    if read is not None and not member.metadata.get('d_writable'):
+        raise TypeError("'%s' is not writable from enaml" % name)
+
+    engine = klass.__engine__
     if read is not None:
-        node.engine.read_handlers[name] = read
+        engine.read_handlers[name] = read
         mode = (DefaultValue.CallObject_ObjectName, __read_op_dispatcher)
         if member.default_value_mode != mode:
-            clone = member.clone()
-            clone.set_default_value_mode(*mode)
-            node.klass.members()[name] = clone
-            setattr(node.klass, name, clone)
+            member = member.clone()
+            member.set_default_value_mode(*mode)
+            klass.members()[name] = member
+            setattr(klass, name, member)
+
     if write is not None:
-        handlers = node.engine.write_handlers.get(name)
+        handlers = engine.write_handlers.get(name)
         if handlers is None:
-            handlers = node.engine.write_handlers[name] = []
+            handlers = engine.write_handlers[name] = []
         handlers.append(write)
         if not member.has_observer(__write_op_dispatcher):
-            clone = member.clone()
-            clone.add_static_observer(__write_op_dispatcher)
-            node.klass.members()[name] = clone
-            setattr(node.klass, name, clone)
+            member = member.clone()
+            member.add_static_observer(__write_op_dispatcher)
+            klass.members()[name] = member
+            setattr(klass, name, member)
 
 
 def __validate_type(klass):
