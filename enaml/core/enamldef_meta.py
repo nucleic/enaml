@@ -18,25 +18,53 @@ class EnamlDefMeta(AtomMeta):
     #: modified by user code.
     __node__ = None
 
+    def iternodes(cls):
+        """ Get a generator which yields the construct nodes.
+
+        The nodes are yielded in the order in which they should be
+        consumed for the purpose of populating the child subtree. It
+        includes the superclass nodes followed by the current node.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields the enamldef construct nodes.
+
+        """
+        node = cls.__node__  # this should never be None
+        for super_node in node.super_nodes:
+            yield super_node
+        yield node
+
     def __repr__(cls):
         """ A nice repr for a type created by the `enamldef` keyword.
 
         """
         return "<enamldef '%s.%s'>" % (cls.__module__, cls.__name__)
 
-    def iternodes(cls):
-        node = cls.__node__
-        if node is not None:
-            for super_node in node.super_nodes:
-                yield super_node
-            yield node
-
     def __call__(cls, parent=None, **kwargs):
-        """ A custom instance creation routine for EnamlDef classes.
+        """ Create a new instance of the enamldef class.
+
+        This method will create the new instance, then populate that
+        instance with children defined in the enamldef. Once those
+        children are added, the __init__ method of the instance will
+        be invoked with the provided arguments.
+
+        Parameters
+        ----------
+        parent : Object or None
+            The parent object of the new instance.
+
+        **kwargs
+            Additional keyword arguments to pass to the constructor.
 
         """
         self = cls.__new__(cls)
-        self._d_engine = cls.__node__.engine
+
+        # Each node represents a subtree which exists in a separate
+        # conceptual scope and therefore has its own locals mapping.
+        # A node with None for a scope key does not require locals
+        # and the storage overhead for that node cab be avoided.
         for node in cls.iternodes():
             if node.scope_key is not None:
                 f_locals = sortedmap()
@@ -45,7 +73,12 @@ class EnamlDefMeta(AtomMeta):
                     f_locals[node.identifier] = self
             else:
                 f_locals = None
+            # The instance is repsonsible for building out its subtree.
+            # The indirection allows objects like Looper and Conditional
+            # to intercept the build process and delay the creation of
+            # the subtree to a later point.
             for child_node in node.children:
-                self.build_subtree(child_node, f_locals)
+                self.add_subtree(child_node, f_locals)
+
         self.__init__(parent, **kwargs)
         return self
