@@ -8,7 +8,6 @@
 from atom.api import Typed, Unicode, Event
 from atom.datastructures.api import sortedmap
 
-from .expression_engine import ExpressionEngine
 from .object import Object, flag_generator, flag_property
 
 
@@ -69,10 +68,6 @@ class Declarative(Object):
     #: not be manipulated directly by user code.
     is_initialized = flag_property(INITIALIZED_FLAG)
 
-    #: The engine used for the declarative expressions bound to the
-    #: object. This should not normally be manipulated by user code.
-    _d_engine = Typed(ExpressionEngine)
-
     #: Storage space for the declarative runtime. This value should
     #: not normally be manipulated by user code.
     _d_storage = Typed(sortedmap, ())
@@ -101,7 +96,6 @@ class Declarative(Object):
 
         """
         self.is_initialized = False
-        del self._d_engine
         del self._d_storage
         super(Declarative, self).destroy()
 
@@ -117,13 +111,37 @@ class Declarative(Object):
             if self.is_initialized and not child.is_initialized:
                 child.initialize()
 
-    def build_subtree(self, child_node, f_locals):
-        child = child_node.klass()
-        child._d_engine = child_node.engine
-        if f_locals is not None and child_node.identifier:
-            f_locals[child_node.identifier] = child
-        if child_node.scope_key is not None:
-            child._d_storage[child_node.scope_key] = f_locals
-        for other_node in child_node.children:
-            child.build_subtree(other_node, f_locals)
+    def add_subtree(self, node, f_locals):
+        """ Add a node subtree to this instance.
+
+        This method is invoked by the declarative runtime when an
+        enamldef block is executed. It is responsibilty for creating
+        the children defined by the child node and adding them to the
+        given scope.
+
+        The default implementation of this method is suitable for most
+        all use cases, but some advanced components like Looper and
+        Conditional reimplement this method to delay and modify child
+        construction. A developer should have a firm understanding of
+        the declarative runtime before reimplementing this method.
+
+        Parameters
+        ----------
+        node : ConstructNode
+            A construct node containing the information required to
+            instantiate the child.
+
+        f_locals : mapping or None
+            A mapping object for the current local scope or None if
+            the block does not require a local scope.
+
+        """
+        child = node.klass()
+        if f_locals is not None:
+            if node.identifier:
+                f_locals[node.identifier] = child
+            if node.scope_key is not None:
+                child._d_storage[node.scope_key] = f_locals
+        for child_node in node.children:
+            child.add_subtree(child_node, f_locals)
         child.set_parent(self)
