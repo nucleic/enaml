@@ -7,8 +7,6 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, Str, Typed, ForwardTyped, List
 
-from .expression_engine import ExpressionEngine
-
 
 class ConstructNode(Atom):
     """ A node class which holds an enamldef type structure.
@@ -30,12 +28,9 @@ class ConstructNode(Atom):
     children = List(ForwardTyped(lambda: ConstructNode))
 
     #: The construct nodes of the super classes. This will only contain
-    #: data for enamldef blocks which inherit from another enamldef.
+    #: values for enamldef blocks which inherit from another enamldef.
     #: The nodes will be in the reverse order of the type mro.
     super_nodes = List(ForwardTyped(lambda: ConstructNode))
-
-    #: The engine to use for the created declarative instances.
-    engine = Typed(ExpressionEngine, ())
 
     #: The key for the local scope in the local storage map. This will
     #: be None if no local scope is needed for the object.
