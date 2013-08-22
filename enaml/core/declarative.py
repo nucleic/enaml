@@ -69,12 +69,13 @@ class Declarative(Object):
     #: not be manipulated directly by user code.
     is_initialized = flag_property(INITIALIZED_FLAG)
 
-    #: The engine used for the expressions bound to the this object.
-    #: This value should not be manipulated by user code.
-    _engine = Typed(ExpressionEngine)
+    #: The engine used for the declarative expressions bound to the
+    #: object. This should not normally be manipulated by user code.
+    _d_engine = Typed(ExpressionEngine)
 
-    #: Private storage for the item.
-    _storage = Typed(sortedmap, ())
+    #: Storage space for the declarative runtime. This value should
+    #: not normally be manipulated by user code.
+    _d_storage = Typed(sortedmap, ())
 
     def initialize(self):
         """ Initialize this object all of its children recursively.
@@ -100,8 +101,8 @@ class Declarative(Object):
 
         """
         self.is_initialized = False
-        del self._engine
-        del self._storage
+        del self._d_engine
+        del self._d_storage
         super(Declarative, self).destroy()
 
     def child_added(self, child):
@@ -118,9 +119,11 @@ class Declarative(Object):
 
     def build_subtree(self, child_node, f_locals):
         child = child_node.klass()
-        if child_node.identifier:
+        child._d_engine = child_node.engine
+        if f_locals is not None and child_node.identifier:
             f_locals[child_node.identifier] = child
-        child._storage[child_node.scope_key] = f_locals
+        if child_node.scope_key is not None:
+            child._d_storage[child_node.scope_key] = f_locals
         for other_node in child_node.children:
             child.build_subtree(other_node, f_locals)
         child.set_parent(self)

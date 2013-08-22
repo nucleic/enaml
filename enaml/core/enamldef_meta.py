@@ -24,22 +24,27 @@ class EnamlDefMeta(AtomMeta):
         """
         return "<enamldef '%s.%s'>" % (cls.__module__, cls.__name__)
 
+    def iternodes(cls):
+        node = cls.__node__
+        if node is not None:
+            for super_node in node.super_nodes:
+                yield super_node
+            yield node
+
     def __call__(cls, parent=None, **kwargs):
         """ A custom instance creation routine for EnamlDef classes.
 
         """
         self = cls.__new__(cls)
-        nodes = []
-        for klass in cls.mro():
-            node = getattr(klass, '__node__', None)
-            if node is None:
-                break
-            nodes.append(node)
-        for node in reversed(nodes):
-            f_locals = sortedmap()
-            self._storage[node.scope_key] = f_locals
-            if node.identifier:
-                f_locals[node.identifier] = self
+        self._d_engine = cls.__node__.engine
+        for node in cls.iternodes():
+            if node.scope_key is not None:
+                f_locals = sortedmap()
+                self._d_storage[node.scope_key] = f_locals
+                if node.identifier:
+                    f_locals[node.identifier] = self
+            else:
+                f_locals = None
             for child_node in node.children:
                 self.build_subtree(child_node, f_locals)
         self.__init__(parent, **kwargs)
