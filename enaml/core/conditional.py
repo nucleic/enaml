@@ -10,17 +10,6 @@ from atom.api import Bool, List
 from .declarative import Declarative, d_
 
 
-def populate_conditional(conditional, node, f_locals):
-    """ The populate function for the Conditional class.
-
-    """
-    if node.scope_member:
-        node.scope_member.set_slot(conditional, f_locals)
-    if node.identifier:
-        f_locals[node.identifier] = conditional
-    conditional._cdata.append((node, f_locals))
-
-
 class Conditional(Declarative):
     """ A declarative object that represents conditional objects.
 
@@ -41,17 +30,7 @@ class Conditional(Declarative):
     items = List()
 
     #: Private data storage for the conditional.
-    _cdata = List()
-
-    @classmethod
-    def populator_func(cls):
-        """ Get the populator function for the Conditional class.
-
-        This returns a populator function which intercepts the creation
-        of the child items and defers it until the initialization pass.
-
-        """
-        return populate_conditional
+    _node_data = List()
 
     #--------------------------------------------------------------------------
     # Lifetime API
@@ -83,6 +62,32 @@ class Conditional(Declarative):
                 if not item.is_destroyed:
                     item.destroy()
         del self.items
+        del self._node_data
+
+    def add_subtree(self, node, f_locals):
+        """ Add a node subtree to this conditional.
+
+        This method changes the default behavior provided by the parent
+        class. It stores the node object and the locals mapping until
+        the object is initialized, at which point it creates the subtree
+        if the conditional expression evaluates to True.
+
+        Parameters
+        ----------
+        node : ConstructNode
+            A construct node containing the information required to
+            instantiate the children.
+
+        f_locals : mapping or None
+            A mapping object for the current local scope or None if
+            the block does not require a local scope.
+
+        """
+        if f_locals is not None:
+            if node.identifier:
+                f_locals[node.identifier] = self
+            self._d_storage[node.scope_key] = f_locals
+        self._node_data.append((node, f_locals))
 
     #--------------------------------------------------------------------------
     # Private API
@@ -94,7 +99,7 @@ class Conditional(Declarative):
         items will be refreshed.
 
         """
-        if self.is_initialized:
+        if change['type'] == 'update' and self.is_initialized:
             self._refresh_items()
 
     def _refresh_items(self):
@@ -106,19 +111,22 @@ class Conditional(Declarative):
         """
         items = []
         condition = self.condition
-        cdata = self._cdata
+        node_data = self._node_data
 
-        if condition and len(cdata) > 0:
-            for node, f_locals in cdata:
-                new_locals = f_locals.copy()
-                for child_node in node.child_defs:
-                    child = child_node.typeclass()
-                    child_node.populate(child, child_node, new_locals)
+        if condition and len(node_data) > 0:
+            for node, f_locals in node_data:
+                if f_locals is not None:
+                    f_locals = f_locals.copy()
+                for child_node in node.children:
+                    child = child_node.klass()
+                    child.add_subtree(child_node, f_locals)
                     items.append(child)
 
         for old in self.items:
             if not old.is_destroyed:
                 old.destroy()
+
         if len(items) > 0:
             self.parent.insert_children(self, items)
+
         self.items = items
