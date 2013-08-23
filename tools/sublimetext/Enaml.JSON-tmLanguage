@@ -3,14 +3,6 @@
   "fileTypes": ["enaml"],
   "patterns": [
     {
-      "comment": "Enaml Identifier",
-      "match": "^\\s*(id):\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*$",
-      "captures": {
-        "1": { "name": "keyword.other" },
-        "2": { "name": "variable.other" }
-      }
-    },
-    {
       "comment": "Enaml Declaration",
       "match": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):\\s*$",
       "captures": {

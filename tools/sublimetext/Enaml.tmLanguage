@@ -16,25 +16,6 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>keyword.other</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>variable.other</string>
-				</dict>
-			</dict>
-			<key>comment</key>
-			<string>Enaml Identifier</string>
-			<key>match</key>
-			<string>^\s*(id):\s*([A-Za-z_][A-Za-z0-9_]*)\s*$</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
 					<string>storage.type</string>
 				</dict>
 				<key>2</key>
