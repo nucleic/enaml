@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Typed
+from atom.api import Atom, List, Typed
 from atom.datastructures.api import sortedmap
 
 
@@ -58,21 +58,94 @@ class WriteHandler(Atom):
         raise NotImplementedError
 
 
+class HandlerPair(Atom):
+    """ An object which represents a pair of handlers.
+
+    A handler pair is used to provide read and write handlers to the
+    expression engine as the result of an operator call. The runtime
+    adds the pair returned by the operator to the relevant expression
+    engine.
+
+    """
+    #: The read handler for the pair. This may be None if the given
+    #: operator does not support read semantics.
+    reader = Typed(ReadHandler)
+
+    #: The write handler for the pair. This may be None if the given
+    #: operator does not support write semantics.
+    writer = Typed(WriteHandler)
+
+
+class HandlerSet(Atom):
+    """ A class which aggregates handler pairs for an expression.
+
+    This class is used internally by the runtime to manage handler
+    pair precedence. It should not be used directly by user code.
+
+    """
+    #: The handler pair which hold the precedent read handler.
+    read_pair = Typed(HandlerPair)
+
+    #: The list of handler pairs which hold write handlers. The pairs
+    #: are ordered from oldest to newest (execution order).
+    write_pairs = List(HandlerPair)
+
+    #: The complete list of handler pairs for an attribute.
+    all_pairs = List(HandlerPair)
+
+    def copy(self):
+        """ Create a copy of this handler set.
+
+        Returns
+        -------
+        result : HandlerSet
+            A copy of the handler set with independent lists.
+
+        """
+        # Atom Lists have copy semantics
+        new = HandlerSet()
+        new.read_pair = self.read_pair
+        new.write_pairs = self.write_pairs
+        new.all_pairs = self.all_pairs
+        return new
+
+
 class ExpressionEngine(Atom):
     """ A class which manages reading and writing bound expressions.
 
     """
-    #: A mapping of string name to read handler.
-    read_handlers = Typed(sortedmap, ())
+    #: A private mapping of string attribute name to HandlerSet.
+    _handlers = Typed(sortedmap, ())
 
-    #: A mapping of string name to list of write handlers.
-    write_handlers = Typed(sortedmap, ())
+    #: A private set of guard tuples for preventing feedback loops.
+    _guards = Typed(set, ())
 
-    #: A set which holds (owner, name) pairs as guard sentinels.
-    guards = Typed(set, ())
+    def add_pair(self, name, pair):
+        """ Add a HandlerPair to the engine.
+
+        Parameters
+        ----------
+        name : str
+            The name of the attribute to which the pair is bound.
+
+        pair : HandlerPair
+            The pair to bind to the expression.
+
+        """
+        handler = self._handlers.get(name)
+        if handler is None:
+            handler = self._handlers[name] = HandlerSet()
+        handler.all_pairs.append(pair)
+        if pair.reader is not None:
+            handler.read_pair = pair
+        if pair.writer is not None:
+            handler.write_pairs.append(pair)
 
     def read(self, owner, name):
         """ Compute and return the value of an expression.
+
+        This should only be called if handler pair with a reader was
+        previously added to the engine for the given name.
 
         Parameters
         ----------
@@ -83,10 +156,16 @@ class ExpressionEngine(Atom):
             The name of the relevant bound expression.
 
         """
-        return self.read_handlers[name](owner, name)
+        return self._handlers[name].read_pair.reader(owner, name)
 
     def write(self, owner, name, change):
         """ Write a change to an expression.
+
+        This should only be called if handler pair with a writer was
+        previously added to the engine for the given name. This method
+        will not run the handler if its paired read handler is actively
+        updating the owner attribute. This behavior protects against
+        feedback loops and saves useless computation.
 
         Parameters
         ----------
@@ -101,24 +180,27 @@ class ExpressionEngine(Atom):
             which owns the engine.
 
         """
-        guards = self.guards
-        key = (owner, name)
-        if key in guards:
-            return
-        guards.add(key)
-        try:
-            for handler in self.write_handlers[name]:
-                handler(owner, name, change)
-        finally:
-            guards.remove(key)
+        guards = self._guards
+        handler = self._handlers[name]
+        for pair in handler.write_pairs:
+            key = (owner, pair)
+            if key not in guards:
+                guards.add(key)
+                try:
+                    pair.writer(owner, name, change)
+                finally:
+                    guards.remove(key)
 
     def update(self, owner, name):
         """ Update the named attribute of the owner.
 
-        This method will update the named attribute by re-reading the
-        expression provided that the attribute is not already guarded
-        by a cylic notification guard. If the attribute is guarded,
-        this method is a no-op.
+        This should only be called if handler pair with a reader was
+        previously added to the engine for the given name. This method
+        will update the named attribute by re-reading the expression and
+        setting the value of the attribute. This method will not run the
+        handler if its paired write handler is actively updating the
+        owner attribute. This behavior protects against feedback loops
+        and saves useless computation.
 
         Parameters
         ----------
@@ -129,15 +211,15 @@ class ExpressionEngine(Atom):
             The name of the relevant bound expression.
 
         """
-        guards = self.guards
-        key = (owner, name)
-        if key in guards:
-            return
-        guards.add(key)
-        try:
-            setattr(owner, name, self.read(owner, name))
-        finally:
-            guards.remove(key)
+        guards = self._guards
+        pair = self._handlers[name].read_pair
+        key = (owner, pair)
+        if key not in guards:
+            guards.add(key)
+            try:
+                setattr(owner, name, pair.reader(owner, name))
+            finally:
+                guards.remove(key)
 
     def copy(self):
         """ Create a copy of the expression engine.
@@ -145,12 +227,12 @@ class ExpressionEngine(Atom):
         Returns
         -------
         result : ExpressionEngine
-            A copy of the engine with independent handler maps.
+            A copy of the engine with independent handler sets.
 
         """
         new = ExpressionEngine()
-        new.read_handlers = self.read_handlers.copy()
-        new.write_handlers = w = sortedmap()
-        for key, value in self.write_handlers.items():
-            w[key] = value[:]
+        handlers = sortedmap()
+        for key, value in self._handlers.items():
+            handlers[key] = value.copy()
+        new._handlers = handlers
         return new

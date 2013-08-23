@@ -173,7 +173,7 @@ def __run_operator(node, name, op, code, f_globals):
     if op not in operators:
         raise TypeError("failed to load operator '%s'" % op)
     scope_key = node.scope_key
-    read, write = operators[op](code, scope_key, f_globals)
+    pair = operators[op](code, scope_key, f_globals)
 
     # The read and write semantics are reversed here. In the context of
     # a declarative member, d_readable means that an attribute can be
@@ -186,14 +186,14 @@ def __run_operator(node, name, op, code, f_globals):
         member.metadata is None or
         not member.metadata.get('d_member')):
         raise TypeError("'%s' is not a declarative member" % name)
-    if write is not None and not member.metadata.get('d_readable'):
+    if pair.writer is not None and not member.metadata.get('d_readable'):
         raise TypeError("'%s' is not readable from enaml" % name)
-    if read is not None and not member.metadata.get('d_writable'):
+    if pair.reader is not None and not member.metadata.get('d_writable'):
         raise TypeError("'%s' is not writable from enaml" % name)
 
-    engine = klass.__engine__
-    if read is not None:
-        engine.read_handlers[name] = read
+    klass.__engine__.add_pair(name, pair)
+
+    if pair.reader is not None:
         mode = (DefaultValue.CallObject_ObjectName, __read_op_dispatcher)
         if member.default_value_mode != mode:
             member = member.clone()
@@ -201,11 +201,7 @@ def __run_operator(node, name, op, code, f_globals):
             klass.members()[name] = member
             setattr(klass, name, member)
 
-    if write is not None:
-        handlers = engine.write_handlers.get(name)
-        if handlers is None:
-            handlers = engine.write_handlers[name] = []
-        handlers.append(write)
+    if pair.writer is not None:
         if not member.has_observer(__write_op_dispatcher):
             member = member.clone()
             member.add_static_observer(__write_op_dispatcher)
