@@ -8,5 +8,6 @@
 from .conditional import Conditional
 from .declarative import Declarative, d_
 from .include import Include
+from .inline import Inline
 from .looper import Looper
 from .object import Object
