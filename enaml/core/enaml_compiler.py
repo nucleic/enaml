@@ -252,16 +252,13 @@ class EnamlDefCompiler(NodeVisitor):
     # Utility Methods
     #--------------------------------------------------------------------------
     @classmethod
-    def needs_local_scope(cls, node):
-        """ Get whether or not an EnamlDef node needs a local scope.
-
-        An enamldef needs a local scope if widgets within the block
-        use identifiers.
+    def has_block_identifiers(cls, node):
+        """ Get whether or not an EnamlDef node has block identifiers.
 
         Returns
         -------
         result : bool
-            True if the block needs local scope, False otherwise.
+            True if the block has identifiers, False otherwise.
 
         """
         stack = [node]
@@ -401,19 +398,18 @@ class EnamlDefCompiler(NodeVisitor):
             (bp.STORE_FAST, '_[f_globals]'),    # <empty>
         ])
 
+        # Store the boolean for the block identifiers
+        self.code_ops.extend([                                  # <empty>
+            (bp.LOAD_CONST, self.has_block_identifiers(node)),  # bool
+            (bp.STORE_FAST, '_[has_block_idents]'),             # <empty>
+        ])
+
         # Create the local scope storage key
-        if self.needs_local_scope(node):
-            self.code_ops.extend([                  # <empty>
-                (bp.LOAD_GLOBAL, 'object'),         # object
-                (bp.CALL_FUNCTION, 0x0000),         # key
-            ])
-        else:
-            self.code_ops.append(                   # <empty>
-                (bp.LOAD_CONST, None),              # key
-            )
-        self.code_ops.append(
-            (bp.STORE_FAST, '_[scope_key]'),       # <empty>
-        )
+        self.code_ops.extend([                  # <empty>
+            (bp.LOAD_GLOBAL, 'object'),         # object
+            (bp.CALL_FUNCTION, 0x0000),         # key
+            (bp.STORE_FAST, '_[scope_key]'),    # <empty>
+        ])
 
         # Build the enamldef class and construct node
         self.code_ops.extend([                      # <empty>
@@ -443,7 +439,8 @@ class EnamlDefCompiler(NodeVisitor):
             (bp.ROT_TWO, None),                     # helper -> class
             (bp.LOAD_CONST, node.identifier),       # helper -> class -> identifier
             (bp.LOAD_FAST, '_[scope_key]'),         # helper -> class -> identifier -> key
-            (bp.CALL_FUNCTION, 0x0003),             # node
+            (bp.LOAD_FAST, '_[has_block_idents]'),  # helper -> class -> identifier -> key -> bool
+            (bp.CALL_FUNCTION, 0x0004),             # node
             (bp.STORE_FAST, node_var),              # <empty>
         ])
 
@@ -519,7 +516,8 @@ class EnamlDefCompiler(NodeVisitor):
             (bp.ROT_TWO, None),                     # helper -> class
             (bp.LOAD_CONST, node.identifier),       # helper -> class -> identifier
             (bp.LOAD_FAST, '_[scope_key]'),         # helper -> class -> identifier -> key
-            (bp.CALL_FUNCTION, 0x0003),             # node
+            (bp.LOAD_FAST, '_[has_block_idents]'),  # helper -> class -> identifier -> key -> bool
+            (bp.CALL_FUNCTION, 0x0004),             # node
             (bp.STORE_FAST, node_var),              # <empty>
         ])
 

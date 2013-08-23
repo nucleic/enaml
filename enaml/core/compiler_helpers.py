@@ -63,7 +63,7 @@ def __add_storage(klass, name, store_type, kind):
     setattr(klass, name, new)
 
 
-def __construct_node(klass, identifier, scope_key):
+def __construct_node(klass, identifier, scope_key, block_idents):
     """ Create and return a ConstructNode for the given klass.
 
     Parameters
@@ -77,6 +77,9 @@ def __construct_node(klass, identifier, scope_key):
     scope_key : object
         The key for the local scope in the local storage map.
 
+    block_idents : bool
+        Whether or not the node lives in a block with identifiers.
+
     Returns
     -------
     result : ConstructNode
@@ -87,6 +90,7 @@ def __construct_node(klass, identifier, scope_key):
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
+    node.has_block_identifiers = block_idents
     # copy over the superclass nodes, if any
     s_node = getattr(klass, '__node__', None)
     if s_node is not None:
