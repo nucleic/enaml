@@ -353,10 +353,9 @@ def p_enaml_module_item2(p):
 #------------------------------------------------------------------------------
 def p_enamldef1(p):
     ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_body '''
-    doc, idn, items = p[7]
+    doc, items = p[7]
     enamldef = enaml_ast.EnamlDef(
-        typename=p[2], base=p[4], identifier=idn, docstring=doc, body=items,
-        lineno=p.lineno(1)
+        typename=p[2], base=p[4], docstring=doc, body=items, lineno=p.lineno(1)
     )
     p[0] = enamldef
 
@@ -368,10 +367,7 @@ def p_enamldef2(p):
 
 def p_enamldef3(p):
     ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_body '''
-    doc, idn, items = p[9]
-    if idn:
-        msg = 'multiple identifiers declared'
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
+    doc, items = p[9]
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], identifier=p[7], docstring=doc, body=items,
         lineno=p.lineno(1)
@@ -391,44 +387,14 @@ def p_enamldef_body1(p):
     ''' enamldef_body : NEWLINE INDENT enamldef_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
-    # TODO only a 2-tuple required after removing old identifiers
-    p[0] = ('', '', items)
+    p[0] = ('', items)
 
 
 def p_enamldef_body2(p):
     ''' enamldef_body : NEWLINE INDENT STRING NEWLINE enamldef_body_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[5])
-    # TODO only a 2-tuple required after removing old identifiers
-    p[0] = (p[3], '', items)
-
-
-def p_enamldef_body3(p):
-    ''' enamldef_body : NEWLINE INDENT identifier DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    p[0] = ('', p[3], [])
-
-
-def p_enamldef_body4(p):
-    ''' enamldef_body : NEWLINE INDENT identifier enamldef_body_items DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    # Filter out any pass statements
-    items = filter(None, p[4])
-    p[0] = ('', p[3], items)
-
-
-def p_enamldef_body5(p):
-    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE identifier DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
-    p[0] = (p[3], p[5], [])
-
-
-def p_enamldef_body6(p):
-    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE identifier enamldef_body_items DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
-    # Filter out any pass statements
-    items = filter(None, p[6])
-    p[0] = (p[3], p[5], items)
+    p[0] = (p[3], items)
 
 
 def p_enamldef_body_items1(p):
@@ -459,29 +425,6 @@ def p_enamldef_body_item3(p):
 def p_enamldef_body_item4(p):
     ''' enamldef_body_item : PASS NEWLINE '''
     p[0] = None
-
-
-#------------------------------------------------------------------------------
-# Identifier
-#------------------------------------------------------------------------------
-# TODO get rid of old identifiers in Enaml version 0.8.0
-def p_identifier(p):
-    ''' identifier : NAME COLON NAME NEWLINE '''
-    lhs = p[1]
-    if lhs != 'id':
-        msg = "'id' required. Got '%s' instead." % lhs
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    p[0] = p[3]
-
-
-_warn_reg = {}
-
-
-def _warn_ident(filename, lineno):
-    msg = "The 'id' tag is deprecated and will be removed in Enaml version "
-    msg += "0.8.0. Use the 'Foo: name: ...' construct instead."
-    import warnings
-    warnings.warn_explicit(msg, FutureWarning, filename, lineno, '', _warn_reg)
 
 
 #------------------------------------------------------------------------------
@@ -537,9 +480,8 @@ def p_storage_def4(p):
 #------------------------------------------------------------------------------
 def p_child_def1(p):
     ''' child_def : NAME COLON child_def_body '''
-    idn, items = p[3]
     child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=idn, body=items, lineno=p.lineno(1)
+        typename=p[1], body=p[3], lineno=p.lineno(1)
     )
     p[0] = child_def
 
@@ -557,12 +499,8 @@ def p_child_def3(p):
 
 def p_child_def4(p):
     ''' child_def : NAME COLON NAME COLON child_def_body '''
-    idn, items = p[5]
-    if idn:
-        msg = 'multiple identifiers declared'
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
     child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=p[3], body=items, lineno=p.lineno(1)
+        typename=p[1], identifier=p[3], body=p[5], lineno=p.lineno(1)
     )
     p[0] = child_def
 
@@ -587,22 +525,7 @@ def p_child_def6(p):
 def p_child_def_body1(p):
     ''' child_def_body : NEWLINE INDENT child_def_body_items DEDENT '''
     # Filter out any pass statements
-    items = filter(None, p[3])
-    p[0] = ('', items)
-
-
-def p_child_def_body2(p):
-    ''' child_def_body : NEWLINE INDENT identifier DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    p[0] = (p[3], [])
-
-
-def p_child_def_body3(p):
-    ''' child_def_body : NEWLINE INDENT identifier child_def_body_items DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    # Filter out any pass statements
-    items = filter(None, p[4])
-    p[0] = (p[3], items)
+    p[0] = filter(None, p[3])
 
 
 def p_child_def_body_items1(p):
