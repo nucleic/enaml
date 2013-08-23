@@ -81,7 +81,7 @@ from . import enaml_ast
 #     update adds a check for running on < 2.7 and dups the TOS.
 # 12 : Post process an enamldef immediately. - 18 March 2013
 #     This removes the need for the 2.6 check from version 11 since it
-#     does not rely on the LIST_APPEND instruction. It almost means
+#     does not rely on the LIST_APPEND instruction. It also means
 #     that widget names must appear before they are used, just like in
 #     normal Python class bodies.
 # 13 : Move the post processing of enamldefs to before running the
@@ -96,7 +96,7 @@ from . import enaml_ast
 #     all of the type resolution and type hierarchy building is performed
 #     at import time using native code instead of serialized dict and a
 #     runtime resolver object (I have no idea what I was thinking with
-#     with compiler version 14).
+#     with compiler versions 9 - 14).
 COMPILER_VERSION = 15
 
 
