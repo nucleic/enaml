@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Str, Typed, ForwardTyped, List
+from atom.api import Atom, Bool, Str, Typed, ForwardTyped, List
 
 
 class ConstructNode(Atom):
@@ -35,3 +35,7 @@ class ConstructNode(Atom):
     #: The key for the local scope in the local storage map. This will
     #: be None if no local scope is needed for the object.
     scope_key = Typed(object)
+
+    #: A boolean indicating whether the node exists in a block which
+    #: has declared component identifiers.
+    has_block_identifiers = Bool(False)
