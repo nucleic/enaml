@@ -51,7 +51,7 @@ class Looper(Pattern):
     def destroy(self):
         """ A reimplemented destructor.
 
-        This destructor releases references to owned data.
+        The looper will release the owned items on destruction.
 
         """
         super(Looper, self).destroy()

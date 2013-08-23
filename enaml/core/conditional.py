@@ -34,7 +34,7 @@ class Conditional(Pattern):
     def destroy(self):
         """ A reimplemented destructor
 
-        The conditional will releases the owned items on destruction.
+        The conditional will release the owned items on destruction.
 
         """
         super(Conditional, self).destroy()
@@ -70,11 +70,8 @@ class Conditional(Pattern):
 
         """
         items = []
-        condition = self.condition
-        pattern_nodes = self.pattern_nodes
-
-        if condition and len(pattern_nodes) > 0:
-            for node, f_locals in pattern_nodes:
+        if self.condition:
+            for node, f_locals in self.pattern_nodes:
                 if f_locals is not None:
                     f_locals = f_locals.copy()
                 for child_node in node.children:

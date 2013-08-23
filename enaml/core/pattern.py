@@ -41,7 +41,7 @@ class Pattern(Declarative):
             item.initialize()
 
     def destroy(self):
-        """ A reimplemented destructor
+        """ A reimplemented destructor.
 
         The pattern will destroy all of the pattern items unless the
         parent object is in the process of being destroyed.
