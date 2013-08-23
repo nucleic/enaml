@@ -115,13 +115,12 @@ class Declarative(Object):
         """ Add a node subtree to this instance.
 
         This method is invoked by the declarative runtime when an
-        enamldef block is executed. It is responsibilty for creating
-        the children defined by the child node and adding them to the
-        given scope.
+        enamldef block is executed. It is responsible for creating the
+        children defined by the node and adding them to the given scope.
 
         The default implementation of this method is suitable for most
-        all use cases, but some advanced components like Looper and
-        Conditional reimplement this method to delay and modify child
+        use cases, but some of the advanced components, like Looper and
+        Conditional, reimplement this method to delay and modify child
         construction. A developer should have a firm understanding of
         the declarative runtime before reimplementing this method.
 
@@ -129,19 +128,18 @@ class Declarative(Object):
         ----------
         node : ConstructNode
             A construct node containing the information required to
-            instantiate the child.
+            instantiate the children for the instance.
 
         f_locals : mapping or None
             A mapping object for the current local scope or None if
             the block does not require a local scope.
 
         """
-        child = node.klass()
         if f_locals is not None:
             if node.identifier:
-                f_locals[node.identifier] = child
-            if node.scope_key is not None:
-                child._d_storage[node.scope_key] = f_locals
+                f_locals[node.identifier] = self
+            self._d_storage[node.scope_key] = f_locals
         for child_node in node.children:
+            child = child_node.klass()
             child.add_subtree(child_node, f_locals)
-        child.set_parent(self)
+            child.set_parent(self)

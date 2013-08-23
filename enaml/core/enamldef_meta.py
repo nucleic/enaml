@@ -64,21 +64,16 @@ class EnamlDefMeta(AtomMeta):
         # Each node represents a subtree which exists in a separate
         # conceptual scope and therefore has its own locals mapping.
         # A node with None for a scope key does not require locals
-        # and the storage overhead for that node cab be avoided.
+        # and the storage overhead for that node can be avoided. The
+        # instance is repsonsible for building out its subtree. The
+        # indirection allows objects like Looper and Conditional to
+        # intercept the build process and delay the creation of the
+        # subtree to a later point.
         for node in cls.iternodes():
-            if node.scope_key is not None:
+            f_locals = None
+            if node.has_block_identifiers:
                 f_locals = sortedmap()
-                self._d_storage[node.scope_key] = f_locals
-                if node.identifier:
-                    f_locals[node.identifier] = self
-            else:
-                f_locals = None
-            # The instance is repsonsible for building out its subtree.
-            # The indirection allows objects like Looper and Conditional
-            # to intercept the build process and delay the creation of
-            # the subtree to a later point.
-            for child_node in node.children:
-                self.add_subtree(child_node, f_locals)
+            self.add_subtree(node, f_locals)
 
         self.__init__(parent, **kwargs)
         return self
