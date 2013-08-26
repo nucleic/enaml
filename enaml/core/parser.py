@@ -331,7 +331,8 @@ def p_enaml_module_body2(p):
 
 def p_enaml_module_item1(p):
     ''' enaml_module_item : stmt
-                          | enamldef '''
+                          | enamldef
+                          | template '''
     p[0] = p[1]
 
 
@@ -352,7 +353,7 @@ def p_enaml_module_item2(p):
 # EnamlDef
 #------------------------------------------------------------------------------
 def p_enamldef1(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_body '''
+    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enaml_doc_suite '''
     doc, items = p[7]
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], docstring=doc, body=items, lineno=p.lineno(1)
@@ -366,7 +367,7 @@ def p_enamldef2(p):
 
 
 def p_enamldef3(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_body '''
+    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enaml_doc_suite '''
     doc, items = p[9]
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], identifier=p[7], docstring=doc, body=items,
@@ -383,47 +384,43 @@ def p_enamldef4(p):
     p[0] = enamldef
 
 
-def p_enamldef_body1(p):
-    ''' enamldef_body : NEWLINE INDENT enamldef_body_items DEDENT '''
+#------------------------------------------------------------------------------
+# Enaml Suite
+#------------------------------------------------------------------------------
+def p_enaml_suite(p):
+    ''' enaml_suite : NEWLINE INDENT enaml_suite_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
-    p[0] = ('', items)
+    p[0] = items
 
 
-def p_enamldef_body2(p):
-    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE enamldef_body_items DEDENT '''
+def p_enaml_doc_suite(p):
+    ''' enaml_doc_suite : NEWLINE INDENT STRING NEWLINE enaml_suite_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[5])
     p[0] = (p[3], items)
 
 
-def p_enamldef_body_items1(p):
-    ''' enamldef_body_items : enamldef_body_item '''
+def p_enaml_suite_items1(p):
+    ''' enaml_suite_items : enaml_suite_item '''
     p[0] = [p[1]]
 
 
-def p_enamldef_body_items2(p):
-    ''' enamldef_body_items : enamldef_body_items enamldef_body_item '''
+def p_enaml_suite_items2(p):
+    ''' enaml_suite_items : enaml_suite_items enaml_suite_item '''
     p[0] = p[1] + [p[2]]
 
 
-def p_enamldef_body_item1(p):
-    ''' enamldef_body_item : storage_def '''
+def p_enaml_suite_item1(p):
+    ''' enaml_suite_item : binding
+                         | child_def
+                         | storage_def
+                         | templ_inst '''
     p[0] = p[1]
 
 
-def p_enamldef_body_item2(p):
-    ''' enamldef_body_item : binding '''
-    p[0] = p[1]
-
-
-def p_enamldef_body_item3(p):
-    ''' enamldef_body_item : child_def '''
-    p[0] = p[1]
-
-
-def p_enamldef_body_item4(p):
-    ''' enamldef_body_item : PASS NEWLINE '''
+def p_enaml_suite_item2(p):
+    ''' enaml_suite_item : PASS NEWLINE '''
     p[0] = None
 
 
@@ -479,7 +476,7 @@ def p_storage_def4(p):
 # ChildDef
 #------------------------------------------------------------------------------
 def p_child_def1(p):
-    ''' child_def : NAME COLON child_def_body '''
+    ''' child_def : NAME COLON enaml_suite '''
     child_def = enaml_ast.ChildDef(
         typename=p[1], body=p[3], lineno=p.lineno(1)
     )
@@ -498,7 +495,7 @@ def p_child_def3(p):
 
 
 def p_child_def4(p):
-    ''' child_def : NAME COLON NAME COLON child_def_body '''
+    ''' child_def : NAME COLON NAME COLON enaml_suite '''
     child_def = enaml_ast.ChildDef(
         typename=p[1], identifier=p[3], body=p[5], lineno=p.lineno(1)
     )
@@ -522,47 +519,11 @@ def p_child_def6(p):
     p[0] = child_def
 
 
-def p_child_def_body1(p):
-    ''' child_def_body : NEWLINE INDENT child_def_body_items DEDENT '''
-    # Filter out any pass statements
-    p[0] = filter(None, p[3])
-
-
-def p_child_def_body_items1(p):
-    ''' child_def_body_items : child_def_body_item '''
-    p[0] = [p[1]]
-
-
-def p_child_def_body_items2(p):
-    ''' child_def_body_items : child_def_body_items child_def_body_item '''
-    p[0] = p[1] + [p[2]]
-
-
-def p_child_def_body_item1(p):
-    ''' child_def_body_item : child_def '''
-    p[0] = p[1]
-
-
-def p_child_def_body_item2(p):
-    ''' child_def_body_item : binding '''
-    p[0] = p[1]
-
-
-def p_child_def_body_item3(p):
-    ''' child_def_body_item : storage_def '''
-    p[0] = p[1]
-
-
-def p_child_def_body_item4(p):
-    ''' child_def_body_item : PASS NEWLINE '''
-    p[0] = None
-
-
 #------------------------------------------------------------------------------
 # Binding
 #------------------------------------------------------------------------------
 def p_binding(p):
-    ''' binding : NAME operator_expr'''
+    ''' binding : NAME operator_expr '''
     p[0] = enaml_ast.Binding(name=p[1], expr=p[2], lineno=p.lineno(1))
 
 
@@ -604,6 +565,133 @@ def p_operator_expr3(p):
             syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
     python = enaml_ast.PythonModule(ast=mod, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
+
+
+#------------------------------------------------------------------------------
+# Template
+#------------------------------------------------------------------------------
+def p_template1(p):
+    ''' template : TEMPLATE NAME LPAR RPAR templ_suite '''
+
+
+def p_template2(p):
+    ''' template : TEMPLATE NAME LPAR templ_params RPAR templ_suite '''
+
+
+def p_templ_params(p):
+    ''' templ_params : '''
+
+
+def p_templ_suite(p):
+    ''' templ_suite : NEWLINE INDENT templ_suite_items DEDENT '''
+    # Filter out any pass statements
+    p[0] = filter(None, p[3])
+
+
+def p_templ_suite_items1(p):
+    ''' templ_suite_items : templ_suite_item '''
+    p[0] = [p[1]]
+
+
+def p_templ_suite_items2(p):
+    ''' templ_suite_items : templ_suite_items templ_suite_item '''
+    p[0] = p[1] + [p[2]]
+
+
+def p_templ_suite_item1(p):
+    ''' templ_suite_item : storage_def '''
+    # assert simple const storage
+    p[0] = p[1]
+
+
+def p_templ_suite_item2(p):
+    ''' templ_suite_item : child_def
+                         | templ_inst '''
+    p[0] = p[1]
+
+
+def p_templ_suite_item3(p):
+    ''' templ_suite_item : PASS NEWLINE '''
+    p[0] = None
+
+
+#------------------------------------------------------------------------------
+# Template Instantiation
+#------------------------------------------------------------------------------
+def p_templ_inst1(p):
+    ''' templ_inst : NAME BANG COLON enaml_suite '''
+
+
+def p_templ_inst2(p):
+    ''' templ_inst : NAME BANG COLON templ_ids COLON enaml_suite '''
+
+
+def p_templ_inst3(p):
+    ''' templ_inst : NAME BANG LPAR RPAR COLON enaml_suite '''
+
+
+def p_templ_inst4(p):
+    ''' templ_inst : NAME BANG LPAR RPAR COLON templ_ids COLON enaml_suite '''
+
+
+def p_templ_inst5(p):
+    ''' templ_inst : NAME BANG LPAR templ_args RPAR COLON enaml_suite '''
+
+
+def p_templ_inst6(p):
+    ''' templ_inst : NAME BANG LPAR templ_args RPAR COLON templ_ids COLON enaml_suite '''
+
+
+def p_templ_ids1(p):
+    ''' templ_ids : NAME '''
+
+
+def p_templ_ids2(p):
+    ''' templ_ids : templ_idlist NAME '''
+
+
+def p_templ_ids3(p):
+    ''' templ_ids : STAR NAME '''
+
+
+def p_templ_ids4(p):
+    ''' templ_ids : templ_id_list STAR NAME '''
+
+
+def p_templ_id_list1(p):
+    ''' templ_id_list : NAME COMMA '''
+
+
+def p_templ_id_list2(p):
+    ''' templ_id_list : templ_id_list NAME COMMA '''
+
+
+def p_templ_args1(p):
+    ''' templ_args : templ_argument '''
+
+
+def p_templ_args2(p):
+    ''' templ_args : templ_arglist templ_argument '''
+
+
+def p_templ_arglist1(p):
+    ''' templ_arglist : templ_argument COMMA '''
+
+
+def p_templ_arglist2(p):
+    ''' templ_arglist : templ_arglist templ_argument COMMA '''
+
+
+def p_templ_argument1(p):
+    ''' templ_argument : test '''
+
+
+def p_templ_argument2(p):
+    ''' templ_argument : test comp_for '''
+
+
+def p_templ_argument3(p):
+    ''' argument : test EQUAL test '''
 
 
 #------------------------------------------------------------------------------
