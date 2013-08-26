@@ -14,9 +14,8 @@ class Pattern(Declarative):
     """ A declarative object that represents a pattern object.
 
     The Pattern class serves as a base class for other classes such as
-    Looper, Conditional, and Inline, where the compiler nodes for the
-    type hierarchy are used to modify the standard behavior of creating
-    child instances.
+    Looper and Conditional, where the compiler nodes for the hierarchy
+    are used to modify the standard behavior of creating children.
 
     Creating a Pattern without a parent is a programming error.
 
