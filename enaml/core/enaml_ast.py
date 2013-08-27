@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
-from atom.api import Atom, Enum, Int, List, Str, Instance, Typed
+from atom.api import Atom, Int, List, Str, Instance, Typed
 
 
 class ASTNode(Atom):
@@ -64,7 +64,7 @@ class EnamlDef(ASTNode):
     decorators = List()
 
     #: The list of body nodes for the enamldef. This will be composed
-    #: of StorageDef, Binding, and ChildDef nodes.
+    #: of StorageExpr, Binding, ChildDef, and TemplateInst nodes.
     body = List()
 
 
@@ -78,8 +78,8 @@ class ChildDef(ASTNode):
     #: The identifier given to the child.
     identifier = Str()
 
-    #: The list of body nodes for the child definition. This will be
-    #: composed of StorageDef, Binding, and ChildDef nodes.
+    #: The list of body nodes for the child def. This will be composed
+    #: of StorageExpr, Binding, ChildDef and TemplateInst nodes.
     body = List()
 
 
@@ -105,19 +105,133 @@ class Binding(ASTNode):
     expr = Typed(OperatorExpr)
 
 
-class StorageDef(ASTNode):
-    """ An AST node for storage definitions.
+class StorageExpr(ASTNode):
+    """ A base class AST node for storage expressions.
 
     """
-    #: The kind of the storage definition.
-    kind = Enum('attr', 'event')
-
     #: The name of the storage object being defined.
     name = Str()
 
-    #: The typename of the allowed values for the storage object.
-    typename = Str()
+    #: The name of the type allowed values for the storage object.
+    kind = Str()
 
     #: The default expression bound to the storage object. This may
     #: be None if the storage object has no default expr binding.
     expr = Typed(OperatorExpr)
+
+
+class AttrExpr(StorageExpr):
+    """ A node representing an 'attr' declaration expression.
+
+    """
+    pass
+
+
+class EventExpr(StorageExpr):
+    """ A node representing an 'event' declaration expression.
+
+    """
+    pass
+
+
+class ConstExpr(StorageExpr):
+    """ A node representing a 'const' declaration expression.
+
+    """
+    pass
+
+
+class TemplateParameter(ASTNode):
+    """ An AST node for storing a template parameter.
+
+    """
+    #: The names of the parameter.
+    name = Str()
+
+    #: The name of the type of the parameter.
+    kind = Str()
+
+    #: The default value for the parameter.
+    default = Typed(PythonExpression)
+
+
+class TemplateParameters(ASTNode):
+    """ An AST node for template parameters.
+
+    """
+    #: The positional and keyword parameters.
+    params = List(TemplateParameter)
+
+    #: The variadic star param.
+    starparam = Str()
+
+
+class Template(ASTNode):
+    """ An AST node for template definitions.
+
+    """
+    #: The name to which the template is bound.
+    name = Str()
+
+    #: The parameters associated with the template.
+    parameters = Typed(TemplateParameters)
+
+    #: The body of the template. This will be composed of ConstExpr,
+    #: ChildDef, and TemplateInst nodes.
+    body = List()
+
+
+class TemplateArgument(ASTNode):
+    """ An AST node representing a template argument.
+
+    """
+    #: The python expression which loads the argument value.
+    expr = Typed(PythonExpression)
+
+
+class TemplateKeywordArgument(TemplateArgument):
+    """ An AST node representing a template keyword argument.
+
+    """
+    #: The name of the keyword argument.
+    name = Str()
+
+
+class TemplateArguments(ASTNode):
+    """ An ASTNode representing template instatiation arguments.
+
+    """
+    #: The positional and keyword arguments.
+    args = List(TemplateArgument)
+
+    #: The variadic argument.
+    stararg = Typed(PythonExpression)
+
+
+class TemplateIdentifiers(ASTNode):
+    """ An AST node representing template identifiers.
+
+    """
+    #: The list of identifier names
+    names = List(Str())
+
+    #: The capturing star name.
+    starname = Str()
+
+
+class TemplateInst(ASTNode):
+    """ An AST node for template instantiation definitions.
+
+    """
+    #: The name of the template to instantiate.
+    name = Str()
+
+    #: The arguments to pass to the template.
+    arguments = Typed(TemplateArguments)
+
+    #: The identifiers to apply to the template items.
+    identifiers = Typed(TemplateIdentifiers)
+
+    #: The body nodes of the template instance. This will be composed
+    #: of StorageExpr, Binding, ChildDef and TemplateInst nodes.
+    body = List()

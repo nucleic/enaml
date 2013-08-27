@@ -191,6 +191,7 @@ class EnamlLexer(object):
         'print': 'PRINT',
         'raise': 'RAISE',
         'return': 'RETURN',
+        'template': 'TEMPLATE',
         'try': 'TRY',
         'while': 'WHILE',
         'with': 'WITH',
