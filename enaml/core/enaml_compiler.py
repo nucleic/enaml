@@ -290,7 +290,7 @@ class EnamlDefCompiler(NodeVisitor):
             True if the class must be subclassed, False otherwise.
 
         """
-        types = (enaml_ast.StorageDef, enaml_ast.Binding)
+        types = (enaml_ast.StorageExpr, enaml_ast.Binding)
         return any(isinstance(item, types) for item in node.body)
 
     @classmethod
@@ -313,7 +313,7 @@ class EnamlDefCompiler(NodeVisitor):
         for item in node.body:
             if isinstance(item, enaml_ast.Binding):
                 return True
-            if isinstance(item, enaml_ast.StorageDef):
+            if isinstance(item, enaml_ast.StorageExpr):
                 if item.expr is not None:
                     return True
         return False
@@ -553,8 +553,8 @@ class EnamlDefCompiler(NodeVisitor):
         self.var_pool.release(class_var)
         self.var_pool.release(node_var)
 
-    def visit_StorageDef(self, node):
-        """ The compiler visitor for a StorageDef node.
+    def visit_StorageExpr(self, node):
+        """ The compiler visitor for a StorageExpr node.
 
         """
         self.code_ops.append(                       # <empty>
