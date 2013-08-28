@@ -152,8 +152,8 @@ class Template(ASTNode):
     """ An AST node for template definitions.
 
     """
-    #: The name to which the template is bound.
-    name = Str()
+    #: The typename given to the template.
+    typename = Str()
 
     #: The parameters associated with the template.
     parameters = Typed(TemplateParameters)
