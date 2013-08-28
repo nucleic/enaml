@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
-from atom.api import Atom, Int, List, Str, Instance, Typed
+from atom.api import Atom, Enum, Int, List, Str, Instance, Typed
 
 
 class ASTNode(Atom):
@@ -109,36 +109,18 @@ class StorageExpr(ASTNode):
     """ A base class AST node for storage expressions.
 
     """
+    #: The stype of the storage expression.
+    kind = Enum('attr', 'event', 'const')
+
     #: The name of the storage object being defined.
     name = Str()
 
     #: The name of the type allowed values for the storage object.
-    kind = Str()
+    typename = Str()
 
     #: The default expression bound to the storage object. This may
     #: be None if the storage object has no default expr binding.
     expr = Typed(OperatorExpr)
-
-
-class AttrExpr(StorageExpr):
-    """ A node representing an 'attr' declaration expression.
-
-    """
-    pass
-
-
-class EventExpr(StorageExpr):
-    """ A node representing an 'event' declaration expression.
-
-    """
-    pass
-
-
-class ConstExpr(StorageExpr):
-    """ A node representing a 'const' declaration expression.
-
-    """
-    pass
 
 
 class TemplateParameter(ASTNode):
