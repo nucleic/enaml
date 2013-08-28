@@ -447,32 +447,26 @@ def p_enaml_suite_item2(p):
 # StorageExpr
 #------------------------------------------------------------------------------
 def _validate_storage_expr(p):
-    which = p[1]
+    kind = p[1]
     lineno = p.lineno(1)
-    if which not in ('attr', 'event', 'const'):
+    if kind not in ('attr', 'event', 'const'):
         syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
-    return which, lineno
+    return kind, lineno
 
 
-_storage_expr_nodes = {
-    'attr': enaml_ast.AttrExpr,
-    'event': enaml_ast.EventExpr,
-    'const': enaml_ast.ConstExpr,
-}
-
-
-def _make_storage_expr(p, which, name, kind='', expr=None, lineno=-1):
-    if which == 'const':
+def _make_storage_expr(p, kind, name, typename='', expr=None, lineno=-1):
+    if kind == 'const':
         if expr is None:
             msg = "'const' expression must have a value"
             syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
         if expr.operator != '=':
             msg = "invalid operator for 'const' expression"
             syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
-    node = _storage_expr_nodes[which]()
+    node = enaml_ast.StorageExpr()
     node.lineno = lineno
-    node.name = name
     node.kind = kind
+    node.name = name
+    node.typename = typename
     node.expr = expr
     return node
 
@@ -765,8 +759,28 @@ def p_template_param4(p):
 #------------------------------------------------------------------------------
 # Template Instantiation
 #------------------------------------------------------------------------------
-def _validate_and_fixup_template_args(node, lexer):
-    # Fixup the line numbers
+def p_template_inst1(p):
+    ''' template_inst : NAME template_args COLON enaml_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[2]
+    node.body = p[4]
+    p[0] = node
+
+
+def p_template_inst2(p):
+    ''' template_inst : NAME template_args COLON template_ids COLON enaml_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[2]
+    node.identifiers = p[4]
+    node.body = p[6]
+    p[0] = node
+
+
+def _fixup_template_args(node):
     lineno = node.lineno
     for arg in node.args:
         if arg.lineno == -1:
@@ -777,7 +791,8 @@ def _validate_and_fixup_template_args(node, lexer):
         arg.expr.ast.lineno = lineno
         ast.fix_missing_locations(arg.expr.ast)
 
-    # Validate the keyword argument names
+
+def _validate_template_args(node, lexer):
     kwnames = set()
     seen_kw = False
     for arg in node.args:
@@ -794,29 +809,6 @@ def _validate_and_fixup_template_args(node, lexer):
             syntax_error(msg, tok)
 
 
-def p_template_inst1(p):
-    ''' template_inst : NAME template_args COLON enaml_suite '''
-    _validate_and_fixup_template_args(p[2], p.lexer.lexer)
-    node = enaml_ast.TemplateInst()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.arguments = p[2]
-    node.body = p[4]
-    p[0] = node
-
-
-def p_template_inst2(p):
-    ''' template_inst : NAME template_args COLON template_ids COLON enaml_suite '''
-    _validate_and_fixup_template_args(p[2], p.lexer.lexer)
-    node = enaml_ast.TemplateInst()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.arguments = p[2]
-    node.identifiers = p[4]
-    node.body = p[6]
-    p[0] = node
-
-
 def p_template_args1(p):
     ''' template_args : LPAR RPAR '''
     node = enaml_ast.TemplateArguments()
@@ -826,49 +818,69 @@ def p_template_args1(p):
 
 def p_template_args2(p):
     ''' template_args : LPAR template_arglist RPAR '''
+    args, stararg = p[2]
     node = enaml_ast.TemplateArguments()
     node.lineno = p.lineno(1)
-    node.args = p[2]
-    p[0] = node
-
-
-def p_template_args3(p):
-    ''' template_args : LPAR template_arglist COMMA STAR test RPAR '''
-    node = enaml_ast.TemplateArguments()
-    node.lineno = p.lineno(1)
-    node.args = p[2]
-    lineno = p.lineno(4)
-    expr = ast.Expression(body=p[5])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
-    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
-    node.stararg = python
+    node.args = args
+    node.stararg = stararg
+    _fixup_template_args(node)
+    _validate_template_args(node, p.lexer.lexer)
     p[0] = node
 
 
 def p_template_arglist1(p):
     ''' template_arglist : template_argument '''
-    p[0] = [p[1]]
+    p[0] = ([p[1]], None)
 
 
 def p_template_arglist2(p):
-    ''' template_arglist : template_arglist_list template_argument '''
-    p[0] = p[1] + [p[2]]
+    ''' template_arglist : STAR test '''
+    lineno = p.lineno(1)
+    expr = ast.Expression(body=p[2])
+    expr.lineno = lineno
+    ast.fix_missing_locations(expr)
+    node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    p[0] = ([], node)
+
+
+def p_template_arglist3(p):
+    ''' template_arglist : template_argument template_arglist_list '''
+    p[0] = ([p[1]] + p[2], None)
+
+
+def p_template_arglist4(p):
+    ''' template_arglist : template_argument COMMA STAR test '''
+    lineno = p.lineno(3)
+    expr = ast.Expression(body=p[4])
+    expr.lineno = lineno
+    ast.fix_missing_locations(expr)
+    node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    p[0] = ([p[1]], node)
+
+
+def p_template_arglist5(p):
+    ''' template_arglist : template_argument template_arglist_list COMMA STAR test '''
+    lineno = p.lineno(4)
+    expr = ast.Expression(body=p[5])
+    expr.lineno = lineno
+    ast.fix_missing_locations(expr)
+    node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    p[0] = ([p[1]] + p[2], node)
 
 
 def p_template_arglist_list1(p):
-    ''' template_arglist_list : template_argument COMMA '''
-    arg = p[1]
+    ''' template_arglist_list : COMMA template_argument '''
+    arg = p[2]
     if arg.lineno == -1:
-        arg.lineno = p.lineno(2)
+        arg.lineno = p.lineno(1)
     p[0] = [arg]
 
 
 def p_template_arglist_list2(p):
-    ''' template_arglist_list : template_arglist_list template_argument COMMA '''
-    arg = p[2]
+    ''' template_arglist_list : template_arglist_list COMMA template_argument '''
+    arg = p[3]
     if arg.lineno == -1:
-        arg.lineno = p.lineno(3)
+        arg.lineno = p.lineno(2)
     p[0] = p[1] + [arg]
 
 
@@ -3497,8 +3509,8 @@ def p_error(t):
 _parse_dir = os.path.join(os.path.dirname(__file__), 'parse_tab')
 _parse_module = 'enaml.core.parse_tab.parsetab'
 _parser = yacc.yacc(
-    debug=1, outputdir=_parse_dir, tabmodule=_parse_module, optimize=1,
-    #errorlog=yacc.NullLogger(),
+    debug=0, outputdir=_parse_dir, tabmodule=_parse_module, optimize=1,
+    errorlog=yacc.NullLogger(),
 )
 
 
