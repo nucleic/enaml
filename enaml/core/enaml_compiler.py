@@ -6,7 +6,6 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import sys
-import types
 
 from . import byteplay as bp
 from . import enaml_ast
@@ -116,18 +115,6 @@ CLEANUP = [
     'del __add_storage, __construct_node, __make_enamldef, '\
     '__make_engine, __run_operator, __validate_type'
 ]
-
-
-def update_firstlineno(code, firstlineno):
-    """ Returns a new code object with an updated first line number.
-
-    """
-    return types.CodeType(
-        code.co_argcount, code.co_nlocals, code.co_stacksize, code.co_flags,
-        code.co_code, code.co_consts, code.co_names, code.co_varnames,
-        code.co_filename, code.co_name, firstlineno, code.co_lnotab,
-        code.co_freevars, code.co_cellvars,
-    )
 
 
 class VarPool(object):
@@ -618,7 +605,6 @@ class EnamlDefCompiler(NodeVisitor):
 
         """
         code = compile(node.ast, self.filename, mode='eval')
-        code = update_firstlineno(code, node.lineno)
         self.code_stack.append(code)
 
     def visit_PythonModule(self, node):
@@ -729,7 +715,6 @@ class EnamlCompiler(NodeVisitor):
         # Load the decorators
         for decorator in node.decorators:
             code = compile(decorator.ast, self.filename, mode='eval')
-            update_firstlineno(code, decorator.lineno)
             bp_code = bp.Code.from_code(code).code
             self.code_ops.extend(bp_code[:-1])  # skip the return value op
 
