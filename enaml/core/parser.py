@@ -557,9 +557,10 @@ def p_operator_expr1(p):
     ''' operator_expr : EQUAL test NEWLINE
                       | LEFTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
-    expr = ast.Expression(body=p[2])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
+    body = p[2]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
     python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
 
@@ -568,10 +569,11 @@ def p_operator_expr2(p):
     ''' operator_expr : COLONEQUAL test NEWLINE
                       | RIGHTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
-    validate_invertable(p[2], lineno, p)
-    expr = ast.Expression(body=p[2])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
+    body = p[2]
+    validate_invertable(body, lineno, p)
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
     python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
 
@@ -617,7 +619,7 @@ def p_template(p):
     _validate_template_params(p[3], p.lexer.lexer)
     node = enaml_ast.Template()
     node.lineno = p.lineno(1)
-    node.name = p[2]
+    node.typename = p[2]
     node.parameters = p[3]
     node.body = p[5]
     p[0] = node
@@ -733,9 +735,10 @@ def p_template_param3(p):
     node = enaml_ast.TemplateParameter()
     node.lineno = lineno
     node.name = p[1]
-    expr = ast.Expression(body=p[3])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
+    body = p[3]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
     python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     node.default = python
     p[0] = node
@@ -748,9 +751,10 @@ def p_template_param4(p):
     node.lineno = lineno
     node.name = p[1]
     node.kind = p[3]
-    expr = ast.Expression(body=p[5])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
+    body = p[5]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
     python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     node.default = python
     p[0] = node
@@ -788,8 +792,8 @@ def _fixup_template_args(node):
         else:
             lineno = arg.lineno
         arg.expr.lineno = lineno
-        arg.expr.ast.lineno = lineno
-        ast.fix_missing_locations(arg.expr.ast)
+        arg.expr.ast.body.lineno = lineno
+        ast.fix_missing_locations(arg.expr.ast.body)
 
 
 def _validate_template_args(node, lexer):
@@ -836,9 +840,10 @@ def p_template_arglist1(p):
 def p_template_arglist2(p):
     ''' template_arglist : STAR test '''
     lineno = p.lineno(1)
-    expr = ast.Expression(body=p[2])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
+    body = p[2]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
     node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = ([], node)
 
@@ -851,9 +856,10 @@ def p_template_arglist3(p):
 def p_template_arglist4(p):
     ''' template_arglist : template_argument COMMA STAR test '''
     lineno = p.lineno(3)
-    expr = ast.Expression(body=p[4])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
+    body = p[4]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
     node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = ([p[1]], node)
 
@@ -861,9 +867,10 @@ def p_template_arglist4(p):
 def p_template_arglist5(p):
     ''' template_arglist : template_argument template_arglist_list COMMA STAR test '''
     lineno = p.lineno(4)
-    expr = ast.Expression(body=p[5])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
+    body = p[5]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
     node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = ([p[1]] + p[2], node)
 
@@ -2505,7 +2512,7 @@ def p_atom7(p):
 
 def p_atom8(p):
     ''' atom : NAME '''
-    p[0] = ast.Name(id=p[1], ctx=Load)
+    p[0] = ast.Name(id=p[1], ctx=Load, lineno=p.lineno(1))
 
 
 def p_atom9(p):
@@ -2628,7 +2635,7 @@ def p_trailer3(p):
 
 def p_trailer4(p):
     ''' trailer : DOT NAME '''
-    p[0] = ast.Attribute(attr=p[2], ctx=Load)
+    p[0] = ast.Attribute(attr=p[2], ctx=Load, lineno=p.lineno(2))
 
 
 def p_subscriptlist1(p):
@@ -3441,7 +3448,7 @@ def p_varargslist_list4(p):
 
 def p_fpdef1(p):
     ''' fpdef : NAME '''
-    p[0] = ast.Name(id=p[1], ctx=ast.Param())
+    p[0] = ast.Name(id=p[1], ctx=ast.Param(), lineno=p.lineno(1))
 
 
 def p_fpdef2(p):
