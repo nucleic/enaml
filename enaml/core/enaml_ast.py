@@ -110,7 +110,7 @@ class StorageExpr(ASTNode):
 
     """
     #: The stype of the storage expression.
-    kind = Enum('attr', 'event', 'const')
+    kind = Enum('attr', 'event', 'static')
 
     #: The name of the storage object being defined.
     name = Str()
@@ -158,7 +158,7 @@ class Template(ASTNode):
     #: The parameters associated with the template.
     parameters = Typed(TemplateParameters)
 
-    #: The body of the template. This will be composed of ConstExpr,
+    #: The body of the template. This will be composed of StorageExpr,
     #: ChildDef, and TemplateInst nodes.
     body = List()
 

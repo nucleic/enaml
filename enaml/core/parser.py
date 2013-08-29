@@ -449,18 +449,18 @@ def p_enaml_suite_item2(p):
 def _validate_storage_expr(p):
     kind = p[1]
     lineno = p.lineno(1)
-    if kind not in ('attr', 'event', 'const'):
+    if kind not in ('attr', 'event', 'static'):
         syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
     return kind, lineno
 
 
 def _make_storage_expr(p, kind, name, typename='', expr=None, lineno=-1):
-    if kind == 'const':
+    if kind == 'static':
         if expr is None:
-            msg = "'const' expression must have a value"
+            msg = "'static' assignment must have a value"
             syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
         if expr.operator != '=':
-            msg = "invalid operator for 'const' expression"
+            msg = "invalid operator for 'static' assignment"
             syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
     node = enaml_ast.StorageExpr()
     node.lineno = lineno
@@ -644,8 +644,8 @@ def p_template_suite_items2(p):
 def p_template_suite_item1(p):
     ''' template_suite_item : storage_expr '''
     node = p[1]
-    if not isinstance(node, enaml_ast.ConstExpr):
-        msg = "expected 'const' expression"
+    if node.kind != 'static':
+        msg = "expected 'static' assignment"
         syntax_error(msg, FakeToken(p.lexer.lexer, node.lineno))
     p[0] = node
 
