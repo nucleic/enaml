@@ -209,7 +209,7 @@ def __run_operator(node, name, op, code, f_globals):
             setattr(klass, name, member)
 
 
-def __validate_d_type(klass):
+def __validate_type(klass):
     """ Validate that an object is a Declarative type.
 
     Parameters
