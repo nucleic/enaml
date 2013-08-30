@@ -123,15 +123,23 @@ class StorageExpr(ASTNode):
     expr = Typed(OperatorExpr)
 
 
-class TemplateParameter(ASTNode):
-    """ An AST node for storing a template parameter.
+class PositionalParameter(ASTNode):
+    """ An AST node for storing a positional template parameter.
 
     """
-    #: The names of the parameter.
+    #: The name of the parameter.
     name = Str()
 
-    #: The name of the type of the parameter.
-    kind = Str()
+    #: The parameter specialization.
+    specialization = Typed(PythonExpression)
+
+
+class KeywordParameter(ASTNode):
+    """ An AST node for storing a keyword template parameter.
+
+    """
+    #: The name of the parameter.
+    name = Str()
 
     #: The default value for the parameter.
     default = Typed(PythonExpression)
@@ -141,8 +149,11 @@ class TemplateParameters(ASTNode):
     """ An AST node for template parameters.
 
     """
-    #: The positional and keyword parameters.
-    params = List(TemplateParameter)
+    #: The positional parameters.
+    positional = List(PositionalParameter)
+
+    #: The keyword parameters.
+    keywords = List(KeywordParameter)
 
     #: The variadic star param.
     starparam = Str()
@@ -163,28 +174,12 @@ class Template(ASTNode):
     body = List()
 
 
-class TemplateArgument(ASTNode):
-    """ An AST node representing a template argument.
-
-    """
-    #: The python expression which loads the argument value.
-    expr = Typed(PythonExpression)
-
-
-class TemplateKeywordArgument(TemplateArgument):
-    """ An AST node representing a template keyword argument.
-
-    """
-    #: The name of the keyword argument.
-    name = Str()
-
-
 class TemplateArguments(ASTNode):
     """ An ASTNode representing template instatiation arguments.
 
     """
-    #: The positional and keyword arguments.
-    args = List(TemplateArgument)
+    #: The list of python expressions for the arguments.
+    args = List(PythonExpression)
 
     #: The variadic argument.
     stararg = Typed(PythonExpression)

@@ -595,28 +595,8 @@ def p_operator_expr3(p):
 #------------------------------------------------------------------------------
 # Template
 #------------------------------------------------------------------------------
-def _validate_template_params(parameters, lexer):
-    seen_params = set()
-    seen_kwparam = False
-    for param in parameters.params:
-        if param.name in seen_params:
-            msg = "duplicate argument '%s' in template definition"
-            syntax_error(msg % param.name, FakeToken(lexer, param.lineno))
-        seen_params.add(param.name)
-        if param.default is not None:
-            seen_kwparam = True
-        elif seen_kwparam:
-            msg = "non-default argument follows default argument"
-            syntax_error(msg, FakeToken(lexer, param.lineno))
-    starparam = parameters.starparam
-    if starparam and starparam in seen_params:
-        msg = "duplicate argument '%s' in template definition"
-        syntax_error(msg % starparam, FakeToken(lexer, parameters.lineno))
-
-
 def p_template(p):
     ''' template : TEMPLATE NAME template_params COLON template_suite '''
-    _validate_template_params(p[3], p.lexer.lexer)
     node = enaml_ast.Template()
     node.lineno = p.lineno(1)
     node.name = p[2]
@@ -668,11 +648,32 @@ def p_template_params1(p):
     p[0] = node
 
 
+def _validate_template_paramlist(paramlist, starparam, lexer):
+    keywords = []
+    positional = []
+    seen_params = set([starparam])
+    for param in paramlist:
+        if param.name in seen_params:
+            msg = "duplicate argument '%s' in template definition"
+            syntax_error(msg % param.name, FakeToken(lexer, param.lineno))
+        seen_params.add(param.name)
+        if isinstance(param, enaml_ast.KeywordParameter):
+            keywords.append(param)
+        elif keywords:
+            msg = "non-default argument follows default argument"
+            syntax_error(msg, FakeToken(lexer, param.lineno))
+        else:
+            positional.append(param)
+    return positional, keywords
+
+
 def p_template_params2(p):
     ''' template_params : LPAR template_paramlist RPAR '''
     params, starparam = p[2]
+    pos, kwds = _validate_template_paramlist(params, starparam, p.lexer.lexer)
     node = enaml_ast.TemplateParameters()
-    node.params = params
+    node.positional = pos
+    node.keywords = kwds
     node.starparam = starparam
     p[0] = node
 
@@ -714,25 +715,16 @@ def p_template_paramlist_list2(p):
 
 def p_template_param1(p):
     ''' template_param : NAME '''
-    node = enaml_ast.TemplateParameter()
+    node = enaml_ast.PositionalParameter()
     node.lineno = p.lineno(1)
     node.name = p[1]
     p[0] = node
 
 
 def p_template_param2(p):
-    ''' template_param : NAME COLON NAME '''
-    node = enaml_ast.TemplateParameter()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.kind = p[3]
-    p[0] = node
-
-
-def p_template_param3(p):
-    ''' template_param : NAME EQUAL test '''
+    ''' template_param : NAME COLON test '''
     lineno = p.lineno(1)
-    node = enaml_ast.TemplateParameter()
+    node = enaml_ast.PositionalParameter()
     node.lineno = lineno
     node.name = p[1]
     body = p[3]
@@ -740,18 +732,17 @@ def p_template_param3(p):
     ast.fix_missing_locations(body)
     expr = ast.Expression(body=body)
     python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
-    node.default = python
+    node.specialization = python
     p[0] = node
 
 
-def p_template_param4(p):
-    ''' template_param : NAME COLON NAME EQUAL test '''
+def p_template_param3(p):
+    ''' template_param : NAME EQUAL test '''
     lineno = p.lineno(1)
-    node = enaml_ast.TemplateParameter()
+    node = enaml_ast.KeywordParameter()
     node.lineno = lineno
     node.name = p[1]
-    node.kind = p[3]
-    body = p[5]
+    body = p[3]
     body.lineno = lineno
     ast.fix_missing_locations(body)
     expr = ast.Expression(body=body)
@@ -784,6 +775,13 @@ def p_template_inst2(p):
     p[0] = node
 
 
+def p_template_args1(p):
+    ''' template_args : LPAR RPAR '''
+    node = enaml_ast.TemplateArguments()
+    node.lineno = p.lineno(1)
+    p[0] = node
+
+
 def _fixup_template_args(node):
     lineno = node.lineno
     for arg in node.args:
@@ -791,33 +789,8 @@ def _fixup_template_args(node):
             arg.lineno = lineno
         else:
             lineno = arg.lineno
-        arg.expr.lineno = lineno
-        arg.expr.ast.body.lineno = lineno
-        ast.fix_missing_locations(arg.expr.ast.body)
-
-
-def _validate_template_args(node, lexer):
-    kwnames = set()
-    seen_kw = False
-    for arg in node.args:
-        if isinstance(arg, enaml_ast.TemplateKeywordArgument):
-            seen_kw = True
-            if arg.name in kwnames:
-                msg = 'keyword argument repeated'
-                tok = FakeToken(lexer, arg.lineno)
-                syntax_error(msg, tok)
-            kwnames.add(arg.name)
-        elif seen_kw:
-            msg = 'non-keyword arg after keyword arg'
-            tok = FakeToken(lexer, arg.lineno)
-            syntax_error(msg, tok)
-
-
-def p_template_args1(p):
-    ''' template_args : LPAR RPAR '''
-    node = enaml_ast.TemplateArguments()
-    node.lineno = p.lineno(1)
-    p[0] = node
+        arg.ast.body.lineno = lineno
+        ast.fix_missing_locations(arg.ast.body)
 
 
 def p_template_args2(p):
@@ -828,7 +801,6 @@ def p_template_args2(p):
     node.args = args
     node.stararg = stararg
     _fixup_template_args(node)
-    _validate_template_args(node, p.lexer.lexer)
     p[0] = node
 
 
@@ -893,27 +865,15 @@ def p_template_arglist_list2(p):
 
 def p_template_argument1(p):
     ''' template_argument : test '''
-    node = enaml_ast.TemplateArgument()
     expr = ast.Expression(body=p[1])
-    node.expr = enaml_ast.PythonExpression(ast=expr)
+    node = enaml_ast.PythonExpression(ast=expr)
     p[0] = node
 
 
 def p_template_argument2(p):
     ''' template_argument : test comp_for '''
-    node = enaml_ast.TemplateArgument()
     expr = ast.GeneratorExp(elt=p[1], generators=p[2])
-    node.expr = enaml_ast.PythonExpression(ast=expr)
-    p[0] = node
-
-
-def p_template_argument3(p):
-    ''' template_argument : NAME EQUAL test '''
-    node = enaml_ast.TemplateKeywordArgument()
-    node.lineno = p.lineno(2)
-    node.name = p[1]
-    expr = ast.Expression(body=p[3])
-    node.expr = enaml_ast.PythonExpression(ast=expr)
+    node = enaml_ast.PythonExpression(ast=expr)
     p[0] = node
 
 
