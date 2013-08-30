@@ -5,11 +5,14 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from contextlib import contextmanager
 import sys
 
+from atom.api import Typed
+
 from . import byteplay as bp
-from . import enaml_ast
+from .compiler_base import CompilerBase
+from .enamldef_compiler import EnamlDefCompiler
+from .template_compiler import TemplateCompiler
 
 
 # Increment this number whenever the compiler changes the code which it
@@ -100,712 +103,24 @@ from . import enaml_ast
 COMPILER_VERSION = 15
 
 
-#------------------------------------------------------------------------------
-# Compiler Helpers
-#------------------------------------------------------------------------------
 # Code that will be executed at the top of every enaml module
 STARTUP = ['from enaml.core.compiler_helpers import __compiler_helpers']
 
 
-# Cleanup code that will be included in every compiled enaml module
+# Cleanup code that will be included at the end of every enaml module
 CLEANUP = []
 
 
-class VarPool(object):
-    """ A class for generating private variable names.
-
-    """
-    def __init__(self):
-        """ Initialize a VarPool.
-
-        """
-        self._pool = set()
-
-    def new(self):
-        """ Get a new private variable name.
-
-        Returns
-        -------
-        result : str
-            An unused variable name.
-
-        """
-        var = '_[var_%d]' % len(self._pool)
-        self._pool.add(var)
-        return var
-
-    def release(self, name):
-        """ Return a variable name to the pool.
-
-        Parameters
-        ----------
-        name : str
-            The variable name which is free to be reused.
-
-        """
-        self._pool.discard(name)
-
-
-class NodeVisitor(object):
-    """ A base class for defining node visitor classes.
-
-    This class is used as base class for the various Enaml compilers.
-
-    """
-    def visit(self, node):
-        """ The main visitor dispatch method.
-
-        Unhandled nodes will raise an error.
-
-        """
-        name = 'visit_%s' % node.__class__.__name__
-        try:
-            method = getattr(self, name)
-        except AttributeError:
-            method = self.default_visit
-        method(node)
-
-    def default_visit(self, node):
-        """ The default visitor method.
-
-        This method raises since there should be no unhandled nodes.
-
-        """
-        raise ValueError('Unhandled Node %s.' % node)
-
-
-#------------------------------------------------------------------------------
-# Block Compiler
-#------------------------------------------------------------------------------
-class BlockCompiler(NodeVisitor):
-    """ A base class for creating block compilers.
-
-    This class provides the functionality which is common between the
-    compilers for the 'enamldef' and 'template' blocks.
-
-    """
-    def __init__(self, filename):
-        """ Initialize a BlockCompiler.
-
-        Parameters
-        ----------
-        filename : str
-            The full name of the file which is being compiled.
-
-        """
-        self.filename = filename
-        self.var_pool = VarPool()
-        self.local_names = set()
-        self.has_locals = False
-        self.class_stack = []
-        self.node_stack = []
-        self.bind_stack = []
-        self.code_stack = []
-        self.code_ops = []
-
-    #--------------------------------------------------------------------------
-    # Utilities
-    #--------------------------------------------------------------------------
-    def set_lineno(self, lineno):
-        """ Set the current line number in the code.
-
-        """
-        self.code_ops.append((bp.SetLineno, lineno))
-
-    def load_name(self, name):
-        """ Load a name onto the TOS.
-
-        If the name is contained in the 'local_names' set, it is loaded
-        from the fast locals, otherwise it is loaded from the globals.
-
-        Parameters
-        ----------
-        name : str
-            The name of the object to load onto the TOS.
-
-        """
-        if name in self.local_names:
-            inst = bp.LOAD_FAST
-        else:
-            inst = bp.LOAD_GLOBAL
-        self.code_ops.append((inst, name))
-
-    def fetch_globals(self):
-        """ Fetch the globals and store into fast locals.
-
-        """
-        self.code_ops.extend([
-            (bp.LOAD_GLOBAL, 'globals'),        # func
-            (bp.CALL_FUNCTION, 0x0000),         # globals
-            (bp.STORE_FAST, '_[f_globals]'),    # <empty>
-        ])
-
-    def load_globals(self):
-        """ Load the globals onto the TOS.
-
-        """
-        self.code_ops.append((bp.LOAD_FAST, '_[f_globals]'))
-
-    def fetch_helpers(self):
-        """ Fetch the compiler helpers and store into fast locals.
-
-        """
-        self.code_ops.extend([
-            (bp.LOAD_GLOBAL, '__compiler_helpers'), # helpers
-            (bp.STORE_FAST, '_[helpers]'),          # <empty>
-        ])
-
-    def load_helper(self, name):
-        """ Load a compiler helper onto the TOS.
-
-        Parameters
-        ----------
-        name : str
-            The name of the helper function to load onto the TOS.
-
-        """
-        self.code_ops.extend([
-            (bp.LOAD_FAST, '_[helpers]'),   # helpers
-            (bp.LOAD_CONST, name),          # helpers -> name
-            (bp.BINARY_SUBSCR, None),       # helper
-        ])
-
-    def make_scope_key(self):
-        """ Create a scope key and store into fast locals.
-
-        """
-        self.code_ops.extend([
-            (bp.LOAD_GLOBAL, 'object'),         # object
-            (bp.CALL_FUNCTION, 0x0000),         # key
-            (bp.STORE_FAST, '_[scope_key]'),    # <empty>
-        ])
-
-    def load_scope_key(self):
-        """ Load the scope key onto the TOS.
-
-        """
-        self.code_ops.append((bp.LOAD_FAST, '_[scope_key]'))
-
-    def validate_d_type(self):
-        """ Write instructions which assert a Declarative type at TOS.
-
-        """
-        self.code_ops.append(                   # class
-            (bp.DUP_TOP, None)                  # class -> class
-        )
-        self.load_helper('validate_d_type')     # class -> class -> helper
-        self.code_ops.extend([
-            (bp.ROT_TWO, None),                 # class -> helper -> class
-            (bp.CALL_FUNCTION, 0x0001),         # class -> retval
-            (bp.POP_TOP, None),                 # class
-        ])
-
-    @contextmanager
-    def try_squash_raise(self):
-        """ A context manager for squashing tracebacks.
-
-        The code written during this context will be wrapped so that
-        any exception raised will appear to have been generated from
-        this code, rather than any function called by the code.
-
-        """
-        exc_label = bp.Label()
-        final_label = bp.Label()
-        self.code_ops.append(
-            (bp.SETUP_EXCEPT, exc_label)
-        )
-        yield
-        self.code_ops.extend([                  # TOS
-            (bp.POP_BLOCK, None),               # TOS
-            (bp.JUMP_FORWARD, final_label),     # TOS
-            (exc_label, None),                  # TOS -> tb -> val -> exc
-            (bp.ROT_THREE, None),               # TOS -> exc -> tb -> val
-            (bp.ROT_TWO, None),                 # TOS -> exc -> val -> tb
-            (bp.POP_TOP, None),                 # TOS -> exc -> val
-            (bp.RAISE_VARARGS, 2),              # TOS
-            (bp.JUMP_FORWARD, final_label),     # TOS
-            (bp.END_FINALLY, None),             # TOS
-            (final_label, None),                # TOS
-        ])
-
-    def needs_subclass(cls, node):
-        """ Get whether or not a ChildDef node needs subclassing.
-
-        A child def class must be subclassed if it uses storage or
-        has attribute bindings.
-
-        Parameters
-        ----------
-        node : ChildDef
-            The child def node of interest.
-
-        Returns
-        -------
-        result : bool
-            True if the class must be subclassed, False otherwise.
-
-        """
-        types = (enaml_ast.StorageExpr, enaml_ast.Binding)
-        return any(isinstance(item, types) for item in node.body)
-
-    def needs_engine(cls, node):
-        """ Get whether or not a node needs an expression engine.
-
-        A node requires an engine if it has attribute bindings.
-
-        Parameters
-        ----------
-        node : EnamlDef or ChildDef
-            The node of interest.
-
-        Returns
-        -------
-        result : bool
-            True if the class requires an engine, False otherwise.
-
-        """
-        for item in node.body:
-            if isinstance(item, enaml_ast.Binding):
-                return True
-            if isinstance(item, enaml_ast.StorageExpr):
-                if item.expr is not None:
-                    return True
-        return False
-
-    def has_identifiers(cls, node):
-        """ Get whether or not a node has block identifiers.
-
-        Parameters
-        ----------
-        node : EnamlDef, ChildDef, Template, or TemplateInst
-            The node of interest.
-
-        Returns
-        -------
-        result : bool
-            True if the node or any of it's decendents have identifiers,
-            False otherwise.
-
-        """
-        stack = [node]
-        while stack:
-            node = stack.pop()
-            if isinstance(node, (enaml_ast.EnamlDef, enaml_ast.ChildDef)):
-                if node.identifier:
-                    return True
-                stack.extend(node.body)
-            elif isinstance(node, enaml_ast.TemplateInst):
-                if node.identifiers:
-                    return True
-                stack.extend(node.body)
-            elif isinstance(node, enaml_ast.Template):
-                stack.extend(node.body)
-        return False
-
-    #--------------------------------------------------------------------------
-    # Visitors
-    #--------------------------------------------------------------------------
-    def visit_ChildDef(self, node):
-        """ The compiler visitor for a ChildDef node.
-
-        """
-        # Claim the variables needed for the class and construct node
-        class_var = self.var_pool.new()
-        node_var = self.var_pool.new()
-
-        # Load and validate the child class
-        self.set_lineno(node.lineno)
-        self.load_name(node.typename)
-        self.validate_d_type()
-
-        # Subclass the child class if needed
-        if self.needs_subclass(node):
-            self.code_ops.extend([              # class
-                (bp.LOAD_CONST, node.typename), # class -> name
-                (bp.ROT_TWO, None),             # name -> class
-                (bp.BUILD_TUPLE, 1),            # name -> bases
-                (bp.BUILD_MAP, 0),              # name -> bases -> dict
-                (bp.LOAD_GLOBAL, '__name__'),   # name -> bases -> dict -> __name__
-                (bp.LOAD_CONST, '__module__'),  # name -> bases -> dict -> __name__ -> '__module__'
-                (bp.STORE_MAP, None),           # name -> bases -> dict
-                (bp.BUILD_CLASS, None),         # class
-            ])
-
-        # Store the class as a local
-        self.code_ops.extend([                  # class
-            (bp.DUP_TOP, None),                 # class -> class
-            (bp.STORE_FAST, class_var),         # class
-        ])
-
-        # Build and store the construct node
-        self.load_helper('construct_node')
-        self.code_ops.extend([                      # class -> helper
-            (bp.ROT_TWO, None),                     # helper -> class
-            (bp.LOAD_CONST, node.identifier),       # helper -> class -> identifier
-        ])
-        self.load_scope_key()
-        self.code_ops.extend([                      # helper -> class -> identifier -> key
-            (bp.LOAD_CONST, self.has_locals),       # helper -> class -> identifier -> key -> bool
-            (bp.CALL_FUNCTION, 0x0004),             # node
-            (bp.STORE_FAST, node_var),              # <empty>
-        ])
-
-        # Build an engine for the new class if needed.
-        if self.needs_engine(node):
-            self.load_helper('make_engine')
-            self.code_ops.extend([                  # helper
-                (bp.LOAD_FAST, class_var),          # helper -> class
-                (bp.CALL_FUNCTION, 0x0001),         # engine
-                (bp.LOAD_FAST, class_var),          # engine -> class
-                (bp.STORE_ATTR, '__engine__'),      # <empty>
-            ])
-
-        # Populate the body of the class
-        self.class_stack.append(class_var)
-        self.node_stack.append(node_var)
-        for item in node.body:
-            self.visit(item)
-        self.class_stack.pop()
-        self.node_stack.pop()
-
-        # Add this node to the parent node
-        self.code_ops.extend([                      # <empty>
-            (bp.LOAD_FAST, self.node_stack[-1]),    # parent
-            (bp.LOAD_ATTR, 'children'),             # children
-            (bp.LOAD_ATTR, 'append'),               # append
-            (bp.LOAD_FAST, node_var),               # append -> node
-            (bp.CALL_FUNCTION, 0x0001),             # retval
-            (bp.POP_TOP, None),                     # <empty>
-        ])
-
-        # Release the held variables
-        self.var_pool.release(class_var)
-        self.var_pool.release(node_var)
-
-    def visit_StorageExpr(self, node):
-        """ The compiler visitor for a StorageExpr node.
-
-        """
-        self.set_lineno(node.lineno)
-        with self.try_squash_raise():
-            self.load_helper('add_storage')
-            self.code_ops.extend([                      # helper
-                (bp.LOAD_FAST, self.class_stack[-1]),   # helper -> class
-                (bp.LOAD_CONST, node.name),             # helper -> class -> name
-            ])
-            if node.typename:
-                self.load_name(node.typename)           # helper -> class -> name -> type
-            else:
-                self.code_ops.append(
-                    (bp.LOAD_CONST, None)               # helper -> class -> name -> None
-                )
-            self.code_ops.extend([
-                (bp.LOAD_CONST, node.kind),             # helper -> class -> name -> type -> kind
-                (bp.CALL_FUNCTION, 0x0004),             # retval
-                (bp.POP_TOP, None),                     # <empty>
-            ])
-        if node.expr is not None:
-            self.bind_stack.append(node.name)
-            self.visit(node.expr)
-            self.bind_stack.pop()
-
-    def visit_Binding(self, node):
-        """ The compiler visitor for a Binding node.
-
-        """
-        self.bind_stack.append(node.name)
-        self.visit(node.expr)
-        self.bind_stack.pop()
-
-    def visit_OperatorExpr(self, node):
-        """ The compiler visitor for an OperatorExpr node.
-
-        """
-        self.visit(node.value)
-        code = self.code_stack.pop()
-        self.set_lineno(node.lineno)
-        with self.try_squash_raise():
-            self.load_helper('run_operator')
-            self.code_ops.extend([                      # helper
-                (bp.LOAD_FAST, self.node_stack[-1]),    # helper -> node
-                (bp.LOAD_CONST, self.bind_stack[-1]),   # helper -> node -> name
-                (bp.LOAD_CONST, node.operator),         # helper -> node -> name -> op
-                (bp.LOAD_CONST, code),                  # helper -> node -> name -> op -> code
-            ])
-            self.load_globals()
-            self.code_ops.extend([                      # helper -> node -> name -> op -> code -> globals
-                (bp.CALL_FUNCTION, 0x0005),             # retval
-                (bp.POP_TOP, None),                     # <empty>
-            ])
-
-    def visit_PythonExpression(self, node):
-        """ The compiler visitor for a PythonExpression node.
-
-        """
-        code = compile(node.ast, self.filename, mode='eval')
-        self.code_stack.append(code)
-
-    def visit_PythonModule(self, node):
-        """ The compiler visitor for a PythonModule node.
-
-        """
-        code = compile(node.ast, self.filename, mode='exec')
-        self.code_stack.append(code)
-
-
-#------------------------------------------------------------------------------
-# EnamlDef Compiler
-#------------------------------------------------------------------------------
-class EnamlDefCompiler(BlockCompiler):
-    """ A compiler class for compiling 'enamldef' blocks.
-
-    This compiler is invoked by the main EnamlCompiler class when it
-    reaches an EnamlDef ast node. The main entry point is the 'compile'
-    classmethod.
-
-    """
-    @classmethod
-    def compile(cls, node, filename):
-        """ Compile an EnamlDef node into a code object.
-
-        Parameters
-        ----------
-        node : EnamlDef
-            The enaml ast node representing the enamldef block.
-
-        filename : str
-            The full name of the file which contains the node.
-
-        Returns
-        -------
-        result : CodeType
-            A Python code object which implements the enamldef block.
-
-        """
-        compiler = cls(filename)
-        compiler.visit(node)
-        code = bp.Code(
-            compiler.code_ops, [], [], False, False, True, node.typename,
-            filename, node.lineno, node.docstring or None
-        )
-        return code.to_code()
-
-    #--------------------------------------------------------------------------
-    # Visitors
-    #--------------------------------------------------------------------------
-    def visit_EnamlDef(self, node):
-        """ The compiler visitor for an EnamlDef node.
-
-        """
-        # Determine whether instances of the block need local storage.
-        self.has_locals = self.has_identifiers(node)
-
-        # Claim the variables needed for the class and construct node
-        class_var = self.var_pool.new()
-        node_var = self.var_pool.new()
-
-        # Prepare the block for execution
-        self.set_lineno(node.lineno)
-        self.fetch_globals()
-        self.fetch_helpers()
-        self.make_scope_key()
-
-        # Build the enamldef class
-        self.load_helper('make_enamldef')           # helper
-        self.code_ops.append(
-            (bp.LOAD_CONST, node.typename)          # helper -> name
-        )
-        self.load_name(node.base)                   # helper -> name -> base
-        self.validate_d_type()
-        self.code_ops.extend([
-            (bp.BUILD_TUPLE, 1),                    # helper -> name -> bases
-            (bp.BUILD_MAP, 0),                      # helper -> name -> bases -> dict
-            (bp.LOAD_GLOBAL, '__name__'),           # helper -> name -> bases -> dict -> __name__
-            (bp.LOAD_CONST, '__module__'),          # helper -> name -> bases -> dict -> __name__ -> '__module__'
-            (bp.STORE_MAP, None),                   # helper -> name -> bases -> dict
-        ])
-        if node.docstring:
-            self.code_ops.extend([
-                (bp.LOAD_CONST, node.docstring),    # helper -> name -> bases -> dict -> docstring
-                (bp.LOAD_CONST, '__doc__'),         # helper -> name -> bases -> dict -> docstring -> '__doc__'
-                (bp.STORE_MAP, None),               # helper -> name -> bases -> dict
-            ])
-        self.code_ops.append(
-            (bp.CALL_FUNCTION, 0x0003),             # class
-        )
-
-        # Store the class as a local
-        self.code_ops.extend([                      # class
-            (bp.DUP_TOP, None),                     # class -> class
-            (bp.STORE_FAST, class_var),             # class
-        ])
-
-        # Build the construct node
-        self.load_helper('construct_node')
-        self.code_ops.extend([                      # class -> helper
-            (bp.ROT_TWO, None),                     # helper -> class
-            (bp.LOAD_CONST, node.identifier),       # helper -> class -> identifier
-        ])
-        self.load_scope_key()
-        self.code_ops.extend([                      # helper -> class -> identifier -> key
-            (bp.LOAD_CONST, self.has_locals),       # helper -> class -> identifier -> key -> bool
-            (bp.CALL_FUNCTION, 0x0004),             # node
-            (bp.STORE_FAST, node_var),              # <empty>
-        ])
-
-        # Build an engine for the new class if needed.
-        if self.needs_engine(node):
-            self.load_helper('make_engine')
-            self.code_ops.extend([                  # helper
-                (bp.LOAD_FAST, class_var),          # helper -> class
-                (bp.CALL_FUNCTION, 0x0001),         # engine
-                (bp.LOAD_FAST, class_var),          # engine -> class
-                (bp.STORE_ATTR, '__engine__'),      # <empty>
-            ])
-
-        # Popuplate the body of the class
-        self.class_stack.append(class_var)
-        self.node_stack.append(node_var)
-        for item in node.body:
-            self.visit(item)
-        self.class_stack.pop()
-        self.node_stack.pop()
-
-        # Store the node on the enamldef and return the class
-        self.code_ops.extend([              # <empty>
-            (bp.LOAD_FAST, class_var),      # class
-            (bp.DUP_TOP, None),             # class -> class
-            (bp.LOAD_FAST, node_var),       # class -> class -> node
-            (bp.ROT_TWO, None),             # class -> node -> class
-            (bp.STORE_ATTR, '__node__'),    # class
-            (bp.RETURN_VALUE, None),        # <return>
-        ])
-
-        # Release the held variables
-        self.var_pool.release(class_var)
-        self.var_pool.release(node_var)
-
-
-#------------------------------------------------------------------------------
-# Template Compiler
-#------------------------------------------------------------------------------
-class TemplateCompiler(BlockCompiler):
-    """ A compiler class for compiling 'template' blocks.
-
-    This compiler is invoked by the main EnamlCompiler class when it
-    reaches a Template ast node. The main entry point is the 'compile'
-    classmethod.
-
-    """
-    @classmethod
-    def compile(cls, node, filename):
-        """ Compile a Template node into a code object.
-
-        Parameters
-        ----------
-        node : Template
-            The enaml ast node representing the template block.
-
-        filename : str
-            The full name of the file which contains the node.
-
-        Returns
-        -------
-        result : CodeType
-            A Python code object which implements the template block.
-
-        """
-        compiler = cls(filename)
-        compiler.visit(node)
-        code = bp.Code(
-            compiler.code_ops, [], [], False, False, True,
-            node.name, filename, node.lineno, None
-        )
-        return code.to_code()
-
-    #--------------------------------------------------------------------------
-    # Utilities
-    #--------------------------------------------------------------------------
-    def has_template_locals(self, node):
-        """ Get whether or not a Template has local scope variables.
-
-        A template will have local scope variables if it has parameters,
-        const expressions, or child identifiers.
-
-        Parameters
-        ----------
-        node : Template
-            The template node of interest.
-
-        Returns
-        -------
-        result : bool
-            True if the node has locals, False otherwise.
-
-        """
-        parameters = node.parameters
-        if parameters.params or parameters.starparam:
-            return True
-        # The parser enforces that the StorageExpr is 'static'
-        StorageExpr = enaml_ast.StorageExpr
-        if any(isinstance(b, StorageExpr) for b in node.body):
-            return True
-        return self.has_identifiers(node)
-
-    #--------------------------------------------------------------------------
-    # Visitors
-    #--------------------------------------------------------------------------
-    def visit_Template(self, node):
-        """ The compiler visitor for a Template node.
-
-        """
-        # Determine whether instances of the block need local storage.
-        self.has_locals = self.has_template_locals(node)
-
-        # Claim the variable for the template node
-        node_var = self.var_pool.new()
-
-        # Prepare the block for execution
-        self.set_lineno(node.lineno)
-        self.fetch_globals()
-        self.fetch_helpers()
-        self.make_scope_key()
-
-        # Create and store the template node
-        self.load_helper('template_node')
-        self.load_scope_key()
-        self.code_ops.extend([                  # helper -> scope_key
-            (bp.LOAD_CONST, self.has_locals),   # helper -> scope_key -> bool
-            (bp.CALL_FUNCTION, 0x0002),         # node
-            (bp.STORE_FAST, node_var),          # <empty>
-        ])
-
-        # Populate the body of the template
-        self.node_stack.append(node_var)
-        for item in node.body:
-            self.visit(item)
-        self.node_stack.pop()
-
-        # Return the template node
-        self.code_ops.extend([
-            (bp.LOAD_FAST, node_var),
-            (bp.RETURN_VALUE, None),
-        ])
-
-        # Release the held variables
-        self.var_pool.release(node_var)
-
-
-#------------------------------------------------------------------------------
-# Enaml Compiler
-#------------------------------------------------------------------------------
-class EnamlCompiler(NodeVisitor):
-    """ A visitor that will compile an enaml module ast node.
+class EnamlCompiler(CompilerBase):
+    """ A compiler which will compile an Enaml module.
 
     The entry point is the `compile` classmethod which will compile
     the ast into an appropriate python code object for a module.
 
     """
+    #: The set of templates created by the compiler.
+    template_vars = Typed(set, ())
+
     @classmethod
     def compile(cls, module_ast, filename):
         """ The main entry point of the compiler.
@@ -838,7 +153,7 @@ class EnamlCompiler(NodeVisitor):
             module_ops.extend(bp_code.code[1:-2])
 
         # Add in the code ops for the module
-        compiler = cls(filename)
+        compiler = cls(filename=filename)
         compiler.visit(module_ast)
         module_ops.extend(compiler.code_ops)
 
@@ -857,22 +172,13 @@ class EnamlCompiler(NodeVisitor):
 
         # Generate and return the module code object.
         mod_code = bp.Code(
-            module_ops, [], [], False, False, False, '',  filename, 0, '',
+            module_ops, [], [], False, False, False, '',  filename, 0, None,
         )
         return mod_code.to_code()
 
-    def __init__(self, filename):
-        """ Initialize an EnamlCompiler.
-
-        Parameters
-        ----------
-        filename : str
-            The string filename of the module ast being compiled.
-
-        """
-        self.filename = filename
-        self.code_ops = []
-
+    #--------------------------------------------------------------------------
+    # Visitors
+    #--------------------------------------------------------------------------
     def visit_Module(self, node):
         """ The compiler visitor for a Module node.
 
@@ -886,6 +192,7 @@ class EnamlCompiler(NodeVisitor):
         """
         code = compile(node.ast, self.filename, mode='exec')
         bp_code = bp.Code.from_code(code)
+        self.set_lineno(node.lineno)
         # Skip the SetLineo and ReturnValue codes
         self.code_ops.extend(bp_code.code[1:-2])
 
@@ -918,10 +225,83 @@ class EnamlCompiler(NodeVisitor):
         """ The compiler visitor for a Template node.
 
         """
-        # Generate the template code
+        self.set_lineno(node.lineno)
+
+        # Evaluate the specializations
+        load_none = (bp.LOAD_CONST, None)
+        for param in node.parameters.positional:
+            spec = param.specialization
+            if spec is not None:
+                code = compile(spec.ast, self.filename, 'eval')
+                bp_code = bp.Code.from_code(code).code
+                self.code_ops.extend(bp_code[:-1])  # skip the return value op
+                with self.try_squash_raise():
+                    self.code_ops.append(               # value
+                        (bp.DUP_TOP, None)              # value -> value
+                    )
+                    self.load_helper('validate_spec')
+                    self.code_ops.extend([              # value -> value -> helper
+                        (bp.ROT_TWO, None),             # value -> helper -> value
+                        (bp.CALL_FUNCTION, 0x0001),     # value -> retval
+                        (bp.POP_TOP, None),             # value
+                    ])
+            else:
+                self.code_ops.append(load_none)
+
+        n_positional = len(node.parameters.positional)
+        n_keywords = len(node.parameters.keywords)
+        self.code_ops.extend([load_none] * n_keywords)
+
+        # Store the specializations in a tuple
+        n_specs = n_positional + n_keywords
+        if n_specs > 0:
+            self.code_ops.append(               # p_1 -> p_2 -> p_n
+                (bp.BUILD_TUPLE, n_specs)       # paramspec
+            )
+        else:
+            self.code_ops.append(               # p_1 -> p_2 -> p_n
+                (bp.LOAD_CONST, ())             # paramspec
+            )
+
+        # Evaluate the template defaults
+        for param in node.parameters.keywords:
+            code = compile(param.default.ast, self.filename, 'eval')
+            bp_code = bp.Code.from_code(code).code
+            self.code_ops.extend(bp_code[:-1])  # skip the return value op
+
+        # Generate the template code and function
         code = TemplateCompiler.compile(node, self.filename)
-        self.code_ops.extend([
-            (bp.LOAD_CONST, code),
-            (bp.MAKE_FUNCTION, 0),
-            (bp.STORE_NAME, node.name)
+        self.code_ops.extend([                  # paramspec -> defaults
+            (bp.LOAD_CONST, code),              # paramspec -> defaults -> code
+            (bp.MAKE_FUNCTION, n_keywords),     # paramspec -> function
+        ])
+
+        # Load or create the template object
+        t_map = self.template_map
+        if node.name in t_map:
+            self.code_ops.append(                   # paramspec -> function
+                (bp.LOAD_GLOBAL, t_map[node.name])  # paramspec -> function -> template
+            )
+        else:
+            t_name = self.template_vars.next()
+            t_map[node.name] = t_name
+            self.load_helper('make_template')
+            self.code_ops.extend([              # paramspec -> function -> helper
+                (bp.LOAD_GLOBAL, '__name__'),   # paramspec -> function -> helper -> module
+                (bp.LOAD_CONST,  node.name),    # paramspec -> function -> helper -> module -> name
+                (bp.CALL_FUNCTION, 0x0002),     # paramspec -> function -> template
+                (bp.DUP_TOP, None),             # paramspec -> function -> template -> template
+                (bp.DUP_TOP, None),             # paramspec -> function -> template -> template -> template
+                (bp.STORE_GLOBAL, node.name),   # paramspec -> function -> template -> template
+                (bp.STORE_GLOBAL, t_name),      # paramspec -> function -> template
+            ])
+
+        # Add the specialization to the template
+        attr = 'add_specialization'
+        #with self.try_squash_raise():
+        self.code_ops.extend([              # paramspec -> function -> template
+            (bp.LOAD_ATTR, attr),           # paramspec -> function -> handler
+            (bp.ROT_THREE, None),           # handler -> paramspec -> function
+            (bp.CALL_FUNCTION, 0x0002),     # retval
+            (bp.POP_TOP, None),             # <empty>
         ])
