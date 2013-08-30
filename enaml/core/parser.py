@@ -619,7 +619,7 @@ def p_template(p):
     _validate_template_params(p[3], p.lexer.lexer)
     node = enaml_ast.Template()
     node.lineno = p.lineno(1)
-    node.typename = p[2]
+    node.name = p[2]
     node.parameters = p[3]
     node.body = p[5]
     p[0] = node
