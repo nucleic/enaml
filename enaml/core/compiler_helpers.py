@@ -7,14 +7,14 @@
 #------------------------------------------------------------------------------
 from atom.api import DefaultValue, Event, Instance
 
-from .construct_node import ConstructNode
+from .compiler_nodes import ConstructNode, TemplateNode
 from .declarative import Declarative, d_
 from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
 from .operators import __get_operators
 
 
-def __add_storage(klass, name, store_type, kind):
+def add_storage(klass, name, store_type, kind):
     """ Add user storage to a Declarative subclass.
 
     Parameters
@@ -63,7 +63,7 @@ def __add_storage(klass, name, store_type, kind):
     setattr(klass, name, new)
 
 
-def __construct_node(klass, identifier, scope_key, block_idents):
+def construct_node(klass, identifier, scope_key, has_locals):
     """ Create and return a ConstructNode for the given klass.
 
     Parameters
@@ -77,8 +77,8 @@ def __construct_node(klass, identifier, scope_key, block_idents):
     scope_key : object
         The key for the local scope in the local storage map.
 
-    block_idents : bool
-        Whether or not the node lives in a block with identifiers.
+    has_locals : bool
+        Whether or not the node has local scope.
 
     Returns
     -------
@@ -90,7 +90,7 @@ def __construct_node(klass, identifier, scope_key, block_idents):
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
-    node.has_block_identifiers = block_idents
+    node.has_locals = has_locals
     # copy over the superclass nodes, if any
     s_node = getattr(klass, '__node__', None)
     if s_node is not None:
@@ -98,7 +98,23 @@ def __construct_node(klass, identifier, scope_key, block_idents):
     return node
 
 
-def __make_enamldef(name, bases, dct):
+def template_node(scope_key, has_locals):
+    """ Create and return a template node.
+
+    scope_key : object
+        The key for the local scope in the local storage map.
+
+    has_locals : bool
+        Whether or not the node has local scope.
+
+    """
+    node = TemplateNode()
+    node.scope_key = scope_key
+    node.has_locals = has_locals
+    return node
+
+
+def make_enamldef(name, bases, dct):
     """ Make an enamldef class for the given data.
 
     Parameters
@@ -116,7 +132,7 @@ def __make_enamldef(name, bases, dct):
     return EnamlDefMeta(name, bases, dct)
 
 
-def __make_engine(klass):
+def make_engine(klass):
     """ Make the expression engine for the class.
 
     Parameters
@@ -131,14 +147,14 @@ def __make_engine(klass):
     return ExpressionEngine()
 
 
-def __read_op_dispatcher(owner, name):
+def read_op_dispatcher(owner, name):
     """ A default value handler which reads from a declarative engine.
 
     """
     return type(owner).__engine__.read(owner, name)
 
 
-def __write_op_dispatcher(change):
+def write_op_dispatcher(change):
     """ An observer which writes to a declarative engine.
 
     """
@@ -148,7 +164,7 @@ def __write_op_dispatcher(change):
         type(owner).__engine__.write(owner, change['name'], change)
 
 
-def __run_operator(node, name, op, code, f_globals):
+def run_operator(node, name, op, code, f_globals):
     """ Run the operator for a given node.
 
     Parameters
@@ -194,7 +210,7 @@ def __run_operator(node, name, op, code, f_globals):
     klass.__engine__.add_pair(name, pair)
 
     if pair.reader is not None:
-        mode = (DefaultValue.CallObject_ObjectName, __read_op_dispatcher)
+        mode = (DefaultValue.CallObject_ObjectName, read_op_dispatcher)
         if member.default_value_mode != mode:
             member = member.clone()
             member.set_default_value_mode(*mode)
@@ -202,14 +218,14 @@ def __run_operator(node, name, op, code, f_globals):
             setattr(klass, name, member)
 
     if pair.writer is not None:
-        if not member.has_observer(__write_op_dispatcher):
+        if not member.has_observer(write_op_dispatcher):
             member = member.clone()
-            member.add_static_observer(__write_op_dispatcher)
+            member.add_static_observer(write_op_dispatcher)
             klass.members()[name] = member
             setattr(klass, name, member)
 
 
-def __validate_type(klass):
+def validate_d_type(klass):
     """ Validate that an object is a Declarative type.
 
     Parameters
@@ -222,3 +238,14 @@ def __validate_type(klass):
         raise TypeError("%s is not a type" % klass)
     if not issubclass(klass, Declarative):
         raise TypeError("'%s' is not a Declarative type" % klass.__name__)
+
+
+__compiler_helpers = {
+    'add_storage': add_storage,
+    'construct_node': construct_node,
+    'make_enamldef': make_enamldef,
+    'make_engine': make_engine,
+    'run_operator': run_operator,
+    'template_node': template_node,
+    'validate_d_type': validate_d_type,
+}

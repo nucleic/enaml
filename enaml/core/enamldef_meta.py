@@ -71,7 +71,7 @@ class EnamlDefMeta(AtomMeta):
         # subtree to a later point.
         for node in cls.iternodes():
             f_locals = None
-            if node.has_block_identifiers:
+            if node.has_locals:
                 f_locals = sortedmap()
             self.add_subtree(node, f_locals)
 
