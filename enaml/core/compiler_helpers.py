@@ -12,6 +12,7 @@ from .declarative import Declarative, d_
 from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
 from .operators import __get_operators
+from .template import Template
 
 
 def add_storage(klass, name, store_type, kind):
@@ -147,6 +148,31 @@ def make_engine(klass):
     return ExpressionEngine()
 
 
+def make_scope_key():
+    """ Return a unique key for a local scope.
+
+    """
+    return object()
+
+
+def make_template(module, name):
+    """ Return a new template object.
+
+    Parameters
+    ----------
+    module : str
+        The name of the module in which the template lives.
+
+    name : str
+        The name of the template.
+
+    """
+    template = Template()
+    template.module = module
+    template.name = name
+    return template
+
+
 def read_op_dispatcher(owner, name):
     """ A default value handler which reads from a declarative engine.
 
@@ -225,7 +251,7 @@ def run_operator(node, name, op, code, f_globals):
             setattr(klass, name, member)
 
 
-def validate_d_type(klass):
+def validate_declarative(klass):
     """ Validate that an object is a Declarative type.
 
     Parameters
@@ -240,12 +266,24 @@ def validate_d_type(klass):
         raise TypeError("'%s' is not a Declarative type" % klass.__name__)
 
 
+def validate_spec(spec):
+    """ Validate an object is valid for specialization.
+
+    """
+    if spec is None:
+        raise TypeError("cannot specialize on None")
+    hash(spec)  # will raise if unhashable
+
+
 __compiler_helpers = {
     'add_storage': add_storage,
     'construct_node': construct_node,
     'make_enamldef': make_enamldef,
     'make_engine': make_engine,
+    'make_scope_key': make_scope_key,
+    'make_template': make_template,
     'run_operator': run_operator,
     'template_node': template_node,
-    'validate_d_type': validate_d_type,
+    'validate_declarative': validate_declarative,
+    'validate_spec': validate_spec,
 }
