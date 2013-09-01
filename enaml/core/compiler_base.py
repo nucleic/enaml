@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from atom.api import Atom, List, Str
 
 from . import byteplay as bp
+from . import enaml_ast
 
 
 class CompilerBase(Atom):
@@ -35,6 +36,16 @@ class CompilerBase(Atom):
         """
         self.code_ops.append((bp.SetLineno, lineno))
 
+    def load_name(self, name):
+        """ Load a name onto the TOS.
+
+        This method may be reimplemented by subclasses to control how
+        the name is loaded. The default behavior loads the name from
+        the global scope.
+
+        """
+        self.code_ops.append((bp.LOAD_GLOBAL, name))
+
     def load_globals(self):
         """ Load the globals onto the TOS.
 
@@ -46,15 +57,6 @@ class CompilerBase(Atom):
             (bp.LOAD_GLOBAL, 'globals'),
             (bp.CALL_FUNCTION, 0x0000),
         ])
-
-    def load_name(self, name):
-        """ Load a name onto the TOS.
-
-        The default implementation uses the LOAD_NAME opcode. This may
-        be reimplemented in a subclass to change how a name is loaded.
-
-        """
-        self.code_ops.append((bp.LOAD_NAME, name))
 
     def load_helper(self, name):
         """ Load a compiler helper onto the TOS.
@@ -84,22 +86,22 @@ class CompilerBase(Atom):
 
         """
         exc_label = bp.Label()
-        final_label = bp.Label()
+        end_label = bp.Label()
         self.code_ops.append(
             (bp.SETUP_EXCEPT, exc_label)
         )
         yield
         self.code_ops.extend([                  # TOS
             (bp.POP_BLOCK, None),               # TOS
-            (bp.JUMP_FORWARD, final_label),     # TOS
+            (bp.JUMP_FORWARD, end_label),       # TOS
             (exc_label, None),                  # TOS -> tb -> val -> exc
             (bp.ROT_THREE, None),               # TOS -> exc -> tb -> val
             (bp.ROT_TWO, None),                 # TOS -> exc -> val -> tb
             (bp.POP_TOP, None),                 # TOS -> exc -> val
             (bp.RAISE_VARARGS, 2),              # TOS
-            (bp.JUMP_FORWARD, final_label),     # TOS
+            (bp.JUMP_FORWARD, end_label),       # TOS
             (bp.END_FINALLY, None),             # TOS
-            (final_label, None),                # TOS
+            (end_label, None),                  # TOS
         ])
 
     def validate_declarative(self):
@@ -116,6 +118,40 @@ class CompilerBase(Atom):
                 (bp.CALL_FUNCTION, 0x0001),             # class -> retval
                 (bp.POP_TOP, None),                     # class
             ])
+
+    def has_identifiers(self, node):
+        """ Get whether or not a node block has identifiers.
+
+        Parameters
+        ----------
+        node : EnamlDef, ChildDef, Template, or TemplateInst
+            The enaml ast node of interest.
+
+        Returns
+        -------
+        result : bool
+            True if the node or any of it's decendents have identifiers,
+            False otherwise.
+
+        """
+        EnamlDef = enaml_ast.EnamlDef
+        ChildDef = enaml_ast.ChildDef
+        Template = enaml_ast.Template
+        TemplateInst = enaml_ast.TemplateInst
+        stack = [node]
+        while stack:
+            node = stack.pop()
+            if isinstance(node, (ChildDef, EnamlDef)):
+                if node.identifier:
+                    return True
+                stack.extend(node.body)
+            elif isinstance(node, TemplateInst):
+                if node.identifiers:
+                    return True
+                stack.extend(node.body)
+            elif isinstance(node, Template):
+                stack.extend(node.body)
+        return False
 
     #--------------------------------------------------------------------------
     # Visitors
