@@ -148,29 +148,52 @@ def make_engine(klass):
     return ExpressionEngine()
 
 
-def make_scope_key():
-    """ Return a unique key for a local scope.
+def make_object():
+    """ Return a new empty object.
 
     """
     return object()
 
 
-def make_template(module, name):
+def make_template(paramspec, func, name, f_globals, template_map):
     """ Return a new template object.
+
+    This method will create a new template if necessary, add the
+    specialization, and store the template in the globals and the
+    template map. If a template already exists in the template map
+    but not in the globals, it indicates an error and an exception
+    will be raised.
 
     Parameters
     ----------
-    module : str
-        The name of the module in which the template lives.
+    paramspec : tuple
+        The tuple of the parameter specialization arguments.
+
+    func : FunctionType
+        The function which implements the template.
 
     name : str
         The name of the template.
 
+    f_globals : dict
+        The globals dictionary for the module.
+
+    template_map : dict
+        The mapping of templates already created for the module.
+
     """
-    template = Template()
-    template.module = module
-    template.name = name
-    return template
+    template = template_map.get(name)
+    if template is not None:
+        if f_globals.get(name) is not template:
+            msg = "template '%s' was deleted before being specialized"
+            raise TypeError(msg % name)
+    else:
+        template = Template()
+        template.module = f_globals.get('__name__', '')
+        template.name = name
+        template_map[name] = template
+        f_globals[name] = template
+    template.add_specialization(paramspec, func)
 
 
 def read_op_dispatcher(owner, name):
@@ -266,13 +289,34 @@ def validate_declarative(klass):
         raise TypeError("'%s' is not a Declarative type" % klass.__name__)
 
 
-def validate_spec(spec):
-    """ Validate an object is valid for specialization.
+def validate_spec(index, spec):
+    """ Validate the value for a parameter specialization.
+
+    This validator ensures that the value is hashable and not None.
+
+    Parameters
+    ----------
+    index : int
+        The integer index of the parameter being specialized.
+
+    spec : object
+        The parameter specialization.
+
+    Returns
+    -------
+    result : object
+        The validated specialization object.
 
     """
     if spec is None:
-        raise TypeError("cannot specialize on None")
-    hash(spec)  # will raise if unhashable
+        msg = "cannot specialize template parameter %d with None"
+        raise TypeError(msg % index)
+    try:
+        hash(spec)
+    except TypeError:
+        msg = "template parameter %d has unhashable type: '%s'"
+        raise TypeError(msg % (index, type(spec).__name__))
+    return spec
 
 
 __compiler_helpers = {
@@ -280,7 +324,7 @@ __compiler_helpers = {
     'construct_node': construct_node,
     'make_enamldef': make_enamldef,
     'make_engine': make_engine,
-    'make_scope_key': make_scope_key,
+    'make_object': make_object,
     'make_template': make_template,
     'run_operator': run_operator,
     'template_node': template_node,
