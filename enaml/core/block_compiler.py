@@ -124,7 +124,7 @@ class BlockCompiler(CompilerBase):
         """ Create a scope key and store into fast locals.
 
         """
-        self.load_helper('make_scope_key')
+        self.load_helper('make_object')
         self.code_ops.extend([                  # helper
             (bp.CALL_FUNCTION, 0x0000),         # key
             (bp.STORE_FAST, '_[scope_key]'),    # <empty>
