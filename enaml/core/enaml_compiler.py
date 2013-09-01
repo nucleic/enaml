@@ -7,8 +7,6 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Typed
-
 from . import byteplay as bp
 from .compiler_base import CompilerBase
 from .enamldef_compiler import EnamlDefCompiler
@@ -118,9 +116,6 @@ class EnamlCompiler(CompilerBase):
     the ast into an appropriate python code object for a module.
 
     """
-    #: The set of templates created by the compiler.
-    template_vars = Typed(set, ())
-
     @classmethod
     def compile(cls, module_ast, filename):
         """ The main entry point of the compiler.
@@ -177,14 +172,40 @@ class EnamlCompiler(CompilerBase):
         return mod_code.to_code()
 
     #--------------------------------------------------------------------------
+    # Utilities
+    #--------------------------------------------------------------------------
+    def make_template_map(self):
+        """ Create the temporary map for template storage.
+
+        """
+        self.code_ops.extend([
+            (bp.BUILD_MAP, 0),
+            (bp.STORE_GLOBAL, '_[template_map]'),
+        ])
+
+    def load_template_map(self):
+        """ Load the temporary template storage map.
+
+        """
+        self.code_ops.append((bp.LOAD_GLOBAL, '_[template_map]'))
+
+    def delete_template_map(self):
+        """ Delete the temporary template storage map.
+
+        """
+        self.code_ops.append((bp.DELETE_GLOBAL, '_[template_map]'))
+
+    #--------------------------------------------------------------------------
     # Visitors
     #--------------------------------------------------------------------------
     def visit_Module(self, node):
         """ The compiler visitor for a Module node.
 
         """
+        self.make_template_map()
         for item in node.body:
             self.visit(item)
+        self.delete_template_map()
 
     def visit_PythonModule(self, node):
         """ The compiler visitor for a PythonModule node.
@@ -219,7 +240,7 @@ class EnamlCompiler(CompilerBase):
             self.code_ops.append((bp.CALL_FUNCTION, 0x0001))
 
         # Store the result into the namespace
-        self.code_ops.append((bp.STORE_NAME, node.typename))
+        self.code_ops.append((bp.STORE_GLOBAL, node.typename))
 
     def visit_Template(self, node):
         """ The compiler visitor for a Template node.
@@ -227,81 +248,54 @@ class EnamlCompiler(CompilerBase):
         """
         self.set_lineno(node.lineno)
 
-        # Evaluate the specializations
-        load_none = (bp.LOAD_CONST, None)
-        for param in node.parameters.positional:
-            spec = param.specialization
-            if spec is not None:
-                code = compile(spec.ast, self.filename, 'eval')
+        # All of the operations for this node manipulate variables on
+        # the stack and must all exist within the exception context or
+        # byteplay's stack size validation gets confused.
+        with self.try_squash_raise():
+
+            # Evaluate the parameter specializations. For parameters which
+            # are not specialized, None is loaded which indicates that any
+            # parameter is a match. The validate helper ensures that the
+            # specialization object is of a valid type.
+            for index, param in enumerate(node.parameters.positional):
+                spec = param.specialization
+                if spec is not None:
+                    self.load_helper('validate_spec')
+                    self.code_ops.append((bp.LOAD_CONST, index))
+                    code = compile(spec.ast, self.filename, 'eval')
+                    bp_code = bp.Code.from_code(code).code
+                    self.code_ops.extend(bp_code[:-1])  # skip the return value op
+                    self.code_ops.append((bp.CALL_FUNCTION, 0x0002))
+                else:
+                    self.code_ops.append((bp.LOAD_CONST, None))
+
+            # Store the specializations as a tuple
+            n_pos = len(node.parameters.positional)
+            self.code_ops.append((bp.BUILD_TUPLE, n_pos))
+
+            # Evaluate the default parameters
+            for param in node.parameters.keywords:
+                code = compile(param.default.ast, self.filename, 'eval')
                 bp_code = bp.Code.from_code(code).code
                 self.code_ops.extend(bp_code[:-1])  # skip the return value op
-                with self.try_squash_raise():
-                    self.code_ops.append(               # value
-                        (bp.DUP_TOP, None)              # value -> value
-                    )
-                    self.load_helper('validate_spec')
-                    self.code_ops.extend([              # value -> value -> helper
-                        (bp.ROT_TWO, None),             # value -> helper -> value
-                        (bp.CALL_FUNCTION, 0x0001),     # value -> retval
-                        (bp.POP_TOP, None),             # value
-                    ])
-            else:
-                self.code_ops.append(load_none)
 
-        n_positional = len(node.parameters.positional)
-        n_keywords = len(node.parameters.keywords)
-        self.code_ops.extend([load_none] * n_keywords)
-
-        # Store the specializations in a tuple
-        n_specs = n_positional + n_keywords
-        if n_specs > 0:
-            self.code_ops.append(               # p_1 -> p_2 -> p_n
-                (bp.BUILD_TUPLE, n_specs)       # paramspec
-            )
-        else:
-            self.code_ops.append(               # p_1 -> p_2 -> p_n
-                (bp.LOAD_CONST, ())             # paramspec
-            )
-
-        # Evaluate the template defaults
-        for param in node.parameters.keywords:
-            code = compile(param.default.ast, self.filename, 'eval')
-            bp_code = bp.Code.from_code(code).code
-            self.code_ops.extend(bp_code[:-1])  # skip the return value op
-
-        # Generate the template code and function
-        code = TemplateCompiler.compile(node, self.filename)
-        self.code_ops.extend([                  # paramspec -> defaults
-            (bp.LOAD_CONST, code),              # paramspec -> defaults -> code
-            (bp.MAKE_FUNCTION, n_keywords),     # paramspec -> function
-        ])
-
-        # Load or create the template object
-        t_map = self.template_map
-        if node.name in t_map:
-            self.code_ops.append(                   # paramspec -> function
-                (bp.LOAD_GLOBAL, t_map[node.name])  # paramspec -> function -> template
-            )
-        else:
-            t_name = self.template_vars.next()
-            t_map[node.name] = t_name
-            self.load_helper('make_template')
-            self.code_ops.extend([              # paramspec -> function -> helper
-                (bp.LOAD_GLOBAL, '__name__'),   # paramspec -> function -> helper -> module
-                (bp.LOAD_CONST,  node.name),    # paramspec -> function -> helper -> module -> name
-                (bp.CALL_FUNCTION, 0x0002),     # paramspec -> function -> template
-                (bp.DUP_TOP, None),             # paramspec -> function -> template -> template
-                (bp.DUP_TOP, None),             # paramspec -> function -> template -> template -> template
-                (bp.STORE_GLOBAL, node.name),   # paramspec -> function -> template -> template
-                (bp.STORE_GLOBAL, t_name),      # paramspec -> function -> template
+            # Generate the template code and function
+            n_kwd = len(node.parameters.keywords)
+            code = TemplateCompiler.compile(node, self.filename)
+            self.code_ops.extend([                  # paramspec -> defaults
+                (bp.LOAD_CONST, code),              # paramspec -> defaults -> code
+                (bp.MAKE_FUNCTION, n_kwd),          # paramspec -> function
             ])
 
-        # Add the specialization to the template
-        attr = 'add_specialization'
-        #with self.try_squash_raise():
-        self.code_ops.extend([              # paramspec -> function -> template
-            (bp.LOAD_ATTR, attr),           # paramspec -> function -> handler
-            (bp.ROT_THREE, None),           # handler -> paramspec -> function
-            (bp.CALL_FUNCTION, 0x0002),     # retval
-            (bp.POP_TOP, None),             # <empty>
-        ])
+            # Load and call the helper which will build the template
+            self.load_helper('make_template')
+            self.code_ops.extend([                  # paramsepc -> function -> helper
+                (bp.ROT_THREE, None),               # helper -> paramspec -> function
+                (bp.LOAD_CONST, node.name),         # helper -> paramspec -> function -> name
+            ])
+            self.load_globals()
+            self.load_template_map()
+            self.code_ops.extend([                  # helper -> paramspec -> function -> name -> globals -> template_map
+                (bp.CALL_FUNCTION, 0x0005),         # retval
+                (bp.POP_TOP, None),                 # empty
+            ])
