@@ -45,34 +45,6 @@ class EnamlDefCompiler(BlockCompiler):
         return code.to_code()
 
     #--------------------------------------------------------------------------
-    # Utilities
-    #--------------------------------------------------------------------------
-    def has_identifiers(self, node):
-        """ Get whether or not a node block has identifiers.
-
-        Parameters
-        ----------
-        node : EnamlDef or ChildDef
-            The enaml ast node of interest.
-
-        Returns
-        -------
-        result : bool
-            True if the node or any of it's decendents have identifiers,
-            False otherwise.
-
-        """
-        child_t = enaml_ast.ChildDef
-        func = lambda item: isinstance(item, child_t)
-        stack = [node]
-        while stack:
-            node = stack.pop()
-            if node.identifier:
-                return True
-            stack.extend(filter(func, node.body))
-        return False
-
-    #--------------------------------------------------------------------------
     # Visitors
     #--------------------------------------------------------------------------
     def visit_EnamlDef(self, node):
