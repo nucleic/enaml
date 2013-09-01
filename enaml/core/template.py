@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from types import FunctionType
 
-from atom.api import Atom, Bool, List, Str, Tuple, Typed
+from atom.api import Atom, List, Str, Tuple, Typed
 
 from .byteplay import CO_VARARGS
 from .compiler_nodes import TemplateNode
@@ -43,16 +43,13 @@ class TemplateInstance(Atom):
 class Specialization(Atom):
     """ A class which represents the specialization of a template.
 
-    Instances of this class are created by a Template instance.
+    Instances of this class are created by instances of Template.
 
     """
     #: The function which builds the TemplateNode.
     func = Typed(FunctionType)
 
-    #: Whether or not the function is variadic.
-    variadic = Bool()
-
-    #: The parameter type specification.
+    #: The specialized parameter values for the template.
     paramspec = Tuple()
 
 
@@ -79,64 +76,117 @@ class Template(Atom):
         """
         return "<template '%s.%s'>" % (self.module, self.name)
 
-    def add_specialization(self, paramspec, func):
+    def make_paramspec(self, items):
+        """ Convert the given items into a parameter specification.
+
+        Parameters
+        ----------
+        items : tuple
+            A tuple of parameter objects.
+
+        Returns
+        -------
+        result : tuple
+            A tuple of 2-tuples representing the parameter spec. Each
+            2-tuple is of the form (bool, value) where the boolean
+            indicates whether the value is a type.
+
+        """
+        return tuple((isinstance(item, type), item) for item in items)
+
+    def add_specialization(self, params, func):
         """ Add a specialization to the template.
 
         Parameters
         ----------
-        paramspec : tuple
-            A tuple specifying the specializations for the function.
+        params : tuple
+            A tuple specifying the parameter specializations for the
+            positional arguments of the template function. A value of
+            None indicates that the parameter can be of any type.
 
         func : FunctionType
             A function which will return a TemplateNode when invoked
             with user arguments.
 
         """
+        paramspec = self.make_paramspec(params)
         for spec in self.specializations:
             if spec.paramspec == paramspec:
-                msg = 'ambiguous specialization for parameters: %s'
-                raise TypeError(msg % (paramspec,))
+                msg = 'ambiguous template specialization for parameters: %s'
+                raise TypeError(msg % (params,))
         spec = Specialization()
         spec.func = func
         spec.paramspec = paramspec
-        spec.variadic = bool(func.func_code.co_flags & CO_VARARGS)
         self.specializations.append(spec)
 
-    def match_specialization(self, args):
-        """ Match the args against the specializations.
+    def get_specialization(self, args):
+        """ Get the specialization for the given arguments.
 
         Parameters
         ----------
         args : tuple
-            A tuple of arguments for the instantiation.
+            A tuple of arguments to match against the current template
+            specializations.
 
         Returns
         -------
         result : Specialization or None
-            The best matching specialization for the args, or None if
-            no match could be found.
+            The best matching specialization for the arguments, or None
+            if no match could be found.
 
         """
         matches = []
         n_args = len(args)
+        argspec = None
+
         for spec in self.specializations:
+            # Before scoring for a match, rule out incompatible specs
+            # based on the number of arguments. To few arguments is no
+            # match, and too many is no match unless the specialization
+            # accepts variadic arguments.
             n_params = len(spec.paramspec)
             if n_args < n_params:
                 continue
-            if n_args > n_params and not spec.variadic:
+            n_total = n_params + len(spec.func.func_defaults or ())
+            variadic = spec.func.func_code.co_flags & CO_VARARGS
+            if n_args > n_total and not variadic:
                 continue
+
+            # Defer creating the argpec until needed
+            if argspec is None:
+                argspec = self.make_paramspec(args)
+
+            # Scoring a match is done by ranking the arguments using a
+            # closeness meausure. If an argument is an exact match to
+            # the parameter, it gets a score of 0. If an argument is a
+            # subtype of a type parameter, it gets a score equal to the
+            # index of the type in the mro of the subtype. If the arg
+            # is not an exact match or a subtype, the specialization is
+            # not a match. If the parameter has no specialization, the
+            # argument gets a score of 1 << 16, which is arbitrary but
+            # large enough that it's highly unlikely to be outweighed
+            # by any mro type match (1 << 16 subclasses!) and small
+            # enough that max_args * (1 << 16) is less that sys.maxint.
+            # The default and variadic parameters do not enter into the
+            # scoring since the 'add_specialization' method will reject
+            # any specialization which is ambiguous. The lowest score
+            # wins and a tie will raise an exception.
             score = 0
-            for arg, param in zip(args, spec.paramspec):
+            items = zip(argspec, spec.paramspec)
+            for (a_type, arg), (p_type, param) in items:
                 if arg == param:
                     continue
                 if param is None:
-                    score += 1
+                    score += 1 << 16
+                    continue
+                if p_type and a_type and param in arg.__mro__:
+                    score += arg.__mro__.index(param)
                     continue
                 score = -1
                 break
             if score >= 0:
-                key = (score, n_args - n_params)
-                matches.append((key, spec))
+                matches.append((score, spec))
+
         if matches:
             if len(matches) == 1:
                 return matches[0][1]
@@ -144,7 +194,7 @@ class Template(Atom):
             score_0, match_0 = matches[0]
             score_1, match_1 = matches[1]
             if score_0 == score_1:
-                msg = "ambiguous instantiation for arguments: %s"
+                msg = "ambiguous template instantiation for arguments: %s"
                 raise TypeError(msg % (args,))
             return match_0
 
@@ -165,11 +215,11 @@ class Template(Atom):
         inst = self.cache.get(args)
         if inst is not None:
             return inst
-        spec = self.match_specialization(args)
+        spec = self.get_specialization(args)
         if spec is not None:
             inst = TemplateInstance()
             inst.node = spec.func(*args)
             self.cache[args] = inst
             return inst
-        msg = 'no matching specialization for arguments: %s'
+        msg = 'no matching template specialization for arguments: %s'
         raise TypeError(msg % (args,))
