@@ -153,44 +153,8 @@ class TemplateCompiler(BlockCompiler):
         if node.kind != 'const':
             super(TemplateCompiler, self).visit_StorageExpr(node)
             return
-
-        # Compile the expression for the assigment
-        self.visit(node.expr.value)
-        code = self.code_stack.pop()
-        bp_code = bp.Code.from_code(code).code
-
-        # Translate the code to work from function scope. This isolates
-        # any effects the expression may have on the local scope, such
-        # as list comprehensions which leak the loop variable.
-        arg_names = self.translate_locals(bp_code)
-        code = bp.Code(
-            bp_code, [], arg_names, False, False, True, node.name,
-            self.filename, node.lineno, None
-        )
-
-        # Inovke the function and store the result as a fast local.
-        self.set_lineno(node.lineno)
-        self.code_ops.extend([
-            (bp.LOAD_CONST, code),  # code
-            (bp.MAKE_FUNCTION, 0),  # function
-        ])
-        for name in arg_names:
-            self.code_ops.append((bp.LOAD_FAST, name))
-        self.code_ops.append(                       # function -> args
-            (bp.CALL_FUNCTION, len(arg_names)),     # value
-        )
-
-        # Validate the type of the value if necessary.
-        if node.typename:
-            with self.try_squash_raise():
-                self.load_name(node.typename)
-                self.load_helper('type_check_expr')
-                self.code_ops.extend([              # value -> kind -> helper
-                    (bp.ROT_THREE, None),           # helper -> value -> kind
-                    (bp.CALL_FUNCTION, 0x0002),     # value
-                ])
-
-        # Store the value in the fast locals
+        # Evaluate the expression and store the result in fast locals.
+        self.eval_const_or_static(node)
         self.code_ops.append(               # value
             (bp.STORE_FAST, node.name)      # <empty>
         )

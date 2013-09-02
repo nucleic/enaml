@@ -12,7 +12,29 @@ from .declarative import Declarative, d_
 from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
 from .operators import __get_operators
+from .static import Static
 from .template import Template
+
+
+def add_static_attr(klass, name, value):
+    """ Add a static attribute to a class.
+
+    Parameters
+    ----------
+    klass : type
+        The declarative class to which the attribute should be added.
+
+    name : str
+        The name of the attribute to add.
+
+    value : object
+        The value of the static attribute.
+
+    """
+    if hasattr(klass, name):
+        msg = "cannot override '%s' with static attribute"
+        raise TypeError(msg % name)
+    setattr(klass, name, Static(name, value))
 
 
 def add_storage(klass, name, store_type, kind):
@@ -50,8 +72,10 @@ def add_storage(klass, name, store_type, kind):
 
     if kind == 'event':
         new = d_(Event(store_type), writable=False, final=False)
-    else:
+    elif kind == 'attr':
         new = d_(Instance(store_type), final=False)
+    else:
+        raise RuntimeError("invalid kind '%s'" % kind)
 
     if member is not None:
         new.set_index(member.index)
@@ -345,6 +369,7 @@ def validate_spec(index, spec):
 
 
 __compiler_helpers = {
+    'add_static_attr': add_static_attr,
     'add_storage': add_storage,
     'construct_node': construct_node,
     'make_enamldef': make_enamldef,

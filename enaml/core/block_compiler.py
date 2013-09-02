@@ -292,6 +292,54 @@ class BlockCompiler(CompilerBase):
                     return True
         return False
 
+    def eval_const_or_static(self, node):
+        """ Eval a StorageExpr node of kind 'const' or 'static'.
+
+        This method will evaluate the expression, type check the value
+        if needed, and leave the value on the TOS
+
+        Parameters
+        ----------
+        node : StorageExpr
+            The storage expr of kind 'const' or 'static'.
+
+        """
+        # Compile the expression for the assignment
+        self.visit(node.expr.value)
+        code = self.code_stack.pop()
+        bp_code = bp.Code.from_code(code).code
+
+        # Translate the code to work from function scope. This isolates
+        # any effects the expression may have on the local scope, such
+        # as list comprehensions which leak the loop variable.
+        arg_names = self.translate_locals(bp_code)
+        code = bp.Code(
+            bp_code, [], arg_names, False, False, True, node.name,
+            self.filename, node.lineno, None
+        )
+
+        # Create and inovke the function.
+        self.set_lineno(node.lineno)
+        self.code_ops.extend([
+            (bp.LOAD_CONST, code),  # code
+            (bp.MAKE_FUNCTION, 0),  # function
+        ])
+        for name in arg_names:
+            self.code_ops.append((bp.LOAD_FAST, name))
+        self.code_ops.append(                       # function -> args
+            (bp.CALL_FUNCTION, len(arg_names)),     # value
+        )
+
+        # Validate the type of the value if necessary.
+        if node.typename:
+            with self.try_squash_raise():
+                self.load_name(node.typename)
+                self.load_helper('type_check_expr')
+                self.code_ops.extend([              # value -> kind -> helper
+                    (bp.ROT_THREE, None),           # helper -> value -> kind
+                    (bp.CALL_FUNCTION, 0x0002),     # value
+                ])
+
     #--------------------------------------------------------------------------
     # Visitors
     #--------------------------------------------------------------------------
@@ -377,6 +425,23 @@ class BlockCompiler(CompilerBase):
         """ The compiler visitor for a StorageExpr node.
 
         """
+        if node.kind == 'static':
+            self.eval_const_or_static(node)
+            static_var = self.var_pool.new()
+            self.code_ops.append((bp.STORE_FAST, static_var))
+            with self.try_squash_raise():
+                self.load_helper('add_static_attr')
+                self.code_ops.extend([                      # helper
+                    (bp.LOAD_FAST, self.class_stack[-1]),   # helper -> class
+                    (bp.LOAD_CONST, node.name),             # helper -> class -> name
+                    (bp.LOAD_FAST, static_var),             # helper -> class -> name -> value
+                    (bp.CALL_FUNCTION, 0x0003),             # retval
+                    (bp.POP_TOP, None),                     # <empty>
+                ])
+            self.code_ops.append((bp.DELETE_FAST, static_var))
+            self.var_pool.release(static_var)
+            return
+
         self.set_lineno(node.lineno)
         with self.try_squash_raise():
             self.load_helper('add_storage')
