@@ -10,7 +10,6 @@ from contextlib import contextmanager
 from atom.api import Atom, List, Str
 
 from . import byteplay as bp
-from . import enaml_ast
 
 
 class CompilerBase(Atom):
@@ -35,16 +34,6 @@ class CompilerBase(Atom):
 
         """
         self.code_ops.append((bp.SetLineno, lineno))
-
-    def load_name(self, name):
-        """ Load a name onto the TOS.
-
-        This method may be reimplemented by subclasses to control how
-        the name is loaded. The default behavior loads the name from
-        the global scope.
-
-        """
-        self.code_ops.append((bp.LOAD_GLOBAL, name))
 
     def load_globals(self):
         """ Load the globals onto the TOS.
@@ -103,55 +92,6 @@ class CompilerBase(Atom):
             (bp.END_FINALLY, None),             # TOS
             (end_label, None),                  # TOS
         ])
-
-    def validate_declarative(self):
-        """ Validate that the TOS is a Declarative subclass.
-
-        """
-        with self.try_squash_raise():
-            self.code_ops.append(                       # class
-                (bp.DUP_TOP, None)                      # class -> class
-            )
-            self.load_helper('validate_declarative')    # class -> class -> helper
-            self.code_ops.extend([
-                (bp.ROT_TWO, None),                     # class -> helper -> class
-                (bp.CALL_FUNCTION, 0x0001),             # class -> retval
-                (bp.POP_TOP, None),                     # class
-            ])
-
-    def has_identifiers(self, node):
-        """ Get whether or not a node block has identifiers.
-
-        Parameters
-        ----------
-        node : EnamlDef, ChildDef, Template, or TemplateInst
-            The enaml ast node of interest.
-
-        Returns
-        -------
-        result : bool
-            True if the node or any of it's decendents have identifiers,
-            False otherwise.
-
-        """
-        EnamlDef = enaml_ast.EnamlDef
-        ChildDef = enaml_ast.ChildDef
-        Template = enaml_ast.Template
-        TemplateInst = enaml_ast.TemplateInst
-        stack = [node]
-        while stack:
-            node = stack.pop()
-            if isinstance(node, (ChildDef, EnamlDef)):
-                if node.identifier:
-                    return True
-                stack.extend(node.body)
-            elif isinstance(node, TemplateInst):
-                if node.identifiers:
-                    return True
-                stack.extend(node.body)
-            elif isinstance(node, Template):
-                stack.extend(node.body)
-        return False
 
     #--------------------------------------------------------------------------
     # Visitors

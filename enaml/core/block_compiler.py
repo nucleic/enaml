@@ -54,9 +54,16 @@ class BlockCompiler(CompilerBase):
     #: A pool for generating unique private variable names.
     var_pool = Typed(VarPool, ())
 
+    #: The set of parameter and local variable names. This should be
+    #: populated by a subclass with "compile-time" local variables
+    #: which can be used to load declarative and template instances.
+    local_vars = Typed(set, ())
+
     #: A bool indicating whether or not the block has variables which
     #: are visible as locals to an instantiated declarative component.
-    #: This should be set to True by a block which has local variables.
+    #: This will include template parameters and const expressions, and
+    #: identifiers of declarative components. This should be set to True
+    #: by a block which has local variables.
     has_locals = Bool(False)
 
     #: The stack of variable names of the generated class objects.
@@ -101,6 +108,20 @@ class BlockCompiler(CompilerBase):
     #--------------------------------------------------------------------------
     # Utilities
     #--------------------------------------------------------------------------
+    def load_name(self, name):
+        """ Load a name onto the TOS.
+
+        This method is used to load the name for template inst and
+        declarative components. It loads from fast locals if the name
+        is in the 'local_vars' set, otherwise it loads from globals.
+
+        """
+        if name in self.local_vars:
+            op = bp.LOAD_FAST
+        else:
+            op = bp.LOAD_GLOBAL
+        self.code_ops.append((op, name))
+
     def fetch_globals(self):
         """ Fetch the globals and store into fast locals.
 
@@ -135,6 +156,97 @@ class BlockCompiler(CompilerBase):
 
         """
         self.code_ops.append((bp.LOAD_FAST, '_[scope_key]'))
+
+    def validate_declarative(self):
+        """ Validate that the TOS is a Declarative subclass.
+
+        """
+        with self.try_squash_raise():
+            self.code_ops.append(                       # class
+                (bp.DUP_TOP, None)                      # class -> class
+            )
+            self.load_helper('validate_declarative')    # class -> class -> helper
+            self.code_ops.extend([
+                (bp.ROT_TWO, None),                     # class -> helper -> class
+                (bp.CALL_FUNCTION, 0x0001),             # class -> retval
+                (bp.POP_TOP, None),                     # class
+            ])
+
+    def has_identifiers(self, node):
+        """ Get whether or not a node block has identifiers.
+
+        Parameters
+        ----------
+        node : EnamlDef, ChildDef, Template, or TemplateInst
+            The enaml ast node of interest.
+
+        Returns
+        -------
+        result : bool
+            True if the node or any of it's decendents have identifiers,
+            False otherwise.
+
+        """
+        EnamlDef = enaml_ast.EnamlDef
+        ChildDef = enaml_ast.ChildDef
+        Template = enaml_ast.Template
+        TemplateInst = enaml_ast.TemplateInst
+        stack = [node]
+        while stack:
+            node = stack.pop()
+            if isinstance(node, (ChildDef, EnamlDef)):
+                if node.identifier:
+                    return True
+                stack.extend(node.body)
+            elif isinstance(node, TemplateInst):
+                if node.identifiers:
+                    return True
+                stack.extend(node.body)
+            elif isinstance(node, Template):
+                stack.extend(node.body)
+        return False
+
+    def translate_locals(self, code_list):
+        """ Translate the LOAD_NAME and STORE_NAME opcodes.
+
+        This method operates on the code list in-place and translates
+        the list to operate properly from within it's own local scope.
+        This is used by the StorageExpr visitors to translate the code
+        for 'const' and 'static' expressions.
+
+        Parameters
+        ----------
+        code_list : list
+            The list of byteplay code ops. This list is modified in
+            place.
+
+        Returns
+        -------
+        result : list
+            The list of local variables to load before invoking the
+            function created for the codelist.
+
+        """
+        arg_names = []
+        stored_names = set()
+        local_vars = self.local_vars
+        for idx, (op, op_arg) in enumerate(code_list):
+            if op == bp.STORE_NAME:
+                stored_names.add(op_arg)
+                code_list[idx] = (bp.STORE_FAST, op_arg)
+        for idx, (op, op_arg) in enumerate(code_list):
+            if op == bp.LOAD_NAME:
+                if op_arg in local_vars:
+                    op = bp.LOAD_FAST
+                    arg_names.append(op_arg)
+                elif op_arg in stored_names:
+                    op = bp.LOAD_FAST
+                else:
+                    op = bp.LOAD_GLOBAL
+                code_list[idx] = (op, op_arg)
+            elif op == bp.DELETE_NAME and op_arg in stored_names:
+                code_list[idx] = (bp.DELETE_FAST, op_arg)  # py2.6 list comps
+        return arg_names
 
     def needs_subclass(cls, node):
         """ Get whether or not a ChildDef node needs subclassing.

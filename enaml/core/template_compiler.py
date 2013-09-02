@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed
-
 from . import byteplay as bp
 from . import enaml_ast
 from .block_compiler import BlockCompiler
@@ -20,9 +18,6 @@ class TemplateCompiler(BlockCompiler):
     classmethod.
 
     """
-    #: The set of parameter and local variable names.
-    local_vars = Typed(set, ())
-
     @classmethod
     def compile(cls, node, filename):
         """ Compile a Template node into a code object.
@@ -62,19 +57,6 @@ class TemplateCompiler(BlockCompiler):
     #--------------------------------------------------------------------------
     # Utilities
     #--------------------------------------------------------------------------
-    def load_name(self, name):
-        """ Load a name onto the TOS.
-
-        This is a reimplemented method which will load the name from
-        the fast locals if present, otherwise loading from globals.
-
-        """
-        if name in self.local_vars:
-            op = bp.LOAD_FAST
-        else:
-            op = bp.LOAD_GLOBAL
-        self.code_ops.append((op, name))
-
     def collect_local_vars(self, node):
         """ Collect the compile-time local variable names for the node.
 
@@ -97,7 +79,6 @@ class TemplateCompiler(BlockCompiler):
             local_vars.append(param.name)
         if params.starparam:
             local_vars.append(params.starparam)
-        # The parser enforces that the StorageExpr is 'static'
         for item in node.body:
             if isinstance(item, enaml_ast.StorageExpr):
                 local_vars.append(item.name)
@@ -152,44 +133,29 @@ class TemplateCompiler(BlockCompiler):
     def visit_StorageExpr(self, node):
         """ The compiler visitor for a StorageExpr node.
 
-        This reimplements the base class visitor to specialize on
-        the template static expressions.
+        This reimplements the base class visitor to handle template
+        'const' expressions.
 
         """
-        # XXX verify and document me!!!
+        if node.kind != 'const':
+            super(TemplateCompiler, self).visit_StorageExpr(node)
+            return
 
-        # The parser has ensured that the storage is static. The code
-        # object reprenting the RHS of the expression must be rewritten
-        # to accept local variables where necessary.
+        # Compile the expression for the assigment
         self.visit(node.expr.value)
         code = self.code_stack.pop()
         bp_code = bp.Code.from_code(code).code
 
-        arg_names = []
-        stored_names = set()
-        local_vars = self.local_vars
-        for idx, (op, op_arg) in enumerate(bp_code):
-            if op == bp.STORE_NAME:
-                stored_names.add(op_arg)
-                bp_code[idx] = (bp.STORE_FAST, op_arg)
-        for idx, (op, op_arg) in enumerate(bp_code):
-            if op == bp.LOAD_NAME:
-                if op_arg in local_vars:
-                    op = bp.LOAD_FAST
-                    arg_names.append(op_arg)
-                elif op_arg in stored_names:
-                    op = bp.LOAD_FAST
-                else:
-                    op = bp.LOAD_GLOBAL
-                bp_code[idx] = (op, op_arg)
-            elif op == bp.DELETE_NAME:
-                bp_code[idx] = (bp.DELETE_FAST, op_arg)
-
+        # Translate the code to work from function scope. This isolates
+        # any effects the expression may have on the local scope, such
+        # as list comprehensions which leak the loop variable.
+        arg_names = self.translate_locals(bp_code)
         code = bp.Code(
             bp_code, [], arg_names, False, False, True, node.name,
             self.filename, node.lineno, None
         )
 
+        # Inovke the function and store the result as a fast local.
         self.set_lineno(node.lineno)
         self.code_ops.extend([
             (bp.LOAD_CONST, code),  # code
@@ -197,7 +163,7 @@ class TemplateCompiler(BlockCompiler):
         ])
         for name in arg_names:
             self.code_ops.append((bp.LOAD_FAST, name))
-        self.code_ops.extend([
-            (bp.CALL_FUNCTION, len(arg_names)),
-            (bp.STORE_FAST, node.name)
+        self.code_ops.extend([                      # function -> args
+            (bp.CALL_FUNCTION, len(arg_names)),     # retval
+            (bp.STORE_FAST, node.name)              # empty
         ])

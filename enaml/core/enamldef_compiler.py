@@ -6,7 +6,6 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from . import byteplay as bp
-from . import enaml_ast
 from .block_compiler import BlockCompiler
 
 
@@ -51,7 +50,7 @@ class EnamlDefCompiler(BlockCompiler):
         """ The compiler visitor for an EnamlDef node.
 
         """
-        # Determine whether instances need local storage.
+        # Determine whether declaration instances need local storage.
         self.has_locals = self.has_identifiers(node)
 
         # Claim the variables needed for the class and construct node
@@ -66,10 +65,10 @@ class EnamlDefCompiler(BlockCompiler):
 
         # Load the type name and the base class
         self.load_helper('make_enamldef')           # helper
-        self.code_ops.append(
-            (bp.LOAD_CONST, node.typename)          # helper -> name
-        )
-        self.load_name(node.base)                   # helper -> name -> base
+        self.code_ops.extend([
+            (bp.LOAD_CONST, node.typename),         # helper -> name
+            (bp.LOAD_GLOBAL, node.base),            # helper -> name -> base
+        ])
 
         # Validate the type of the base class
         self.validate_declarative()
