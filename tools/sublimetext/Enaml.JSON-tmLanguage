@@ -88,7 +88,7 @@
     },
     {
       "comment": "Enaml Attribute Declaration",
-      "match": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
+      "match": "^\\s*(attr|event|static|const)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
       "captures": {
         "1": { "name": "storage.type" },
         "2": { "name": "entity.other.attribute-name" }
@@ -96,7 +96,7 @@
     },
     {
       "comment": "Enaml Attribute Declaration with Type",
-      "match": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
+      "match": "^\\s*(attr|event|static|const)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
       "captures": {
         "1": { "name": "storage.type" },
         "2": { "name": "entity.other.attribute-name" },
@@ -105,7 +105,7 @@
     },
     {
       "comment": "Enaml Attribute Declaration with Binding",
-      "begin": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "begin": "^\\s*(attr|event|static|const)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
       "beginCaptures": {
         "1": { "name": "storage.type" },
         "2": { "name": "entity.other.attribute-name" },
@@ -118,7 +118,7 @@
     },
     {
       "comment": "Enaml Attribute Declaration with Type and Binding",
-      "begin": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "begin": "^\\s*(attr|event|static|const)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
       "beginCaptures": {
         "1": { "name": "storage.type" },
         "2": { "name": "entity.other.attribute-name" },
@@ -140,6 +140,14 @@
         { "include": "source.python" }
       ],
       "end": "$"
+    },
+    {
+      "comment": "Template declaration",
+      "match": "^(template)\\s*([A-Za-z_][A-Za-z0-9_]*)\\(.*?\\):\\s*$",
+      "captures": {
+        "1": { "name": "storage.type" },
+        "2": { "name": "entity.name.type" }
+      }
     },
     { "include": "source.python" }
   ],

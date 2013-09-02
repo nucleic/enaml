@@ -235,7 +235,7 @@
 			<key>comment</key>
 			<string>Enaml Attribute Declaration</string>
 			<key>match</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
+			<string>^\s*(attr|event|static|const)\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -259,11 +259,11 @@
 			<key>comment</key>
 			<string>Enaml Attribute Declaration with Type</string>
 			<key>match</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
+			<string>^\s*(attr|event|static|const)\s*([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
+			<string>^\s*(attr|event|static|const)\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -296,7 +296,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
+			<string>^\s*(attr|event|static|const)\s*([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -354,6 +354,25 @@
 					<string>source.python</string>
 				</dict>
 			</array>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>storage.type</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.type</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>Template declaration</string>
+			<key>match</key>
+			<string>^(template)\s*([A-Za-z_][A-Za-z0-9_]*)\(.*?\):\s*$</string>
 		</dict>
 		<dict>
 			<key>include</key>
