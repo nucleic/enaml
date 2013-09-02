@@ -595,6 +595,34 @@ def p_operator_expr3(p):
 #------------------------------------------------------------------------------
 # Template
 #------------------------------------------------------------------------------
+def _assert_no_parameter_shadowing(node, lexer):
+    names = set()
+    params = node.parameters
+    for param in params.positional:
+        names.add(param.name)
+    for param in params.keywords:
+        names.add(param.name)
+    if params.starparam:
+        names.add(param.starparam)
+    for item in node.body:
+        if isinstance(item, enaml_ast.StorageExpr):
+            if item.name in names:
+                msg = "declaration of '%s %s' shadows a parameter"
+                token = FakeToken(lexer, item.lineno)
+                syntax_error(msg % (item.kind, item.name), token)
+
+
+def _assert_no_const_redeclaration(node, lexer):
+    names = set()
+    for item in node.body:
+        if isinstance(item, enaml_ast.StorageExpr):
+            if item.name in names:
+                msg = "redeclaration of '%s %s"
+                token = FakeToken(lexer, item.lineno)
+                syntax_error(msg % (item.kind, item.name), token)
+            names.add(item.name)
+
+
 def p_template(p):
     ''' template : TEMPLATE NAME template_params COLON template_suite '''
     node = enaml_ast.Template()
@@ -602,6 +630,8 @@ def p_template(p):
     node.name = p[2]
     node.parameters = p[3]
     node.body = p[5]
+    _assert_no_parameter_shadowing(node, p.lexer.lexer)
+    _assert_no_const_redeclaration(node, p.lexer.lexer)
     p[0] = node
 
 
