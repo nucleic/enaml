@@ -176,7 +176,21 @@ class TemplateCompiler(BlockCompiler):
         ])
         for name in arg_names:
             self.code_ops.append((bp.LOAD_FAST, name))
-        self.code_ops.extend([                      # function -> args
-            (bp.CALL_FUNCTION, len(arg_names)),     # retval
-            (bp.STORE_FAST, node.name)              # empty
-        ])
+        self.code_ops.append(                       # function -> args
+            (bp.CALL_FUNCTION, len(arg_names)),     # value
+        )
+
+        # Validate the type of the value if necessary.
+        if node.typename:
+            with self.try_squash_raise():
+                self.load_name(node.typename)
+                self.load_helper('type_check_expr')
+                self.code_ops.extend([              # value -> kind -> helper
+                    (bp.ROT_THREE, None),           # helper -> value -> kind
+                    (bp.CALL_FUNCTION, 0x0002),     # value
+                ])
+
+        # Store the value in the fast locals
+        self.code_ops.append(               # value
+            (bp.STORE_FAST, node.name)      # <empty>
+        )

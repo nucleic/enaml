@@ -274,6 +274,31 @@ def run_operator(node, name, op, code, f_globals):
             setattr(klass, name, member)
 
 
+def type_check_expr(value, kind):
+    """ Type check the value of an expression.
+
+    Parameters
+    ----------
+    value : object
+        The value to type check.
+
+    kind : type
+        The allowed type of the value.
+
+    Returns
+    -------
+    result : object
+        The original value.
+
+    """
+    if not isinstance(kind, type):
+        raise TypeError("%s is not a type" % kind)
+    if not isinstance(value, kind):
+        msg = "expression value has invalid type '%s'"
+        raise TypeError(msg % type(value).__name__)
+    return value
+
+
 def validate_declarative(klass):
     """ Validate that an object is a Declarative type.
 
@@ -328,6 +353,7 @@ __compiler_helpers = {
     'make_template': make_template,
     'run_operator': run_operator,
     'template_node': template_node,
+    'type_check_expr': type_check_expr,
     'validate_declarative': validate_declarative,
     'validate_spec': validate_spec,
 }
