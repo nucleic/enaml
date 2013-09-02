@@ -110,7 +110,7 @@ class StorageExpr(ASTNode):
 
     """
     #: The stype of the storage expression.
-    kind = Enum('attr', 'event', 'static')
+    kind = Enum('attr', 'event', 'static', 'const')
 
     #: The name of the storage object being defined.
     name = Str()
