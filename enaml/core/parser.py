@@ -435,7 +435,10 @@ def p_enaml_suite_item1(p):
                          | child_def
                          | storage_expr
                          | template_inst '''
-    p[0] = p[1]
+    node = p[1]
+    if isinstance(node, enaml_ast.StorageExpr):
+        _assert_no_const_expr(node, p.lexer.lexer)
+    p[0] = node
 
 
 def p_enaml_suite_item2(p):
@@ -446,6 +449,13 @@ def p_enaml_suite_item2(p):
 #------------------------------------------------------------------------------
 # StorageExpr
 #------------------------------------------------------------------------------
+def _assert_no_const_expr(node, lexer):
+    if node.kind == 'const':
+        msg = "'%s' expression not allowed here" % node.kind
+        token = FakeToken(lexer, node.lineno)
+        syntax_error(msg, token)
+
+
 def _validate_storage_expr(p):
     kind = p[1]
     lineno = p.lineno(1)
@@ -509,7 +519,10 @@ def p_child_def1(p):
 def p_child_def2(p):
     ''' child_def : NAME COLON binding
                   | NAME COLON storage_expr '''
-    p[0] = enaml_ast.ChildDef(typename=p[1], body=[p[3]], lineno=p.lineno(1))
+    node = p[3]
+    if isinstance(node, enaml_ast.StorageExpr):
+        _assert_no_const_expr(node, p.lexer.lexer)
+    p[0] = enaml_ast.ChildDef(typename=p[1], body=[node], lineno=p.lineno(1))
 
 
 def p_child_def3(p):
@@ -528,8 +541,11 @@ def p_child_def4(p):
 def p_child_def5(p):
     ''' child_def : NAME COLON NAME COLON binding
                   | NAME COLON NAME COLON storage_expr '''
+    node = p[5]
+    if isinstance(node, enaml_ast.StorageExpr):
+        _assert_no_const_expr(node, p.lexer.lexer)
     child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=p[3], body=[p[5]], lineno=p.lineno(1)
+        typename=p[1], identifier=p[3], body=[node], lineno=p.lineno(1)
     )
     p[0] = child_def
 
