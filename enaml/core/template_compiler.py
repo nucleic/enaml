@@ -121,9 +121,22 @@ class TemplateCompiler(BlockCompiler):
             self.visit(item)
         self.node_stack.pop()
 
-        # Return the template node
-        self.code_ops.extend([
-            (bp.LOAD_FAST, node_var),
+        # Create a tuple of the scope variables. The variables are
+        # sorted since the pairs will be converted into a sortedmap,
+        # which can be populated faster from a sorted sequence.
+        for name in sorted(self.local_vars):
+            self.code_ops.extend([
+                (bp.LOAD_CONST, name),  # name
+                (bp.LOAD_FAST, name),   # name -> var
+            ])
+        self.code_ops.append(                           # name -> var -> ...
+            (bp.BUILD_TUPLE, 2 * len(self.local_vars))  # scope_tuple
+        )
+
+        # Load and return a tuple of the template scope and node.
+        self.code_ops.extend([          # scope_tuple
+            (bp.LOAD_FAST, node_var),   # scope_tuple -> node
+            (bp.BUILD_TUPLE, 2),        # retval
             (bp.RETURN_VALUE, None),
         ])
 
