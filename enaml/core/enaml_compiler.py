@@ -7,7 +7,8 @@
 #------------------------------------------------------------------------------
 import sys
 
-from . import byteplay as bp
+from atom.api import Const
+
 from .compiler_base import CompilerBase
 from .enamldef_compiler import EnamlDefCompiler
 from .template_compiler import TemplateCompiler
@@ -116,6 +117,8 @@ class EnamlCompiler(CompilerBase):
     the ast into an appropriate python code object for a module.
 
     """
+    template_map = Const('_[template_map]')
+
     @classmethod
     def compile(cls, module_ast, filename):
         """ The main entry point of the compiler.
@@ -139,163 +142,115 @@ class EnamlCompiler(CompilerBase):
         if isinstance(filename, unicode):
             filename = filename.encode(sys.getfilesystemencoding())
 
-        # Generate the startup code for the module
-        module_ops = [(bp.SetLineno, 1)]
-        for start in STARTUP:
-            start_code = compile(start, filename, mode='exec')
-            bp_code = bp.Code.from_code(start_code)
-            # Skip the SetLineo and ReturnValue codes
-            module_ops.extend(bp_code.code[1:-2])
+        # Create and setup the compiler
+        compiler = cls()
+        cg = compiler.code_generator
+        cg.filename = filename
 
         # Add in the code ops for the module
-        compiler = cls(filename=filename)
         compiler.visit(module_ast)
-        module_ops.extend(compiler.code_ops)
-
-        # Generate the cleanup code for the module
-        for end in CLEANUP:
-            end_code = compile(end, filename, mode='exec')
-            bp_code = bp.Code.from_code(end_code)
-            # Skip the SetLineo and ReturnValue codes
-            module_ops.extend(bp_code.code[1:-2])
-
-        # Add in the final return value ops
-        module_ops.extend([
-            (bp.LOAD_CONST, None),
-            (bp.RETURN_VALUE, None),
-        ])
 
         # Generate and return the module code object.
-        mod_code = bp.Code(
-            module_ops, [], [], False, False, False, '',  filename, 0, None,
-        )
-        return mod_code.to_code()
+        return cg.to_code()
 
-    #--------------------------------------------------------------------------
-    # Utilities
-    #--------------------------------------------------------------------------
-    def make_template_map(self):
-        """ Create the temporary map for template storage.
-
-        """
-        self.code_ops.extend([
-            (bp.BUILD_MAP, 0),
-            (bp.STORE_GLOBAL, '_[template_map]'),
-        ])
-
-    def load_template_map(self):
-        """ Load the temporary template storage map.
-
-        """
-        self.code_ops.append((bp.LOAD_GLOBAL, '_[template_map]'))
-
-    def delete_template_map(self):
-        """ Delete the temporary template storage map.
-
-        """
-        self.code_ops.append((bp.DELETE_GLOBAL, '_[template_map]'))
-
-    #--------------------------------------------------------------------------
-    # Visitors
-    #--------------------------------------------------------------------------
     def visit_Module(self, node):
         """ The compiler visitor for a Module node.
 
         """
-        self.make_template_map()
+        cg = self.code_generator
+
+        # Generate the startup code for the module
+        cg.set_lineno(1)
+        for start in STARTUP:
+            cg.insert_python_block(start)
+
+        # Create the template map
+        cg.build_map()
+        cg.store_global(self.template_map)
+
+        # Populate the body of the module
         for item in node.body:
             self.visit(item)
-        self.delete_template_map()
+
+        # Delete the template map
+        cg.delete_global(self.template_map)
+
+        # Generate the cleanup code for the module
+        for end in CLEANUP:
+            cg.insert_python_block(end)
+
+        # Add in the final return value ops
+        cg.load_const(None)
+        cg.return_value()
 
     def visit_PythonModule(self, node):
         """ The compiler visitor for a PythonModule node.
 
         """
-        code = compile(node.ast, self.filename, mode='exec')
-        bp_code = bp.Code.from_code(code)
-        self.set_lineno(node.lineno)
-        # Skip the SetLineo and ReturnValue codes
-        self.code_ops.extend(bp_code.code[1:-2])
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+        cg.insert_python_block(node.ast)
 
     def visit_EnamlDef(self, node):
         """ The compiler visitor for an EnamlDef node.
 
         """
+        cg = self.code_generator
+
         # Load the decorators
         for decorator in node.decorators:
-            code = compile(decorator.ast, self.filename, mode='eval')
-            bp_code = bp.Code.from_code(code).code
-            self.code_ops.extend(bp_code[:-1])  # skip the return value op
+            cg.insert_python_expr(decorator.ast)
 
         # Generate the enamldef class
         code = EnamlDefCompiler.compile(node, self.filename)
-        self.code_ops.extend([              # decorators
-            (bp.LOAD_CONST, code),          # decorators -> code
-            (bp.MAKE_FUNCTION, 0),          # decorators -> function
-            (bp.CALL_FUNCTION, 0x0000),     # decorators -> class
-        ])
+        cg.load_const(code)
+        cg.make_function()
+        cg.call_function()
 
         # Invoke the decorators
         for decorator in node.decorators:
-            self.code_ops.append((bp.CALL_FUNCTION, 0x0001))
+            cg.call_function(1)
 
         # Store the result into the namespace
-        self.code_ops.append((bp.STORE_GLOBAL, node.typename))
+        cg.store_global(node.typename)
 
     def visit_Template(self, node):
         """ The compiler visitor for a Template node.
 
         """
-        self.set_lineno(node.lineno)
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
 
-        # All of the operations for this node manipulate variables on
-        # the stack and must all exist within the exception context or
-        # byteplay's stack size validation gets confused.
-        with self.try_squash_raise():
+        with cg.try_squash_raise():
 
-            # Evaluate the parameter specializations. For parameters which
-            # are not specialized, None is loaded which indicates that any
-            # parameter is a match. The validate helper ensures that the
-            # specialization object is of a valid type.
+            # Load and validate the parameter specializations
             for index, param in enumerate(node.parameters.positional):
                 spec = param.specialization
                 if spec is not None:
-                    self.load_helper('validate_spec')
-                    self.code_ops.append((bp.LOAD_CONST, index))
-                    code = compile(spec.ast, self.filename, 'eval')
-                    bp_code = bp.Code.from_code(code).code
-                    self.code_ops.extend(bp_code[:-1])  # skip the return value op
-                    self.code_ops.append((bp.CALL_FUNCTION, 0x0002))
+                    cg.load_helper('validate_spec')
+                    cg.load_const(index)
+                    cg.insert_python_expr(spec.ast)
+                    cg.call_function(2)
                 else:
-                    self.code_ops.append((bp.LOAD_CONST, None))
+                    cg.load_const(None)
 
             # Store the specializations as a tuple
-            n_pos = len(node.parameters.positional)
-            self.code_ops.append((bp.BUILD_TUPLE, n_pos))
+            cg.build_tuple(len(node.parameters.positional))
 
             # Evaluate the default parameters
             for param in node.parameters.keywords:
-                code = compile(param.default.ast, self.filename, 'eval')
-                bp_code = bp.Code.from_code(code).code
-                self.code_ops.extend(bp_code[:-1])  # skip the return value op
+                cg.insert_python_expr(param.default.ast)
 
             # Generate the template code and function
-            n_kwd = len(node.parameters.keywords)
             code = TemplateCompiler.compile(node, self.filename)
-            self.code_ops.extend([                  # paramspec -> defaults
-                (bp.LOAD_CONST, code),              # paramspec -> defaults -> code
-                (bp.MAKE_FUNCTION, n_kwd),          # paramspec -> function
-            ])
+            cg.load_const(code)
+            cg.make_function(len(node.parameters.keywords))
 
             # Load and call the helper which will build the template
-            self.load_helper('make_template')
-            self.code_ops.extend([                  # paramsepc -> function -> helper
-                (bp.ROT_THREE, None),               # helper -> paramspec -> function
-                (bp.LOAD_CONST, node.name),         # helper -> paramspec -> function -> name
-            ])
-            self.load_globals()
-            self.load_template_map()
-            self.code_ops.extend([                  # helper -> paramspec -> function -> name -> globals -> template_map
-                (bp.CALL_FUNCTION, 0x0005),         # retval
-                (bp.POP_TOP, None),                 # empty
-            ])
+            cg.load_helper('make_template')
+            cg.rot_three()
+            cg.load_const(node.name)
+            cg.load_globals()
+            cg.load_global(self.template_map)  # helper -> paramspec -> function -> name -> globals -> template_map
+            cg.call_function(5)
+            cg.pop_top()
