@@ -433,15 +433,18 @@ def p_enaml_suite_items2(p):
 def p_enaml_suite_item1(p):
     ''' enaml_suite_item : binding
                          | child_def
-                         | storage_expr
                          | template_inst '''
-    node = p[1]
-    if isinstance(node, enaml_ast.StorageExpr):
-        _assert_no_const_expr(node, p.lexer.lexer)
-    p[0] = node
+    p[0] = p[1]
 
 
 def p_enaml_suite_item2(p):
+    ''' enaml_suite_item : storage_expr '''
+    node = p[1]
+    _assert_no_const_expr(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_enaml_suite_item3(p):
     ''' enaml_suite_item : PASS NEWLINE '''
     p[0] = None
 
@@ -456,22 +459,19 @@ def _assert_no_const_expr(node, lexer):
         syntax_error(msg, token)
 
 
-def _validate_storage_expr(p):
-    kind = p[1]
-    lineno = p.lineno(1)
+def _validate_storage_expr(kind, lineno, lexer):
     if kind not in ('attr', 'event', 'static', 'const'):
-        syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
-    return kind, lineno
+        syntax_error('invalid syntax', FakeToken(lexer, lineno))
 
 
-def _make_storage_expr(p, kind, name, typename='', expr=None, lineno=-1):
+def _make_storage_expr(lexer, kind, name, typename='', expr=None, lineno=-1):
     if kind == 'static' or kind == 'const':
         if expr is None:
             msg = "'%s' expression must have a value" % kind
-            syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
+            syntax_error(msg, FakeToken(lexer, lineno))
         if expr.operator != '=':
             msg = "invalid operator for '%s' expression" % kind
-            syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
+            syntax_error(msg, FakeToken(lexer, lineno))
     node = enaml_ast.StorageExpr()
     node.lineno = lineno
     node.kind = kind
@@ -483,26 +483,97 @@ def _make_storage_expr(p, kind, name, typename='', expr=None, lineno=-1):
 
 def p_storage_expr1(p):
     ''' storage_expr : NAME NAME NEWLINE '''
-    which, lineno = _validate_storage_expr(p)
-    p[0] = _make_storage_expr(p, which, p[2], lineno=lineno)
+    kind = p[1]
+    lineno = p.lineno(1)
+    lexer = p.lexer.lexer
+    _validate_storage_expr(kind, lineno, lexer)
+    p[0] = _make_storage_expr(lexer, kind, p[2], lineno=lineno)
 
 
 def p_storage_expr2(p):
     ''' storage_expr : NAME NAME COLON NAME NEWLINE '''
-    which, lineno = _validate_storage_expr(p)
-    p[0] = _make_storage_expr(p, which, p[2], p[4], lineno=lineno)
+    kind = p[1]
+    lineno = p.lineno(1)
+    lexer = p.lexer.lexer
+    _validate_storage_expr(kind, lineno, lexer)
+    p[0] = _make_storage_expr(lexer, kind, p[2], p[4], lineno=lineno)
 
 
 def p_storage_expr3(p):
     ''' storage_expr : NAME NAME operator_expr '''
-    which, lineno = _validate_storage_expr(p)
-    p[0] = _make_storage_expr(p, which, p[2], expr=p[3], lineno=lineno)
+    kind = p[1]
+    lineno = p.lineno(1)
+    lexer = p.lexer.lexer
+    _validate_storage_expr(kind, lineno, lexer)
+    p[0] = _make_storage_expr(lexer, kind, p[2], expr=p[3], lineno=lineno)
 
 
 def p_storage_expr4(p):
     ''' storage_expr : NAME NAME COLON NAME operator_expr '''
-    which, lineno = _validate_storage_expr(p)
-    p[0] = _make_storage_expr(p, which, p[2], p[4], p[5], lineno)
+    kind = p[1]
+    lineno = p.lineno(1)
+    lexer = p.lexer.lexer
+    _validate_storage_expr(kind, lineno, lexer)
+    p[0] = _make_storage_expr(lexer, kind, p[2], p[4], p[5], lineno)
+
+
+#------------------------------------------------------------------------------
+# ExtStorageExpr
+#------------------------------------------------------------------------------
+def p_ext_storage_expr1(p):
+    ''' ext_storage_expr : NAME NAME DOT NAME NEWLINE '''
+    kind = p[1]
+    lineno = p.lineno(1)
+    lexer = p.lexer.lexer
+    _validate_storage_expr(kind, lineno, lexer)
+    storage = _make_storage_expr(lexer, kind, p[4], lineno=lineno)
+    node = enaml_ast.ExtStorageExpr()
+    node.lineno = lineno
+    node.name = p[2]
+    node.storage = storage
+    p[0] = node
+
+
+def p_ext_storage_expr2(p):
+    ''' ext_storage_expr : NAME NAME DOT NAME COLON NAME NEWLINE '''
+    kind = p[1]
+    lineno = p.lineno(1)
+    lexer = p.lexer.lexer
+    _validate_storage_expr(kind, lineno, lexer)
+    storage = _make_storage_expr(lexer, kind, p[4], p[6], lineno=lineno)
+    node = enaml_ast.ExtStorageExpr()
+    node.lineno = lineno
+    node.name = p[2]
+    node.storage = storage
+    p[0] = node
+
+
+def p_ext_storage_expr3(p):
+    ''' ext_storage_expr : NAME NAME DOT NAME operator_expr '''
+    kind = p[1]
+    lineno = p.lineno(1)
+    lexer = p.lexer.lexer
+    _validate_storage_expr(kind, lineno, lexer)
+    storage = _make_storage_expr(lexer, kind, p[4], expr=p[5], lineno=lineno)
+    node = enaml_ast.ExtStorageExpr()
+    node.lineno = lineno
+    node.name = p[2]
+    node.storage = storage
+    p[0] = node
+
+
+def p_ext_storage_expr4(p):
+    ''' ext_storage_expr : NAME NAME DOT NAME COLON NAME operator_expr '''
+    kind = p[1]
+    lineno = p.lineno(1)
+    lexer = p.lexer.lexer
+    _validate_storage_expr(kind, lineno, lexer)
+    storage = _make_storage_expr(lexer, kind, p[4], p[6], p[7], lineno)
+    node = enaml_ast.ExtStorageExpr()
+    node.lineno = lineno
+    node.name = p[2]
+    node.storage = storage
+    p[0] = node
 
 
 #------------------------------------------------------------------------------
@@ -517,20 +588,23 @@ def p_child_def1(p):
 
 
 def p_child_def2(p):
-    ''' child_def : NAME COLON binding
-                  | NAME COLON storage_expr '''
-    node = p[3]
-    if isinstance(node, enaml_ast.StorageExpr):
-        _assert_no_const_expr(node, p.lexer.lexer)
-    p[0] = enaml_ast.ChildDef(typename=p[1], body=[node], lineno=p.lineno(1))
+    ''' child_def : NAME COLON binding '''
+    p[0] = enaml_ast.ChildDef(typename=p[1], body=[p[3]], lineno=p.lineno(1))
 
 
 def p_child_def3(p):
+    ''' child_def : NAME COLON storage_expr '''
+    node = p[3]
+    _assert_no_const_expr(node, p.lexer.lexer)
+    p[0] = enaml_ast.ChildDef(typename=p[1], body=[node], lineno=p.lineno(1))
+
+
+def p_child_def4(p):
     ''' child_def : NAME COLON PASS NEWLINE '''
     p[0] = enaml_ast.ChildDef(typename=p[1], lineno=p.lineno(1))
 
 
-def p_child_def4(p):
+def p_child_def5(p):
     ''' child_def : NAME COLON NAME COLON enaml_suite '''
     child_def = enaml_ast.ChildDef(
         typename=p[1], identifier=p[3], body=p[5], lineno=p.lineno(1)
@@ -538,19 +612,25 @@ def p_child_def4(p):
     p[0] = child_def
 
 
-def p_child_def5(p):
-    ''' child_def : NAME COLON NAME COLON binding
-                  | NAME COLON NAME COLON storage_expr '''
+def p_child_def6(p):
+    ''' child_def : NAME COLON NAME COLON binding '''
+    child_def = enaml_ast.ChildDef(
+        typename=p[1], identifier=p[3], body=[p[5]], lineno=p.lineno(1)
+    )
+    p[0] = child_def
+
+
+def p_child_def7(p):
+    ''' child_def : NAME COLON NAME COLON storage_expr '''
     node = p[5]
-    if isinstance(node, enaml_ast.StorageExpr):
-        _assert_no_const_expr(node, p.lexer.lexer)
+    _assert_no_const_expr(node, p.lexer.lexer)
     child_def = enaml_ast.ChildDef(
         typename=p[1], identifier=p[3], body=[node], lineno=p.lineno(1)
     )
     p[0] = child_def
 
 
-def p_child_def6(p):
+def p_child_def8(p):
     ''' child_def : NAME COLON NAME COLON PASS NEWLINE '''
     child_def = enaml_ast.ChildDef(
         typename=p[1], identifier=p[3], lineno=p.lineno(1)
@@ -564,6 +644,18 @@ def p_child_def6(p):
 def p_binding(p):
     ''' binding : NAME operator_expr '''
     p[0] = enaml_ast.Binding(name=p[1], expr=p[2], lineno=p.lineno(1))
+
+
+#------------------------------------------------------------------------------
+# Binding
+#------------------------------------------------------------------------------
+def p_ext_binding(p):
+    ''' ext_binding : NAME DOT NAME operator_expr '''
+    lineno = p.lineno(1)
+    binding = enaml_ast.Binding(name=p[3], expr=p[4], lineno=lineno)
+    ext_binding = enaml_ast.ExtBinding(binding=binding, lineno=lineno)
+    ext_binding.name = p[1]
+    p[0] = ext_binding
 
 
 #------------------------------------------------------------------------------
@@ -611,32 +703,71 @@ def p_operator_expr3(p):
 #------------------------------------------------------------------------------
 # Template
 #------------------------------------------------------------------------------
-def _assert_no_parameter_shadowing(node, lexer):
-    names = set()
+def _validate_template(node, lexer):
+    """ Validate the correctness of names in a template definitions.
+
+    This function ensures that parameters, const expressions, and
+    identifiers do not shadow one another.
+
+    """
+    param_names = set()
+    const_names = set()
+    ident_names = set()
+
+    def check_const(name, node):
+        msg = None
+        if name in param_names:
+            msg = "declaration of 'const %s' shadows a parameter"
+        elif name in const_names:
+            msg = "redeclaration of 'const %s'"
+        if msg is not None:
+            syntax_error(msg % name, FakeToken(lexer, node.lineno))
+        const_names.add(name)
+
+    def check_id(name, node):
+        msg = None
+        if name in param_names:
+            msg = "identifier '%s' shadows a parameter"
+        elif name in const_names:
+            msg = "identifier '%s' shadows a const expression"
+        elif name in ident_names:
+            msg = "redeclaration of identifier '%s'"
+        if msg is not None:
+            syntax_error(msg % name, FakeToken(lexer, node.lineno))
+        ident_names.add(name)
+
+    # collect the parameter names
     params = node.parameters
     for param in params.positional:
-        names.add(param.name)
+        param_names.add(param.name)
     for param in params.keywords:
-        names.add(param.name)
+        param_names.add(param.name)
     if params.starparam:
-        names.add(param.starparam)
-    for item in node.body:
-        if isinstance(item, enaml_ast.StorageExpr):
-            if item.name in names:
-                msg = "declaration of '%s %s' shadows a parameter"
-                token = FakeToken(lexer, item.lineno)
-                syntax_error(msg % (item.kind, item.name), token)
+        param_names.add(param.starparam)
 
-
-def _assert_no_const_redeclaration(node, lexer):
-    names = set()
+    # validate the const expressions
+    StorageExpr = enaml_ast.StorageExpr
     for item in node.body:
-        if isinstance(item, enaml_ast.StorageExpr):
-            if item.name in names:
-                msg = "redeclaration of '%s %s"
-                token = FakeToken(lexer, item.lineno)
-                syntax_error(msg % (item.kind, item.name), token)
-            names.add(item.name)
+        if isinstance(item, StorageExpr):
+            check_const(item.name, item)
+
+    # validate the identifiers
+    ChildDef = enaml_ast.ChildDef
+    TemplateInst = enaml_ast.TemplateInst
+    stack = list(reversed(node.body))
+    while stack:
+        node = stack.pop()
+        if isinstance(node, ChildDef):
+            if node.identifier:
+                check_id(node.identifier, node)
+            stack.extend(reversed(node.body))
+        elif isinstance(node, TemplateInst):
+            idents = node.identifiers
+            if idents is not None:
+                for name in idents.names:
+                    check_id(name, idents)
+                if idents.starname:
+                    check_id(idents.starname, idents)
 
 
 def p_template(p):
@@ -646,8 +777,7 @@ def p_template(p):
     node.name = p[2]
     node.parameters = p[3]
     node.body = p[5]
-    _assert_no_parameter_shadowing(node, p.lexer.lexer)
-    _assert_no_const_redeclaration(node, p.lexer.lexer)
+    _validate_template(node, p.lexer.lexer)
     p[0] = node
 
 
@@ -800,24 +930,162 @@ def p_template_param3(p):
 #------------------------------------------------------------------------------
 # Template Instantiation
 #------------------------------------------------------------------------------
-def p_template_inst1(p):
-    ''' template_inst : NAME template_args COLON enaml_suite '''
+def _validate_template_inst(node, lexer):
+    """ Validate a template instantiation.
+
+    This function ensures that any extended bindings on the node access
+    available identifiers. Duplicate identifiers are not validated here
+    since they will be caught by the '_validate_template' method.
+
+    """
+    names = set()
+    idents = node.identifiers
+    if idents is not None:
+        names.update(idents.names)
+        if idents.starname:
+            names.add(idents.starname)
+    types = (enaml_ast.ExtBinding, enaml_ast.ExtStorageExpr)
+    msg = "'%s' is an undeclared identifier for this instantiation"
+    for item in node.body:
+        if isinstance(item, types):
+            if item.name not in names:
+                syntax_error(msg % item.name, FakeToken(lexer, item.lineno))
+
+
+def p_template_inst(p):
+    ''' template_inst : template_inst_impl '''
+    node = p[1]
+    _validate_template_inst(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_inst_impl1(p):
+    ''' template_inst_impl : NAME BANG COLON template_inst_item '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
-    node.arguments = p[2]
+    item = p[4]
+    if item is not None:
+        node.body = [item]
+    p[0] = node
+
+
+def p_template_inst_impl2(p):
+    ''' template_inst_impl : NAME BANG COLON template_inst_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
     node.body = p[4]
     p[0] = node
 
 
-def p_template_inst2(p):
-    ''' template_inst : NAME template_args COLON template_ids COLON enaml_suite '''
+def p_template_inst_impl3(p):
+    ''' template_inst_impl : NAME BANG COLON template_ids COLON template_inst_item '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
-    node.arguments = p[2]
+    node.identifiers = p[4]
+    item = p[6]
+    if item is not None:
+        node.body = [item]
+    p[0] = node
+
+
+def p_template_inst_impl4(p):
+    ''' template_inst_impl : NAME BANG COLON template_ids COLON template_inst_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
     node.identifiers = p[4]
     node.body = p[6]
+    p[0] = node
+
+
+def p_template_inst_impl5(p):
+    ''' template_inst_impl : NAME BANG template_args COLON template_inst_item '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[3]
+    item = p[5]
+    if item is not None:
+        node.body = [item]
+    p[0] = node
+
+
+def p_template_inst_impl6(p):
+    ''' template_inst_impl : NAME BANG template_args COLON template_inst_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[3]
+    node.body = p[5]
+    p[0] = node
+
+
+def p_template_inst_impl7(p):
+    ''' template_inst_impl : NAME BANG template_args COLON template_ids COLON template_inst_item '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[3]
+    node.identifiers = p[5]
+    item = p[7]
+    if item is not None:
+        node.body = [item]
+    p[0] = node
+
+
+def p_template_inst_impl8(p):
+    ''' template_inst_impl : NAME BANG template_args COLON template_ids COLON template_inst_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[3]
+    node.identifiers = p[5]
+    node.body = p[7]
+    p[0] = node
+
+
+def p_template_inst_suite(p):
+    ''' template_inst_suite : NEWLINE INDENT template_inst_items DEDENT '''
+    # Filter out any pass statements
+    items = filter(None, p[3])
+    p[0] = items
+
+
+def p_template_inst_items1(p):
+    ''' template_inst_items : template_inst_item '''
+    p[0] = [p[1]]
+
+
+def p_template_inst_items2(p):
+    ''' template_inst_items : template_inst_items template_inst_item '''
+    p[0] = p[1] + [p[2]]
+
+
+def p_template_inst_item1(p):
+    ''' template_inst_item : PASS NEWLINE '''
+    p[0] = None
+
+
+def p_template_inst_item2(p):
+    ''' template_inst_item : binding
+                           | ext_binding '''
+    p[0] = p[1]
+
+
+def p_template_inst_item3(p):
+    ''' template_inst_item : storage_expr '''
+    node = p[1]
+    _assert_no_const_expr(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_inst_item4(p):
+    ''' template_inst_item : ext_storage_expr '''
+    node = p[1]
+    _assert_no_const_expr(node.storage, p.lexer.lexer)
     p[0] = node
 
 
