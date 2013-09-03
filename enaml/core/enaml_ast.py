@@ -23,7 +23,7 @@ class Module(ASTNode):
 
     """
     #: The list of ast nodes for the body of the module. This will be
-    #: composed of Python and EnamlDef nodes.
+    #: composed of PythonModule, EnamlDef, and Template nodes.
     body = List()
 
 
