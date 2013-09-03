@@ -5,11 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from . import byteplay as bp
-from .block_compiler import BlockCompiler
+from .compiler_base import CompilerBase
 
 
-class EnamlDefCompiler(BlockCompiler):
+class EnamlDefCompiler(CompilerBase):
     """ A compiler class for compiling 'enamldef' blocks.
 
     This compiler is invoked by the main EnamlCompiler class when it
@@ -35,13 +34,15 @@ class EnamlDefCompiler(BlockCompiler):
             A Python code object which implements the enamldef block.
 
         """
-        compiler = cls(filename=filename)
+        compiler = cls()
+        cg = compiler.code_generator
+        cg.filename = filename
         compiler.visit(node)
-        code = bp.Code(
-            compiler.code_ops, [], [], False, False, True, node.typename,
-            filename, node.lineno, node.docstring or None
+        code = cg.to_code(
+            newlocals=True, name=node.typename, lineno=node.lineno,
+            docstring=node.docstring or None
         )
-        return code.to_code()
+        return code
 
     #--------------------------------------------------------------------------
     # Visitors
