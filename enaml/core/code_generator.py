@@ -180,6 +180,15 @@ class CodeGenerator(Atom):
             (bp.CALL_FUNCTION, argspec),                # TOS -> retval
         )
 
+    def call_function_var(self, n_args=0, n_kwds=0):
+        """ Call a var function on the TOS with the given args and kwargs.
+
+        """
+        argspec = ((n_kwds & 0xFF) << 8) + (n_args & 0xFF)
+        self.code_ops.append(                           # TOS -> func -> args -> kwargs -> varargs
+            (bp.CALL_FUNCTION_VAR, argspec),            # TOS -> retval
+        )
+
     def pop_top(self):
         """ Pop the value from the TOS.
 
@@ -293,6 +302,39 @@ class CodeGenerator(Atom):
             (bp.JUMP_FORWARD, end_label),               # TOS
             (bp.END_FINALLY, None),                     # TOS
             (end_label, None),                          # TOS
+        ])
+
+    @contextmanager
+    def for_loop(self, iter_var, fast_var=True):
+        """ A context manager for creating for-loops.
+
+        Parameters
+        ----------
+        iter_var : str
+            The name of the loop iter variable.
+
+        fast_var : bool, optional
+            Whether the iter_var lives in fast locals. The default is
+            True. If False, the iter_var is loaded from globals.
+
+        """
+        start_label = bp.Label()
+        jump_label = bp.Label()
+        end_label = bp.Label()
+        load_op = bp.LOAD_FAST if fast_var else bp.LOAD_GLOBAL
+        self.code_ops.extend([
+            (bp.SETUP_LOOP, end_label),
+            (load_op, iter_var),
+            (bp.GET_ITER, None),
+            (start_label, None),
+            (bp.FOR_ITER, jump_label),
+        ])
+        yield
+        self.code_ops.extend([
+            (bp.JUMP_ABSOLUTE, start_label),
+            (jump_label, None),
+            (bp.POP_BLOCK, None),
+            (end_label, None),
         ])
 
     def insert_python_block(self, pydata, trim=True):
