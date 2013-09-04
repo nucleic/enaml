@@ -368,6 +368,25 @@ def validate_spec(index, spec):
     return spec
 
 
+def validate_template(template):
+    """ Validate that the object is a template.
+
+    Parameters
+    ----------
+    template : object
+        The object to validate.
+
+    Returns
+    -------
+    result : object
+        The validated object.
+
+    """
+    if not isinstance(template, Template):
+        raise TypeError("%s is not a template" % template)
+    return template
+
+
 __compiler_helpers = {
     'add_static_attr': add_static_attr,
     'add_storage': add_storage,
@@ -380,5 +399,6 @@ __compiler_helpers = {
     'template_node': template_node,
     'type_check_expr': type_check_expr,
     'validate_declarative': validate_declarative,
+    'validate_template': validate_template,
     'validate_spec': validate_spec,
 }
