@@ -62,6 +62,14 @@ class CodeGenerator(Atom):
             (bp.LOAD_CONST, const),                     # TOS -> value
         )
 
+    def load_attr(self, name):
+        """ Load an attribute from the object on TOS.
+
+        """
+        self.code_ops.append(                           # TOS -> obj
+            (bp.LOAD_ATTR, name),                       # TOS -> value
+        )
+
     def store_global(self, name):
         """ Store the TOS as a global.
 
@@ -76,6 +84,14 @@ class CodeGenerator(Atom):
         """
         self.code_ops.append(                           # TOS -> value
             (bp.STORE_FAST, name),                      # TOS
+        )
+
+    def store_attr(self, name):
+        """ Store the value at 2nd as an attr on 1st.
+
+        """
+        self.code_ops.append(                           # TOS -> val -> obj
+            (bp.STORE_ATTR, name),                      # TOS
         )
 
     def delete_global(self, name):
@@ -130,6 +146,22 @@ class CodeGenerator(Atom):
             self.code_ops.append(                       # TOS
                 (bp.BUILD_TUPLE, n),                    # TOS -> tuple
             )
+
+    def store_map(self):
+        """ Store the key/value pair on the TOS into the map a 3rd pos.
+
+        """
+        self.code_ops.append(                           # TOS -> map -> value -> key
+            (bp.STORE_MAP, None),                       # TOS -> map
+        )
+
+    def build_class(self):
+        """ Build a class from the top 3 stack items.
+
+        """
+        self.code_ops.append(                           # TOS -> name -> bases -> dict
+            (bp.BUILD_CLASS, None),                     # TOS -> class
+        )
 
     def make_function(self, n_defaults=0):
         """ Make a function from a code object on the TOS.
@@ -263,21 +295,70 @@ class CodeGenerator(Atom):
             (end_label, None),                          # TOS
         ])
 
-    def insert_python_block(self, pydata):
+    def insert_python_block(self, pydata, trim=True):
         """ Insert the compiled code for a Python Module ast or string.
 
         """
         code = compile(pydata, self.filename, mode='exec')
         bp_code = bp.Code.from_code(code).code
-        self.code_ops.extend(bp_code[1:-2])  # skip SetLineno and ReturnValue
+        if trim:  # skip SetLineno and ReturnValue
+            bp_code = bp_code[1:-2]
+        self.code_ops.extend(bp_code)
 
-    def insert_python_expr(self, pydata):
+    def insert_python_expr(self, pydata, trim=True):
         """ Insert the compiled code for a Python Expression ast or string.
 
         """
         code = compile(pydata, self.filename, mode='eval')
         bp_code = bp.Code.from_code(code).code
-        self.code_ops.extend(bp_code[:-1])  # skip ReturnValue
+        if trim:  # skip ReturnValue
+            bp_code = bp_code[:-1]
+        self.code_ops.extend(bp_code)
+
+    def rewrite_to_fast_locals(self, local_names):
+        """ Rewrite the locals to be loaded from fast locals.
+
+        Given a set of available local names, this method will rewrite
+        the current code ops, replaces every instance of a *_NAME opcode
+        with a *_FAST or *_GLOBAL depending on whether or not the name
+        exists in local_names or was written via STORE_NAME. This method
+        is useful to convert the code so it can be used as a function.
+
+        Parameters
+        ----------
+        local_names : set
+            The set of available locals for the code.
+
+        Returns
+        -------
+        result : list
+            The list of names which must be provided as arguments.
+
+        """
+        arg_names = []
+        stored_names = set()
+        code_ops = self.code_ops
+        for idx, (op, op_arg) in enumerate(code_ops):
+            if op == bp.STORE_NAME:
+                stored_names.add(op_arg)
+                code_ops[idx] = (bp.STORE_FAST, op_arg)
+        for idx, (op, op_arg) in enumerate(code_ops):
+            if op == bp.LOAD_NAME:
+                if op_arg in local_names:
+                    op = bp.LOAD_FAST
+                    arg_names.append(op_arg)
+                elif op_arg in stored_names:
+                    op = bp.LOAD_FAST
+                else:
+                    op = bp.LOAD_GLOBAL
+                code_ops[idx] = (op, op_arg)
+            elif op == bp.DELETE_NAME:          # py2.6 list comps
+                if op_arg in stored_names:
+                    op = bp.DELETE_FAST
+                else:
+                    op = bp.DELETE_GLOBAL
+                code_ops[idx] = (op, op_arg)
+        return arg_names
 
     def to_code(self, freevars=[], args=[], varargs=False, varkwargs=False,
                 newlocals=False, name='', firstlineno=0, docstring=None):
@@ -289,3 +370,4 @@ class CodeGenerator(Atom):
             newlocals, name, self.filename, firstlineno, docstring,
         )
         return bp_code.to_code()
+
