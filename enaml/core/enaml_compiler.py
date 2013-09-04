@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Const
+from atom.api import Constant
 
 from .compiler_base import CompilerBase
 from .enamldef_compiler import EnamlDefCompiler
@@ -117,7 +117,7 @@ class EnamlCompiler(CompilerBase):
     the ast into an appropriate python code object for a module.
 
     """
-    template_map = Const('_[template_map]')
+    template_map = Constant('_[template_map]')
 
     @classmethod
     def compile(cls, module_ast, filename):
@@ -202,7 +202,7 @@ class EnamlCompiler(CompilerBase):
             cg.insert_python_expr(decorator.ast)
 
         # Generate the enamldef class
-        code = EnamlDefCompiler.compile(node, self.filename)
+        code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
         cg.make_function()
         cg.call_function()
