@@ -242,7 +242,7 @@ class EnamlCompiler(CompilerBase):
                 cg.insert_python_expr(param.default.ast)
 
             # Generate the template code and function
-            code = TemplateCompiler.compile(node, self.filename)
+            code = TemplateCompiler.compile(node, cg.filename)
             cg.load_const(code)
             cg.make_function(len(node.parameters.keywords))
 

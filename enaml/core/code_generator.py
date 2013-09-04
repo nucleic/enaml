@@ -370,4 +370,3 @@ class CodeGenerator(Atom):
             newlocals, name, self.filename, firstlineno, docstring,
         )
         return bp_code.to_code()
-
