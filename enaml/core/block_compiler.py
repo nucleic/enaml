@@ -9,9 +9,7 @@ from atom.api import Constant, List, Typed
 
 from .code_generator import CodeGenerator
 from .compiler_base import CompilerBase
-from .compiler_util import (
-    VarPool, needs_engine, needs_subclass,
-)
+from .compiler_util import VarPool, needs_engine, needs_subclass
 
 
 class BlockCompiler(CompilerBase):
@@ -150,6 +148,91 @@ class BlockCompiler(CompilerBase):
         self.var_pool.release(class_var)
         self.var_pool.release(node_var)
 
+    def visit_TemplateInst(self, node):
+        """ The compiler visitor for a TemplateInst node.
+
+        """
+        # FIXME this visitor still needs a lot of work
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+
+        # Load and validate the template
+        self.load_name(node.name)
+        with cg.try_squash_raise():
+            cg.load_helper_from_fast('validate_template')
+            cg.rot_two()
+            cg.call_function(1)
+
+        # XXX clean me up
+        # Load the instantiation arguments
+        argcount = 0
+        varargs = False
+        arguments = node.arguments
+        if arguments is not None:
+            argcount = len(arguments.args)
+            for arg in arguments.args:
+
+                # Generate the code object for the argument
+                expr_cg = CodeGenerator(filename=cg.filename)
+                expr_cg.insert_python_expr(arg.ast, trim=False)
+                call_args = expr_cg.rewrite_to_fast_locals(self.local_names())
+                expr_code = expr_cg.to_code(
+                    args=call_args, newlocals=True, name=node.name,
+                    firstlineno=arg.lineno
+                )
+
+                # Create and invoke the argument function
+                cg.load_const(expr_code)
+                cg.make_function()
+                for ca in call_args:
+                    self.load_name(ca)
+                cg.call_function(len(call_args))
+
+            if arguments.stararg:
+                varargs = True
+                # Generate the code object for the argument
+                expr_cg = CodeGenerator(filename=cg.filename)
+                expr_cg.insert_python_expr(arg.ast, trim=False)
+                call_args = expr_cg.rewrite_to_fast_locals(self.local_names())
+                expr_code = expr_cg.to_code(
+                    args=call_args, newlocals=True, name=node.name,
+                    firstlineno=arg.lineno
+                )
+
+                # Create and invoke the argument function
+                cg.load_const(expr_code)
+                cg.make_function()
+                for ca in call_args:
+                    self.load_name(ca)
+                cg.call_function(len(call_args))
+
+        # Instantiate the template
+        if varargs:
+            cg.call_function_var(argcount)
+        else:
+            cg.call_function(argcount)
+
+        # XXX breaking into private api
+        # Load the template node children and store as a local
+        cg.load_attr('_template_node')
+        cg.load_attr('children')
+        nodes_var = self.var_pool.new()
+        cg.store_fast(nodes_var)
+
+        # Loop over the nodes and add them to the parent.
+        loop_var = self.var_pool.new()
+        with cg.for_loop(nodes_var):
+            cg.store_fast(loop_var)
+            cg.load_fast(self.node_stack[-1])
+            cg.load_attr('children')
+            cg.load_attr('append')
+            cg.load_fast(loop_var)
+            cg.call_function(1)
+            cg.pop_top()
+
+        self.var_pool.release(loop_var)
+        self.var_pool.release(nodes_var)
+
     def visit_StorageExpr(self, node):
         """ The compiler visitor for a StorageExpr node.
 
@@ -164,7 +247,7 @@ class BlockCompiler(CompilerBase):
 
         cg = self.code_generator
         cg.set_lineno(node.lineno)
-        with self.try_squash_raise():
+        with cg.try_squash_raise():
             cg.load_helper_from_fast('add_storage')
             cg.load_fast(self.class_stack[-1])
             cg.load_const(node.name)
@@ -189,6 +272,7 @@ class BlockCompiler(CompilerBase):
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
+        # XXX clean me up
         # Generate the code object for the expression
         expr_cg = CodeGenerator(filename=cg.filename)
         py_node = node.expr.value
@@ -232,6 +316,7 @@ class BlockCompiler(CompilerBase):
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
+        # XXX clean me up
         # Generate the code object for the expression
         expr_cg = CodeGenerator(filename=cg.filename)
         py_node = node.expr.value
