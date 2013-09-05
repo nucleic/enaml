@@ -67,6 +67,29 @@ def declarative_change_handler(change):
             engine.write(owner, change['name'], change)
 
 
+def patch_d_member(member):
+    """ Patch the d_ member for declarative handling.
+
+    This function will add the default value and change handlers to
+    pull data from the declarative engine.
+
+    Parameters
+    ----------
+    member : Member
+        A member declared as a d_ member.
+
+    """
+    metadata = member.metadata
+    if metadata['d_writable']:
+        mode, ctxt = member.default_value_mode
+        handler = DeclarativeDefaultHandler()
+        handler.delegate = member.clone()
+        new_mode = DefaultValue.CallObject_ObjectName
+        member.set_default_value_mode(new_mode, handler)
+    if metadata['d_readable']:
+        member.add_static_observer(declarative_change_handler)
+
+
 class DeclarativeMeta(AtomMeta):
     """ The metaclass for Declarative classes.
 
@@ -90,12 +113,5 @@ class DeclarativeMeta(AtomMeta):
             if isinstance(value, Member):
                 metadata = value.metadata
                 if metadata is not None and metadata.get('d_member'):
-                    if metadata['d_writable']:
-                        mode, ctxt = value.default_value_mode
-                        handler = DeclarativeDefaultHandler()
-                        handler.delegate = value.clone()
-                        new_mode = DefaultValue.CallObject_ObjectName
-                        value.set_default_value_mode(new_mode, handler)
-                    if metadata['d_readable']:
-                        value.add_static_observer(declarative_change_handler)
+                    patch_d_member(value)
         return cls
