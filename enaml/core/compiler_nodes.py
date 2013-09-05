@@ -145,7 +145,7 @@ class EnamlDefNode(DeclarativeNode):
         """
         instance = self.klass.__new__(self.klass)
         for node in self.super_nodes:
-            node.popuplate(instance)
+            node.populate(instance)
         self.populate(instance)
         instance.__init__(parent, **kwargs)
         return instance
