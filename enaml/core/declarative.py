@@ -5,9 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, Unicode, Event
+from atom.api import Event, Typed, Unicode
 from atom.datastructures.api import sortedmap
 
+from .declarative_meta import DeclarativeMeta
+from .expression_engine import ExpressionEngine
 from .object import Object, flag_generator, flag_property
 
 
@@ -22,10 +24,12 @@ def d_(member, readable=True, writable=True, final=True):
     readable : bool, optional
         Whether the member is readable from Enaml syntax. The member
         must be readable to use the '>>', ':=', and '::' operators.
+        The default is True.
 
     writable : bool, optional
         Whether the member is writable from Enaml syntax. The member
         must be writable to use the '=', '<<', and ':=' operators.
+        The default is True.
 
     final : bool, optional
         Whether or not the member can be redefined from Enaml syntax
@@ -56,6 +60,8 @@ class Declarative(Object):
     visual representation; that functionality is added by subclasses.
 
     """
+    __metaclass__ = DeclarativeMeta
+
     #: Export the 'name' attribute as a declarative member.
     name = d_(Unicode())
 
@@ -68,9 +74,13 @@ class Declarative(Object):
     #: not be manipulated directly by user code.
     is_initialized = flag_property(INITIALIZED_FLAG)
 
-    #: Storage space for the declarative runtime. This value should
-    #: not normally be manipulated by user code.
+    #: Storage space for the declarative runtime. This value should not
+    #: be manipulated by user code.
     _d_storage = Typed(sortedmap, ())
+
+    #: Storage space for the declarative engine. This value should not
+    #: be manipulated by user code.
+    _d_engine = Typed(ExpressionEngine)
 
     def initialize(self):
         """ Initialize this object all of its children recursively.
@@ -97,6 +107,7 @@ class Declarative(Object):
         """
         self.is_initialized = False
         del self._d_storage
+        del self._d_engine
         super(Declarative, self).destroy()
 
     def child_added(self, child):
@@ -110,36 +121,3 @@ class Declarative(Object):
         if isinstance(child, Declarative):
             if self.is_initialized and not child.is_initialized:
                 child.initialize()
-
-    def add_subtree(self, node, f_locals):
-        """ Add a node subtree to this instance.
-
-        This method is invoked by the declarative runtime when an
-        enamldef block is executed. It is responsible for creating the
-        children defined by the node and adding them to the given scope.
-
-        The default implementation of this method is suitable for most
-        use cases, but some of the advanced components, like Looper and
-        Conditional, reimplement this method to delay and modify child
-        construction. A developer should have a firm understanding of
-        the declarative runtime before reimplementing this method.
-
-        Parameters
-        ----------
-        node : ConstructNode
-            A construct node containing the information required to
-            instantiate the children for the instance.
-
-        f_locals : mapping or None
-            A mapping object for the current local scope or None if
-            the block does not require a local scope.
-
-        """
-        if f_locals is not None:
-            if node.identifier:
-                f_locals[node.identifier] = self
-            self._d_storage[node.scope_key] = f_locals
-        for child_node in node.children:
-            child = child_node.klass()
-            child.add_subtree(child_node, f_locals)
-            child.set_parent(self)
