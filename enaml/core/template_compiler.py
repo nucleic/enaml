@@ -126,8 +126,7 @@ class TemplateCompiler(BlockCompiler):
 
         # Create and store the template node
         cg.load_helper_from_fast('template_node')
-        cg.load_fast(self.scope_key)
-        cg.call_function(1)
+        cg.call_function()
         cg.store_fast(node_var)
 
         # Populate the body of the template
@@ -135,6 +134,10 @@ class TemplateCompiler(BlockCompiler):
         for item in node.body:
             self.visit(item)
         self.node_stack.pop()
+
+        # Load the helper and the template node.
+        cg.load_helper_from_fast('make_template_scope')
+        cg.load_fast(node_var)
 
         # Create a tuple of the scope variables. The variables are
         # sorted since the pairs will be converted into a sortedmap,
@@ -144,9 +147,8 @@ class TemplateCompiler(BlockCompiler):
             cg.load_fast(name)
         cg.build_tuple(2 * len(self._local_names))
 
-        # Load and return a tuple of the template scope and node.
-        cg.load_fast(node_var)
-        cg.build_tuple(2)
+        # Call the helper and return the resulting node
+        cg.call_function(2)
         cg.return_value()
 
         # Release the held variables
