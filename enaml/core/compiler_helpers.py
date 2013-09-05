@@ -6,9 +6,13 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import Event, Instance
+from atom.datastructures.api import sortedmap
 
-from .compiler_nodes import DeclarativeNode, EnamlDefNode
+from .compiler_nodes import (
+    DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstNode
+)
 from .declarative import Declarative, d_
+from .declarative_meta import patch_d_member
 from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
 from .operators import __get_operators
@@ -84,6 +88,7 @@ def add_storage(klass, name, store_type, kind):
         new.set_index(len(members))
 
     new.set_name(name)
+    patch_d_member(new)
     members[name] = new
     setattr(klass, name, new)
 
@@ -152,19 +157,42 @@ def enamldef_node(klass, identifier, scope_key):
     return node
 
 
-def template_node(scope_key, has_locals):
+def template_node():
     """ Create and return a template node.
 
-    scope_key : object
-        The key for the local scope in the local storage map.
-
-    has_locals : bool
-        Whether or not the node has local scope.
+    Returns
+    -------
+    result : TemplateNode
+        A new compiler template node.
 
     """
-    node = TemplateNode()
-    node.scope_key = scope_key
-    node.has_locals = has_locals
+    return TemplateNode()
+
+
+def template_inst_node(template_inst):
+    node = TemplateInstNode()
+    node.template_node = template_inst.template_node
+    return node
+
+
+def make_template_scope(node, scope_tuple):
+    """ Create and add the template scope to a template node.
+
+    Parameters
+    ----------
+    node : TemplateNode
+        The template node for which to create the scope.
+
+    scope_tuple : tuple
+        A tuple of alternating key, value pairs representing the
+        scope of a template instantiation.
+
+    """
+    scope = sortedmap()
+    t_iter = iter(scope_tuple)
+    for key, value in zip(t_iter, t_iter):
+        scope[key] = value
+    node.template_scope = scope
     return node
 
 
@@ -377,8 +405,10 @@ __compiler_helpers = {
     'make_enamldef': make_enamldef,
     'make_object': make_object,
     'make_template': make_template,
+    'make_template_scope': make_template_scope,
     'run_operator': run_operator,
     'template_node': template_node,
+    'template_inst_node': template_inst_node,
     'type_check_expr': type_check_expr,
     'validate_declarative': validate_declarative,
     'validate_template': validate_template,
