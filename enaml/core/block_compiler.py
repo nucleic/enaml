@@ -5,12 +5,43 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Constant, List, Typed
+from atom.api import Atom, Constant, List, Typed
 
 from .code_generator import CodeGenerator
 from .compiler_base import CompilerBase
-from .compiler_util import VarPool
 from .enaml_ast import StorageExpr
+
+
+class VarPool(Atom):
+    """ A class for generating private variable names.
+
+    """
+    #: The pool of currently used variable names.
+    pool = Typed(set, ())
+
+    def new(self):
+        """ Get a new private variable name.
+
+        Returns
+        -------
+        result : str
+            An unused variable name.
+
+        """
+        var = '_[var_%d]' % len(self.pool)
+        self.pool.add(var)
+        return var
+
+    def release(self, name):
+        """ Return a variable name to the pool.
+
+        Parameters
+        ----------
+        name : str
+            The variable name which is free to be reused.
+
+        """
+        self.pool.discard(name)
 
 
 class BlockCompiler(CompilerBase):

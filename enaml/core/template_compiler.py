@@ -8,7 +8,35 @@
 from atom.api import Typed
 
 from .block_compiler import BlockCompiler
-from .compiler_util import collect_local_names
+from .enaml_ast import StorageExpr
+
+
+def collect_local_names(node):
+    """ Collect the compile-time local variable names for the node.
+
+    Parameters
+    ----------
+    node : Template
+        The enaml ast template node of interest.
+
+    Returns
+    -------
+    result : list
+        The list of local variable names found in the block.
+
+    """
+    local_vars = []
+    params = node.parameters
+    for param in params.positional:
+        local_vars.append(param.name)
+    for param in params.keywords:
+        local_vars.append(param.name)
+    if params.starparam:
+        local_vars.append(params.starparam)
+    for item in node.body:
+        if isinstance(item, StorageExpr):
+            local_vars.append(item.name)
+    return local_vars
 
 
 class TemplateCompiler(BlockCompiler):
