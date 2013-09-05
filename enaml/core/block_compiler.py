@@ -167,7 +167,6 @@ class BlockCompiler(CompilerBase):
         """ The compiler visitor for a TemplateInst node.
 
         """
-        return
         # FIXME this visitor still needs a lot of work
         cg = self.code_generator
         cg.set_lineno(node.lineno)
@@ -228,26 +227,18 @@ class BlockCompiler(CompilerBase):
         else:
             cg.call_function(argcount)
 
-        # XXX breaking into private api
-        # Load the template node children and store as a local
-        cg.load_attr('_template_node')
+        node_var = self.var_pool.new()
+        cg.load_helper_from_fast('template_inst_node')
+        cg.rot_two()
+        cg.call_function(1)
+        cg.store_fast(node_var)
+        cg.load_fast(self.node_stack[-1])
         cg.load_attr('children')
-        nodes_var = self.var_pool.new()
-        cg.store_fast(nodes_var)
-
-        # Loop over the nodes and add them to the parent.
-        loop_var = self.var_pool.new()
-        with cg.for_loop(nodes_var):
-            cg.store_fast(loop_var)
-            cg.load_fast(self.node_stack[-1])
-            cg.load_attr('children')
-            cg.load_attr('append')
-            cg.load_fast(loop_var)
-            cg.call_function(1)
-            cg.pop_top()
-
-        self.var_pool.release(loop_var)
-        self.var_pool.release(nodes_var)
+        cg.load_attr('append')
+        cg.load_fast(node_var)
+        cg.call_function(1)
+        cg.pop_top()
+        self.var_pool.release(node_var)
 
     def visit_StorageExpr(self, node):
         """ The compiler visitor for a StorageExpr node.
