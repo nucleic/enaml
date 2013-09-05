@@ -9,7 +9,8 @@ from atom.api import Constant, List, Typed
 
 from .code_generator import CodeGenerator
 from .compiler_base import CompilerBase
-from .compiler_util import VarPool, needs_engine, needs_subclass
+from .compiler_util import VarPool
+from .enaml_ast import StorageExpr
 
 
 class BlockCompiler(CompilerBase):
@@ -39,14 +40,6 @@ class BlockCompiler(CompilerBase):
 
     def load_name(self, name):
         """ Load the given name onto the TOS.
-
-        This method must be implemented by subclasses.
-
-        """
-        raise NotImplementedError
-
-    def has_locals(self):
-        """ Get whether or not this block has locals.
 
         This method must be implemented by subclasses.
 
@@ -97,7 +90,7 @@ class BlockCompiler(CompilerBase):
             cg.pop_top()                            # base
 
         # Subclass the child class if needed
-        if needs_subclass(node):
+        if any(isinstance(item, StorageExpr) for item in node.body):
             cg.load_const(node.typename)
             cg.rot_two()
             cg.build_tuple(1)
@@ -112,21 +105,12 @@ class BlockCompiler(CompilerBase):
         cg.store_fast(class_var)
 
         # Build the construct node
-        cg.load_helper_from_fast('construct_node')
+        cg.load_helper_from_fast('declarative_node')
         cg.rot_two()
         cg.load_const(node.identifier)
-        cg.load_fast(self.scope_key)
-        cg.load_const(self.has_locals())            # helper -> class -> identifier -> key -> bool
-        cg.call_function(4)                         # node
+        cg.load_fast(self.scope_key)                # helper -> class -> identifier -> key
+        cg.call_function(3)                         # node
         cg.store_fast(node_var)
-
-        # Build an engine for the new class if needed.
-        if needs_engine(node):
-            cg.load_helper_from_fast('make_engine')
-            cg.load_fast(class_var)                 # helper -> class
-            cg.call_function(1)                     # engine
-            cg.load_fast(class_var)                 # engine -> class
-            cg.store_attr('__engine__')
 
         # Populate the body of the node
         self.class_stack.append(class_var)
@@ -152,6 +136,7 @@ class BlockCompiler(CompilerBase):
         """ The compiler visitor for a TemplateInst node.
 
         """
+        return
         # FIXME this visitor still needs a lot of work
         cg = self.code_generator
         cg.set_lineno(node.lineno)

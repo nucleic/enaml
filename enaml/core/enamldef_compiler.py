@@ -5,10 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Typed
+from atom.api import Typed
 
 from .block_compiler import BlockCompiler
-from .compiler_util import has_identifiers, needs_engine
 
 
 class EnamlDefCompiler(BlockCompiler):
@@ -19,10 +18,8 @@ class EnamlDefCompiler(BlockCompiler):
     classmethod.
 
     """
-    #: Whether instances of the block need local storage.
-    _has_locals = Bool(False)
-
-    #: The user-accessible local names for the block.
+    #: The user-accessible local names for the block. These are always
+    #: empty for an enamldef block.
     _local_names = Typed(set, ())
 
     @classmethod
@@ -61,14 +58,6 @@ class EnamlDefCompiler(BlockCompiler):
         """
         self.code_generator.load_global(name)
 
-    def has_locals(self):
-        """ Get whether or not the block has locals.
-
-        This implements a required BlockCompiler method.
-
-        """
-        return self._has_locals
-
     def local_names(self):
         """ Get the set of user-accessible local names for the block.
 
@@ -82,9 +71,6 @@ class EnamlDefCompiler(BlockCompiler):
 
         """
         cg = self.code_generator
-
-        # Determine whether declaration instances need local storage.
-        self._has_locals = has_identifiers(node)
 
         # Claim the variables needed for the class and construct node
         class_var = self.var_pool.new()
@@ -123,22 +109,13 @@ class EnamlDefCompiler(BlockCompiler):
         cg.dup_top()
         cg.store_fast(class_var)
 
-        # Build the construct node
-        cg.load_helper_from_fast('construct_node')
+        # Build the compiler node
+        cg.load_helper_from_fast('enamldef_node')
         cg.rot_two()
         cg.load_const(node.identifier)
-        cg.load_fast(self.scope_key)
-        cg.load_const(self._has_locals)             # helper -> class -> identifier -> key -> bool
-        cg.call_function(4)                         # node
+        cg.load_fast(self.scope_key)                # helper -> class -> identifier -> key
+        cg.call_function(3)                         # node
         cg.store_fast(node_var)
-
-        # Build an engine for the new class if needed.
-        if needs_engine(node):
-            cg.load_helper_from_fast('make_engine')
-            cg.load_fast(class_var)                 # helper -> class
-            cg.call_function(1)                     # engine
-            cg.load_fast(class_var)                 # engine -> class
-            cg.store_attr('__engine__')
 
         # Popuplate the body of the class
         self.class_stack.append(class_var)
@@ -149,11 +126,10 @@ class EnamlDefCompiler(BlockCompiler):
         self.node_stack.pop()
 
         # Store the node on the enamldef and return the class
-        cg.load_fast(class_var)
-        cg.dup_top()
         cg.load_fast(node_var)
-        cg.rot_two()
+        cg.load_fast(class_var)
         cg.store_attr('__node__')
+        cg.load_fast(class_var)
         cg.return_value()
 
         # Release the held variables

@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Typed
+from atom.api import Typed
 
 from .block_compiler import BlockCompiler
-from .compiler_util import collect_local_names, has_identifiers
+from .compiler_util import collect_local_names
 
 
 class TemplateCompiler(BlockCompiler):
@@ -19,9 +19,6 @@ class TemplateCompiler(BlockCompiler):
     classmethod.
 
     """
-    #: Whether instances of the block need local storage.
-    _has_locals = Bool(False)
-
     #: The user-accessible local names for the block.
     _local_names = Typed(set, ())
 
@@ -75,14 +72,6 @@ class TemplateCompiler(BlockCompiler):
         else:
             cg.load_global(name)
 
-    def has_locals(self):
-        """ Get whether or not the block has locals.
-
-        This implements a required BlockCompiler method.
-
-        """
-        return self._has_locals
-
     def local_names(self):
         """ Get the set of user-accessible local names for the block.
 
@@ -99,9 +88,6 @@ class TemplateCompiler(BlockCompiler):
 
         # Extract the local variables and check for other local scope.
         self._local_names.update(collect_local_names(node))
-        self._has_locals = bool(self._local_names)
-        if not self._has_locals:
-            self._has_locals = has_identifiers(node)
 
         # Claim the variable for the template node
         node_var = self.var_pool.new()
@@ -113,8 +99,7 @@ class TemplateCompiler(BlockCompiler):
         # Create and store the template node
         cg.load_helper_from_fast('template_node')
         cg.load_fast(self.scope_key)
-        cg.load_const(self._has_locals)        # helper -> scope_key -> bool
-        cg.call_function(2)
+        cg.call_function(1)
         cg.store_fast(node_var)
 
         # Populate the body of the template
