@@ -5,9 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import DefaultValue, Event, Instance
+from atom.api import Event, Instance
 
-from .compiler_nodes import ConstructNode, TemplateNode
+from .compiler_nodes import DeclarativeNode, EnamlDefNode
 from .declarative import Declarative, d_
 from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
@@ -88,8 +88,8 @@ def add_storage(klass, name, store_type, kind):
     setattr(klass, name, new)
 
 
-def construct_node(klass, identifier, scope_key, has_locals):
-    """ Create and return a ConstructNode for the given klass.
+def declarative_node(klass, identifier, scope_key):
+    """ Create and return a DeclarativeNode for the given klass.
 
     Parameters
     ----------
@@ -100,26 +100,55 @@ def construct_node(klass, identifier, scope_key, has_locals):
         The local string identifier to associate with instances.
 
     scope_key : object
-        The key for the local scope in the local storage map.
-
-    has_locals : bool
-        Whether or not the node has local scope.
+        The key for the local scope in the local storage maps.
 
     Returns
     -------
-    result : ConstructNode
-        A construct node for the given class.
+    result : DeclarativeNode
+        The compiler node for the given klass.
 
     """
-    node = ConstructNode()
+    node = DeclarativeNode()
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
-    node.has_locals = has_locals
-    # copy over the superclass nodes, if any
+    # If the class is an enamldef, the engine must be copied
+    s_node = getattr(klass, '__node__', None)
+    if s_node is not None and s_node.engine is not None:
+        node.engine = s_node.engine.copy()
+    return node
+
+
+def enamldef_node(klass, identifier, scope_key):
+    """ Create and return an EnamlDefNode for the given class.
+
+    Parameters
+    ----------
+    klass : type
+        The resolved declarative class for the node.
+
+    identifier : str
+        The local string identifier to associate with instances.
+
+    scope_key : object
+        The key for the local scope in the local storage maps.
+
+    Returns
+    -------
+    result : EnamlDefNode
+        The compiler node for the given class.
+
+    """
+    node = EnamlDefNode()
+    node.klass = klass
+    node.identifier = identifier
+    node.scope_key = scope_key
+    # Copy over the data from the supernode.
     s_node = getattr(klass, '__node__', None)
     if s_node is not None:
         node.super_nodes = s_node.super_nodes + [s_node]
+        if s_node.engine is not None:
+            node.engine = s_node.engine.copy()
     return node
 
 
@@ -155,21 +184,6 @@ def make_enamldef(name, bases, dct):
 
     """
     return EnamlDefMeta(name, bases, dct)
-
-
-def make_engine(klass):
-    """ Make the expression engine for the class.
-
-    Parameters
-    ----------
-    klass : type
-        The Declarative class which should be given an engine.
-
-    """
-    engine = getattr(klass, '__engine__', None)
-    if engine is not None:
-        return engine.copy()
-    return ExpressionEngine()
 
 
 def make_object():
@@ -220,23 +234,6 @@ def make_template(paramspec, func, name, f_globals, template_map):
     template.add_specialization(paramspec, func)
 
 
-def read_op_dispatcher(owner, name):
-    """ A default value handler which reads from a declarative engine.
-
-    """
-    return type(owner).__engine__.read(owner, name)
-
-
-def write_op_dispatcher(change):
-    """ An observer which writes to a declarative engine.
-
-    """
-    change_t = change['type']
-    if change_t == 'update' or change_t == 'event':
-        owner = change['object']
-        type(owner).__engine__.write(owner, change['name'], change)
-
-
 def run_operator(node, name, op, code, f_globals):
     """ Run the operator for a given node.
 
@@ -261,16 +258,14 @@ def run_operator(node, name, op, code, f_globals):
     operators = __get_operators()
     if op not in operators:
         raise TypeError("failed to load operator '%s'" % op)
-    scope_key = node.scope_key
-    pair = operators[op](code, scope_key, f_globals)
+    pair = operators[op](code, node.scope_key, f_globals)
 
     # The read and write semantics are reversed here. In the context of
     # a declarative member, d_readable means that an attribute can be
     # *read* from enaml and it's value *written* to the expression,
     # d_writable means that an expression can be *read* and its value
     # *written* to the attribute attribute.
-    klass = node.klass
-    member = klass.members().get(name)
+    member = node.klass.members().get(name)
     if (member is None or
         member.metadata is None or
         not member.metadata.get('d_member')):
@@ -280,22 +275,9 @@ def run_operator(node, name, op, code, f_globals):
     if pair.reader is not None and not member.metadata.get('d_writable'):
         raise TypeError("'%s' is not writable from enaml" % name)
 
-    klass.__engine__.add_pair(name, pair)
-
-    if pair.reader is not None:
-        mode = (DefaultValue.CallObject_ObjectName, read_op_dispatcher)
-        if member.default_value_mode != mode:
-            member = member.clone()
-            member.set_default_value_mode(*mode)
-            klass.members()[name] = member
-            setattr(klass, name, member)
-
-    if pair.writer is not None:
-        if not member.has_observer(write_op_dispatcher):
-            member = member.clone()
-            member.add_static_observer(write_op_dispatcher)
-            klass.members()[name] = member
-            setattr(klass, name, member)
+    if node.engine is None:
+        node.engine = ExpressionEngine()
+    node.engine.add_pair(name, pair)
 
 
 def type_check_expr(value, kind):
@@ -390,9 +372,9 @@ def validate_template(template):
 __compiler_helpers = {
     'add_static_attr': add_static_attr,
     'add_storage': add_storage,
-    'construct_node': construct_node,
+    'declarative_node': declarative_node,
+    'enamldef_node': enamldef_node,
     'make_enamldef': make_enamldef,
-    'make_engine': make_engine,
     'make_object': make_object,
     'make_template': make_template,
     'run_operator': run_operator,
