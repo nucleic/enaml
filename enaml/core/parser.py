@@ -743,7 +743,7 @@ def _validate_template(node, lexer):
     for param in params.keywords:
         param_names.add(param.name)
     if params.starparam:
-        param_names.add(param.starparam)
+        param_names.add(params.starparam)
 
     # validate the const expressions
     StorageExpr = enaml_ast.StorageExpr
@@ -960,10 +960,11 @@ def p_template_inst(p):
 
 
 def p_template_inst_impl1(p):
-    ''' template_inst_impl : NAME BANG COLON template_inst_item '''
+    ''' template_inst_impl : NAME template_args COLON template_inst_item '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
+    node.arguments = p[2]
     item = p[4]
     if item is not None:
         node.body = [item]
@@ -971,19 +972,21 @@ def p_template_inst_impl1(p):
 
 
 def p_template_inst_impl2(p):
-    ''' template_inst_impl : NAME BANG COLON template_inst_suite '''
+    ''' template_inst_impl : NAME template_args COLON template_inst_suite '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
+    node.arguments = p[2]
     node.body = p[4]
     p[0] = node
 
 
 def p_template_inst_impl3(p):
-    ''' template_inst_impl : NAME BANG COLON template_ids COLON template_inst_item '''
+    ''' template_inst_impl : NAME template_args COLON template_ids COLON template_inst_item '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
+    node.arguments = p[2]
     node.identifiers = p[4]
     item = p[6]
     if item is not None:
@@ -992,58 +995,13 @@ def p_template_inst_impl3(p):
 
 
 def p_template_inst_impl4(p):
-    ''' template_inst_impl : NAME BANG COLON template_ids COLON template_inst_suite '''
+    ''' template_inst_impl : NAME template_args COLON template_ids COLON template_inst_suite '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
+    node.arguments = p[2]
     node.identifiers = p[4]
     node.body = p[6]
-    p[0] = node
-
-
-def p_template_inst_impl5(p):
-    ''' template_inst_impl : NAME BANG template_args COLON template_inst_item '''
-    node = enaml_ast.TemplateInst()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.arguments = p[3]
-    item = p[5]
-    if item is not None:
-        node.body = [item]
-    p[0] = node
-
-
-def p_template_inst_impl6(p):
-    ''' template_inst_impl : NAME BANG template_args COLON template_inst_suite '''
-    node = enaml_ast.TemplateInst()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.arguments = p[3]
-    node.body = p[5]
-    p[0] = node
-
-
-def p_template_inst_impl7(p):
-    ''' template_inst_impl : NAME BANG template_args COLON template_ids COLON template_inst_item '''
-    node = enaml_ast.TemplateInst()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.arguments = p[3]
-    node.identifiers = p[5]
-    item = p[7]
-    if item is not None:
-        node.body = [item]
-    p[0] = node
-
-
-def p_template_inst_impl8(p):
-    ''' template_inst_impl : NAME BANG template_args COLON template_ids COLON template_inst_suite '''
-    node = enaml_ast.TemplateInst()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.arguments = p[3]
-    node.identifiers = p[5]
-    node.body = p[7]
     p[0] = node
 
 

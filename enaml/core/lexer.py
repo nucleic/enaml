@@ -135,7 +135,6 @@ class EnamlLexer(object):
         (r'::', 'DOUBLECOLON'),
         (r'\.\.\.', 'ELLIPSIS'),
         (r':=', 'COLONEQUAL'),
-        (r'!', 'BANG'),
     )
 
     tokens = (
