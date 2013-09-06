@@ -199,15 +199,11 @@ class TemplateNode(CompilerNode):
 class TemplateInstNode(CompilerNode):
     """ A compiler node which represents a template instantiation.
 
+    This compiler node will never have children.
+
     """
     #: The template node which will create the instances.
     template_node = Typed(TemplateNode)
-
-    #: The key for the local block scope in the storage map.
-    scope_key = Typed(object)
-
-    #: The expression engines to assign to the objects.
-    engines = List(ExpressionEngine)
 
     #: The named identifiers for the instantiated objects.
     names = Tuple()
@@ -231,11 +227,6 @@ class TemplateInstNode(CompilerNode):
                 f_locals[name] = instance
         if self.starname:
             f_locals[self.starname] = tuple(instances[len(self.names):])
-        # if self.engines:
-        #     for engine, instance in zip(self.engines, instances):
-        #         if engine is not None:
-        #             instance._d_storage[self.scope_key] = f_locals
-        #             instance._d_engine = engine
         return instances
 
     def size(self):
