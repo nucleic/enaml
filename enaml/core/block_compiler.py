@@ -207,9 +207,6 @@ class BlockCompiler(CompilerBase):
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
-        # Create the variable needed for the node
-        node_var = self.var_pool.new()
-
         # Load and validate the template
         self.load_name(node.name)
         with cg.try_squash_raise():
@@ -253,17 +250,14 @@ class BlockCompiler(CompilerBase):
         cg.load_const(names)
         cg.load_const(starname)
         cg.call_function(3)
-        cg.store_fast(node_var)
 
+        # Append the node to the parent node
         cg.load_fast(self.node_stack[-1])
         cg.load_attr('children')
         cg.load_attr('append')
-        cg.load_fast(node_var)
+        cg.rot_two()
         cg.call_function(1)
         cg.pop_top()
-
-        # Release the held variables
-        self.var_pool.release(node_var)
 
     def visit_StorageExpr(self, node):
         """ The compiler visitor for a StorageExpr node.
