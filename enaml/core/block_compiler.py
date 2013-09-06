@@ -210,9 +210,6 @@ class BlockCompiler(CompilerBase):
         # Create the variable needed for the node
         node_var = self.var_pool.new()
 
-        # Preload the template inst node helper.
-        cg.load_helper_from_fast('template_inst_node')
-
         # Load and validate the template
         self.load_name(node.name)
         with cg.try_squash_raise():
@@ -236,7 +233,7 @@ class BlockCompiler(CompilerBase):
         else:
             cg.call_function(argcount)
 
-        # Validate the instantiation unpack size, if needed.
+        # Validate the instantiation size, if needed.
         names = ()
         starname = ''
         identifiers = node.identifiers
@@ -250,7 +247,9 @@ class BlockCompiler(CompilerBase):
                 cg.load_const(bool(starname))
                 cg.call_function(3)
 
-        # Invoke the helper to create the template inst node
+        # Load and call the helper to create the compiler node
+        cg.load_helper_from_fast('template_inst_node')
+        cg.rot_two()
         cg.load_const(names)
         cg.load_const(starname)
         cg.call_function(3)
