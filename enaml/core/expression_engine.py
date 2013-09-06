@@ -83,7 +83,7 @@ class HandlerSet(Atom):
     pair precedence. It should not be used directly by user code.
 
     """
-    #: The handler pair which hold the precedent read handler.
+    #: The handler pair which holds the precedent read handler.
     read_pair = Typed(HandlerPair)
 
     #: The list of handler pairs which hold write handlers. The pairs
@@ -102,7 +102,6 @@ class HandlerSet(Atom):
             A copy of the handler set with independent lists.
 
         """
-        # Atom Lists have copy semantics
         new = HandlerSet()
         new.read_pair = self.read_pair
         new.write_pairs = self.write_pairs
@@ -119,6 +118,15 @@ class ExpressionEngine(Atom):
 
     #: A private set of guard tuples for preventing feedback loops.
     _guards = Typed(set, ())
+
+    def __nonzero__(self):
+        """ Get the boolean value for the engine.
+
+        An expression engine will test boolean False if there are
+        no handlers associated with the engine.
+
+        """
+        return len(self._handlers) > 0
 
     def add_pair(self, name, pair):
         """ Add a HandlerPair to the engine.
@@ -144,9 +152,6 @@ class ExpressionEngine(Atom):
     def read(self, owner, name):
         """ Compute and return the value of an expression.
 
-        This should only be called if handler pair with a reader was
-        previously added to the engine for the given name.
-
         Parameters
         ----------
         owner : Declarative
@@ -155,17 +160,26 @@ class ExpressionEngine(Atom):
         name : str
             The name of the relevant bound expression.
 
+        Returns
+        -------
+        result : object or NotImplemented
+            The evaluated value of the expression, or NotImplemented
+            if there is no readable expression in the engine.
+
         """
-        return self._handlers[name].read_pair.reader(owner, name)
+        handler = self._handlers.get(name)
+        if handler is not None:
+            pair = handler.read_pair
+            if pair is not None:
+                return pair.reader(owner, name)
+        return NotImplemented
 
     def write(self, owner, name, change):
         """ Write a change to an expression.
 
-        This should only be called if handler pair with a writer was
-        previously added to the engine for the given name. This method
-        will not run the handler if its paired read handler is actively
-        updating the owner attribute. This behavior protects against
-        feedback loops and saves useless computation.
+        This method will not run the handler if its paired read handler
+        is actively updating the owner attribute. This behavior protects
+        against feedback loops and saves useless computation.
 
         Parameters
         ----------
@@ -180,27 +194,26 @@ class ExpressionEngine(Atom):
             which owns the engine.
 
         """
-        guards = self._guards
-        handler = self._handlers[name]
-        for pair in handler.write_pairs:
-            key = (owner, pair)
-            if key not in guards:
-                guards.add(key)
-                try:
-                    pair.writer(owner, name, change)
-                finally:
-                    guards.remove(key)
+        handler = self._handlers.get(name)
+        if handler is not None:
+            guards = self._guards
+            for pair in handler.write_pairs:
+                key = (owner, pair)
+                if key not in guards:
+                    guards.add(key)
+                    try:
+                        pair.writer(owner, name, change)
+                    finally:
+                        guards.remove(key)
 
     def update(self, owner, name):
         """ Update the named attribute of the owner.
 
-        This should only be called if handler pair with a reader was
-        previously added to the engine for the given name. This method
-        will update the named attribute by re-reading the expression and
-        setting the value of the attribute. This method will not run the
-        handler if its paired write handler is actively updating the
-        owner attribute. This behavior protects against feedback loops
-        and saves useless computation.
+        This method will update the named attribute by re-reading the
+        expression and setting the value of the attribute. This method
+        will not run the handler if its paired write handler is actively
+        updating the owner attribute. This behavior protects against
+        feedback loops and saves useless computation.
 
         Parameters
         ----------
@@ -211,15 +224,18 @@ class ExpressionEngine(Atom):
             The name of the relevant bound expression.
 
         """
-        guards = self._guards
-        pair = self._handlers[name].read_pair
-        key = (owner, pair)
-        if key not in guards:
-            guards.add(key)
-            try:
-                setattr(owner, name, pair.reader(owner, name))
-            finally:
-                guards.remove(key)
+        handler = self._handlers.get(name)
+        if handler is not None:
+            pair = handler.read_pair
+            if pair is not None:
+                guards = self._guards
+                key = (owner, pair)
+                if key not in guards:
+                    guards.add(key)
+                    try:
+                        setattr(owner, name, pair.reader(owner, name))
+                    finally:
+                        guards.remove(key)
 
     def copy(self):
         """ Create a copy of the expression engine.

@@ -49,7 +49,9 @@ class SubscriptionObserver(object):
         """
         if self.ref:
             owner = self.ref()
-            type(owner).__engine__.update(owner, self.name)
+            engine = owner._d_engine
+            if engine is not None:
+                engine.update(owner, self.name)
 
 
 class StandardTracer(CodeTracer):

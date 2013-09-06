@@ -10,6 +10,7 @@ from collections import Iterable
 from atom.api import Instance, List, Typed
 from atom.datastructures.api import sortedmap
 
+from .compiler_nodes import new_scope
 from .declarative import d_
 from .pattern import Pattern
 
@@ -106,17 +107,16 @@ class Looper(Pattern):
                 iteration = []
                 new_iter_data[loop_item] = iteration
                 new_items.append(iteration)
-                for node, f_locals in pattern_nodes:
-                    if f_locals is not None:
-                        f_locals = f_locals.copy()
-                    else:
-                        f_locals = sortedmap()
-                    f_locals['loop_index'] = loop_index
-                    f_locals['loop_item'] = loop_item
-                    for child_node in node.children:
-                        child = child_node.klass()
-                        child.add_subtree(child_node, f_locals)
-                        iteration.append(child)
+                for nodes, f_locals in pattern_nodes:
+                    with new_scope(f_locals) as f_locals:
+                        f_locals['loop_index'] = loop_index
+                        f_locals['loop_item'] = loop_item
+                        for node in nodes:
+                            child = node(None)
+                            if isinstance(child, list):
+                                iteration.extend(child)
+                            else:
+                                iteration.append(child)
 
         for iteration in old_items:
             for old in iteration:

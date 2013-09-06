@@ -43,7 +43,7 @@ def optimize_locals(codelist):
         if op == LOAD_NAME and op_arg in fast_locals:
             codelist[idx] = (LOAD_FAST, op_arg)
         elif op == DELETE_NAME and op_arg in fast_locals:
-            codelist[idx] = (DELETE_FAST, op_arg)
+            codelist[idx] = (DELETE_FAST, op_arg)  # py2.6 list comps
 
 
 def gen_simple(code, f_globals):

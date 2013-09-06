@@ -20,6 +20,9 @@ class Pattern(Declarative):
     Creating a Pattern without a parent is a programming error.
 
     """
+    #: Single to the compiler that this class handles child creation.
+    __intercepts_child_nodes__ = True
+
     #: Storage for the collected pattern nodes. This is used directly
     #: by subclasses and should not be manipulated by user code.
     pattern_nodes = List()
@@ -55,30 +58,25 @@ class Pattern(Declarative):
                     item.destroy()
         del self.pattern_nodes
 
-    def add_subtree(self, node, f_locals):
-        """ Add a node subtree to this pattern.
+    def child_node_intercept(self, nodes, f_locals):
+        """ Add a child subtree to this pattern.
 
-        This method changes the default behavior provided by the parent
-        class. It stores the node object and the locals mapping until
-        the object is initialized, at which point the subclass will be
-        called to create the pattern items.
+        This method changes the default behavior of the runtime. It
+        stores the child nodes and the locals mapping until the object
+        is initialized, at which point the nodes will be called to
+        create the pattern items.
 
         Parameters
         ----------
-        node : ConstructNode
-            A construct node containing the information required to
-            instantiate the children.
+        nodes : list
+            A list of compiler nodes containing the information required
+            to instantiate the children.
 
         f_locals : mapping or None
-            A mapping object for the current local scope or None if
-            the block does not require a local scope.
+            A mapping object for the current local scope.
 
         """
-        if f_locals is not None:
-            if node.identifier:
-                f_locals[node.identifier] = self
-            self._d_storage[node.scope_key] = f_locals
-        self.pattern_nodes.append((node, f_locals))
+        self.pattern_nodes.append((nodes, f_locals))
 
     #--------------------------------------------------------------------------
     # Abstract API

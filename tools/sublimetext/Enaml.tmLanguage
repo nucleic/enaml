@@ -140,7 +140,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 			</dict>
 			<key>comment</key>
@@ -154,7 +154,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -175,7 +175,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -203,7 +203,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 			</dict>
 			<key>comment</key>
@@ -224,7 +224,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.modifier</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -235,7 +235,7 @@
 			<key>comment</key>
 			<string>Enaml Attribute Declaration</string>
 			<key>match</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
+			<string>^\s*(attr|event|static|const)\s+([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -243,7 +243,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.modifier</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -253,23 +253,23 @@
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 			</dict>
 			<key>comment</key>
 			<string>Enaml Attribute Declaration with Type</string>
 			<key>match</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
+			<string>^\s*(attr|event|static|const)\s+([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
+			<string>^\s*(attr|event|static|const)\s+([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.modifier</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -296,13 +296,13 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
+			<string>^\s*(attr|event|static|const)\s+([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.modifier</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -312,7 +312,7 @@
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 				<key>4</key>
 				<dict>
@@ -352,6 +352,70 @@
 				<dict>
 					<key>include</key>
 					<string>source.python</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>storage.type</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.function</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>Template declaration</string>
+			<key>match</key>
+			<string>^(template)\s*([A-Za-z_][A-Za-z0-9_]*)\(.*?\):\s*$</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.tag</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>Template instantiation</string>
+			<key>match</key>
+			<string>^\s*([A-Za-z_][A-Za-z0-9_]*)\(.*?\)\s*$</string>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>^\s*([A-Za-z_][A-Za-z0-9_]*)\(.*?\):</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.tag</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>Template instantiation with id</string>
+			<key>end</key>
+			<string>$</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>variable.other</string>
+						</dict>
+					</dict>
+					<key>match</key>
+					<string>\s*([A-Za-z_][A-Za-z0-9_]*)\s*</string>
 				</dict>
 			</array>
 		</dict>
