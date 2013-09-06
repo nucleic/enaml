@@ -99,7 +99,16 @@ from .template_compiler import TemplateCompiler
 #     at import time using native code instead of serialized dict and a
 #     runtime resolver object (I have no idea what I was thinking with
 #     with compiler versions 9 - 14).
-COMPILER_VERSION = 15
+# 16 : Support for templates - 9 September 2013
+#     This overhauls the compiler with added support for templates to
+#     the language grammar. The various compiler bits have been broken
+#     out into their own classes and delegate to a CodeGenerator for
+#     actually writing the bytecode operations. A large number of new
+#     compiler helpers were needed for this, and they are now held in
+#     a module level dictionary since the dict must persist for the
+#     lifetime of the module in order to insantiate templates. The dict
+#     helps remove namespace pollution.
+COMPILER_VERSION = 16
 
 
 # Code that will be executed at the top of every enaml module
