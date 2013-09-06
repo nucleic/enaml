@@ -130,7 +130,7 @@ def enamldef_node(klass, identifier, scope_key):
     Parameters
     ----------
     klass : type
-        The resolved declarative class for the node.
+        The enamldef declarative class for the node.
 
     identifier : str
         The local string identifier to associate with instances.
@@ -148,7 +148,7 @@ def enamldef_node(klass, identifier, scope_key):
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
-    # Copy over the data from the supernode.
+    # Copy over the data from the supernodes, if present.
     s_node = getattr(klass, '__node__', None)
     if s_node is not None:
         node.super_nodes = s_node.super_nodes + [s_node]
@@ -169,9 +169,32 @@ def template_node():
     return TemplateNode()
 
 
-def template_inst_node(template_inst):
+def template_inst_node(template_inst, names, starname):
+    """ Create and return a template inst node.
+
+    Parameters
+    ----------
+    template_inst : TemplateInst
+        The template instantiation object.
+
+    names : tuple
+        The identifier names to associate with the instantiation items.
+        This may be an empty tuple if there are no such identifiers.
+
+    starname : str
+        The star name to associate with the extra instantiated items.
+        This may be an empty string if there is no such item.
+
+    Returns
+    -------
+    result : TemplateInstNode
+        The compiler node for the template instantiation.
+
+    """
     node = TemplateInstNode()
     node.template_node = template_inst.template_node
+    node.names = names
+    node.starname = starname
     return node
 
 
@@ -397,6 +420,18 @@ def validate_template(template):
     return template
 
 
+def validate_unpack_size(template_inst, n, ex_unpack):
+    """ Validate the length of a template instantiation.
+
+    """
+    size = template_inst.template_node.size()
+    if size < n:
+        raise ValueError("need more than %d values to unpack" % size)
+    if not ex_unpack and size > n:
+        raise ValueError("too many values to unpack")
+    return template_inst
+
+
 __compiler_helpers = {
     'add_static_attr': add_static_attr,
     'add_storage': add_storage,
@@ -411,6 +446,7 @@ __compiler_helpers = {
     'template_inst_node': template_inst_node,
     'type_check_expr': type_check_expr,
     'validate_declarative': validate_declarative,
-    'validate_template': validate_template,
     'validate_spec': validate_spec,
+    'validate_template': validate_template,
+    'validate_unpack_size': validate_unpack_size,
 }
