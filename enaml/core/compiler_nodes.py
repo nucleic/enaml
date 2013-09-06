@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from atom.api import Atom, Str, Typed, ForwardTyped, List
+from atom.api import Atom, Str, Tuple, Typed, ForwardTyped, List
 from atom.datastructures.api import sortedmap
 
 from .expression_engine import ExpressionEngine
@@ -90,8 +90,8 @@ class DeclarativeNode(CompilerNode):
 
         Parameters
         ----------
-        parent : Object or None
-            The parent object for the hierarchy.
+        parent : Declarative or None
+            The parent declarative object for the hierarchy.
 
         Returns
         -------
@@ -110,6 +110,12 @@ class DeclarativeNode(CompilerNode):
             node(instance)
         instance.set_parent(parent)
         return instance
+
+    def size(self):
+        """ Return the size of the instantiated node.
+
+        """
+        return 1
 
 
 class EnamlDefNode(DeclarativeNode):
@@ -164,8 +170,8 @@ class TemplateNode(CompilerNode):
 
         Parameters
         ----------
-        parent : Object or None
-            The parent object of the declarative.
+        parent : Declarative or None
+            The parent declarative object for the templates.
 
         Returns
         -------
@@ -183,8 +189,57 @@ class TemplateNode(CompilerNode):
                     instances.append(value)
         return instances
 
+    def size(self):
+        """ Return the size of the instantiated node.
+
+        """
+        return sum(child.size() for child in self.children)
+
 
 class TemplateInstNode(CompilerNode):
+    """ A compiler node which represents a template instantiation.
+
+    """
+    #: The template node which will create the instances.
     template_node = Typed(TemplateNode)
-    def __call__(self,parent):
-        return self.template_node(parent)
+
+    #: The key for the local block scope in the storage map.
+    scope_key = Typed(object)
+
+    #: The expression engines to assign to the objects.
+    engines = List(ExpressionEngine)
+
+    #: The named identifiers for the instantiated objects.
+    names = Tuple()
+
+    #: The starname identifier for the instantiated objects.
+    starname = Str()
+
+    def __call__(self, parent):
+        """ Invoke the template instantiation to build the objects.
+
+        Parameters
+        ----------
+        parent : Declarative
+            The parent declarative object for the instantiation.
+
+        """
+        instances = self.template_node(parent)
+        f_locals = peek_scope()
+        if self.names:
+            for name, instance in zip(self.names, instances):
+                f_locals[name] = instance
+        if self.starname:
+            f_locals[self.starname] = tuple(instances[len(self.names):])
+        # if self.engines:
+        #     for engine, instance in zip(self.engines, instances):
+        #         if engine is not None:
+        #             instance._d_storage[self.scope_key] = f_locals
+        #             instance._d_engine = engine
+        return instances
+
+    def size(self):
+        """ Return the size of the instantiated node.
+
+        """
+        return self.template_node.size()

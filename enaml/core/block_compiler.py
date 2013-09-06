@@ -207,6 +207,12 @@ class BlockCompiler(CompilerBase):
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
+        # Create the variable needed for the node
+        node_var = self.var_pool.new()
+
+        # Preload the template inst node helper.
+        cg.load_helper_from_fast('template_inst_node')
+
         # Load and validate the template
         self.load_name(node.name)
         with cg.try_squash_raise():
@@ -230,18 +236,34 @@ class BlockCompiler(CompilerBase):
         else:
             cg.call_function(argcount)
 
-        # Create the template instance node
-        node_var = self.var_pool.new()
-        cg.load_helper_from_fast('template_inst_node')
-        cg.rot_two()
-        cg.call_function(1)
+        # Validate the instantiation unpack size, if needed.
+        names = ()
+        starname = ''
+        identifiers = node.identifiers
+        if identifiers is not None:
+            names = tuple(identifiers.names)
+            starname = identifiers.starname
+            with cg.try_squash_raise():
+                cg.load_helper_from_fast('validate_unpack_size')
+                cg.rot_two()
+                cg.load_const(len(names))
+                cg.load_const(bool(starname))
+                cg.call_function(3)
+
+        # Invoke the helper to create the template inst node
+        cg.load_const(names)
+        cg.load_const(starname)
+        cg.call_function(3)
         cg.store_fast(node_var)
+
         cg.load_fast(self.node_stack[-1])
         cg.load_attr('children')
         cg.load_attr('append')
         cg.load_fast(node_var)
         cg.call_function(1)
         cg.pop_top()
+
+        # Release the held variables
         self.var_pool.release(node_var)
 
     def visit_StorageExpr(self, node):
