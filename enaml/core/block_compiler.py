@@ -98,6 +98,43 @@ class BlockCompiler(CompilerBase):
         cg.call_function()
         cg.store_fast(self.scope_key)
 
+    def safe_eval_ast(self, ast, name, lineno):
+        """ Evaluate an expression in a separate local scope.
+
+        This generates code using the same technique as a Python
+        generator expression. It allows the expression to be evaluated
+        without the possibility of polluting the local namespace.
+
+        Parameters
+        ----------
+        ast : ast.Expression
+            A Python expression ast node.
+
+        name : str
+            The name to use for the code object.
+
+        lineno : int
+            The first line number of the expression.
+
+        """
+        cg = self.code_generator
+
+        # Generate the code object for the expression
+        expr_cg = CodeGenerator(filename=cg.filename)
+        expr_cg.set_lineno(lineno)
+        expr_cg.insert_python_expr(ast, trim=False)
+        call_args = expr_cg.rewrite_to_fast_locals(self.local_names())
+        expr_code = expr_cg.to_code(
+            args=call_args, newlocals=True, name=name, firstlineno=lineno
+        )
+
+        # Create and invoke the function
+        cg.load_const(expr_code)
+        cg.make_function()
+        for ca in call_args:
+            self.load_name(ca)
+        cg.call_function(len(call_args))
+
     def visit_ChildDef(self, node):
         """ The compiler visitor for a ChildDef node.
 
@@ -167,7 +204,6 @@ class BlockCompiler(CompilerBase):
         """ The compiler visitor for a TemplateInst node.
 
         """
-        # FIXME this visitor still needs a lot of work
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
@@ -178,48 +214,18 @@ class BlockCompiler(CompilerBase):
             cg.rot_two()
             cg.call_function(1)
 
-        # XXX clean me up
-        # Load the instantiation arguments
+        # Load the arguments for the instantiation call.
         argcount = 0
         varargs = False
         arguments = node.arguments
         if arguments is not None:
             argcount = len(arguments.args)
             for arg in arguments.args:
-
-                # Generate the code object for the argument
-                expr_cg = CodeGenerator(filename=cg.filename)
-                expr_cg.insert_python_expr(arg.ast, trim=False)
-                call_args = expr_cg.rewrite_to_fast_locals(self.local_names())
-                expr_code = expr_cg.to_code(
-                    args=call_args, newlocals=True, name=node.name,
-                    firstlineno=arg.lineno
-                )
-
-                # Create and invoke the argument function
-                cg.load_const(expr_code)
-                cg.make_function()
-                for ca in call_args:
-                    self.load_name(ca)
-                cg.call_function(len(call_args))
-
+                self.safe_eval_ast(arg.ast, node.name, arg.lineno)
             if arguments.stararg:
                 varargs = True
-                # Generate the code object for the argument
-                expr_cg = CodeGenerator(filename=cg.filename)
-                expr_cg.insert_python_expr(arg.ast, trim=False)
-                call_args = expr_cg.rewrite_to_fast_locals(self.local_names())
-                expr_code = expr_cg.to_code(
-                    args=call_args, newlocals=True, name=node.name,
-                    firstlineno=arg.lineno
-                )
-
-                # Create and invoke the argument function
-                cg.load_const(expr_code)
-                cg.make_function()
-                for ca in call_args:
-                    self.load_name(ca)
-                cg.call_function(len(call_args))
+                arg = arguments.stararg
+                self.safe_eval_ast(arg.ast, node.name, arg.lineno)
 
         # Instantiate the template
         if varargs:
@@ -227,6 +233,7 @@ class BlockCompiler(CompilerBase):
         else:
             cg.call_function(argcount)
 
+        # Create the template instance node
         node_var = self.var_pool.new()
         cg.load_helper_from_fast('template_inst_node')
         cg.rot_two()
@@ -278,20 +285,6 @@ class BlockCompiler(CompilerBase):
         """
         cg = self.code_generator
         cg.set_lineno(node.lineno)
-
-        # Generate the code object for the expression. The expression
-        # is executed as an independent function to avoid local scope
-        # pollution. This is same technique used by Python generators.
-        expr_cg = CodeGenerator(filename=cg.filename)
-        py_node = node.expr.value
-        expr_cg.set_lineno(py_node.lineno)
-        expr_cg.insert_python_expr(py_node.ast, trim=False)
-        call_args = expr_cg.rewrite_to_fast_locals(self.local_names())
-        expr_code = expr_cg.to_code(
-            args=call_args, newlocals=True, name=node.name,
-            firstlineno=py_node.lineno
-        )
-
         with cg.try_squash_raise():
 
             # Preload the helper and context
@@ -299,12 +292,9 @@ class BlockCompiler(CompilerBase):
             cg.load_fast(self.class_stack[-1])
             cg.load_const(node.name)                # helper -> class -> name
 
-            # Create and invoke the expression function
-            cg.load_const(expr_code)
-            cg.make_function()                      # TOS -> func
-            for arg in call_args:
-                self.load_name(arg)
-            cg.call_function(len(call_args))        # TOS -> value
+            # Load the value of the expression
+            py_node = node.expr.value
+            self.safe_eval_ast(py_node.ast, node.name, py_node.lineno)
 
             # Validate the type of the value if necessary
             if node.typename:
@@ -323,28 +313,11 @@ class BlockCompiler(CompilerBase):
         """
         cg = self.code_generator
         cg.set_lineno(node.lineno)
-
-        # Generate the code object for the expression. The expression
-        # is executed as an independent function to avoid local scope
-        # pollution. This is same technique used by Python generators.
-        expr_cg = CodeGenerator(filename=cg.filename)
-        py_node = node.expr.value
-        expr_cg.set_lineno(py_node.lineno)
-        expr_cg.insert_python_expr(py_node.ast, trim=False)
-        call_args = expr_cg.rewrite_to_fast_locals(self.local_names())
-        expr_code = expr_cg.to_code(
-            args=call_args, newlocals=True, name=node.name,
-            firstlineno=py_node.lineno
-        )
-
         with cg.try_squash_raise():
 
-            # Create and invoke the expression function
-            cg.load_const(expr_code)
-            cg.make_function()                      # TOS -> func
-            for arg in call_args:
-                self.load_name(arg)
-            cg.call_function(len(call_args))        # TOS -> value
+            # Load the value of the expression
+            py_node = node.expr.value
+            self.safe_eval_ast(py_node.ast, node.name, py_node.lineno)
 
             # Validate the type of the value if necessary
             if node.typename:
