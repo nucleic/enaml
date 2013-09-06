@@ -279,8 +279,9 @@ class BlockCompiler(CompilerBase):
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
-        # XXX clean me up
-        # Generate the code object for the expression
+        # Generate the code object for the expression. The expression
+        # is executed as an independent function to avoid local scope
+        # pollution. This is same technique used by Python generators.
         expr_cg = CodeGenerator(filename=cg.filename)
         py_node = node.expr.value
         expr_cg.set_lineno(py_node.lineno)
@@ -323,8 +324,9 @@ class BlockCompiler(CompilerBase):
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
-        # XXX clean me up
-        # Generate the code object for the expression
+        # Generate the code object for the expression. The expression
+        # is executed as an independent function to avoid local scope
+        # pollution. This is same technique used by Python generators.
         expr_cg = CodeGenerator(filename=cg.filename)
         py_node = node.expr.value
         expr_cg.set_lineno(py_node.lineno)
