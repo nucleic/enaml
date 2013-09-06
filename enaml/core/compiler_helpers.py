@@ -426,7 +426,8 @@ def validate_unpack_size(template_inst, n, ex_unpack):
     """
     size = template_inst.template_node.size()
     if size < n:
-        raise ValueError("need more than %d values to unpack" % size)
+        suffix = 'values' if size > 1 else 'value'
+        raise ValueError("need more than %d %s to unpack" % (size, suffix))
     if not ex_unpack and size > n:
         raise ValueError("too many values to unpack")
     return template_inst
