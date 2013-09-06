@@ -52,14 +52,14 @@
       "comment": "Enaml Instantiation",
       "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*$",
       "captures": {
-        "1": { "name": "support.class" }
+        "1": { "name": "entity.name.tag" }
       }
     },
     {
       "comment": "Enaml Instantiation with id",
       "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*$",
       "captures": {
-        "1": { "name": "support.class" },
+        "1": { "name": "entity.name.tag" },
         "2": { "name": "variable.other" }
       }
     },
@@ -67,7 +67,7 @@
       "comment": "Enaml Instantiation one liner with id",
       "begin": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*([A-Za-z_][A-Za-z0-9_]*):",
       "beginCaptures": {
-        "1": { "name": "support.class" },
+        "1": { "name": "entity.name.tag" },
         "2": { "name": "variable.other" }
       },
       "patterns": [
@@ -79,7 +79,7 @@
       "comment": "Enaml Instantiation one liner",
       "begin": "^\\s*([A-Za-z_][A-Za-z0-9_]*):",
       "beginCaptures": {
-        "1": { "name": "support.class" }
+        "1": { "name": "entity.name.tag" }
       },
       "patterns": [
         { "include": "source.python" }
@@ -88,26 +88,26 @@
     },
     {
       "comment": "Enaml Attribute Declaration",
-      "match": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
+      "match": "^\\s*(attr|event|static|const)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*$",
       "captures": {
-        "1": { "name": "storage.type" },
+        "1": { "name": "storage.modifier" },
         "2": { "name": "entity.other.attribute-name" }
       }
     },
     {
       "comment": "Enaml Attribute Declaration with Type",
-      "match": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
+      "match": "^\\s*(attr|event|static|const)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
       "captures": {
-        "1": { "name": "storage.type" },
+        "1": { "name": "storage.modifier" },
         "2": { "name": "entity.other.attribute-name" },
-        "3": { "name": "support.class" }
+        "3": { "name": "entity.name.tag" }
       }
     },
     {
       "comment": "Enaml Attribute Declaration with Binding",
-      "begin": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "begin": "^\\s*(attr|event|static|const)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
       "beginCaptures": {
-        "1": { "name": "storage.type" },
+        "1": { "name": "storage.modifier" },
         "2": { "name": "entity.other.attribute-name" },
         "3": { "name": "keyword.operator" }
       },
@@ -118,11 +118,11 @@
     },
     {
       "comment": "Enaml Attribute Declaration with Type and Binding",
-      "begin": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "begin": "^\\s*(attr|event|static|const)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
       "beginCaptures": {
-        "1": { "name": "storage.type" },
+        "1": { "name": "storage.modifier" },
         "2": { "name": "entity.other.attribute-name" },
-        "3": { "name": "support.class" },
+        "3": { "name": "entity.name.tag" },
         "4": { "name": "keyword.operator" }
       },
       "patterns": [
@@ -138,6 +138,37 @@
       },
       "patterns": [
         { "include": "source.python" }
+      ],
+      "end": "$"
+    },
+    {
+      "comment": "Template declaration",
+      "match": "^(template)\\s*([A-Za-z_][A-Za-z0-9_]*)\\(.*?\\):\\s*$",
+      "captures": {
+        "1": { "name": "storage.type" },
+        "2": { "name": "entity.name.function" }
+      }
+    },
+    {
+      "comment": "Template instantiation",
+      "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\(.*?\\)\\s*$",
+      "captures": {
+        "1": { "name": "entity.name.tag" }
+      }
+    },
+    {
+      "comment": "Template instantiation with id",
+      "begin": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\(.*?\\):",
+      "beginCaptures": {
+        "1": { "name": "entity.name.tag" }
+      },
+      "patterns": [
+        {
+          "match": "\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*",
+          "captures": {
+            "1": { "name": "variable.other" }
+          }
+        }
       ],
       "end": "$"
     },

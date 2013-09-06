@@ -23,7 +23,7 @@ class Module(ASTNode):
 
     """
     #: The list of ast nodes for the body of the module. This will be
-    #: composed of Python and EnamlDef nodes.
+    #: composed of PythonModule, EnamlDef, and Template nodes.
     body = List()
 
 
@@ -64,7 +64,7 @@ class EnamlDef(ASTNode):
     decorators = List()
 
     #: The list of body nodes for the enamldef. This will be composed
-    #: of StorageDef, Binding, and ChildDef nodes.
+    #: of StorageExpr, Binding, ChildDef, and TemplateInst nodes.
     body = List()
 
 
@@ -78,8 +78,8 @@ class ChildDef(ASTNode):
     #: The identifier given to the child.
     identifier = Str()
 
-    #: The list of body nodes for the child definition. This will be
-    #: composed of StorageDef, Binding, and ChildDef nodes.
+    #: The list of body nodes for the child def. This will be composed
+    #: of StorageExpr, Binding, ChildDef and TemplateInst nodes.
     body = List()
 
 
@@ -105,19 +105,106 @@ class Binding(ASTNode):
     expr = Typed(OperatorExpr)
 
 
-class StorageDef(ASTNode):
-    """ An AST node for storage definitions.
+class StorageExpr(ASTNode):
+    """ An AST node representing a storage expression.
 
     """
-    #: The kind of the storage definition.
-    kind = Enum('attr', 'event')
+    #: The stype of the storage expression.
+    kind = Enum('attr', 'event', 'static', 'const')
 
     #: The name of the storage object being defined.
     name = Str()
 
-    #: The typename of the allowed values for the storage object.
+    #: The name of the type allowed values for the storage object.
     typename = Str()
 
     #: The default expression bound to the storage object. This may
     #: be None if the storage object has no default expr binding.
     expr = Typed(OperatorExpr)
+
+
+class PositionalParameter(ASTNode):
+    """ An AST node for storing a positional template parameter.
+
+    """
+    #: The name of the parameter.
+    name = Str()
+
+    #: The parameter specialization.
+    specialization = Typed(PythonExpression)
+
+
+class KeywordParameter(ASTNode):
+    """ An AST node for storing a keyword template parameter.
+
+    """
+    #: The name of the parameter.
+    name = Str()
+
+    #: The default value for the parameter.
+    default = Typed(PythonExpression)
+
+
+class TemplateParameters(ASTNode):
+    """ An AST node for template parameters.
+
+    """
+    #: The positional parameters.
+    positional = List(PositionalParameter)
+
+    #: The keyword parameters.
+    keywords = List(KeywordParameter)
+
+    #: The variadic star param.
+    starparam = Str()
+
+
+class Template(ASTNode):
+    """ An AST node for template definitions.
+
+    """
+    #: The name given to the template.
+    name = Str()
+
+    #: The parameters associated with the template.
+    parameters = Typed(TemplateParameters)
+
+    #: The body of the template. This will be composed of StorageExpr,
+    #: ChildDef, and TemplateInst nodes.
+    body = List()
+
+
+class TemplateArguments(ASTNode):
+    """ An ASTNode representing template instatiation arguments.
+
+    """
+    #: The list of python expressions for the arguments.
+    args = List(PythonExpression)
+
+    #: The variadic argument.
+    stararg = Typed(PythonExpression)
+
+
+class TemplateIdentifiers(ASTNode):
+    """ An AST node representing template identifiers.
+
+    """
+    #: The list of identifier names
+    names = List(Str())
+
+    #: The capturing star name.
+    starname = Str()
+
+
+class TemplateInst(ASTNode):
+    """ An AST node for template instantiation definitions.
+
+    """
+    #: The name of the template to instantiate.
+    name = Str()
+
+    #: The arguments to pass to the template.
+    arguments = Typed(TemplateArguments)
+
+    #: The identifiers to apply to the template items.
+    identifiers = Typed(TemplateIdentifiers)
