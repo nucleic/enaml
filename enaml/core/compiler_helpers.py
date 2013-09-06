@@ -9,7 +9,8 @@ from atom.api import Event, Instance
 from atom.datastructures.api import sortedmap
 
 from .compiler_nodes import (
-    DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstNode
+    DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstNode,
+    DeclarativeInterceptNode, EnamlDefInterceptNode
 )
 from .declarative import Declarative, d_
 from .declarative_meta import patch_d_member
@@ -113,7 +114,10 @@ def declarative_node(klass, identifier, scope_key):
         The compiler node for the given klass.
 
     """
-    node = DeclarativeNode()
+    if klass.__intercepts_child_nodes__:
+        node = DeclarativeInterceptNode()
+    else:
+        node = DeclarativeNode()
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
@@ -144,7 +148,10 @@ def enamldef_node(klass, identifier, scope_key):
         The compiler node for the given class.
 
     """
-    node = EnamlDefNode()
+    if klass.__intercepts_child_nodes__:
+        node = EnamlDefInterceptNode()
+    else:
+        node = EnamlDefNode()
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key

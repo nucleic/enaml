@@ -100,6 +100,13 @@ class DeclarativeMeta(AtomMeta):
     default handler hookups.
 
     """
+    #: A flag which can be set on a declarative class to indicate to
+    #: the compiler that instances of the class will build out their
+    #: children. If this flag is set, the class must provide a method
+    #: named 'child_node_intercept' which accepts the list of nodes
+    #: and the local scope for their instantiation and returns None.
+    __intercepts_child_nodes__ = False
+
     def __new__(meta, name, bases, dct):
         """ Create a new Declarative subclass.
 

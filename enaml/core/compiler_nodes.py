@@ -158,6 +158,57 @@ class EnamlDefNode(DeclarativeNode):
                 node(instance)
 
 
+class DeclarativeInterceptNode(DeclarativeNode):
+    """ A DeclarativeNode which intercepts child creation.
+
+    """
+    def __call__(self, parent):
+        """ Instantiate the type hierarchy.
+
+        This is invoked by other compiler nodes when a hierarchy is
+        being instantiated.
+
+        Parameters
+        ----------
+        parent : Declarative or None
+            The parent declarative object for the hierarchy.
+
+        Returns
+        -------
+        result : Declarative
+            The declarative instance created by the node.
+
+        """
+        klass = self.klass
+        instance = klass()
+        f_locals = peek_scope()
+        if self.identifier:
+            f_locals[self.identifier] = instance
+        if self.engine:
+            instance._d_storage[self.scope_key] = f_locals
+            instance._d_engine = self.engine
+        instance.child_node_intercept(self.children[:], f_locals)
+        instance.set_parent(parent)
+        return instance
+
+
+class EnamlDefInterceptNode(EnamlDefNode):
+    """ An EnamlDefNode which intercepts child creation.
+
+    """
+    def populate(self, instance):
+        """ Populate the type instance with the node children.
+
+        """
+        with new_scope() as f_locals:
+            if self.identifier:
+                f_locals[self.identifier] = instance
+            if self.engine:
+                instance._d_storage[self.scope_key] = f_locals
+                instance._d_engine = self.engine
+            instance.child_node_intercept(self.children[:], f_locals)
+
+
 class TemplateNode(CompilerNode):
     """ A compiler node which represents a template declaration.
 

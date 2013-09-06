@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, List
 
+from .compiler_nodes import new_scope
 from .declarative import d_
 from .pattern import Pattern
 
@@ -71,13 +72,14 @@ class Conditional(Pattern):
         """
         items = []
         if self.condition:
-            for node, f_locals in self.pattern_nodes:
-                if f_locals is not None:
-                    f_locals = f_locals.copy()
-                for child_node in node.children:
-                    child = child_node.klass()
-                    child.add_subtree(child_node, f_locals)
-                    items.append(child)
+            for nodes, f_locals in self.pattern_nodes:
+                with new_scope(f_locals):
+                    for node in nodes:
+                        child = node(None)
+                        if isinstance(child, list):
+                            items.extend(child)
+                        else:
+                            items.append(child)
 
         for old in self.items:
             if not old.is_destroyed:
