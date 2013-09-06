@@ -40,4 +40,7 @@ class EnamlDefMeta(DeclarativeMeta):
             Additional keyword arguments to pass to the constructor.
 
         """
-        return cls.__node__(parent, **kwargs)
+        instance = cls.__new__(cls)
+        cls.__node__(instance)
+        instance.__init__(parent, **kwargs)
+        return instance
