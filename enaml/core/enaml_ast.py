@@ -105,17 +105,6 @@ class Binding(ASTNode):
     expr = Typed(OperatorExpr)
 
 
-class ExtBinding(ASTNode):
-    """ An AST node which represents an extended code binding.
-
-    """
-    #: The name of the variable being bound.
-    name = Str()
-
-    #: The attribute binding for the variable.
-    binding = Typed(Binding)
-
-
 class StorageExpr(ASTNode):
     """ An AST node representing a storage expression.
 
@@ -219,7 +208,3 @@ class TemplateInst(ASTNode):
 
     #: The identifiers to apply to the template items.
     identifiers = Typed(TemplateIdentifiers)
-
-    #: The body nodes of the template instance. This will be
-    #: composed of Binding, and ExtBinding nodes.
-    body = List()

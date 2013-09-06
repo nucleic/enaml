@@ -588,18 +588,6 @@ def p_binding(p):
 
 
 #------------------------------------------------------------------------------
-# Binding
-#------------------------------------------------------------------------------
-def p_ext_binding(p):
-    ''' ext_binding : NAME DOT NAME operator_expr '''
-    lineno = p.lineno(1)
-    binding = enaml_ast.Binding(name=p[3], expr=p[4], lineno=lineno)
-    ext_binding = enaml_ast.ExtBinding(binding=binding, lineno=lineno)
-    ext_binding.name = p[1]
-    p[0] = ext_binding
-
-
-#------------------------------------------------------------------------------
 # OperatorExpr
 #------------------------------------------------------------------------------
 def p_operator_expr1(p):
@@ -871,107 +859,23 @@ def p_template_param3(p):
 #------------------------------------------------------------------------------
 # Template Instantiation
 #------------------------------------------------------------------------------
-def _validate_template_inst(node, lexer):
-    """ Validate a template instantiation.
-
-    This function ensures that any extended bindings on the node access
-    available identifiers. Duplicate identifiers are not validated here
-    since they will be caught by the '_validate_template' method.
-
-    """
-    names = set()
-    idents = node.identifiers
-    if idents is not None:
-        names.update(idents.names)
-        if idents.starname:
-            names.add(idents.starname)
-    ExtBinding = enaml_ast.ExtBinding
-    msg = "'%s' is an undeclared identifier for this instantiation"
-    for item in node.body:
-        if isinstance(item, ExtBinding):
-            if item.name not in names:
-                syntax_error(msg % item.name, FakeToken(lexer, item.lineno))
-
-
-def p_template_inst(p):
-    ''' template_inst : template_inst_impl '''
-    node = p[1]
-    _validate_template_inst(node, p.lexer.lexer)
-    p[0] = node
-
-
-def p_template_inst_impl1(p):
-    ''' template_inst_impl : NAME template_args COLON template_inst_item '''
+def p_template_inst1(p):
+    ''' template_inst : NAME template_args NEWLINE '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
     node.arguments = p[2]
-    item = p[4]
-    if item is not None:
-        node.body = [item]
     p[0] = node
 
 
-def p_template_inst_impl2(p):
-    ''' template_inst_impl : NAME template_args COLON template_inst_suite '''
-    node = enaml_ast.TemplateInst()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.arguments = p[2]
-    node.body = p[4]
-    p[0] = node
-
-
-def p_template_inst_impl3(p):
-    ''' template_inst_impl : NAME template_args COLON template_ids COLON template_inst_item '''
+def p_template_inst2(p):
+    ''' template_inst : NAME template_args COLON template_ids NEWLINE '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
     node.arguments = p[2]
     node.identifiers = p[4]
-    item = p[6]
-    if item is not None:
-        node.body = [item]
     p[0] = node
-
-
-def p_template_inst_impl4(p):
-    ''' template_inst_impl : NAME template_args COLON template_ids COLON template_inst_suite '''
-    node = enaml_ast.TemplateInst()
-    node.lineno = p.lineno(1)
-    node.name = p[1]
-    node.arguments = p[2]
-    node.identifiers = p[4]
-    node.body = p[6]
-    p[0] = node
-
-
-def p_template_inst_suite(p):
-    ''' template_inst_suite : NEWLINE INDENT template_inst_items DEDENT '''
-    # Filter out any pass statements
-    items = filter(None, p[3])
-    p[0] = items
-
-
-def p_template_inst_items1(p):
-    ''' template_inst_items : template_inst_item '''
-    p[0] = [p[1]]
-
-
-def p_template_inst_items2(p):
-    ''' template_inst_items : template_inst_items template_inst_item '''
-    p[0] = p[1] + [p[2]]
-
-
-def p_template_inst_item1(p):
-    ''' template_inst_item : PASS NEWLINE '''
-    p[0] = None
-
-
-def p_template_inst_item2(p):
-    ''' template_inst_item : binding
-                           | ext_binding '''
-    p[0] = p[1]
 
 
 def p_template_args1(p):
