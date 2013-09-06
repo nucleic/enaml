@@ -518,65 +518,6 @@ def p_storage_expr4(p):
 
 
 #------------------------------------------------------------------------------
-# ExtStorageExpr
-#------------------------------------------------------------------------------
-def p_ext_storage_expr1(p):
-    ''' ext_storage_expr : NAME NAME DOT NAME NEWLINE '''
-    kind = p[1]
-    lineno = p.lineno(1)
-    lexer = p.lexer.lexer
-    _validate_storage_expr(kind, lineno, lexer)
-    storage = _make_storage_expr(lexer, kind, p[4], lineno=lineno)
-    node = enaml_ast.ExtStorageExpr()
-    node.lineno = lineno
-    node.name = p[2]
-    node.storage = storage
-    p[0] = node
-
-
-def p_ext_storage_expr2(p):
-    ''' ext_storage_expr : NAME NAME DOT NAME COLON NAME NEWLINE '''
-    kind = p[1]
-    lineno = p.lineno(1)
-    lexer = p.lexer.lexer
-    _validate_storage_expr(kind, lineno, lexer)
-    storage = _make_storage_expr(lexer, kind, p[4], p[6], lineno=lineno)
-    node = enaml_ast.ExtStorageExpr()
-    node.lineno = lineno
-    node.name = p[2]
-    node.storage = storage
-    p[0] = node
-
-
-def p_ext_storage_expr3(p):
-    ''' ext_storage_expr : NAME NAME DOT NAME operator_expr '''
-    kind = p[1]
-    lineno = p.lineno(1)
-    lexer = p.lexer.lexer
-    _validate_storage_expr(kind, lineno, lexer)
-    storage = _make_storage_expr(lexer, kind, p[4], expr=p[5], lineno=lineno)
-    node = enaml_ast.ExtStorageExpr()
-    node.lineno = lineno
-    node.name = p[2]
-    node.storage = storage
-    p[0] = node
-
-
-def p_ext_storage_expr4(p):
-    ''' ext_storage_expr : NAME NAME DOT NAME COLON NAME operator_expr '''
-    kind = p[1]
-    lineno = p.lineno(1)
-    lexer = p.lexer.lexer
-    _validate_storage_expr(kind, lineno, lexer)
-    storage = _make_storage_expr(lexer, kind, p[4], p[6], p[7], lineno)
-    node = enaml_ast.ExtStorageExpr()
-    node.lineno = lineno
-    node.name = p[2]
-    node.storage = storage
-    p[0] = node
-
-
-#------------------------------------------------------------------------------
 # ChildDef
 #------------------------------------------------------------------------------
 def p_child_def1(p):
@@ -944,10 +885,10 @@ def _validate_template_inst(node, lexer):
         names.update(idents.names)
         if idents.starname:
             names.add(idents.starname)
-    types = (enaml_ast.ExtBinding, enaml_ast.ExtStorageExpr)
+    ExtBinding = enaml_ast.ExtBinding
     msg = "'%s' is an undeclared identifier for this instantiation"
     for item in node.body:
-        if isinstance(item, types):
+        if isinstance(item, ExtBinding):
             if item.name not in names:
                 syntax_error(msg % item.name, FakeToken(lexer, item.lineno))
 
@@ -1031,20 +972,6 @@ def p_template_inst_item2(p):
     ''' template_inst_item : binding
                            | ext_binding '''
     p[0] = p[1]
-
-
-def p_template_inst_item3(p):
-    ''' template_inst_item : storage_expr '''
-    node = p[1]
-    _assert_no_const_expr(node, p.lexer.lexer)
-    p[0] = node
-
-
-def p_template_inst_item4(p):
-    ''' template_inst_item : ext_storage_expr '''
-    node = p[1]
-    _assert_no_const_expr(node.storage, p.lexer.lexer)
-    p[0] = node
 
 
 def p_template_args1(p):

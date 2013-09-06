@@ -134,17 +134,6 @@ class StorageExpr(ASTNode):
     expr = Typed(OperatorExpr)
 
 
-class ExtStorageExpr(ASTNode):
-    """ An AST node representing an extended storage expression.
-
-    """
-    #: The name of the variable getting storage.
-    name = Str()
-
-    #: The storage expression for the variable.
-    storage = Typed(StorageExpr)
-
-
 class PositionalParameter(ASTNode):
     """ An AST node for storing a positional template parameter.
 
@@ -231,6 +220,6 @@ class TemplateInst(ASTNode):
     #: The identifiers to apply to the template items.
     identifiers = Typed(TemplateIdentifiers)
 
-    #: The body nodes of the template instance. This will be composed
-    #: of Binding, ExtBinding, StorageExpr, and ExtStorageExpr nodes.
+    #: The body nodes of the template instance. This will be
+    #: composed of Binding, and ExtBinding nodes.
     body = List()
