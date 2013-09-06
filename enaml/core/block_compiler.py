@@ -214,20 +214,17 @@ class BlockCompiler(CompilerBase):
             cg.rot_two()
             cg.call_function(1)
 
-        # Load the arguments for the instantiation call.
-        argcount = 0
-        varargs = False
+        # Load the arguments for the instantiation call
         arguments = node.arguments
-        if arguments is not None:
-            argcount = len(arguments.args)
-            for arg in arguments.args:
-                self.safe_eval_ast(arg.ast, node.name, arg.lineno)
-            if arguments.stararg:
-                varargs = True
-                arg = arguments.stararg
-                self.safe_eval_ast(arg.ast, node.name, arg.lineno)
+        for arg in arguments.args:
+            self.safe_eval_ast(arg.ast, node.name, arg.lineno)
+        if arguments.stararg:
+            arg = arguments.stararg
+            self.safe_eval_ast(arg.ast, node.name, arg.lineno)
 
         # Instantiate the template
+        argcount = len(arguments.args)
+        varargs = bool(arguments.stararg)
         if varargs:
             cg.call_function_var(argcount)
         else:
