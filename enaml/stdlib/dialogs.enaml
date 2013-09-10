@@ -1,0 +1,61 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" Enaml Standard Library - Dialogs
+
+This is a library of useful dialog windows and functions.
+
+"""
+from enaml.core.include import Include
+from enaml.layout.layout_helpers import align, hbox, vbox, spacer
+from enaml.widgets.container import Container
+from enaml.widgets.label import Label
+from enaml.widgets.push_button import PushButton
+from enaml.widgets.window import Window
+
+
+enamldef AcceptRejectDialog(Window): window:
+    event accepted
+    event rejected
+    attr content
+    attr result: bool = False
+    attr accept_text: basestring = 'Ok'
+    attr reject_text: basestring = 'Cancel'
+    modality = 'application_modal'
+    title = 'Accept | Reject'
+    Container:
+        hug_width = 'strong'
+        hug_height = 'strong'
+        constraints = [vbox(content, hbox(spacer, accept_btn, reject_btn))]
+        Include:
+            objects = [content]
+        PushButton: accept_btn:
+            text = accept_text
+            clicked :: accepted()
+        PushButton: reject_btn:
+            text = reject_text
+            clicked :: rejected()
+
+
+enamldef InformationDialog(Window):
+    event okayed
+    attr content
+    attr ok_text: basestring = 'Ok'
+    modality = 'application_modal'
+    title = 'Attention'
+    Container:
+        hug_width = 'strong'
+        hug_height = 'strong'
+        constraints = [
+            vbox(content, hbox(spacer, ok_btn, spacer)),
+            align('h_center', content, ok_btn),
+        ]
+        Include:
+            objects = [content]
+        PushButton: ok_btn:
+            text = ok_text
+            clicked :: pass
