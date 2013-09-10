@@ -28,6 +28,11 @@ class ReadHandler(Atom):
             The attribute name on the declarative object for which
             the expression is providing a value.
 
+        Returns
+        -------
+        result : object
+            The evaluated value of the expression.
+
         """
         raise NotImplementedError
 

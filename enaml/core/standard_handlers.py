@@ -117,4 +117,4 @@ class StandardInvertedWriteHandler(WriteHandler, HandlerMixin):
         f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
         inverter = StandardInverter(scope)
-        return call_func(func, (inverter, change['value']), {}, scope)
+        call_func(func, (inverter, change['value']), {}, scope)

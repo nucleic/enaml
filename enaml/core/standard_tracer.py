@@ -92,7 +92,7 @@ class StandardTracer(CodeTracer):
     def finalize(self):
         """ Finalize the tracing process.
 
-        This method will discard the old observe and attach a new
+        This method will discard the old observer and attach a new
         observer to the traced dependencies.
 
         """
