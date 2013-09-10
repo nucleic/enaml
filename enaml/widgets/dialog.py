@@ -19,10 +19,10 @@ class ProxyDialog(ProxyWindow):
     #: A reference to the Dialog declaration.
     declaration = ForwardTyped(lambda: Dialog)
 
-    def done(self, accept):
+    def exec_(self):
         raise NotImplementedError
 
-    def exec_(self):
+    def done(self, result):
         raise NotImplementedError
 
 
@@ -30,11 +30,13 @@ class Dialog(Window):
     """ A top-level Window class for creating dialogs.
 
     """
-    #: The result of the dialog.
+    #: The result of the dialog. This value is updated before any of
+    #: the related dialog events are fired.
     result = d_(Bool(False), writable=False)
 
     #: An event fired when the dialog is finished. The payload will be
-    #: the boolean result of the dialog.
+    #: the boolean result of the dialog. This event is fired before
+    #: the 'accepted' or rejected event.
     finished = d_(Event(bool), writable=False)
 
     #: An event fired when the dialog is accepted.
@@ -49,34 +51,10 @@ class Dialog(Window):
     #: A reference to the ProxyDialog object.
     proxy = Typed(ProxyDialog)
 
-    def done(self, accept):
-        """ Close the dialog and set the result value.
-
-        This will cause a call to 'exec_' to return.
-
-        Parameters
-        ----------
-        accept : bool
-            Wether to accept or reject the dialog.
-
-        """
-        if self.proxy_is_active:
-            self.proxy.done(accept)
-
-    def accept(self):
-        """ Close the dialog and set the result to True.
-
-        """
-        self.done(True)
-
-    def reject(self):
-        """ Close the dialog and set the result to False.
-
-        """
-        self.done(False)
-
     def exec_(self):
         """ Launch the dialog as a modal window.
+
+        This call will block until the dialog is closed.
 
         Returns
         -------
@@ -89,3 +67,29 @@ class Dialog(Window):
         if not self.proxy_is_active:
             self.activate_proxy()
         return self.proxy.exec_()
+
+    def done(self, result):
+        """ Close the dialog and set the result value.
+
+        This will cause a call to 'exec_' to return.
+
+        Parameters
+        ----------
+        result : bool
+            The result value for the dialog.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.done(result)
+
+    def accept(self):
+        """ Close the dialog and set the result to True.
+
+        """
+        self.done(True)
+
+    def reject(self):
+        """ Close the dialog and set the result to False.
+
+        """
+        self.done(False)

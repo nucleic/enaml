@@ -13,6 +13,7 @@ from .combo_box import ComboBox
 from .container import Container
 from .date_selector import DateSelector
 from .datetime_selector import DatetimeSelector
+from .dialog import Dialog
 from .dock_area import DockArea
 from .dock_item import DockItem
 from .dock_pane import DockPane
