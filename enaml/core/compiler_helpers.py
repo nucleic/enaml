@@ -8,6 +8,7 @@
 from atom.api import Event, Instance
 from atom.datastructures.api import sortedmap
 
+from .alias import ObjectAlias, AttributeAlias
 from .compiler_nodes import (
     DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstNode,
     DeclarativeInterceptNode, EnamlDefInterceptNode
@@ -18,6 +19,42 @@ from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
 from .operators import __get_operators
 from .template import Template
+
+
+def add_alias(klass, name, target, attr, key):
+    """ Add an alias to a Declarative subclass.
+
+    Parameters
+    ----------
+    klass : type
+        The Declarative subclass to which an alias should be added.
+
+    name : str
+        The name of the alias.
+
+    target : str
+        The target of the alias.
+
+    attr : str
+        The attribute being accessed on the target. This should be
+        an empty string for object aliases.
+
+    key : object
+        The local scope key for the current block.
+
+    """
+    curr = getattr(klass, name, None)
+    if isinstance(curr, (ObjectAlias, AttributeAlias)):
+        msg = "cann't override alias '%s'"
+        raise TypeError(msg % name)
+    if name in klass.members():
+        msg = "can't override member '%s' with an alias"
+        raise TypeError(msg % name)
+    if attr:
+        alias = AttributeAlias(target, attr, key)
+    else:
+        alias = ObjectAlias(target, key)
+    setattr(klass, name, alias)
 
 
 def add_storage(klass, name, store_type, kind):
@@ -270,6 +307,10 @@ def make_template(paramspec, func, name, f_globals, template_map):
     template.add_specialization(paramspec, func)
 
 
+def bind_alias(node, name, pair, alias):
+    pass
+
+
 def run_operator(node, name, op, code, f_globals):
     """ Run the operator for a given node.
 
@@ -296,15 +337,22 @@ def run_operator(node, name, op, code, f_globals):
         raise TypeError("failed to load operator '%s'" % op)
     pair = operators[op](code, node.scope_key, f_globals)
 
+    member = node.klass.members().get(name)
+    if member is None:
+        alias = getattr(node.klass, name, None)
+        if isinstance(alias, AttributeAlias):
+            bind_alias(node, name, pair, alias)
+        elif isinstance(alias, ObjectAlias):
+            raise TypeError("can't bind to an object alias '%s'" % name)
+        else:
+            raise TypeError("'%s' is not a declarative member" % name)
+
     # The read and write semantics are reversed here. In the context of
     # a declarative member, d_readable means that an attribute can be
     # *read* from enaml and it's value *written* to the expression,
     # d_writable means that an expression can be *read* and its value
     # *written* to the attribute attribute.
-    member = node.klass.members().get(name)
-    if (member is None or
-        member.metadata is None or
-        not member.metadata.get('d_member')):
+    if member.metadata is None or not member.metadata.get('d_member'):
         raise TypeError("'%s' is not a declarative member" % name)
     if pair.writer is not None and not member.metadata.get('d_readable'):
         raise TypeError("'%s' is not readable from enaml" % name)
@@ -419,6 +467,7 @@ def validate_unpack_size(template_inst, n, ex_unpack):
 
 
 __compiler_helpers = {
+    'add_alias': add_alias,
     'add_storage': add_storage,
     'declarative_node': declarative_node,
     'enamldef_node': enamldef_node,

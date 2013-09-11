@@ -22,6 +22,9 @@ class EnamlDefCompiler(BlockCompiler):
     #: empty for an enamldef block.
     _local_names = Typed(set, ())
 
+    #: Storage for the visited aliases.
+    _aliases = Typed(list, ())
+
     @classmethod
     def compile(cls, node, filename):
         """ Compile an EnamlDef node into a code object.
@@ -135,3 +138,19 @@ class EnamlDefCompiler(BlockCompiler):
         # Release the held variables
         self.var_pool.release(class_var)
         self.var_pool.release(node_var)
+
+    def visit_AliasExpr(self, node):
+        """ The compiler visitor for an AliasExpr node.
+
+        """
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+        with cg.try_squash_raise():
+            cg.load_helper_from_fast('add_alias')
+            cg.load_fast(self.class_stack[-1])
+            cg.load_const(node.name)
+            cg.load_const(node.target)
+            cg.load_const(node.attr)
+            cg.load_fast(self.scope_key)
+            cg.call_function(5)
+            cg.pop_top()
