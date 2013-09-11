@@ -64,7 +64,8 @@ class EnamlDef(ASTNode):
     decorators = List()
 
     #: The list of body nodes for the enamldef. This will be composed
-    #: of StorageExpr, Binding, ChildDef, and TemplateInst nodes.
+    #: of StaticExpr, StorageExpr, Binding, ChildDef, and TemplateInst
+    #: nodes.
     body = List()
 
 
@@ -79,8 +80,37 @@ class ChildDef(ASTNode):
     identifier = Str()
 
     #: The list of body nodes for the child def. This will be composed
-    #: of StorageExpr, Binding, ChildDef and TemplateInst nodes.
+    #: of StaticExpr, StorageExpr, Binding, ChildDef and TemplateInst
+    #: nodes.
     body = List()
+
+
+class ConstExpr(ASTNode):
+    """ An AST node which represents a 'const' expression.
+
+    """
+    #: The name being assigned by the expression.
+    name = Str()
+
+    #: The name of the type of allowed values for the expression.
+    typename = Str()
+
+    #: The Python expression to evaluate.
+    expr = Typed(PythonExpression)
+
+
+class StaticExpr(ASTNode):
+    """ An AST node which represents a 'static' expression.
+
+    """
+    #: The name being assigned by the expression.
+    name = Str()
+
+    #: The name of the type of allowed values for the expression.
+    typename = Str()
+
+    #: The Python expression to evaluate.
+    expr = Typed(PythonExpression)
 
 
 class OperatorExpr(ASTNode):
@@ -110,12 +140,12 @@ class StorageExpr(ASTNode):
 
     """
     #: The stype of the storage expression.
-    kind = Enum('attr', 'event', 'static', 'const')
+    kind = Enum('attr', 'event')
 
     #: The name of the storage object being defined.
     name = Str()
 
-    #: The name of the type allowed values for the storage object.
+    #: The name of the type of allowed values for the storage object.
     typename = Str()
 
     #: The default expression bound to the storage object. This may
@@ -169,7 +199,7 @@ class Template(ASTNode):
     #: The parameters associated with the template.
     parameters = Typed(TemplateParameters)
 
-    #: The body of the template. This will be composed of StorageExpr,
+    #: The body of the template. This will be composed of ConstExpr,
     #: ChildDef, and TemplateInst nodes.
     body = List()
 

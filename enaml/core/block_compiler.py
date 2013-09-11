@@ -9,7 +9,7 @@ from atom.api import Atom, Constant, List, Typed
 
 from .code_generator import CodeGenerator
 from .compiler_base import CompilerBase
-from .enaml_ast import StorageExpr
+from .enaml_ast import StorageExpr, StaticExpr
 
 
 class VarPool(Atom):
@@ -158,7 +158,8 @@ class BlockCompiler(CompilerBase):
             cg.pop_top()                            # base
 
         # Subclass the child class if needed
-        if any(isinstance(item, StorageExpr) for item in node.body):
+        types = (StorageExpr, StaticExpr)
+        if any(isinstance(item, types) for item in node.body):
             cg.load_const(node.typename)
             cg.rot_two()
             cg.build_tuple(1)
@@ -259,18 +260,37 @@ class BlockCompiler(CompilerBase):
         cg.call_function(1)
         cg.pop_top()
 
+    def visit_StaticExpr(self, node):
+        """ The compiler visitor for a StaticExpr node.
+
+        """
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+        with cg.try_squash_raise():
+
+            # Preload the helper and context
+            cg.load_helper_from_fast('add_static_attr')
+            cg.load_fast(self.class_stack[-1])
+            cg.load_const(node.name)                # helper -> class -> name
+
+            # Load the value of the expression
+            self.safe_eval_ast(node.expr.ast, node.name, node.lineno)
+
+            # Validate the type of the value if necessary
+            if node.typename:
+                cg.load_helper_from_fast('type_check_expr')
+                cg.rot_two()
+                self.load_name(node.typename)
+                cg.call_function(2)                 # TOS -> value
+
+            # Invoke the helper to add the static attribute
+            cg.call_function(3)
+            cg.pop_top()
+
     def visit_StorageExpr(self, node):
         """ The compiler visitor for a StorageExpr node.
 
         """
-        if node.kind == 'static':
-            self.visit_StorageExpr_static(node)
-            return
-
-        if node.kind == 'const':
-            self.visit_StorageExpr_const(node)
-            return
-
         cg = self.code_generator
         cg.set_lineno(node.lineno)
         with cg.try_squash_raise():
@@ -290,56 +310,6 @@ class BlockCompiler(CompilerBase):
             self.bind_stack.append(node.name)
             self.visit(node.expr)
             self.bind_stack.pop()
-
-    def visit_StorageExpr_static(self, node):
-        """ The compiler visitor for a 'static' StorageExpr node.
-
-        """
-        cg = self.code_generator
-        cg.set_lineno(node.lineno)
-        with cg.try_squash_raise():
-
-            # Preload the helper and context
-            cg.load_helper_from_fast('add_static_attr')
-            cg.load_fast(self.class_stack[-1])
-            cg.load_const(node.name)                # helper -> class -> name
-
-            # Load the value of the expression
-            py_node = node.expr.value
-            self.safe_eval_ast(py_node.ast, node.name, py_node.lineno)
-
-            # Validate the type of the value if necessary
-            if node.typename:
-                cg.load_helper_from_fast('type_check_expr')
-                cg.rot_two()
-                self.load_name(node.typename)
-                cg.call_function(2)                 # TOS -> value
-
-            # Invoke the helper to add the static attribute
-            cg.call_function(3)
-            cg.pop_top()
-
-    def visit_StorageExpr_const(self, node):
-        """ The compiler visitor for a 'const' StorageExpr node.
-
-        """
-        cg = self.code_generator
-        cg.set_lineno(node.lineno)
-        with cg.try_squash_raise():
-
-            # Load the value of the expression
-            py_node = node.expr.value
-            self.safe_eval_ast(py_node.ast, node.name, py_node.lineno)
-
-            # Validate the type of the value if necessary
-            if node.typename:
-                cg.load_helper_from_fast('type_check_expr')
-                cg.rot_two()
-                self.load_name(node.typename)
-                cg.call_function(2)                 # TOS -> value
-
-            # Store the value as a fast local
-            cg.store_fast(node.name)
 
     def visit_Binding(self, node):
         """ The compiler visitor for a Binding node.

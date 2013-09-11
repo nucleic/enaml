@@ -8,7 +8,7 @@
 from atom.api import Typed
 
 from .block_compiler import BlockCompiler
-from .enaml_ast import StorageExpr
+from .enaml_ast import ConstExpr
 
 
 def collect_local_names(node):
@@ -34,7 +34,7 @@ def collect_local_names(node):
     if params.starparam:
         local_vars.append(params.starparam)
     for item in node.body:
-        if isinstance(item, StorageExpr):
+        if isinstance(item, ConstExpr):
             local_vars.append(item.name)
     return local_vars
 
@@ -153,3 +153,24 @@ class TemplateCompiler(BlockCompiler):
 
         # Release the held variables
         self.var_pool.release(node_var)
+
+    def visit_ConstExpr(self, node):
+        """ The compiler visitor for a ConstExpr node.
+
+        """
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+        with cg.try_squash_raise():
+
+            # Load the value of the expression
+            self.safe_eval_ast(node.expr.ast, node.name, node.lineno)
+
+            # Validate the type of the value if necessary
+            if node.typename:
+                cg.load_helper_from_fast('type_check_expr')
+                cg.rot_two()
+                self.load_name(node.typename)
+                cg.call_function(2)                 # TOS -> value
+
+            # Store the value as a fast local
+            cg.store_fast(node.name)
