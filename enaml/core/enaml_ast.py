@@ -64,8 +64,7 @@ class EnamlDef(ASTNode):
     decorators = List()
 
     #: The list of body nodes for the enamldef. This will be composed
-    #: of StaticExpr, StorageExpr, Binding, ChildDef, and TemplateInst
-    #: nodes.
+    #: of StorageExpr, Binding, ChildDef, and TemplateInst nodes.
     body = List()
 
 
@@ -80,8 +79,7 @@ class ChildDef(ASTNode):
     identifier = Str()
 
     #: The list of body nodes for the child def. This will be composed
-    #: of StaticExpr, StorageExpr, Binding, ChildDef and TemplateInst
-    #: nodes.
+    #: of StorageExpr, Binding, ChildDef and TemplateInst nodes.
     body = List()
 
 
@@ -99,18 +97,18 @@ class ConstExpr(ASTNode):
     expr = Typed(PythonExpression)
 
 
-class StaticExpr(ASTNode):
-    """ An AST node which represents a 'static' expression.
+class AliasExpr(ASTNode):
+    """ An AST node which represents an 'alias' expression.
 
     """
-    #: The name being assigned by the expression.
+    #: The name of the alias.
     name = Str()
 
-    #: The name of the type of allowed values for the expression.
-    typename = Str()
+    #: The identifier of the target being aliased.
+    target = Str()
 
-    #: The Python expression to evaluate.
-    expr = Typed(PythonExpression)
+    #: The attribute on the target which is aliased.
+    attr = Str()
 
 
 class OperatorExpr(ASTNode):

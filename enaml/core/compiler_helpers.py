@@ -17,29 +17,7 @@ from .declarative_meta import patch_d_member
 from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
 from .operators import __get_operators
-from .static import Static
 from .template import Template
-
-
-def add_static_attr(klass, name, value):
-    """ Add a static attribute to a class.
-
-    Parameters
-    ----------
-    klass : type
-        The declarative class to which the attribute should be added.
-
-    name : str
-        The name of the attribute to add.
-
-    value : object
-        The value of the static attribute.
-
-    """
-    if hasattr(klass, name):
-        msg = "cannot override '%s' with static attribute"
-        raise TypeError(msg % name)
-    setattr(klass, name, Static(name, value))
 
 
 def add_storage(klass, name, store_type, kind):
@@ -441,7 +419,6 @@ def validate_unpack_size(template_inst, n, ex_unpack):
 
 
 __compiler_helpers = {
-    'add_static_attr': add_static_attr,
     'add_storage': add_storage,
     'declarative_node': declarative_node,
     'enamldef_node': enamldef_node,

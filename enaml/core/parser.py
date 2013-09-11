@@ -329,16 +329,51 @@ def p_enaml_module_body2(p):
     p[0] = [p[1]]
 
 
+def _validate_enamldef_aliases(enamldef, lexer):
+    type_0 = enaml_ast.AliasExpr
+    func = lambda item: isinstance(item, type_0)
+    aliases = filter(func, enamldef.body)
+    if not aliases:
+        return
+    type_1 = (enaml_ast.EnamlDef, enaml_ast.ChildDef)
+    type_2 = enaml_ast.TemplateInst
+    obj_ids = set()
+    stack = [enamldef]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, type_1):
+            if node.identifier:
+                obj_ids.add(node.identifier)
+            stack.extend(node.body)
+        elif isinstance(node, type_2) and node.identifiers:
+            obj_ids.update(node.identifiers.names)
+    alias_names = set()
+    for alias in aliases:
+        if alias.target not in obj_ids:
+            msg = "%s is not a valid alias target in this scope"
+            syntax_error(msg % alias.target, FakeToken(lexer, alias.lineno))
+        if alias.name in alias_names:
+            msg = "redefinition of alias %s"
+            syntax_error(msg % alias.name, FakeToken(lexer, alias.lineno))
+        alias_names.add(alias.name)
+
+
 def p_enaml_module_item1(p):
     ''' enaml_module_item : stmt
-                          | enamldef
                           | template '''
     p[0] = p[1]
 
 
 def p_enaml_module_item2(p):
+    ''' enaml_module_item : enamldef '''
+    _validate_enamldef_aliases(p[1], p.lexer.lexer)
+    p[0] = p[1]
+
+
+def p_enaml_module_item3(p):
     ''' enaml_module_item : decorators enamldef '''
     enamldef = p[2]
+    _validate_enamldef_aliases(enamldef, p.lexer.lexer)
     decorators = []
     for decnode in p[1]:
         expr = ast.Expression()
@@ -411,7 +446,7 @@ def p_enamldef_suite_items2(p):
 def p_enamldef_suite_item1(p):
     ''' enamldef_suite_item : binding
                             | child_def
-                            | static_expr
+                            | alias_expr
                             | storage_expr
                             | template_inst '''
     p[0] = p[1]
@@ -425,16 +460,32 @@ def p_enamldef_suite_item2(p):
 #------------------------------------------------------------------------------
 # AliasExpr
 #------------------------------------------------------------------------------
-# def p_alias1(p):
-#     ''' alias : ALIAS NAME NEWLINE '''
+def p_alias_expr1(p):
+    ''' alias_expr : ALIAS NAME NEWLINE '''
+    node = enaml_ast.AliasExpr()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.target = p[2]
+    p[0] = node
 
 
-# def p_alias2(p):
-#     ''' alias : ALIAS NAME COLON NAME NEWLINE '''
+def p_alias_expr2(p):
+    ''' alias_expr : ALIAS NAME COLON NAME NEWLINE '''
+    node = enaml_ast.AliasExpr()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.target = p[4]
+    p[0] = node
 
 
-# def p_alias3(p):
-#     ''' alias : ALIAS NAME COLON NAME DOT NAME NEWLINE '''
+def p_alias_expr3(p):
+    ''' alias_expr : ALIAS NAME COLON NAME DOT NAME NEWLINE '''
+    node = enaml_ast.AliasExpr()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.target = p[4]
+    node.attr = p[6]
+    p[0] = node
 
 
 #------------------------------------------------------------------------------
@@ -464,40 +515,6 @@ def p_const_expr2(p):
     expr = ast.Expression(body=body)
     python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     node = enaml_ast.ConstExpr()
-    node.lineno = lineno
-    node.name = p[2]
-    node.typename = p[4]
-    node.expr = python
-    p[0] = node
-
-
-#------------------------------------------------------------------------------
-# StaticExpr
-#------------------------------------------------------------------------------
-def p_static_expr1(p):
-    ''' static_expr : STATIC NAME EQUAL test NEWLINE '''
-    lineno = p.lineno(1)
-    body = p[4]
-    body.lineno = lineno
-    ast.fix_missing_locations(body)
-    expr = ast.Expression(body=body)
-    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
-    node = enaml_ast.StaticExpr()
-    node.lineno = lineno
-    node.name = p[2]
-    node.expr = python
-    p[0] = node
-
-
-def p_static_expr2(p):
-    ''' static_expr : STATIC NAME COLON NAME EQUAL test NEWLINE '''
-    lineno = p.lineno(1)
-    body = p[6]
-    body.lineno = lineno
-    ast.fix_missing_locations(body)
-    expr = ast.Expression(body=body)
-    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
-    node = enaml_ast.StaticExpr()
     node.lineno = lineno
     node.name = p[2]
     node.typename = p[4]
@@ -643,7 +660,6 @@ def p_child_def_suite_items2(p):
 def p_child_def_suite_item1(p):
     ''' child_def_suite_item : binding
                              | child_def
-                             | static_expr
                              | storage_expr
                              | template_inst '''
     p[0] = p[1]

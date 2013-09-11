@@ -164,7 +164,7 @@ class EnamlLexer(object):
 
     reserved = {
         'and': 'AND',
-        #'alias': 'ALIAS',
+        'alias': 'ALIAS',
         'as': 'AS',
         'assert': 'ASSERT',
         'break': 'BREAK',
@@ -193,7 +193,6 @@ class EnamlLexer(object):
         'print': 'PRINT',
         'raise': 'RAISE',
         'return': 'RETURN',
-        'static': 'STATIC',
         'template': 'TEMPLATE',
         'try': 'TRY',
         'while': 'WHILE',

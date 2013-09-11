@@ -9,7 +9,7 @@ from atom.api import Atom, Constant, List, Typed
 
 from .code_generator import CodeGenerator
 from .compiler_base import CompilerBase
-from .enaml_ast import StorageExpr, StaticExpr
+from .enaml_ast import StorageExpr
 
 
 class VarPool(Atom):
@@ -158,8 +158,7 @@ class BlockCompiler(CompilerBase):
             cg.pop_top()                            # base
 
         # Subclass the child class if needed
-        types = (StorageExpr, StaticExpr)
-        if any(isinstance(item, types) for item in node.body):
+        if any(isinstance(item, StorageExpr) for item in node.body):
             cg.load_const(node.typename)
             cg.rot_two()
             cg.build_tuple(1)
@@ -259,33 +258,6 @@ class BlockCompiler(CompilerBase):
         cg.rot_two()
         cg.call_function(1)
         cg.pop_top()
-
-    def visit_StaticExpr(self, node):
-        """ The compiler visitor for a StaticExpr node.
-
-        """
-        cg = self.code_generator
-        cg.set_lineno(node.lineno)
-        with cg.try_squash_raise():
-
-            # Preload the helper and context
-            cg.load_helper_from_fast('add_static_attr')
-            cg.load_fast(self.class_stack[-1])
-            cg.load_const(node.name)                # helper -> class -> name
-
-            # Load the value of the expression
-            self.safe_eval_ast(node.expr.ast, node.name, node.lineno)
-
-            # Validate the type of the value if necessary
-            if node.typename:
-                cg.load_helper_from_fast('type_check_expr')
-                cg.rot_two()
-                self.load_name(node.typename)
-                cg.call_function(2)                 # TOS -> value
-
-            # Invoke the helper to add the static attribute
-            cg.call_function(3)
-            cg.pop_top()
 
     def visit_StorageExpr(self, node):
         """ The compiler visitor for a StorageExpr node.
