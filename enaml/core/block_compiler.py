@@ -9,7 +9,7 @@ from atom.api import Atom, Constant, List, Typed
 
 from .code_generator import CodeGenerator
 from .compiler_base import CompilerBase
-from .enaml_ast import StorageExpr
+from .enaml_ast import Binding, StorageExpr
 
 
 class VarPool(Atom):
@@ -42,6 +42,32 @@ class VarPool(Atom):
 
         """
         self.pool.discard(name)
+
+
+def should_store_locals(node):
+    """ Get whether or not a child def should store its locals.
+
+    A child def must store its local scope if it has attribute
+    bindings or storage expressions with default bindings.
+
+    Parameters
+    ----------
+    node : ChildDef
+        The child def ast node of interest.
+
+    Returns
+    -------
+    result : bool
+        True if instances of the child def should store their local
+        scopes, False otherwise.
+
+    """
+    for item in node.body:
+        if isinstance(item, Binding):
+            return True
+        if isinstance(item, StorageExpr) and item.expr is not None:
+            return True
+    return False
 
 
 class BlockCompiler(CompilerBase):
@@ -178,11 +204,13 @@ class BlockCompiler(CompilerBase):
         cg.store_fast(class_var)
 
         # Build the construct node
+        store_locals = should_store_locals(node)
         cg.load_helper_from_fast('declarative_node')
         cg.rot_two()
         cg.load_const(node.identifier)
-        cg.load_fast(self.scope_key)                # helper -> class -> identifier -> key
-        cg.call_function(3)                         # node
+        cg.load_fast(self.scope_key)
+        cg.load_const(store_locals)                 # helper -> class -> identifier -> key -> bool
+        cg.call_function(4)                         # node
         cg.store_fast(node_var)
 
         #: Store the node in the node map if needed.
