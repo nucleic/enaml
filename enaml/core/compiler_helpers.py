@@ -124,7 +124,7 @@ def add_storage(klass, name, store_type, kind):
     setattr(klass, name, new)
 
 
-def declarative_node(klass, identifier, scope_key):
+def declarative_node(klass, identifier, scope_key, store_locals):
     """ Create and return a DeclarativeNode for the given klass.
 
     Parameters
@@ -138,27 +138,34 @@ def declarative_node(klass, identifier, scope_key):
     scope_key : object
         The key for the local scope in the local storage maps.
 
+    store_locals : bool
+        Whether instances of this node class should store the
+        local scope in their storage map.
+
     Returns
     -------
     result : DeclarativeNode
         The compiler node for the given klass.
 
     """
-    if klass.__intercepts_child_nodes__:
-        node = DeclarativeInterceptNode()
-    else:
-        node = DeclarativeNode()
+    #if klass.__intercepts_child_nodes__:
+    #    node = DeclarativeInterceptNode()
+    #else:
+    node = DeclarativeNode()
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
-    # If the class is an enamldef, the engine must be copied
-    s_node = getattr(klass, '__node__', None)
-    if s_node is not None and s_node.engine is not None:
-        node.engine = s_node.engine.copy()
+    node.store_locals = store_locals
+    # If the class is an enamldef, copy its node as the super node.
+    super_node = getattr(klass, '__node__', None)
+    if super_node is not None:
+        super_node = super_node.copy()
+        node.super_node = super_node
+        node.engine = super_node.engine
     return node
 
 
-def enamldef_node(klass, identifier, scope_key):
+def enamldef_node(klass, identifier, scope_key, store_locals):
     """ Create and return an EnamlDefNode for the given class.
 
     Parameters
@@ -172,25 +179,30 @@ def enamldef_node(klass, identifier, scope_key):
     scope_key : object
         The key for the local scope in the local storage maps.
 
+    store_locals : bool
+        Whether instances of this node class should store the
+        local scope in their storage map.
+
     Returns
     -------
     result : EnamlDefNode
         The compiler node for the given class.
 
     """
-    if klass.__intercepts_child_nodes__:
-        node = EnamlDefInterceptNode()
-    else:
-        node = EnamlDefNode()
+    #if klass.__intercepts_child_nodes__:
+    #    node = EnamlDefInterceptNode()
+    #else:
+    node = EnamlDefNode()
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
-    # Copy over the data from the supernodes, if present.
-    s_node = getattr(klass, '__node__', None)
-    if s_node is not None:
-        node.super_nodes = s_node.super_nodes + [s_node]
-        if s_node.engine is not None:
-            node.engine = s_node.engine.copy()
+    node.store_locals = store_locals
+    # If the class is an enamldef, copy its node as the super node.
+    super_node = getattr(klass, '__node__', None)
+    if super_node is not None:
+        super_node = super_node.copy()
+        node.super_node = super_node
+        node.engine = super_node.engine
     return node
 
 
