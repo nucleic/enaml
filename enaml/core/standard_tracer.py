@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, atomref
 
-from .alias import AttributeAlias
+from .alias import Alias
 from .code_tracing import CodeTracer
 
 
@@ -91,8 +91,10 @@ class StandardTracer(CodeTracer):
             self.items.add((obj, name))
         else:
             alias = getattr(type(obj), name, None)
-            if isinstance(alias, AttributeAlias):
-                self.trace_atom(*alias.resolve(obj))
+            if isinstance(alias, Alias):
+                alias_obj, alias_attr = alias.resolve(obj)
+                if alias_attr:
+                    self.trace_atom(alias_obj, alias_attr)
 
     def finalize(self):
         """ Finalize the tracing process.
