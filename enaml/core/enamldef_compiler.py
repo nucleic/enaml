@@ -8,6 +8,7 @@
 from atom.api import Typed
 
 from .block_compiler import BlockCompiler
+from .code_generator import CodeGenerator
 
 
 class EnamlDefCompiler(BlockCompiler):
@@ -22,8 +23,8 @@ class EnamlDefCompiler(BlockCompiler):
     #: empty for an enamldef block.
     _local_names = Typed(set, ())
 
-    #: Storage for the visited aliases.
-    _aliases = Typed(list, ())
+    #: Temporary storage for the visited aliases.
+    _alias_nodes = Typed(list, ())
 
     @classmethod
     def compile(cls, node, filename):
@@ -125,6 +126,7 @@ class EnamlDefCompiler(BlockCompiler):
         self.node_stack.append(node_var)
         for item in node.body:
             self.visit(item)
+        self.process_aliases(node.typename)
         self.class_stack.pop()
         self.node_stack.pop()
 
@@ -140,17 +142,59 @@ class EnamlDefCompiler(BlockCompiler):
         self.var_pool.release(node_var)
 
     def visit_AliasExpr(self, node):
-        """ The compiler visitor for an AliasExpr node.
+        """  The compiler visitor for an AliasExpr node.
 
         """
+        # Store away the node for later processing.
+        self._alias_nodes.append(node)
+
+    def process_aliases(self, name):
+        """ The handler for processing the alias definitions.
+
+        Parameters
+        ----------
+        name : str
+            The name of the enamldef to which the aliases belong.
+
+        """
+        if not self._alias_nodes:
+            return
+
+        # The aliases must be processed as a separate function. The
+        # line number table in a Python code object does not support
+        # negative offsets, and so the only way to get line numbers
+        # correct when processing the aliases out-of-order wrt to the
+        # block is to given them their own independent code object.
         cg = self.code_generator
-        cg.set_lineno(node.lineno)
-        with cg.try_squash_raise():
-            cg.load_helper_from_fast('add_alias')
-            cg.load_fast(self.class_stack[-1])
-            cg.load_const(node.name)
-            cg.load_const(node.target)
-            cg.load_const(node.attr)
-            cg.load_fast(self.scope_key)
-            cg.call_function(5)
-            cg.pop_top()
+        cg_ex = CodeGenerator(filename=cg.filename)
+
+        # Invoke the helper for each alias.
+        with cg_ex.try_squash_raise():
+            for node in self._alias_nodes:
+                cg_ex.set_lineno(node.lineno)
+                cg_ex.load_fast('helper')
+                cg_ex.load_fast('node_map')
+                cg_ex.load_fast('node')
+                cg_ex.load_const(node.name)
+                cg_ex.load_const(node.target)
+                cg_ex.load_const(node.attr)
+                cg_ex.call_function(5)
+                cg_ex.pop_top()
+        cg_ex.load_const(None)
+        cg_ex.return_value()
+
+        # Generate the code object for the aliases.
+        args = ['helper', 'node_map', 'node']
+        firstlineno = self._alias_nodes[0].lineno
+        code = cg_ex.to_code(
+            args=args, newlocals=True, name=name, firstlineno=firstlineno
+        )
+
+        # Invoke the code object inline.
+        cg.load_const(code)
+        cg.make_function()
+        cg.load_helper_from_fast('add_alias')
+        cg.load_fast(self.node_map)
+        cg.load_fast(self.node_stack[-1])
+        cg.call_function(3)
+        cg.pop_top()
