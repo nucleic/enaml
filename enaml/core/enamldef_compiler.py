@@ -9,6 +9,35 @@ from atom.api import Typed
 
 from .block_compiler import BlockCompiler
 from .code_generator import CodeGenerator
+from .enaml_ast import AliasExpr, Binding, StorageExpr
+
+
+def should_store_locals(node):
+    """ Get whether or not an enamldef should store its locals.
+
+    An enamldef must store its local scope if it has alias expressions,
+    attribute bindings, or storage expressions with default bindings.
+
+    Parameters
+    ----------
+    node : EnamlDef
+        The enamldef ast node of interest.
+
+    Returns
+    -------
+    result : bool
+        True if instances of the enamldef should store their local
+        scopes, False otherwise.
+
+    """
+    for item in node.body:
+        if isinstance(item, AliasExpr):
+            return True
+        if isinstance(item, Binding):
+            return True
+        if isinstance(item, StorageExpr) and item.expr is not None:
+            return True
+    return False
 
 
 class EnamlDefCompiler(BlockCompiler):
@@ -114,11 +143,13 @@ class EnamlDefCompiler(BlockCompiler):
         cg.store_fast(class_var)
 
         # Build the compiler node
+        store_locals = should_store_locals(node)
         cg.load_helper_from_fast('enamldef_node')
         cg.rot_two()
         cg.load_const(node.identifier)
-        cg.load_fast(self.scope_key)                # helper -> class -> identifier -> key
-        cg.call_function(3)                         # node
+        cg.load_fast(self.scope_key)
+        cg.load_const(store_locals)                 # helper -> class -> identifier -> bool
+        cg.call_function(4)                         # node
         cg.store_fast(node_var)
 
         # Popuplate the body of the class
