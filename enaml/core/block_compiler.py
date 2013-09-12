@@ -57,6 +57,9 @@ class BlockCompiler(CompilerBase):
     #: The name of scope key in local storage.
     scope_key = Constant('_[scope_key]')
 
+    #: The name of the node map in the fast locals.
+    node_map = Constant('_[node_map]')
+
     #: A stack of var names for parent classes.
     class_stack = List()
 
@@ -97,6 +100,8 @@ class BlockCompiler(CompilerBase):
         cg.load_helper_from_fast('make_object')
         cg.call_function()
         cg.store_fast(self.scope_key)
+        cg.build_map()
+        cg.store_fast(self.node_map)
 
     def safe_eval_ast(self, ast, name, lineno):
         """ Evaluate an expression in a separate local scope.
@@ -179,6 +184,14 @@ class BlockCompiler(CompilerBase):
         cg.load_fast(self.scope_key)                # helper -> class -> identifier -> key
         cg.call_function(3)                         # node
         cg.store_fast(node_var)
+
+        #: Store the node in the node map if needed.
+        if node.identifier:
+            cg.load_fast(self.node_map)
+            cg.load_fast(node_var)
+            cg.load_const(node.identifier)
+            cg.store_map()
+            cg.pop_top()
 
         # Populate the body of the node
         self.class_stack.append(class_var)
