@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Event, Instance
+from atom.api import Event, Instance, Member
 from atom.datastructures.api import sortedmap
 
-from .alias import ObjectAlias, AttributeAlias
+from .alias import Alias
 from .compiler_nodes import (
     DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstNode,
     DeclarativeInterceptNode, EnamlDefInterceptNode
@@ -21,13 +21,28 @@ from .operators import __get_operators
 from .template import Template
 
 
-def add_alias(klass, name, target, attr, key):
+def validate_alias(node_map, target, attr):
+    if target not in node_map:
+        msg = "'%s' is not a valid alias target"
+        raise TypeError(msg % target)
+    if attr:
+        item = getattr(node_map[target].klass, attr, None)
+        if not isinstance(item, (Alias, Member)):
+            msg = "'%s' is not a valid alias attribute"
+            raise TypeError(msg % attr)
+
+
+def add_alias(node_map, node, name, target, attr):
     """ Add an alias to a Declarative subclass.
 
     Parameters
     ----------
-    klass : type
-        The Declarative subclass to which an alias should be added.
+    node_map : dict
+        A dict mapping identifier to declarative child nodes for the
+        entire enamldef block.
+
+    node : EnamlDefNode
+        The enamldef node for which an alias should be added.
 
     name : str
         The name of the alias.
@@ -39,21 +54,17 @@ def add_alias(klass, name, target, attr, key):
         The attribute being accessed on the target. This should be
         an empty string for object aliases.
 
-    key : object
-        The local scope key for the current block.
-
     """
-    curr = getattr(klass, name, None)
-    if isinstance(curr, (ObjectAlias, AttributeAlias)):
-        msg = "cann't override alias '%s'"
+    validate_alias(node_map, target, attr)
+    klass = node.klass
+    item = getattr(klass, name, None)
+    if isinstance(item, Alias):
+        msg = "can't override alias '%s'"
         raise TypeError(msg % name)
     if name in klass.members():
         msg = "can't override member '%s' with an alias"
         raise TypeError(msg % name)
-    if attr:
-        alias = AttributeAlias(target, attr, key)
-    else:
-        alias = ObjectAlias(target, key)
+    alias = Alias(target, attr, node.scope_key)
     setattr(klass, name, alias)
 
 
@@ -80,14 +91,18 @@ def add_storage(klass, name, store_type, kind):
     elif not isinstance(store_type, type):
         raise TypeError("%s is not a type" % store_type)
 
+    if isinstance(getattr(klass, name, None), Alias):
+        msg = "can't override alias '%s' with a member"
+        raise TypeError(msg % name)
+
     members = klass.members()
     member = members.get(name)
     if member is not None:
         if member.metadata is None or not member.metadata.get('d_member'):
-            msg = "cannot override non-declarative member '%s'"
+            msg = "can't override non-declarative member '%s'"
             raise TypeError(msg % name)
         if member.metadata.get('d_final'):
-            msg = "cannot override the final member '%s'"
+            msg = "can't override the final member '%s'"
             raise TypeError(msg % name)
 
     if kind == 'event':
