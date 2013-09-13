@@ -21,8 +21,8 @@ from .operators import __get_operators
 from .template import Template
 
 
-def fixup_alias(node_map, node, target, attr):
-    """ Validate and fixup a potential alias declaration.
+def validate_alias(node_map, target, attr):
+    """ Validate an alias declaration.
 
     Parameters
     ----------
@@ -49,9 +49,6 @@ def fixup_alias(node_map, node, target, attr):
             if item.metadata is None or not item.metadata.get('d_member'):
                 msg = "alias '%s.%s' resolves to a non-declarative member"
                 raise TypeError(msg % (target, attr))
-    if node.aliased_nodes is None:
-        node.aliased_nodes = sortedmap()
-    node.aliased_nodes[target] = node_map[target]
 
 
 def add_alias(node_map, node, name, target, attr):
@@ -77,6 +74,7 @@ def add_alias(node_map, node, name, target, attr):
         an empty string for object aliases.
 
     """
+    validate_alias(node_map, target, attr)
     klass = node.klass
     item = getattr(klass, name, None)
     if isinstance(item, Alias):
@@ -87,15 +85,18 @@ def add_alias(node_map, node, name, target, attr):
         raise TypeError(msg % name)
     alias = Alias(target, attr, node.scope_key)
     setattr(klass, name, alias)
+    if node.aliased_nodes is None:
+        node.aliased_nodes = sortedmap()
+    node.aliased_nodes[target] = node_map[target]
 
 
-def add_storage(klass, name, store_type, kind):
+def add_storage(node, name, store_type, kind):
     """ Add user storage to a Declarative subclass.
 
     Parameters
     ----------
-    klass : type
-        The Declarative subclass to which storage should be added.
+    node : DeclarativeNode
+        The declarative node to which storage should be added.
 
     name : str
         The name of the attribute or event to add to the class.
@@ -112,6 +113,7 @@ def add_storage(klass, name, store_type, kind):
     elif not isinstance(store_type, type):
         raise TypeError("%s is not a type" % store_type)
 
+    klass = node.klass
     if isinstance(getattr(klass, name, None), Alias):
         msg = "can't override alias '%s' with a member"
         raise TypeError(msg % name)
@@ -376,8 +378,7 @@ def resolve_alias_member(node, alias):
     """
     if node is None:
         return None
-    attr = alias.attr
-    if not attr:
+    if not alias.attr:
         return None
     if not isinstance(node, EnamlDefNode):
         return resolve_alias_member(node.super_node, alias)
@@ -387,7 +388,7 @@ def resolve_alias_member(node, alias):
     if target_node is None:
         return resolve_alias_member(node.super_node, alias)
     # validate_alias ensures this will be a Member or an Alias
-    item = getattr(target_node.klass, attr)
+    item = getattr(target_node.klass, alias.attr)
     if isinstance(item, Member):
         return (target_node, item)
     return resolve_alias_member(target_node, item)
@@ -405,7 +406,7 @@ def bind_alias_member(node, name, alias, pair):
         The name being bound for the class.
 
     alias : Alias
-        The alias object being bound.
+        The alias being bound.
 
     pair : HandlerPair
         The handler pair to add to the expression engine.
@@ -413,7 +414,7 @@ def bind_alias_member(node, name, alias, pair):
     """
     resolved = resolve_alias_member(node, alias)
     if resolved is None:
-        msg = "'%s' alias does not resolve to a declarative member"
+        msg = "alias '%s' does not resolve to a declarative member"
         raise TypeError(msg % name)
     target_node, member = resolved
     if pair.writer is not None and not member.metadata.get('d_readable'):
@@ -457,6 +458,95 @@ def bind_member(node, name, pair):
     node.engine.add_pair(name, pair)
 
 
+def resolve_alias_object(node, alias):
+    """ Resolve the declarative object pointed to by an alias.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The declarative node on which the alias is being accessed.
+
+    alias : Alias
+        The alias which is being accessed.
+
+    Returns
+    -------
+    result : DeclarativeNode or None
+        The declarative node pointed to by an alias, or None if the
+        alias does not point to a node.
+
+    """
+    if node is None:
+        return None
+    if not isinstance(node, EnamlDefNode):
+        return resolve_alias_object(node.super_node, alias)
+    if node.aliased_nodes is None:
+        return resolve_alias_object(node.super_node, alias)
+    target_node = node.aliased_nodes.get(alias.target)
+    if target_node is None:
+        return resolve_alias_object(node.super_node, alias)
+    if not alias.attr:
+        return target_node
+    # validate_alias ensures this will be a Member or an Alias
+    item = getattr(target_node.klass, alias.attr)
+    if isinstance(item, Member):
+        return None
+    return resolve_alias_object(target_node, item)
+
+
+def bind_alias_object(node, name, attr, alias, pair):
+    """ Bind a handler pair to an alias object.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The compiler node holding the declarative class.
+
+    name : str
+        The name being bound for the class.
+
+    attr : str
+        The name of the attribute on the alias object being bound.
+
+    alias : Alias
+        The alias being bound.
+
+    pair : HandlerPair
+        The handler pair to add to the expression engine.
+
+    """
+    target_node = resolve_alias_object(node, alias)
+    if target_node is None:
+        msg = "alias '%s' does not resolve to an object"
+        raise TypeError(msg % name)
+    bind_member(target_node, attr, pair)
+    if target_node.closure_keys is None:
+        target_node.closure_keys = set()
+    target_node.closure_keys.add(node.scope_key)
+
+
+def bind_extended_member(node, parts, pair):
+    """ Bind a handler pair to an extended member.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The compiler node holding the declarative class.
+
+    parts : tuple
+        A 2-tuple of (name, attr) for the extended binding.
+
+    pair : HandlerPair
+        The handler pair to add to the expression engine.
+
+    """
+    name, attr = parts
+    alias = getattr(node.klass, name, None)
+    if not isinstance(alias, Alias):
+        raise TypeError("'%s' is not an alias" % name)
+    bind_alias_object(node, name, attr, alias, pair)
+
+
 def run_operator(node, name, op, code, f_globals):
     """ Run the operator for a given node.
 
@@ -482,11 +572,14 @@ def run_operator(node, name, op, code, f_globals):
     if op not in operators:
         raise TypeError("failed to load operator '%s'" % op)
     pair = operators[op](code, node.scope_key, f_globals)
-    alias = getattr(node.klass, name, None)
-    if isinstance(alias, Alias):
-        bind_alias_member(node, name, alias, pair)
+    if isinstance(name, tuple):  # extended binding
+        bind_extended_member(node, name, pair)
     else:
-        bind_member(node, name, pair)
+        alias = getattr(node.klass, name, None)
+        if isinstance(alias, Alias):
+            bind_alias_member(node, name, alias, pair)
+        else:
+            bind_member(node, name, pair)
 
 
 def type_check_expr(value, kind):
@@ -596,7 +689,6 @@ __compiler_helpers = {
     'add_storage': add_storage,
     'declarative_node': declarative_node,
     'enamldef_node': enamldef_node,
-    'fixup_alias': fixup_alias,
     'make_enamldef': make_enamldef,
     'make_object': make_object,
     'make_template': make_template,

@@ -86,9 +86,6 @@ class BlockCompiler(CompilerBase):
     #: The name of the node map in the fast locals.
     node_map = Constant('_[node_map]')
 
-    #: A stack of var names for parent classes.
-    class_stack = List()
-
     #: A stack of var names for parent nodes.
     node_stack = List()
 
@@ -172,8 +169,7 @@ class BlockCompiler(CompilerBase):
         """
         cg = self.code_generator
 
-        # Claim the variables needed for the class and construct node
-        class_var = self.var_pool.new()
+        # Claim the variable needed for the compiler node.
         node_var = self.var_pool.new()
 
         # Set the line number and load the child class
@@ -181,12 +177,11 @@ class BlockCompiler(CompilerBase):
         self.load_name(node.typename)
 
         # Validate the type of the child
-        with cg.try_squash_raise():
-            cg.dup_top()
-            cg.load_helper_from_fast('validate_declarative')
-            cg.rot_two()                            # base -> helper -> base
-            cg.call_function(1)                     # base -> retval
-            cg.pop_top()                            # base
+        cg.dup_top()
+        cg.load_helper_from_fast('validate_declarative')
+        cg.rot_two()                            # base -> helper -> base
+        cg.call_function(1)                     # base -> retval
+        cg.pop_top()                            # base
 
         # Subclass the child class if needed
         if any(isinstance(item, StorageExpr) for item in node.body):
@@ -198,10 +193,6 @@ class BlockCompiler(CompilerBase):
             cg.load_const('__module__')
             cg.store_map()                          # name -> bases -> dict
             cg.build_class()                        # class
-
-        # Store the class as a local
-        cg.dup_top()
-        cg.store_fast(class_var)
 
         # Build the construct node
         store_locals = should_store_locals(node)
@@ -222,11 +213,9 @@ class BlockCompiler(CompilerBase):
             cg.pop_top()
 
         # Populate the body of the node
-        self.class_stack.append(class_var)
         self.node_stack.append(node_var)
         for item in node.body:
             self.visit(item)
-        self.class_stack.pop()
         self.node_stack.pop()
 
         # Add this node to the parent node
@@ -237,8 +226,7 @@ class BlockCompiler(CompilerBase):
         cg.call_function(1)
         cg.pop_top()
 
-        # Release the held variables
-        self.var_pool.release(class_var)
+        # Release the held node variable
         self.var_pool.release(node_var)
 
     def visit_TemplateInst(self, node):
@@ -250,10 +238,9 @@ class BlockCompiler(CompilerBase):
 
         # Load and validate the template
         self.load_name(node.name)
-        with cg.try_squash_raise():
-            cg.load_helper_from_fast('validate_template')
-            cg.rot_two()
-            cg.call_function(1)
+        cg.load_helper_from_fast('validate_template')
+        cg.rot_two()
+        cg.call_function(1)
 
         # Load the arguments for the instantiation call
         arguments = node.arguments
@@ -278,12 +265,11 @@ class BlockCompiler(CompilerBase):
         if identifiers is not None:
             names = tuple(identifiers.names)
             starname = identifiers.starname
-            with cg.try_squash_raise():
-                cg.load_helper_from_fast('validate_unpack_size')
-                cg.rot_two()
-                cg.load_const(len(names))
-                cg.load_const(bool(starname))
-                cg.call_function(3)
+            cg.load_helper_from_fast('validate_unpack_size')
+            cg.rot_two()
+            cg.load_const(len(names))
+            cg.load_const(bool(starname))
+            cg.call_function(3)
 
         # Load and call the helper to create the compiler node
         cg.load_helper_from_fast('template_inst_node')
@@ -306,17 +292,16 @@ class BlockCompiler(CompilerBase):
         """
         cg = self.code_generator
         cg.set_lineno(node.lineno)
-        with cg.try_squash_raise():
-            cg.load_helper_from_fast('add_storage')
-            cg.load_fast(self.class_stack[-1])
-            cg.load_const(node.name)
-            if node.typename:
-                self.load_name(node.typename)
-            else:
-                cg.load_const(None)
-            cg.load_const(node.kind)                # helper -> class -> name -> type -> kind
-            cg.call_function(4)                     # retval
-            cg.pop_top()
+        cg.load_helper_from_fast('add_storage')
+        cg.load_fast(self.node_stack[-1])
+        cg.load_const(node.name)
+        if node.typename:
+            self.load_name(node.typename)
+        else:
+            cg.load_const(None)
+        cg.load_const(node.kind)                # helper -> class -> name -> type -> kind
+        cg.call_function(4)                     # retval
+        cg.pop_top()
 
         # Handle the expression binding, if present
         if node.expr is not None:
@@ -332,6 +317,15 @@ class BlockCompiler(CompilerBase):
         self.visit(node.expr)
         self.bind_stack.pop()
 
+    def visit_ExBinding(self, node):
+        """ The compiler visitor for an ExBinding node.
+
+        """
+        parts = (node.name, node.binding.name)
+        self.bind_stack.append(parts)
+        self.visit(node.binding.expr)
+        self.bind_stack.pop()
+
     def visit_OperatorExpr(self, node):
         """ The compiler visitor for an OperatorExpr node.
 
@@ -340,15 +334,14 @@ class BlockCompiler(CompilerBase):
         self.visit(node.value)
         code = self.code_stack.pop()
         cg.set_lineno(node.lineno)
-        with cg.try_squash_raise():
-            cg.load_helper_from_fast('run_operator')
-            cg.load_fast(self.node_stack[-1])
-            cg.load_const(self.bind_stack[-1])
-            cg.load_const(node.operator)
-            cg.load_const(code)
-            cg.load_globals_from_fast()             # helper -> node -> name -> op -> code -> globals
-            cg.call_function(5)
-            cg.pop_top()
+        cg.load_helper_from_fast('run_operator')
+        cg.load_fast(self.node_stack[-1])
+        cg.load_const(self.bind_stack[-1])
+        cg.load_const(node.operator)
+        cg.load_const(code)
+        cg.load_globals_from_fast()             # helper -> node -> name -> op -> code -> globals
+        cg.call_function(5)
+        cg.pop_top()
 
     def visit_PythonExpression(self, node):
         """ The compiler visitor for a PythonExpression node.

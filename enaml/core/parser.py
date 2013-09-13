@@ -410,6 +410,7 @@ def p_enamldef_suite_items2(p):
 
 def p_enamldef_suite_item1(p):
     ''' enamldef_suite_item : binding
+                            | ex_binding
                             | child_def
                             | alias_expr
                             | storage_expr
@@ -624,6 +625,7 @@ def p_child_def_suite_items2(p):
 
 def p_child_def_suite_item1(p):
     ''' child_def_suite_item : binding
+                             | ex_binding
                              | child_def
                              | storage_expr
                              | template_inst '''
@@ -641,6 +643,16 @@ def p_child_def_suite_item2(p):
 def p_binding(p):
     ''' binding : NAME operator_expr '''
     p[0] = enaml_ast.Binding(name=p[1], expr=p[2], lineno=p.lineno(1))
+
+
+#------------------------------------------------------------------------------
+# ExBinding
+#------------------------------------------------------------------------------
+def p_ex_binding(p):
+    ''' ex_binding : NAME DOT NAME operator_expr '''
+    lineno = p.lineno(1)
+    binding = enaml_ast.Binding(name=p[3], expr=p[4], lineno=lineno)
+    p[0] = enaml_ast.ExBinding(name=p[1], binding=binding, lineno=lineno)
 
 
 #------------------------------------------------------------------------------

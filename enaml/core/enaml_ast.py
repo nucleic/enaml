@@ -133,6 +133,17 @@ class Binding(ASTNode):
     expr = Typed(OperatorExpr)
 
 
+class ExBinding(ASTNode):
+    """ An AST node which represents an extended code binding.
+
+    """
+    #: The root name of the extended binding.
+    name = Str()
+
+    #: The code binding for the expression.
+    binding = Typed(Binding)
+
+
 class StorageExpr(ASTNode):
     """ An AST node representing a storage expression.
 

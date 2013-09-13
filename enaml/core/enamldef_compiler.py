@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed
+from atom.api import List, Typed
 
 from .block_compiler import BlockCompiler
 from .code_generator import CodeGenerator
-from .enaml_ast import AliasExpr, Binding, StorageExpr
+from .enaml_ast import AliasExpr, Binding, StorageExpr, ChildDef, TemplateInst
 
 
 def should_store_locals(node):
@@ -47,12 +47,12 @@ class EnamlDefCompiler(BlockCompiler):
     classmethod.
 
     """
+    #: Temporary storage for deferred process nodes.
+    deferred_nodes = List()
+
     #: The user-accessible local names for the block. These are always
     #: empty for an enamldef block.
     _local_names = Typed(set, ())
-
-    #: Temporary storage for the alias nodes.
-    _alias_nodes = Typed(list, ())
 
     @classmethod
     def compile(cls, node, filename):
@@ -98,6 +98,54 @@ class EnamlDefCompiler(BlockCompiler):
         """
         return self._local_names
 
+    def process_deferred_nodes(self, name):
+        """ The handler for processing the deferred body nodes.
+
+        Parameters
+        ----------
+        name : str
+            The typename for the enamldef block.
+
+        """
+        # In order to properly report line numbers in tracebacks, the
+        # deferred nodes must be executed in their own function. This
+        # is due to the fact that the lineno table in a code object
+        # does not support negative offsets.
+        if not self.deferred_nodes:
+            return
+
+        # Setup a new code generator for the deferred nodes.
+        cg = self.code_generator
+        cg_ex = CodeGenerator(filename=cg.filename)
+        cg_ex.store_helpers_to_fast()
+        cg_ex.store_globals_to_fast()
+
+        # Invoke the vistors for the nodes under the new generator.
+        self.code_generator = cg_ex
+        for node in self.deferred_nodes:
+            self.visit(node)
+        self.code_generator = cg
+
+        # Setup the return value for the function.
+        cg_ex.load_const(None)
+        cg_ex.return_value()
+
+        # Compile the code object for the nodes.
+        node_var = self.node_stack[-1]
+        args = [self.node_map, node_var]
+        firstlineno = self.deferred_nodes[0].lineno
+        code = cg_ex.to_code(
+            args=args, newlocals=True, name=name, firstlineno=firstlineno
+        )
+
+        # Load the code and arguments and invoke the function.
+        cg.load_const(code)
+        cg.make_function()
+        cg.load_fast(self.node_map)
+        cg.load_fast(node_var)
+        cg.call_function(2)
+        cg.pop_top()
+
     def visit_EnamlDef(self, node):
         """ The compiler visitor for an EnamlDef node.
 
@@ -118,12 +166,11 @@ class EnamlDefCompiler(BlockCompiler):
         cg.load_global(node.base)                   # helper -> name -> base
 
         # Validate the type of the base class
-        with cg.try_squash_raise():
-            cg.dup_top()
-            cg.load_helper_from_fast('validate_declarative')
-            cg.rot_two()                            # helper -> name -> base -> helper -> base
-            cg.call_function(1)                     # helper -> name -> base -> retval
-            cg.pop_top()                            # helper -> name -> base
+        cg.dup_top()
+        cg.load_helper_from_fast('validate_declarative')
+        cg.rot_two()                            # helper -> name -> base -> helper -> base
+        cg.call_function(1)                     # helper -> name -> base -> retval
+        cg.pop_top()                            # helper -> name -> base
 
         # Build the enamldef class
         cg.build_tuple(1)
@@ -151,13 +198,17 @@ class EnamlDefCompiler(BlockCompiler):
         cg.call_function(4)                         # node
         cg.store_fast(node_var)
 
-        # Popuplate the body of the class
-        self.class_stack.append(class_var)
+        # Popuplate the body of the class. The expression bindings are
+        # processed after all of the children are created so that any
+        # forward reference by an alias can be processed.
         self.node_stack.append(node_var)
+        child_types = (ChildDef, TemplateInst)
         for item in node.body:
-            self.visit(item)
-        self.fixup_aliases(node.typename)
-        self.class_stack.pop()
+            if isinstance(item, child_types):
+                self.visit(item)
+            else:
+                self.deferred_nodes.append(item)
+        self.process_deferred_nodes(node.typename)
         self.node_stack.pop()
 
         # Store the node on the enamldef and return the class
@@ -175,49 +226,13 @@ class EnamlDefCompiler(BlockCompiler):
         """ The compiler visitor for an AliasExpr node.
 
         """
-        self._alias_nodes.append(node)
         cg = self.code_generator
         cg.set_lineno(node.lineno)
-        with cg.try_squash_raise():
-            cg.load_helper_from_fast('add_alias')
-            cg.load_fast(self.node_map)
-            cg.load_fast(self.node_stack[-1])
-            cg.load_const(node.name)
-            cg.load_const(node.target)
-            cg.load_const(node.attr)
-            cg.call_function(5)
-            cg.pop_top()
-
-    def fixup_aliases(self, name):
-        if not self._alias_nodes:
-            return
-
-        cg = self.code_generator
-        cg_ex = CodeGenerator(filename=cg.filename)
-
-        with cg_ex.try_squash_raise():
-            for node in self._alias_nodes:
-                cg_ex.set_lineno(node.lineno)
-                cg_ex.load_fast('helper')
-                cg_ex.load_fast('node_map')
-                cg_ex.load_fast('node')
-                cg_ex.load_const(node.target)
-                cg_ex.load_const(node.attr)
-                cg_ex.call_function(4)
-                cg_ex.pop_top()
-        cg_ex.load_const(None)
-        cg_ex.return_value()
-
-        args = ['helper', 'node_map', 'node']
-        firstlineno = self._alias_nodes[0].lineno
-        code = cg_ex.to_code(
-            args=args, newlocals=True, name=name, firstlineno=firstlineno
-        )
-
-        cg.load_const(code)
-        cg.make_function()
-        cg.load_helper_from_fast('fixup_alias')
+        cg.load_helper_from_fast('add_alias')
         cg.load_fast(self.node_map)
         cg.load_fast(self.node_stack[-1])
-        cg.call_function(3)
+        cg.load_const(node.name)
+        cg.load_const(node.target)
+        cg.load_const(node.attr)
+        cg.call_function(5)
         cg.pop_top()
