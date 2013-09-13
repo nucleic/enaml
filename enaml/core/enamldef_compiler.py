@@ -220,5 +220,5 @@ class EnamlDefCompiler(BlockCompiler):
         cg.load_helper_from_fast('fixup_alias')
         cg.load_fast(self.node_map)
         cg.load_fast(self.node_stack[-1])
-        cg.call_function(2)
+        cg.call_function(3)
         cg.pop_top()
