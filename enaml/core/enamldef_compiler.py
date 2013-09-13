@@ -30,10 +30,9 @@ def should_store_locals(node):
         scopes, False otherwise.
 
     """
+    types = (AliasExpr, Binding)
     for item in node.body:
-        if isinstance(item, AliasExpr):
-            return True
-        if isinstance(item, Binding):
+        if isinstance(item, types):
             return True
         if isinstance(item, StorageExpr) and item.expr is not None:
             return True
