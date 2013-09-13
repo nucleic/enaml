@@ -21,7 +21,22 @@ from .operators import __get_operators
 from .template import Template
 
 
-def validate_alias(node_map, target, attr):
+def fixup_alias(node_map, node, target, attr):
+    """ Validate and fixup a potential alias declaration.
+
+    Parameters
+    ----------
+    node_map : dict
+        A dictionary which maps node id to node for the block.
+
+    target : str
+        The identifier of the target object in the block.
+
+    attr : str
+        The attribute name aliased on the target. This can be an
+        empty string if an attribute is not aliased.
+
+    """
     if target not in node_map:
         msg = "'%s' is not a valid alias target"
         raise TypeError(msg % target)
@@ -30,6 +45,13 @@ def validate_alias(node_map, target, attr):
         if not isinstance(item, (Alias, Member)):
             msg = "'%s' is not a valid alias attribute"
             raise TypeError(msg % attr)
+        if isinstance(item, Member):
+            if item.metadata is None or not item.metadata.get('d_member'):
+                msg = "alias '%s.%s' resolves to a non-declarative member"
+                raise TypeError(msg % (target, attr))
+    if node.aliased_nodes is None:
+        node.aliased_nodes = sortedmap()
+    node.aliased_nodes[target] = node_map[target]
 
 
 def add_alias(node_map, node, name, target, attr):
@@ -55,7 +77,6 @@ def add_alias(node_map, node, name, target, attr):
         an empty string for object aliases.
 
     """
-    validate_alias(node_map, target, attr)
     klass = node.klass
     item = getattr(klass, name, None)
     if isinstance(item, Alias):
@@ -334,8 +355,106 @@ def make_template(paramspec, func, name, f_globals, template_map):
     template.add_specialization(paramspec, func)
 
 
-def bind_alias(node, name, pair, alias):
-    pass
+def resolve_alias_member(node, alias):
+    """ Resolve the declarative member pointed to by an alias.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The declarative node on which the alias is being accessed.
+
+    alias : Alias
+        The alias which is being accessed.
+
+    Returns
+    -------
+    result : tuple or None
+        A 2-tuple of (node, member) which represents the resolved
+        alias definition. If the alias does not resolve to a member,
+        None will be returned.
+
+    """
+    if node is None:
+        return None
+    attr = alias.attr
+    if not attr:
+        return None
+    if not isinstance(node, EnamlDefNode):
+        return resolve_alias_member(node.super_node, alias)
+    if node.aliased_nodes is None:
+        return resolve_alias_member(node.super_node, alias)
+    target_node = node.aliased_nodes.get(alias.target)
+    if target_node is None:
+        return resolve_alias_member(node.super_node, alias)
+    # validate_alias ensures this will be a Member or an Alias
+    item = getattr(target_node.klass, attr)
+    if isinstance(item, Member):
+        return (target_node, item)
+    return resolve_alias_member(target_node, item)
+
+
+def bind_alias_member(node, name, alias, pair):
+    """ Bind a handler pair to an alias.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The compiler node holding the declarative class.
+
+    name : str
+        The name being bound for the class.
+
+    alias : Alias
+        The alias object being bound.
+
+    pair : HandlerPair
+        The handler pair to add to the expression engine.
+
+    """
+    resolved = resolve_alias_member(node, alias)
+    if resolved is None:
+        msg = "'%s' alias does not resolve to a declarative member"
+        raise TypeError(msg % name)
+    target_node, member = resolved
+    if pair.writer is not None and not member.metadata.get('d_readable'):
+        raise TypeError("alias '%s' is not readable from enaml" % name)
+    if pair.reader is not None and not member.metadata.get('d_writable'):
+        raise TypeError("alias '%s' is not writable from enaml" % name)
+    if target_node.engine is None:
+        target_node.engine = ExpressionEngine()
+    target_node.engine.add_pair(member.name, pair)
+    if target_node.closure_keys is None:
+        target_node.closure_keys = set()
+    target_node.closure_keys.add(node.scope_key)
+
+
+def bind_member(node, name, pair):
+    """ Bind a handler pair to a node.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The compiler node holding the declarative class.
+
+    name : str
+        The name being bound for the class.
+
+    pair : HandlerPair
+        The handler pair to add to the expression engine.
+
+    """
+    member = node.klass.members().get(name)
+    if member is None:
+        raise TypeError("'%s' is not a declarative member" % name)
+    if member.metadata is None or not member.metadata.get('d_member'):
+        raise TypeError("'%s' is not a declarative member" % name)
+    if pair.writer is not None and not member.metadata.get('d_readable'):
+        raise TypeError("'%s' is not readable from enaml" % name)
+    if pair.reader is not None and not member.metadata.get('d_writable'):
+        raise TypeError("'%s' is not writable from enaml" % name)
+    if node.engine is None:
+        node.engine = ExpressionEngine()
+    node.engine.add_pair(name, pair)
 
 
 def run_operator(node, name, op, code, f_globals):
@@ -343,8 +462,8 @@ def run_operator(node, name, op, code, f_globals):
 
     Parameters
     ----------
-    node : ConstructNode
-        The construct node holding the declarative class.
+    node : DeclarativeNode
+        The compiler node holding the declarative class.
 
     name : str
         The name being bound for the class.
@@ -363,32 +482,11 @@ def run_operator(node, name, op, code, f_globals):
     if op not in operators:
         raise TypeError("failed to load operator '%s'" % op)
     pair = operators[op](code, node.scope_key, f_globals)
-
-    member = node.klass.members().get(name)
-    if member is None:
-        alias = getattr(node.klass, name, None)
-        if isinstance(alias, AttributeAlias):
-            bind_alias(node, name, pair, alias)
-        elif isinstance(alias, ObjectAlias):
-            raise TypeError("can't bind to an object alias '%s'" % name)
-        else:
-            raise TypeError("'%s' is not a declarative member" % name)
-
-    # The read and write semantics are reversed here. In the context of
-    # a declarative member, d_readable means that an attribute can be
-    # *read* from enaml and it's value *written* to the expression,
-    # d_writable means that an expression can be *read* and its value
-    # *written* to the attribute attribute.
-    if member.metadata is None or not member.metadata.get('d_member'):
-        raise TypeError("'%s' is not a declarative member" % name)
-    if pair.writer is not None and not member.metadata.get('d_readable'):
-        raise TypeError("'%s' is not readable from enaml" % name)
-    if pair.reader is not None and not member.metadata.get('d_writable'):
-        raise TypeError("'%s' is not writable from enaml" % name)
-
-    if node.engine is None:
-        node.engine = ExpressionEngine()
-    node.engine.add_pair(name, pair)
+    alias = getattr(node.klass, name, None)
+    if isinstance(alias, Alias):
+        bind_alias_member(node, name, alias, pair)
+    else:
+        bind_member(node, name, pair)
 
 
 def type_check_expr(value, kind):
@@ -498,6 +596,7 @@ __compiler_helpers = {
     'add_storage': add_storage,
     'declarative_node': declarative_node,
     'enamldef_node': enamldef_node,
+    'fixup_alias': fixup_alias,
     'make_enamldef': make_enamldef,
     'make_object': make_object,
     'make_template': make_template,

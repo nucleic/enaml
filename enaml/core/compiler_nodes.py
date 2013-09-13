@@ -17,14 +17,22 @@ from .expression_engine import ExpressionEngine
 __stack = []
 
 
+#: The private map of active local scopes.
+__map = {}
+
+
 @contextmanager
-def new_scope(seed=None):
+def new_scope(key, seed=None):
     """ Create a new scope mapping and push it onto the stack.
 
-    The currently active scope can be retrieved with 'peek_locals'.
+    The currently active scope can be retrieved with 'peek_scope' and
+    a specific scope can be retrieved with 'fetch_scope'.
 
     Parameters
     ----------
+    key : object
+        The scope key to associate with this local scope.
+
     seed : sortedmap, optional
         The seed map values for creating the scope.
 
@@ -39,15 +47,15 @@ def new_scope(seed=None):
         scope = seed.copy()
     else:
         scope = sortedmap()
+    __map[key] = scope
     __stack.append(scope)
     yield scope
     __stack.pop()
+    del __map[key]
 
 
 def peek_scope():
-    """ Get the active scope key and mapping.
-
-    If there is no active scope, this will raise an IndexError.
+    """ Get the local scope object from the top of the scope stack.
 
     Returns
     -------
@@ -56,6 +64,23 @@ def peek_scope():
 
     """
     return __stack[-1]
+
+
+def fetch_scope(key):
+    """ Fetch a specific local scope by key.
+
+    Parameters
+    ----------
+    key : object
+        The scope key associated with the scope of interest.
+
+    Returns
+    -------
+    result : sortedmap
+        The relevant local scope.
+
+    """
+    return __map[key]
 
 
 class DeclarativeNode(Atom):
@@ -80,6 +105,10 @@ class DeclarativeNode(Atom):
 
     #: The expression engine to associate with the instance.
     engine = Typed(ExpressionEngine)
+
+    #: The set of scope keys for the closure scopes. This will be None
+    #: if the node does not require any closure scopes.
+    closure_keys = Typed(set)
 
     #: The superclass nodes of this node. This will be None if the
     #: node represents a raw declarative object vs an enamldef.
@@ -108,6 +137,19 @@ class DeclarativeNode(Atom):
         """
         klass = self.klass
         instance = klass.__new__(klass)
+        self.populate(instance)
+        instance.__init__(parent)
+        return instance
+
+    def populate(self, instance):
+        """ Populate an instance generated for the node.
+
+        Parameters
+        ----------
+        instance : Declarative
+            The declarative instance for this node.
+
+        """
         if self.super_node is not None:
             self.super_node(instance)
         f_locals = peek_scope()
@@ -117,10 +159,11 @@ class DeclarativeNode(Atom):
             instance._d_storage[self.scope_key] = f_locals
         if self.engine is not None:
             instance._d_engine = self.engine
+        if self.closure_keys is not None:
+            for key in self.closure_keys:
+                instance._d_storage[key] = fetch_scope(key)
         for node in self.children:
             node(instance)
-        instance.__init__(parent)
-        return instance
 
     def size(self):
         """ Return the size of the instantiated node.
@@ -146,6 +189,8 @@ class DeclarativeNode(Atom):
             node.engine = self.engine.copy()
         if self.super_node is not None:
             node.super_node = self.super_node.copy()
+        if self.closure_keys is not None:
+            node.closure_keys = self.closure_keys.copy()
         node.children = [child.copy() for child in self.children]
         return node
 
@@ -154,6 +199,9 @@ class EnamlDefNode(DeclarativeNode):
     """ A declarative node which represents an 'enamldef' block.
 
     """
+    #: A mapping of id->node for the aliased nodes in the block.
+    aliased_nodes = Typed(sortedmap)
+
     def __call__(self, instance):
         """ Instantiate the declarative hierarchy for the node.
 
@@ -167,17 +215,29 @@ class EnamlDefNode(DeclarativeNode):
             The enamldef instance which should be populated.
 
         """
-        if self.super_node is not None:
-            self.super_node(instance)
-        with new_scope() as f_locals:
-            if self.identifier:
-                f_locals[self.identifier] = instance
-            if self.store_locals:
-                instance._d_storage[self.scope_key] = f_locals
-            if self.engine is not None:
-                instance._d_engine = self.engine
-            for node in self.children:
-                node(instance)
+        with new_scope(self.scope_key):
+            self.populate(instance)
+
+    def copy(self):
+        """ Copy the EnamlDefNode.
+
+        Returns
+        -------
+        result : EnamlDefNode
+            A copy of this enamldef node.
+
+        """
+        node = super(EnamlDefNode, self).copy()
+        if self.aliased_nodes is not None:
+            new = self.aliased_nodes.copy()
+            stack = list(reversed(node.children))
+            while stack:
+                child = stack.pop()
+                if child.identifier and child.identifier in new:
+                    new[child.identifier] = child
+                stack.extend(reversed(child.children))
+            node.aliased_nodes = new
+        return node
 
 
 class DeclarativeInterceptNode(DeclarativeNode):
