@@ -10,8 +10,7 @@ from atom.datastructures.api import sortedmap
 
 from .alias import Alias
 from .compiler_nodes import (
-    DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstNode,
-    DeclarativeInterceptNode, EnamlDefInterceptNode
+    DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstNode
 )
 from .declarative import Declarative, d_
 from .declarative_meta import patch_d_member
@@ -22,19 +21,24 @@ from .template import Template
 
 
 def validate_alias(node_map, target, attr):
-    """ Validate an alias declaration.
+    """ Validate the declaration for an alias.
+
+    This function ensures that the alias delcaration points to a node
+    in the node map. If the alias specifies an attribute, it validates
+    that the attribute refers to another alias or a declarative member.
 
     Parameters
     ----------
     node_map : dict
-        A dictionary which maps node id to node for the block.
+        A dictionary which maps node id to node for the nodes the
+        block enclosing the alias.
 
     target : str
         The identifier of the target object in the block.
 
     attr : str
-        The attribute name aliased on the target. This can be an
-        empty string if an attribute is not aliased.
+        The attribute name for the alias. This should be an empty
+        string if the alias does not have an attribute.
 
     """
     if target not in node_map:
@@ -58,20 +62,20 @@ def add_alias(node_map, node, name, target, attr):
     ----------
     node_map : dict
         A dict mapping identifier to declarative child nodes for the
-        entire enamldef block.
+        enamldef block enclosing the alias definition.
 
     node : EnamlDefNode
-        The enamldef node for which an alias should be added.
+        The enamldef node for which the alias should be added.
 
     name : str
-        The name of the alias.
+        The attribute name to use when adding the alias to the class.
 
     target : str
-        The target of the alias.
+        The target identifier for the alias.
 
     attr : str
-        The attribute being accessed on the target. This should be
-        an empty string for object aliases.
+        The name of the aliased attribute on the target. This should
+        be an empty string for object aliases.
 
     """
     validate_alias(node_map, target, attr)
@@ -125,7 +129,7 @@ def add_storage(node, name, store_type, kind):
             msg = "can't override non-declarative member '%s'"
             raise TypeError(msg % name)
         if member.metadata.get('d_final'):
-            msg = "can't override the final member '%s'"
+            msg = "can't override final member '%s'"
             raise TypeError(msg % name)
 
     if kind == 'event':
@@ -162,8 +166,8 @@ def declarative_node(klass, identifier, scope_key, store_locals):
         The key for the local scope in the local storage maps.
 
     store_locals : bool
-        Whether instances of this node class should store the
-        local scope in their storage map.
+        Whether instances of the class should store the local scope in
+        their storage map.
 
     Returns
     -------
@@ -171,14 +175,12 @@ def declarative_node(klass, identifier, scope_key, store_locals):
         The compiler node for the given klass.
 
     """
-    #if klass.__intercepts_child_nodes__:
-    #    node = DeclarativeInterceptNode()
-    #else:
     node = DeclarativeNode()
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
     node.store_locals = store_locals
+    node.child_intercept = klass.__intercepts_child_nodes__
     # If the class is an enamldef, copy its node as the super node.
     super_node = getattr(klass, '__node__', None)
     if super_node is not None:
@@ -203,8 +205,8 @@ def enamldef_node(klass, identifier, scope_key, store_locals):
         The key for the local scope in the local storage maps.
 
     store_locals : bool
-        Whether instances of this node class should store the
-        local scope in their storage map.
+        Whether instances of the class should store the local scope in
+        their storage map.
 
     Returns
     -------
@@ -212,14 +214,12 @@ def enamldef_node(klass, identifier, scope_key, store_locals):
         The compiler node for the given class.
 
     """
-    #if klass.__intercepts_child_nodes__:
-    #    node = EnamlDefInterceptNode()
-    #else:
     node = EnamlDefNode()
     node.klass = klass
     node.identifier = identifier
     node.scope_key = scope_key
     node.store_locals = store_locals
+    node.child_intercept = klass.__intercepts_child_nodes__
     # If the class is an enamldef, copy its node as the super node.
     super_node = getattr(klass, '__node__', None)
     if super_node is not None:
@@ -229,8 +229,13 @@ def enamldef_node(klass, identifier, scope_key, store_locals):
     return node
 
 
-def template_node():
-    """ Create and return a template node.
+def template_node(scope_key):
+    """ Create and return a new template node.
+
+    Parameters
+    ----------
+    scope_key : object
+        The key for the local scope in the local storage maps.
 
     Returns
     -------
@@ -238,11 +243,13 @@ def template_node():
         A new compiler template node.
 
     """
-    return TemplateNode()
+    node = TemplateNode()
+    node.scope_key = scope_key
+    return node
 
 
-def template_inst_node(template_inst, names, starname):
-    """ Create and return a template inst node.
+def template_inst_node(template_inst, names, starname, scope_key):
+    """ Create and return a new template inst node.
 
     Parameters
     ----------
@@ -257,6 +264,9 @@ def template_inst_node(template_inst, names, starname):
         The star name to associate with the extra instantiated items.
         This may be an empty string if there is no such item.
 
+    scope_key : object
+        The key for the local scope in the local storage maps.
+
     Returns
     -------
     result : TemplateInstNode
@@ -267,6 +277,7 @@ def template_inst_node(template_inst, names, starname):
     node.template_node = template_inst.template_node
     node.names = names
     node.starname = starname
+    node.scope_key = scope_key
     return node
 
 
@@ -281,6 +292,11 @@ def make_template_scope(node, scope_tuple):
     scope_tuple : tuple
         A tuple of alternating key, value pairs representing the
         scope of a template instantiation.
+
+    Returns
+    -------
+    result : sortedmap
+        The scope mapping for the given scope tuple.
 
     """
     scope = sortedmap()
@@ -305,19 +321,29 @@ def make_enamldef(name, bases, dct):
     dct : dict
         The class dictionary.
 
+    Returns
+    -------
+    result : EnamlDefMeta
+        A new class generator from the EnamlDefMeta metaclass.
+
     """
     return EnamlDefMeta(name, bases, dct)
 
 
 def make_object():
-    """ Return a new empty object.
+    """ Create a new empty object instance.
+
+    Returns
+    -------
+    result : object
+        A new object instance.
 
     """
     return object()
 
 
 def make_template(paramspec, func, name, f_globals, template_map):
-    """ Return a new template object.
+    """ Create a new template object.
 
     This method will create a new template if necessary, add the
     specialization, and store the template in the globals and the
@@ -394,70 +420,6 @@ def resolve_alias_member(node, alias):
     return resolve_alias_member(target_node, item)
 
 
-def bind_alias_member(node, name, alias, pair):
-    """ Bind a handler pair to an alias.
-
-    Parameters
-    ----------
-    node : DeclarativeNode
-        The compiler node holding the declarative class.
-
-    name : str
-        The name being bound for the class.
-
-    alias : Alias
-        The alias being bound.
-
-    pair : HandlerPair
-        The handler pair to add to the expression engine.
-
-    """
-    resolved = resolve_alias_member(node, alias)
-    if resolved is None:
-        msg = "alias '%s' does not resolve to a declarative member"
-        raise TypeError(msg % name)
-    target_node, member = resolved
-    if pair.writer is not None and not member.metadata.get('d_readable'):
-        raise TypeError("alias '%s' is not readable from enaml" % name)
-    if pair.reader is not None and not member.metadata.get('d_writable'):
-        raise TypeError("alias '%s' is not writable from enaml" % name)
-    if target_node.engine is None:
-        target_node.engine = ExpressionEngine()
-    target_node.engine.add_pair(member.name, pair)
-    if target_node.closure_keys is None:
-        target_node.closure_keys = set()
-    target_node.closure_keys.add(node.scope_key)
-
-
-def bind_member(node, name, pair):
-    """ Bind a handler pair to a node.
-
-    Parameters
-    ----------
-    node : DeclarativeNode
-        The compiler node holding the declarative class.
-
-    name : str
-        The name being bound for the class.
-
-    pair : HandlerPair
-        The handler pair to add to the expression engine.
-
-    """
-    member = node.klass.members().get(name)
-    if member is None:
-        raise TypeError("'%s' is not a declarative member" % name)
-    if member.metadata is None or not member.metadata.get('d_member'):
-        raise TypeError("'%s' is not a declarative member" % name)
-    if pair.writer is not None and not member.metadata.get('d_readable'):
-        raise TypeError("'%s' is not readable from enaml" % name)
-    if pair.reader is not None and not member.metadata.get('d_writable'):
-        raise TypeError("'%s' is not writable from enaml" % name)
-    if node.engine is None:
-        node.engine = ExpressionEngine()
-    node.engine.add_pair(name, pair)
-
-
 def resolve_alias_object(node, alias):
     """ Resolve the declarative object pointed to by an alias.
 
@@ -494,6 +456,41 @@ def resolve_alias_object(node, alias):
     return resolve_alias_object(target_node, item)
 
 
+def bind_alias_member(node, name, alias, pair):
+    """ Bind a handler pair to an alias.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The compiler node holding the declarative class.
+
+    name : str
+        The name being bound for the class.
+
+    alias : Alias
+        The alias being bound.
+
+    pair : HandlerPair
+        The handler pair to add to the expression engine.
+
+    """
+    resolved = resolve_alias_member(node, alias)
+    if resolved is None:
+        msg = "alias '%s' does not resolve to a declarative member"
+        raise TypeError(msg % name)
+    target_node, member = resolved
+    if pair.writer is not None and not member.metadata.get('d_readable'):
+        raise TypeError("alias '%s' is not readable from enaml" % name)
+    if pair.reader is not None and not member.metadata.get('d_writable'):
+        raise TypeError("alias '%s' is not writable from enaml" % name)
+    if target_node.engine is None:
+        target_node.engine = ExpressionEngine()
+    target_node.engine.add_pair(member.name, pair)
+    if target_node.closure_keys is None:
+        target_node.closure_keys = set()
+    target_node.closure_keys.add(node.scope_key)
+
+
 def bind_alias_object(node, name, attr, alias, pair):
     """ Bind a handler pair to an alias object.
 
@@ -523,6 +520,35 @@ def bind_alias_object(node, name, attr, alias, pair):
     if target_node.closure_keys is None:
         target_node.closure_keys = set()
     target_node.closure_keys.add(node.scope_key)
+
+
+def bind_member(node, name, pair):
+    """ Bind a handler pair to a node.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The compiler node holding the declarative class.
+
+    name : str
+        The name being bound for the class.
+
+    pair : HandlerPair
+        The handler pair to add to the expression engine.
+
+    """
+    member = node.klass.members().get(name)
+    if member is None:
+        raise TypeError("'%s' is not a declarative member" % name)
+    if member.metadata is None or not member.metadata.get('d_member'):
+        raise TypeError("'%s' is not a declarative member" % name)
+    if pair.writer is not None and not member.metadata.get('d_readable'):
+        raise TypeError("'%s' is not readable from enaml" % name)
+    if pair.reader is not None and not member.metadata.get('d_writable'):
+        raise TypeError("'%s' is not writable from enaml" % name)
+    if node.engine is None:
+        node.engine = ExpressionEngine()
+    node.engine.add_pair(name, pair)
 
 
 def bind_extended_member(node, parts, pair):
