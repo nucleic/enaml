@@ -276,7 +276,8 @@ class BlockCompiler(CompilerBase):
         cg.rot_two()
         cg.load_const(names)
         cg.load_const(starname)
-        cg.call_function(3)
+        cg.load_fast(self.scope_key)
+        cg.call_function(4)
 
         # Append the node to the parent node
         cg.load_fast(self.node_stack[-1])

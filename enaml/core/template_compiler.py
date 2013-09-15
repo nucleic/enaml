@@ -126,7 +126,8 @@ class TemplateCompiler(BlockCompiler):
 
         # Create and store the template node
         cg.load_helper_from_fast('template_node')
-        cg.call_function()
+        cg.load_fast(self.scope_key)
+        cg.call_function(1)
         cg.store_fast(node_var)
 
         # Populate the body of the template
