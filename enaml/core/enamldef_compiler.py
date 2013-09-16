@@ -5,38 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import List, Typed
+from itertools import count
 
-from .block_compiler import BlockCompiler
+from .block_compiler import BlockCompiler, CompilerPass
 from .code_generator import CodeGenerator
-from .enaml_ast import AliasExpr, Binding, StorageExpr, ChildDef, TemplateInst
-
-
-def should_store_locals(node):
-    """ Get whether or not an enamldef should store its locals.
-
-    An enamldef must store its local scope if it has alias expressions,
-    attribute bindings, or storage expressions with default bindings.
-
-    Parameters
-    ----------
-    node : EnamlDef
-        The enamldef ast node of interest.
-
-    Returns
-    -------
-    result : bool
-        True if instances of the enamldef should store their local
-        scopes, False otherwise.
-
-    """
-    types = (AliasExpr, Binding)
-    for item in node.body:
-        if isinstance(item, types):
-            return True
-        if isinstance(item, StorageExpr) and item.expr is not None:
-            return True
-    return False
 
 
 class EnamlDefCompiler(BlockCompiler):
@@ -47,13 +19,6 @@ class EnamlDefCompiler(BlockCompiler):
     classmethod.
 
     """
-    #: Temporary storage for deferred process nodes.
-    deferred_nodes = List()
-
-    #: The user-accessible local names for the block. These are always
-    #: empty for an enamldef block.
-    _local_names = Typed(set, ())
-
     @classmethod
     def compile(cls, node, filename):
         """ Compile an EnamlDef node into a code object.
@@ -72,105 +37,73 @@ class EnamlDefCompiler(BlockCompiler):
             A Python code object which implements the enamldef block.
 
         """
+        def new_code_generator():
+            gen = CodeGenerator()
+            gen.filename = filename
+            gen.name = node.typename
+            gen.firstlineno = node.lineno
+            gen.newlocals = True
+            return gen
+
+        # Create the compiler instance for generating the block.
         compiler = cls()
-        cg = compiler.code_generator
-        cg.filename = filename
+
+        # Run the first pass to count the nodes.
+        compiler.comp_pass = CompilerPass.CountNodes
+        compiler.index_counter = count()
         compiler.visit(node)
-        code = cg.to_code(
-            newlocals=True, name=node.typename, firstlineno=node.lineno,
-            docstring=node.docstring or None
-        )
-        return code
 
-    def load_name(self, name):
-        """ Load the given name on the TOS.
+        # Create the outer code generator and setup the block.
+        cg = new_code_generator()
+        compiler.code_generator = cg
+        compiler.prepare_block()
 
-        This implements a required BlockCompiler method.
+        # Run the second pass to generate the nodes.
+        compiler.comp_pass = CompilerPass.BuildNodes
+        compiler.code_generator = new_code_generator()
+        compiler.index_counter = count()
+        compiler.visit(node)
+        compiler.call_from(cg)
 
-        """
-        self.code_generator.load_global(name)
+        # Run the third pass to generate data binding.
+        compiler.comp_pass = CompilerPass.BindData
+        compiler.code_generator = new_code_generator()
+        compiler.index_counter = count()
+        compiler.visit(node)
+        compiler.call_from(cg)
 
-    def local_names(self):
-        """ Get the set of user-accessible local names for the block.
+        # Load the node for the class and return the class.
+        cg.load_node(0)
+        cg.load_attr('klass')
+        cg.return_value()
 
-        This implements a required BlockCompiler method.
+        # Generate and return the code object for the block.
+        return cg.to_code()
 
-        """
-        return self._local_names
-
-    def process_deferred_nodes(self, name):
-        """ The handler for processing the deferred body nodes.
-
-        Parameters
-        ----------
-        name : str
-            The typename for the enamldef block.
-
-        """
-        # In order to properly report line numbers in tracebacks, the
-        # deferred nodes must be executed in their own function. This
-        # is due to the fact that the lineno table in a code object
-        # does not support negative offsets.
-        if not self.deferred_nodes:
-            return
-
-        # Setup a new code generator for the deferred nodes.
-        cg = self.code_generator
-        cg_ex = CodeGenerator(filename=cg.filename)
-        cg_ex.store_helpers_to_fast()
-        cg_ex.store_globals_to_fast()
-
-        # Invoke the vistors for the nodes under the new generator.
-        self.code_generator = cg_ex
-        for node in self.deferred_nodes:
-            self.visit(node)
-        self.code_generator = cg
-
-        # Setup the return value for the function.
-        cg_ex.load_const(None)
-        cg_ex.return_value()
-
-        # Compile the code object for the nodes.
-        node_var = self.node_stack[-1]
-        args = [self.node_map, node_var]
-        firstlineno = self.deferred_nodes[0].lineno
-        code = cg_ex.to_code(
-            args=args, newlocals=True, name=name, firstlineno=firstlineno
-        )
-
-        # Load the code and arguments and invoke the function.
-        cg.load_const(code)
-        cg.make_function()
-        cg.load_fast(self.node_map)
-        cg.load_fast(node_var)
-        cg.call_function(2)
-        cg.pop_top()
-
-    def visit_EnamlDef(self, node):
-        """ The compiler visitor for an EnamlDef node.
+    #--------------------------------------------------------------------------
+    # Utilities
+    #--------------------------------------------------------------------------
+    def handle_enaml_def(self, node, index):
+        """ The handler for an enamldef node.
 
         """
         cg = self.code_generator
 
-        # Claim the variables needed for the class and construct node
-        class_var = self.var_pool.new()
-        node_var = self.var_pool.new()
-
-        # Prepare the block for execution
+        # Preload the helper to generate the enamldef
         cg.set_lineno(node.lineno)
-        self.prepare_block()
-
-        # Load the type name and the base class
         cg.load_helper_from_fast('make_enamldef')
+
+        # Load the base class for the enamldef
         cg.load_const(node.typename)
         cg.load_global(node.base)                   # helper -> name -> base
 
         # Validate the type of the base class
-        cg.dup_top()
-        cg.load_helper_from_fast('validate_declarative')
-        cg.rot_two()                            # helper -> name -> base -> helper -> base
-        cg.call_function(1)                     # helper -> name -> base -> retval
-        cg.pop_top()                            # helper -> name -> base
+        with cg.try_squash_raise():
+            cg.dup_top()
+            cg.load_helper_from_fast('validate_declarative')
+            cg.rot_two()                            # helper -> name -> base -> helper -> base
+            cg.call_function(1)                     # helper -> name -> base -> retval
+            cg.pop_top()                            # helper -> name -> base
 
         # Build the enamldef class
         cg.build_tuple(1)
@@ -184,55 +117,43 @@ class EnamlDefCompiler(BlockCompiler):
             cg.store_map()
         cg.call_function(3)                         # class
 
-        # Store the class as a local
-        cg.dup_top()
-        cg.store_fast(class_var)
-
         # Build the compiler node
-        store_locals = should_store_locals(node)
+        store_locals = self.should_store_locals(node)
         cg.load_helper_from_fast('enamldef_node')
         cg.rot_two()
         cg.load_const(node.identifier)
-        cg.load_fast(self.scope_key)
+        cg.load_scope_key()
         cg.load_const(store_locals)                 # helper -> class -> identifier -> bool
         cg.call_function(4)                         # node
-        cg.store_fast(node_var)
 
-        # Popuplate the body of the class. The expression bindings are
-        # processed after all of the children are created so that any
-        # forward reference by an alias can be processed.
-        self.node_stack.append(node_var)
-        child_types = (ChildDef, TemplateInst)
-        for item in node.body:
-            if isinstance(item, child_types):
-                self.visit(item)
-            else:
-                self.deferred_nodes.append(item)
-        self.process_deferred_nodes(node.typename)
-        self.node_stack.pop()
+        # Store the node into the node list
+        cg.store_node(index)
 
-        # Store the node on the enamldef and return the class
-        cg.load_fast(node_var)
-        cg.load_fast(class_var)
-        cg.store_attr('__node__')
-        cg.load_fast(class_var)
-        cg.return_value()
+        #: Store the node in the node map if needed.
+        if node.identifier:
+            cg.load_node_map()
+            cg.load_node(index)
+            cg.load_const(node.identifier)
+            cg.store_map()
+            cg.pop_top()
 
-        # Release the held variables
-        self.var_pool.release(class_var)
-        self.var_pool.release(node_var)
-
-    def visit_AliasExpr(self, node):
-        """ The compiler visitor for an AliasExpr node.
+    #--------------------------------------------------------------------------
+    # Visitors
+    #--------------------------------------------------------------------------
+    def visit_EnamlDef(self, node):
+        """ The compiler visitor for an EnamlDef node.
 
         """
-        cg = self.code_generator
-        cg.set_lineno(node.lineno)
-        cg.load_helper_from_fast('add_alias')
-        cg.load_fast(self.node_map)
-        cg.load_fast(self.node_stack[-1])
-        cg.load_const(node.name)
-        cg.load_const(node.target)
-        cg.load_const(node.attr)
-        cg.call_function(5)
-        cg.pop_top()
+        comp_pass = self.comp_pass
+        index = self.index_counter.next()
+        self.index_stack.append(index)
+
+        if comp_pass == CompilerPass.CountNodes:
+            self.node_count += 1
+        elif comp_pass == CompilerPass.BuildNodes:
+            self.handle_enaml_def(node, index)
+
+        for item in node.body:
+            self.visit(item)
+
+        self.index_stack.pop()

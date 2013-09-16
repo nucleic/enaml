@@ -14,10 +14,10 @@ class CompilerBase(Atom):
     """ A base class for creating compilers.
 
     """
-    #: The code generator for the compiler.
+    #: The current code generator for the compiler.
     code_generator = Typed(CodeGenerator, ())
 
-    def visit(self, node):
+    def visit(self, node, *args):
         """ The main visitor dispatch method.
 
         Unhandled nodes will raise an error.
@@ -28,9 +28,9 @@ class CompilerBase(Atom):
             method = getattr(self, name)
         except AttributeError:
             method = self.default_visit
-        method(node)
+        return method(node, *args)
 
-    def default_visit(self, node):
+    def default_visit(self, node, *args):
         """ The default visitor method.
 
         This method raises since there should be no unhandled nodes.
