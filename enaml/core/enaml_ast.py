@@ -247,3 +247,6 @@ class TemplateInst(ASTNode):
 
     #: The identifiers to apply to the template items.
     identifiers = Typed(TemplateIdentifiers)
+
+    #: The body of the template instance.
+    body = List()

@@ -11,10 +11,13 @@ using namespace PythonHelpers;
 
 
 // Static classes assigned during startup
+static PyObject* Alias
 static PyObject* Declarative;
 static PyObject* DeclarativeNode;
 static PyObject* EnamlDefMeta;
 static PyObject* EnamlDefNode;
+static PyObject* Member;
+static PyObject* Template;
 static PyObject* TemplateNode;
 static PyObject* TemplateInstNode;
 
@@ -22,19 +25,24 @@ static PyObject* TemplateInstNode;
 static PyObject* sortedmap;
 static PyObject* empty_tuple;
 
-// Statically attribute name strings
-static PyObject* copy_attr;
-static PyObject* engine_attr;
-static PyObject* identifier_attr;
-static PyObject* klass_attr;
-static PyObject* names_attr;
-static PyObject* scope_key_attr;
-static PyObject* starname_attr;
-static PyObject* store_locals_attr;
-static PyObject* super_node_attr;
-static PyObject* template_node_attr;
+// Statically allocated strings
+static PyObject* add_specialization_str
+static PyObject* copy_str;
+static PyObject* d_member_str;
+static PyObject* dunder_name_str;
+static PyObject* dunder_node_str;
+static PyObject* engine_str;
+static PyObject* identifier_str;
+static PyObject* klass_str;
+static PyObject* metadata_str;
+static PyObject* name_str;
+static PyObject* names_str;
+static PyObject* scope_key_str;
+static PyObject* starname_str;
+static PyObject* store_locals_str;
+static PyObject* super_node_str;
+static PyObject* template_node_str;
 static PyObject* template_scope_str;
-static PyObject* dunder_node_attr;
 
 
 /* internal declarative node builder */
@@ -51,29 +59,29 @@ _make_d_node_impl( PyObject* NodeType, PyObject* args, const char* name )
     PyObjectPtr node( PyObject_Call( NodeType, empty_tuple, 0 ) );
     if( !node )
         return 0;
-    if( !node.setattr( klass_attr, klass ) )
+    if( !node.setattr( klass_str, klass ) )
         return 0;
-    if( !node.setattr( identifier_attr, identifier ) )
+    if( !node.setattr( identifier_str, identifier ) )
         return 0;
-    if( !node.setattr( scope_key_attr, scope_key ) )
+    if( !node.setattr( scope_key_str, scope_key ) )
         return 0;
-    if( !node.setattr( store_locals_attr, store_locals ) )
+    if( !node.setattr( store_locals_str, store_locals ) )
         return 0;
-    PyObjectPtr super_node( PyObject_GetAttr( klass, dunder_node_attr ) );
+    PyObjectPtr super_node( PyObject_GetAttr( klass, dunder_node_str ) );
     if( super_node && super_node.get() != Py_None )
     {
-        PyObjectPtr copy_method( super_node.getattr( copy_attr ) );
+        PyObjectPtr copy_method( super_node.getattr( copy_str ) );
         if( !copy_method )
             return 0;
         super_node = PyObject_Call( copy_method.get(), empty_tuple, 0 );
         if( !super_node )
             return 0;
-        if( !node.setattr( super_node_attr, super_node.get() ) )
+        if( !node.setattr( super_node_str, super_node.get() ) )
             return 0;
-        PyObjectPtr engine( super_node.getattr( engine_attr ) );
+        PyObjectPtr engine( super_node.getattr( engine_str ) );
         if( !engine )
             return 0;
-        if( !node.setattr( engine_attr, engine.get() ) )
+        if( !node.setattr( engine_str, engine.get() ) )
             return 0;
     }
     else if( PyErr_Occurred() )
@@ -168,6 +176,81 @@ make_object( PyObject* mod, PyObject* ignored )
 }
 
 
+/* Make a new template if needed and add the specialization.
+
+Parameters
+----------
+paramspec : tuple
+    The tuple of the parameter specialization arguments.
+
+func : FunctionType
+    The function which implements the template.
+
+name : str
+    The name of the template.
+
+f_globals : dict
+    The globals dictionary for the module.
+
+template_map : dict
+    The mapping of templates already created for the module.
+
+*/
+static PyObject*
+make_template( PyObject* mod, PyObject* args )
+{
+    PyObject* paramspec;
+    PyObject* func;
+    PyObject* name;
+    PyObject* f_globals;
+    PyObject* template_map;
+    if( !PyArg_UnpackTuple( args, "make_template", 5, 5,
+        &paramspec, &func, &name, &f_globals, &template_map ) )
+        return 0;
+    if( !PyString_CheckExact( name ) )
+        return py_type_fail( "argument 3 must be a string" );
+    if( !PyDict_CheckExact( f_globals ) )
+        return py_type_fail( "argument 4 must be a dict" );
+    if( !PyDict_CheckExact( template_map ) )
+        return py_type_fail( "argument 5 must be a dict" );
+    PyObjectPtr templ( PyDict_GetItem( template_map, name ) );
+    if( templ )
+    {
+        if( PyDict_GetItem( f_globals, name ) != templ.get() )
+        {
+            PyErr_Format(
+                PyExc_TypeError,
+                "template '%s' was deleted before being specialized",
+                PyString_AS_STRING( name )
+            );
+            return 0;
+        }
+    }
+    else
+    {
+        templ = PyObject_Call( Template, empty_tuple, 0 );
+        if( !templ )
+            return 0;
+        PyObject* modname = PyDict_GetItem( f_globals, dunder_name_str );
+        if( modname && !templ.setattr( module_str, modname ) )
+            return 0;
+        if( !templ.setattr( name_str, name ) )
+            return 0;
+        PyDict_SetItem( template_map, name, templ.get() );
+        PyDict_SetItem( f_globals, name, templ.get() );
+    }
+    PyObjectPtr method( templ.getattr( add_specialization_str ) );
+    if( !method )
+        return 0;
+    PyObjectPtr args( PyTuple_Pack( 2, paramspec, func ) );
+    if( !args )
+        return 0;
+    if( !method( args ) )
+        return 0;
+    Py_RETURN_NONE;
+}
+
+
 /* Create a new empty TemplateNode.
 
 */
@@ -206,14 +289,14 @@ make_template_inst_node( PyObject* mod, PyObject* args )
     PyObjectPtr node( PyObject_Call( TemplateInstNode, empty_tuple, 0 ) );
     if( !node )
         return 0;
-    PyObjectPtr temp_node( PyObject_GetAttr( inst, template_node_attr ) );
+    PyObjectPtr temp_node( PyObject_GetAttr( inst, template_node_str ) );
     if( !tnode )
         return 0;
-    if( !node.setattr( template_node_attr, temp_node.get() ) )
+    if( !node.setattr( template_node_str, temp_node.get() ) )
         return 0;
-    if( !node.setattr( names_attr, names ) )
+    if( !node.setattr( names_str, names ) )
         return 0;
-    if( !node.setattr( starname_attr, starname ) )
+    if( !node.setattr( starname_str, starname ) )
         return 0;
     Py_RETURN_NONE;
 }
@@ -240,10 +323,7 @@ make_template_scope( PyObject* mod, PyObject* args )
         &node, &tuple ) )
         return 0;
     if( !PyTuple_CheckExact( tuple ) )
-    {
-        PyErr_SetString( PyExc_TypeError, "argument 2 must be a tuple" );
-        return 0;
-    }
+        return py_type_fail( "argument 2 must be a tuple" );
     PyObjectPtr map( PyObject_Call( sortedmap, empty_tuple, 0 ) );
     if( !map )
         return 0;
@@ -344,3 +424,289 @@ validate_declarative( PyObject* mod, PyObject* klass )
     Py_RETURN_NONE;
 }
 
+
+/* Validate the value for a parameter specification.
+
+Parameters
+----------
+index : int
+    The integer index of the parameter being specialized.
+
+spec : object
+    The parameter specialization.
+
+*/
+static PyObject*
+validate_spec( PyObject* mod, PyObject* args )
+{
+    PyObject* index;
+    PyObject* spec;
+    if( !PyArg_UnpackTuple( args, "validate_spec", 2, 2, &index, &spec ) )
+        return 0;
+    if( !PyInt_CheckExact( index ) )
+        return py_type_fail( "argument 1 must be an int" );
+    if( spec == Py_None )
+    {
+        PyErr_Format(
+            PyExc_TypeError,
+            "can't specialize template parameter %d with None",
+            PyInt_AS_LONG( index )
+        );
+        return 0;
+    }
+    long hash = PyObject_Hash( spec );
+    if( hash == -1 && PyErr_Occurred() )
+    {
+        PyErr_Clear();
+        PyErr_Format(
+            "template parameter %d has unhashable type: '%s'",
+            PyInt_AS_LONG( index ),
+            spec->ob_type->tp_name
+        );
+        return 0;
+    }
+    return newref( spec );
+}
+
+
+/* Validate that an object is a Template.
+
+Parameters
+----------
+template : object
+    The object to validate.
+
+*/
+static PyObject*
+validate_template( PyObject* mod, PyObject* templ )
+{
+    if( !PyObject_TypeCheck( templ, Template ) )
+    {
+        PyObjectPtr pystr( PyObject_Str( templ ) );
+        if( !pystr )
+            return 0;
+        PyErr_Format(
+            PyExc_TypeError,
+            "%s is not a template",
+            PyString_AS_STRING( pystr )
+        );
+        return 0;
+    }
+    return newref( templ );
+}
+
+
+/* Validate the length of a template instantiation
+
+Parameters
+----------
+template_inst : TemplateInstNode
+    The template instantiation node.
+
+n : int
+    The number of positional parameters.
+
+ex_unpack : bool
+    Wether or not the unpacking accepts *args.
+
+*/
+static PyObject*
+validate_unpack_size( PyObject* mod, PyObject* args )
+{
+    PyObject* template_inst;
+    PyObject* n;
+    PyObject* ex_unpack;
+    if( !PyArg_UnpackTuple( args, "validate_unpack_size", 3, 3,
+        &template_inst, &n, &ex_unpack ) )
+        return 0;
+    if( !PyInt_CheckExact( n ) )
+        return py_type_fail( "argument 2 must be an int" );
+    if( !PyBool_Check( ex_unpack ) )
+        return py_type_fail( "argument 3 must be an int" );
+    PyObjectPtr node( PyObject_GetAttr( template_inst, template_node_str ) );
+    if( !node )
+        return 0;
+    PyObjectPtr method( node.getattr( size_str ) );
+    if( !method )
+        return 0;
+    PyObjectPtr pysize( PyObject_Call( method.get(), empty_tuple, 0 ) );
+    if( !pysize )
+        return 0;
+    if( !PyInt_CheckExact( pysize ) )
+        return py_type_fail( "expected an int for template size" );
+    long size = PyInt_AS_LONG( pysize );
+    long nsize = PyInt_AS_LONG( n );
+    if( size < nsize )
+    {
+        PyErr_Format(
+            PyExc_ValueError,
+            "need more that %d %s to unpack",
+            size,
+            size > 1 ? "values" : "value"
+        );
+        return 0;
+    }
+    if( ex_unpack == Py_False && size > nsize )
+        return py_value_fail( "too many values to unpack" );
+    return newref( template_inst );
+}
+
+
+/* Validate an alias declaration.
+
+Parameters
+----------
+node_map : dict
+    A dictionary which maps node id to node for the block.
+
+target : str
+    The identifier of the target object in the block.
+
+attr : str
+    The attribute name aliased on the target. This can be an
+    empty string if an attribute is not aliased.
+
+*/
+static bool
+validate_alias( PyObject* node_map, PyObject* target, PyObject* attr )
+{
+    PyObjectPtr target_node( xnewref( PyDict_GetItem( node_map, target ) ) );
+    if( !target_node )
+    {
+        PyErr_Format(
+            PyExc_TypeError,
+            "'%s' is not a valid alias target",
+            PyString_AS_STRING( target )
+        );
+        return false;
+    }
+    if( PyStr_GET_SIZE( attr ) > 0 )
+    {
+        PyObjectPtr klass( target_node.getattr( klass_str ) );
+        if( !klass )
+            return false;
+        PyObjectPtr item( klass.getattr( attr ) );
+        if( !item )
+        {
+            if( !PyErr_ExceptionMatches( PyExc_AttributeError ) )
+                return false;
+            PyErr_Clear()
+            PyErr_Format(
+                PyExc_TypeError,
+                "'%s' is not a valid alias attribute",
+                PyString_AS_STRING( attr )
+            );
+            return false;
+        }
+        PyObjectPtr types( PyTuple_Pack( 2, Alias, Member ) );
+        if( !types )
+            return false;
+        int ok = PyObject_IsInstance( item.get(), types.get() );
+        if( ok < 0 )
+            return false;
+        if( ok == 0 )
+        {
+            PyErr_Format(
+                PyExc_TypeError,
+                "'%s' is not a valid alias attribute",
+                PyString_AS_STRING( attr )
+            );
+            return false;
+        }
+        if( PyObject_TypeCheck( item.get(), Member ) )
+        {
+            PyObjectPtr metadata( item.getattr( metatdata_str ) );
+            if( !metadata )
+                return false;
+            if( metadata.get() == Py_None || PyDict_GetItem( metadata.get(), d_member_str ) != Py_True )
+            {
+                PyErr_Format(
+                    PyExc_TypeError,
+                    "alias '%s.%s' resolves to a non-declarative member",
+                    target, attr
+                );
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+/* Add an alias to a Declarative subclass.
+
+Parameters
+----------
+node_map : dict
+    A dict mapping identifier to declarative child nodes for the
+    entire enamldef block.
+
+node : EnamlDefNode
+    The enamldef node for which an alias should be added.
+
+name : str
+    The name of the alias.
+
+target : str
+    The target of the alias.
+
+attr : str
+    The attribute being accessed on the target. This should be
+    an empty string for object aliases.
+
+*/
+static PyObject*
+add_alias( PyObject* mod, PyObject* args )
+{
+    PyObject* node_map;
+    PyObject* node;
+    PyObject* name;
+    PyObject* target;
+    PyObject* attr;
+    if( !PyArg_UnpackTuple( args, "add_alias", 5, 5,
+        &node_map, &node, &name, &target, &attr ) )
+        return 0;
+    if( !PyDict_CheckExact( node_map ) )
+        return py_type_fail( "argument 1 must be a dict" );
+    if( !PyString_CheckExact( name ) )
+        return py_type_fail( "argument 3 must be a string" );
+    if( !PyString_CheckExact( target ) )
+        return py_type_fail( "argument 4 must be a string" );
+    if( !PyString_CheckExact( attr ) )
+        return py_type_fail( "argument 5 must be a string" );
+    if( !validate_alias( node_map, target, attr ) )
+        return 0;
+    PyObjectPtr klass( PyObject_GetAttr( node, klass_str ) );
+    if( !klass )
+        return 0;
+    PyObjectPtr item( klass.getattr( name ) )
+    if( !item )
+    {
+        if( PyErr_ExceptionMatches( PyExc_AttributeError ) )
+            PyErr_Clear();
+        else
+            return 0;
+    }
+    if( item && PyObject_TypeCheck( item.get(), Alias ) )
+    {
+
+    }
+    Py_RETURN_NONE;
+}
+/*
+def add_alias(node_map, node, name, target, attr):
+    validate_alias(node_map, target, attr)
+    klass = node.klass
+    item = getattr(klass, name, None)
+    if isinstance(item, Alias):
+        msg = "can't override alias '%s'"
+        raise TypeError(msg % name)
+    if name in klass.members():
+        msg = "can't override member '%s' with an alias"
+        raise TypeError(msg % name)
+    alias = Alias(target, attr, node.scope_key)
+    setattr(klass, name, alias)
+    if node.aliased_nodes is None:
+        node.aliased_nodes = sortedmap()
+    node.aliased_nodes[target] = node_map[target]
+*/

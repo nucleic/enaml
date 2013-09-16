@@ -920,21 +920,44 @@ def p_template_param3(p):
 # Template Instantiation
 #------------------------------------------------------------------------------
 def p_template_inst1(p):
-    ''' template_inst : NAME template_args NEWLINE '''
+    ''' template_inst : NAME template_args COLON template_inst_suite_item '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
     node.arguments = p[2]
+    node.body = filter(None, [p[4]])
     p[0] = node
 
 
 def p_template_inst2(p):
-    ''' template_inst : NAME template_args COLON template_ids NEWLINE '''
+    ''' template_inst : NAME template_args COLON template_ids COLON template_inst_suite_item '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
     node.arguments = p[2]
     node.identifiers = p[4]
+    node.body = filter(None, [p[6]])
+    p[0] = node
+
+
+def p_template_inst3(p):
+    ''' template_inst : NAME template_args COLON template_inst_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[2]
+    node.body = filter(None, p[4])
+    p[0] = node
+
+
+def p_template_inst4(p):
+    ''' template_inst : NAME template_args COLON template_ids COLON template_inst_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[2]
+    node.identifiers = p[4]
+    node.body = filter(None, p[6])
     p[0] = node
 
 
@@ -1081,6 +1104,26 @@ def p_template_id_list1(p):
 def p_template_id_list2(p):
     ''' template_id_list : template_id_list NAME COMMA '''
     p[0] = p[1] + [p[2]]
+
+
+def p_template_inst_suite(p):
+    ''' template_inst_suite : NEWLINE INDENT template_inst_suite_items DEDENT '''
+    p[0] = p[3]
+
+
+def p_template_inst_suite_items1(p):
+    ''' template_inst_suite_items : template_inst_suite_items template_inst_suite_item '''
+    p[0] = p[1] + [p[2]]
+
+
+def p_template_inst_suite_items2(p):
+    ''' template_inst_suite_items : template_inst_suite_item '''
+    p[0] = [p[1]]
+
+
+def p_template_inst_suite_item1(p):
+    ''' template_inst_suite_item : PASS NEWLINE '''
+    p[0] = None
 
 
 #------------------------------------------------------------------------------
