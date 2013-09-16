@@ -134,6 +134,9 @@ class DeclarativeNode(CompilerNode):
     #: node represents a raw declarative object vs an enamldef.
     super_node = ForwardTyped(lambda: EnamlDefNode)
 
+    #: A mapping of id->node for the aliased nodes in the block.
+    aliased_nodes = Typed(sortedmap)
+
     def __call__(self, parent):
         """ Instantiate the type hierarchy.
 
@@ -210,6 +213,15 @@ class DeclarativeNode(CompilerNode):
             node.super_node = self.super_node.copy()
         if self.closure_keys is not None:
             node.closure_keys = self.closure_keys.copy()
+        if self.aliased_nodes is not None:
+            new = self.aliased_nodes.copy()
+            stack = list(reversed(node.children))
+            while stack:
+                child = stack.pop()
+                if child.identifier and child.identifier in new:
+                    new[child.identifier] = child
+                stack.extend(reversed(child.children))
+            node.aliased_nodes = new
         return node
 
 
@@ -217,9 +229,6 @@ class EnamlDefNode(DeclarativeNode):
     """ A declarative node which represents an 'enamldef' block.
 
     """
-    #: A mapping of id->node for the aliased nodes in the block.
-    aliased_nodes = Typed(sortedmap)
-
     def __call__(self, instance):
         """ Instantiate the declarative hierarchy for the node.
 
@@ -235,27 +244,6 @@ class EnamlDefNode(DeclarativeNode):
         """
         with new_scope(self.scope_key):
             self.populate(instance)
-
-    def copy(self):
-        """ Copy the EnamlDefNode.
-
-        Returns
-        -------
-        result : EnamlDefNode
-            A copy of this enamldef node.
-
-        """
-        node = super(EnamlDefNode, self).copy()
-        if self.aliased_nodes is not None:
-            new = self.aliased_nodes.copy()
-            stack = list(reversed(node.children))
-            while stack:
-                child = stack.pop()
-                if child.identifier and child.identifier in new:
-                    new[child.identifier] = child
-                stack.extend(reversed(child.children))
-            node.aliased_nodes = new
-        return node
 
 
 class TemplateNode(CompilerNode):

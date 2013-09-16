@@ -226,6 +226,7 @@ def enamldef_node(klass, identifier, scope_key, store_locals):
         super_node = super_node.copy()
         node.super_node = super_node
         node.engine = super_node.engine
+    klass.__node__ = node
     return node
 
 
@@ -406,13 +407,13 @@ def resolve_alias_member(node, alias):
         return None
     if not alias.attr:
         return None
-    if not isinstance(node, EnamlDefNode):
+    if node.scope_key != alias.key:
         return resolve_alias_member(node.super_node, alias)
     if node.aliased_nodes is None:
-        return resolve_alias_member(node.super_node, alias)
+        return None
     target_node = node.aliased_nodes.get(alias.target)
     if target_node is None:
-        return resolve_alias_member(node.super_node, alias)
+        return None
     # validate_alias ensures this will be a Member or an Alias
     item = getattr(target_node.klass, alias.attr)
     if isinstance(item, Member):
@@ -440,13 +441,13 @@ def resolve_alias_object(node, alias):
     """
     if node is None:
         return None
-    if not isinstance(node, EnamlDefNode):
+    if node.scope_key != alias.key:
         return resolve_alias_object(node.super_node, alias)
     if node.aliased_nodes is None:
-        return resolve_alias_object(node.super_node, alias)
+        return None
     target_node = node.aliased_nodes.get(alias.target)
     if target_node is None:
-        return resolve_alias_object(node.super_node, alias)
+        return None
     if not alias.attr:
         return target_node
     # validate_alias ensures this will be a Member or an Alias

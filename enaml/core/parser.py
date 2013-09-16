@@ -362,8 +362,12 @@ def p_enamldef1(p):
 
 
 def p_enamldef2(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON PASS NEWLINE '''
-    p[0] = enaml_ast.EnamlDef(typename=p[2], base=p[4], lineno=p.lineno(1))
+    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_simple_item '''
+    body = filter(None, [p[7]])
+    enamldef = enaml_ast.EnamlDef(
+        typename=p[2], base=p[4], body=body,lineno=p.lineno(1)
+    )
+    p[0] = enamldef
 
 
 def p_enamldef3(p):
@@ -377,9 +381,10 @@ def p_enamldef3(p):
 
 
 def p_enamldef4(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON PASS NEWLINE '''
+    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_simple_item '''
+    body = filter(None, [p[9]])
     enamldef = enaml_ast.EnamlDef(
-        typename=p[2], base=p[4], identifier=p[7], lineno=p.lineno(1)
+        typename=p[2], base=p[4], identifier=p[7], body=body, lineno=p.lineno(1)
     )
     p[0] = enamldef
 
@@ -408,18 +413,23 @@ def p_enamldef_suite_items2(p):
    p[0] = p[1] + [p[2]]
 
 
-def p_enamldef_suite_item1(p):
-    ''' enamldef_suite_item : binding
-                            | ex_binding
+def p_enamldef_suite_item(p):
+    ''' enamldef_suite_item : enamldef_simple_item
                             | child_def
-                            | alias_expr
-                            | storage_expr
                             | template_inst '''
     p[0] = p[1]
 
 
-def p_enamldef_suite_item2(p):
-    ''' enamldef_suite_item : PASS NEWLINE '''
+def p_enamldef_simple_item1(p):
+    ''' enamldef_simple_item : binding
+                             | ex_binding
+                             | alias_expr
+                             | storage_expr '''
+    p[0] = p[1]
+
+
+def p_enamldef_simple_item2(p):
+    ''' enamldef_simple_item : PASS NEWLINE '''
     p[0] = None
 
 
@@ -560,21 +570,12 @@ def p_child_def1(p):
 
 
 def p_child_def2(p):
-    ''' child_def : NAME COLON binding '''
-    p[0] = enaml_ast.ChildDef(typename=p[1], body=[p[3]], lineno=p.lineno(1))
+    ''' child_def : NAME COLON child_def_simple_item '''
+    body = filter(None, [p[3]])
+    p[0] = enaml_ast.ChildDef(typename=p[1], body=body, lineno=p.lineno(1))
 
 
 def p_child_def3(p):
-    ''' child_def : NAME COLON storage_expr '''
-    p[0] = enaml_ast.ChildDef(typename=p[1], body=[p[3]], lineno=p.lineno(1))
-
-
-def p_child_def4(p):
-    ''' child_def : NAME COLON PASS NEWLINE '''
-    p[0] = enaml_ast.ChildDef(typename=p[1], lineno=p.lineno(1))
-
-
-def p_child_def5(p):
     ''' child_def : NAME COLON NAME COLON child_def_suite '''
     child_def = enaml_ast.ChildDef(
         typename=p[1], identifier=p[3], body=p[5], lineno=p.lineno(1)
@@ -582,26 +583,11 @@ def p_child_def5(p):
     p[0] = child_def
 
 
-def p_child_def6(p):
-    ''' child_def : NAME COLON NAME COLON binding '''
+def p_child_def4(p):
+    ''' child_def : NAME COLON NAME COLON child_def_simple_item  '''
+    body = filter(None, [p[3]])
     child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=p[3], body=[p[5]], lineno=p.lineno(1)
-    )
-    p[0] = child_def
-
-
-def p_child_def7(p):
-    ''' child_def : NAME COLON NAME COLON storage_expr '''
-    child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=p[3], body=[p[5]], lineno=p.lineno(1)
-    )
-    p[0] = child_def
-
-
-def p_child_def8(p):
-    ''' child_def : NAME COLON NAME COLON PASS NEWLINE '''
-    child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=p[3], lineno=p.lineno(1)
+        typename=p[1], identifier=p[3], body=body, lineno=p.lineno(1)
     )
     p[0] = child_def
 
@@ -623,17 +609,23 @@ def p_child_def_suite_items2(p):
    p[0] = p[1] + [p[2]]
 
 
-def p_child_def_suite_item1(p):
-    ''' child_def_suite_item : binding
-                             | ex_binding
+def p_child_def_suite_item(p):
+    ''' child_def_suite_item : child_def_simple_item
                              | child_def
-                             | storage_expr
                              | template_inst '''
     p[0] = p[1]
 
 
-def p_child_def_suite_item2(p):
-    ''' child_def_suite_item : PASS NEWLINE '''
+def p_child_def_simple_item1(p):
+    ''' child_def_simple_item : binding
+                              | ex_binding
+                              | alias_expr
+                              | storage_expr '''
+    p[0] = p[1]
+
+
+def p_child_def_simple_item2(p):
+    ''' child_def_simple_item : PASS NEWLINE '''
     p[0] = None
 
 
@@ -767,13 +759,24 @@ def _validate_template(node, lexer):
                     check_id(idents.starname, idents)
 
 
-def p_template(p):
+def p_template1(p):
     ''' template : TEMPLATE NAME template_params COLON template_suite '''
     node = enaml_ast.Template()
     node.lineno = p.lineno(1)
     node.name = p[2]
     node.parameters = p[3]
     node.body = p[5]
+    _validate_template(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template2(p):
+    ''' template : TEMPLATE NAME template_params COLON template_simple_item '''
+    node = enaml_ast.Template()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.parameters = p[3]
+    node.body = filter(None, [p[5]])
     _validate_template(node, p.lexer.lexer)
     p[0] = node
 
@@ -794,15 +797,20 @@ def p_template_suite_items2(p):
     p[0] = p[1] + [p[2]]
 
 
-def p_template_suite_item1(p):
-    ''' template_suite_item : const_expr
+def p_template_suite_item(p):
+    ''' template_suite_item : template_simple_item
                             | child_def
                             | template_inst '''
     p[0] = p[1]
 
 
-def p_template_suite_item2(p):
-    ''' template_suite_item : PASS NEWLINE '''
+def p_template_simple_item1(p):
+    ''' template_simple_item : const_expr '''
+    p[0] = p[1]
+
+
+def p_template_simple_item2(p):
+    ''' template_simple_item : PASS NEWLINE '''
     p[0] = None
 
 
