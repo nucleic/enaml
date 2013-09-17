@@ -215,7 +215,7 @@ class DeclarativeNode(CompilerNode):
             node.closure_keys = self.closure_keys.copy()
         if self.aliased_nodes is not None:
             new = self.aliased_nodes.copy()
-            stack = list(reversed(node.children))
+            stack = [node]
             while stack:
                 child = stack.pop()
                 if child.identifier and child.identifier in new:
