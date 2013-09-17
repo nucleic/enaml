@@ -7,8 +7,9 @@
 #------------------------------------------------------------------------------
 from itertools import count
 
-from atom.api import Int, IntEnum, List, Typed
+from atom.api import Constant, Int, IntEnum, List, Typed
 
+from .code_generator import CodeGenerator
 from .compiler_base import CompilerBase
 from .enaml_ast import Binding, StorageExpr, AliasExpr
 
@@ -47,9 +48,166 @@ class BlockCompiler(CompilerBase):
     #: The current pass of the compiler.
     comp_pass = Typed(CompilerPass)
 
+    #: The set of local names for the compiler.
+    local_names = Typed(set, ())
+
+    #: The name of the scope key in local storage.
+    scope_key = Constant('_[scope_key]')
+
+    #: The name of the node map in the fast locals.
+    node_map = Constant('_[node_map]')
+
+    #: The name of the node list in the fast locals.
+    node_list = Constant('_[node_list]')
+
+    #: The name of the globals in the fast locals.
+    f_globals = Constant('_[f_globals]')
+
+    #: The name of the compiler helpers in the fast locals.
+    c_helpers = Constant('_[helpers]')
+
     #--------------------------------------------------------------------------
     # Utilities
     #--------------------------------------------------------------------------
+    def load_name(self, name):
+        """ Load a name onto the TOS.
+
+        This indirection allows the call to be redirected by a subclass
+        to load the name from the local scope.
+
+        """
+        cg = self.code_generator
+        if name in self.local_names:
+            cg.load_fast(name)
+        else:
+            cg.load_global(name)
+
+    def load_helper(self, name):
+        """ Load the compiler helper with the given name.
+
+        """
+        cg = self.code_generator
+        cg.load_fast(self.c_helpers)
+        cg.load_const(name)
+        cg.binary_subscr()
+
+    def load_node(self, index):
+        """ Load a node onto the TOS.
+
+        """
+        cg = self.code_generator
+        cg.load_fast(self.node_list)
+        cg.load_const(index)
+        cg.binary_subscr()
+
+    def store_node(self, index):
+        """ Store the node on TOS into the node list.
+
+        """
+        cg = self.code_generator
+        cg.load_fast(self.node_list)
+        cg.load_const(index)
+        cg.store_subscr()
+
+    def append_node(self, parent, index):
+        """ Append a child node to a parent node.
+
+        """
+        cg = self.code_generator
+        self.load_node(parent)
+        cg.load_attr('children')
+        cg.load_attr('append')
+        self.load_node(index)
+        cg.call_function(1)
+        cg.pop_top()
+
+    def prepare_block(self):
+        """ Prepare the code block for code generation.
+
+        This method will setup the state variables needed by the
+        rest of the code generators for the block.
+
+        """
+        cg = self.code_generator
+
+        # Store the globals as fast locals.
+        cg.load_global('globals')
+        cg.call_function()
+        cg.store_fast(self.f_globals)
+
+        # Store the helpers as fast locals.
+        cg.load_global('__compiler_helpers')
+        cg.store_fast(self.c_helpers)
+
+        # Create a local scope key for the block.
+        self.load_helper('make_object')
+        cg.call_function()
+        cg.store_fast(self.scope_key)
+
+        # Create node id map for the block.
+        cg.build_map()
+        cg.store_fast(self.node_map)
+
+        # Create the node list for the block.
+        cg.load_const(None)
+        cg.build_list(1)
+        cg.load_const(self.node_count)
+        cg.binary_multiply()
+        cg.store_fast(self.node_list)
+
+    def call_from(self, pg):
+        """ Invoke the current code generator as a function.
+
+        Parameters
+        ----------
+        pg : CodeGenerator
+            The outer parent code generator from which to invoke
+            the function.
+
+        """
+        cg = self.code_generator
+
+        # Setup the list of arguments which must be passed.
+        args = [self.scope_key, self.node_map, self.node_list,
+                self.f_globals, self.c_helpers]
+
+        # Add in the return value ops and generate the code.
+        cg.load_const(None)
+        cg.return_value()
+        cg.args = args
+        code = cg.to_code()
+
+        # Invoke the code object as a function.
+        pg.load_const(code)
+        pg.make_function()
+        for arg in args:
+            pg.load_fast(arg)
+        pg.call_function(len(args))
+        pg.pop_top()
+
+    def safe_eval_ast(self, node, name, lineno):
+        """ Safe eval a Python ast node.
+
+        """
+        cg = self.code_generator
+
+        # Generate the code object for the expression
+        expr_cg = CodeGenerator()
+        expr_cg.filename = cg.filename
+        expr_cg.name = name
+        expr_cg.firstlineno = lineno
+        expr_cg.set_lineno(lineno)
+        expr_cg.insert_python_expr(node, trim=False)
+        call_args = expr_cg.rewrite_to_fast_locals(self.local_names)
+        expr_code = expr_cg.to_code()
+
+        # Create and invoke the function
+        cg.load_const(expr_code)
+        cg.make_function()
+        for arg in call_args:
+            self.load_name(arg)
+        cg.call_function(len(call_args))
+
     def should_store_locals(self, node):
         """ Get whether or not a node should store its locals.
 
@@ -76,66 +234,9 @@ class BlockCompiler(CompilerBase):
                 return True
         return False
 
-    def prepare_block(self):
-        """ Prepare the code block for code generation.
-
-        This method will setup the state variables needed by the
-        rest of the code generators for the block.
-
-        """
-        cg = self.code_generator
-
-        # Store the globals and the compiler helpers as fast locals.
-        cg.store_globals_to_fast()
-        cg.store_helpers_to_fast()
-
-        # Create a local scope key for the block.
-        cg.load_helper_from_fast('make_object')
-        cg.call_function()
-        cg.store_scope_key()
-
-        # Create node id map for the block.
-        cg.build_map()
-        cg.store_node_map()
-
-        # Create the node list for the block.
-        cg.load_const(None)
-        cg.build_list(1)
-        cg.load_const(self.node_count)
-        cg.binary_multiply()
-        cg.store_node_list()
-
-    def call_from(self, pg):
-        """ Invoke the current code generator as a function.
-
-        Parameters
-        ----------
-        pg : CodeGenerator
-            The outer parent code generator from which to invoke
-            the function.
-
-        """
-        cg = self.code_generator
-
-        # Add in the return value ops and generate the code.
-        cg.load_const(None)
-        cg.return_value()
-        cg.args = [
-            cg.scope_key, cg.node_map, cg.node_list, cg.f_globals, cg.c_helpers
-        ]
-        code = cg.to_code()
-
-        # Invoke the code object as a function.
-        pg.load_const(code)
-        pg.make_function()
-        pg.load_fast(pg.scope_key)
-        pg.load_fast(pg.node_map)
-        pg.load_fast(pg.node_list)
-        pg.load_fast(pg.f_globals)
-        pg.load_fast(pg.c_helpers)
-        pg.call_function(5)
-        pg.pop_top()
-
+    #--------------------------------------------------------------------------
+    # Node Handlers
+    #--------------------------------------------------------------------------
     def handle_child_def(self, node, parent, index):
         """ The handler for a childdef node.
 
@@ -144,12 +245,12 @@ class BlockCompiler(CompilerBase):
 
         # Set the line number and load the child class
         cg.set_lineno(node.lineno)
-        cg.load_name(node.typename)
+        self.load_name(node.typename)
 
         # Validate the type of the child
         with cg.try_squash_raise():
             cg.dup_top()
-            cg.load_helper_from_fast('validate_declarative')
+            self.load_helper('validate_declarative')
             cg.rot_two()                            # base -> helper -> base
             cg.call_function(1)                     # base -> retval
             cg.pop_top()                            # base
@@ -168,26 +269,90 @@ class BlockCompiler(CompilerBase):
 
         # Build the declarative compiler node
         store_locals = self.should_store_locals(node)
-        cg.load_helper_from_fast('declarative_node')
+        self.load_helper('declarative_node')
         cg.rot_two()
         cg.load_const(node.identifier)
-        cg.load_scope_key()
+        cg.load_fast(self.scope_key)
         cg.load_const(store_locals)                 # helper -> class -> identifier -> key -> bool
         cg.call_function(4)                         # node
 
-        # Store this node to the node list.
-        cg.store_node(index)
+        # Store this node in the node list.
+        self.store_node(index)
 
         #: Store the node in the node map if needed.
         if node.identifier:
-            cg.load_node_map()
-            cg.load_node(index)
+            cg.load_fast(self.node_map)
+            self.load_node(index)
             cg.load_const(node.identifier)
             cg.store_map()
             cg.pop_top()
 
         # Append this node to the parent node
-        cg.append_node(parent, index)
+        self.append_node(parent, index)
+
+    def handle_template_inst(self, node, parent, index):
+        """ The handler for a template inst node.
+
+        """
+        cg = self.code_generator
+
+        # Set the line number and load the template
+        cg.set_lineno(node.lineno)
+        self.load_name(node.name)
+
+        # Validate the template definition.
+        with cg.try_squash_raise():
+            cg.dup_top()
+            self.load_helper('validate_template')
+            cg.rot_two()
+            cg.call_function(1)
+            cg.pop_top()
+
+        # Load the arguments for the instantiation call
+        arguments = node.arguments
+        for arg in arguments.args:
+            self.safe_eval_ast(arg.ast, node.name, arg.lineno)
+        if arguments.stararg:
+            arg = arguments.stararg
+            self.safe_eval_ast(arg.ast, node.name, arg.lineno)
+
+        # Instantiate the template
+        argcount = len(arguments.args)
+        varargs = bool(arguments.stararg)
+        if varargs:
+            cg.call_function_var(argcount)
+        else:
+            cg.call_function(argcount)
+
+        # Validate the instantiation size, if needed.
+        names = ()
+        starname = ''
+        identifiers = node.identifiers
+        if identifiers is not None:
+            names = tuple(identifiers.names)
+            starname = identifiers.starname
+            with cg.try_squash_raise():
+                cg.dup_top()
+                self.load_helper('validate_unpack_size')
+                cg.rot_two()
+                cg.load_const(len(names))
+                cg.load_const(bool(starname))
+                cg.call_function(3)
+                cg.pop_top()
+
+        # Load and call the helper to create the compiler node
+        self.load_helper('template_inst_node')
+        cg.rot_two()
+        cg.load_const(names)
+        cg.load_const(starname)
+        cg.load_fast(self.scope_key)
+        cg.call_function(4)
+
+        # Store the node to the node list.
+        self.store_node(index)
+
+        # Append the node to the parent node
+        self.append_node(parent, index)
 
     def handle_storage_expr(self, node, index):
         """ The handler for a storage expresssion node.
@@ -196,11 +361,11 @@ class BlockCompiler(CompilerBase):
         cg = self.code_generator
         with cg.try_squash_raise():
             cg.set_lineno(node.lineno)
-            cg.load_helper_from_fast('add_storage')
-            cg.load_node(index)
+            self.load_helper('add_storage')
+            self.load_node(index)
             cg.load_const(node.name)
             if node.typename:
-                cg.load_name(node.typename)
+                self.load_name(node.typename)
             else:
                 cg.load_const(None)
             cg.load_const(node.kind)                # helper -> class -> name -> type -> kind
@@ -214,9 +379,9 @@ class BlockCompiler(CompilerBase):
         cg = self.code_generator
         with cg.try_squash_raise():
             cg.set_lineno(node.lineno)
-            cg.load_helper_from_fast('add_alias')
-            cg.load_node_map()
-            cg.load_node(index)
+            self.load_helper('add_alias')
+            cg.load_fast(self.node_map)
+            self.load_node(index)
             cg.load_const(node.name)
             cg.load_const(node.target)
             cg.load_const(node.attr)
@@ -231,12 +396,12 @@ class BlockCompiler(CompilerBase):
         code = self.visit(node.value)
         with cg.try_squash_raise():
             cg.set_lineno(node.lineno)
-            cg.load_helper_from_fast('run_operator')
-            cg.load_node(index)
+            self.load_helper('run_operator')
+            self.load_node(index)
             cg.load_const(name)
             cg.load_const(node.operator)
             cg.load_const(code)
-            cg.load_globals_from_fast()             # helper -> node -> name -> op -> code -> globals
+            cg.load_fast(self.f_globals)            # helper -> node -> name -> op -> code -> globals
             cg.call_function(5)
             cg.pop_top()
 
@@ -266,59 +431,20 @@ class BlockCompiler(CompilerBase):
         """ The compiler visitor for a TemplateInst node.
 
         """
-        cg = self.code_generator
-        cg.set_lineno(node.lineno)
+        comp_pass = self.comp_pass
+        parent = self.index_stack[-1]
+        index = self.index_counter.next()
+        self.index_stack.append(index)
 
-        # Load and validate the template
-        self.load_name(node.name)
-        cg.load_helper_from_fast('validate_template')
-        cg.rot_two()
-        cg.call_function(1)
+        if comp_pass == CompilerPass.CountNodes:
+            self.node_count += 1
+        elif comp_pass == CompilerPass.BuildNodes:
+            self.handle_template_inst(node, parent, index)
 
-        # Load the arguments for the instantiation call
-        arguments = node.arguments
-        for arg in arguments.args:
-            self.safe_eval_ast(arg.ast, node.name, arg.lineno)
-        if arguments.stararg:
-            arg = arguments.stararg
-            self.safe_eval_ast(arg.ast, node.name, arg.lineno)
+        #for item in node.body():
+        #    self.visit(item)
 
-        # Instantiate the template
-        argcount = len(arguments.args)
-        varargs = bool(arguments.stararg)
-        if varargs:
-            cg.call_function_var(argcount)
-        else:
-            cg.call_function(argcount)
-
-        # Validate the instantiation size, if needed.
-        names = ()
-        starname = ''
-        identifiers = node.identifiers
-        if identifiers is not None:
-            names = tuple(identifiers.names)
-            starname = identifiers.starname
-            cg.load_helper_from_fast('validate_unpack_size')
-            cg.rot_two()
-            cg.load_const(len(names))
-            cg.load_const(bool(starname))
-            cg.call_function(3)
-
-        # Load and call the helper to create the compiler node
-        cg.load_helper_from_fast('template_inst_node')
-        cg.rot_two()
-        cg.load_const(names)
-        cg.load_const(starname)
-        cg.load_fast(self.scope_key)
-        cg.call_function(4)
-
-        # Append the node to the parent node
-        cg.load_fast(self.node_stack[-1])
-        cg.load_attr('children')
-        cg.load_attr('append')
-        cg.rot_two()
-        cg.call_function(1)
-        cg.pop_top()
+        self.index_stack.pop()
 
     def visit_StorageExpr(self, node):
         """ The compiler visitor for a StorageExpr node.
@@ -347,8 +473,7 @@ class BlockCompiler(CompilerBase):
         """ The compiler visitor for an ExBinding node.
 
         """
-        parts = (node.name, node.binding.name)
-        self.visit(node.binding.expr, parts)
+        self.visit(node.expr, (node.root, node.name))
 
     def visit_OperatorExpr(self, node, name):
         """ The compiler visitor for an OperatorExpr node.

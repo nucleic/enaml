@@ -73,7 +73,9 @@ class EnamlDefCompiler(BlockCompiler):
         compiler.call_from(cg)
 
         # Load the node for the class and return the class.
-        cg.load_node(0)
+        cg.load_fast(compiler.node_list)
+        cg.load_const(0)
+        cg.binary_subscr()
         cg.load_attr('klass')
         cg.return_value()
 
@@ -91,7 +93,7 @@ class EnamlDefCompiler(BlockCompiler):
 
         # Preload the helper to generate the enamldef
         cg.set_lineno(node.lineno)
-        cg.load_helper_from_fast('make_enamldef')
+        self.load_helper('make_enamldef')
 
         # Load the base class for the enamldef
         cg.load_const(node.typename)
@@ -100,7 +102,7 @@ class EnamlDefCompiler(BlockCompiler):
         # Validate the type of the base class
         with cg.try_squash_raise():
             cg.dup_top()
-            cg.load_helper_from_fast('validate_declarative')
+            self.load_helper('validate_declarative')
             cg.rot_two()                            # helper -> name -> base -> helper -> base
             cg.call_function(1)                     # helper -> name -> base -> retval
             cg.pop_top()                            # helper -> name -> base
@@ -119,20 +121,20 @@ class EnamlDefCompiler(BlockCompiler):
 
         # Build the compiler node
         store_locals = self.should_store_locals(node)
-        cg.load_helper_from_fast('enamldef_node')
+        self.load_helper('enamldef_node')
         cg.rot_two()
         cg.load_const(node.identifier)
-        cg.load_scope_key()
+        cg.load_fast(self.scope_key)
         cg.load_const(store_locals)                 # helper -> class -> identifier -> bool
         cg.call_function(4)                         # node
 
         # Store the node into the node list
-        cg.store_node(index)
+        self.store_node(index)
 
         #: Store the node in the node map if needed.
         if node.identifier:
-            cg.load_node_map()
-            cg.load_node(index)
+            cg.load_fast(self.node_map)
+            self.load_node(index)
             cg.load_const(node.identifier)
             cg.store_map()
             cg.pop_top()
