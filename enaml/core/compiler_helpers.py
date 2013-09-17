@@ -687,28 +687,32 @@ def validate_template(template):
     template : object
         The object to validate.
 
-    Returns
-    -------
-    result : object
-        The validated object.
-
     """
     if not isinstance(template, Template):
         raise TypeError("%s is not a template" % template)
-    return template
 
 
-def validate_unpack_size(template_inst, n, ex_unpack):
+def validate_unpack_size(template_inst, count, variadic):
     """ Validate the length of a template instantiation.
+
+    Parameters
+    ----------
+    template_inst : TemplateInstance
+        An instantiation of a template.
+
+    count : int
+        The number of singular unpack parameters.
+
+    variadic : bool
+        Whether or not a variadic unpacking parameter is present.
 
     """
     size = template_inst.template_node.size()
-    if size < n:
+    if size < count:
         suffix = 'values' if size > 1 else 'value'
         raise ValueError("need more than %d %s to unpack" % (size, suffix))
-    if not ex_unpack and size > n:
+    if not variadic and size > count:
         raise ValueError("too many values to unpack")
-    return template_inst
 
 
 __compiler_helpers = {
