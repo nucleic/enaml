@@ -11,7 +11,7 @@ import os
 import ply.yacc as yacc
 
 from . import enaml_ast
-from .lexer import syntax_error, EnamlLexer, ParsingError
+from .lexer import syntax_error, syntax_warning, EnamlLexer, ParsingError
 
 
 #------------------------------------------------------------------------------
@@ -219,35 +219,6 @@ def ast_for_dotted_name(dotted_name):
     return res
 
 
-# The nodes which can be inverted to form an assignable expression.
-_INVERTABLE = (ast.Name, ast.Attribute, ast.Call, ast.Subscript)
-
-
-def validate_invertable(node, lineno, p):
-    """ Validates that its possible for the compiler to generated
-    inversion code for the given ast node.
-
-    Currently, code is invertable if the expression terminates with
-    a node of the following types: Name, Attribute, Call, Subscript.
-
-    Parameters
-    ----------
-    node : ast.AST
-        The ast expression node to validate.
-
-    lineno : int
-        The line number of the declaration.
-
-    p : Yacc Production
-        The Ply object passed to the parser rule. This is used to
-        extract the filename for syntax error reporting.
-
-    """
-    if not isinstance(node, _INVERTABLE):
-        msg = "can't assign to expression of this form"
-        syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
-
-
 class CommaSeparatedList(object):
     """ A parsing helper to delineate a comma separated list.
 
@@ -352,12 +323,47 @@ def p_enaml_module_item2(p):
 #------------------------------------------------------------------------------
 # EnamlDef
 #------------------------------------------------------------------------------
+def _validate_enamldef(node, lexer):
+    """ Validate the correctness of names in an enamldef definition.
+
+    This function ensures that identifiers do not shadow one another.
+
+    """
+    ident_names = set()
+
+    def check_id(name, node):
+        if name in ident_names:
+            msg = "redeclaration of identifier '%s'"
+            msg += " (this will be an error in a future version of Enaml)"
+            syntax_warning(msg % name, FakeToken(lexer, node.lineno))
+        ident_names.add(name)
+
+    # validate the identifiers
+    ChildDef = enaml_ast.ChildDef
+    TemplateInst = enaml_ast.TemplateInst
+    stack = list(reversed(node.body))
+    while stack:
+        node = stack.pop()
+        if isinstance(node, ChildDef):
+            if node.identifier:
+                check_id(node.identifier, node)
+            stack.extend(reversed(node.body))
+        elif isinstance(node, TemplateInst):
+            idents = node.identifiers
+            if idents is not None:
+                for name in idents.names:
+                    check_id(name, idents)
+                if idents.starname:
+                    check_id(idents.starname, idents)
+
+
 def p_enamldef1(p):
     ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_suite '''
     doc, body = p[7]
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], docstring=doc, body=body, lineno=p.lineno(1)
     )
+    _validate_enamldef(enamldef, p.lexer.lexer)
     p[0] = enamldef
 
 
@@ -367,6 +373,7 @@ def p_enamldef2(p):
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], body=body,lineno=p.lineno(1)
     )
+    _validate_enamldef(enamldef, p.lexer.lexer)
     p[0] = enamldef
 
 
@@ -377,6 +384,7 @@ def p_enamldef3(p):
         typename=p[2], base=p[4], identifier=p[7], docstring=doc, body=body,
         lineno=p.lineno(1)
     )
+    _validate_enamldef(enamldef, p.lexer.lexer)
     p[0] = enamldef
 
 
@@ -386,6 +394,7 @@ def p_enamldef4(p):
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], identifier=p[7], body=body, lineno=p.lineno(1)
     )
+    _validate_enamldef(enamldef, p.lexer.lexer)
     p[0] = enamldef
 
 
@@ -585,7 +594,7 @@ def p_child_def3(p):
 
 def p_child_def4(p):
     ''' child_def : NAME COLON NAME COLON child_def_simple_item  '''
-    body = filter(None, [p[3]])
+    body = filter(None, [p[5]])
     child_def = enaml_ast.ChildDef(
         typename=p[1], identifier=p[3], body=body, lineno=p.lineno(1)
     )
@@ -662,12 +671,18 @@ def p_operator_expr1(p):
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
 
 
+# The nodes which can be inverted to form an assignable expression.
+_INVERTABLE = (ast.Name, ast.Attribute, ast.Call, ast.Subscript)
+
+
 def p_operator_expr2(p):
     ''' operator_expr : COLONEQUAL test NEWLINE
                       | RIGHTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
     body = p[2]
-    validate_invertable(body, lineno, p)
+    if not isinstance(body, _INVERTABLE):
+        msg = "can't assign to expression of this form"
+        syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
     body.lineno = lineno
     ast.fix_missing_locations(body)
     expr = ast.Expression(body=body)
