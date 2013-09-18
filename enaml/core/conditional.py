@@ -72,8 +72,8 @@ class Conditional(Pattern):
         """
         items = []
         if self.condition:
-            for nodes, f_locals in self.pattern_nodes:
-                with new_scope(f_locals):
+            for nodes, key, f_locals in self.pattern_nodes:
+                with new_scope(key, f_locals):
                     for node in nodes:
                         child = node(None)
                         if isinstance(child, list):

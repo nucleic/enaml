@@ -107,8 +107,8 @@ class Looper(Pattern):
                 iteration = []
                 new_iter_data[loop_item] = iteration
                 new_items.append(iteration)
-                for nodes, f_locals in pattern_nodes:
-                    with new_scope(f_locals) as f_locals:
+                for nodes, key, f_locals in pattern_nodes:
+                    with new_scope(key, f_locals) as f_locals:
                         f_locals['loop_index'] = loop_index
                         f_locals['loop_item'] = loop_item
                         for node in nodes:
