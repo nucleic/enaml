@@ -5,6 +5,7 @@
 |
 | The full license is in the file COPYING.txt, distributed with this software.
 |----------------------------------------------------------------------------*/
+#include <sstream>
 #include "pythonhelpersex.h"
 
 
@@ -17,8 +18,9 @@ static PyObject* storage_str;
 typedef struct {
     PyObject_HEAD
     PyObject* target;
-    PyObject* attr;
+    PyObject* chain;
     PyObject* key;
+    bool canset;
 } Alias;
 
 
@@ -26,19 +28,20 @@ static PyObject*
 Alias_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
     PyObject* target;
-    PyObject* attr;
+    PyObject* chain;
     PyObject* key;
-    static char* kwlist[] = { "target", "attr", "key", 0 };
-    if( !PyArg_ParseTupleAndKeywords(
-        args, kwargs, "SSO:__new__", kwlist, &target, &attr, &key ) )
+    if( !PyArg_ParseTuple( args, "OOO", &target, &chain, &key ) )
         return 0;
+    if( !PyTuple_CheckExact( chain ) )
+        return py_type_fail( "argument 2 must be a tuple" );
     PyObject* self = PyType_GenericNew( type, 0, 0 );
     if( !self )
         return 0;
     Alias* alias = reinterpret_cast<Alias*>( self );
     alias->target = newref( target );
-    alias->attr = newref( attr );
+    alias->chain = newref( chain );
     alias->key = newref( key );
+    alias->canset = false;
     return self;
 }
 
@@ -47,9 +50,42 @@ static void
 Alias_dealloc( Alias* self )
 {
     Py_CLEAR( self->target );
-    Py_CLEAR( self->attr );
+    Py_CLEAR( self->chain );
     Py_CLEAR( self->key );
     self->ob_type->tp_free( pyobject_cast( self ) );
+}
+
+
+static PyObject*
+alias_load_fail( Alias* self )
+{
+    std::ostringstream ostr;
+    PyObjectPtr pystr( PyObject_Str( self->target ) );
+    if( !pystr )
+        return 0;
+    ostr << PyString_AS_STRING( pystr.get() );
+    Py_ssize_t size = PyTuple_GET_SIZE( self->chain );
+    for( Py_ssize_t i = 0; i < size; ++i )
+    {
+        pystr = PyObject_Str( PyTuple_GET_ITEM( self->chain, i ) );
+        if( !pystr )
+            return 0;
+        ostr << "." << PyString_AS_STRING( pystr.get() );
+    }
+    PyErr_Format(
+        PyExc_RuntimeError,
+        "failed to load alias '%s'",
+        ostr.str().c_str()
+    );
+    return 0;
+}
+
+
+static int
+alias_load_set_fail( Alias* self )
+{
+    alias_load_fail( self );
+    return -1;
 }
 
 
@@ -66,17 +102,28 @@ Alias__get__( Alias* self, PyObject* object, PyObject* type )
         return 0;
     PyObjectPtr target( PyObject_GetItem( f_locals.get(), self->target ) );
     if( !target )
+    {
+        if( PyErr_ExceptionMatches( PyExc_KeyError ) )
+            return alias_load_fail( self );
         return 0;
-    if( PyString_GET_SIZE( self->attr ) == 0 )
-        return target.release();
-    return PyObject_GetAttr( target.get(), self->attr );
+    }
+    PyObject* name;
+    Py_ssize_t size = PyTuple_GET_SIZE( self->chain );
+    for( Py_ssize_t i = 0; i < size; ++i )
+    {
+        name = PyTuple_GET_ITEM( self->chain, i );
+        target = PyObject_GetAttr( target.get(), name );
+        if( !target )
+            return 0;
+    }
+    return target.release();
 }
 
 
 static int
 Alias__set__( Alias* self, PyObject* object, PyObject* value )
 {
-    if( PyString_GET_SIZE( self->attr ) == 0 )
+    if( !self->canset )
     {
         PyErr_Format(
             PyExc_AttributeError, "can't %s alias", value ? "set" : "delete"
@@ -91,8 +138,22 @@ Alias__set__( Alias* self, PyObject* object, PyObject* value )
         return -1;
     PyObjectPtr target( PyObject_GetItem( f_locals.get(), self->target ) );
     if( !target )
+    {
+        if( PyErr_ExceptionMatches( PyExc_KeyError ) )
+            return alias_load_set_fail( self );
         return -1;
-    return PyObject_SetAttr( target.get(), self->attr, value );
+    }
+    PyObject* name;
+    Py_ssize_t last = PyTuple_GET_SIZE( self->chain ) - 1;
+    for( Py_ssize_t i = 0; i < last; ++i )
+    {
+        name = PyTuple_GET_ITEM( self->chain, i );
+        target = PyObject_GetAttr( target.get(), name );
+        if( !target )
+            return -1;
+    }
+    name = PyTuple_GET_ITEM( self->chain, last );
+    return PyObject_SetAttr( target.get(), name, value );
 }
 
 
@@ -107,8 +168,27 @@ Alias_resolve( Alias* self, PyObject* object )
         return 0;
     PyObjectPtr target( PyObject_GetItem( f_locals.get(), self->target ) );
     if( !target )
+    {
+        if( PyErr_ExceptionMatches( PyExc_KeyError ) )
+            return alias_load_fail( self );
         return 0;
-    return PyTuple_Pack( 2, target.get(), self->attr );
+    }
+    PyObject* name;
+    Py_ssize_t size = PyTuple_GET_SIZE( self->chain );
+    if( self->canset )
+        --size;
+    for( Py_ssize_t i = 0; i < size; ++i )
+    {
+        name = PyTuple_GET_ITEM( self->chain, i );
+        target = PyObject_GetAttr( target.get(), name );
+        if( !target )
+            return 0;
+    }
+    if( self->canset )
+        name = PyTuple_GET_ITEM( self->chain, size );
+    else
+        name = Py_None;
+    return PyTuple_Pack( 2, target.get(), name );
 }
 
 
@@ -120,6 +200,13 @@ Alias_get_target( Alias* self, void* ctxt )
 
 
 static PyObject*
+Alias_get_chain( Alias* self, void* ctxt )
+{
+    return newref( self->chain );
+}
+
+
+static PyObject*
 Alias_get_key( Alias* self, void* ctxt )
 {
     return newref( self->key );
@@ -127,20 +214,35 @@ Alias_get_key( Alias* self, void* ctxt )
 
 
 static PyObject*
-Alias_get_attr( Alias* self, void* ctxt )
+Alias_get_canset( Alias* self, void* ctxt )
 {
-    return newref( self->attr );
+    return newref( self->canset ? Py_True : Py_False );
+}
+
+
+static int
+Alias_set_canset( Alias* self, PyObject* value, void* ctxt )
+{
+    if( !PyBool_Check( value ) )
+    {
+        py_expected_type_fail( value, "bool" );
+        return -1;
+    }
+    self->canset = value == Py_True ? true : false;
+    return 0;
 }
 
 
 static PyGetSetDef
 Alias_getset[] = {
     { "target", ( getter )Alias_get_target, 0,
-      "Get the name of the target for the alias." },
-    { "attr", ( getter )Alias_get_attr, 0,
-      "Get the target attribute for the alias." },
+      "Get the target of the alias" },
+    { "chain", ( getter )Alias_get_chain, 0,
+      "Get the name chain for the alias." },
     { "key", ( getter )Alias_get_key, 0,
       "Get the scope key for the alias." },
+    { "canset", ( getter )Alias_get_canset, ( setter )Alias_set_canset,
+      "Get whether or not the alias is settable" },
     { 0 } // sentinel
 };
 
