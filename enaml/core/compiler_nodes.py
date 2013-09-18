@@ -93,6 +93,23 @@ class CompilerNode(Atom):
     #: The child compiler nodes of this node.
     children = Typed(list, ())
 
+    #: A mapping of id->node for the nodes in the block. This mapping
+    #: is shared among all nodes in the same block.
+    id_nodes = Typed(sortedmap)
+
+    def update_id_nodes(self, mapping):
+        """ Recursively update the id nodes for this node.
+
+        Parameters
+        ----------
+        mapping : sortedmap
+            The mapping to fill with the identifier information.
+
+        """
+        self.id_nodes = mapping
+        for child in self.children:
+            child.update_id_nodes(mapping)
+
     def copy(self):
         """ Create a copy of the compiler node.
 
@@ -134,9 +151,6 @@ class DeclarativeNode(CompilerNode):
     #: node represents a raw declarative object vs an enamldef.
     super_node = ForwardTyped(lambda: EnamlDefNode)
 
-    #: A mapping of id->node for the aliased nodes for this node.
-    aliased_nodes = Typed(sortedmap)
-
     def __call__(self, parent):
         """ Instantiate the type hierarchy.
 
@@ -172,17 +186,19 @@ class DeclarativeNode(CompilerNode):
         if self.super_node is not None:
             self.super_node(instance)
         f_locals = peek_scope()
+        scope_key = self.scope_key
         if self.identifier:
             f_locals[self.identifier] = instance
         if self.store_locals:
-            instance._d_storage[self.scope_key] = f_locals
+            instance._d_storage[scope_key] = f_locals
         if self.engine is not None:
             instance._d_engine = self.engine
         if self.closure_keys is not None:
             for key in self.closure_keys:
                 instance._d_storage[key] = fetch_scope(key)
         if self.child_intercept:
-            instance.child_node_intercept(self.children[:], f_locals)
+            children_copy = self.children[:]
+            instance.child_node_intercept(children_copy, scope_key, f_locals)
         else:
             for node in self.children:
                 node(instance)
@@ -192,6 +208,19 @@ class DeclarativeNode(CompilerNode):
 
         """
         return 1
+
+    def update_id_nodes(self, mapping):
+        """ Update the id nodes for this node.
+
+        Parameters
+        ----------
+        mapping : sortedmap
+            The mapping to fill with the identifier information.
+
+        """
+        if self.identifier:
+            mapping[self.identifier] = self
+        super(DeclarativeNode, self).update_id_nodes(mapping)
 
     def copy(self):
         """ Create a copy of this portion of the node hierarchy.
@@ -213,15 +242,6 @@ class DeclarativeNode(CompilerNode):
             node.super_node = self.super_node.copy()
         if self.closure_keys is not None:
             node.closure_keys = self.closure_keys.copy()
-        if self.aliased_nodes is not None:
-            new = self.aliased_nodes.copy()
-            stack = [node]
-            while stack:
-                child = stack.pop()
-                if child.identifier and child.identifier in new:
-                    new[child.identifier] = child
-                stack.extend(reversed(child.children))
-            node.aliased_nodes = new
         return node
 
 
@@ -244,6 +264,23 @@ class EnamlDefNode(DeclarativeNode):
         """
         with new_scope(self.scope_key):
             self.populate(instance)
+
+    def update_id_nodes(self):
+        """ Update the id nodes for this node.
+
+        """
+        mapping = sortedmap()
+        if self.identifier:
+            mapping[self.identifier] = self
+        super(DeclarativeNode, self).update_id_nodes(mapping)
+
+    def copy(self):
+        """ Create a copy the enamldef node hierarchy.
+
+        """
+        node = super(EnamlDefNode, self).copy()
+        node.update_id_nodes()
+        return node
 
 
 class TemplateNode(CompilerNode):
@@ -271,12 +308,17 @@ class TemplateNode(CompilerNode):
         instances = []
         with new_scope(self.scope_key, self.scope):
             for node in self.children:
-                value = node(parent)
-                if isinstance(value, list):
-                    instances.extend(value)
-                else:
-                    instances.append(value)
+                if isinstance(node, DeclarativeNode):
+                    instances.append(node(parent))
+                elif isinstance(node, TemplateInstanceNode):
+                    instances.extend(node(parent))
         return instances
+
+    def update_id_nodes(self):
+        """ Update the id nodes for this node.
+
+        """
+        super(TemplateNode, self).update_id_nodes(sortedmap())
 
     def size(self):
         """ Return the size of the instantiated node.
@@ -284,12 +326,30 @@ class TemplateNode(CompilerNode):
         """
         return sum(child.size() for child in self.children)
 
+    def iternodes(self):
+        """ Iterate over the nodes of the template.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields the unrolled nodes of the template
+            instantiation.
+
+        """
+        for child in self.children:
+            if isinstance(child, DeclarativeNode):
+                yield child
+            elif isinstance(child, TemplateInstanceNode):
+                for node in child.iternodes():
+                    yield node
+
     def copy(self):
         """ Create a copy of the node.
 
         """
         node = super(TemplateNode, self).copy()
         node.scope = self.scope
+        node.update_id_nodes()
         return node
 
 
@@ -324,11 +384,38 @@ class TemplateInstanceNode(CompilerNode):
             f_locals[self.starname] = tuple(instances[len(self.names):])
         return instances
 
+    def update_id_nodes(self, mapping):
+        """ Update the id nodes for this node.
+
+        Parameters
+        ----------
+        mapping : sortedmap
+            The mapping to fill with the identifier information.
+
+        """
+        if self.names:
+            nodeiter = self.iternodes()
+            for name in self.names:
+                mapping[name] = nodeiter.next()
+        super(TemplateInstanceNode, self).update_id_nodes(mapping)
+
     def size(self):
         """ Return the size of the instantiated node.
 
         """
-        return self.template_node.size()
+        return self.template.size()
+
+    def iternodes(self):
+        """ Iterate over the nodes of the instantiation.
+
+        Returns
+        -------
+        result : generator
+            A generator which yields the unrolled nodes of the template
+            instantiation.
+
+        """
+        return self.template.iternodes()
 
     def copy(self):
         """ Create a copy of the node.
