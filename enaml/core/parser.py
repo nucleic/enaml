@@ -464,12 +464,12 @@ def p_alias_expr2(p):
 
 
 def p_alias_expr3(p):
-    ''' alias_expr : ALIAS NAME COLON NAME DOT NAME NEWLINE '''
+    ''' alias_expr : ALIAS NAME COLON NAME ex_dotted_names NEWLINE '''
     node = enaml_ast.AliasExpr()
     node.lineno = p.lineno(1)
     node.name = p[2]
     node.target = p[4]
-    node.attr = p[6]
+    node.chain = tuple(p[5])
     p[0] = node
 
 
@@ -650,13 +650,22 @@ def p_binding(p):
 # ExBinding
 #------------------------------------------------------------------------------
 def p_ex_binding(p):
-    ''' ex_binding : NAME DOT NAME operator_expr '''
+    ''' ex_binding : NAME ex_dotted_names operator_expr '''
     node = enaml_ast.ExBinding()
     node.lineno = p.lineno(1)
-    node.root = p[1]
-    node.name = p[3]
-    node.expr = p[4]
+    node.chain = (p[1],) + tuple(p[2])
+    node.expr = p[3]
     p[0] = node
+
+
+def p_ex_dotted_names1(p):
+    ''' ex_dotted_names : DOT NAME '''
+    p[0] = [p[2]]
+
+
+def p_ex_dotted_names2(p):
+    ''' ex_dotted_names : DOT NAME ex_dotted_names '''
+    p[0] = [p[2]] + p[3]
 
 
 #------------------------------------------------------------------------------

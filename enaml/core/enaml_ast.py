@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
-from atom.api import Atom, Enum, Int, List, Str, Instance, Typed
+from atom.api import Atom, Enum, Int, List, Str, Instance, Tuple, Typed
 
 
 class ASTNode(Atom):
@@ -107,8 +107,8 @@ class AliasExpr(ASTNode):
     #: The identifier of the target being aliased.
     target = Str()
 
-    #: The attribute on the target which is aliased.
-    attr = Str()
+    #: The chain of names being accessed by the alias.
+    chain = Tuple()
 
 
 class OperatorExpr(ASTNode):
@@ -137,11 +137,8 @@ class ExBinding(ASTNode):
     """ An AST node which represents an extended code binding.
 
     """
-    #: The root name of the extended binding.
-    root = Str()
-
-    #: The name of the attribute being bound.
-    name = Str()
+    #: The chain of names being bound for the expression.
+    chain = Tuple()
 
     #: The operator expression for the binding.
     expr = Typed(OperatorExpr)
