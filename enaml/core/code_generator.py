@@ -161,6 +161,14 @@ class CodeGenerator(Atom):
             (bp.BINARY_MULTIPLY, None),                 # TOS -> retval
         )
 
+    def binary_add(self):
+        """ Multiple the 2 items on the TOS.
+
+        """
+        self.code_ops.append(                           # TOS -> val_1 -> val_2
+            (bp.BINARY_ADD, None),                      # TOS -> retval
+        )
+
     def dup_top(self):
         """ Duplicate the value on the TOS.
 
@@ -270,6 +278,14 @@ class CodeGenerator(Atom):
         """
         self.code_ops.append(                           # TOS -> val_1 -> val_2 -> val_3
             (bp.ROT_THREE, None),                       # TOS -> val_3 -> val_1 -> val_2
+        )
+
+    def unpack_sequence(self, n):
+        """ Unpack the sequence on the TOS.
+
+        """
+        self.code_ops.append(                           # TOS -> obj
+            (bp.UNPACK_SEQUENCE, n),                    # TOS -> val_n -> val_2 -> val_1
         )
 
     @contextmanager
