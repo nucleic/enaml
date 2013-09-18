@@ -20,7 +20,7 @@ from .operators import __get_operators
 from .template import Template
 
 
-def validate_alias(node_map, target, attr):
+def validate_alias(node, target, attr):
     """ Validate the declaration for an alias.
 
     This function ensures that the alias delcaration points to a node
@@ -29,9 +29,8 @@ def validate_alias(node_map, target, attr):
 
     Parameters
     ----------
-    node_map : dict
-        A dictionary which maps node id to node for the nodes the
-        block enclosing the alias.
+    node : DeclarativeNode
+        The node on which the alias should be added.
 
     target : str
         The identifier of the target object in the block.
@@ -41,11 +40,12 @@ def validate_alias(node_map, target, attr):
         string if the alias does not have an attribute.
 
     """
-    if target not in node_map:
+    target_node = node.id_nodes.get(target)
+    if target_node is None:
         msg = "'%s' is not a valid alias target"
         raise TypeError(msg % target)
     if attr:
-        item = getattr(node_map[target].klass, attr, None)
+        item = getattr(target_node.klass, attr, None)
         if not isinstance(item, (Alias, Member)):
             msg = "'%s' is not a valid alias attribute"
             raise TypeError(msg % attr)
@@ -55,15 +55,11 @@ def validate_alias(node_map, target, attr):
                 raise TypeError(msg % (target, attr))
 
 
-def add_alias(node_map, node, name, target, attr):
+def add_alias(node, name, target, attr):
     """ Add an alias to a Declarative subclass.
 
     Parameters
     ----------
-    node_map : dict
-        A dict mapping identifier to declarative child nodes for the
-        enamldef block enclosing the alias definition.
-
     node : EnamlDefNode
         The enamldef node for which the alias should be added.
 
@@ -78,7 +74,7 @@ def add_alias(node_map, node, name, target, attr):
         be an empty string for object aliases.
 
     """
-    validate_alias(node_map, target, attr)
+    validate_alias(node, target, attr)
     klass = node.klass
     item = getattr(klass, name, None)
     if isinstance(item, Alias):
@@ -89,9 +85,6 @@ def add_alias(node_map, node, name, target, attr):
         raise TypeError(msg % name)
     alias = Alias(target, attr, node.scope_key)
     setattr(klass, name, alias)
-    if node.aliased_nodes is None:
-        node.aliased_nodes = sortedmap()
-    node.aliased_nodes[target] = node_map[target]
 
 
 def add_storage(node, name, store_type, kind):
@@ -407,9 +400,7 @@ def resolve_alias_member(node, alias):
         return None
     if node.scope_key != alias.key:
         return resolve_alias_member(node.super_node, alias)
-    if node.aliased_nodes is None:
-        return None
-    target_node = node.aliased_nodes.get(alias.target)
+    target_node = node.id_nodes.get(alias.target)
     if target_node is None:
         return None
     # validate_alias ensures this will be a Member or an Alias
@@ -441,9 +432,7 @@ def resolve_alias_object(node, alias):
         return None
     if node.scope_key != alias.key:
         return resolve_alias_object(node.super_node, alias)
-    if node.aliased_nodes is None:
-        return None
-    target_node = node.aliased_nodes.get(alias.target)
+    target_node = node.id_nodes.get(alias.target)
     if target_node is None:
         return None
     if not alias.attr:
@@ -618,18 +607,12 @@ def type_check_expr(value, kind):
     kind : type
         The allowed type of the value.
 
-    Returns
-    -------
-    result : object
-        The original value.
-
     """
     if not isinstance(kind, type):
         raise TypeError("%s is not a type" % kind)
     if not isinstance(value, kind):
         msg = "expression value has invalid type '%s'"
         raise TypeError(msg % type(value).__name__)
-    return value
 
 
 def validate_declarative(klass):
