@@ -435,8 +435,7 @@ class BlockCompiler(Atom):
             elif isinstance(node, Binding):
                 self.gen_OperatorExpr(node.expr, parent, node.name)
             elif isinstance(node, ExBinding):
-                name = (node.root, node.name)
-                self.gen_OperatorExpr(node.expr, parent, name)
+                self.gen_OperatorExpr(node.expr, parent, node.chain)
             elif isinstance(node, AliasExpr):
                 self.gen_AliasExpr(node, parent)
             elif isinstance(node, StorageExpr):
@@ -718,7 +717,7 @@ class BlockCompiler(Atom):
             self.load_node(index)
             cg.load_const(node.name)
             cg.load_const(node.target)
-            cg.load_const(node.attr)
+            cg.load_const(node.chain)
             cg.call_function(4)
             cg.pop_top()
 
