@@ -114,6 +114,9 @@ class BlockCompiler(Atom):
     #: The set of local names for the compiler.
     local_names = Typed(set, ())
 
+    #: A mapping of const name to index in the const tuple.
+    const_indices = Typed(dict, ())
+
     #: The code generator for the compiler.
     code_generator = Typed(CodeGenerator, ())
 
@@ -275,6 +278,10 @@ class BlockCompiler(Atom):
         # TODO optimize the parameter packing and unpacking based
         # on whether or not the block will actually use the values.
 
+        # Setup the const index mapping.
+        for idx, name in enumerate(const_names):
+            self.const_indices[name] = idx
+
         # Generate the code for building the compiler nodes.
         node_cg = new_code_generator()
         node_cg.load_fast(self.t_params)
@@ -294,10 +301,6 @@ class BlockCompiler(Atom):
         data_cg.unpack_sequence(len(param_names))
         for p_name in param_names:
             data_cg.store_fast(p_name)
-        data_cg.load_fast(self.t_consts)
-        data_cg.unpack_sequence(len(const_names))
-        for c_name in const_names:
-            data_cg.store_fast(c_name)
         self.code_generator = data_cg
         self.dispatch_bind_data(node)
         data_cg.load_const(None)
@@ -314,7 +317,7 @@ class BlockCompiler(Atom):
         primary_cg.build_tuple(len(param_names))
         primary_cg.store_fast(self.t_params)
 
-        # Setup the args for invoking the secondary codes
+        # Setup the args for invoking the node building codes
         args = [
             self.scope_key, self.node_map, self.node_list,
             self.f_globals, self.c_helpers, self.t_params
@@ -329,8 +332,10 @@ class BlockCompiler(Atom):
         primary_cg.call_function(len(args))
         primary_cg.store_fast(self.t_consts)
 
-        # Invoke the data generating code.
+        # Setup the args for invoking the data binding code.
         args.append(self.t_consts)
+
+        # Invoke the data binding code.
         data_cg.args = args
         primary_cg.load_const(data_cg.to_code())
         primary_cg.make_function()
@@ -428,6 +433,8 @@ class BlockCompiler(Atom):
                 self.gen_StorageExpr(node, parent)
                 if node.expr is not None:
                     self.gen_OperatorExpr(node.expr, parent, node.name)
+            elif isinstance(node, ConstExpr):
+                self.unpack_ConstExpr(node)
 
     #--------------------------------------------------------------------------
     # Node Generators
@@ -749,6 +756,22 @@ class BlockCompiler(Atom):
             cg.load_fast(self.f_globals)            # helper -> node -> name -> op -> code -> globals
             cg.call_function(5)
             cg.pop_top()
+
+    def unpack_ConstExpr(self, node):
+        """ Unpack a const value from the local consts tuple.
+
+        Parameters
+        ----------
+        node : ConstExpr
+            The ConstExpr ast node of interest.
+
+        """
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+        cg.load_fast(self.t_consts)
+        cg.load_const(self.const_indices[node.name])
+        cg.binary_subscr()
+        cg.store_fast(node.name)
 
     #--------------------------------------------------------------------------
     # Utilities
