@@ -282,7 +282,7 @@ def template_inst_node(template_inst, names, starname, scope_key):
     return node
 
 
-def make_template_scope(node, scope_tuple):
+def add_template_scope(node, names, values):
     """ Create and add the template scope to a template node.
 
     Parameters
@@ -301,11 +301,9 @@ def make_template_scope(node, scope_tuple):
 
     """
     scope = sortedmap()
-    t_iter = iter(scope_tuple)
-    for key, value in zip(t_iter, t_iter):
-        scope[key] = value
+    for name, value in zip(names, values):
+        scope[name] = value
     node.template_scope = scope
-    return node
 
 
 def make_enamldef(name, bases, dct):
@@ -717,13 +715,13 @@ def validate_unpack_size(template_inst, count, variadic):
 
 __compiler_helpers = {
     'add_alias': add_alias,
+    'add_template_scope': add_template_scope,
     'add_storage': add_storage,
     'declarative_node': declarative_node,
     'enamldef_node': enamldef_node,
     'make_enamldef': make_enamldef,
     'make_object': make_object,
     'make_template': make_template,
-    'make_template_scope': make_template_scope,
     'run_operator': run_operator,
     'template_node': template_node,
     'template_inst_node': template_inst_node,
