@@ -138,10 +138,13 @@ class ExBinding(ASTNode):
 
     """
     #: The root name of the extended binding.
+    root = Str()
+
+    #: The name of the attribute being bound.
     name = Str()
 
-    #: The code binding for the expression.
-    binding = Typed(Binding)
+    #: The operator expression for the binding.
+    expr = Typed(OperatorExpr)
 
 
 class StorageExpr(ASTNode):
@@ -250,3 +253,34 @@ class TemplateInst(ASTNode):
 
     #: The body of the template instance.
     body = List()
+
+
+class TemplateInstBinding(ASTNode):
+    """ An AST node for a template binding.
+
+    """
+    #: The name of the object being bound.
+    root = Str()
+
+    #: The name of the attribute being bound.
+    name = Str()
+
+    #: The operator expression for the binding.
+    expr = Typed(OperatorExpr)
+
+
+class TemplateInstExBinding(ASTNode):
+    """ An AST node for an extended template binding.
+
+    """
+    #: The name of the object being bound.
+    root = Str()
+
+    #: The name of the attribute being bound.
+    name = Str()
+
+    #: The extended name of the attribute being bound.
+    ex_name = Str()
+
+    #: The operator expression for the binding.
+    expr = Typed(OperatorExpr)

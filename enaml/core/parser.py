@@ -651,9 +651,12 @@ def p_binding(p):
 #------------------------------------------------------------------------------
 def p_ex_binding(p):
     ''' ex_binding : NAME DOT NAME operator_expr '''
-    lineno = p.lineno(1)
-    binding = enaml_ast.Binding(name=p[3], expr=p[4], lineno=lineno)
-    p[0] = enaml_ast.ExBinding(name=p[1], binding=binding, lineno=lineno)
+    node = enaml_ast.ExBinding()
+    node.lineno = p.lineno(1)
+    node.root = p[1]
+    node.name = p[3]
+    node.expr = p[4]
+    p[0] = node
 
 
 #------------------------------------------------------------------------------
@@ -750,9 +753,9 @@ def _validate_template(node, lexer):
         param_names.add(params.starparam)
 
     # validate the const expressions
-    StorageExpr = enaml_ast.StorageExpr
+    ConstExpr = enaml_ast.ConstExpr
     for item in node.body:
-        if isinstance(item, StorageExpr):
+        if isinstance(item, ConstExpr):
             check_const(item.name, item)
 
     # validate the identifiers
@@ -1145,8 +1148,35 @@ def p_template_inst_suite_items2(p):
 
 
 def p_template_inst_suite_item1(p):
+    ''' template_inst_suite_item : template_inst_binding
+                                 | template_inst_ex_binding '''
+    p[0] = p[1]
+
+
+def p_template_inst_suite_item2(p):
     ''' template_inst_suite_item : PASS NEWLINE '''
     p[0] = None
+
+
+def p_template_inst_binding(p):
+    ''' template_inst_binding : NAME DOT NAME operator_expr '''
+    node = enaml_ast.TemplateInstBinding()
+    node.lineno = p.lineno(1)
+    node.root = p[1]
+    node.name = p[3]
+    node.expr = p[4]
+    p[0] = node
+
+
+def p_template_inst_ex_binding(p):
+    ''' template_inst_ex_binding : NAME DOT NAME DOT NAME operator_expr '''
+    node = enaml_ast.TemplateInstExBinding()
+    node.lineno = p.lineno(1)
+    node.root = p[1]
+    node.name = p[3]
+    node.ex_name = p[5]
+    node.expr = p[6]
+    p[0] = node
 
 
 #------------------------------------------------------------------------------
