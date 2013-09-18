@@ -257,27 +257,10 @@ class TemplateInstBinding(ASTNode):
 
     """
     #: The name of the object being bound.
-    root = Str()
-
-    #: The name of the attribute being bound.
     name = Str()
 
-    #: The operator expression for the binding.
-    expr = Typed(OperatorExpr)
-
-
-class TemplateInstExBinding(ASTNode):
-    """ An AST node for an extended template binding.
-
-    """
-    #: The name of the object being bound.
-    root = Str()
-
-    #: The name of the attribute being bound.
-    name = Str()
-
-    #: The extended name of the attribute being bound.
-    ex_name = Str()
+    #: The chain of names being bound on the object.
+    chain = Tuple()
 
     #: The operator expression for the binding.
     expr = Typed(OperatorExpr)

@@ -1157,8 +1157,7 @@ def p_template_inst_suite_items2(p):
 
 
 def p_template_inst_suite_item1(p):
-    ''' template_inst_suite_item : template_inst_binding
-                                 | template_inst_ex_binding '''
+    ''' template_inst_suite_item : template_inst_binding '''
     p[0] = p[1]
 
 
@@ -1168,23 +1167,12 @@ def p_template_inst_suite_item2(p):
 
 
 def p_template_inst_binding(p):
-    ''' template_inst_binding : NAME DOT NAME operator_expr '''
+    ''' template_inst_binding : NAME ex_dotted_names operator_expr '''
     node = enaml_ast.TemplateInstBinding()
     node.lineno = p.lineno(1)
-    node.root = p[1]
-    node.name = p[3]
-    node.expr = p[4]
-    p[0] = node
-
-
-def p_template_inst_ex_binding(p):
-    ''' template_inst_ex_binding : NAME DOT NAME DOT NAME operator_expr '''
-    node = enaml_ast.TemplateInstExBinding()
-    node.lineno = p.lineno(1)
-    node.root = p[1]
-    node.name = p[3]
-    node.ex_name = p[5]
-    node.expr = p[6]
+    node.name = p[1]
+    node.chain = p[2]
+    node.expr = p[3]
     p[0] = node
 
 
