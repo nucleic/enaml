@@ -12,7 +12,8 @@ from atom.api import Atom, Constant, Str, Typed
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     Binding, StorageExpr, AliasExpr, EnamlDef, Template, ChildDef,
-    PythonExpression, PythonModule, TemplateInst, ExBinding, ConstExpr
+    PythonExpression, PythonModule, TemplateInst, ExBinding, ConstExpr,
+    TemplateInstBinding
 )
 
 
@@ -436,6 +437,9 @@ class BlockCompiler(Atom):
                 self.gen_OperatorExpr(node.expr, parent, node.name)
             elif isinstance(node, ExBinding):
                 self.gen_OperatorExpr(node.expr, parent, node.chain)
+            elif isinstance(node, TemplateInstBinding):
+                names = (node.name, node.chain)
+                self.gen_OperatorExpr(node.expr, parent, names)
             elif isinstance(node, AliasExpr):
                 self.gen_AliasExpr(node, parent)
             elif isinstance(node, StorageExpr):
@@ -733,8 +737,8 @@ class BlockCompiler(Atom):
             The index of the compiler node for the storage.
 
         name : str or tuple
-            The string name or 2-tuple of (name, attr) to which
-            the operator is being bound.
+            The string name or tuple of extended names to which the
+            operator is being bound.
 
         """
         cg = self.code_generator

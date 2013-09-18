@@ -535,6 +535,45 @@ def bind_member(node, name, pair):
     node.engine.add_pair(name, pair)
 
 
+def bind_template_inst(node, name, chain, pair):
+    """ Bind a handler pair to an temlate instance.
+
+    Parameters
+    ----------
+    node : TemplateInstanceNode
+        The compiler node holding the template instantiation.
+
+    name : str
+        The name of the unpacked object being bound.
+
+    chain : tuple
+        A tuple of names for the extended binding.
+
+    pair : HandlerPair
+        The handler pair to add to the expression engine.
+
+    """
+    # TODO we iterate over the unpacking on each binding. The
+    # unpacking can be cached and reused for all bindings.
+    names = node.names
+    if name not in names:
+        msg = "'%s' is not a valid template object"
+        raise TypeError(msg % name)
+    nodeiter = node.iternodes()
+    for u_name in names:
+        u_node = nodeiter.next()
+        if name == u_name:
+            if len(chain) == 1:
+                name = chain[0]
+                item = getattr(u_node.klass, name, None)
+                if isinstance(item, Alias):
+                    bind_aliased_member(u_node, name, item, pair)
+                else:
+                    bind_member(u_node, name, pair)
+            else:
+                bind_extended_member(u_node, chain, pair)
+
+
 def run_operator(node, name, op, code, f_globals):
     """ Run the operator for a given node.
 
@@ -561,7 +600,11 @@ def run_operator(node, name, op, code, f_globals):
         raise TypeError("failed to load operator '%s'" % op)
     pair = operators[op](code, node.scope_key, f_globals)
     if isinstance(name, tuple):
-        bind_extended_member(node, name, pair)
+        if isinstance(node, TemplateInstanceNode):
+            name, chain = name
+            bind_template_inst(node, name, chain, pair)
+        else:
+            bind_extended_member(node, name, pair)
     else:
         item = getattr(node.klass, name, None)
         if isinstance(item, Alias):

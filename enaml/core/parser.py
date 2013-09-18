@@ -1171,7 +1171,7 @@ def p_template_inst_binding(p):
     node = enaml_ast.TemplateInstBinding()
     node.lineno = p.lineno(1)
     node.name = p[1]
-    node.chain = p[2]
+    node.chain = tuple(p[2])
     node.expr = p[3]
     p[0] = node
 
