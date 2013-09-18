@@ -134,7 +134,7 @@ class DeclarativeNode(CompilerNode):
     #: node represents a raw declarative object vs an enamldef.
     super_node = ForwardTyped(lambda: EnamlDefNode)
 
-    #: A mapping of id->node for the aliased nodes in the block.
+    #: A mapping of id->node for the aliased nodes for this node.
     aliased_nodes = Typed(sortedmap)
 
     def __call__(self, parent):
@@ -250,8 +250,9 @@ class TemplateNode(CompilerNode):
     """ A compiler node which represents a template declaration.
 
     """
-    #: The local scope for the template instantiation.
-    template_scope = Typed(sortedmap, ())
+    #: The params and consts for the template instantiation. This is
+    #: provided by the compiler, and should be considered read-only.
+    scope = Typed(sortedmap, ())
 
     def __call__(self, parent):
         """ Instantiate the type hierarchy.
@@ -268,7 +269,7 @@ class TemplateNode(CompilerNode):
 
         """
         instances = []
-        with new_scope(self.scope_key, self.template_scope):
+        with new_scope(self.scope_key, self.scope):
             for node in self.children:
                 value = node(parent)
                 if isinstance(value, list):
@@ -288,16 +289,16 @@ class TemplateNode(CompilerNode):
 
         """
         node = super(TemplateNode, self).copy()
-        node.template_scope = self.template_scope.copy()
+        node.scope = self.scope
         return node
 
 
-class TemplateInstNode(CompilerNode):
+class TemplateInstanceNode(CompilerNode):
     """ A compiler node which represents a template instantiation.
 
     """
-    #: The template node which will create the instances.
-    template_node = Typed(TemplateNode)
+    #: The template node which is invoked to generate the object.
+    template = Typed(TemplateNode)
 
     #: The named identifiers for the instantiated objects.
     names = Tuple()
@@ -314,7 +315,7 @@ class TemplateInstNode(CompilerNode):
             The parent declarative object for the instantiation.
 
         """
-        instances = self.template_node(parent)
+        instances = self.template(parent)
         f_locals = peek_scope()
         if self.names:
             for name, instance in zip(self.names, instances):
@@ -333,8 +334,8 @@ class TemplateInstNode(CompilerNode):
         """ Create a copy of the node.
 
         """
-        node = super(TemplateInstNode, self).copy()
-        node.template_node = self.template_node.copy()
+        node = super(TemplateInstanceNode, self).copy()
+        node.template = self.template.copy()
         node.names = self.names
         node.starname = self.starname
         return node

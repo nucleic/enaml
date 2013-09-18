@@ -10,7 +10,7 @@ from atom.datastructures.api import sortedmap
 
 from .alias import Alias
 from .compiler_nodes import (
-    DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstNode
+    DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstanceNode
 )
 from .declarative import Declarative, d_
 from .declarative_meta import patch_d_member
@@ -274,8 +274,8 @@ def template_inst_node(template_inst, names, starname, scope_key):
         The compiler node for the template instantiation.
 
     """
-    node = TemplateInstNode()
-    node.template_node = template_inst.template_node
+    node = TemplateInstanceNode()
+    node.template = template_inst.node
     node.names = names
     node.starname = starname
     node.scope_key = scope_key
@@ -303,7 +303,7 @@ def add_template_scope(node, names, values):
     scope = sortedmap()
     for name, value in zip(names, values):
         scope[name] = value
-    node.template_scope = scope
+    node.scope = scope
 
 
 def make_enamldef(name, bases, dct):
@@ -705,7 +705,7 @@ def validate_unpack_size(template_inst, count, variadic):
         Whether or not a variadic unpacking parameter is present.
 
     """
-    size = template_inst.template_node.size()
+    size = template_inst.node.size()
     if size < count:
         suffix = 'values' if size > 1 else 'value'
         raise ValueError("need more than %d %s to unpack" % (size, suffix))
