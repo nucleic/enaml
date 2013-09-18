@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from itertools import count
 
-from atom.api import Atom, Constant, Int, Str, Typed
+from atom.api import Atom, Constant, Str, Typed
 
 from .code_generator import CodeGenerator
 from .enaml_ast import (
@@ -36,15 +36,15 @@ def count_nodes(node):
         The number of nodes needed for the block.
 
     """
-    count = 0
+    node_count = 0
     stack = [node]
     types = (Template, ChildDef, EnamlDef, TemplateInst)
     while stack:
         node = stack.pop()
         if isinstance(node, types):
-            count += 1
+            node_count += 1
             stack.extend(node.body)
-    return count
+    return node_count
 
 
 def should_store_locals(node):
@@ -122,9 +122,6 @@ class BlockCompiler(Atom):
 
     #: The name of the scope key in local storage.
     scope_key = Constant('_[scope_key]')
-
-    #: The name of the node map in the fast locals.
-    node_map = Constant('_[node_map]')
 
     #: The name of the node list in the fast locals.
     node_list = Constant('_[node_list]')
@@ -215,10 +212,7 @@ class BlockCompiler(Atom):
         self.prepare_block(count_nodes(node))
 
         # Setup the args for invoking the secondary codes.
-        args = [
-            self.scope_key, self.node_map, self.node_list,
-            self.f_globals, self.c_helpers
-        ]
+        args = [self.scope_key, self.node_list, self.f_globals, self.c_helpers]
 
         # Invoke the node builder code
         node_cg.args = args
@@ -227,6 +221,14 @@ class BlockCompiler(Atom):
         for arg in args:
             primary_cg.load_fast(arg)
         primary_cg.call_function(len(args))
+        primary_cg.pop_top()
+
+        # Update the internal node ids for the hierarchy.
+        primary_cg.load_fast(self.node_list)
+        primary_cg.load_const(0)
+        primary_cg.binary_subscr()
+        primary_cg.load_attr('update_id_nodes')
+        primary_cg.call_function()
         primary_cg.pop_top()
 
         # Invoke the data binding code
@@ -319,11 +321,11 @@ class BlockCompiler(Atom):
 
         # Setup the args for invoking the node building codes
         args = [
-            self.scope_key, self.node_map, self.node_list,
-            self.f_globals, self.c_helpers, self.t_params
+            self.scope_key, self.node_list, self.f_globals,
+            self.c_helpers, self.t_params
         ]
 
-        # Invoke the node generating code and store the scope tuple.
+        # Invoke the node generating code and store the consts tuple.
         node_cg.args = args
         primary_cg.load_const(node_cg.to_code())
         primary_cg.make_function()
@@ -331,6 +333,14 @@ class BlockCompiler(Atom):
             primary_cg.load_fast(arg)
         primary_cg.call_function(len(args))
         primary_cg.store_fast(self.t_consts)
+
+        # Update the internal node ids for the node hierarchy.
+        primary_cg.load_fast(self.node_list)
+        primary_cg.load_const(0)
+        primary_cg.binary_subscr()
+        primary_cg.load_attr('update_id_nodes')
+        primary_cg.call_function()
+        primary_cg.pop_top()
 
         # Setup the args for invoking the data binding code.
         args.append(self.t_consts)
@@ -493,14 +503,6 @@ class BlockCompiler(Atom):
         # Store the node into the node list
         self.store_node(index)
 
-        # Store the node in the node map if needed.
-        if node.identifier:
-            cg.load_fast(self.node_map)
-            self.load_node(index)
-            cg.load_const(node.identifier)
-            cg.store_map()
-            cg.pop_top()
-
     def gen_ChildDef(self, node, index, parent):
         """ Build the compiler node for a ChildDef.
 
@@ -554,14 +556,6 @@ class BlockCompiler(Atom):
         # Store this node in the node list.
         self.store_node(index)
 
-        #: Store the node in the node map if needed.
-        if node.identifier:
-            cg.load_fast(self.node_map)
-            self.load_node(index)
-            cg.load_const(node.identifier)
-            cg.store_map()
-            cg.pop_top()
-
         # Append this node to the parent node
         self.append_node(parent, index)
 
@@ -582,11 +576,11 @@ class BlockCompiler(Atom):
         """
         cg = self.code_generator
 
-        # Set the line number and load the template
+        # Set the line number and load the template.
         cg.set_lineno(node.lineno)
         self.load_name(node.name)
 
-        # Validate the template definition.
+        # Validate the type of the template.
         with cg.try_squash_raise():
             cg.dup_top()
             self.load_helper('validate_template')
@@ -594,7 +588,7 @@ class BlockCompiler(Atom):
             cg.call_function(1)
             cg.pop_top()
 
-        # Load the arguments for the instantiation call
+        # Load the arguments for the instantiation call.
         arguments = node.arguments
         for arg in arguments.args:
             self.safe_eval_ast(arg.ast, node.name, arg.lineno)
@@ -602,7 +596,7 @@ class BlockCompiler(Atom):
             arg = arguments.stararg
             self.safe_eval_ast(arg.ast, node.name, arg.lineno)
 
-        # Instantiate the template
+        # Instantiate the template.
         argcount = len(arguments.args)
         varargs = bool(arguments.stararg)
         if varargs:
@@ -653,8 +647,8 @@ class BlockCompiler(Atom):
 
         """
         cg = self.code_generator
-        self.load_helper('template_node')
         cg.set_lineno(node.lineno)
+        self.load_helper('template_node')
         cg.load_fast(self.scope_key)
         cg.call_function(1)
         self.store_node(index)
@@ -668,10 +662,12 @@ class BlockCompiler(Atom):
             cg.set_lineno(node.lineno)
             self.safe_eval_ast(node.expr.ast, node.name, node.lineno)
             if node.typename:
+                cg.dup_top()
                 self.load_helper('type_check_expr')
                 cg.rot_two()
                 self.load_name(node.typename)
-                cg.call_function(2)                 # TOS -> value
+                cg.call_function(2)                 # TOS -> retval
+                cg.pop_top()
             cg.store_fast(node.name)
 
     #--------------------------------------------------------------------------
@@ -719,12 +715,11 @@ class BlockCompiler(Atom):
         with cg.try_squash_raise():
             cg.set_lineno(node.lineno)
             self.load_helper('add_alias')
-            cg.load_fast(self.node_map)
             self.load_node(index)
             cg.load_const(node.name)
             cg.load_const(node.target)
             cg.load_const(node.attr)
-            cg.call_function(5)
+            cg.call_function(4)
             cg.pop_top()
 
     def gen_OperatorExpr(self, node, index, name):
@@ -855,10 +850,6 @@ class BlockCompiler(Atom):
         self.load_helper('make_object')
         cg.call_function()
         cg.store_fast(self.scope_key)
-
-        # Create node id map for the block.
-        cg.build_map()
-        cg.store_fast(self.node_map)
 
         # Create the node list for the block.
         cg.load_const(None)
