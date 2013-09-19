@@ -954,6 +954,22 @@ def p_template_param3(p):
 #------------------------------------------------------------------------------
 # Template Instantiation
 #------------------------------------------------------------------------------
+def _validate_template_inst(node, lexer):
+    """ Validate a template instantiation.
+
+    This function ensures that the bindings on the instantiation refer
+    to declared identifiers on the instantiation.
+
+    """
+    names = set()
+    if node.identifiers:
+        names.update(node.identifiers.names)
+    for binding in node.body:
+        if binding.name not in names:
+            msg = "'%s' is not a valid template id reference"
+            syntax_error(msg % binding.name, FakeToken(lexer, binding.lineno))
+
+
 def p_template_inst1(p):
     ''' template_inst : NAME template_args COLON template_inst_suite_item '''
     node = enaml_ast.TemplateInst()
@@ -961,6 +977,7 @@ def p_template_inst1(p):
     node.name = p[1]
     node.arguments = p[2]
     node.body = filter(None, [p[4]])
+    _validate_template_inst(node, p.lexer.lexer)
     p[0] = node
 
 
@@ -972,6 +989,7 @@ def p_template_inst2(p):
     node.arguments = p[2]
     node.identifiers = p[4]
     node.body = filter(None, [p[6]])
+    _validate_template_inst(node, p.lexer.lexer)
     p[0] = node
 
 
@@ -982,6 +1000,7 @@ def p_template_inst3(p):
     node.name = p[1]
     node.arguments = p[2]
     node.body = filter(None, p[4])
+    _validate_template_inst(node, p.lexer.lexer)
     p[0] = node
 
 
@@ -993,6 +1012,7 @@ def p_template_inst4(p):
     node.arguments = p[2]
     node.identifiers = p[4]
     node.body = filter(None, p[6])
+    _validate_template_inst(node, p.lexer.lexer)
     p[0] = node
 
 
