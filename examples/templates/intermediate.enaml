@@ -1,0 +1,201 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An intermediate example of Enaml templates.
+
+This example shows how Enaml templates can be used to loop over a list
+of models and automatically select the correct view to display for each.
+
+Template specialization is used to select the version of the view a given
+model type at runtime. Template recursion is then used to unroll a list
+of models into a final view in a scroll area.
+
+"""
+import random
+
+from atom.api import Atom, Str, Int, observe
+
+from enaml.core.api import Include
+from enaml.layout.api import hbox
+from enaml.widgets.api import (
+    Window, Container, Slider, Label, Field, SpinBox, ScrollArea, Form
+)
+
+
+class NumberModel(Atom):
+    """ A model class composed of integers.
+
+    """
+    alpha = Int()
+    beta = Int()
+    gamma = Int()
+
+
+class StringModel(Atom):
+    """ A model class composed of strings.
+
+    """
+    owner = Str()
+    operator = Str()
+    investor = Str()
+
+
+class MixedModel(Atom):
+    """ A model class which mixes strings and ints.
+
+    """
+    foo = Int()
+    bar = Str()
+    baz = Int()
+
+
+enamldef SliderField(Container):
+    """ A Container which combines a Slider and field.
+
+    """
+    alias value: slider.value
+    padding = 0
+    constraints = [hbox(slider, field)]
+    Slider: slider:
+        pass
+    Field: field:
+        constraints = [width == 30]
+        read_only = True
+        text << unicode(slider.value)
+
+
+template ModelView(ModelType: NumberModel):
+    """ A model view specialized on NumberModels.
+
+    """
+    Form:
+        padding = 0
+        attr model: ModelType
+        Label:
+            text = 'alpha'
+        SliderField:
+            value := model.alpha
+        Label:
+            text = 'beta'
+        SliderField:
+            value := model.beta
+        Label:
+            text = 'gamma'
+        SliderField:
+            value := model.gamma
+
+
+template ModelView(ModelType: StringModel):
+    """ A model view specialized on StringModels.
+
+    """
+    Form:
+        padding = 0
+        attr model: ModelType
+        Label:
+            text = 'owner'
+        Field:
+            text := model.owner
+        Label:
+            text = 'operator'
+        Field:
+            text := model.operator
+        Label:
+            text = 'investor'
+        Field:
+            text := model.investor
+
+
+template ModelView(ModelType: MixedModel):
+    """ A model view specialized on MixedModels.
+
+    """
+    Form:
+        padding = 0
+        attr model: ModelType
+        Label:
+            text = 'foo'
+        SpinBox:
+            value := model.foo
+        Label:
+            text = 'bar'
+        Field:
+            text := model.bar
+        Label:
+            text = 'baz'
+        SpinBox:
+            value := model.baz
+
+
+template ForEach(Items, View):
+    """ A template which unrolls a list of template items.
+
+    Parameters
+    ----------
+    Items : tuple
+        A tuple of items to pass sucessively to View.
+
+    View : template
+        A template which accepts a single item from the tuple of
+        items.
+
+    """
+    ForEach(Items[:-1], View):
+        pass
+    View(Items[-1]):
+        pass
+
+
+template ForEach(Items: (), View):
+    """ The terminating loop condition for the template.
+
+    """
+    pass
+
+
+# Generate the list of models to display in the view.
+models = []
+for model_type in (NumberModel, StringModel, MixedModel):
+    for ignored in range(3):
+        models.append(model_type())
+
+# Apply a random ordering to the models.
+random.shuffle(models)
+
+
+def get_views(models):
+    """ Generate the views for the models.
+
+    Parameters
+    ----------
+    models : list
+        The list of models for which to generate views.
+
+    Returns
+    -------
+    result : list
+        The list of bound views for the model.
+
+    """
+    types = tuple(type(m) for m in models)
+    views = ForEach(types, ModelView)()
+    for view, model in zip(views, models):
+        view.model = model
+    return views
+
+
+enamldef Main(Window):
+    """ The main application window.
+
+    """
+    title = 'Intermediate Templates'
+    attr main_models = models
+    Container:
+        ScrollArea:
+            Container:
+                Include:
+                    objects = get_views(models)
