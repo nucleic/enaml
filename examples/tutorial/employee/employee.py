@@ -1,6 +1,9 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import datetime
 
@@ -54,7 +57,7 @@ class Employee(Person):
     # The employee's phone number as a tuple of 3 ints
     phone = Tuple(Int())
 
-    # This method will be called automatically by atom when the 
+    # This method will be called automatically by atom when the
     # employee's phone number changes
     def _phone_changed(self, val):
         print 'received new phone number for %s: %s' % (self.first_name, val)
