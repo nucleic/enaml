@@ -108,7 +108,12 @@ from .enaml_ast import Module, PythonModule, EnamlDef, Template
 #     a module level dictionary since the dict must persist for the
 #     lifetime of the module in order to insantiate templates. The dict
 #     helps remove namespace pollution.
-COMPILER_VERSION = 16
+# 17 : Support for aliases - 19 September 2013
+#     The introduction of templates with version 16 introduced a strong
+#     need for an alias construct. This version implements suppor for
+#     such a thing. It was quite the overhaul and represents almost an
+#     entirely new compiler.
+COMPILER_VERSION = 17
 
 
 # Code that will be executed at the top of every enaml module
