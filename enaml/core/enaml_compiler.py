@@ -7,11 +7,11 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Constant
+from atom.api import Atom, Constant, Str, Typed
 
-from .compiler_base import CompilerBase
-from .enamldef_compiler import EnamlDefCompiler
-from .template_compiler import TemplateCompiler
+from .block_compiler import BlockCompiler
+from .code_generator import CodeGenerator
+from .enaml_ast import Module, PythonModule, EnamlDef, Template
 
 
 # Increment this number whenever the compiler changes the code which it
@@ -108,7 +108,12 @@ from .template_compiler import TemplateCompiler
 #     a module level dictionary since the dict must persist for the
 #     lifetime of the module in order to insantiate templates. The dict
 #     helps remove namespace pollution.
-COMPILER_VERSION = 16
+# 17 : Support for aliases - 19 September 2013
+#     The introduction of templates with version 16 introduced a strong
+#     need for an alias construct. This version implements suppor for
+#     such a thing. It was quite the overhaul and represents almost an
+#     entirely new compiler.
+COMPILER_VERSION = 17
 
 
 # Code that will be executed at the top of every enaml module
@@ -119,22 +124,32 @@ STARTUP = ['from enaml.core.compiler_helpers import __compiler_helpers']
 CLEANUP = []
 
 
-class EnamlCompiler(CompilerBase):
+class EnamlCompiler(Atom):
     """ A compiler which will compile an Enaml module.
 
     The entry point is the `compile` classmethod which will compile
     the ast into an appropriate python code object for a module.
 
     """
+    #: The filename for the code being compiled.
+    filename = Str()
+
+    #: The code generator for the compiler.
+    code_generator = Typed(CodeGenerator)
+
+    #: The name of the template map in the global namespace.
     template_map = Constant('_[template_map]')
 
+    #: The name of the global compiler helpers.
+    c_helpers = Constant('__compiler_helpers')
+
     @classmethod
-    def compile(cls, module_ast, filename):
+    def compile(cls, node, filename):
         """ The main entry point of the compiler.
 
         Parameters
         ----------
-        module_ast : enaml_ast.Module
+        node : enaml_ast.Module
             The enaml module ast node that should be compiled.
 
         filename : str
@@ -146,85 +161,108 @@ class EnamlCompiler(CompilerBase):
             The code object for the compiled module.
 
         """
+        if not isinstance(node, Module):
+            raise TypeError("invalid node '%s'" % type(node).__name__)
+
         # Protect against unicode filenames, which are incompatible
         # with code objects created via types.CodeType
         if isinstance(filename, unicode):
             filename = filename.encode(sys.getfilesystemencoding())
 
-        # Create and setup the compiler
-        compiler = cls()
-        cg = compiler.code_generator
-        cg.filename = filename
+        # Create the compiler and generate the code.
+        compiler = cls(filename=filename)
+        return compiler.compile_Module(node)
 
-        # Add in the code ops for the module
-        compiler.visit(module_ast)
+    #--------------------------------------------------------------------------
+    # Root Compiler
+    #--------------------------------------------------------------------------
+    def compile_Module(self, node):
+        """ Compile a Module node into a code object.
 
-        # Generate and return the module code object.
-        return cg.to_code()
+        Parameters
+        ----------
+        node : Module
+            The enamldef ast node of interest.
 
-    def visit_Module(self, node):
-        """ The compiler visitor for a Module node.
+        Returns
+        -------
+        result : CodeType
+            The compiled code object for the node.
 
         """
-        cg = self.code_generator
+        # Setup the code generator for the compiler.
+        cg = CodeGenerator()
+        cg.filename = self.filename
+        self.code_generator = cg
 
-        # Generate the startup code for the module
+        # Generate the startup code for the module.
         cg.set_lineno(1)
         for start in STARTUP:
             cg.insert_python_block(start)
 
-        # Create the template map
+        # Create the template map.
         cg.build_map()
         cg.store_global(self.template_map)
 
-        # Populate the body of the module
+        # Populate the body of the module.
         for item in node.body:
-            self.visit(item)
+            if isinstance(item, PythonModule):
+                self.gen_PythonModule(item)
+            elif isinstance(item, EnamlDef):
+                self.gen_EnamlDef(item)
+            elif isinstance(item, Template):
+                self.gen_Template(item)
+            else:
+                raise TypeError("Invalid node '%s'" % type(item).__name__)
 
-        # Delete the template map
+        # Delete the template map.
         cg.delete_global(self.template_map)
 
-        # Generate the cleanup code for the module
+        # Generate the cleanup code for the module.
         for end in CLEANUP:
             cg.insert_python_block(end)
 
-        # Add in the final return value ops
+        # Finalize the ops and return the code object.
         cg.load_const(None)
         cg.return_value()
+        return cg.to_code()
 
-    def visit_PythonModule(self, node):
-        """ The compiler visitor for a PythonModule node.
+    #--------------------------------------------------------------------------
+    # Generators
+    #--------------------------------------------------------------------------
+    def gen_PythonModule(self, node):
+        """ The compiler generator for a PythonModule node.
 
         """
         cg = self.code_generator
         cg.set_lineno(node.lineno)
         cg.insert_python_block(node.ast)
 
-    def visit_EnamlDef(self, node):
-        """ The compiler visitor for an EnamlDef node.
+    def gen_EnamlDef(self, node):
+        """ The compiler generator for an EnamlDef node.
 
         """
         cg = self.code_generator
 
-        # Load the decorators
+        # Load the decorators.
         for decorator in node.decorators:
             cg.insert_python_expr(decorator.ast)
 
-        # Generate the enamldef class
-        code = EnamlDefCompiler.compile(node, cg.filename)
+        # Generate the enamldef class.
+        code = BlockCompiler.compile(node, cg.filename)
         cg.load_const(code)
         cg.make_function()
         cg.call_function()
 
-        # Invoke the decorators
+        # Invoke the decorators.
         for decorator in node.decorators:
             cg.call_function(1)
 
-        # Store the result into the namespace
+        # Store the result into the namespace.
         cg.store_global(node.typename)
 
-    def visit_Template(self, node):
-        """ The compiler visitor for a Template node.
+    def gen_Template(self, node):
+        """ The compiler generator for a Template node.
 
         """
         cg = self.code_generator
@@ -236,7 +274,7 @@ class EnamlCompiler(CompilerBase):
             for index, param in enumerate(node.parameters.positional):
                 spec = param.specialization
                 if spec is not None:
-                    cg.load_helper('validate_spec')
+                    self.load_helper('validate_spec')
                     cg.load_const(index)
                     cg.insert_python_expr(spec.ast)
                     cg.call_function(2)
@@ -251,15 +289,28 @@ class EnamlCompiler(CompilerBase):
                 cg.insert_python_expr(param.default.ast)
 
             # Generate the template code and function
-            code = TemplateCompiler.compile(node, cg.filename)
+            code = BlockCompiler.compile(node, cg.filename)
             cg.load_const(code)
             cg.make_function(len(node.parameters.keywords))
 
             # Load and call the helper which will build the template
-            cg.load_helper('make_template')
+            self.load_helper('make_template')
             cg.rot_three()
             cg.load_const(node.name)
-            cg.load_globals()
+            cg.load_global('globals')
+            cg.call_function()
             cg.load_global(self.template_map)  # helper -> paramspec -> function -> name -> globals -> template_map
             cg.call_function(5)
             cg.pop_top()
+
+    #--------------------------------------------------------------------------
+    # Utilities
+    #--------------------------------------------------------------------------
+    def load_helper(self, name):
+        """ Load the named compiler helper onto the TOS.
+
+        """
+        cg = self.code_generator
+        cg.load_global(self.c_helpers)
+        cg.load_const(name)
+        cg.binary_subscr()

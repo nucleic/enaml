@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, atomref
 
+from .alias import Alias
 from .code_tracing import CodeTracer
 
 
@@ -83,11 +84,17 @@ class StandardTracer(CodeTracer):
             The atom object owning the attribute.
 
         name : string
-            The member name to for which to bind a handler.
+            The member name for which to bind a handler.
 
         """
         if obj.get_member(name) is not None:
             self.items.add((obj, name))
+        else:
+            alias = getattr(type(obj), name, None)
+            if isinstance(alias, Alias):
+                alias_obj, alias_attr = alias.resolve(obj)
+                if alias_attr:
+                    self.trace_atom(alias_obj, alias_attr)
 
     def finalize(self):
         """ Finalize the tracing process.

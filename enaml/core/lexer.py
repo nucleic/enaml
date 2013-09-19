@@ -74,6 +74,24 @@ def syntax_error(message, token):
     _parsing_error(SyntaxError, message, token)
 
 
+def syntax_warning(message, token):
+    """ Raise a warning about dubious syntax.
+
+    Parameters
+    ----------
+    message : string
+        The message to pass to the IndentationError
+
+    token : LexToken
+        The current lextoken for the error.
+
+    """
+    import warnings
+    filename = token.lexer.filename
+    lineno = token.lineno
+    warnings.warn_explicit(message, SyntaxWarning, filename, lineno)
+
+
 def indentation_error(message, token):
     """ Raise a ParsingError which will be converted into an proper
     IndentationError during parsing.
@@ -164,10 +182,12 @@ class EnamlLexer(object):
 
     reserved = {
         'and': 'AND',
+        'alias': 'ALIAS',
         'as': 'AS',
         'assert': 'ASSERT',
         'break': 'BREAK',
         'class': 'CLASS',
+        'const': 'CONST',
         'continue': 'CONTINUE',
         'def': 'DEF',
         'del': 'DEL',

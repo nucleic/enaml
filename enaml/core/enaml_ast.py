@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
-from atom.api import Atom, Enum, Int, List, Str, Instance, Typed
+from atom.api import Atom, Enum, Int, List, Str, Instance, Tuple, Typed
 
 
 class ASTNode(Atom):
@@ -83,6 +83,34 @@ class ChildDef(ASTNode):
     body = List()
 
 
+class ConstExpr(ASTNode):
+    """ An AST node which represents a 'const' expression.
+
+    """
+    #: The name being assigned by the expression.
+    name = Str()
+
+    #: The name of the type of allowed values for the expression.
+    typename = Str()
+
+    #: The Python expression to evaluate.
+    expr = Typed(PythonExpression)
+
+
+class AliasExpr(ASTNode):
+    """ An AST node which represents an 'alias' expression.
+
+    """
+    #: The name of the alias.
+    name = Str()
+
+    #: The identifier of the target being aliased.
+    target = Str()
+
+    #: The chain of names being accessed by the alias.
+    chain = Tuple()
+
+
 class OperatorExpr(ASTNode):
     """ An AST node which represents an operator expression.
 
@@ -105,17 +133,28 @@ class Binding(ASTNode):
     expr = Typed(OperatorExpr)
 
 
+class ExBinding(ASTNode):
+    """ An AST node which represents an extended code binding.
+
+    """
+    #: The chain of names being bound for the expression.
+    chain = Tuple()
+
+    #: The operator expression for the binding.
+    expr = Typed(OperatorExpr)
+
+
 class StorageExpr(ASTNode):
     """ An AST node representing a storage expression.
 
     """
     #: The stype of the storage expression.
-    kind = Enum('attr', 'event', 'static', 'const')
+    kind = Enum('attr', 'event')
 
     #: The name of the storage object being defined.
     name = Str()
 
-    #: The name of the type allowed values for the storage object.
+    #: The name of the type of allowed values for the storage object.
     typename = Str()
 
     #: The default expression bound to the storage object. This may
@@ -169,7 +208,7 @@ class Template(ASTNode):
     #: The parameters associated with the template.
     parameters = Typed(TemplateParameters)
 
-    #: The body of the template. This will be composed of StorageExpr,
+    #: The body of the template. This will be composed of ConstExpr,
     #: ChildDef, and TemplateInst nodes.
     body = List()
 
@@ -208,3 +247,20 @@ class TemplateInst(ASTNode):
 
     #: The identifiers to apply to the template items.
     identifiers = Typed(TemplateIdentifiers)
+
+    #: The body of the template instance.
+    body = List()
+
+
+class TemplateInstBinding(ASTNode):
+    """ An AST node for a template binding.
+
+    """
+    #: The name of the object being bound.
+    name = Str()
+
+    #: The chain of names being bound on the object.
+    chain = Tuple()
+
+    #: The operator expression for the binding.
+    expr = Typed(OperatorExpr)
