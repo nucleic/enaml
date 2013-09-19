@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from itertools import count
 
-from atom.api import Atom, Constant, Str, Typed
+from atom.api import Atom, Constant, Int, Str, Typed
 
 from .code_generator import CodeGenerator
 from .enaml_ast import (
@@ -138,6 +138,12 @@ class BlockCompiler(Atom):
 
     #: The name of the stored template const values.
     t_consts = Constant('_[t_consts]')
+
+    #: The name of the unpack mapping for the current template inst.
+    unpack_map = Constant('_[unpack_map]')
+
+    #: The index of the node for the current unpack mapping.
+    unpack_index = Int(-1)
 
     @classmethod
     def compile(cls, node, filename):
@@ -438,8 +444,7 @@ class BlockCompiler(Atom):
             elif isinstance(node, ExBinding):
                 self.gen_OperatorExpr(node.expr, parent, node.chain)
             elif isinstance(node, TemplateInstBinding):
-                names = (node.name, node.chain)
-                self.gen_OperatorExpr(node.expr, parent, names)
+                self.gen_TemplateInstBinding(node, parent)
             elif isinstance(node, AliasExpr):
                 self.gen_AliasExpr(node, parent)
             elif isinstance(node, StorageExpr):
@@ -752,6 +757,44 @@ class BlockCompiler(Atom):
             cg.load_const(node.operator)
             cg.load_const(code)
             cg.load_fast(self.f_globals)            # helper -> node -> name -> op -> code -> globals
+            cg.call_function(5)
+            cg.pop_top()
+
+    def gen_TemplateInstBinding(self, node, index):
+        """ Bind the data expressions for a template instance.
+
+        Parameters
+        ----------
+        node : TemplateInst
+            The ast node of interest.
+
+        index : int
+            The index of the compiler node for the storage.
+
+        """
+        cg = self.code_generator
+
+        # Create the unpack map for this node, if needed.
+        if index != self.unpack_index:
+            self.load_helper('make_unpack_map')
+            self.load_node(index)
+            cg.call_function(1)
+            cg.store_fast(self.unpack_map)
+            self.unpack_index = index
+
+        op_node = node.expr
+        mode = COMPILE_MODE[type(op_node.value)]
+        code = compile(op_node.value.ast, cg.filename, mode=mode)
+        with cg.try_squash_raise():
+            cg.set_lineno(node.lineno)
+            self.load_helper('run_operator')
+            cg.load_fast(self.unpack_map)
+            cg.load_const(node.name)
+            cg.binary_subscr()
+            cg.load_const(node.chain)
+            cg.load_const(op_node.operator)
+            cg.load_const(code)
+            cg.load_fast(self.f_globals)
             cg.call_function(5)
             cg.pop_top()
 

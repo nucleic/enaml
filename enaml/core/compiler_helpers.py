@@ -535,45 +535,6 @@ def bind_member(node, name, pair):
     node.engine.add_pair(name, pair)
 
 
-def bind_template_inst(node, name, chain, pair):
-    """ Bind a handler pair to an temlate instance.
-
-    Parameters
-    ----------
-    node : TemplateInstanceNode
-        The compiler node holding the template instantiation.
-
-    name : str
-        The name of the unpacked object being bound.
-
-    chain : tuple
-        A tuple of names for the extended binding.
-
-    pair : HandlerPair
-        The handler pair to add to the expression engine.
-
-    """
-    # TODO we iterate over the unpacking on each binding. The
-    # unpacking can be cached and reused for all bindings.
-    names = node.names
-    if name not in names:
-        msg = "'%s' is not a valid template object"
-        raise TypeError(msg % name)
-    nodeiter = node.iternodes()
-    for u_name in names:
-        u_node = nodeiter.next()
-        if name == u_name:
-            if len(chain) == 1:
-                name = chain[0]
-                item = getattr(u_node.klass, name, None)
-                if isinstance(item, Alias):
-                    bind_aliased_member(u_node, name, item, pair)
-                else:
-                    bind_member(u_node, name, pair)
-            else:
-                bind_extended_member(u_node, chain, pair)
-
-
 def run_operator(node, name, op, code, f_globals):
     """ Run the operator for a given node.
 
@@ -600,17 +561,31 @@ def run_operator(node, name, op, code, f_globals):
         raise TypeError("failed to load operator '%s'" % op)
     pair = operators[op](code, node.scope_key, f_globals)
     if isinstance(name, tuple):
-        if isinstance(node, TemplateInstanceNode):
-            name, chain = name
-            bind_template_inst(node, name, chain, pair)
-        else:
-            bind_extended_member(node, name, pair)
+        bind_extended_member(node, name, pair)
     else:
         item = getattr(node.klass, name, None)
         if isinstance(item, Alias):
             bind_aliased_member(node, name, item, pair)
         else:
             bind_member(node, name, pair)
+
+
+def make_unpack_map(node):
+    """ Make a mapping of unpack values for a template instance.
+
+    Parameters
+    ----------
+    node : TemplateInstanceNode
+        The compiler node for the template instantiation.
+
+    Returns
+    -------
+    result : dict
+        A dict mapping unpack name to compiler node for the template
+        instantiation.
+
+    """
+    return dict(zip(node.names, node.iternodes()))
 
 
 def type_check_expr(value, kind):
@@ -722,6 +697,7 @@ __compiler_helpers = {
     'make_enamldef': make_enamldef,
     'make_object': make_object,
     'make_template': make_template,
+    'make_unpack_map': make_unpack_map,
     'run_operator': run_operator,
     'template_node': template_node,
     'template_inst_node': template_inst_node,
