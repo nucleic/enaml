@@ -334,7 +334,7 @@ def _validate_enamldef(node, lexer):
     def check_id(name, node):
         if name in ident_names:
             msg = "redeclaration of identifier '%s'"
-            msg += " (this will be an error in a future version of Enaml)"
+            msg += " (this will be an error in Enaml version 1.0)"
             syntax_warning(msg % name, FakeToken(lexer, node.lineno))
         ident_names.add(name)
 
