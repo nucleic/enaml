@@ -808,10 +808,29 @@ def p_template2(p):
     p[0] = node
 
 
+def p_template3(p):
+    ''' template : TEMPLATE NAME template_params COLON template_doc_suite '''
+    doc, body = p[5]
+    node = enaml_ast.Template()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.parameters = p[3]
+    node.docstring = doc
+    node.body = body
+    _validate_template(node, p.lexer.lexer)
+    p[0] = node
+
+
 def p_template_suite(p):
     ''' template_suite : NEWLINE INDENT template_suite_items DEDENT '''
     # Filter out any pass statements
     p[0] = filter(None, p[3])
+
+
+def p_template_doc_suite(p):
+    ''' template_doc_suite : NEWLINE INDENT STRING NEWLINE template_suite_items DEDENT '''
+    # Filter out any pass statements
+    p[0] = (p[3], filter(None, p[5]))
 
 
 def p_template_suite_items1(p):

@@ -208,6 +208,9 @@ class Template(ASTNode):
     #: The parameters associated with the template.
     parameters = Typed(TemplateParameters)
 
+    #: The docstring for the template.
+    docstring = Str()
+
     #: The body of the template. This will be composed of ConstExpr,
     #: ChildDef, and TemplateInst nodes.
     body = List()

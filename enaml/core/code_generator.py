@@ -53,7 +53,7 @@ class CodeGenerator(Atom):
         bp_code = bp.Code(
             self.code_ops, self.freevars, self.args, self.varargs,
             self.varkwargs, self.newlocals, self.name, self.filename,
-            self.firstlineno, self.docstring
+            self.firstlineno, self.docstring or None
         )
         return bp_code.to_code()
 
