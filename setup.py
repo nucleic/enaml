@@ -43,6 +43,11 @@ ext_modules = [
         'enaml.core.dynamicscope',
         ['enaml/src/dynamicscope.cpp'],
         language='c++',
+    ),
+    Extension(
+        'enaml.core.alias',
+        ['enaml/src/alias.cpp'],
+        language='c++',
     )
 ]
 

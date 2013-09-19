@@ -58,7 +58,7 @@ class Pattern(Declarative):
                     item.destroy()
         del self.pattern_nodes
 
-    def child_node_intercept(self, nodes, f_locals):
+    def child_node_intercept(self, nodes, key, f_locals):
         """ Add a child subtree to this pattern.
 
         This method changes the default behavior of the runtime. It
@@ -72,11 +72,14 @@ class Pattern(Declarative):
             A list of compiler nodes containing the information required
             to instantiate the children.
 
+        key : object
+            The scope key for the current local scope.
+
         f_locals : mapping or None
             A mapping object for the current local scope.
 
         """
-        self.pattern_nodes.append((nodes, f_locals))
+        self.pattern_nodes.append((nodes, key, f_locals))
 
     #--------------------------------------------------------------------------
     # Abstract API
