@@ -1,6 +1,13 @@
 Enaml Release Notes
 ===================
 
+0.8.0 - 09/20/2013
+------------------
+- Added templates to the language.
+- Added aliases to the language.
+- Removed the compatibility code scheduled for removal.
+- Added a completely new declarative expression engine.
+
 0.7.20 - 08/12/2013
 -------------------
 - Bugfix area layout traversal. 308164fd5134_
