@@ -1,0 +1,302 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An advanced example of Enaml templates.
+
+This example shows how Enaml templates can be used to automatically
+generate the body of a form. Template specialization is used to select
+the proper control for a model attribute at runtime. Template recursion
+is then used to unroll a list of these controls into the body of a form.
+
+"""
+from atom.api import *
+from enaml.widgets.api import *
+from enaml.core.api import *
+from enaml.stdlib.fields import FloatField
+
+
+#------------------------------------------------------------------------------
+# "Libaray" Definitions
+#------------------------------------------------------------------------------
+# The templates and enamldefs defined in this section are ones which can
+# be written once and then used as a library. They are more-or-less fully
+# generic and will work for a large swath of models. With a bit more work,
+# they could be viable for inclusion in the Enaml stdlib.
+
+template FormControl(Attr, MemberType):
+    """ A template which generates a control for an AutoForm.
+
+    This default specialization displays read-only text for the value.
+
+    Parameters
+    ----------
+    Attr : str
+        The name of the attribute on 'model' being accessed.
+
+    MemberType : type
+        The type of the member being accessed.
+
+    """
+    Field:
+        read_only = True
+        text << unicode(getattr(model, Attr))
+
+
+template FormControl(Attr, MemberType: Int):
+    """ A form control template specialization for Int members.
+
+    This control uses a spin box to represent the value.
+
+    """
+    SpinBox:
+        value := getattr(model, Attr)
+
+
+template FormControl(Attr, MemberType: Str):
+    """ A form control template specialization for Str members.
+
+    This control uses a Field to represent the value.
+
+    """
+    Field:
+        text << getattr(model, Attr)
+        text :: setattr(model, Attr, str(text))
+
+
+template FormControl(Attr, MemberType: Unicode):
+    """ A form control template specialization for Unicode members.
+
+    This control uses a Field to represent the value.
+
+    """
+    Field:
+        text := getattr(model, Attr)
+
+
+template FormControl(Attr, MemberType: Float):
+    """ A form control template specialization for Float members.
+
+    This control uses a FloatField to represent the value.
+
+    """
+    FloatField:
+        value := getattr(model, Attr)
+
+
+template FormControl(Attr, MemberType: Bool):
+    """ A form control template specialization for Bool members.
+
+    This control uses a CheckBox to represent the value.
+
+    """
+    CheckBox:
+        checked := getattr(model, Attr)
+
+
+template FormControl(Attr, MemberType: Event):
+    """ A form control template specialization for Event members.
+
+    This control uses a PushButton to represent the value.
+
+    """
+    const ButtonText = Attr[0].upper() + Attr[1:].lower()
+    PushButton:
+        text = ButtonText
+        clicked :: getattr(model, Attr)()
+
+
+enamldef RadioItem(RadioButton):
+    """ A radio button which operators on an enum attribute.
+
+    """
+    attr model_attr
+    checked << getattr(model, model_attr) == text
+    checked ::
+        if checked:
+            setattr(model, model_attr, text)
+
+
+template RadioItemList(Attr, Items):
+    """ A template which generates a list of radio items.
+
+    Parameters
+    ----------
+    Attr : str
+        The attribute name of the enum member on the model.
+
+    Items : tuple
+        The tuple of strings representing the enum items.
+
+    """
+    RadioItemList(Attr, Items[:-1]):
+        pass
+    RadioItem:
+        model_attr = Attr
+        text = Items[-1]
+
+
+template RadioItemList(Attr, Items: ()):
+    """ The terminating condition for the radio item list.
+
+    """
+    pass
+
+
+def radio_items(model, attr):
+    """ Return the tuple of radio items for the model.
+
+    """
+    items = getattr(type(model), attr).items
+    return tuple(sorted(items))
+
+
+template FormControl(Attr, MemberType: Enum):
+    """ A form control template specialization for Enum members.
+
+    This control uses a Container of RadioButtons to represent the
+    value.
+
+    """
+    Container:
+        Include:
+            objects = RadioItemList(Attr, radio_items(model, Attr))()
+
+
+template FormItem(Attr, MemberType):
+    """ A template which generates a pair of items for an AutoForm.
+
+    Parameters
+    ----------
+    Attr : str
+        The name of the attribute on 'model' being accessed.
+
+    MemberType : type
+        The type of the member being accessed.
+
+    """
+    const LabelText = Attr[0].upper() + Attr[1:].lower()
+    Label:
+        text = LabelText
+    FormControl(Attr, MemberType):
+        pass
+
+
+def form_spec(obtype):
+    """ Generate a form specification for an atom type.
+
+    Parameters
+    ----------
+    obtype : type
+        The Atom subclass of interest.
+
+    Returns
+    -------
+    result : tuple
+        A tuple of 2-tuples of (attr, member_type) for all non-private
+        members of the class.
+
+    """
+    items = []
+    for name, member in obtype.members().iteritems():
+        if not name.startswith('_'):
+            items.append((name, type(member)))
+    items.sort()
+    return tuple(items)
+
+
+template ForEach(Spec, Item):
+    """ A templated loop which maps a template over a sequence.
+
+    Parameters
+    ----------
+    Spec : tuple
+        A tuple of tuples which are the values to map over the item.
+
+    Item : template
+        A template which accepts *values from inner tuples of the spec.
+
+    """
+    ForEach(Spec[:-1], Item):
+        pass
+    Item(*Spec[-1]):
+        pass
+
+
+template ForEach(Spec: (), Item):
+    """ The terminating condition for the templated loop.
+
+    """
+    pass
+
+
+template AutoFormBody(ModelType):
+    """ A template which builds the body for an AutoForm.
+
+    Parameters
+    ----------
+    ModelType : type
+        The type of the model. This should be an Atom subclass.
+
+    """
+    const Spec = form_spec(ModelType)
+    ForEach(Spec, FormItem):
+        pass
+
+
+template AutoFormBody(ModelType: type(None)):
+    """ A template specialization for null models.
+
+    """
+    pass
+
+
+enamldef AutoForm(Form):
+    """ A Form which automatically generates its body from a model.
+
+    """
+    attr model: Atom
+    Include:
+        objects = AutoFormBody(type(model))()
+
+
+#------------------------------------------------------------------------------
+# Main Models and Views
+#------------------------------------------------------------------------------
+class FooModel(Atom):
+    spam = Int(34)
+    ham = Int(42)
+    first = Str('first')
+    last = Str('last')
+    owner = Unicode('owner')
+    time = Float(42.56)
+    click = Bool()
+    clack = Bool()
+
+
+class BarModel(Atom):
+    name = Unicode('name')
+    trigger = Event()
+    choices = Enum('first', 'second', 'third')
+
+
+enamldef Main(Window):
+    title = 'Advanced Templates'
+    attr foo_model = FooModel()
+    attr bar_model = BarModel()
+    Container:
+        GroupBox:
+            title = 'Foo Model'
+            flat = True
+            AutoForm:
+                padding = 0
+                model = foo_model
+        GroupBox:
+            title = 'bar_model'
+            flat = True
+            AutoForm:
+                padding = 0
+                model = bar_model
