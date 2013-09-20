@@ -667,17 +667,17 @@ class BlockCompiler(Atom):
 
         """
         cg = self.code_generator
-        with cg.try_squash_raise():
-            cg.set_lineno(node.lineno)
-            self.safe_eval_ast(node.expr.ast, node.name, node.lineno)
-            if node.typename:
+        cg.set_lineno(node.lineno)
+        self.safe_eval_ast(node.expr.ast, node.name, node.lineno)
+        if node.typename:
+            with cg.try_squash_raise():
                 cg.dup_top()
                 self.load_helper('type_check_expr')
                 cg.rot_two()
                 self.load_name(node.typename)
                 cg.call_function(2)                 # TOS -> retval
                 cg.pop_top()
-            cg.store_fast(node.name)
+        cg.store_fast(node.name)
 
     #--------------------------------------------------------------------------
     # Data Binders
