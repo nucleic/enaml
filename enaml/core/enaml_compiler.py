@@ -118,7 +118,10 @@ from .enaml_ast import Module, PythonModule, EnamlDef, Template
 #     const expressions, where an error raised by a function called
 #     by the expression would have its traceback erroneously squashed.
 #     This version fixes that bug.
-COMPILER_VERSION = 18
+# 19 : Fix a bug in variadic template args - 20 September 2013
+#     The code generated for variadic template functions did not set
+#     the varargs flag on the code object. This is now fixed.
+COMPILER_VERSION = 19
 
 
 # Code that will be executed at the top of every enaml module

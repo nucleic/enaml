@@ -383,6 +383,7 @@ class BlockCompiler(Atom):
         # Generate and return the code object for the block.
         primary_cg.args = param_names
         primary_cg.docstring = node.docstring
+        primary_cg.varargs = bool(node.parameters.starparam)
         return primary_cg.to_code()
 
     #--------------------------------------------------------------------------
