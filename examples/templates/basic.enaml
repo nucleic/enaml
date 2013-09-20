@@ -31,11 +31,6 @@ template OkCancelPanel(Content):
         A widget which will be used as the central content of the
         panel.
 
-    Returns
-    -------
-    result : Container
-        A container which implements the panel.
-
     """
     Container:
         alias content
