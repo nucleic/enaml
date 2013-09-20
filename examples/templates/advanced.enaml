@@ -13,10 +13,14 @@ the proper control for a model attribute at runtime. Template recursion
 is then used to unroll a list of these controls into the body of a form.
 
 """
-from atom.api import *
-from enaml.widgets.api import *
-from enaml.core.api import *
+from atom.api import Atom, Bool, Enum, Event, Float, Int, Str, Unicode
+
+from enaml.core.api import Include
 from enaml.stdlib.fields import FloatField
+from enaml.widgets.api import (
+    CheckBox, Container, Field, Form, GroupBox, Label, PushButton,
+    RadioButton, SpinBox, Window,
+)
 
 
 #------------------------------------------------------------------------------
@@ -24,8 +28,7 @@ from enaml.stdlib.fields import FloatField
 #------------------------------------------------------------------------------
 # The templates and enamldefs defined in this section are ones which can
 # be written once and then used as a library. They are more-or-less fully
-# generic and will work for a large swath of models. With a bit more work,
-# they could be viable for inclusion in the Enaml stdlib.
+# generic and will work for a large swath of models.
 
 template FormControl(Attr, MemberType):
     """ A template which generates a control for an AutoForm.
@@ -281,6 +284,8 @@ class BarModel(Atom):
     name = Unicode('name')
     trigger = Event()
     choices = Enum('first', 'second', 'third')
+    def _observe_trigger(self, change):
+        print 'I was triggered'
 
 
 enamldef Main(Window):
@@ -288,14 +293,17 @@ enamldef Main(Window):
     attr foo_model = FooModel()
     attr bar_model = BarModel()
     Container:
+        hug_height = 'strong'
         GroupBox:
             title = 'Foo Model'
+            hug_height = 'strong'
             flat = True
             AutoForm:
                 padding = 0
                 model = foo_model
         GroupBox:
-            title = 'bar_model'
+            title = 'Bar Model'
+            hug_height = 'strong'
             flat = True
             AutoForm:
                 padding = 0
