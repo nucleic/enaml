@@ -113,7 +113,12 @@ from .enaml_ast import Module, PythonModule, EnamlDef, Template
 #     need for an alias construct. This version implements suppor for
 #     such a thing. It was quite the overhaul and represents almost an
 #     entirely new compiler.
-COMPILER_VERSION = 17
+# 18 : Allow const exprs to raise unsquashed - 20 September 2013
+#     There was a bug in the code generated for evaluating template
+#     const expressions, where an error raised by a function called
+#     by the expression would have its traceback erroneously squashed.
+#     This version fixes that bug.
+COMPILER_VERSION = 18
 
 
 # Code that will be executed at the top of every enaml module
