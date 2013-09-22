@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Str, Range, Bool, observe
+from atom.api import Atom, Unicode, Range, Bool, observe
 
 import enaml
 from enaml.qt.qt_application import QtApplication
@@ -15,9 +15,9 @@ class Person(Atom):
     """ A simple class representing a person object.
 
     """
-    last_name = Str()
+    last_name = Unicode()
 
-    first_name = Str()
+    first_name = Unicode()
 
     age = Range(low=0)
 

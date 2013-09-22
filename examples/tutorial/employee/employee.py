@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import datetime
 
-from atom.api import Atom, Str, Range, Bool, Value, Int, Tuple, observe
+from atom.api import Atom, Unicode, Range, Bool, Value, Int, Tuple, observe
 import enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -16,9 +16,9 @@ class Person(Atom):
     """ A simple class representing a person object.
 
     """
-    last_name = Str()
+    last_name = Unicode()
 
-    first_name = Str()
+    first_name = Unicode()
 
     age = Range(low=0)
 
@@ -44,7 +44,7 @@ class Employer(Person):
 
     """
     # The name of the company
-    company_name = Str()
+    company_name = Unicode()
 
 
 class Employee(Person):
@@ -83,5 +83,3 @@ if __name__ == '__main__':
     view.show()
 
     app.start()
-
-
