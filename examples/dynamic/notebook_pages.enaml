@@ -10,8 +10,6 @@
 This example demonstrates using the `Include` component to dynamically
 insert and remove pages from a notebook.
 
-This example requires Enaml version >= 0.4.0
-
 """
 from enaml.layout.api import vbox, hbox, align, spacer
 from enaml.widgets.api import (

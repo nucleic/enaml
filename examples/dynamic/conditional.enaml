@@ -5,8 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" An example of using Conditional to generate the views for objects
-which are not known until runtime.
+""" An example of using Conditional to generate the views.
+
+This example shows how Conditional can be used to generate views for
+objects which are not known until runtime.
 
 """
 import random
@@ -83,4 +85,3 @@ enamldef Main(Window): main:
                         )
                         Separator:
                             orientation = 'horizontal'
-

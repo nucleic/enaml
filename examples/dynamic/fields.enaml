@@ -10,8 +10,6 @@
 There are three columns in the example, each showing one of the many
 ways that the Include component may be used.
 
-This example requires Enaml version >= 0.4.0
-
 """
 import random
 
@@ -43,9 +41,6 @@ enamldef Main(Window):
                 # time the spin box is changed. All the old widgets
                 # will be destroyed. This is the simplest way to use
                 # the Include, albeit not the most efficient.
-                #
-                # FIXME: this causes more flicker than i'd like. It
-                # should be possible to reduce it quite a bit.
                 objects << [Field(text=str(i)) for i in xrange(spin1.value)]
         Container: cont2:
             Label:

@@ -5,8 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" An example of how the constraints engine can be used to create fluid,
-adaptable layouts.
+""" An example of how constraints can be used to create fluid layouts.
 
 At the top of the layout is an `Html` widget which expands to fill the
 available space. Below the `Html` are four `PushButton` widgets. On the

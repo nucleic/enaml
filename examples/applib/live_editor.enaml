@@ -5,6 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+""" An example of using the live editor applib components.
+
+This examples shows how the various applib live editor components can be
+stitched together to form a live Enaml code editor application.
+
+"""
 from enaml.applib.live_editor_model import LiveEditorModel
 from enaml.applib.live_editor_view import (
     ModelEditorPanel, ViewEditorPanel, TracebackPanel, ViewPanel
