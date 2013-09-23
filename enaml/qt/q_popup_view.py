@@ -5,11 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Typed, Float, Int
+from atom.api import Atom, Typed, Float, Int, IntEnum
 
 from .QtCore import (
-    Qt, QPoint, QPointF, QSize, QMargins, QPropertyAnimation, QTimer, QEvent,
-    Signal
+    Qt, QPoint, QPointF, QSize, QRect,QMargins, QPropertyAnimation, QTimer,
+    QEvent, Signal
 )
 from .QtGui import (
     QApplication, QWidget, QLayout, QPainter, QPainterPath, QRegion, QPen,
@@ -17,6 +17,326 @@ from .QtGui import (
 )
 
 from .q_single_widget_layout import QSingleWidgetLayout
+
+
+class AnchorMode(IntEnum):
+    """ An IntEnum defining the various popup anchor modes.
+
+    """
+    #: Anchor to the parent widget.
+    Parent = 0
+
+    #: Anchor to current snapped mouse position.
+    Cursor = 1
+
+
+class ArrowEdge(IntEnum):
+    """ An IntEnum defining the edge location of the popup arrow.
+
+    """
+    #: The left edge of the popup view.
+    Left = 0
+
+    #: The right edge of the popup view.
+    Right = 1
+
+    #: The top edge of the popup view.
+    Top = 2
+
+    #: The bottom edge of the popup view.
+    Bottom = 3
+
+
+class PopupState(Atom):
+    """ A class which maintains the public state for a popup view.
+
+    """
+    #: The anchor location on the view. The default anchors
+    #: the top center of the view to the center of the parent.
+    anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.0))
+
+    #: The anchor location on the parent. The default anchors
+    #: the top center of the view to the center of the parent.
+    parent_anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.5))
+
+    #: The offset of the popup view with respect to the anchor.
+    offset = Typed(QPoint, factory=lambda: QPoint(0, 0))
+
+    #: The mode to use when computing the anchored position.
+    anchor_mode = Typed(AnchorMode, factory=lambda: AnchorMode.Parent)
+
+    #: The edge location of the arrow for the view.
+    arrow_edge = Typed(ArrowEdge, factory=lambda: ArrowEdge.Left)
+
+    #: The size of the arrow for the view.
+    arrow_size = Int(0)
+
+    #: The position of the arrow for the view.
+    arrow_position = Float(0.5)
+
+    #: The timeout value to use when closing the view, in seconds.
+    timeout = Float(0.0)
+
+    #: The duration for the fade in.
+    fade_in_duration = Int(100)
+
+    #: The duration for the fade out.
+    fade_out_duration = Int(100)
+
+    #: The computed path to use when drawing the view.
+    path = Typed(QPainterPath, factory=lambda: QPainterPath())
+
+    #: The animator to use when showing the view.
+    fade_in_animator = Typed(QPropertyAnimation, ())
+
+    #: The animator to use when hiding the view.
+    fade_out_animator = Typed(QPropertyAnimation, ())
+
+    #: The timeout timer to use for closing the view.
+    close_timer = Typed(QTimer, ())
+
+    def init(self, widget):
+        """ Initialize the state for the owner widget.
+
+        """
+        fade_in = self.fade_in_animator
+        fade_in.setTargetObject(widget)
+        fade_in.setPropertyName('windowOpacity')
+        fade_out = self.fade_out_animator
+        fade_out.setTargetObject(widget)
+        fade_out.setPropertyName('windowOpacity')
+        fade_out.finished.connect(widget.close)
+        close_timer = self.close_timer
+        close_timer.setSingleShot(True)
+        close_timer.timeout.connect(widget.close)
+
+
+class LayoutData(Atom):
+    """ An object which holds the data for popup view layout.
+
+    """
+    #: The position of the popup view.
+    pos = Typed(QPoint)
+
+    #: The size of the popup view.
+    size = Typed(QSize)
+
+    #: The size of the arrow in pixels.
+    arrow_size = Int(0)
+
+    #: The edge location of the arrow.
+    arrow_edge = Typed(ArrowEdge)
+
+    #: The position of the arrow on the edge.
+    arrow_position = Float(0.0)
+
+
+def make_path(layout_data):
+    """ Create the painter path for the arrow.
+
+    Parameters
+    ----------
+    layout_data : LayoutData
+        The layout data object describing the path to generate.
+
+    Returns
+    -------
+    result : QPainterPath
+        The painter path for the view.
+
+    """
+    def arrow_offset(length, height, pos):
+        base = 2 * height
+        pos = max(0.0, min(1.0, pos))
+        base = min(length, base)
+        return int(pos * (length - base)) + base / 2
+    arrow_size = layout_data.arrow_size
+    arrow_pos = layout_data.arrow_position
+    edge = layout_data.arrow_edge
+    w = layout_data.size.width()
+    h = layout_data.size.height()
+    path = QPainterPath()
+    if arrow_size <= 0:
+        path.moveTo(0, 0)
+        path.lineTo(w, 0)
+        path.lineTo(w, h)
+        path.lineTo(0, h)
+        path.lineTo(0, 0)
+    elif edge == ArrowEdge.Bottom:
+        offset = arrow_offset(w, arrow_size, arrow_pos)
+        ledge = h - arrow_size
+        path.moveTo(0, 0)
+        path.lineTo(w, 0)
+        path.lineTo(w, ledge)
+        path.lineTo(offset + arrow_size, ledge)
+        path.lineTo(offset, h)
+        path.lineTo(offset - arrow_size, ledge)
+        path.lineTo(0, ledge)
+        path.lineTo(0, 0)
+    elif edge == ArrowEdge.Top:
+        offset = arrow_offset(w, arrow_size, arrow_pos)
+        path.moveTo(0, arrow_size)
+        path.lineTo(offset - arrow_size, arrow_size)
+        path.lineTo(offset, 0)
+        path.lineTo(offset + arrow_size, arrow_size)
+        path.lineTo(w, arrow_size)
+        path.lineTo(w, h)
+        path.lineTo(0, h)
+        path.lineTo(0, arrow_size)
+    elif edge == ArrowEdge.Left:
+        offset = arrow_offset(h, arrow_size, arrow_pos)
+        path.moveTo(arrow_size, 0)
+        path.lineTo(w, 0)
+        path.lineTo(w, h)
+        path.lineTo(arrow_size, h)
+        path.lineTo(arrow_size, offset + arrow_size)
+        path.lineTo(0, offset)
+        path.lineTo(arrow_size, offset - arrow_size)
+        path.lineTo(arrow_size, 0)
+    else:
+        offset = arrow_offset(h, arrow_size, arrow_pos)
+        ledge = w - arrow_size
+        path.moveTo(0, 0)
+        path.lineTo(ledge, 0)
+        path.lineTo(ledge, offset - arrow_size)
+        path.lineTo(w, offset)
+        path.lineTo(ledge, offset + arrow_size)
+        path.lineTo(ledge, h)
+        path.lineTo(0, h)
+        path.lineTo(0, 0)
+    return path
+
+
+def edge_margins(size, edge):
+    """ Get the contents margins for a given arrow size and edge.
+
+    Parameters
+    ----------
+    size : int
+        The size of the arrow in pixels.
+
+    edge : ArrowEdge
+        The edge location of the arrow.
+
+    """
+    margins = QMargins()
+    if size > 0:
+        if edge == ArrowEdge.Right:
+            margins.setRight(size)
+        elif edge == ArrowEdge.Bottom:
+            margins.setBottom(size)
+        elif edge == ArrowEdge.Left:
+            margins.setLeft(size)
+        else:
+            margins.setTop(size)
+    return margins
+
+
+def target_global_pos(parent, mode, anchor):
+    """ Get the global position of the parent anchor.
+
+    Parameters
+    ----------
+    parent : QWidget or None
+        The parent widget for the view.
+
+    mode : AnchorMode
+        The anchor mode for the view.
+
+    anchor : QPoint
+        The anchor location on the parent.
+
+    Returns
+    -------
+    result : QPoint
+        The global coordinates of the target parent anchor.
+
+    """
+    if mode == AnchorMode.Cursor:
+        origin = QCursor.pos()
+        size = QSize()
+    else:
+        if parent is None:
+            desktop = QApplication.desktop()
+            geo = desktop.availableGeometry()
+            origin = geo.topLeft()
+            size = geo.size()
+        else:
+            origin = parent.mapToGlobal(QPoint(0, 0))
+            size = parent.size()
+    px = int(anchor.x() * size.width())
+    py = int(anchor.y() * size.height())
+    return origin + QPoint(px, py)
+
+
+def popup_offset(size, anchor, offset):
+    """ Get the offset to apply to the target global pos.
+
+    Parameters
+    ----------
+    size : QSize
+        The size of the popup view.
+
+    anchor : QPoint
+        The anchor for the popup view.
+
+    offset : QPoint
+        The additional offset for the popup view.
+
+    Returns
+    -------
+    result : QPoint
+        The offset to apply to the global target position to
+        move the popup to the correct location.
+
+    """
+    px = int(anchor.x() * size.width())
+    py = int(anchor.y() * size.height())
+    return QPoint(px, py) - offset
+
+
+def arrow_tip_pos(layout_data):
+    """ Compute the position of the arrow point.
+
+    """
+    pos = QPoint(layout_data.pos)
+    size = layout_data.size
+    width = size.width()
+    height = size.height()
+    arrow_edge = layout_data.arrow_edge
+    arrow_pos = layout_data.arrow_position
+    if arrow_edge == ArrowEdge.Top:
+        pos += QPoint(width * arrow_pos, 0)
+    elif arrow_edge == ArrowEdge.Right:
+        pos += QPoint(width, height * arrow_pos)
+    elif arrow_edge == ArrowEdge.Bottom:
+        pos += QPoint(width * arrow_pos, height)
+    else:
+        pos += QPoint(0, height * arrow_pos)
+    return pos
+
+
+def ensure_on_screen(layout_data):
+    """
+
+    """
+    return False
+    # tip_pos = arrow_tip_pos(layout_data)
+    # screen_geo = QApplication.desktop().availableGeometry(tip_pos)
+    # view_geo = QRect(layout_data.pos, layout_data.size)
+    # if screen_geo.contains(view_geo):
+    #     return False
+    # sides = []
+    # size = layout_data.size
+    # if _test_top(view_geo, )
+    # if view_geo.width() > screen_geo.width():
+    #     return False
+    # if view_geo.height() > screen_geo.height():
+    #     return False
+    # if view_geo.x() < screen_geo.x():
+    #     dx = screen_geo.x() - view_geo.x()
+
+
 
 
 class QPopupView(QWidget):
@@ -28,87 +348,6 @@ class QPopupView(QWidget):
     """
     #: A signal emitted when the popup is fully closed.
     closed = Signal()
-
-    #: The left edge of the popup view.
-    LeftEdge = 0
-
-    #: The right edge of the popup view.
-    RightEdge = 1
-
-    #: The top edge of the popup view.
-    TopEdge = 2
-
-    #: The bottom edge of the popup view.
-    BottomEdge = 3
-
-    #: Anchor to parent (which can be None)
-    AnchorParent = 0
-
-    #: Anchor to mouse
-    AnchorCursor = 1
-
-    class ViewState(Atom):
-        """ A private class used to manage the state of a popup view.
-
-        """
-        #: The anchor location on the view. The default anchors
-        #: the top center of the view to the center of the parent.
-        anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.0))
-
-        #: The anchor location on the parent. The default anchors
-        #: the top center of the view to the center of the parent.
-        parent_anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.5))
-
-        #: Anchor to parent or cursor
-        anchor_mode = Int(0)  # AnchorParent
-
-        #: The size of the arrow for the view.
-        arrow_size = Int(0)
-
-        #: The edge location of the arrow for the view.
-        arrow_edge = Int(0)  # LeftEdge
-
-        #: The position of the arrow for the view.
-        arrow_position = Float(0.5)
-
-        #: The offset of the view wrt to the anchor.
-        offset = Typed(QPoint, factory=lambda: QPoint(0, 0))
-
-        #: The timeout value to use when closing the view, in seconds.
-        timeout = Float(0.0)
-
-        #: The path to use when drawing the view.
-        path = Typed(QPainterPath, factory=QPainterPath)
-
-        #: The animator to use when showing the view.
-        fade_in_animator = Typed(QPropertyAnimation, ())
-
-        #: The animator to use when hiding the view.
-        fade_out_animator = Typed(QPropertyAnimation, ())
-
-        #: The duration for the fade in.
-        fade_in_duration = Int(100)
-
-        #: The duration for the fade out.
-        fade_out_duration = Int(100)
-
-        #: The timeout timer to use for closing the view.
-        close_timer = Typed(QTimer, ())
-
-        def init(self, widget):
-            """ Initialize the state for the owner widget.
-
-            """
-            fade_in = self.fade_in_animator
-            fade_in.setTargetObject(widget)
-            fade_in.setPropertyName('windowOpacity')
-            fade_out = self.fade_out_animator
-            fade_out.setTargetObject(widget)
-            fade_out.setPropertyName('windowOpacity')
-            fade_out.finished.connect(widget.close)
-            close_timer = self.close_timer
-            close_timer.setSingleShot(True)
-            close_timer.timeout.connect(widget.close)
 
     def __init__(self, parent=None, flags=Qt.Popup):
         """ Initialize a QPopupView.
@@ -129,7 +368,7 @@ class QPopupView(QWidget):
         layout = QSingleWidgetLayout()
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
-        self._state = self.ViewState()
+        self._state = PopupState()
         self._state.init(self)
         if parent is not None:
             parent.installEventFilter(self)
@@ -183,32 +422,7 @@ class QPopupView(QWidget):
         state = self._state
         if anchor != state.anchor:
             state.anchor = anchor
-            self._updatePosition()
-
-    def anchorMode(self):
-        """ Get the anchor mode for the popup view
-
-        Returns
-        -------
-        result : int
-            An enum value describing the anchor mode of the popup.
-
-        """
-        return self._state.anchor_mode
-
-    def setAnchorMode(self, mode):
-        """ Set the anchor mode for the popup view
-
-        Parameters
-        ----------
-        mode : int
-            The anchor mode (can be AnchorParent or AnchorCursor)
-
-        """
-        state = self._state
-        if mode != state.anchor_mode:
-            state.anchor_mode = mode
-            self._updatePosition()
+            self._refreshGeometry()
 
     def parentAnchor(self):
         """ Get the parent anchor position for the popup view.
@@ -233,7 +447,82 @@ class QPopupView(QWidget):
         state = self._state
         if anchor != state.parent_anchor:
             state.parent_anchor = anchor
-            self._updatePosition()
+            self._refreshGeometry()
+
+    def offset(self):
+        """ Get the offset of the view from the anchors.
+
+        Returns
+        -------
+        result : QPoint
+            The offset of the view from the anchors.
+
+        """
+        return self._state.offset
+
+    def setOffset(self, offset):
+        """ Set the offset of the view from the anchors.
+
+        Parameters
+        ----------
+        offset : QPoint
+            The offset of the view from the anchors.
+
+        """
+        state = self._state
+        if offset != state.offset:
+            state.offset = offset
+            self._refreshGeometry()
+
+    def anchorMode(self):
+        """ Get the anchor mode for the popup view
+
+        Returns
+        -------
+        result : int
+            An enum value describing the anchor mode of the popup.
+
+        """
+        return self._state.anchor_mode
+
+    def setAnchorMode(self, mode):
+        """ Set the anchor mode for the popup view
+
+        Parameters
+        ----------
+        mode : int
+            The anchor mode (can be AnchorParent or AnchorCursor)
+
+        """
+        state = self._state
+        if mode != state.anchor_mode:
+            state.anchor_mode = mode
+            self._refreshGeometry()
+
+    def arrowEdge(self):
+        """ Get edge for the popup arrow.
+
+        Returns
+        -------
+        result : int
+            An enum value describing the edge location of the arrow.
+
+        """
+        return self._state.arrow_edge
+
+    def setArrowEdge(self, edge):
+        """ Set the edge for the popup arrow.
+
+        Parameters
+        ----------
+        edge : int
+            The enum describing the edge location of the arrow.
+
+        """
+        state = self._state
+        if edge != state.arrow_edge:
+            state.arrow_edge = edge
+            self._refreshGeometry()
 
     def arrowSize(self):
         """ Get the size of the popup arrow.
@@ -259,35 +548,7 @@ class QPopupView(QWidget):
         state = self._state
         if size != state.arrow_size:
             state.arrow_size = size
-            self._updateMargins()
-            self._updateMask()
-            self._updatePosition()
-
-    def arrowEdge(self):
-        """ Get edge for the popup arrow.
-
-        Returns
-        -------
-        result : int
-            An enum value describing the edge location of the arrow.
-
-        """
-        return self._state.arrow_edge
-
-    def setArrowEdge(self, edge):
-        """ Set the edge for the popup arrow.
-
-        Parameters
-        ----------
-        edge : int
-            The enum describing the edge location of the arrow.
-
-        """
-        state = self._state
-        if edge != state.arrow_edge:
-            state.arrow_edge = edge
-            self._updateMargins()
-            self._updateMask()
+            self._refreshGeometry()
 
     def arrowPosition(self):
         """ Get the position of the popup arrow.
@@ -312,34 +573,7 @@ class QPopupView(QWidget):
         state = self._state
         if pos != state.arrow_position:
             state.arrow_position = pos
-            self._updateMask()  # This does not generate a paint event.
-            if self.isVisible():
-               self.update()
-
-    def offset(self):
-        """ Get the offset of the view from the anchors.
-
-        Returns
-        -------
-        result : QPoint
-            The offset of the view from the anchors.
-
-        """
-        return self._state.offset
-
-    def setOffset(self, offset):
-        """ Set the offset of the view from the anchors.
-
-        Parameters
-        ----------
-        offset : QPoint
-            The offset of the view from the anchors.
-
-        """
-        state = self._state
-        if offset != state.offset:
-            state.offset = offset
-            self._updatePosition()
+            self._refreshGeometry()
 
     def timeout(self):
         """ Get the timeout for the view.
@@ -420,7 +654,8 @@ class QPopupView(QWidget):
         evt_type = event.type()
         if evt_type == QEvent.Move or evt_type == QEvent.Resize:
             if obj is self.parent():
-                self._updatePosition()
+                #self._updatePosition()
+                self._refreshGeometry()
         return False
 
     def mousePressEvent(self, event):
@@ -453,6 +688,7 @@ class QPopupView(QWidget):
         manages the timeout for the popup.
 
         """
+        self._refreshGeometry(force=True)
         state = self._state
         if state.timeout > 0.0:
             state.close_timer.start(int(state.timeout * 1000))
@@ -500,8 +736,7 @@ class QPopupView(QWidget):
 
         """
         super(QPopupView, self).resizeEvent(event)
-        self._updateMask()
-        self._updatePosition()
+        self._refreshGeometry()
 
     def paintEvent(self, event):
         """ Handle the paint event for the popup view.
@@ -523,167 +758,60 @@ class QPopupView(QWidget):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    @staticmethod
-    def _arrowOffset(length, height, pos):
-        """ Compute the offset for an arrow from parameters.
+    def _refreshGeometry(self, force=False):
+        """ Refresh the geometry for the popup using the current state.
 
         Parameters
         ----------
-        length : int
-            The length of the edge on which the arrow is being drawn.
-
-        height : int
-            The height of the arrow.
-
-        pos : float
-            The position of the arrow along the edge.
-
-        Returns
-        -------
-        result : int
-            The offset from the start of the edge to the center of
-            the base of the arrow.
+        force : bool, optional
+            Wether or not to force the computation even if the view is
+            not visible. The default is False.
 
         """
-        base = 2 * height
-        pos = max(0.0, min(1.0, pos))
-        base = min(length, base)
-        return int(pos * (length - base)) + base / 2
+        if not force and not self.isVisible():
+            return
 
-    def _updateMargins(self):
-        """ Update the contents margins for the popup view.
-
-        """
+        # Compute the margins as specified by the state.
         state = self._state
-        margins = QMargins()
-        if state.arrow_size > 0:
-            size = state.arrow_size
-            edge = state.arrow_edge
-            if edge == QPopupView.RightEdge:
-                margins.setRight(size)
-            elif edge == QPopupView.BottomEdge:
-                margins.setBottom(size)
-            elif edge == QPopupView.LeftEdge:
-                margins.setLeft(size)
-            else:
-                margins.setTop(size)
+        arrow_edge = state.arrow_edge
+        arrow_size = state.arrow_size
+        margins = edge_margins(arrow_size, arrow_edge)
+
+        # Compute the hypothetical view size.
         self.setContentsMargins(margins)
-
-    def _updateMask(self):
-        """ Update the mask and painter path for the popup view.
-
-        """
         size = self.size()
-        state = self._state
-        asize = state.arrow_size
-        apos = state.arrow_position
-        edge = state.arrow_edge
-        path = QPainterPath()
-        w = size.width()
-        h = size.height()
-        path = QPainterPath()
-        if asize <= 0:
-            path.moveTo(0, 0)
-            path.lineTo(w, 0)
-            path.lineTo(w, h)
-            path.lineTo(0, h)
-            path.lineTo(0, 0)
-        elif edge == QPopupView.BottomEdge:
-            offset = self._arrowOffset(w, asize, apos)
-            ledge = h - asize
-            path.moveTo(0, 0)
-            path.lineTo(w, 0)
-            path.lineTo(w, ledge)
-            path.lineTo(offset + asize, ledge)
-            path.lineTo(offset, h)
-            path.lineTo(offset - asize, ledge)
-            path.lineTo(0, ledge)
-            path.lineTo(0, 0)
-        elif edge == QPopupView.TopEdge:
-            offset = self._arrowOffset(w, asize, apos)
-            path.moveTo(0, asize)
-            path.lineTo(offset - asize, asize)
-            path.lineTo(offset, 0)
-            path.lineTo(offset + asize, asize)
-            path.lineTo(w, asize)
-            path.lineTo(w, h)
-            path.lineTo(0, h)
-            path.lineTo(0, asize)
-        elif edge == QPopupView.LeftEdge:
-            offset = self._arrowOffset(h, asize, apos)
-            path.moveTo(asize, 0)
-            path.lineTo(w, 0)
-            path.lineTo(w, h)
-            path.lineTo(asize, h)
-            path.lineTo(asize, offset + asize)
-            path.lineTo(0, offset)
-            path.lineTo(asize, offset - asize)
-            path.lineTo(asize, 0)
-        else:
-            offset = self._arrowOffset(h, asize, apos)
-            ledge = w - asize
-            path.moveTo(0, 0)
-            path.lineTo(ledge, 0)
-            path.lineTo(ledge, offset - asize)
-            path.lineTo(w, offset)
-            path.lineTo(ledge, offset + asize)
-            path.lineTo(ledge, h)
-            path.lineTo(0, h)
-            path.lineTo(0, 0)
+
+        # Compute the hypothetical view position.
+        anchor_mode = state.anchor_mode
+        parent_anchor = state.parent_anchor
+        pos = target_global_pos(self.parent(), anchor_mode, parent_anchor)
+        pos -= popup_offset(size, state.anchor, state.offset)
+
+        # Create the layout data and ensure it the view is on screen.
+        layout_data = LayoutData()
+        layout_data.pos = pos
+        layout_data.size = size
+        layout_data.arrow_size = arrow_size
+        layout_data.arrow_edge = arrow_edge
+        layout_data.arrow_position = state.arrow_position
+        changed = ensure_on_screen(layout_data)
+
+        # If the layout has changed, apply the update.
+        if changed:
+            arrow_size = layout_data.arrow_size
+            arrow_edge = layout_data.arrow_edge
+            margins = edge_margins(arrow_size, arrow_edge)
+            self.setContentsMargins(margins)
+            layout_data.size = self.size()
+
+        # Compute the painter path for the view and set the mask.
+        path = make_path(layout_data)
         state.path = path
         mask = QRegion(path.toFillPolygon().toPolygon())
         self.setMask(mask)
 
-    def _targetGlobalPos(self):
-        """ Get the global position of the parent anchor.
-
-        Returns
-        -------
-        result : QPoint
-            The global coordinates of the target parent anchor.
-
-        """
-        state = self._state
-        if state.anchor_mode == QPopupView.AnchorCursor:
-            origin = QCursor.pos()
-            size = QSize()
-        else:
-            parent = self.parent()
-            if parent is None:
-                # FIXME expose something other than the primary screen.
-                desktop = QApplication.desktop()
-                geo = desktop.availableGeometry()
-                origin = geo.topLeft()
-                size = geo.size()
-            else:
-                origin = parent.mapToGlobal(QPoint(0, 0))
-                size = parent.size()
-        anchor = state.parent_anchor
-        px = int(anchor.x() * size.width())
-        py = int(anchor.y() * size.height())
-        return origin + QPoint(px, py)
-
-    def _popupOffset(self):
-        """ Get the offset to apply to the target global pos.
-
-        Returns
-        -------
-        result : QPoint
-            The offset to apply to the global target position to
-            move the popup to the correct location.
-
-        """
-        state = self._state
-        size = self.size()
-        anchor = state.anchor
-        px = int(anchor.x() * size.width())
-        py = int(anchor.y() * size.height())
-        return QPoint(px, py) - state.offset
-
-    def _updatePosition(self):
-        """ Update the position of the popup view.
-
-        """
-        target = self._targetGlobalPos()
-        offset = self._popupOffset()
-        self.move(target - offset)
+        # Move the widget into position and update it. The update is
+        # necessary in the case where only the mask has changed, which
+        # does not automatically generate a paint event.
+        self.move(layout_data.pos)
+        self.update()

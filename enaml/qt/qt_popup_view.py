@@ -11,15 +11,15 @@ from enaml.widgets.popup_view import ProxyPopupView
 
 from .QtCore import Qt, QPointF, QPoint
 
-from .q_popup_view import QPopupView
+from .q_popup_view import QPopupView, ArrowEdge, AnchorMode
 from .qt_widget import QtWidget
 
 
 EDGES = {
-    'left': QPopupView.LeftEdge,
-    'right': QPopupView.RightEdge,
-    'top': QPopupView.TopEdge,
-    'bottom': QPopupView.BottomEdge,
+    'left': ArrowEdge.Left,
+    'right': ArrowEdge.Right,
+    'top': ArrowEdge.Top,
+    'bottom': ArrowEdge.Bottom,
 }
 
 
@@ -28,9 +28,10 @@ WINDOW_TYPES = {
     'tool_tip': Qt.ToolTip,
 }
 
+
 ANCHOR_MODE = {
-    'parent': QPopupView.AnchorParent,
-    'cursor': QPopupView.AnchorCursor,
+    'parent': AnchorMode.Parent,
+    'cursor': AnchorMode.Cursor,
 }
 
 
