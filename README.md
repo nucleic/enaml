@@ -29,9 +29,9 @@ The enamldoc package provides a Sphinx extension for documenting Enaml objects.
 
 Prerequisites
 -------------
-* Python >= 2.6 (not Python 3)
+* Python 2.6 or 2.7
 * Atom (https://github.com/nucleic/atom)
-* PyQt4 or PySide
+* PyQt4 (PySide may work but is not officially supported)
 * Casuarius (https://github.com/enthought/casuarius)
 * PLY (Python Lex-Yacc)
 * Sphinx (only if building the docs)
