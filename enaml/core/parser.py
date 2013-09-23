@@ -2474,7 +2474,7 @@ def p_xor_expr2(p):
 
 def p_xor_expr_list1(p):
     ''' xor_expr_list : CIRCUMFLEX and_expr '''
-    p[0] = [[ast.BitXor(), p[1]]]
+    p[0] = [[ast.BitXor(), p[2]]]
 
 
 def p_xor_expr_list2(p):
@@ -2497,7 +2497,7 @@ def p_and_expr2(p):
 
 def p_and_expr_list1(p):
     ''' and_expr_list : AMPER shift_expr '''
-    p[0] = [[ast.BitAnd(), p[3]]]
+    p[0] = [[ast.BitAnd(), p[2]]]
 
 
 def p_and_expr_list2(p):
