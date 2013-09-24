@@ -165,12 +165,12 @@ class QtField(QtControl, ProxyField):
         widget = self.widget
         handler = self.on_submit_text
         try:
-            widget.lostFocus.disconnect(handler)
-        except TypeError:  # was never connected
+            widget.lostFocus.disconnect()
+        except (TypeError, RuntimeError):  # was never connected
             pass
         try:
             widget.returnPressed.disconnect()
-        except TypeError:  # was never connected
+        except (TypeError, RuntimeError):  # was never connected
             pass
         if 'lost_focus' in triggers:
             widget.lostFocus.connect(handler)
