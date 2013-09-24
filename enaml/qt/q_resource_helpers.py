@@ -5,28 +5,25 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.fontext import FontStyle, FontCaps
+
 from .QtCore import Qt, QSize
 from .QtGui import QColor, QFont, QImage, QIcon, QPixmap
 
 
-from enaml.fontext import FontStyle, FontCaps
-
-
-# Mapping from enaml font styles to Qt font styles.
-_qfont_style_mapping = {
-    FontStyle.Normal: QFont.Style.StyleNormal,
-    FontStyle.Italic: QFont.Style.StyleItalic,
-    FontStyle.Oblique: QFont.Style.StyleOblique,
+FONT_STYLES = {
+    FontStyle.Normal: QFont.StyleNormal,
+    FontStyle.Italic: QFont.StyleItalic,
+    FontStyle.Oblique: QFont.StyleOblique,
 }
 
 
-# Mapping from enaml capitalization modes to Qt capitalization modes.
-_qfont_capitalization_mapping = {
-    FontCaps.MixedCase: QFont.Capitalization.MixedCase,
-    FontCaps.AllUppercase: QFont.Capitalization.AllUppercase,
-    FontCaps.AllLowercase: QFont.Capitalization.AllLowercase,
-    FontCaps.SmallCaps: QFont.Capitalization.SmallCaps,
-    FontCaps.Capitalize: QFont.Capitalization.Capitalize,
+FONT_CAPS = {
+    FontCaps.MixedCase: QFont.MixedCase,
+    FontCaps.AllUppercase: QFont.AllUppercase,
+    FontCaps.AllLowercase: QFont.AllLowercase,
+    FontCaps.SmallCaps: QFont.SmallCaps,
+    FontCaps.Capitalize: QFont.Capitalize,
 }
 
 
@@ -206,8 +203,8 @@ def QFont_from_Font(font):
 
     """
     qfont = QFont(font.family, font.pointsize, font.weight)
-    qfont.setStyle(_qfont_style_mapping[font.style])
-    qfont.setCapitalization(_qfont_capitalization_mapping[font.caps])
+    qfont.setStyle(FONT_STYLES[font.style])
+    qfont.setCapitalization(FONT_CAPS[font.caps])
     return qfont
 
 
