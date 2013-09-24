@@ -64,9 +64,6 @@ class ProxyPopupView(ProxyWidget):
     def set_arrow_edge(self, edget):
         raise NotImplementedError
 
-    def set_arrow_position(self, pos):
-        raise NotImplementedError
-
     def set_offset(self, pos):
         raise NotImplementedError
 
@@ -77,6 +74,9 @@ class ProxyPopupView(ProxyWidget):
         raise NotImplementedError
 
     def set_fade_out_duration(self, duration):
+        raise NotImplementedError
+
+    def set_close_on_click(self, enable):
         raise NotImplementedError
 
     def close(self):
@@ -105,15 +105,9 @@ class PopupView(Widget):
     #: The window type cannot be changed once the widget is created.
     window_type = d_(Enum('popup', 'tool_tip'))
 
-    #: The relative position on the view to use as the anchor. This
-    #: anchor will be aligned with the parent anchor to position the
-    #: popup view. It is expressed as a percentage of the view size.
-    #: The default anchors will position the popup just below the
-    #: center of the parent widget.
-    anchor = d_(Coerced(PosF, (0.5, 0.0), coercer=coerce_posf))
-
-    #: If the anchor mode is cursor, ignore the parent and use the cursor
-    #: position for the popup
+    #: The mode to use for anchoring. The 'parent' mode uses a point
+    #: on the parent or the desktop as the target anchor, the 'cursor'
+    #: mode uses the current cursor position as the target anchor.
     anchor_mode = d_(Enum('parent', 'cursor'))
 
     #: The relative position on the parent to use as the anchor. This
@@ -123,19 +117,26 @@ class PopupView(Widget):
     #: center of the parent widget.
     parent_anchor = d_(Coerced(PosF, (0.5, 0.5), coercer=coerce_posf))
 
-    #: The size of the arrow in pixels. Zero size indicates no anchor.
-    arrow_size = d_(Int(0))
+    #: The relative position on the view to use as the view anchor.
+    #: This anchor will be aligned with the parent anchor to position
+    #: the popup view. It is expressed as a percentage of the view
+    #: size. The default anchors will position the popup just below
+    #: the center of the parent widget.
+    anchor = d_(Coerced(PosF, (0.5, 0.0), coercer=coerce_posf))
 
-    #: The edge of the popup view to use for drawing the arrow.
+    #: The offset to apply between the two anchors, in pixels.
+    offset = d_(Coerced(Pos, (0, 0), coercer=coerce_pos))
+
+    #: The edge of the popup view to use for rendering the arrow.
     arrow_edge = d_(Enum('top', 'bottom', 'left', 'right'))
 
-    #: The position of the arrow along the arrow edge. This is expressed
-    #: as a percentage of the arrow edge size.
-    arrow_position = d_(Float(0.5))
-
-    #: The adjustment to apply to the final anchored position. This
-    #: is expressed as an offset in pixel coordinates.
-    offset = d_(Coerced(Pos, (0, 0), coercer=coerce_pos))
+    #: The size of the arrow in pixels. If this value is > 0, the view
+    #: anchor is taken to be the point of the arrow. If the arrow edge
+    #: is 'left' or 'right', the anchor's y-coordinate is used to set
+    #: the arrow position, and the x-coordinate is ignored. If the
+    #: arrow edge is 'top' or 'bottom', the anchor's x-coordinate is
+    #: used to set the arrow position, and the y-coordinate is ignored.
+    arrow_size = d_(Int(0))
 
     #: The timeout, in seconds, before automatically closing the popup.
     #: A value less than or equal to zero means no timeout. This is
@@ -149,6 +150,11 @@ class PopupView(Widget):
     #: The duration of the fade-out, in milliseconds. A value less than
     #: or equal to zero means no fade.
     fade_out_duration = d_(Int(100))
+
+    #: Whether or not close the popup view on a mouse click. For 'popup'
+    #: windows, this means clicking outside of the view. For 'tool_tip'
+    #: windows, this means clicking inside of the view.
+    close_on_click = d_(Bool(True))
 
     #: Whether or not the background of the popup view is translucent.
     #: This must be True in order to use background colors with alpha
@@ -166,6 +172,9 @@ class PopupView(Widget):
 
     #: A reference to the ProxyPopupView object.
     proxy = Typed(ProxyPopupView)
+
+    #: This attribute is deprecated and will be removed in Enaml 1.0
+    arrow_position = d_(Float(0.5))
 
     #--------------------------------------------------------------------------
     # Public API
@@ -208,9 +217,9 @@ class PopupView(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe('anchor', 'anchor_mode', 'parent_anchor', 'arrow_size',
-        'arrow_edge', 'arrow_position', 'offset', 'timeout',
-        'fade_in_duration', 'fade_out_duration')
+    @observe('anchor', 'anchor_mode', 'parent_anchor', 'arrow_size', 'offset',
+        'arrow_edge', 'timeout', 'fade_in_duration', 'fade_out_duration',
+        'close_on_click')
     def _update_proxy(self, change):
         """ Update the proxy when the PopupView data changes.
 
