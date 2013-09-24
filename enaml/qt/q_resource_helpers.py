@@ -9,7 +9,7 @@ from .QtCore import Qt, QSize
 from .QtGui import QColor, QFont, QImage, QIcon, QPixmap
 
 
-from ..fontext import FontStyle, FontCaps
+from enaml.fontext import FontStyle, FontCaps
 
 
 # Mapping from enaml font styles to Qt font styles.
