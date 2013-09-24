@@ -11,15 +11,15 @@ from enaml.widgets.popup_view import ProxyPopupView
 
 from .QtCore import Qt, QPointF, QPoint
 
-from .q_popup_view import QPopupView
+from .q_popup_view import QPopupView, ArrowEdge, AnchorMode
 from .qt_widget import QtWidget
 
 
 EDGES = {
-    'left': QPopupView.LeftEdge,
-    'right': QPopupView.RightEdge,
-    'top': QPopupView.TopEdge,
-    'bottom': QPopupView.BottomEdge,
+    'left': ArrowEdge.Left,
+    'right': ArrowEdge.Right,
+    'top': ArrowEdge.Top,
+    'bottom': ArrowEdge.Bottom,
 }
 
 
@@ -28,9 +28,10 @@ WINDOW_TYPES = {
     'tool_tip': Qt.ToolTip,
 }
 
+
 ANCHOR_MODE = {
-    'parent': QPopupView.AnchorParent,
-    'cursor': QPopupView.AnchorCursor,
+    'parent': AnchorMode.Parent,
+    'cursor': AnchorMode.Cursor,
 }
 
 
@@ -65,11 +66,11 @@ class QtPopupView(QtWidget, ProxyPopupView):
         self.set_parent_anchor(d.parent_anchor)
         self.set_arrow_size(d.arrow_size)
         self.set_arrow_edge(d.arrow_edge)
-        self.set_arrow_position(d.arrow_position)
         self.set_offset(d.offset)
         self.set_timeout(d.timeout)
         self.set_fade_in_duration(d.fade_in_duration)
         self.set_fade_out_duration(d.fade_out_duration)
+        self.set_close_on_click(d.close_on_click)
         self.widget.closed.connect(self.on_closed)
 
     def init_layout(self):
@@ -143,12 +144,6 @@ class QtPopupView(QtWidget, ProxyPopupView):
         """
         self.widget.setArrowEdge(EDGES[edge])
 
-    def set_arrow_position(self, pos):
-        """ Set the position of the arrow on the underlying widget.
-
-        """
-        self.widget.setArrowPosition(pos)
-
     def set_offset(self, offset):
         """ Set the offset of the underlying widget.
 
@@ -172,6 +167,12 @@ class QtPopupView(QtWidget, ProxyPopupView):
 
         """
         self.widget.setFadeOutDuration(duration)
+
+    def set_close_on_click(self, enable):
+        """ Set the close on click flag for the underlying widget.
+
+        """
+        self.widget.setCloseOnClick(enable)
 
     def close(self):
         """ Close the underlying popup widget.
