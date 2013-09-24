@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Typed, Float, Int, IntEnum
+from atom.api import Atom, Bool, Typed, Float, Int, IntEnum
 
 from .QtCore import (
     Qt, QPoint, QPointF, QSize, QRect,QMargins, QPropertyAnimation, QTimer,
@@ -51,28 +51,25 @@ class PopupState(Atom):
     """ A class which maintains the public state for a popup view.
 
     """
-    #: The anchor location on the view. The default anchors
-    #: the top center of the view to the center of the parent.
-    anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.0))
+    #: The mode to use when computing the anchored position.
+    anchor_mode = Typed(AnchorMode, factory=lambda: AnchorMode.Parent)
 
     #: The anchor location on the parent. The default anchors
     #: the top center of the view to the center of the parent.
     parent_anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.5))
 
+    #: The anchor location on the view. The default anchors
+    #: the top center of the view to the center of the parent.
+    anchor = Typed(QPointF, factory=lambda: QPointF(0.5, 0.0))
+
     #: The offset of the popup view with respect to the anchor.
     offset = Typed(QPoint, factory=lambda: QPoint(0, 0))
-
-    #: The mode to use when computing the anchored position.
-    anchor_mode = Typed(AnchorMode, factory=lambda: AnchorMode.Parent)
 
     #: The edge location of the arrow for the view.
     arrow_edge = Typed(ArrowEdge, factory=lambda: ArrowEdge.Left)
 
     #: The size of the arrow for the view.
     arrow_size = Int(0)
-
-    #: The position of the arrow for the view.
-    arrow_position = Float(0.5)
 
     #: The timeout value to use when closing the view, in seconds.
     timeout = Float(0.0)
@@ -95,6 +92,12 @@ class PopupState(Atom):
     #: The timeout timer to use for closing the view.
     close_timer = Typed(QTimer, ())
 
+    #: Whether or not the view closes on click.
+    close_on_click = Bool(True)
+
+    #: Whether or not the view is currently in a resize event.
+    in_resize_event = Bool(False)
+
     def init(self, widget):
         """ Initialize the state for the owner widget.
 
@@ -111,33 +114,22 @@ class PopupState(Atom):
         close_timer.timeout.connect(widget.close)
 
 
-class LayoutData(Atom):
-    """ An object which holds the data for popup view layout.
-
-    """
-    #: The position of the popup view.
-    pos = Typed(QPoint)
-
-    #: The size of the popup view.
-    size = Typed(QSize)
-
-    #: The size of the arrow in pixels.
-    arrow_size = Int(0)
-
-    #: The edge location of the arrow.
-    arrow_edge = Typed(ArrowEdge)
-
-    #: The position of the arrow on the edge.
-    arrow_position = Float(0.0)
-
-
-def make_path(layout_data):
-    """ Create the painter path for the arrow.
+def make_path(size, arrow_size, arrow_edge, offset):
+    """ Create the painter path for the view with an edge arrow.
 
     Parameters
     ----------
-    layout_data : LayoutData
-        The layout data object describing the path to generate.
+    size : QSize
+        The size of the view.
+
+    arrow_size : int
+        The size of the arrow.
+
+    arrow_edge : ArrowEdge
+        The edge location of the arrow.
+
+    offset : int
+        The offset along the arrow edge to the arrow center.
 
     Returns
     -------
@@ -145,16 +137,8 @@ def make_path(layout_data):
         The painter path for the view.
 
     """
-    def arrow_offset(length, height, pos):
-        base = 2 * height
-        pos = max(0.0, min(1.0, pos))
-        base = min(length, base)
-        return int(pos * (length - base)) + base / 2
-    arrow_size = layout_data.arrow_size
-    arrow_pos = layout_data.arrow_position
-    edge = layout_data.arrow_edge
-    w = layout_data.size.width()
-    h = layout_data.size.height()
+    w = size.width()
+    h = size.height()
     path = QPainterPath()
     if arrow_size <= 0:
         path.moveTo(0, 0)
@@ -162,8 +146,7 @@ def make_path(layout_data):
         path.lineTo(w, h)
         path.lineTo(0, h)
         path.lineTo(0, 0)
-    elif edge == ArrowEdge.Bottom:
-        offset = arrow_offset(w, arrow_size, arrow_pos)
+    elif arrow_edge == ArrowEdge.Bottom:
         ledge = h - arrow_size
         path.moveTo(0, 0)
         path.lineTo(w, 0)
@@ -173,8 +156,7 @@ def make_path(layout_data):
         path.lineTo(offset - arrow_size, ledge)
         path.lineTo(0, ledge)
         path.lineTo(0, 0)
-    elif edge == ArrowEdge.Top:
-        offset = arrow_offset(w, arrow_size, arrow_pos)
+    elif arrow_edge == ArrowEdge.Top:
         path.moveTo(0, arrow_size)
         path.lineTo(offset - arrow_size, arrow_size)
         path.lineTo(offset, 0)
@@ -183,8 +165,7 @@ def make_path(layout_data):
         path.lineTo(w, h)
         path.lineTo(0, h)
         path.lineTo(0, arrow_size)
-    elif edge == ArrowEdge.Left:
-        offset = arrow_offset(h, arrow_size, arrow_pos)
+    elif arrow_edge == ArrowEdge.Left:
         path.moveTo(arrow_size, 0)
         path.lineTo(w, 0)
         path.lineTo(w, h)
@@ -194,7 +175,6 @@ def make_path(layout_data):
         path.lineTo(arrow_size, offset - arrow_size)
         path.lineTo(arrow_size, 0)
     else:
-        offset = arrow_offset(h, arrow_size, arrow_pos)
         ledge = w - arrow_size
         path.moveTo(0, 0)
         path.lineTo(ledge, 0)
@@ -207,136 +187,304 @@ def make_path(layout_data):
     return path
 
 
-def edge_margins(size, edge):
+def edge_margins(arrow_size, arrow_edge):
     """ Get the contents margins for a given arrow size and edge.
 
     Parameters
     ----------
-    size : int
+    arrow_size : int
         The size of the arrow in pixels.
 
-    edge : ArrowEdge
+    arrow_edge : ArrowEdge
         The edge location of the arrow.
+
+    Returns
+    -------
+    result : QMargins
+        The contents margins for the given arrow spec.
 
     """
     margins = QMargins()
-    if size > 0:
-        if edge == ArrowEdge.Right:
-            margins.setRight(size)
-        elif edge == ArrowEdge.Bottom:
-            margins.setBottom(size)
-        elif edge == ArrowEdge.Left:
-            margins.setLeft(size)
+    if arrow_size > 0:
+        if arrow_edge == ArrowEdge.Right:
+            margins.setRight(arrow_size)
+        elif arrow_edge == ArrowEdge.Bottom:
+            margins.setBottom(arrow_size)
+        elif arrow_edge == ArrowEdge.Left:
+            margins.setLeft(arrow_size)
         else:
-            margins.setTop(size)
+            margins.setTop(arrow_size)
     return margins
 
 
-def target_global_pos(parent, mode, anchor):
-    """ Get the global position of the parent anchor.
+def is_fully_on_screen(rect):
+    """ Get whether or not a rect is fully contained on the screen.
 
     Parameters
     ----------
-    parent : QWidget or None
-        The parent widget for the view.
-
-    mode : AnchorMode
-        The anchor mode for the view.
-
-    anchor : QPoint
-        The anchor location on the parent.
+    rect : QRect
+        The rect of interest.
 
     Returns
     -------
-    result : QPoint
-        The global coordinates of the target parent anchor.
+    result : bool
+        True if the rect is fully contained on the screen, False
+        otherwise.
 
     """
-    if mode == AnchorMode.Cursor:
-        origin = QCursor.pos()
-        size = QSize()
-    else:
-        if parent is None:
-            desktop = QApplication.desktop()
-            geo = desktop.availableGeometry()
-            origin = geo.topLeft()
-            size = geo.size()
-        else:
-            origin = parent.mapToGlobal(QPoint(0, 0))
-            size = parent.size()
-    px = int(anchor.x() * size.width())
-    py = int(anchor.y() * size.height())
-    return origin + QPoint(px, py)
+    desktop = QApplication.desktop()
+    desk_geo = desktop.availableGeometry(rect.topLeft())
+    if not desk_geo.contains(rect.topLeft()):
+        return False
+    desk_geo = desktop.availableGeometry(rect.topRight())
+    if not desk_geo.contains(rect.topRight()):
+        return False
+    desk_geo = desktop.availableGeometry(rect.bottomLeft())
+    if not desk_geo.contains(rect.bottomLeft()):
+        return False
+    desk_geo = desktop.availableGeometry(rect.bottomRight())
+    if not desk_geo.contains(rect.bottomRight()):
+        return False
+    return True
 
 
-def popup_offset(size, anchor, offset):
-    """ Get the offset to apply to the target global pos.
+def left_screen_edge(desktop, rect):
+    """ Get the x-coordinate of the effective left screen edge.
 
     Parameters
     ----------
-    size : QSize
-        The size of the popup view.
+    desktop : QDesktopWidget
+        The desktop widget for the application.
 
-    anchor : QPoint
-        The anchor for the popup view.
+    rect : QRect
+        The rect of interest.
+
+    Returns
+    -------
+    result : int
+        the x-coordinate of the effective left screen edge.
+
+    """
+    p1 = rect.topLeft()
+    p2 = rect.bottomLeft()
+    g1 = desktop.availableGeometry(p1)
+    g2 = desktop.availableGeometry(p2)
+    return max(p1.x(), g1.left(), g2.left())
+
+
+def right_screen_edge(desktop, rect):
+    """ Get the x-coordinate of the effective right screen edge.
+
+    Parameters
+    ----------
+    desktop : QDesktopWidget
+        The desktop widget for the application.
+
+    rect : QRect
+        The rect of interest.
+
+    Returns
+    -------
+    result : int
+        the x-coordinate of the effective right screen edge.
+
+    """
+    p1 = rect.topRight()
+    p2 = rect.bottomRight()
+    g1 = desktop.availableGeometry(p1)
+    g2 = desktop.availableGeometry(p2)
+    return min(p1.x(), g1.right(), g2.right())
+
+
+def top_screen_edge(desktop, rect):
+    """ Get the y-coordinate of the effective top screen edge.
+
+    Parameters
+    ----------
+    desktop : QDesktopWidget
+        The desktop widget for the application.
+
+    rect : QRect
+        The rect of interest.
+
+    Returns
+    -------
+    result : int
+        the y-coordinate of the effective top screen edge.
+
+    """
+    p1 = rect.topLeft()
+    p2 = rect.topRight()
+    g1 = desktop.availableGeometry(p1)
+    g2 = desktop.availableGeometry(p2)
+    return max(p1.y(), g1.top(), g2.top())
+
+
+def bottom_screen_edge(desktop, rect):
+    """ Get the y-coordinate of the effective bottom screen edge.
+
+    Parameters
+    ----------
+    desktop : QDesktopWidget
+        The desktop widget for the application.
+
+    rect : QRect
+        The rect of interest.
+
+    Returns
+    -------
+    result : int
+        the y-coordinate of the effective bottom screen edge.
+
+    """
+    p1 = rect.bottomLeft()
+    p2 = rect.bottomRight()
+    g1 = desktop.availableGeometry(p1)
+    g2 = desktop.availableGeometry(p2)
+    return min(p1.y(), g1.bottom(), g2.bottom())
+
+
+def ensure_on_screen(rect):
+    """ Ensure that the given rectangle is fully on-screen.
+
+    If the given rectangle does fit on the screen its position will be
+    adjusted so that it fits on screen as close as possible to its
+    original position. Rects which are bigger than the screen size
+    will necessarily still incur clipping.
+
+    Parameters
+    ----------
+    rect : QRect
+        The global geometry rectangle of interest.
+
+    Returns
+    -------
+    result : QRect
+        A potentially adjust rect which best fits on the screen.
+
+    """
+    rect = QRect(rect)
+    desktop = QApplication.desktop()
+    desk_geo = desktop.availableGeometry(rect.topLeft())
+    if desk_geo.contains(rect):
+        return rect
+    bottom_edge = bottom_screen_edge(desktop, rect)
+    if rect.bottom() > bottom_edge:
+        rect.moveBottom(bottom_edge)
+    right_edge = right_screen_edge(desktop, rect)
+    if rect.right() > right_edge:
+        rect.moveRight(right_edge)
+    top_edge = top_screen_edge(desktop, rect)
+    if rect.top() < top_edge:
+        rect.moveTop(top_edge)
+    left_edge = left_screen_edge(desktop, rect)
+    if rect.left() < left_edge:
+        rect.moveLeft(left_edge)
+    return rect
+
+
+def adjust_arrow_rect(rect, arrow_edge, target_pos, offset):
+    """ Adjust an arrow rectangle to fit on the screen.
+
+    Parameters
+    ----------
+    rect : QRect
+        The rect of interest.
+
+    arrow_edge : ArrowEdge
+        The edge on which the arrow will be rendered.
+
+    target_pos : QPoint
+        The global target position of the parent anchor.
 
     offset : QPoint
-        The additional offset for the popup view.
+        The offset to apply to the parent anchor.
 
     Returns
     -------
-    result : QPoint
-        The offset to apply to the global target position to
-        move the popup to the correct location.
+    result : tuple
+        A 4-tuple of (QRect, ArrowEdge, int, int) which represent the
+        adjusted rect, the new arrow edge, and x and y deltas to apply
+        to the arrow position.
 
     """
-    px = int(anchor.x() * size.width())
-    py = int(anchor.y() * size.height())
-    return QPoint(px, py) - offset
+    ax = ay = 0
+    rect = QRect(rect)
+    desktop = QApplication.desktop()
 
+    if arrow_edge == ArrowEdge.Left:
+        bottom_edge = bottom_screen_edge(desktop, rect)
+        if rect.bottom() > bottom_edge:
+            ay += rect.bottom() - bottom_edge
+            rect.moveBottom(bottom_edge)
+        top_edge = top_screen_edge(desktop, rect)
+        if rect.top() < top_edge:
+            ay -= top_edge - rect.top()
+            rect.moveTop(top_edge)
+        left_edge = left_screen_edge(desktop, rect)
+        if rect.left() < left_edge:
+            rect.moveLeft(left_edge)
+        right_edge = right_screen_edge(desktop, rect)
+        if rect.right() > right_edge:
+            arrow_edge = ArrowEdge.Right
+            right = target_pos.x() - offset.x()
+            rect.moveRight(min(right, right_edge))
 
-def arrow_tip_pos(layout_data):
-    """ Compute the position of the arrow point.
+    elif arrow_edge == ArrowEdge.Top:
+        right_edge = right_screen_edge(desktop, rect)
+        if rect.right() > right_edge:
+            ax += rect.right() - right_edge
+            rect.moveRight(right_edge)
+        left_edge = left_screen_edge(desktop, rect)
+        if rect.left() < left_edge:
+            ax -= left_edge - rect.left()
+            rect.moveLeft(left_edge)
+        top_edge = top_screen_edge(desktop, rect)
+        if rect.top() < top_edge:
+            rect.moveTop(top_edge)
+        bottom_edge = bottom_screen_edge(desktop, rect)
+        if rect.bottom() > bottom_edge:
+            arrow_edge = ArrowEdge.Bottom
+            bottom = target_pos.y() - offset.y()
+            rect.moveBottom(min(bottom, bottom_edge))
 
-    """
-    pos = QPoint(layout_data.pos)
-    size = layout_data.size
-    width = size.width()
-    height = size.height()
-    arrow_edge = layout_data.arrow_edge
-    arrow_pos = layout_data.arrow_position
-    if arrow_edge == ArrowEdge.Top:
-        pos += QPoint(width * arrow_pos, 0)
     elif arrow_edge == ArrowEdge.Right:
-        pos += QPoint(width, height * arrow_pos)
-    elif arrow_edge == ArrowEdge.Bottom:
-        pos += QPoint(width * arrow_pos, height)
-    else:
-        pos += QPoint(0, height * arrow_pos)
-    return pos
+        bottom_edge = bottom_screen_edge(desktop, rect)
+        if rect.bottom() > bottom_edge:
+            ay += rect.bottom() - bottom_edge
+            rect.moveBottom(bottom_edge)
+        top_edge = top_screen_edge(desktop, rect)
+        if rect.top() < top_edge:
+            ay -= top_edge - rect.top()
+            rect.moveTop(top_edge)
+        right_edge = right_screen_edge(desktop, rect)
+        if rect.right() > right_edge:
+            rect.moveRight(right_edge)
+        left_edge = left_screen_edge(desktop, rect)
+        if rect.left() < left_edge:
+            arrow_edge = ArrowEdge.Left
+            left = target_pos.x() - offset.x()
+            rect.moveLeft(max(left, left_edge))
 
+    else:  # ArrowEdge.Bottom
+        right_edge = right_screen_edge(desktop, rect)
+        if rect.right() > right_edge:
+            ax += rect.right() - right_edge
+            rect.moveRight(right_edge)
+        left_edge = left_screen_edge(desktop, rect)
+        if rect.left() < left_edge:
+            ax -= left_edge - rect.left()
+            rect.moveLeft(left_edge)
+        bottom_edge = bottom_screen_edge(desktop, rect)
+        if rect.bottom() > bottom_edge:
+            rect.moveBottom(bottom_edge)
+        top_edge = top_screen_edge(desktop, rect)
+        if rect.top() < top_edge:
+            arrow_edge = ArrowEdge.Top
+            top = target_pos.y() - offset.y()
+            rect.moveTop(max(top, top_edge))
 
-def ensure_on_screen(layout_data):
-    """
-
-    """
-    return False
-    # tip_pos = arrow_tip_pos(layout_data)
-    # screen_geo = QApplication.desktop().availableGeometry(tip_pos)
-    # view_geo = QRect(layout_data.pos, layout_data.size)
-    # if screen_geo.contains(view_geo):
-    #     return False
-    # sides = []
-    # size = layout_data.size
-    # if _test_top(view_geo, )
-    # if view_geo.width() > screen_geo.width():
-    #     return False
-    # if view_geo.height() > screen_geo.height():
-    #     return False
-    # if view_geo.x() < screen_geo.x():
-    #     dx = screen_geo.x() - view_geo.x()
-
-
+    return rect, arrow_edge, ax, ay
 
 
 class QPopupView(QWidget):
@@ -372,6 +520,8 @@ class QPopupView(QWidget):
         self._state.init(self)
         if parent is not None:
             parent.installEventFilter(self)
+            if not parent.isWindow():
+                parent.window().installEventFilter(self)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -399,31 +549,6 @@ class QPopupView(QWidget):
         """
         self.layout().setWidget(widget)
 
-    def anchor(self):
-        """ Get the anchor position for the popup view.
-
-        Returns
-        -------
-        result : QPointF
-            The anchor point for the view.
-
-        """
-        return self._state.anchor
-
-    def setAnchor(self, anchor):
-        """ Set the anchor position for the popup view.
-
-        Parameters
-        ----------
-        anchor : QPointF
-            The anchor point for the view.
-
-        """
-        state = self._state
-        if anchor != state.anchor:
-            state.anchor = anchor
-            self._refreshGeometry()
-
     def parentAnchor(self):
         """ Get the parent anchor position for the popup view.
 
@@ -447,6 +572,31 @@ class QPopupView(QWidget):
         state = self._state
         if anchor != state.parent_anchor:
             state.parent_anchor = anchor
+            self._refreshGeometry()
+
+    def anchor(self):
+        """ Get the anchor position for the popup view.
+
+        Returns
+        -------
+        result : QPointF
+            The anchor point for the view.
+
+        """
+        return self._state.anchor
+
+    def setAnchor(self, anchor):
+        """ Set the anchor position for the popup view.
+
+        Parameters
+        ----------
+        anchor : QPointF
+            The anchor point for the view.
+
+        """
+        state = self._state
+        if anchor != state.anchor:
+            state.anchor = anchor
             self._refreshGeometry()
 
     def offset(self):
@@ -550,31 +700,6 @@ class QPopupView(QWidget):
             state.arrow_size = size
             self._refreshGeometry()
 
-    def arrowPosition(self):
-        """ Get the position of the popup arrow.
-
-        Returns
-        -------
-        result : float
-            The position of the arrow along its edge.
-
-        """
-        return self._state.arrow_position
-
-    def setArrowPosition(self, pos):
-        """ Set the position of the popup arrow.
-
-        Parameters
-        ----------
-        pos : float
-            The position of the popup arrow along its edge.
-
-        """
-        state = self._state
-        if pos != state.arrow_position:
-            state.arrow_position = pos
-            self._refreshGeometry()
-
     def timeout(self):
         """ Get the timeout for the view.
 
@@ -641,6 +766,29 @@ class QPopupView(QWidget):
         """
         self._state.fade_out_duration = duration
 
+    def closeOnClick(self):
+        """ Get whether or not close on click is enabled.
+
+        Returns
+        -------
+        result : bool
+            True if close on click is enabled, False otherwise. The
+            default value is True.
+
+        """
+        return self._state.close_on_click
+
+    def setCloseOnClick(self, enable):
+        """ Set whether or not close on click is enabled.
+
+        Parameters
+        ----------
+        enable : bool
+            True if close on click should be enabled, False otherwise.
+
+        """
+        self._state.close_on_click = enable
+
     #--------------------------------------------------------------------------
     # Event Handlers
     #--------------------------------------------------------------------------
@@ -653,9 +801,7 @@ class QPopupView(QWidget):
         """
         evt_type = event.type()
         if evt_type == QEvent.Move or evt_type == QEvent.Resize:
-            if obj is self.parent():
-                #self._updatePosition()
-                self._refreshGeometry()
+            self._refreshGeometry()
         return False
 
     def mousePressEvent(self, event):
@@ -665,21 +811,25 @@ class QPopupView(QWidget):
         cases, when the superclass method doesn't handle it.
 
         """
-        super(QPopupView, self).mousePressEvent(event)
-        if self.isVisible():
+        event.ignore()
+        state = self._state
+        if state.close_on_click:
+            path = state.path
             pos = event.pos()
             rect = self.rect()
-            if rect.contains(pos):
-                pt = QPointF(pos.x(), pos.y())
-                win_type = self.windowType()
-                if win_type == Qt.ToolTip:
-                    if self._state.path.contains(pt):
+            win_type = self.windowType()
+            if win_type == Qt.Popup:
+                if not rect.contains(pos):
+                    super(QPopupView, self).mousePressEvent(event)
+                else:
+                    path = state.path
+                    if not path.isEmpty() and not path.contains(pos):
                         event.accept()
                         self.close()
-                elif win_type == Qt.Popup:
-                    if not self._state.path.contains(pt):
-                        event.accept()
-                        self.close()
+            elif win_type == Qt.ToolTip:
+                if path.isEmpty() or path.contains(pos):
+                    event.accept()
+                    self.close()
 
     def showEvent(self, event):
         """ Handle the show event for the popup view.
@@ -736,7 +886,13 @@ class QPopupView(QWidget):
 
         """
         super(QPopupView, self).resizeEvent(event)
-        self._refreshGeometry()
+        if self._state.in_resize_event:
+            return
+        self._state.in_resize_event = True
+        try:
+            self._refreshGeometry()
+        finally:
+            self._state.in_resize_event = False
 
     def paintEvent(self, event):
         """ Handle the paint event for the popup view.
@@ -770,48 +926,123 @@ class QPopupView(QWidget):
         """
         if not force and not self.isVisible():
             return
+        if self._state.arrow_size <= 0:
+            self._layoutPlainRect()
+        else:
+            self._layoutArrowRect()
 
-        # Compute the margins as specified by the state.
+    def _layoutPlainRect(self):
+        """ Layout the widget with no edge arrow.
+
+        """
+        self.setContentsMargins(QMargins())
+        self.clearMask()
+        target_pos = self._targetPos()
+        anchor_pos = self._anchorPos()
+        offset = self._state.offset
+        trial_pos = target_pos + offset - anchor_pos
+        trial_geo = QRect(trial_pos, self.size())
+        geo = ensure_on_screen(trial_geo)
+        self.setGeometry(geo)
+
+    def _layoutArrowRect(self):
+        """ Layout the widget with the edge arrow.
+
+        """
+        # Setup the initial contents margins.
         state = self._state
-        arrow_edge = state.arrow_edge
         arrow_size = state.arrow_size
+        arrow_edge = state.arrow_edge
         margins = edge_margins(arrow_size, arrow_edge)
-
-        # Compute the hypothetical view size.
         self.setContentsMargins(margins)
+
+        # Use the current size to compute the arrow position.
+        ax = ay = 0
         size = self.size()
+        anchor = state.anchor
+        if arrow_edge == ArrowEdge.Left or arrow_edge == ArrowEdge.Right:
+            ay = int(anchor.y() * size.height())
+            ay = max(arrow_size, min(size.height() - arrow_size, ay))
+            if arrow_edge == ArrowEdge.Right:
+                ax = size.width()
+        else:
+            ax = int(anchor.x() * size.width())
+            ax = max(arrow_size, min(size.width() - arrow_size, ax))
+            if arrow_edge == ArrowEdge.Bottom:
+                ay = size.height()
 
-        # Compute the hypothetical view position.
-        anchor_mode = state.anchor_mode
-        parent_anchor = state.parent_anchor
-        pos = target_global_pos(self.parent(), anchor_mode, parent_anchor)
-        pos -= popup_offset(size, state.anchor, state.offset)
+        # Compute the view rect and adjust it if it falls off screen.
+        target_pos = self._targetPos()
+        pos = target_pos + state.offset - QPoint(ax, ay)
+        rect = QRect(pos, size)
+        if not is_fully_on_screen(rect):
+            rect, new_edge, d_ax, d_ay = adjust_arrow_rect(
+                rect, arrow_edge, target_pos, state.offset
+            )
+            ax = max(arrow_size, min(size.width() - arrow_size, ax + d_ax))
+            ay = max(arrow_size, min(size.height() - arrow_size, ay + d_ay))
+            if new_edge != arrow_edge:
+                arrow_edge = new_edge
+                margins = edge_margins(arrow_size, new_edge)
+                self.setContentsMargins(margins)
 
-        # Create the layout data and ensure it the view is on screen.
-        layout_data = LayoutData()
-        layout_data.pos = pos
-        layout_data.size = size
-        layout_data.arrow_size = arrow_size
-        layout_data.arrow_edge = arrow_edge
-        layout_data.arrow_position = state.arrow_position
-        changed = ensure_on_screen(layout_data)
+        # Use the final geometry to get the path for the arrow.
+        if arrow_edge == ArrowEdge.Left or arrow_edge == ArrowEdge.Right:
+            path = make_path(rect.size(), arrow_size, arrow_edge, ay)
+        else:
+            path = make_path(rect.size(), arrow_size, arrow_edge, ax)
 
-        # If the layout has changed, apply the update.
-        if changed:
-            arrow_size = layout_data.arrow_size
-            arrow_edge = layout_data.arrow_edge
-            margins = edge_margins(arrow_size, arrow_edge)
-            self.setContentsMargins(margins)
-            layout_data.size = self.size()
-
-        # Compute the painter path for the view and set the mask.
-        path = make_path(layout_data)
+        # Store the path for painting and update the widget mask.
         state.path = path
         mask = QRegion(path.toFillPolygon().toPolygon())
         self.setMask(mask)
 
-        # Move the widget into position and update it. The update is
-        # necessary in the case where only the mask has changed, which
-        # does not automatically generate a paint event.
-        self.move(layout_data.pos)
+        # Set the geometry of the view and update. The update is needed
+        # for the case where the only change was the widget mask, which
+        # will not generate a paint event. Qt collapses paint events,
+        # so the cost of this is minimal.
+        self.setGeometry(rect)
         self.update()
+
+    def _targetPos(self):
+        """ Get the global position of the parent anchor.
+
+        Returns
+        -------
+        result : QPoint
+            The global coordinates of the target parent anchor.
+
+        """
+        state = self._state
+        if state.anchor_mode == AnchorMode.Cursor:
+            origin = QCursor.pos()
+            size = QSize()
+        else:
+            parent = self.parent()
+            if parent is None:
+                desktop = QApplication.desktop()
+                geo = desktop.availableGeometry()
+                origin = geo.topLeft()
+                size = geo.size()
+            else:
+                origin = parent.mapToGlobal(QPoint(0, 0))
+                size = parent.size()
+        anchor = state.parent_anchor
+        px = int(anchor.x() * size.width())
+        py = int(anchor.y() * size.height())
+        return origin + QPoint(px, py)
+
+    def _anchorPos(self):
+        """ Get the position of the anchor in local coordinates.
+
+        Returns
+        -------
+        result : QPoint
+            The anchor position on the view in local coordinates.
+
+        """
+        size = self.size()
+        anchor = self._state.anchor
+        px = int(anchor.x() * size.width())
+        py = int(anchor.y() * size.height())
+        return QPoint(px, py)

@@ -38,7 +38,6 @@ enamldef ConfigPopup(PopupView): popup:
     anchor << POSITIONS[view_box.selected_item]
     arrow_size << sizer.value
     arrow_edge << arrow_edge.selected_item
-    arrow_position << positioner.value / 100.0
     offset << (offset_x.value, offset_y.value)
     Form:
         padding = 20
@@ -46,16 +45,9 @@ enamldef ConfigPopup(PopupView): popup:
             foreground = 'white'
             text = 'Arrow Size'
         Slider: sizer:
-            minimum = 0
+            minimum = 5
             maximum = 30
             value = 20
-        Label:
-            foreground = 'white'
-            text = 'Arrow Position'
-        Slider: positioner:
-            minimum = 0
-            maximum = 100
-            value = 50
         Label:
             foreground = 'white'
             text = 'Arrow Edge'
