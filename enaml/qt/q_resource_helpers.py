@@ -9,6 +9,27 @@ from .QtCore import Qt, QSize
 from .QtGui import QColor, QFont, QImage, QIcon, QPixmap
 
 
+from ..fontext import FontStyle, FontCaps
+
+
+# Mapping from enaml font styles to Qt font styles.
+_qfont_style_mapping = {
+    FontStyle.Normal: QFont.Style.StyleNormal,
+    FontStyle.Italic: QFont.Style.StyleItalic,
+    FontStyle.Oblique: QFont.Style.StyleOblique,
+}
+
+
+# Mapping from enaml capitalization modes to Qt capitalization modes.
+_qfont_capitalization_mapping = {
+    FontCaps.MixedCase: QFont.Capitalization.MixedCase,
+    FontCaps.AllUppercase: QFont.Capitalization.AllUppercase,
+    FontCaps.AllLowercase: QFont.Capitalization.AllLowercase,
+    FontCaps.SmallCaps: QFont.Capitalization.SmallCaps,
+    FontCaps.Capitalize: QFont.Capitalization.Capitalize,
+}
+
+
 ASPECT_RATIO_MODE = {
     'ignore': Qt.IgnoreAspectRatio,
     'keep': Qt.KeepAspectRatio,
@@ -185,8 +206,8 @@ def QFont_from_Font(font):
 
     """
     qfont = QFont(font.family, font.pointsize, font.weight)
-    qfont.setStyle(font.style)
-    qfont.setCapitalization(font.caps)
+    qfont.setStyle(_qfont_style_mapping[font.style])
+    qfont.setCapitalization(_qfont_capitalization_mapping[font.caps])
     return qfont
 
 
