@@ -12,19 +12,18 @@ used to compute the log of a range of numbers.
 
 """
 import math
-from enaml.widgets.api import Window, Container, Label, Field, Slider
-from enaml.layout.api import hbox, vbox
+from enaml.widgets.api import Window, Container, Label, Field, Slider, Form
 
 
 enamldef Main(Window):
     title = 'Slider Example'
     Container:
-        constraints = [vbox(hbox(lbl, fld), slider)]
-        Label: lbl:
-            text = 'Log Value'
-        Field: fld:
-            text << u'{}'.format(math.log(slider.value))
-            read_only = True
+        Form:
+            Label: lbl:
+                text = 'Log Value'
+            Field: fld:
+                text << u'{}'.format(math.log(slider.value))
+                read_only = True
         Slider: slider:
             tick_interval = 50
             maximum = 1000
