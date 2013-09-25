@@ -10,28 +10,32 @@
 This example shows how a PNG image (in an enaml Image object) can displayed.
 
 """
+import os
 
 from enaml.image import Image
 from enaml.layout.api import vbox, hbox, spacer
 from enaml.widgets.api import Window, Container, ComboBox, ImageView
 
 
-_imgs = {
-    "Image A": Image(data=open("images/img1.png").read()),
-    "Image B": Image(data=open("images/img2.png").read()),
-    "Image C": Image(data=open("images/img3.png").read()),
+def image_path(name):
+    dirname = os.path.dirname(__file__)
+    return os.path.join(dirname, 'images', name)
+
+
+IMAGES = {
+    'Image A': Image(data=open(image_path('img1.png'), 'rb').read()),
+    'Image B': Image(data=open(image_path('img2.png'), 'rb').read()),
+    'Image C': Image(data=open(image_path('img3.png'), 'rb').read()),
 }
+
 
 enamldef Main(Window):
     Container:
         constraints = [
-            vbox(
-                hbox(cbox, spacer),
-                img,
-            ),
+            vbox(hbox(cbox, spacer), img),
         ]
         ComboBox: cbox:
-            items = sorted(_imgs.keys())
+            items = sorted(IMAGES.keys())
             index = 0
         ImageView: img:
-            image << _imgs[cbox.selected_item]
+            image << IMAGES[cbox.selected_item]
