@@ -18,13 +18,12 @@ from enaml.widgets.api import Window, Form, Label, Field, Slider
 enamldef Main(Window):
     title = 'Slider Example'
     Form:
-        Label: lbl:
+        Label:
             text = 'Log Value'
-        Field: fld:
+        Field:
             text << u'{}'.format(math.log(slider.value))
             read_only = True
         Slider: slider:
             tick_interval = 50
             maximum = 1000
             minimum = 1
-
