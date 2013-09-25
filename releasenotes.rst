@@ -1,6 +1,14 @@
 Enaml Release Notes
 ===================
 
+0.8.1 - 09/25/2013
+------------------
+- Update the PopupView to automatically reposition on-screen. 3225683f9411_
+- Minor bug fixes.
+- Added an ImageView example.
+
+.. _3225683f9411: https://github.com/nucleic/enaml/commit/3225683f9411266d98b050be252440c7f5a1e892
+
 0.8.0 - 09/20/2013
 ------------------
 - Added templates to the language.
