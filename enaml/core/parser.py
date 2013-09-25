@@ -292,12 +292,18 @@ def p_enaml_module(p):
 
 def p_enaml_module_body1(p):
     ''' enaml_module_body : enaml_module_body enaml_module_item '''
-    p[0] = p[1] + [p[2]]
+    items = p[2]  # a stmt can be a list
+    if not isinstance(items, list):
+        items = [items]
+    p[0] = p[1] + items
 
 
 def p_enaml_module_body2(p):
     ''' enaml_module_body : enaml_module_item '''
-    p[0] = [p[1]]
+    items = p[1]  # a stmt can be a list
+    if not isinstance(items, list):
+        items = [items]
+    p[0] = items
 
 
 def p_enaml_module_item1(p):
