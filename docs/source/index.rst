@@ -19,12 +19,12 @@ A few highlights of the framework:
 .. toctree::
     :hidden:
 
-    Getting Started <_get_started/index>
-    Developer Guides <_dev_guides/index>
-    Architecture Reference <_arch_ref/index>
-    FAQs <_faqs/index>
-    Examples <_examples/index>
-    API Reference <_api_ref/index>
+    Getting Started <get_started/index>
+    Developer Guides <dev_guides/index>
+    Architecture Reference <arch_ref/index>
+    FAQs <faqs/index>
+    Examples <examples/index>
+    API Reference <api_ref/index>
 
 
 .. list-table::
@@ -69,7 +69,7 @@ A few highlights of the framework:
 
         "Use the source, Luke." When all else fails, consult the API docs to
         find the answer you need. The API docs also include convenient links
-        to the most definitive Enaml documentation: its source.
+        to the most definitive Enaml documentation: the source.
 
 
 Indices and Tables

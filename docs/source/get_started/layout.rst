@@ -1,5 +1,5 @@
-.. _operators:
+.. _layout:
 
 ======================
-Data Binding Operators
+Controlling the Layout
 ======================
