@@ -97,13 +97,24 @@ class PopupView(Widget):
     #: reference to a transient popup.
     popup_views = []
 
-    #: The type of the window to create. A 'popup' window will close
-    #: when the user presses escape or clicks outside of the window.
-    #: A 'tool_tip' window will close when the user clicks the window.
-    #: The popup window is useful for showing configuration dialogs,
-    #: while the tool tip window is useful for notification messages.
-    #: The window type cannot be changed once the widget is created.
-    window_type = d_(Enum('popup', 'tool_tip'))
+    #: The type of the window to create. Each has different behavior. The
+    #: window type cannot be changed after the widget is created.
+    #:
+    #: 'popup'
+    #:     This window will close when the user presses escape or clicks
+    #:     outside of the window. It will block all external interactions
+    #:     until it is closed.
+    #:
+    #: 'tool_tip'
+    #:     This window will close when the user clicks inside the window.
+    #:     It stays on top of all the other windows on the desktop. It is
+    #:     useful for showing mouse cursor or desktop notifications.
+    #:
+    #: 'window'
+    #:     This window will close when the user clicks inside the window.
+    #:     It stays on top of its parent, but not the other windows on
+    #:     the desktop. It is useful for notifications inside a window.
+    window_type = d_(Enum('popup', 'tool_tip', 'window'))
 
     #: The mode to use for anchoring. The 'parent' mode uses a point
     #: on the parent or the desktop as the target anchor, the 'cursor'
@@ -153,7 +164,7 @@ class PopupView(Widget):
 
     #: Whether or not close the popup view on a mouse click. For 'popup'
     #: windows, this means clicking outside of the view. For 'tool_tip'
-    #: windows, this means clicking inside of the view.
+    #: and 'window' windows, this means clicking inside of the view.
     close_on_click = d_(Bool(True))
 
     #: Whether or not the background of the popup view is translucent.
