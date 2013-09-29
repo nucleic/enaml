@@ -116,7 +116,7 @@ enamldef Main(Window): win:
             clicked :: ConfigPopup(self).show()
         PushButton:
             text = 'Show Window Notification'
-            clicked :: NotificationPopup(win).show()
+            clicked :: NotificationPopup(win, window_type='window').show()
         PushButton:
             text = 'Show Desktop Notification'
             clicked :: NotificationPopup().show()

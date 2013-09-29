@@ -826,7 +826,7 @@ class QPopupView(QWidget):
                     if not path.isEmpty() and not path.contains(pos):
                         event.accept()
                         self.close()
-            elif win_type == Qt.ToolTip:
+            elif win_type == Qt.ToolTip or win_type == Qt.Window:
                 if path.isEmpty() or path.contains(pos):
                     event.accept()
                     self.close()

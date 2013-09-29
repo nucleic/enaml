@@ -26,6 +26,7 @@ EDGES = {
 WINDOW_TYPES = {
     'popup': Qt.Popup,
     'tool_tip': Qt.ToolTip,
+    'window': Qt.Window,
 }
 
 
