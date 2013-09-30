@@ -657,6 +657,13 @@ DynamicScope_setitem( DynamicScope* self, PyObject* key, PyObject* value )
         py_expected_type_fail( key, "str" );
         return -1;
     }
+    if( !value )
+    {
+        if( self->f_writes )
+            return PyDict_DelItem( self->f_writes, key );
+        PyErr_SetString( PyExc_KeyError, PyString_AS_STRING( key ) );
+        return -1;
+    }
     if( !self->f_writes )
     {
         self->f_writes = PyDict_New();
