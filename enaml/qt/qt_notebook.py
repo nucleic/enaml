@@ -8,7 +8,7 @@
 import sys
 from weakref import WeakKeyDictionary
 
-from atom.api import Typed
+from atom.api import Int, Typed
 
 from enaml.widgets.notebook import ProxyNotebook
 
@@ -261,12 +261,19 @@ class QNotebook(QTabWidget):
         self._refreshTabBar()
 
 
+#: A guard flag for the tab change
+CHANGE_GUARD = 0x01
+
+
 class QtNotebook(QtConstraintsWidget, ProxyNotebook):
     """ A Qt implementation of an Enaml ProxyNotebook.
 
     """
     #: A reference to the widget created by the proxy.
     widget = Typed(QNotebook)
+
+    #: A bitfield of guard flags for the object.
+    _guard = Int(0)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -293,6 +300,7 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         self.set_tab_position(d.tab_position)
         self.set_tabs_closable(d.tabs_closable)
         self.set_tabs_movable(d.tabs_movable)
+        # the selected tab is synchronized during init_layout
 
     def init_layout(self):
         """ Handle the layout initialization for the notebook.
@@ -302,7 +310,9 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         widget = self.widget
         for page in self.pages():
             widget.addPage(page)
+        self.init_selected_tab()
         widget.layoutRequested.connect(self.on_layout_requested)
+        widget.currentChanged.connect(self.on_current_changed)
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -315,6 +325,40 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
             w = p.proxy.widget
             if w is not None:
                 yield w
+
+    def find_page(self, name):
+        """ Find the page with the given name.
+
+        Parameters
+        ----------
+        name : unicode
+            The object name for the page of interest.
+
+        Returns
+        -------
+        result : QPage or None
+            The target page or None if one is not found.
+
+        """
+        for page in self.pages():
+            if page.objectName() == name:
+                return page
+
+    def init_selected_tab(self):
+        """ Initialize the selected tab.
+
+        This should be called only during widget initialization.
+
+        """
+        d = self.declaration
+        if d.selected_tab:
+            self.set_selected_tab(d.selected_tab)
+        else:
+            self._guard |= CHANGE_GUARD
+            try:
+                d.selected_tab = self.widget.currentWidget().objectName()
+            finally:
+                self._guard &= ~CHANGE_GUARD
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -346,6 +390,19 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         """
         self.size_hint_updated()
 
+    def on_current_changed(self):
+        """ Handle the 'currentChanged' signal from the QNotebook.
+
+        """
+        if not self._guard & CHANGE_GUARD:
+            self._guard |= CHANGE_GUARD
+            try:
+                page = self.widget.currentWidget()
+                name = page.objectName() if page is not None else u''
+                self.declaration.selected_tab = name
+            finally:
+                self._guard &= ~CHANGE_GUARD
+
     #--------------------------------------------------------------------------
     # ProxyNotebook API
     #--------------------------------------------------------------------------
@@ -372,3 +429,20 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
 
         """
         self.widget.setMovable(movable)
+
+    def set_selected_tab(self, name):
+        """ Set the selected tab of the widget.
+
+        """
+        if not self._guard & CHANGE_GUARD:
+            page = self.find_page(name)
+            if page is None:
+                import warnings
+                msg = "cannot select tab '%s' - tab not found"
+                warnings.warn(msg % name, UserWarning)
+                return
+            self._guard |= CHANGE_GUARD
+            try:
+                self.widget.setCurrentWidget(page)
+            finally:
+                self._guard &= ~CHANGE_GUARD
