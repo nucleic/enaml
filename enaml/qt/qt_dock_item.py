@@ -64,7 +64,6 @@ class QtDockItem(QtWidget, ProxyDockItem):
         """
         super(QtDockItem, self).init_widget()
         d = self.declaration
-        self.set_name(d.name)
         self.set_title(d.title)
         self.set_title_editable(d.title_editable)
         if not d.title_bar_visible:
@@ -151,12 +150,6 @@ class QtDockItem(QtWidget, ProxyDockItem):
     #--------------------------------------------------------------------------
     # ProxyDockItem API
     #--------------------------------------------------------------------------
-    def set_name(self, name):
-        """ Set the object name on the underlying widget.
-
-        """
-        self.widget.setObjectName(name)
-
     def set_title(self, title):
         """ Set the title on the underlying widget.
 

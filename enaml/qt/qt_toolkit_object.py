@@ -19,8 +19,8 @@ class QtToolkitObject(ProxyToolkitObject):
     """
     # PySide requires weakrefs for using bound methods as slots
     if QT_API == 'pyside':
-        __slots__ = '__weakref__' 
-    
+        __slots__ = '__weakref__'
+
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QObject)
 
@@ -45,7 +45,11 @@ class QtToolkitObject(ProxyToolkitObject):
         state of the widget. The child widgets will not yet be created.
 
         """
-        pass
+        widget = self.widget
+        if widget is not None:
+            name = self.declaration.name
+            if name:
+                widget.setObjectName(name)
 
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.
