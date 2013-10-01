@@ -1,10 +1,10 @@
-.. _icon_api:
-
 .. module:: enaml.icon
 
 ==========
 enaml.icon
 ==========
+
+.. rubric:: Classes
 
 .. autosummary::
     :nosignatures:
@@ -13,13 +13,6 @@ enaml.icon
     IconImage
 
 
-Icon
-----
-
 .. autoclass:: Icon
-
-
-IconImage
----------
 
 .. autoclass:: IconImage

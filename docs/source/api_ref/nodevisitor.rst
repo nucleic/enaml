@@ -1,18 +1,15 @@
-.. _nodevisitor_api:
-
 .. module:: enaml.nodevisitor
 
 =================
 enaml.nodevisitor
 =================
 
+.. rubric:: Classes
+
 .. autosummary::
     :nosignatures:
 
     NodeVisitor
 
-
-NodeVisitor
------------
 
 .. autoclass:: NodeVisitor

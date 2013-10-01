@@ -1,10 +1,18 @@
-.. _core_object_api:
-
 .. module:: enaml.core.object
 
 =================
 enaml.core.object
 =================
+
+.. rubric:: Functions
+
+.. autosummary::
+    :nosignatures:
+
+    flag_property
+
+
+.. rubric:: Classes
 
 .. autosummary::
     :nosignatures:
@@ -12,7 +20,6 @@ enaml.core.object
     Object
 
 
-Object
-------
+.. autofunction:: flag_property
 
 .. autoclass:: Object

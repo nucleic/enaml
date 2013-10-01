@@ -1,18 +1,15 @@
-.. _core_conditional_api:
-
 .. module:: enaml.core.conditional
 
 ======================
 enaml.core.conditional
 ======================
 
+.. rubric:: Classes
+
 .. autosummary::
     :nosignatures:
 
     Conditional
 
-
-Conditional
------------
 
 .. autoclass:: Conditional

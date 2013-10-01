@@ -1,10 +1,10 @@
-.. _validator_api:
-
 .. module:: enaml.validator
 
 ===============
 enaml.validator
 ===============
+
+.. rubric:: Classes
 
 .. autosummary::
     :nosignatures:
@@ -15,25 +15,10 @@ enaml.validator
     Validator
 
 
-FloatValidator
---------------
-
 .. autoclass:: FloatValidator
-
-
-IntValidator
-------------
 
 .. autoclass:: IntValidator
 
-
-RegexValidator
---------------
-
 .. autoclass:: RegexValidator
-
-
-Validator
----------
 
 .. autoclass:: Validator

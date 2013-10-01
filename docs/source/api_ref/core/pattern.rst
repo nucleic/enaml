@@ -1,7 +1,7 @@
-.. module:: enaml.core.include
+.. module:: enaml.core.pattern
 
 ==================
-enaml.core.include
+enaml.core.pattern
 ==================
 
 .. rubric:: Classes
@@ -9,7 +9,7 @@ enaml.core.include
 .. autosummary::
     :nosignatures:
 
-    Include
+    Pattern
 
 
-.. autoclass:: Include
+.. autoclass:: Pattern

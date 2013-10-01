@@ -1,18 +1,15 @@
-.. _core_looper_api:
-
 .. module:: enaml.core.looper
 
 =================
 enaml.core.looper
 =================
 
+.. rubric:: Classes
+
 .. autosummary::
     :nosignatures:
 
     Looper
 
-
-Looper
-------
 
 .. autoclass:: Looper

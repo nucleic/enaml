@@ -24,8 +24,8 @@ from enaml.version import version_info
 
 import sphinx_bootstrap_theme
 
-## from enaml.import_hooks import EnamlImporter
-## EnamlImporter.install()
+from enaml.core.import_hooks import EnamlImporter
+EnamlImporter.install()
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -157,7 +157,10 @@ html_theme = 'bootstrap'
 ##     'sidebarwidth' : '20em'
 ##     }
 html_theme_options = {
-    #'bootswatch_theme': 'spacelab',
+    'navbar_class': 'navbar-inverse',
+    'navbar_sidebarrel': False,
+    'bootswatch_theme': 'spacelab',
+    'bootstrap_version': '3',
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -195,6 +198,10 @@ html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
+    '**': ['realglobaltoc.html'],
+    'index': [],
+    'genindex': [],
+    'search': [],
 }
 
 # Additional templates that should be rendered to pages, maps page names to

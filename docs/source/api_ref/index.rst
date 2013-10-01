@@ -1,17 +1,51 @@
-.. _api_ref:
+.. module:: enaml
 
 =============
 API Reference
 =============
 
 .. toctree::
-    :maxdepth: 2
+    :hidden:
 
-    enaml
-    applib <applib>
-    core <core>
-    layout <layout>
-    qt <qt>
-    scintilla <scintilla>
-    stdlib <stdlib>
-    widgets <widgets>
+    applib <applib/index>
+    application <application>
+    colors <colors>
+    core <core/index>
+    fonts <fonts>
+    icon <icon>
+    image <image>
+    layout <layout/index>
+    nodevisitor <nodevisitor>
+    scintilla <scintilla/index>
+    stdlib <stdlib/index>
+    validator <validator>
+    version <version>
+    widgets <widgets/index>
+
+
+.. rubric:: Modules
+
+.. autosummary::
+    :nosignatures:
+
+    application
+    colors
+    fonts
+    icon
+    image
+    nodevisitor
+    validator
+    version
+
+
+.. rubric:: Packages
+
+.. autosummary::
+    :nosignatures:
+
+    applib
+    core
+    layout
+    scintilla
+    stdlib
+    widgets

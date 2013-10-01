@@ -31,7 +31,7 @@ When you are comfortable with the topics here, have a look at the
         ecosystem. It presents the challenges inherent to UI development and
         how the declarative programming model is used to address them.
 
-      - :ref:`installation`
+    * - :ref:`installation`
 
         The installation instructions present the steps needed to install
         Enaml and its dependencies.
@@ -43,7 +43,7 @@ When you are comfortable with the topics here, have a look at the
         syntactic constructs and framework components combine to create a
         simple user interface application.
 
-      - :ref:`operators`
+    * - :ref:`operators`
 
         One of the great features of Enaml is its rich set of operators. This
         section describes how those operators are used to connect user defined
@@ -57,7 +57,7 @@ When you are comfortable with the topics here, have a look at the
         status quo and provides a flexible layout system which uses symbolic
         constraints. This section covers the basics of constraints layout.
 
-      - :ref:`widgets`
+    * - :ref:`widgets`
 
         This sections provides a brief overview about the structure of an
         Enaml widget and how it communicates with a rendering backend. A

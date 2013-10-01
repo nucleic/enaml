@@ -1,18 +1,15 @@
-.. _version_api:
-
 .. module:: enaml.version
 
 =============
 enaml.version
 =============
 
+.. rubric:: Data
+
 .. autosummary::
     :nosignatures:
 
     version_info
 
-
-version_info
-------------
 
 .. autodata:: version_info

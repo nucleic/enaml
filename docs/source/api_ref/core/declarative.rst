@@ -1,25 +1,25 @@
-.. _core_declarative_api:
-
 .. module:: enaml.core.declarative
 
 ======================
 enaml.core.declarative
 ======================
 
+.. rubric:: Functions
+
 .. autosummary::
     :nosignatures:
 
     d_
+
+
+.. rubric:: Classes
+
+.. autosummary::
+    :nosignatures:
+
     Declarative
 
 
-d\_
----
-
 .. autofunction:: d_
-
-
-Declarative
------------
 
 .. autoclass:: Declarative
