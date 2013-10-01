@@ -9,8 +9,8 @@ dependencies, and those which are required are easily installed, with most
 projects providing binaries or a simple Python setup script. The sections
 below describe how to install Enaml and all of its dependencies from scratch,
 starting with the installation of a Python runtime. The instructions assume
-that the user's system has a compliant C++ compiler and the `Git`_ command
-line tools installed and available on the system path.
+that the user's system has a C++ compiler and the `Git`_ command line tools
+installed and available on the system path.
 
 .. _Git: http://git-scm.com
 
@@ -27,10 +27,11 @@ line tools installed and available on the system path.
 
 .. topic:: Supported Platforms
 
-    Enaml is known to run on Windows, OSX, and Linux. However, primary
-    development of the framework occurs on Windows (7 and 8), so some quirks
-    and bugs may be present on the other platforms. If you encounter a bug,
-    please report it on the `Issue Tracker`_.
+    Enaml is known to run on Windows, OSX, and Linux; and compiles cleanly
+    with MSVC, Clang, GCC, and MinGW. However, primary development of the
+    framework occurs on Windows (7 and 8), so some quirks and bugs may be
+    present on the other platforms. If you encounter a bug, please report
+    it on the `Issue Tracker`_.
 
 .. _Issue Tracker: http://github.com/nucleic/enaml/issues
 
@@ -107,6 +108,22 @@ install via the system package manager.
 .. _PySide: http://qt-project.org/wiki/PySide
 
 
+`Casuarius`_
+------------
+
+Enaml's layout engine is built on top of the `Cassowary`_ linear constraint
+optimizer. This is the same algorithm used by the Cocoa Autolayout engine in
+OSX. Casuarius provides Python bindings to a C++ implementation of the
+Cassowary algorithm.
+
+The simplest way to install Casuarius is with ``easy_install``::
+
+    C:\> easy_install casuarius
+
+.. _Casuarius: https://github.com/enthought/casuarius
+.. _Cassowary: http://www.cs.washington.edu/research/constraints/cassowary
+
+
 `Atom`_
 -------
 
@@ -124,3 +141,16 @@ Cloning and building Atom from source is simple::
 
 .. _Atom: https://github.com/nucleic/atom
 .. _Observer Pattern: http://en.wikipedia.org/wiki/Observer_pattern
+
+
+`Enaml`_
+--------
+
+The last item on the list is Enaml itself, and it can be installed with just
+a few commands::
+
+    C:\> git clone https://github.com/nucleic/enaml.git
+    C:\> cd enaml
+    C:\> python setup.py install
+
+.. _Enaml: https://github.com/nucleic/enaml

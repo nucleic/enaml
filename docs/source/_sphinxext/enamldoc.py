@@ -226,9 +226,14 @@ def process_function(app, name, obj, options, lines):
 
 
 def process_attribute(app, name, obj, options, lines):
-    if isinstance(obj, Member):
-        prefix = '**%s** - ' % type(obj).__name__
-        lines[0] = prefix + lines[0]
+    # if isinstance(obj, Member):
+    #     # indent = '    '
+    #     # name = type(obj).__name__
+    #     # new = [indent + name, u'']
+    #     # for line in lines:
+    #     #     new.append(indent + line)
+    #     # lines = new
+    #     pass
     return lines
 
 
