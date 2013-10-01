@@ -8,8 +8,8 @@
 from .mono_font import MONO_FONT
 
 
+# TODO add many more syntaxes to this theme.
 #: A Scintilla highlight theme based on the Python IDLE environment.
-#: TODO add many more syntaxes to this theme.
 IDLE_THEME = {
     "settings": {
         "caret": "#000000",
