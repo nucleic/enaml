@@ -186,7 +186,7 @@ html_short_title = project + " v" + release
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -282,7 +282,7 @@ latex_domain_indices = True
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'enaml', u'enaml Documentation',
+    ('index', 'enaml', u'Enaml Documentation',
      [u'Nucleic Development Team'], 1)
 ]
 

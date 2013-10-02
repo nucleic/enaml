@@ -1,0 +1,30 @@
+.enamldoc-sidenav form, .enamldoc-sidenav #sourcelink {
+  padding: 5px 20px;
+}
+
+/* The code below is based on the bootstrap website sidebar */
+
+/* First level of nav */
+.enamldoc-sidenav {
+  position: relative;
+  display: inline-block;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  padding-top:    10px;
+  padding-bottom: 10px;
+  text-shadow: 0 1px 0 #fff;
+  background-color: #f7f5fa;
+  border-radius: 5px;
+}
+
+@media screen and (min-width: 992px) {
+  .enamldoc-sidenav {
+    width: 213px;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .enamldoc-sidenav  {
+    width: 263px;
+  }
+}
