@@ -13,8 +13,8 @@
 
         // If the sidebar fits completely on the window, pin the top of
         // the bar to the scroll position, "fixing" it in-place.
-        var offset = this.$offset;
-        var height = this.outerHeight() + 60;
+        var offset = this.topOffset;
+        var height = this.outerHeight(true);
         var winHeight = this.$window.height();
         var scrollTop = this.$window.scrollTop();
         if( height + offset < winHeight )
@@ -44,17 +44,26 @@
         this.css("top", 0);
     }
 
+
     $(window).load(function () {
-        var $sideBar = $("#enamldoc-sidebar");
-        if( $sideBar.length )
+        var sideBar = $("#enamldoc-sidebar");
+        if( sideBar.length )
         {
-            $sideBar.$window = $(window);
-            $sideBar.$offset = $sideBar.offset().top;
-            $(window).on('click', $.proxy(updateSideBarPosition, $sideBar));
-            $(window).on('scroll', $.proxy(updateSideBarPosition, $sideBar));
-            $(window).on('resize', $.proxy(updateSideBarPosition, $sideBar));
-            $.proxy(updateSideBarPosition, $sideBar)();
+            var $window = $(window);
+            sideBar.$window = $window;
+            sideBar.topOffset = sideBar.offset().top;
+            var updater = $.proxy(updateSideBarPosition, sideBar);
+            $window.on('click', updater);
+            $window.on('scroll', updater);
+            $window.on('resize', updater);
+            updater();
         }
+    });
+
+
+    $(document).ready(function () {
+        $(".enamldoc-sidenav ul").addClass("nav nav-list");
+        $(".enamldoc-sidenav > ul > li > a").addClass("nav-header");
     });
 
 }(window.$jqTheme || window.jQuery));

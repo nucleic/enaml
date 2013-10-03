@@ -2,9 +2,7 @@
   padding: 5px 20px;
 }
 
-/* The code below is based on the bootstrap website sidebar */
 
-/* First level of nav */
 .enamldoc-sidenav {
   position: relative;
   display: inline-block;
@@ -17,11 +15,62 @@
   border-radius: 5px;
 }
 
+
+.enamldoc-sidenav .nav > li > a {
+  display: block;
+  color: #716b7a;
+  padding: 5px 20px;
+}
+
+
+.enamldoc-sidenav .nav > li > a:hover,
+.enamldoc-sidenav .nav > li > a:focus {
+  text-decoration: none;
+  background-color: #e5e3e9;
+  border-right: 1px solid #dbd8e0;
+}
+
+
+.enamldoc-sidenav .nav > .active > a,
+.enamldoc-sidenav .nav > .active:hover > a,
+.enamldoc-sidenav .nav > .active:focus > a {
+  font-weight: bold;
+  color: #563d7c;
+  background-color: transparent;
+  border-right: 1px solid #563d7c;
+}
+
+
+.enamldoc-sidenav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 30px;
+  font-size: 90%;
+}
+
+
+.enamldoc-sidenav .nav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 40px;
+  font-size: 90%;
+}
+
+
+.enamldoc-sidenav .nav .nav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 50px;
+  font-size: 90%;
+}
+
+
 @media screen and (min-width: 992px) {
   .enamldoc-sidenav {
     width: 213px;
   }
 }
+
 
 @media screen and (min-width: 1200px) {
   .enamldoc-sidenav  {
