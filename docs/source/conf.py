@@ -110,7 +110,7 @@ exclude_patterns = ['_templates', '_sphinxext']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'trac'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -157,9 +157,9 @@ html_theme = 'bootstrap'
 ##     'sidebarwidth' : '20em'
 ##     }
 html_theme_options = {
-    'navbar_class': 'navbar-inverse',
+    #'navbar_class': 'navbar-inverse',
     'navbar_sidebarrel': False,
-    'bootswatch_theme': 'spacelab',
+    'bootswatch_theme': 'cosmo',
     'bootstrap_version': '3',
 }
 
