@@ -1,3 +1,9 @@
+.paddedimg {
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+
 .enamldoc-sidenav form, .enamldoc-sidenav #sourcelink {
   padding: 5px 20px;
 }
