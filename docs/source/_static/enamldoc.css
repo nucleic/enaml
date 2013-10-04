@@ -1,6 +1,13 @@
-.paddedimg {
-  margin-top: 20px;
-  margin-bottom: 30px;
+.alert-info {
+  background-color: #FFFB85;
+  border-color: #FFFB85;
+  color: #333333;
+}
+
+
+.h-imgs img {
+  float: left;
+  padding: 10px;
 }
 
 
