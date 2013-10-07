@@ -17,9 +17,8 @@ When you are comfortable with the topics here, have a look at the
     introduction
     installation
     anatomy
-    operators
+    models
     layout
-    widgets
 
 
 .. list-table::
@@ -43,12 +42,13 @@ When you are comfortable with the topics here, have a look at the
         syntactic constructs and framework components combine to create a
         simple user interface application.
 
-    * - :doc:`operators`
+    * - :doc:`models`
 
-        One of the great features of Enaml is its rich set of operators. This
-        section describes how those operators are used to connect user defined
-        data models to Enaml views and how they automatically keep the views
-        up-to-date when the data in the models change at runtime.
+        One of the great features of Enaml is its ability to automatically bind
+        to data models through a rich set of operators. This section describes
+        how those operators are used to connect user defined data models to
+        Enaml views and how they automatically keep the views up-to-date when
+        the data in the models change at runtime.
 
     * - :doc:`layout`
 
@@ -56,10 +56,3 @@ When you are comfortable with the topics here, have a look at the
         become tedious for all but the simplest of cases. Enaml sheds the
         status quo and provides a flexible layout system which uses symbolic
         constraints. This section covers the basics of constraints layout.
-
-    * - :doc:`widgets`
-
-        This sections provides a brief overview about the structure of an
-        Enaml widget and how it communicates with a rendering backend. A
-        high level understanding of the widget structure is useful for
-        building a mental model of the application data and event flow.
