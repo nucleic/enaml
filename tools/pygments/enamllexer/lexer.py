@@ -5,77 +5,168 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from pygments.lexer import RegexLexer, include, combined, bygroups
+from pygments.lexer import RegexLexer, bygroups
 from pygments.lexers.agile import PythonLexer
 
-from pygments.token import(
-    Text, Comment, Operator, Keyword, Name, String, Number, Punctuation
+from pygments.token import Text, Keyword, Name, Punctuation, Operator
+
+
+ENAMLDEF_START = (
+    r'^(enamldef)([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(\()',
+    bygroups(Keyword, Text, Name.Class, Text, Punctuation),
+    'enamldef_base',
 )
 
 
-# TODO use state transitions to lex arguments and identifiers
-ENAML_DEF = (
-    (r'^(enamldef)([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)'
-     r'(\()(.*?)(\))([ \t]*)(:)([ \t]*\n)'),
-    bygroups(Keyword, Text, Name.Class, Text,
-        Punctuation, Text, Punctuation, Text, Punctuation, Text),
+ENAMLDEF_BASE = (
+    r'(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)',
+    bygroups(Text, Text, Text),
+    'enamldef_end',
 )
 
 
-CHILD_DEF = (
-    r'^([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(:)([ \t]*\n)',
-    bygroups(Text, Name.Tag, Text, Punctuation, Text),
+ENAMLDEF_END = (
+    r'(\))([ \t]*)(:)([ \t]*\n)',
+    bygroups(Punctuation, Text, Punctuation, Text),
+    '#pop:2',
 )
 
 
-CHILD_DEF_ID = (
-    (r'^([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(:)([ \t]*)'
-     r'([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(:)([ \t]*\n)'),
-    bygroups(Text, Name.Tag, Text, Punctuation, Text,
-        Name.Entity, Text, Punctuation, Text),
+ENAMLDEF_END_ID = (
+    r'(\))([ \t]*)(:)([ \t]*)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(:)([ \t]*\n)',
+    bygroups(Punctuation, Text, Punctuation, Text, Name.Entity, Text,
+        Punctuation, Text),
+    '#pop:2',
+)
+
+
+TEMPLATE_START = (
+    r'^(template)([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(\()',
+    bygroups(Keyword, Text, Name.Function, Text, Punctuation),
+    'template_end',
+)
+
+
+TEMPLATE_END = (
+    r'(.*?)(\))([ \t]*)(:)([ \t]*\n)',
+    bygroups(Text, Punctuation, Text, Punctuation, Text),
+    '#pop',
+)
+
+
+TEMPLATEINST_START = (
+    r'^([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(\()',
+    bygroups(Text, Name.Tag, Text, Punctuation),
+    'templateinst_end',
+)
+
+
+TEMPLATEINST_END = (
+    r'(.*?)(\))([ \t]*)(:)([ \t]*\n)',
+    bygroups(Text, Punctuation, Text, Punctuation, Text),
+    '#pop',
+)
+
+
+TEMPLATEINST_END_ID = (
+    r'(.*?)(\))([ \t]*)(:)([ \t]*)(?=\*?[a-zA-Z_])',
+    bygroups(Text, Punctuation, Text, Punctuation, Text),
+    'templateinst_id',
+)
+
+
+TEMPLATEINST_ID_1 = (
+    r'(\*)([a-zA-Z_][a-zA-Z0-9_]*)',
+    bygroups(Punctuation, Name.Entity),
+)
+
+
+TEMPLATEINST_ID_2 = (
+    r'[a-zA-Z_][a-zA-Z0-9_]*', Name.Entity
+)
+
+
+TEMPLATEINST_ID_3 = (
+    r',', Punctuation
+)
+
+
+TEMPLATEINST_ID_4 = (
+    r'\s*', Text
+)
+
+
+TEMPLATEINST_ID_END = (
+    r'(:)([ \t]*\n)',
+    bygroups(Punctuation, Text),
+    '#pop:2',
+)
+
+
+CHILDDEF_START = (
+    r'^([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(:)(?=[ \t]*[a-zA-Z_\n])',
+    bygroups(Text, Name.Tag, Text, Punctuation),
+    'childdef_end',
+)
+
+
+CHILDDEF_END = (
+    r'[ \t]*\n', Text, '#pop',
+)
+
+
+CHILDDEF_END_ID = (
+    r'([ \t]*)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(:)([ \t]*\n)',
+    bygroups(Text, Name.Entity, Text, Punctuation, Text),
+    '#pop',
 )
 
 
 ENAML_TOKENS = PythonLexer.tokens.copy()
 ENAML_TOKENS['root'] = [
-    (r'\n', Text),
-    (r'^(\s*)([rRuU]{,2}"""(?:.|\n)*?""")', bygroups(Text, String.Doc)),
-    (r"^(\s*)([rRuU]{,2}'''(?:.|\n)*?''')", bygroups(Text, String.Doc)),
-    ENAML_DEF,
-    CHILD_DEF_ID,
-    CHILD_DEF,
-    (r'[^\S\n]+', Text),
-    (r'#.*$', Comment),
-    (r'[]{}:(),;[]', Punctuation),
-    (r'\\\n', Text),
-    (r'\\', Text),
-    (r'(in|is|and|or|not)\b', Operator.Word),
-    (r'!=|==|<<|>>|[-~+/*%=<>&^|.]', Operator),
-    include('keywords'),
-    (r'(def)((?:\s|\\\s)+)', bygroups(Keyword, Text), 'funcname'),
-    (r'(class)((?:\s|\\\s)+)', bygroups(Keyword, Text), 'classname'),
-    (r'(template)((?:\s|\\\s)+)', bygroups(Keyword, Text), 'funcname'),
-    (r'(from)((?:\s|\\\s)+)', bygroups(Keyword.Namespace, Text), 'fromimport'),
-    (r'(import)((?:\s|\\\s)+)', bygroups(Keyword.Namespace, Text), 'import'),
-    include('builtins'),
-    include('backtick'),
-    ('(?:[rR]|[uU][rR]|[rR][uU])"""', String, 'tdqs'),
-    ("(?:[rR]|[uU][rR]|[rR][uU])'''", String, 'tsqs'),
-    ('(?:[rR]|[uU][rR]|[rR][uU])"', String, 'dqs'),
-    ("(?:[rR]|[uU][rR]|[rR][uU])'", String, 'sqs'),
-    ('[uU]?"""', String, combined('stringescape', 'tdqs')),
-    ("[uU]?'''", String, combined('stringescape', 'tsqs')),
-    ('[uU]?"', String, combined('stringescape', 'dqs')),
-    ("[uU]?'", String, combined('stringescape', 'sqs')),
-    include('name'),
-    include('numbers'),
+    ENAMLDEF_START,
+    TEMPLATE_START,
+    TEMPLATEINST_START,
+    CHILDDEF_START,
+    (r'(alias|attr|const|event)\b', Keyword),
+    (r':=', Operator),
+] + ENAML_TOKENS['root']
+
+
+ENAML_TOKENS['enamldef_base'] = [
+    ENAMLDEF_BASE,
 ]
 
 
-ENAML_TOKENS['keywords'] = [
-    (r'(alias|assert|attr|break|const|continue|del|elif|else|except|exec|'
-     r'event|finally|for|global|if|lambda|pass|print|raise|'
-     r'return|try|while|yield|as|with)\b', Keyword),
+ENAML_TOKENS['enamldef_end'] = [
+    ENAMLDEF_END_ID,
+    ENAMLDEF_END,
+]
+
+
+ENAML_TOKENS['template_end'] = [
+    TEMPLATE_END,
+]
+
+
+ENAML_TOKENS['templateinst_end'] = [
+    TEMPLATEINST_END_ID,
+    TEMPLATEINST_END,
+]
+
+
+ENAML_TOKENS['templateinst_id'] = [
+    TEMPLATEINST_ID_END,
+    TEMPLATEINST_ID_1,
+    TEMPLATEINST_ID_2,
+    TEMPLATEINST_ID_3,
+    TEMPLATEINST_ID_4,
+]
+
+
+ENAML_TOKENS['childdef_end'] = [
+    CHILDDEF_END_ID,
+    CHILDDEF_END,
 ]
 
 
@@ -87,5 +178,4 @@ class EnamlLexer(RegexLexer):
     aliases = ['enaml']
     filenames = ['*.enaml']
     mimetypes = ['text/x-enaml', 'application/x-enaml']
-
     tokens = ENAML_TOKENS
