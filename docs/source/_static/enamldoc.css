@@ -11,6 +11,21 @@
 }
 
 
+.padded-img img {
+  padding: 10px;
+}
+
+
+.highlighttable {
+  width: 100%;
+}
+
+
+.highlighttable .code {
+  width: 100%;
+}
+
+
 .enamldoc-sidenav form, .enamldoc-sidenav #sourcelink {
   padding: 5px 20px;
 }
