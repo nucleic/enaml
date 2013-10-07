@@ -10,7 +10,7 @@ for the framework.
 
 .. seealso::
 
-    - For an intro to the Enaml language structure, see :doc:`anatomy`.
+    - For an intro to the Enaml language structure, see the :doc:`anatomy`.
 
     - For advanced articles on the Enaml language and framework,
       see the :doc:`/dev_guides/index`.
