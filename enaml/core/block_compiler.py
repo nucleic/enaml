@@ -102,6 +102,41 @@ def collect_local_names(node):
     return const_names, param_names
 
 
+def bad_pragma(name, filename, lineno):
+    """ Emit a warning for an unrecognized pragma.
+
+    Parameters
+    ----------
+    name : str
+        The name of the unrecognized pragma.
+
+    filename : str
+        The name of the file with the unrecognized pragma.
+
+    lineno : int
+        The line number of the unrecognized pragma.
+
+    """
+    import warnings
+    msg = "unrecognized pragma '%s'" % name
+    warnings.warn_explicit(msg, SyntaxWarning, filename, lineno)
+
+
+def bad_pragma_args(filename, lineno):
+    """ Emit a warning about unhandled pragma args.
+
+    filename : str
+        The name of the file with the offending pragma.
+
+    lineno : int
+        The line number of the offending pragma.
+
+    """
+    import warnings
+    msg = "unhandled pragma arguments"
+    warnings.warn_explicit(msg, SyntaxWarning, filename, lineno)
+
+
 class BlockCompiler(Atom):
     """ A base class for creating block compilers.
 
@@ -593,16 +628,36 @@ class BlockCompiler(Atom):
             The index to use for the parent of the node.
 
         """
-        cg = self.code_generator
+        pragma_defer = False
+        for pragma in node.pragmas:
+            if pragma.command == 'defer':
+                pragma_defer = True
+                if len(pragma.arguments) > 0:
+                    bad_pragma_args(self.filename, pragma.lineno)
+            else:
+                bad_pragma(pragma.command, self.filename, pragma.lineno)
 
-        # No pragmas are available yet for a template instance.
-        if len(node.pragmas) > 0:
-            import warnings
-            msg_t = "unrecognized pragma '%s'"
-            for prag in node.pragmas:
-                msg = msg_t % prag.command
-                args = (msg, SyntaxWarning, self.filename, prag.lineno)
-                warnings.warn_explicit(*args)
+        if pragma_defer:
+            self.gen_TemplateInst_defer(node, index, parent)
+        else:
+            self.gen_TemplateInst_normal(node, index, parent)
+
+    def gen_TemplateInst_normal(self, node, index, parent):
+        """ Build the compiler node for a normal TemplateInst.
+
+        Parameters
+        ----------
+        node : TemplateInst
+            The TemplateInst ast node of interest.
+
+        index : int
+            The index to use for storing the node.
+
+        parent : int
+            The index to use for the parent of the node.
+
+        """
+        cg = self.code_generator
 
         # Set the line number and load the template.
         cg.set_lineno(node.lineno)
@@ -661,6 +716,23 @@ class BlockCompiler(Atom):
 
         # Append the node to the parent node
         self.append_node(parent, index)
+
+    def gen_TemplateInst_defer(self, node, index, parent):
+        """ Build the compiler node for a deferred TemplateInst.
+
+        Parameters
+        ----------
+        node : TemplateInst
+            The TemplateInst ast node of interest.
+
+        index : int
+            The index to use for storing the node.
+
+        parent : int
+            The index to use for the parent of the node.
+
+        """
+        raise NotImplementedError
 
     def gen_Template(self, node, index):
         """ Build the compiler node for a Template.
