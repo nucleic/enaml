@@ -1,0 +1,384 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.field &mdash; Enaml 0.8.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.8.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.1 documentation" href="../../index.html" />
+    <link rel="up" title="enaml.widgets" href="index.html" />
+    <link rel="next" title="enaml.widgets.file_dialog" href="file_dialog.html" />
+    <link rel="prev" title="enaml.widgets.dual_slider" href="dual_slider.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">enaml.widgets.field</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../applib/index.html">applib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../application.html">application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../colors.html">colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core/index.html">core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fonts.html">fonts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../icon.html">icon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../image.html">image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../layout/index.html">layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nodevisitor.html">nodevisitor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scintilla/index.html">scintilla</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../validator.html">validator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../version.html">version</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">widgets</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="abstract_button.html">abstract_button</a></li>
+<li class="toctree-l3"><a class="reference internal" href="action.html">action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="action_group.html">action_group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bounded_date.html">bounded_date</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bounded_datetime.html">bounded_datetime</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bounded_time.html">bounded_time</a></li>
+<li class="toctree-l3"><a class="reference internal" href="calendar.html">calendar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="check_box.html">check_box</a></li>
+<li class="toctree-l3"><a class="reference internal" href="color_dialog.html">color_dialog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="combo_box.html">combo_box</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constraints_widget.html">constraints_widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="container.html">container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="control.html">control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="datetime_selector.html">datetime_selector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="date_selector.html">date_selector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dialog.html">dialog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dock_area.html">dock_area</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dock_events.html">dock_events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dock_item.html">dock_item</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dock_pane.html">dock_pane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dual_slider.html">dual_slider</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="file_dialog.html">file_dialog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="file_dialog_ex.html">file_dialog_ex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow_area.html">flow_area</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow_item.html">flow_item</a></li>
+<li class="toctree-l3"><a class="reference internal" href="form.html">form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frame.html">frame</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group_box.html">group_box</a></li>
+<li class="toctree-l3"><a class="reference internal" href="html.html">html</a></li>
+<li class="toctree-l3"><a class="reference internal" href="image_view.html">image_view</a></li>
+<li class="toctree-l3"><a class="reference internal" href="label.html">label</a></li>
+<li class="toctree-l3"><a class="reference internal" href="main_window.html">main_window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mdi_area.html">mdi_area</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mdi_window.html">mdi_window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="menu.html">menu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="menu_bar.html">menu_bar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpl_canvas.html">mpl_canvas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multiline_field.html">multiline_field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebook.html">notebook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="object_combo.html">object_combo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="page.html">page</a></li>
+<li class="toctree-l3"><a class="reference internal" href="popup_view.html">popup_view</a></li>
+<li class="toctree-l3"><a class="reference internal" href="progress_bar.html">progress_bar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="push_button.html">push_button</a></li>
+<li class="toctree-l3"><a class="reference internal" href="radio_button.html">radio_button</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raw_widget.html">raw_widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scroll_area.html">scroll_area</a></li>
+<li class="toctree-l3"><a class="reference internal" href="separator.html">separator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="slider.html">slider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spin_box.html">spin_box</a></li>
+<li class="toctree-l3"><a class="reference internal" href="splitter.html">splitter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="split_item.html">split_item</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">stack</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack_item.html">stack_item</a></li>
+<li class="toctree-l3"><a class="reference internal" href="status_bar.html">status_bar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="status_item.html">status_item</a></li>
+<li class="toctree-l3"><a class="reference internal" href="timer.html">timer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="time_selector.html">time_selector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="toolkit_dialog.html">toolkit_dialog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="toolkit_object.html">toolkit_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tool_bar.html">tool_bar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="web_view.html">web_view</a></li>
+<li class="toctree-l3"><a class="reference internal" href="widget.html">widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="window.html">window</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <span class="target" id="module-enaml.widgets.field"></span><div class="section" id="enaml-widgets-field">
+<h1>enaml.widgets.field<a class="headerlink" href="#enaml-widgets-field" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.widgets.field.Field" title="enaml.widgets.field.Field"><tt class="xref py py-obj docutils literal"><span class="pre">Field</span></tt></a></td>
+<td>A single line editable text widget.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="enaml.widgets.field.Field">
+<em class="property">class </em><tt class="descclassname">enaml.widgets.field.</tt><tt class="descname">Field</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/field.html#Field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.field.Field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="control.html#enaml.widgets.control.Control" title="enaml.widgets.control.Control"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.control.Control</span></tt></a></p>
+<p>A single line editable text widget.</p>
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.text">
+<tt class="descname">text</tt><a class="headerlink" href="#enaml.widgets.field.Field.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unicode text to display in the field.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.mask">
+<tt class="descname">mask</tt><a class="headerlink" href="#enaml.widgets.field.Field.mask" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>The mask to use for text input:</dt>
+<dd><a class="reference external" href="http://qt-project.org/doc/qt-4.8/qlineedit.html#inputMask-prop">http://qt-project.org/doc/qt-4.8/qlineedit.html#inputMask-prop</a></dd>
+</dl>
+<p>The summary of the mask grammar is as follows:
+A   ASCII alphabetic character required. A-Z, a-z.
+a   ASCII alphabetic character permitted but not required.
+N   ASCII alphanumeric character required. A-Z, a-z, 0-9.
+n   ASCII alphanumeric character permitted but not required.
+X   Any character required.
+x   Any character permitted but not required.
+9   ASCII digit required. 0-9.
+0   ASCII digit permitted but not required.
+D   ASCII digit required. 1-9.
+d   ASCII digit permitted but not required (1-9).
+#   ASCII digit or plus/minus sign permitted but not required.
+H   Hexadecimal character required. A-F, a-f, 0-9.
+h   Hexadecimal character permitted but not required.
+B   Binary character required. 0-1.
+b   Binary character permitted but not required.
+&gt;   All following alphabetic characters are uppercased.
+&lt;   All following alphabetic characters are lowercased.
+!   Switch off case conversion.
+  Use to escape the special characters listed above to use them as separators.</p>
+<p>The mask consists of a string of mask characters and separators, optionally
+followed by a semicolon and the character used for blanks
+Eg: 9 digit phone number: (999) 999-9999;_</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.validator">
+<tt class="descname">validator</tt><a class="headerlink" href="#enaml.widgets.field.Field.validator" title="Permalink to this definition">¶</a></dt>
+<dd><p>The validator to use for this field. If the validator provides
+a client side validator, then text will only be submitted if it
+passes that validator.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.submit_triggers">
+<tt class="descname">submit_triggers</tt><a class="headerlink" href="#enaml.widgets.field.Field.submit_triggers" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of actions which should cause the client to submit its
+text to the server for validation and update. The currently
+supported values are &#8216;lost_focus&#8217;, &#8216;return_pressed&#8217;, and &#8216;auto&#8217;.
+The &#8216;auto_sync&#8217; mode will attempt to validate and synchronize the
+text when the user stops typing.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.placeholder">
+<tt class="descname">placeholder</tt><a class="headerlink" href="#enaml.widgets.field.Field.placeholder" title="Permalink to this definition">¶</a></dt>
+<dd><p>The grayed-out text to display if the field is empty and the
+widget doesn&#8217;t have focus. Defaults to the empty string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.echo_mode">
+<tt class="descname">echo_mode</tt><a class="headerlink" href="#enaml.widgets.field.Field.echo_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>How to display the text in the field. Valid values are &#8216;normal&#8217;
+which displays the text as normal, &#8216;password&#8217; which displays the
+text with an obscured character, and &#8216;silent&#8217; which displays no
+text at all but still allows input.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.max_length">
+<tt class="descname">max_length</tt><a class="headerlink" href="#enaml.widgets.field.Field.max_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum length of the field in characters. The default value
+is Zero and indicates there is no maximum length.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.read_only">
+<tt class="descname">read_only</tt><a class="headerlink" href="#enaml.widgets.field.Field.read_only" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the field is read only. Defaults to False.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.hug_width">
+<tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.field.Field.hug_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>How strongly a component hugs it&#8217;s contents&#8217; width. Fields ignore
+the width hug by default, so they expand freely in width.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.widgets.field.Field.proxy">
+<tt class="descname">proxy</tt><a class="headerlink" href="#enaml.widgets.field.Field.proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the ProxyField object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.widgets.field.Field.field_text">
+<tt class="descname">field_text</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/field.html#Field.field_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.field.Field.field_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the text stored in the field control.</p>
+<p>Depending on the state of the field, this text may be different
+than that stored in the &#8216;text&#8217; attribute.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">unicode</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The unicode text stored in the field.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Oct 07, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

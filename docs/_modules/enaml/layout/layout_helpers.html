@@ -1,22 +1,30 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.layout.layout_helpers &mdash; enaml 0.7.6 documentation</title>
+    <title>enaml.layout.layout_helpers &mdash; Enaml 0.8.1 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.7.6',
+        VERSION:     '0.8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,29 +33,108 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
   </head>
   <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
-      </ul>
-    </div>  
+  
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
             
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
   <h1>Source code for enaml.layout.layout_helpers</h1><div class="highlight"><pre>
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
@@ -93,7 +180,7 @@
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Helper Functions</span>
 <span class="c">#------------------------------------------------------------------------------</span>
-<div class="viewcode-block" id="expand_constraints"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.expand_constraints">[docs]</a><span class="k">def</span> <span class="nf">expand_constraints</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
+<div class="viewcode-block" id="expand_constraints"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.expand_constraints">[docs]</a><span class="k">def</span> <span class="nf">expand_constraints</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A function which expands any DeferredConstraints in the provided</span>
 <span class="sd">    list. This is a generator function which yields the flattened stream</span>
 <span class="sd">    of constraints.</span>
@@ -124,7 +211,7 @@
                 <span class="k">yield</span> <span class="n">cn</span>
 
 </div>
-<div class="viewcode-block" id="is_spacer"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.is_spacer">[docs]</a><span class="k">def</span> <span class="nf">is_spacer</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+<div class="viewcode-block" id="is_spacer"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.is_spacer">[docs]</a><span class="k">def</span> <span class="nf">is_spacer</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Returns True if the given item can be considered a spacer, False</span>
 <span class="sd">    other otherwise.</span>
 
@@ -135,14 +222,14 @@
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Deferred Constraints</span>
 <span class="c">#------------------------------------------------------------------------------</span></div>
-<div class="viewcode-block" id="DeferredConstraints"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.DeferredConstraints">[docs]</a><span class="k">class</span> <span class="nc">DeferredConstraints</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="DeferredConstraints"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.DeferredConstraints">[docs]</a><span class="k">class</span> <span class="nc">DeferredConstraints</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Abstract base class for objects that will yield lists of</span>
 <span class="sd">    constraints upon request.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
 
-<div class="viewcode-block" id="DeferredConstraints.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.DeferredConstraints.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DeferredConstraints.__init__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.DeferredConstraints.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialize a DeferredConstraints instance.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -152,7 +239,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">default_strength</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">default_weight</span> <span class="o">=</span> <span class="bp">None</span>
 </div>
-<div class="viewcode-block" id="DeferredConstraints.__or__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.DeferredConstraints.__or__">[docs]</a>    <span class="k">def</span> <span class="nf">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<div class="viewcode-block" id="DeferredConstraints.__or__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.DeferredConstraints.__or__">[docs]</a>    <span class="k">def</span> <span class="nf">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set the strength of all of the constraints to a common</span>
 <span class="sd">        strength.</span>
 
@@ -168,7 +255,7 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span>
 </div>
-<div class="viewcode-block" id="DeferredConstraints.when"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.DeferredConstraints.when">[docs]</a>    <span class="k">def</span> <span class="nf">when</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">switch</span><span class="p">):</span>
+<div class="viewcode-block" id="DeferredConstraints.when"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.DeferredConstraints.when">[docs]</a>    <span class="k">def</span> <span class="nf">when</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">switch</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A simple method that can be used to switch off the generated</span>
 <span class="sd">        constraints depending on a boolean value.</span>
 
@@ -176,7 +263,7 @@
         <span class="k">if</span> <span class="n">switch</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
 </div>
-<div class="viewcode-block" id="DeferredConstraints.get_constraints"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.DeferredConstraints.get_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">get_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
+<div class="viewcode-block" id="DeferredConstraints.get_constraints"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.DeferredConstraints.get_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">get_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Returns a list of weighted LinearConstraints.</span>
 
 <span class="sd">        Parameters</span>
@@ -232,12 +319,12 @@
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Deferred Constraints Implementations</span>
 <span class="c">#------------------------------------------------------------------------------</span></div>
-<div class="viewcode-block" id="DeferredConstraintsFunction"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.DeferredConstraintsFunction">[docs]</a><span class="k">class</span> <span class="nc">DeferredConstraintsFunction</span><span class="p">(</span><span class="n">DeferredConstraints</span><span class="p">):</span>
+<div class="viewcode-block" id="DeferredConstraintsFunction"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.DeferredConstraintsFunction">[docs]</a><span class="k">class</span> <span class="nc">DeferredConstraintsFunction</span><span class="p">(</span><span class="n">DeferredConstraints</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A concrete implementation of DeferredConstraints which will</span>
 <span class="sd">    call a function to get the constraint list upon request.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="DeferredConstraintsFunction.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.DeferredConstraintsFunction.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<div class="viewcode-block" id="DeferredConstraintsFunction.__init__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.DeferredConstraintsFunction.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialize a DeferredConstraintsFunction.</span>
 
 <span class="sd">        Parameters</span>
@@ -265,12 +352,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwds</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="AbutmentHelper"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AbutmentHelper">[docs]</a><span class="k">class</span> <span class="nc">AbutmentHelper</span><span class="p">(</span><span class="n">DeferredConstraints</span><span class="p">):</span>
+<div class="viewcode-block" id="AbutmentHelper"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AbutmentHelper">[docs]</a><span class="k">class</span> <span class="nc">AbutmentHelper</span><span class="p">(</span><span class="n">DeferredConstraints</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A concrete implementation of DeferredConstraints which will</span>
 <span class="sd">    lay out its components by abutting them in a given orientation.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="AbutmentHelper.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AbutmentHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="AbutmentHelper.__init__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AbutmentHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialize an AbutmentHelper.</span>
 
 <span class="sd">        Parameters</span>
@@ -297,7 +384,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">items</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spacing</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;spacing&#39;</span><span class="p">,</span> <span class="n">DefaultSpacing</span><span class="o">.</span><span class="n">ABUTMENT</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="AbutmentHelper.__repr__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AbutmentHelper.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AbutmentHelper.__repr__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AbutmentHelper.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A pretty string representation of the helper.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -317,12 +404,12 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">cn</span> <span class="k">for</span> <span class="n">cns</span> <span class="ow">in</span> <span class="n">cn_lists</span> <span class="k">for</span> <span class="n">cn</span> <span class="ow">in</span> <span class="n">cns</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="AlignmentHelper"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AlignmentHelper">[docs]</a><span class="k">class</span> <span class="nc">AlignmentHelper</span><span class="p">(</span><span class="n">DeferredConstraints</span><span class="p">):</span>
+<div class="viewcode-block" id="AlignmentHelper"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AlignmentHelper">[docs]</a><span class="k">class</span> <span class="nc">AlignmentHelper</span><span class="p">(</span><span class="n">DeferredConstraints</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A deferred constraints helper class that lays out with a given</span>
 <span class="sd">    anchor to align.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="AlignmentHelper.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AlignmentHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="AlignmentHelper.__init__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AlignmentHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialize an AlignmentHelper.</span>
 
 <span class="sd">        Parameters</span>
@@ -349,7 +436,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">items</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spacing</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;spacing&#39;</span><span class="p">,</span> <span class="n">DefaultSpacing</span><span class="o">.</span><span class="n">ALIGNMENT</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="AlignmentHelper.__repr__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AlignmentHelper.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AlignmentHelper.__repr__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AlignmentHelper.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A pretty string representation of the layout helper.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -373,7 +460,7 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">cn</span> <span class="k">for</span> <span class="n">cns</span> <span class="ow">in</span> <span class="n">cn_lists</span> <span class="k">for</span> <span class="n">cn</span> <span class="ow">in</span> <span class="n">cns</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="BoxHelper"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.BoxHelper">[docs]</a><span class="k">class</span> <span class="nc">BoxHelper</span><span class="p">(</span><span class="n">DeferredConstraints</span><span class="p">):</span>
+<div class="viewcode-block" id="BoxHelper"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.BoxHelper">[docs]</a><span class="k">class</span> <span class="nc">BoxHelper</span><span class="p">(</span><span class="n">DeferredConstraints</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A DeferredConstraints helper class which adds a box model to</span>
 <span class="sd">    the helper.</span>
 
@@ -382,7 +469,7 @@
 <span class="sd">    instances to be nested.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="BoxHelper.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.BoxHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="BoxHelper.__init__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.BoxHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialize a BoxHelper.</span>
 
 <span class="sd">        Parameters</span>
@@ -409,7 +496,7 @@
 <span class="n">ABConstrainable</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">BoxHelper</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="LinearBoxHelper"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.LinearBoxHelper">[docs]</a><span class="k">class</span> <span class="nc">LinearBoxHelper</span><span class="p">(</span><span class="n">BoxHelper</span><span class="p">):</span>
+<div class="viewcode-block" id="LinearBoxHelper"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.LinearBoxHelper">[docs]</a><span class="k">class</span> <span class="nc">LinearBoxHelper</span><span class="p">(</span><span class="n">BoxHelper</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A layout helper which arranges items in a linear box.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -426,7 +513,7 @@
         <span class="s">&#39;vertical&#39;</span><span class="p">:</span> <span class="s">&#39;horizontal&#39;</span><span class="p">,</span>
     <span class="p">}</span>
 
-<div class="viewcode-block" id="LinearBoxHelper.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.LinearBoxHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="LinearBoxHelper.__init__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.LinearBoxHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialize a LinearBoxHelper.</span>
 
 <span class="sd">        Parameters</span>
@@ -461,7 +548,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">spacing</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;spacing&#39;</span><span class="p">,</span> <span class="n">DefaultSpacing</span><span class="o">.</span><span class="n">ABUTMENT</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">margins</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;margins&#39;</span><span class="p">,</span> <span class="n">DefaultSpacing</span><span class="o">.</span><span class="n">BOX_MARGINS</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="LinearBoxHelper.__repr__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.LinearBoxHelper.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LinearBoxHelper.__repr__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.LinearBoxHelper.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A pretty string representation of the layout helper.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -589,11 +676,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">end_col</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_col</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="GridHelper"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.GridHelper">[docs]</a><span class="k">class</span> <span class="nc">GridHelper</span><span class="p">(</span><span class="n">BoxHelper</span><span class="p">):</span>
+<div class="viewcode-block" id="GridHelper"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.GridHelper">[docs]</a><span class="k">class</span> <span class="nc">GridHelper</span><span class="p">(</span><span class="n">BoxHelper</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A layout helper which arranges items in a grid.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="GridHelper.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.GridHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">rows</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="GridHelper.__init__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.GridHelper.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">rows</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialize a GridHelper.</span>
 
 <span class="sd">        Parameters</span>
@@ -644,7 +731,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">col_spacing</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;column_spacing&#39;</span><span class="p">,</span> <span class="n">DefaultSpacing</span><span class="o">.</span><span class="n">ABUTMENT</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">margins</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;margins&#39;</span><span class="p">,</span> <span class="n">DefaultSpacing</span><span class="o">.</span><span class="n">BOX_MARGINS</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="GridHelper.__repr__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.GridHelper.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="GridHelper.__repr__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.GridHelper.__repr__">[docs]</a>    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A pretty string representation of the layout helper.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -798,7 +885,7 @@
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Abstract Constraint Factory</span>
 <span class="c">#------------------------------------------------------------------------------</span></div>
-<div class="viewcode-block" id="AbstractConstraintFactory"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AbstractConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">AbstractConstraintFactory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractConstraintFactory"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AbstractConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">AbstractConstraintFactory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; An abstract constraint factory class. Subclasses must implement</span>
 <span class="sd">    the &#39;constraints&#39; method implement which returns a LinearConstraint</span>
 <span class="sd">    instance.</span>
@@ -807,7 +894,7 @@
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
 
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="AbstractConstraintFactory.validate"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AbstractConstraintFactory.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractConstraintFactory.validate"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AbstractConstraintFactory.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A validator staticmethod that insures a sequence of items is</span>
 <span class="sd">        appropriate for generating a sequence of linear constraints. The</span>
 <span class="sd">        following conditions are verified of the sequence of given items:</span>
@@ -853,7 +940,7 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="n">args</span><span class="p">)</span>
 </div>
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractConstraintFactory.constraints"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AbstractConstraintFactory.constraints">[docs]</a>    <span class="k">def</span> <span class="nf">constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractConstraintFactory.constraints"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AbstractConstraintFactory.constraints">[docs]</a>    <span class="k">def</span> <span class="nf">constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; An abstract method which must be implemented by subclasses.</span>
 <span class="sd">        It should return a list of LinearConstraint instances.</span>
 
@@ -864,13 +951,13 @@
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Abstract Constraint Factory Implementations</span>
 <span class="c">#------------------------------------------------------------------------------</span></div></div>
-<div class="viewcode-block" id="BaseConstraintFactory"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.BaseConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">BaseConstraintFactory</span><span class="p">(</span><span class="n">AbstractConstraintFactory</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseConstraintFactory"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.BaseConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">BaseConstraintFactory</span><span class="p">(</span><span class="n">AbstractConstraintFactory</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A base constraint factory class that implements basic common</span>
 <span class="sd">    logic. It is not meant to be used directly but should rather be</span>
 <span class="sd">    subclassed to be useful.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="BaseConstraintFactory.__init__"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.BaseConstraintFactory.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_anchor</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">second_anchor</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseConstraintFactory.__init__"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.BaseConstraintFactory.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_anchor</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">second_anchor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Create an base constraint instance.</span>
 
 <span class="sd">        Parameters</span>
@@ -889,7 +976,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">spacer</span> <span class="o">=</span> <span class="n">spacer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">second_anchor</span> <span class="o">=</span> <span class="n">second_anchor</span>
 </div>
-<div class="viewcode-block" id="BaseConstraintFactory.constraints"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.BaseConstraintFactory.constraints">[docs]</a>    <span class="k">def</span> <span class="nf">constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseConstraintFactory.constraints"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.BaseConstraintFactory.constraints">[docs]</a>    <span class="k">def</span> <span class="nf">constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Returns LinearConstraint instance which is formed through</span>
 <span class="sd">        an appropriate linear expression for the given space between</span>
 <span class="sd">        the anchors.</span>
@@ -901,7 +988,7 @@
         <span class="k">return</span> <span class="n">spacer</span><span class="o">.</span><span class="n">constrain</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">)</span>
 
 </div></div>
-<div class="viewcode-block" id="SequenceConstraintFactory"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.SequenceConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">SequenceConstraintFactory</span><span class="p">(</span><span class="n">BaseConstraintFactory</span><span class="p">):</span>
+<div class="viewcode-block" id="SequenceConstraintFactory"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.SequenceConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">SequenceConstraintFactory</span><span class="p">(</span><span class="n">BaseConstraintFactory</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A BaseConstraintFactory subclass that represents a constraint</span>
 <span class="sd">    between two anchors of different components separated by some amount</span>
 <span class="sd">    of space. It has a &#39;_make_cns&#39; classmethod which will create a list</span>
@@ -1013,7 +1100,7 @@
         <span class="k">return</span> <span class="n">cns</span>
 
 </div>
-<div class="viewcode-block" id="AbutmentConstraintFactory"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AbutmentConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">AbutmentConstraintFactory</span><span class="p">(</span><span class="n">SequenceConstraintFactory</span><span class="p">):</span>
+<div class="viewcode-block" id="AbutmentConstraintFactory"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AbutmentConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">AbutmentConstraintFactory</span><span class="p">(</span><span class="n">SequenceConstraintFactory</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A SequenceConstraintFactory subclass that represents an abutment</span>
 <span class="sd">    constraint, which is a constraint between two anchors of different</span>
 <span class="sd">    components separated by some amount of space. It has a &#39;from_items&#39;</span>
@@ -1029,7 +1116,7 @@
     <span class="p">}</span>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="AbutmentConstraintFactory.from_items"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AbutmentConstraintFactory.from_items">[docs]</a>    <span class="k">def</span> <span class="nf">from_items</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">spacing</span><span class="p">):</span>
+<div class="viewcode-block" id="AbutmentConstraintFactory.from_items"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AbutmentConstraintFactory.from_items">[docs]</a>    <span class="k">def</span> <span class="nf">from_items</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">spacing</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A classmethod that generates a list of abutment constraints</span>
 <span class="sd">        given a sequence of items, an orientation, and default spacing.</span>
 
@@ -1070,7 +1157,7 @@
         <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_make_cns</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">first_name</span><span class="p">,</span> <span class="n">second_name</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
 
 </div></div>
-<div class="viewcode-block" id="AlignmentConstraintFactory"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AlignmentConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">AlignmentConstraintFactory</span><span class="p">(</span><span class="n">SequenceConstraintFactory</span><span class="p">):</span>
+<div class="viewcode-block" id="AlignmentConstraintFactory"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AlignmentConstraintFactory">[docs]</a><span class="k">class</span> <span class="nc">AlignmentConstraintFactory</span><span class="p">(</span><span class="n">SequenceConstraintFactory</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A SequenceConstraintFactory subclass which represents an</span>
 <span class="sd">    alignmnent constraint, which is a constraint between two anchors of</span>
 <span class="sd">    different components which are aligned but may be separated by some</span>
@@ -1080,7 +1167,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="AlignmentConstraintFactory.from_items"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.AlignmentConstraintFactory.from_items">[docs]</a>    <span class="k">def</span> <span class="nf">from_items</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">anchor_name</span><span class="p">,</span> <span class="n">spacing</span><span class="p">):</span>
+<div class="viewcode-block" id="AlignmentConstraintFactory.from_items"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.AlignmentConstraintFactory.from_items">[docs]</a>    <span class="k">def</span> <span class="nf">from_items</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">anchor_name</span><span class="p">,</span> <span class="n">spacing</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A classmethod that will create a seqence of alignment</span>
 <span class="sd">        constraints given a sequence of items, an anchor name, and</span>
 <span class="sd">        a default spacing.</span>
@@ -1121,7 +1208,7 @@
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Spacers</span>
 <span class="c">#------------------------------------------------------------------------------</span></div></div>
-<div class="viewcode-block" id="Spacer"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.Spacer">[docs]</a><span class="k">class</span> <span class="nc">Spacer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Spacer"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.Spacer">[docs]</a><span class="k">class</span> <span class="nc">Spacer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; An abstract base class for spacers. Subclasses must implement</span>
 <span class="sd">    the &#39;constrain&#39; method.</span>
 
@@ -1133,7 +1220,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">strength</span> <span class="o">=</span> <span class="n">strength</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
 
-<div class="viewcode-block" id="Spacer.when"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.Spacer.when">[docs]</a>    <span class="k">def</span> <span class="nf">when</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">switch</span><span class="p">):</span>
+<div class="viewcode-block" id="Spacer.when"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.Spacer.when">[docs]</a>    <span class="k">def</span> <span class="nf">when</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">switch</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A simple method that can be used to switch off the generated</span>
 <span class="sd">        space depending on a boolean value.</span>
 
@@ -1141,7 +1228,7 @@
         <span class="k">if</span> <span class="n">switch</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
 </div>
-<div class="viewcode-block" id="Spacer.constrain"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.Spacer.constrain">[docs]</a>    <span class="k">def</span> <span class="nf">constrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_anchor</span><span class="p">,</span> <span class="n">second_anchor</span><span class="p">):</span>
+<div class="viewcode-block" id="Spacer.constrain"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.Spacer.constrain">[docs]</a>    <span class="k">def</span> <span class="nf">constrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_anchor</span><span class="p">,</span> <span class="n">second_anchor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Returns the list of generated constraints appropriately</span>
 <span class="sd">        weighted by the default strength and weight, if provided.</span>
 
@@ -1166,7 +1253,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 </div>
-<div class="viewcode-block" id="EqSpacer"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.EqSpacer">[docs]</a><span class="k">class</span> <span class="nc">EqSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
+<div class="viewcode-block" id="EqSpacer"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.EqSpacer">[docs]</a><span class="k">class</span> <span class="nc">EqSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A spacer which represents a fixed amount of space.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1177,7 +1264,7 @@
         <span class="k">return</span> <span class="p">[(</span><span class="n">first_anchor</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">amt</span><span class="p">)</span> <span class="o">==</span> <span class="n">second_anchor</span><span class="p">]</span>
 
 </div>
-<div class="viewcode-block" id="LeSpacer"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.LeSpacer">[docs]</a><span class="k">class</span> <span class="nc">LeSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
+<div class="viewcode-block" id="LeSpacer"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.LeSpacer">[docs]</a><span class="k">class</span> <span class="nc">LeSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A spacer which represents a flexible space with a maximum value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1192,7 +1279,7 @@
                 <span class="n">first_anchor</span> <span class="o">&lt;=</span> <span class="n">second_anchor</span><span class="p">]</span>
 
 </div>
-<div class="viewcode-block" id="GeSpacer"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.GeSpacer">[docs]</a><span class="k">class</span> <span class="nc">GeSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
+<div class="viewcode-block" id="GeSpacer"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.GeSpacer">[docs]</a><span class="k">class</span> <span class="nc">GeSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A spacer which represents a flexible space with a minimum value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1205,7 +1292,7 @@
         <span class="k">return</span> <span class="p">[(</span><span class="n">first_anchor</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">amt</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">second_anchor</span><span class="p">]</span>
 
 </div>
-<div class="viewcode-block" id="FlexSpacer"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.FlexSpacer">[docs]</a><span class="k">class</span> <span class="nc">FlexSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
+<div class="viewcode-block" id="FlexSpacer"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.FlexSpacer">[docs]</a><span class="k">class</span> <span class="nc">FlexSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A spacer which represents a space with a hard minimum, but also</span>
 <span class="sd">    a weaker preference for being that minimum.</span>
 
@@ -1217,7 +1304,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">eq_strength</span> <span class="o">=</span> <span class="n">eq_strength</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eq_weight</span> <span class="o">=</span> <span class="n">eq_weight</span>
 
-<div class="viewcode-block" id="FlexSpacer.constrain"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.FlexSpacer.constrain">[docs]</a>    <span class="k">def</span> <span class="nf">constrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_anchor</span><span class="p">,</span> <span class="n">second_anchor</span><span class="p">):</span>
+<div class="viewcode-block" id="FlexSpacer.constrain"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.FlexSpacer.constrain">[docs]</a>    <span class="k">def</span> <span class="nf">constrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_anchor</span><span class="p">,</span> <span class="n">second_anchor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Return list of LinearConstraint objects that are appropriate to</span>
 <span class="sd">        separate the two anchors according to the amount of space represented by</span>
 <span class="sd">        the spacer.</span>
@@ -1236,7 +1323,7 @@
         <span class="p">]</span>
 
 </div>
-<div class="viewcode-block" id="LayoutSpacer"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.LayoutSpacer">[docs]</a><span class="k">class</span> <span class="nc">LayoutSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
+<div class="viewcode-block" id="LayoutSpacer"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.LayoutSpacer">[docs]</a><span class="k">class</span> <span class="nc">LayoutSpacer</span><span class="p">(</span><span class="n">Spacer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A Spacer instance which supplies convenience symbolic and normal</span>
 <span class="sd">    methods to facilitate specifying spacers in layouts.</span>
 
@@ -1266,7 +1353,7 @@
         <span class="n">spacer</span> <span class="o">=</span> <span class="n">GeSpacer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">amt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">spacer</span><span class="o">.</span><span class="n">_constrain</span><span class="p">(</span><span class="n">first_anchor</span><span class="p">,</span> <span class="n">second_anchor</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LayoutSpacer.flex"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.LayoutSpacer.flex">[docs]</a>    <span class="k">def</span> <span class="nf">flex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="LayoutSpacer.flex"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.LayoutSpacer.flex">[docs]</a>    <span class="k">def</span> <span class="nf">flex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Returns a flex spacer for the current amount.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1276,7 +1363,7 @@
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Layout Helper Functions and Objects</span>
 <span class="c">#------------------------------------------------------------------------------</span></div></div>
-<div class="viewcode-block" id="horizontal"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.horizontal">[docs]</a><span class="k">def</span> <span class="nf">horizontal</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="horizontal"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.horizontal">[docs]</a><span class="k">def</span> <span class="nf">horizontal</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Create a DeferredConstraints object composed of horizontal</span>
 <span class="sd">    abutments for the given sequence of items.</span>
 
@@ -1284,7 +1371,7 @@
     <span class="k">return</span> <span class="n">AbutmentHelper</span><span class="p">(</span><span class="s">&#39;horizontal&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="vertical"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.vertical">[docs]</a><span class="k">def</span> <span class="nf">vertical</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="vertical"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.vertical">[docs]</a><span class="k">def</span> <span class="nf">vertical</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Create a DeferredConstraints object composed of vertical</span>
 <span class="sd">    abutments for the given sequence of items.</span>
 
@@ -1292,7 +1379,7 @@
     <span class="k">return</span> <span class="n">AbutmentHelper</span><span class="p">(</span><span class="s">&#39;vertical&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="hbox"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.hbox">[docs]</a><span class="k">def</span> <span class="nf">hbox</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="hbox"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.hbox">[docs]</a><span class="k">def</span> <span class="nf">hbox</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Create a DeferredConstraints object composed of horizontal</span>
 <span class="sd">    abutments for a given sequence of items.</span>
 
@@ -1300,7 +1387,7 @@
     <span class="k">return</span> <span class="n">LinearBoxHelper</span><span class="p">(</span><span class="s">&#39;horizontal&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="vbox"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.vbox">[docs]</a><span class="k">def</span> <span class="nf">vbox</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="vbox"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.vbox">[docs]</a><span class="k">def</span> <span class="nf">vbox</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Create a DeferredConstraints object composed of vertical abutments</span>
 <span class="sd">    for a given sequence of items.</span>
 
@@ -1308,7 +1395,7 @@
     <span class="k">return</span> <span class="n">LinearBoxHelper</span><span class="p">(</span><span class="s">&#39;vertical&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="align"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.align">[docs]</a><span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="align"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.align">[docs]</a><span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Align the given anchors of the given components. Inter-component</span>
 <span class="sd">    spacing is allowed.</span>
 
@@ -1316,7 +1403,7 @@
     <span class="k">return</span> <span class="n">AlignmentHelper</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="grid"><a class="viewcode-back" href="../../../api_ref/enaml.layout.html#enaml.layout.layout_helpers.grid">[docs]</a><span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="o">*</span><span class="n">rows</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+<div class="viewcode-block" id="grid"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.grid">[docs]</a><span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="o">*</span><span class="n">rows</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Create a DeferredConstraints object which lays out items in a</span>
 <span class="sd">    grid.</span>
 
@@ -1327,46 +1414,22 @@
 <span class="n">spacer</span> <span class="o">=</span> <span class="n">LayoutSpacer</span><span class="p">(</span><span class="n">DefaultSpacing</span><span class="o">.</span><span class="n">ABUTMENT</span><span class="p">)</span>
 </pre></div>
 
-          </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
+      
+  </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
-        &copy; Copyright 2013, Nucleic Development Team.
-      <br>
-      Last updated on May 07, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
-    </div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Oct 07, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
   </body>
 </html>

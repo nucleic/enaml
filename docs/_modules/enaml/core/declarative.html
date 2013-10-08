@@ -1,22 +1,30 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.core.declarative &mdash; enaml 0.7.6 documentation</title>
+    <title>enaml.core.declarative &mdash; Enaml 0.8.1 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.7.6',
+        VERSION:     '0.8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,29 +33,108 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
   </head>
   <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
-      </ul>
-    </div>  
+  
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
             
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
   <h1>Source code for enaml.core.declarative</h1><div class="highlight"><pre>
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
@@ -56,13 +143,15 @@
 <span class="c">#</span>
 <span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
 <span class="c">#------------------------------------------------------------------------------</span>
-<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Event</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">Unicode</span>
+<span class="kn">from</span> <span class="nn">atom.datastructures.api</span> <span class="kn">import</span> <span class="n">sortedmap</span>
 
 <span class="kn">from</span> <span class="nn">.declarative_meta</span> <span class="kn">import</span> <span class="n">DeclarativeMeta</span>
+<span class="kn">from</span> <span class="nn">.expression_engine</span> <span class="kn">import</span> <span class="n">ExpressionEngine</span>
 <span class="kn">from</span> <span class="nn">.object</span> <span class="kn">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">flag_generator</span><span class="p">,</span> <span class="n">flag_property</span>
 
 
-<div class="viewcode-block" id="d_"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.d_">[docs]</a><span class="k">def</span> <span class="nf">d_</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="n">readable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">writable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="d_"><a class="viewcode-back" href="../../../api_ref/core/declarative.html#enaml.core.declarative.d_">[docs]</a><span class="k">def</span> <span class="nf">d_</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="n">readable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">writable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Mark an Atom member as bindable from Enaml syntax.</span>
 
 <span class="sd">    Parameters</span>
@@ -73,10 +162,12 @@
 <span class="sd">    readable : bool, optional</span>
 <span class="sd">        Whether the member is readable from Enaml syntax. The member</span>
 <span class="sd">        must be readable to use the &#39;&gt;&gt;&#39;, &#39;:=&#39;, and &#39;::&#39; operators.</span>
+<span class="sd">        The default is True.</span>
 
 <span class="sd">    writable : bool, optional</span>
 <span class="sd">        Whether the member is writable from Enaml syntax. The member</span>
 <span class="sd">        must be writable to use the &#39;=&#39;, &#39;&lt;&lt;&#39;, and &#39;:=&#39; operators.</span>
+<span class="sd">        The default is True.</span>
 
 <span class="sd">    final : bool, optional</span>
 <span class="sd">        Whether or not the member can be redefined from Enaml syntax</span>
@@ -98,7 +189,7 @@
 <span class="n">INITIALIZED_FLAG</span> <span class="o">=</span> <span class="n">flag_generator</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="Declarative"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.Declarative">[docs]</a><span class="k">class</span> <span class="nc">Declarative</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
+<div class="viewcode-block" id="Declarative"><a class="viewcode-back" href="../../../api_ref/core/declarative.html#enaml.core.declarative.Declarative">[docs]</a><span class="k">class</span> <span class="nc">Declarative</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The most base class of the Enaml declarative objects.</span>
 
 <span class="sd">    This class provides the core functionality required of declarative</span>
@@ -110,7 +201,7 @@
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">DeclarativeMeta</span>
 
     <span class="c">#: Export the &#39;name&#39; attribute as a declarative member.</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Str</span><span class="p">())</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
 
     <span class="c">#: An event fired when an object is initialized. It is triggered</span>
     <span class="c">#: once during the object lifetime, at the end of the initialize</span>
@@ -121,7 +212,15 @@
     <span class="c">#: not be manipulated directly by user code.</span>
     <span class="n">is_initialized</span> <span class="o">=</span> <span class="n">flag_property</span><span class="p">(</span><span class="n">INITIALIZED_FLAG</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Declarative.initialize"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.Declarative.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c">#: Storage space for the declarative runtime. This value should not</span>
+    <span class="c">#: be manipulated by user code.</span>
+    <span class="n">_d_storage</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">sortedmap</span><span class="p">,</span> <span class="p">())</span>
+
+    <span class="c">#: Storage space for the declarative engine. This value should not</span>
+    <span class="c">#: be manipulated by user code.</span>
+    <span class="n">_d_engine</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ExpressionEngine</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Declarative.initialize"><a class="viewcode-back" href="../../../api_ref/core/declarative.html#enaml.core.declarative.Declarative.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initialize this object all of its children recursively.</span>
 
 <span class="sd">        This is called to give the objects in the tree the opportunity</span>
@@ -140,19 +239,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="Declarative.destroy"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.Declarative.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Declarative.destroy"><a class="viewcode-back" href="../../../api_ref/core/declarative.html#enaml.core.declarative.Declarative.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; An overridden destructor method for declarative cleanup.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="bp">False</span>
-        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__eval_operators__</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
-            <span class="n">op</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">oplist</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__notify_operators__</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">oplist</span><span class="p">:</span>
-                <span class="n">op</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d_storage</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d_engine</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Declarative</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="Declarative.child_added"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.declarative.Declarative.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+<div class="viewcode-block" id="Declarative.child_added"><a class="viewcode-back" href="../../../api_ref/core/declarative.html#enaml.core.declarative.Declarative.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; An overridden child added event handler.</span>
 
 <span class="sd">        This handler will automatically initialize a declarative child</span>
@@ -162,92 +258,25 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">Declarative</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Declarative</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">child</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
-                <span class="n">child</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
-
-    <span class="c">#--------------------------------------------------------------------------</span>
-    <span class="c"># Private Framework API</span>
-    <span class="c">#--------------------------------------------------------------------------</span></div>
-    <span class="k">def</span> <span class="nf">_run_eval_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Run the eval operator attached to the given name.</span>
-
-<span class="sd">        This method is used as a default value handler by the Enaml</span>
-<span class="sd">        operators when an eval operator is bound to the object.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        name : string</span>
-<span class="sd">            The name to which the operator of interest is bound.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        result : object or NotImplemented</span>
-<span class="sd">            The result of the evaluated operator, or NotImplemented if</span>
-<span class="sd">            there is no eval operator bound for the given name.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">op</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__eval_operators__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">op</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">op</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span>
-
-    <span class="k">def</span> <span class="nf">_run_notify_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Invoke a bound notify operator for the given change.</span>
-
-<span class="sd">        This method is used as a static observer by the Enaml</span>
-<span class="sd">        operators when a notify operator is bound to the object.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        change : dict</span>
-<span class="sd">            The change dictionary for the notification.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">oplist</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__notify_operators__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">oplist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">oplist</span><span class="p">:</span>
-                <span class="n">op</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">change</span><span class="p">)</span></div>
+                <span class="n">child</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span></div></div>
 </pre></div>
 
-          </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
+      
+  </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
-        &copy; Copyright 2013, Nucleic Development Team.
-      <br>
-      Last updated on May 07, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
-    </div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Oct 07, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
   </body>
 </html>

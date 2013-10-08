@@ -1,0 +1,298 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.core.declarative &mdash; Enaml 0.8.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.8.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.1 documentation" href="../../index.html" />
+    <link rel="up" title="enaml.core" href="index.html" />
+    <link rel="next" title="enaml.core.include" href="include.html" />
+    <link rel="prev" title="enaml.core.conditional" href="conditional.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">enaml.core.declarative</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../applib/index.html">applib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../application.html">application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../colors.html">colors</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">core</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="conditional.html">conditional</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">declarative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="include.html">include</a></li>
+<li class="toctree-l3"><a class="reference internal" href="looper.html">looper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="object.html">object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pattern.html">pattern</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../fonts.html">fonts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../icon.html">icon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../image.html">image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../layout/index.html">layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nodevisitor.html">nodevisitor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scintilla/index.html">scintilla</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../validator.html">validator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../version.html">version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../widgets/index.html">widgets</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <span class="target" id="module-enaml.core.declarative"></span><div class="section" id="enaml-core-declarative">
+<h1>enaml.core.declarative<a class="headerlink" href="#enaml-core-declarative" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.core.declarative.d_" title="enaml.core.declarative.d_"><tt class="xref py py-obj docutils literal"><span class="pre">d_</span></tt></a></td>
+<td>Mark an Atom member as bindable from Enaml syntax.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.core.declarative.Declarative" title="enaml.core.declarative.Declarative"><tt class="xref py py-obj docutils literal"><span class="pre">Declarative</span></tt></a></td>
+<td>The most base class of the Enaml declarative objects.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="enaml.core.declarative.d_">
+<tt class="descclassname">enaml.core.declarative.</tt><tt class="descname">d_</tt><big>(</big><em>member</em>, <em>readable=True</em>, <em>writable=True</em>, <em>final=True</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/declarative.html#d_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.declarative.d_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mark an Atom member as bindable from Enaml syntax.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>member</strong> (<em>Member</em>) &#8211; The atom member to mark as bindable from Enaml syntax.</li>
+<li><strong>readable</strong> (<em>bool, optional</em>) &#8211; Whether the member is readable from Enaml syntax. The member must be readable to use the &#8216;&gt;&gt;&#8217;, &#8216;:=&#8217;, and &#8216;::&#8217; operators. The default is True.</li>
+<li><strong>writable</strong> (<em>bool, optional</em>) &#8211; Whether the member is writable from Enaml syntax. The member must be writable to use the &#8216;=&#8217;, &#8216;&lt;&lt;&#8217;, and &#8216;:=&#8217; operators. The default is True.</li>
+<li><strong>final</strong> (<em>bool, optional</em>) &#8211; Whether or not the member can be redefined from Enaml syntax using the &#8216;attr&#8217; keyword. The default is True and indicates that the member cannot be overridden.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.core.declarative.Declarative">
+<em class="property">class </em><tt class="descclassname">enaml.core.declarative.</tt><tt class="descname">Declarative</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/declarative.html#Declarative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.declarative.Declarative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="object.html#enaml.core.object.Object" title="enaml.core.object.Object"><tt class="xref py py-class docutils literal"><span class="pre">enaml.core.object.Object</span></tt></a></p>
+<p>The most base class of the Enaml declarative objects.</p>
+<p>This class provides the core functionality required of declarative
+Enaml types. It can be used directly in a declarative Enaml object
+tree to store and react to state changes. It has no concept of a
+visual representation; that functionality is added by subclasses.</p>
+<dl class="attribute">
+<dt id="enaml.core.declarative.Declarative.__metaclass__">
+<tt class="descname">__metaclass__</tt><a class="headerlink" href="#enaml.core.declarative.Declarative.__metaclass__" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">DeclarativeMeta</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.core.declarative.Declarative.name">
+<tt class="descname">name</tt><a class="headerlink" href="#enaml.core.declarative.Declarative.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export the &#8216;name&#8217; attribute as a declarative member.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.core.declarative.Declarative.initialized">
+<tt class="descname">initialized</tt><a class="headerlink" href="#enaml.core.declarative.Declarative.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>An event fired when an object is initialized. It is triggered
+once during the object lifetime, at the end of the initialize
+method.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.core.declarative.Declarative.is_initialized">
+<tt class="descname">is_initialized</tt><a class="headerlink" href="#enaml.core.declarative.Declarative.is_initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property which gets and sets the initialized flag. This should
+not be manipulated directly by user code.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.declarative.Declarative.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/core/declarative.html#Declarative.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.declarative.Declarative.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize this object all of its children recursively.</p>
+<p>This is called to give the objects in the tree the opportunity
+to initialize additional state which depends upon the object
+tree being fully built. It is the responsibility of external
+code to call this method at the appropriate time. This will
+emit the <cite>initialized</cite> signal after all of the children have
+been initialized.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.declarative.Declarative.destroy">
+<tt class="descname">destroy</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/core/declarative.html#Declarative.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.declarative.Declarative.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden destructor method for declarative cleanup.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.declarative.Declarative.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/declarative.html#Declarative.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.declarative.Declarative.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>An overridden child added event handler.</p>
+<p>This handler will automatically initialize a declarative child
+if this object itself has already been initialized.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Oct 07, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

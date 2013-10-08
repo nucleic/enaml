@@ -1,22 +1,30 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.core.looper &mdash; enaml 0.7.6 documentation</title>
+    <title>enaml.core.looper &mdash; Enaml 0.8.1 documentation</title>
     
-    <link rel="stylesheet" href="../../../_static/rtd.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.7.6',
+        VERSION:     '0.8.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,29 +33,108 @@
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <link rel="top" title="enaml 0.7.6 documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
   </head>
   <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
-          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
-      </ul>
-    </div>  
+  
+  
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
             
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
   <h1>Source code for enaml.core.looper</h1><div class="highlight"><pre>
 <span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
@@ -61,23 +148,13 @@
 <span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Instance</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Typed</span>
 <span class="kn">from</span> <span class="nn">atom.datastructures.api</span> <span class="kn">import</span> <span class="n">sortedmap</span>
 
-<span class="kn">from</span> <span class="nn">.conditional</span> <span class="kn">import</span> <span class="n">Conditional</span>
-<span class="kn">from</span> <span class="nn">.declarative</span> <span class="kn">import</span> <span class="n">Declarative</span><span class="p">,</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">.compiler_nodes</span> <span class="kn">import</span> <span class="n">new_scope</span>
+<span class="kn">from</span> <span class="nn">.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">.pattern</span> <span class="kn">import</span> <span class="n">Pattern</span>
 
 
-<div class="viewcode-block" id="populate_looper"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.looper.populate_looper">[docs]</a><span class="k">def</span> <span class="nf">populate_looper</span><span class="p">(</span><span class="n">looper</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; The populate function for the Looper class.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">scope_member</span><span class="p">:</span>
-        <span class="n">node</span><span class="o">.</span><span class="n">scope_member</span><span class="o">.</span><span class="n">set_slot</span><span class="p">(</span><span class="n">looper</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">identifier</span><span class="p">:</span>
-        <span class="n">f_locals</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">identifier</span><span class="p">]</span> <span class="o">=</span> <span class="n">looper</span>
-    <span class="n">looper</span><span class="o">.</span><span class="n">_cdata</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">))</span>
-
-</div>
-<div class="viewcode-block" id="Looper"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.looper.Looper">[docs]</a><span class="k">class</span> <span class="nc">Looper</span><span class="p">(</span><span class="n">Declarative</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A declarative object that repeats its children over an iterable.</span>
+<div class="viewcode-block" id="Looper"><a class="viewcode-back" href="../../../api_ref/core/looper.html#enaml.core.looper.Looper">[docs]</a><span class="k">class</span> <span class="nc">Looper</span><span class="p">(</span><span class="n">Pattern</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A pattern object that repeats its children over an iterable.</span>
 
 <span class="sd">    The children of a `Looper` are used as a template when creating new</span>
 <span class="sd">    objects for each item in the given `iterable`. Each iteration of the</span>
@@ -92,8 +169,6 @@
 <span class="sd">    will only create and destroy children for the items in the iterable</span>
 <span class="sd">    which have changed.</span>
 
-<span class="sd">    Creating a `Looper` without a parent is a programming error.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c">#: The iterable to use when creating the items for the looper.</span>
     <span class="n">iterable</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Instance</span><span class="p">(</span><span class="n">Iterable</span><span class="p">))</span>
@@ -107,64 +182,24 @@
     <span class="c">#: Private data storage which maps the user iterable data to the</span>
     <span class="c">#: list of items created for that iteration. This allows the looper</span>
     <span class="c">#: to only create and destroy the items which have changed.</span>
-    <span class="n">_idata</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">sortedmap</span><span class="p">,</span> <span class="p">())</span>
-
-    <span class="c">#: Private data storage for the looper.</span>
-    <span class="n">_cdata</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span>
-
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Looper.populator_func"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.looper.Looper.populator_func">[docs]</a>    <span class="k">def</span> <span class="nf">populator_func</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the populator function for the Looper class.</span>
-
-<span class="sd">        This returns a populator function which intercepts the creation</span>
-<span class="sd">        of the child items and defers it until the initialization pass.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">populate_looper</span>
+    <span class="n">_iter_data</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">sortedmap</span><span class="p">,</span> <span class="p">())</span>
 
     <span class="c">#--------------------------------------------------------------------------</span>
     <span class="c"># Lifetime API</span>
-    <span class="c">#--------------------------------------------------------------------------</span></div>
-<div class="viewcode-block" id="Looper.initialize"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.looper.Looper.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; A reimplemented initialization method.</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Looper.destroy"><a class="viewcode-back" href="../../../api_ref/core/looper.html#enaml.core.looper.Looper.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented destructor.</span>
 
-<span class="sd">        This method will create and initialize the loop items using the</span>
-<span class="sd">        looper templates to generate the items.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Looper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_items</span><span class="p">()</span>
-        <span class="c"># The looper is responsible for initializing new items during</span>
-        <span class="c"># the initialization pass. At all other times, the parent</span>
-        <span class="c"># declarative object will initialize new children.</span>
-        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">iteration</span><span class="p">:</span>
-                <span class="n">item</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
-</div>
-<div class="viewcode-block" id="Looper.destroy"><a class="viewcode-back" href="../../../api_ref/enaml.core.html#enaml.core.looper.Looper.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; A reimplemented destructor</span>
-
-<span class="sd">        The looper will destroy all of its items, provided that the</span>
-<span class="sd">        items are not already destroyed and the parent is not in the</span>
-<span class="sd">        process of being destroyed.</span>
+<span class="sd">        The looper will release the owned items on destruction.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
-        <span class="n">destroy_items</span> <span class="o">=</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">parent</span><span class="o">.</span><span class="n">is_destroyed</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Looper</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
-        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
-        <span class="k">if</span> <span class="n">destroy_items</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">iteration</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">is_destroyed</span><span class="p">:</span>
-                        <span class="n">item</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterable</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdata</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_data</span>
 
     <span class="c">#--------------------------------------------------------------------------</span>
-    <span class="c"># Private API</span>
+    <span class="c"># Observers</span>
     <span class="c">#--------------------------------------------------------------------------</span></div>
     <span class="k">def</span> <span class="nf">_observe_iterable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A private observer for the `iterable` attribute.</span>
@@ -173,56 +208,69 @@
 <span class="sd">        items will be refreshed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;update&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_items</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_refresh_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; A private method which refreshes the loop items.</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Pattern API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Looper.pattern_items"><a class="viewcode-back" href="../../../api_ref/core/looper.html#enaml.core.looper.Looper.pattern_items">[docs]</a>    <span class="k">def</span> <span class="nf">pattern_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get a list of items created by the pattern.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">,</span> <span class="p">[])</span>
+</div>
+<div class="viewcode-block" id="Looper.refresh_items"><a class="viewcode-back" href="../../../api_ref/core/looper.html#enaml.core.looper.Looper.refresh_items">[docs]</a>    <span class="k">def</span> <span class="nf">refresh_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Refresh the items of the pattern.</span>
 
 <span class="sd">        This method destroys the old items and creates and initializes</span>
 <span class="sd">        the new items.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">old_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">[:]</span>
-        <span class="n">old_idata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span>
+        <span class="n">old_iter_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_data</span>
         <span class="n">iterable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterable</span>
-        <span class="n">cdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdata</span>
-        <span class="n">new_idata</span> <span class="o">=</span> <span class="n">sortedmap</span><span class="p">()</span>
+        <span class="n">pattern_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern_nodes</span>
+        <span class="n">new_iter_data</span> <span class="o">=</span> <span class="n">sortedmap</span><span class="p">()</span>
         <span class="n">new_items</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">if</span> <span class="n">iterable</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">cdata</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">iterable</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">loop_index</span><span class="p">,</span> <span class="n">loop_item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
-                <span class="n">iteration</span> <span class="o">=</span> <span class="n">old_idata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">loop_item</span><span class="p">)</span>
+                <span class="n">iteration</span> <span class="o">=</span> <span class="n">old_iter_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">loop_item</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">iteration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                    <span class="n">new_idata</span><span class="p">[</span><span class="n">loop_item</span><span class="p">]</span> <span class="o">=</span> <span class="n">iteration</span>
+                    <span class="n">new_iter_data</span><span class="p">[</span><span class="n">loop_item</span><span class="p">]</span> <span class="o">=</span> <span class="n">iteration</span>
                     <span class="n">new_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span>
                     <span class="n">old_items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span>
                     <span class="k">continue</span>
                 <span class="n">iteration</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">new_idata</span><span class="p">[</span><span class="n">loop_item</span><span class="p">]</span> <span class="o">=</span> <span class="n">iteration</span>
+                <span class="n">new_iter_data</span><span class="p">[</span><span class="n">loop_item</span><span class="p">]</span> <span class="o">=</span> <span class="n">iteration</span>
                 <span class="n">new_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">f_locals</span> <span class="ow">in</span> <span class="n">cdata</span><span class="p">:</span>
-                    <span class="n">new_locals</span> <span class="o">=</span> <span class="n">f_locals</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                    <span class="n">new_locals</span><span class="p">[</span><span class="s">&#39;loop_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loop_index</span>
-                    <span class="n">new_locals</span><span class="p">[</span><span class="s">&#39;loop_item&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loop_item</span>
-                    <span class="k">for</span> <span class="n">child_node</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">child_defs</span><span class="p">:</span>
-                        <span class="n">child</span> <span class="o">=</span> <span class="n">child_node</span><span class="o">.</span><span class="n">typeclass</span><span class="p">()</span>
-                        <span class="n">child_node</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">child_node</span><span class="p">,</span> <span class="n">new_locals</span><span class="p">)</span>
-                        <span class="n">iteration</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">f_locals</span> <span class="ow">in</span> <span class="n">pattern_nodes</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">new_scope</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">f_locals</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_locals</span><span class="p">:</span>
+                        <span class="n">f_locals</span><span class="p">[</span><span class="s">&#39;loop_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loop_index</span>
+                        <span class="n">f_locals</span><span class="p">[</span><span class="s">&#39;loop_item&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loop_item</span>
+                        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+                            <span class="n">child</span> <span class="o">=</span> <span class="n">node</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                                <span class="n">iteration</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">iteration</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="n">old_items</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">old</span> <span class="ow">in</span> <span class="n">iteration</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">old</span><span class="o">.</span><span class="n">is_destroyed</span><span class="p">:</span>
                     <span class="n">old</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_items</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">expanded</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">_recursive_expand</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">new_items</span><span class="p">,</span> <span class="p">[]),</span> <span class="n">expanded</span><span class="p">)</span>
+            <span class="n">recursive_expand</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">new_items</span><span class="p">,</span> <span class="p">[]),</span> <span class="n">expanded</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">insert_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expanded</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">new_items</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_idata</span> <span class="o">=</span> <span class="n">new_idata</span>
 
-</div>
-<span class="k">def</span> <span class="nf">_recursive_expand</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">expanded</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">new_items</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter_data</span> <span class="o">=</span> <span class="n">new_iter_data</span>
+
+</div></div>
+<span class="k">def</span> <span class="nf">recursive_expand</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">expanded</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Recursively expand the list of items created by the looper.</span>
 
 <span class="sd">    This allows the final list to be inserted into the parent and</span>
@@ -232,60 +280,34 @@
 <span class="sd">    ----------</span>
 <span class="sd">    items : list</span>
 <span class="sd">        The list of items to expand. This should be composed of</span>
-<span class="sd">        Looper, Conditional, and other Object instances.</span>
+<span class="sd">        Pattern and other Object instances.</span>
 
 <span class="sd">    expanded : list</span>
 <span class="sd">        The output list. This list will be modified in-place.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Conditional</span><span class="p">):</span>
-            <span class="n">_recursive_expand</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">items</span><span class="p">[:],</span> <span class="n">expanded</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Looper</span><span class="p">):</span>
-            <span class="n">_recursive_expand</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">items</span><span class="p">,</span> <span class="p">[]),</span> <span class="n">expanded</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Pattern</span><span class="p">):</span>
+            <span class="n">recursive_expand</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">pattern_items</span><span class="p">(),</span> <span class="n">expanded</span><span class="p">)</span>
         <span class="n">expanded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 </pre></div>
 
-          </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
+      
+  </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li><a href="../../../index.html">enaml v0.7.6</a> &raquo;</li>
-          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
-      </ul>
-    </div>
-    <div class="footer">
-        &copy; Copyright 2013, Nucleic Development Team.
-      <br>
-      Last updated on May 07, 2013.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
-    </div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Oct 07, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
   </body>
 </html>
