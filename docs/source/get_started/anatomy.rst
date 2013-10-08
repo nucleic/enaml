@@ -47,8 +47,8 @@ visualize how the UI will look and behave, despite the fact that you have no
 other knowledge of Enaml.
 
 
-``enamldef``
-^^^^^^^^^^^^
+enamldef
+^^^^^^^^
 
 The very first thing you'll notice is a new keyword ``enamldef``. Recall that
 Enaml is a *superset* of the Python language and this keyword is one of Enaml's
@@ -99,11 +99,11 @@ requires a single base element in order to create a new ``enamldef``.
 Application Structure
 ---------------------
 
-An Enaml application consists of a collection of ``.enaml`` and ``.py`` files.
-Canonically, the user interface definitions for the application live in the 
-``.enaml`` files, and the application data models and business logic live in
-the ``.py`` files. There is typically an application entry point defined in a 
-``.py`` file which imports the various user interface definitions and data
+An Enaml application consists of a collection of ``.enaml`` and ``.py`` files.
+Canonically, the user interface definitions for the application live in the
+``.enaml`` files, and the application data models and business logic live in
+the ``.py`` files. There is typically an application entry point defined in a
+``.py`` file which imports the various user interface definitions and data
 models, creates an instance of an Enaml application object, shows a window on
 the screen, and then starts the application event loop. For anyone having
 developed a user interface application before, this will all sound familiar.
@@ -204,14 +204,14 @@ For the current example, the following startup file is used:
 
 In the startup file, there are a couple of things to note:
 
-- the import of the ``.enaml`` file into the Python namespace
+- the import of the ``.enaml`` file into the Python namespace
 - the creation of a toolkit specific application object.
 
-Since the Enaml language is not valid Python (remember, Enaml is a *superset* 
+Since the Enaml language is not valid Python (remember, Enaml is a *superset*
 of Python), it must be transformed before it can be used from Python. The
-``enaml.imports()`` context manager is the gateway which makes this
-transformation possible. From within that context, Python’s import statement
-can be used to import ``.enaml`` files into a module’s namespace.
+``enaml.imports()`` context manager is the gateway which makes this
+transformation possible. From within that context, Python's import statement
+can be used to import ``.enaml`` files into a module's namespace.
 
 The second, less magical part of the startup file is the creation of the
 toolkit-specific application object. With rare exception, this is the only time
