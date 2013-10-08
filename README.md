@@ -8,10 +8,10 @@ platform which supports Python and Qt.
 
 A few highlights of the framework:
 
-    * A declarative language which extends the grammar of Python
-    * A set of operators which automatically track runtime dependencies
-    * A layout system which uses symbolic constraint declarations
-    * A design which encourages model-view separation
-    * A well documented and easy to follow code base
+* A declarative language which extends the grammar of Python
+* A set of operators which automatically track runtime dependencies
+* A layout system which uses symbolic constraint declarations
+* A design which encourages model-view separation
+* A well documented and easy to follow code base
 
 See [the docs](http://nucleic.github.io/enaml/docs) for more information.
