@@ -95,7 +95,7 @@
   <ul class="dropdown-menu localtoc"><ul>
 <li><a class="reference internal" href="#">Anatomy of Enaml</a><ul>
 <li><a class="reference internal" href="#enaml-syntax">Enaml Syntax</a><ul>
-<li><a class="reference internal" href="#enamldef"><tt class="docutils literal"><span class="pre">enamldef</span></tt></a></li>
+<li><a class="reference internal" href="#enamldef">enamldef</a></li>
 <li><a class="reference internal" href="#tree-structure">Tree Structure</a></li>
 <li><a class="reference internal" href="#element-state">Element State</a></li>
 <li><a class="reference internal" href="#inheritance">Inheritance</a></li>
@@ -146,7 +146,7 @@
 <li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Anatomy of Enaml</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#enaml-syntax">Enaml Syntax</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#enamldef"><tt class="docutils literal"><span class="pre">enamldef</span></tt></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#enamldef">enamldef</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tree-structure">Tree Structure</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#element-state">Element State</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#inheritance">Inheritance</a></li>
@@ -216,7 +216,7 @@ snippet below is the code that will be used for the example in this article.</p>
 visualize how the UI will look and behave, despite the fact that you have no
 other knowledge of Enaml.</p>
 <div class="section" id="enamldef">
-<h3><tt class="docutils literal"><span class="pre">enamldef</span></tt><a class="headerlink" href="#enamldef" title="Permalink to this headline">¶</a></h3>
+<h3>enamldef<a class="headerlink" href="#enamldef" title="Permalink to this headline">¶</a></h3>
 <p>The very first thing you&#8217;ll notice is a new keyword <tt class="docutils literal"><span class="pre">enamldef</span></tt>. Recall that
 Enaml is a <em>superset</em> of the Python language and this keyword is one of Enaml&#8217;s
 extensions to Python. The keyword is used to declare that the block of code
@@ -257,11 +257,11 @@ requires a single base element in order to create a new <tt class="docutils lite
 </div>
 <div class="section" id="application-structure">
 <h2>Application Structure<a class="headerlink" href="#application-structure" title="Permalink to this headline">¶</a></h2>
-<p>An Enaml application consists of a collection of&nbsp;<tt class="docutils literal"><span class="pre">.enaml``&nbsp;and&nbsp;</span></tt>.py`` files.
+<p>An Enaml application consists of a collection of <tt class="docutils literal"><span class="pre">.enaml</span></tt> and <tt class="docutils literal"><span class="pre">.py</span></tt> files.
 Canonically, the user interface definitions for the application live in the
-<tt class="docutils literal"><span class="pre">.enaml``&nbsp;files,</span> <span class="pre">and</span> <span class="pre">the</span> <span class="pre">application</span> <span class="pre">data</span> <span class="pre">models</span> <span class="pre">and</span> <span class="pre">business</span> <span class="pre">logic</span> <span class="pre">live</span> <span class="pre">in</span>
-<span class="pre">the&nbsp;</span></tt>.py``&nbsp;files. There is typically an application entry point defined in a
-<a href="#id1"><span class="problematic" id="id2">``</span></a>.py``&nbsp;file which imports the various user interface definitions and data
+<tt class="docutils literal"><span class="pre">.enaml</span></tt> files, and the application data models and business logic live in
+the <tt class="docutils literal"><span class="pre">.py</span></tt> files. There is typically an application entry point defined in a
+<tt class="docutils literal"><span class="pre">.py</span></tt> file which imports the various user interface definitions and data
 models, creates an instance of an Enaml application object, shows a window on
 the screen, and then starts the application event loop. For anyone having
 developed a user interface application before, this will all sound familiar.</p>
@@ -347,14 +347,14 @@ must do three things:</p>
 </div>
 <p>In the startup file, there are a couple of things to note:</p>
 <ul class="simple">
-<li>the import of the&nbsp;<a href="#id3"><span class="problematic" id="id4">``</span></a>.enaml``&nbsp;file into the Python namespace</li>
+<li>the import of the <tt class="docutils literal"><span class="pre">.enaml</span></tt> file into the Python namespace</li>
 <li>the creation of a toolkit specific application object.</li>
 </ul>
-<p>Since the Enaml language is not valid Python (remember, Enaml is a&nbsp;<em>superset</em>
+<p>Since the Enaml language is not valid Python (remember, Enaml is a <em>superset</em>
 of Python), it must be transformed before it can be used from Python. The
-<tt class="docutils literal"><span class="pre">enaml.imports()``&nbsp;context</span> <span class="pre">manager</span> <span class="pre">is</span> <span class="pre">the</span> <span class="pre">gateway</span> <span class="pre">which</span> <span class="pre">makes</span> <span class="pre">this</span>
-<span class="pre">transformation</span> <span class="pre">possible.</span> <span class="pre">From</span> <span class="pre">within</span> <span class="pre">that</span> <span class="pre">context,</span> <span class="pre">Python’s&nbsp;import&nbsp;statement</span>
-<span class="pre">can</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">import&nbsp;</span></tt>.enaml``&nbsp;files into a module’s namespace.</p>
+<tt class="docutils literal"><span class="pre">enaml.imports()</span></tt> context manager is the gateway which makes this
+transformation possible. From within that context, Python&#8217;s import statement
+can be used to import <tt class="docutils literal"><span class="pre">.enaml</span></tt> files into a module&#8217;s namespace.</p>
 <p>The second, less magical part of the startup file is the creation of the
 toolkit-specific application object. With rare exception, this is the only time
 when writing an Enaml application where the developer must code anything which
@@ -389,8 +389,8 @@ reflected in the Enaml code from which it was created!</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 07, 2013.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+      Last updated on Oct 08, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
     </p>
   </div>
 </footer>
