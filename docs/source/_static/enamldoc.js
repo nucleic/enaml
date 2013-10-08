@@ -2,62 +2,84 @@
 
     function updateSideBarPosition() {
 
-        // If the window width is such that the sidebar will be stacked
-        // on top, reset the relative top offset to zero.
+        // If the window width is such that the sidebar will be positioned
+        // above the rest of the page content, reset to relative positioning.
         var width = this.$window.width();
         if( width < 992 )
         {
-            this.css("top", 0);
+            this.css({
+                position: "relative",
+                top: 0
+            });
             return;
         }
 
-        // If the sidebar fits completely on the window, pin the top of
-        // the bar to the scroll position, "fixing" it in-place.
+        // Collect the various heights needed for computing position.
         var offset = this.topOffset;
         var height = this.outerHeight(true);
         var winHeight = this.$window.height();
-        var scrollTop = this.$window.scrollTop();
+        var parent = this.parent();
+        var grandParent = parent.parent();
+        var effectiveHeight = Math.max(parent.height(), height);
+        var delta = grandParent.height() - effectiveHeight;
+
+        // If the sidebar fits completely on the window, it is fixed in
+        // place if less than the effective height, or placed relative
+        // top if it is the taller element.
         if( height + offset < winHeight )
         {
-            this.css("top", scrollTop);
+            if( delta > 0 )
+            {
+                this.css({
+                    position: "fixed",
+                    top: offset
+                });
+            }
+            else
+            {
+                this.css({
+                    position: "relative",
+                    top: 0
+                });
+            }
             return;
         }
 
-        // The sidebar is taller than the viewport. If it is not the
-        // tallest item in the row, scroll it at a rate relative to
-        // the scroll percentage of the document. This will cause the
-        // sidebar and the taller content to reach the bottom of the
-        // scroll at the same time, but with different scroll rates.
-        var parent = this.parent();
-        var grandParent = this.parent().parent();
-        var effectiveHeight = Math.max(parent.height(), height);
-        var delta = grandParent.height() - effectiveHeight;
+        // At this point, the sidebar is taller than the viewport. If it is
+        // not the tallest item in the row, scroll it at a rate relative to
+        // the scroll percentage of the document. This will cause the sidebar
+        // and the taller content to reach the bottom of the scroll at the
+        // same time.
         if( delta > 0 )
         {
             var docHeight = $(document).height();
+            var scrollTop = this.$window.scrollTop();
             var perc = 1.0 * scrollTop / (docHeight - winHeight);
-            this.css("top", delta * perc);
+            this.css({
+                position: "relative",
+                top: delta * perc
+            });
             return;
         }
 
-        // The sidebar is the tallest item in the row, treat it normally.
-        this.css("top", 0);
+        // At this point, the sidebar is the tallest item in the row.
+        this.css({
+            position: "relative",
+            top: 0
+        });
     }
 
 
     $(window).load(function () {
         var sideBar = $("#enamldoc-sidebar");
-        if( sideBar.length )
-        {
-            var $window = $(window);
-            sideBar.$window = $window;
-            sideBar.topOffset = sideBar.offset().top;
-            var updater = $.proxy(updateSideBarPosition, sideBar);
-            $window.on('click', updater);
-            $window.on('scroll', updater);
-            $window.on('resize', updater);
-            updater();
-        }
+        var $window = $(window);
+        sideBar.$window = $window;
+        sideBar.topOffset = $("#navbar").height();
+        var updater = $.proxy(updateSideBarPosition, sideBar);
+        $window.on("click", updater);
+        $window.on("scroll", updater);
+        $window.on("resize", updater);
+        updater();
     });
 
 
