@@ -24,7 +24,7 @@ MINOR = 8
 # for bug fix releases and small feature additions.
 MICRO = 1
 
-# The version info for the current release.
+#: A namedtuple of the version info for the current release.
 version_info = namedtuple('version_info', 'major minor micro')
 version_info = version_info(MAJOR, MINOR, MICRO)
 
