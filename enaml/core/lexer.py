@@ -169,6 +169,7 @@ class EnamlLexer(object):
         'RBRACE',
         'RPAR',
         'RSQB',
+        'PRAGMA',
         'STRING',
         'WS',
 
@@ -237,6 +238,7 @@ class EnamlLexer(object):
     #--------------------------------------------------------------------------
     t_COMMA = r','
     t_NUMBER = tokenize.Number
+    t_PRAGMA = r'\$pragma'
 
     # Generate the token matching rules for the operators
     for tok_pattern, tok_name in operators:

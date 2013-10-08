@@ -306,24 +306,11 @@ def p_enaml_module_body2(p):
     p[0] = items
 
 
-def p_enaml_module_item1(p):
+def p_enaml_module_item(p):
     ''' enaml_module_item : stmt
                           | enamldef
                           | template '''
     p[0] = p[1]
-
-
-def p_enaml_module_item2(p):
-    ''' enaml_module_item : decorators enamldef '''
-    decorators = []
-    for decnode in p[1]:
-        expr = ast.Expression()
-        expr.body = decnode
-        python = enaml_ast.PythonExpression(ast=expr, lineno=decnode.lineno)
-        decorators.append(python)
-    enamldef = p[2]
-    enamldef.decorators = decorators
-    p[0] = enamldef
 
 
 #------------------------------------------------------------------------------
@@ -364,7 +351,19 @@ def _validate_enamldef(node, lexer):
 
 
 def p_enamldef1(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_suite '''
+    ''' enamldef : enamldef_impl '''
+    p[0] = p[1]
+
+
+def p_enamldef2(p):
+    ''' enamldef : pragmas enamldef_impl '''
+    node = p[2]
+    node.pragmas = p[1]
+    p[0] = node
+
+
+def p_enamldef_impl1(p):
+    ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_suite '''
     doc, body = p[7]
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], docstring=doc, body=body, lineno=p.lineno(1)
@@ -373,8 +372,8 @@ def p_enamldef1(p):
     p[0] = enamldef
 
 
-def p_enamldef2(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_simple_item '''
+def p_enamldef_impl2(p):
+    ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_simple_item '''
     body = filter(None, [p[7]])
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], body=body,lineno=p.lineno(1)
@@ -383,8 +382,8 @@ def p_enamldef2(p):
     p[0] = enamldef
 
 
-def p_enamldef3(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_suite '''
+def p_enamldef_impl3(p):
+    ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_suite '''
     doc, body = p[9]
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], identifier=p[7], docstring=doc, body=body,
@@ -394,8 +393,8 @@ def p_enamldef3(p):
     p[0] = enamldef
 
 
-def p_enamldef4(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_simple_item '''
+def p_enamldef_impl4(p):
+    ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_simple_item '''
     body = filter(None, [p[9]])
     enamldef = enaml_ast.EnamlDef(
         typename=p[2], base=p[4], identifier=p[7], body=body, lineno=p.lineno(1)
@@ -446,6 +445,62 @@ def p_enamldef_simple_item1(p):
 def p_enamldef_simple_item2(p):
     ''' enamldef_simple_item : PASS NEWLINE '''
     p[0] = None
+
+
+#------------------------------------------------------------------------------
+# Pragmas
+#------------------------------------------------------------------------------
+def p_pragmas1(p):
+    ''' pragmas : pragma pragmas '''
+    p[0] = [p[1]] + p[2]
+
+
+def p_pragmas2(p):
+    ''' pragmas : pragma '''
+    p[0] = [p[1]]
+
+
+def p_pragma1(p):
+    ''' pragma : PRAGMA NAME NEWLINE
+               | PRAGMA NAME LPAR RPAR NEWLINE '''
+    node = enaml_ast.Pragma()
+    node.lineno = p.lineno(1)
+    node.command = p[2]
+    p[0] = node
+
+
+def p_pragma2(p):
+    ''' pragma : PRAGMA NAME LPAR pragma_args RPAR NEWLINE '''
+    node = enaml_ast.Pragma()
+    node.lineno = p.lineno(1)
+    node.command = p[2]
+    node.arguments = p[4]
+    p[0] = node
+
+
+def p_pragma_args1(p):
+    ''' pragma_args : pragma_arg COMMA pragma_args '''
+    p[0] = [p[1]] + p[3]
+
+
+def p_pragma_args2(p):
+    ''' pragma_args : pragma_arg '''
+    p[0] = [p[1]]
+
+
+def p_pragma_arg(p):
+    ''' pragma_arg : NAME '''
+    p[0] = enaml_ast.PragmaArg(kind='token', value=p[1])
+
+
+def p_pragma_arg2(p):
+    ''' pragma_arg : NUMBER '''
+    p[0] = enaml_ast.PragmaArg(kind='number', value=p[1])
+
+
+def p_pragma_arg3(p):
+    ''' pragma_arg : STRING '''
+    p[0] = enaml_ast.PragmaArg(kind='string', value=p[1])
 
 
 #------------------------------------------------------------------------------
@@ -793,7 +848,19 @@ def _validate_template(node, lexer):
 
 
 def p_template1(p):
-    ''' template : TEMPLATE NAME template_params COLON template_suite '''
+    ''' template : template_impl '''
+    p[0] = p[1]
+
+
+def p_template2(p):
+    ''' template : pragmas template_impl '''
+    node = p[2]
+    node.pragmas = p[1]
+    p[0] = node
+
+
+def p_template_impl1(p):
+    ''' template_impl : TEMPLATE NAME template_params COLON template_suite '''
     node = enaml_ast.Template()
     node.lineno = p.lineno(1)
     node.name = p[2]
@@ -803,8 +870,8 @@ def p_template1(p):
     p[0] = node
 
 
-def p_template2(p):
-    ''' template : TEMPLATE NAME template_params COLON template_simple_item '''
+def p_template_impl2(p):
+    ''' template_impl : TEMPLATE NAME template_params COLON template_simple_item '''
     node = enaml_ast.Template()
     node.lineno = p.lineno(1)
     node.name = p[2]
@@ -814,8 +881,8 @@ def p_template2(p):
     p[0] = node
 
 
-def p_template3(p):
-    ''' template : TEMPLATE NAME template_params COLON template_doc_suite '''
+def p_template_impl3(p):
+    ''' template_impl : TEMPLATE NAME template_params COLON template_doc_suite '''
     doc, body = p[5]
     node = enaml_ast.Template()
     node.lineno = p.lineno(1)
@@ -996,7 +1063,19 @@ def _validate_template_inst(node, lexer):
 
 
 def p_template_inst1(p):
-    ''' template_inst : NAME template_args COLON template_inst_suite_item '''
+    ''' template_inst : template_inst_impl '''
+    p[0] = p[1]
+
+
+def p_template_inst2(p):
+    ''' template_inst : pragmas template_inst_impl '''
+    node = p[2]
+    node.pragmas = p[1]
+    p[0] = node
+
+
+def p_template_inst_impl1(p):
+    ''' template_inst_impl : NAME template_args COLON template_inst_suite_item '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
@@ -1006,8 +1085,8 @@ def p_template_inst1(p):
     p[0] = node
 
 
-def p_template_inst2(p):
-    ''' template_inst : NAME template_args COLON template_ids COLON template_inst_suite_item '''
+def p_template_inst_impl2(p):
+    ''' template_inst_impl : NAME template_args COLON template_ids COLON template_inst_suite_item '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
@@ -1018,8 +1097,8 @@ def p_template_inst2(p):
     p[0] = node
 
 
-def p_template_inst3(p):
-    ''' template_inst : NAME template_args COLON template_inst_suite '''
+def p_template_inst_impl3(p):
+    ''' template_inst_impl : NAME template_args COLON template_inst_suite '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]
@@ -1029,8 +1108,8 @@ def p_template_inst3(p):
     p[0] = node
 
 
-def p_template_inst4(p):
-    ''' template_inst : NAME template_args COLON template_ids COLON template_inst_suite '''
+def p_template_inst_impl4(p):
+    ''' template_inst_impl : NAME template_args COLON template_ids COLON template_inst_suite '''
     node = enaml_ast.TemplateInst()
     node.lineno = p.lineno(1)
     node.name = p[1]

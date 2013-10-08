@@ -18,6 +18,28 @@ class ASTNode(Atom):
     lineno = Int(-1)
 
 
+class PragmaArg(Atom):
+    """ An atom class which represents a pragma argument.
+
+    """
+    #: The kind of the argument.
+    kind = Enum("token", "number", "string")
+
+    #: The value of the argument.
+    value = Str()
+
+
+class Pragma(ASTNode):
+    """ An AST node which represents a $pragma expression.
+
+    """
+    #: The pragma command to execute.
+    command = Str()
+
+    #: The list of arguments for the command.
+    arguments = List(PragmaArg)
+
+
 class Module(ASTNode):
     """ An ASTNode representing an Enaml module.
 
@@ -25,6 +47,9 @@ class Module(ASTNode):
     #: The list of ast nodes for the body of the module. This will be
     #: composed of PythonModule, EnamlDef, and Template nodes.
     body = List()
+
+    #: The pragmas to apply for the module.
+    pragmas = List(Pragma)
 
 
 class PythonExpression(ASTNode):
@@ -59,9 +84,8 @@ class EnamlDef(ASTNode):
     #: The docstring for the enamldef.
     docstring = Str()
 
-    #: The list of decorator for the enamldef. This will be composed of
-    #: Python nodes.
-    decorators = List()
+    #: The pragmas to apply to the enamldef.
+    pragmas = List(Pragma)
 
     #: The list of body nodes for the enamldef. This will be composed
     #: of StorageExpr, Binding, ChildDef, and TemplateInst nodes.
@@ -205,6 +229,9 @@ class Template(ASTNode):
     #: The name given to the template.
     name = Str()
 
+    #: The pragmas to apply to the template.
+    pragmas = List(Pragma)
+
     #: The parameters associated with the template.
     parameters = Typed(TemplateParameters)
 
@@ -244,6 +271,9 @@ class TemplateInst(ASTNode):
     """
     #: The name of the template to instantiate.
     name = Str()
+
+    #: The pragmas to apply to the template instance.
+    pragmas = List(Pragma)
 
     #: The arguments to pass to the template.
     arguments = Typed(TemplateArguments)
