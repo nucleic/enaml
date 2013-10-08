@@ -198,18 +198,19 @@ see the <a class="reference internal" href="../dev_guides/index.html"><em>Develo
 and visualizing user interfaces. The simplest way to become familiar with the
 syntax is to look at a code sample and break it down piece by piece. The
 snippet below is the code that will be used for the example in this article.</p>
-<div class="highlight-enaml"><pre>enamldef PersonView(Window):
-    attr person
-    title = 'Person View'
-    Form:
-        Label:
-            text = 'First Name'
-        Field:
-            text := person.first_name
-        Label:
-            text = 'Last Name'
-        Field:
-            text = person.last_name</pre>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="k">enamldef</span> <span class="nc">PersonView</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="k">attr</span> <span class="n">person</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Person View&#39;</span>
+    <span class="nt">Form</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;First Name&#39;</span>
+        <span class="nt">Field</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">:=</span> <span class="n">person</span><span class="o">.</span><span class="n">first_name</span>
+        <span class="nt">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Last Name&#39;</span>
+        <span class="nt">Field</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">person</span><span class="o">.</span><span class="n">last_name</span>
+</pre></div>
 </div>
 <p>Before going any further, take a glance over the code and see if you can
 visualize how the UI will look and behave, despite the fact that you have no
@@ -277,21 +278,22 @@ views and supporting code, and business logic and models be kept in separate
 <p>The definition of the view for this example was provided above. The only thing
 it needs to become a fully functional <tt class="docutils literal"><span class="pre">.enaml</span></tt> file is the addition of the
 imports for the builtin elements:</p>
-<div class="highlight-enaml"><pre># person_view.enaml
-from enaml.widgets.api import Window, Form, Label, Field
-
-enamldef PersonView(Window):
-    attr person
-    title = 'Person View'
-    Form:
-        Label:
-            text = 'First Name'
-        Field:
-            text := person.first_name
-        Label:
-            text = 'Last Name'
-        Field:
-            text = person.last_name</pre>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c"># person_view.enaml</span>
+<span class="hll"><span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Form</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span>
+</span>
+<span class="k">enamldef</span> <span class="nc">PersonView</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="k">attr</span> <span class="n">person</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Person View&#39;</span>
+    <span class="nt">Form</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;First Name&#39;</span>
+        <span class="nt">Field</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">:=</span> <span class="n">person</span><span class="o">.</span><span class="n">first_name</span>
+        <span class="nt">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Last Name&#39;</span>
+        <span class="nt">Field</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">person</span><span class="o">.</span><span class="n">last_name</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="model-files">

@@ -318,27 +318,28 @@ the window above. Even before any introduction to the language, it is clear
 that the structure of the UI is reflected directly in the structure of the
 code. This makes the code easier to read, write, and maintain; which in turn
 slashes development time and leads to more robust applications.</p>
-<div class="highlight-enaml"><pre>enamldef Main(MainWindow):
-    title = 'Window'
-    MenuBar:
-        Menu:
-            title = 'Item 1'
-        Menu:
-            title = 'Item 2'
-        Menu:
-            title = 'Item 3'
-    Container:
-        Form:
-            Label:
-                text = 'Label 1'
-            Field:
-                pass
-            Label:
-                text = 'Label 2'
-            Field:
-                pass
-        PushButton:
-            text = 'Button'</pre>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>MainWindow<span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Window&#39;</span>
+    <span class="nt">MenuBar</span><span class="p">:</span>
+        <span class="nt">Menu</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 1&#39;</span>
+        <span class="nt">Menu</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 2&#39;</span>
+        <span class="nt">Menu</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 3&#39;</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">Form</span><span class="p">:</span>
+            <span class="nt">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Label 1&#39;</span>
+            <span class="nt">Field</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="nt">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Label 2&#39;</span>
+            <span class="nt">Field</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Button&#39;</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="enaml-advantages">
