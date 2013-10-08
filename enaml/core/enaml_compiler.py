@@ -263,8 +263,17 @@ class EnamlCompiler(Atom):
 
         """
         cg = self.code_generator
-        cg.set_lineno(node.lineno)
 
+        # No pragmas are available yet for template definitions.
+        if len(node.pragmas) > 0:
+            import warnings
+            msg_t = "unrecognized pragma '%s'"
+            for prag in node.pragmas:
+                msg = msg_t % prag.command
+                args = (msg, SyntaxWarning, cg.filename, prag.lineno)
+                warnings.warn_explicit(*args)
+
+        cg.set_lineno(node.lineno)
         with cg.try_squash_raise():
 
             # Load and validate the parameter specializations

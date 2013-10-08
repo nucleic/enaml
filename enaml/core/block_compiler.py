@@ -199,6 +199,15 @@ class BlockCompiler(Atom):
             gen.newlocals = True
             return gen
 
+        # No pragmas are available yet for enamldef definitions.
+        if len(node.pragmas) > 0:
+            import warnings
+            msg_t = "unrecognized pragma '%s'"
+            for prag in node.pragmas:
+                msg = msg_t % prag.command
+                args = (msg, SyntaxWarning, self.filename, prag.lineno)
+                warnings.warn_explicit(*args)
+
         # Generate the code for building the compiler nodes.
         node_cg = new_code_generator()
         self.code_generator = node_cg
@@ -586,6 +595,15 @@ class BlockCompiler(Atom):
         """
         cg = self.code_generator
 
+        # No pragmas are available yet for a template instance.
+        if len(node.pragmas) > 0:
+            import warnings
+            msg_t = "unrecognized pragma '%s'"
+            for prag in node.pragmas:
+                msg = msg_t % prag.command
+                args = (msg, SyntaxWarning, self.filename, prag.lineno)
+                warnings.warn_explicit(*args)
+
         # Set the line number and load the template.
         cg.set_lineno(node.lineno)
         self.load_name(node.name)
@@ -649,8 +667,8 @@ class BlockCompiler(Atom):
 
         Parameters
         ----------
-        node : TemplateInst
-            The TemplateInst ast node of interest.
+        node : Template
+            The Template ast node of interest.
 
         index : int
             The index to use for storing the node.
