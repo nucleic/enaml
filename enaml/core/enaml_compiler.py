@@ -250,23 +250,12 @@ class EnamlCompiler(Atom):
         """ The compiler generator for an EnamlDef node.
 
         """
+        # Generate the enamldef class and store in the namespace.
         cg = self.code_generator
-
-        # Load the decorators.
-        for decorator in node.decorators:
-            cg.insert_python_expr(decorator.ast)
-
-        # Generate the enamldef class.
         code = BlockCompiler.compile(node, cg.filename)
         cg.load_const(code)
         cg.make_function()
         cg.call_function()
-
-        # Invoke the decorators.
-        for decorator in node.decorators:
-            cg.call_function(1)
-
-        # Store the result into the namespace.
         cg.store_global(node.typename)
 
     def gen_Template(self, node):
