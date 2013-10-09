@@ -331,8 +331,8 @@ class ASTVisitor(Atom):
             The object returned by the visitor, if any.
 
         """
-        visitor_name = 'visit_' + type(node).__name__
-        visitor = getattr(self, visitor_name, None)
+        name = 'visit_' + type(node).__name__
+        visitor = getattr(self, name, None)
         if visitor is None:
             visitor = self.default_visit
         self._node_stack.append(node)
