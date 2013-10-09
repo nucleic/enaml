@@ -297,3 +297,82 @@ class TemplateInstBinding(ASTNode):
 
     #: The operator expression for the binding.
     expr = Typed(OperatorExpr)
+
+
+class ASTVisitor(Atom):
+    """ A base class for creating AST visitors.
+
+    """
+    #: An internal stack of the nodes being visited.
+    _node_stack = List()
+
+    def visit(self, node, *args, **kwargs):
+        """ The main visitor dispatch method.
+
+        This method will dispatch to a method which has a name which
+        matches the pattern visit_<type> where <type> is the name of
+        the type of the node. If no visitor method for the node exists,
+        the 'default_visit' method will be invoked.
+
+        Parameters
+        ----------
+        node : object
+            The ast node of interest.
+
+        *args
+            Additional arguments to pass to the visitor.
+
+        **kwargs
+            Additional keywords to pass to the visitor.
+
+        Returns
+        -------
+        result : object
+            The object returned by the visitor, if any.
+
+        """
+        visitor_name = 'visit_' + type(node).__name__
+        visitor = getattr(self, visitor_name, None)
+        if visitor is None:
+            visitor = self.default_visit
+        self._node_stack.append(node)
+        try:
+            result = visitor(node, *args, **kwargs)
+        finally:
+            self._node_stack.pop()
+        return result
+
+    def default_visit(self, node, *args, **kwargs):
+        """ The default node visitor method.
+
+        This method is invoked when no named visitor method is found
+        for a given node. This default behavior raises an exception for
+        the missing handler. Subclasses may reimplement this method for
+        custom default behavior.
+
+        """
+        msg = "no visitor found for node of type `%s`"
+        raise TypeError(msg % type(node).__name__)
+
+    def ancestor(self, n=1):
+        """ Retrieve an ancestor node from the internal stack.
+
+        Parameters
+        ----------
+        n : int, optional
+            The depth of the target parent in the ancestry. The default
+            is 1 and indicates the parent of the active node.
+
+        Returns
+        -------
+        result : ASTNode or None
+            The desired ancestor node, or None if the index is out of
+            range.
+
+        """
+        try:
+            # the -1 index is the current node
+            result = self._node_stack[-1 - n]
+        except IndexError:
+            result = None
+        return result

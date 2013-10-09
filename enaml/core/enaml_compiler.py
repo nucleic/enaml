@@ -10,9 +10,8 @@ import sys
 from atom.api import Constant, Str, Typed
 
 from .block_compiler import BlockCompiler
-from .compiler_base import CompilerBase
 from .code_generator import CodeGenerator
-from .enaml_ast import Module
+from .enaml_ast import Module, ASTVisitor
 
 
 # Increment this number whenever the compiler changes the code which it
@@ -133,7 +132,7 @@ STARTUP = ['from enaml.core.compiler_helpers import __compiler_helpers']
 CLEANUP = []
 
 
-class EnamlCompiler(CompilerBase):
+class EnamlCompiler(ASTVisitor):
     """ A compiler which will compile an Enaml module.
 
     The entry point is the `compile` classmethod which will compile
