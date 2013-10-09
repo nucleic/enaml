@@ -12,7 +12,7 @@ from atom.api import Constant, Str, Typed
 from .block_compiler import BlockCompiler
 from .code_generator import CodeGenerator
 from .enaml_ast import Module, ASTVisitor
-
+from .template_compiler import TemplateCompiler
 
 # Increment this number whenever the compiler changes the code which it
 # generates. This number is used by the import hooks to know which version
@@ -195,12 +195,6 @@ class EnamlCompiler(ASTVisitor):
     def visit_Module(self, node):
         """ The compiler visitor for a Module node.
 
-        This visitor prepares the module's execution context by loading
-        the startup code and creating the internal template map. It then
-        dispatches to the body nodes. After the body nodes execute, it
-        deletes the internal template and loads the cleanup code and
-        module return.
-
         Parameters
         ----------
         node : Module
@@ -242,8 +236,6 @@ class EnamlCompiler(ASTVisitor):
     def visit_PythonModule(self, node):
         """ The compiler visitor for a PythonModule node.
 
-        This visitor generates the code for a block of raw python.
-
         Parameters
         ----------
         node : PythonModule
@@ -256,11 +248,6 @@ class EnamlCompiler(ASTVisitor):
 
     def visit_EnamlDef(self, node):
         """ The compiler visitor for an EnamlDef node.
-
-        This visitor invokes the block compiler to compile the code
-        object for the enamldef. It then loads that code object into
-        a function and calls it, storing the return value in the global
-        namespace.
 
         Parameters
         ----------
@@ -278,28 +265,12 @@ class EnamlCompiler(ASTVisitor):
     def visit_Template(self, node):
         """ The compiler visitor for a Template node.
 
-        This visitor generates the code for a template definition. It
-        validates the template parameter specializations and then calls
-        the block compiler to create the code which will be invoked when
-        the template is instantiated. It creates a function for the code
-        object and passes that and the parameter spec to the object in
-        the namespace which manages the template.
-
         Parameters
         ----------
         node : Template
             The enaml ast node of interest.
 
         """
-        # No pragmas are available yet for template definitions.
-        if len(node.pragmas) > 0:
-            import warnings
-            msg_t = "unrecognized pragma '%s'"
-            for prag in node.pragmas:
-                msg = msg_t % prag.command
-                args = (msg, SyntaxWarning, self.filename, prag.lineno)
-                warnings.warn_explicit(*args)
-
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
@@ -324,7 +295,7 @@ class EnamlCompiler(ASTVisitor):
                 cg.insert_python_expr(param.default.ast)
 
             # Generate the template code and function
-            code = BlockCompiler.compile(node, cg.filename)
+            code = TemplateCompiler.compile(node, cg.filename)
             cg.load_const(code)
             cg.make_function(len(node.parameters.keywords))
 
