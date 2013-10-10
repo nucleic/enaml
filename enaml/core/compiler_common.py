@@ -40,6 +40,9 @@ T_PARAMS = '_[t_params]'
 #: The name of the stored template const values.
 T_CONSTS = '_[t_consts]'
 
+#: The global name of the template map in a module.
+TEMPLATE_MAP = '_[template_map]'
+
 #: The name of the unpack mapping for the template instance.
 UNPACK_MAP = '_[unpack_map]'
 

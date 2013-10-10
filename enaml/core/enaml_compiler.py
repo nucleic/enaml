@@ -7,11 +7,9 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Constant, Str, Typed
-
+from . import compiler_common as cmn
 from .block_compiler import BlockCompiler
-from .code_generator import CodeGenerator
-from .enaml_ast import Module, ASTVisitor
+from .enaml_ast import Module
 from .template_compiler import TemplateCompiler
 
 # Increment this number whenever the compiler changes the code which it
@@ -132,40 +130,28 @@ STARTUP = ['from enaml.core.compiler_helpers import __compiler_helpers']
 CLEANUP = []
 
 
-class EnamlCompiler(ASTVisitor):
+class EnamlCompiler(cmn.CompilerBase):
     """ A compiler which will compile an Enaml module.
 
     The entry point is the `compile` classmethod which will compile
     the ast into an appropriate python code object for a module.
 
     """
-    #: The filename for the code being compiled.
-    filename = Str()
-
-    #: The code generator for the compiler.
-    code_generator = Typed(CodeGenerator)
-
-    #: The name of the template map in the global namespace.
-    template_map = Constant('_[template_map]')
-
-    #: The name of the global compiler helpers.
-    c_helpers = Constant('__compiler_helpers')
-
     @classmethod
     def compile(cls, node, filename):
         """ The main entry point of the compiler.
 
         Parameters
         ----------
-        node : enaml_ast.Module
-            The enaml module ast node that should be compiled.
+        node : Module
+            The enaml ast Module node that should be compiled.
 
         filename : str
             The string filename of the module ast being compiled.
 
         Returns
         -------
-        result : types.CodeType
+        result : CodeType
             The code object for the compiled module.
 
         """
@@ -181,31 +167,9 @@ class EnamlCompiler(ASTVisitor):
         return compiler.visit(node)
 
     #--------------------------------------------------------------------------
-    # Default Value Handlers
-    #--------------------------------------------------------------------------
-    def _default_code_generator(self):
-        """ Create the default code generator for the compiler.
-
-        """
-        return CodeGenerator(filename=self.filename)
-
-    #--------------------------------------------------------------------------
     # Visitors
     #--------------------------------------------------------------------------
     def visit_Module(self, node):
-        """ The compiler visitor for a Module node.
-
-        Parameters
-        ----------
-        node : Module
-            The enaml ast node of interest.
-
-        Returns
-        -------
-        result : CodeType
-            The compiled code object for the module.
-
-        """
         cg = self.code_generator
 
         # Generate the startup code for the module.
@@ -215,14 +179,14 @@ class EnamlCompiler(ASTVisitor):
 
         # Create the template map.
         cg.build_map()
-        cg.store_global(self.template_map)
+        cg.store_global(cmn.TEMPLATE_MAP)
 
         # Populate the body of the module.
         for item in node.body:
             self.visit(item)
 
         # Delete the template map.
-        cg.delete_global(self.template_map)
+        cg.delete_global(cmn.TEMPLATE_MAP)
 
         # Generate the cleanup code for the module.
         for end in CLEANUP:
@@ -234,27 +198,13 @@ class EnamlCompiler(ASTVisitor):
         return cg.to_code()
 
     def visit_PythonModule(self, node):
-        """ The compiler visitor for a PythonModule node.
-
-        Parameters
-        ----------
-        node : PythonModule
-            The enaml ast node of interest.
-
-        """
+        # Inline the bytecode for the Python statement block.
         cg = self.code_generator
         cg.set_lineno(node.lineno)
         cg.insert_python_block(node.ast)
 
     def visit_EnamlDef(self, node):
-        """ The compiler visitor for an EnamlDef node.
-
-        Parameters
-        ----------
-        node : EnamlDef
-            The enaml ast node of interest.
-
-        """
+        # Invoke the enamldef code and store result in the namespace.
         cg = self.code_generator
         code = BlockCompiler.compile(node, cg.filename)
         cg.load_const(code)
@@ -263,14 +213,6 @@ class EnamlCompiler(ASTVisitor):
         cg.store_global(node.typename)
 
     def visit_Template(self, node):
-        """ The compiler visitor for a Template node.
-
-        Parameters
-        ----------
-        node : Template
-            The enaml ast node of interest.
-
-        """
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
@@ -280,9 +222,11 @@ class EnamlCompiler(ASTVisitor):
             for index, param in enumerate(node.parameters.positional):
                 spec = param.specialization
                 if spec is not None:
-                    self.load_helper('validate_spec')
+                    cmn.load_helper(cg, 'validate_spec', from_globals=True)
                     cg.load_const(index)
-                    cg.insert_python_expr(spec.ast)
+                    cmn.safe_eval_ast(
+                        cg, spec.ast, node.name, param.lineno, set()
+                    )
                     cg.call_function(2)
                 else:
                     cg.load_const(None)
@@ -292,7 +236,9 @@ class EnamlCompiler(ASTVisitor):
 
             # Evaluate the default parameters
             for param in node.parameters.keywords:
-                cg.insert_python_expr(param.default.ast)
+                cmn.safe_eval_ast(
+                    cg, param.default.ast, node.name, param.lineno, set()
+                )
 
             # Generate the template code and function
             code = TemplateCompiler.compile(node, cg.filename)
@@ -300,28 +246,11 @@ class EnamlCompiler(ASTVisitor):
             cg.make_function(len(node.parameters.keywords))
 
             # Load and call the helper which will build the template
-            self.load_helper('make_template')
+            cmn.load_helper(cg, 'make_template', from_globals=True)
             cg.rot_three()
             cg.load_const(node.name)
             cg.load_global('globals')
             cg.call_function()
-            cg.load_global(self.template_map)
+            cg.load_global(cmn.TEMPLATE_MAP)
             cg.call_function(5)
             cg.pop_top()
-
-    #--------------------------------------------------------------------------
-    # Utilities
-    #--------------------------------------------------------------------------
-    def load_helper(self, name):
-        """ Load a compiler helper onto the TOS.
-
-        Parameters
-        ----------
-        name : str
-            The name of the compiler helper to load onto the TOS.
-
-        """
-        cg = self.code_generator
-        cg.load_global(self.c_helpers)
-        cg.load_const(name)
-        cg.binary_subscr()
