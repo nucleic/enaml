@@ -5,41 +5,43 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .QtCore import QObject, QTimer, Qt, Signal
+from .QtCore import QObject, QTimer, QEvent, QThread
 from .QtGui import QApplication
 
 
-class QDeferredCaller(QObject):
-    """ A QObject subclass which facilitates executing callbacks on the
-    main application thread.
+class DeferredCallEvent(QEvent):
+    """ A custom event type for deferred call events.
 
     """
-    _posted = Signal(object)
+    __slots__ = ('callback', 'args', 'kwargs')
 
+    Type = QEvent.registerEventType()
+
+    def __init__(self, callback, args, kwargs):
+        super(DeferredCallEvent, self).__init__(self.Type)
+        self.callback = callback
+        self.args = args
+        self.kwargs = kwargs
+
+
+class QDeferredCaller(QObject):
+    """ A QObject subclass which handles deferred call events.
+
+    """
     def __init__(self):
         """ Initialize a QDeferredCaller.
 
         """
         super(QDeferredCaller, self).__init__()
-        app = QApplication.instance()
-        if app is not None:
-            self.moveToThread(app.thread())
-        self._posted.connect(self._onPosted, Qt.QueuedConnection)
+        self.moveToThread(QApplication.instance().thread())
 
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _onPosted(self, callback):
-        """ A private signal handler for the '_callbackPosted' signal.
-
-        This handler simply executes the callback.
+    def customEvent(self, event):
+        """ Handle the custom deferred call events.
 
         """
-        callback()
+        if event.type() == DeferredCallEvent.Type:
+            event.callback(*event.args, **event.kwargs)
 
-    #--------------------------------------------------------------------------
-    # Public API
-    #--------------------------------------------------------------------------
     def deferredCall(self, callback, *args, **kwargs):
         """ Execute the callback on the main gui thread.
 
@@ -53,29 +55,8 @@ class QDeferredCaller(QObject):
             the callback.
 
         """
-        f = lambda: callback(*args, **kwargs)
-        self._posted.emit(f)
-
-    def timedCall(self, ms, callback, *args, **kwargs):
-        """ Execute a callback on a timer in the main gui thread.
-
-        Parameters
-        ----------
-        ms : int
-            The time to delay, in milliseconds, before executing the
-            callable.
-
-        callback : callable
-            The callable object to execute at on the timer.
-
-        *args, **kwargs
-            Any additional positional and keyword arguments to pass to
-            the callback.
-
-        """
-        f = lambda: callback(*args, **kwargs)
-        f2 = lambda: QTimer.singleShot(ms, f)
-        self._posted.emit(f2)
+        event = DeferredCallEvent(callback, args, kwargs)
+        QApplication.postEvent(self, event)
 
 
 #: A globally available caller instance. This will be created on demand
@@ -104,8 +85,7 @@ def timedCall(ms, callback, *args, **kwargs):
     This should only be called after the QApplication is created.
 
     """
-    global _caller
-    c = _caller
-    if c is None:
-        c = _caller = QDeferredCaller()
-    c.timedCall(ms, callback, *args, **kwargs)
+    if QThread.currentThread() != QApplication.instance().thread():
+        deferredCall(timedCall, ms, callback, *args, **kwargs)
+    else:
+        QTimer.singleShot(ms, lambda: callback(*args, **kwargs))
