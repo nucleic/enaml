@@ -129,9 +129,11 @@ class Container(Frame):
         is an instance of 'ConstraintsWidget'.
 
         """
-        super(Container, self).child_added(child)
+        # Request the relayout first so that the widget's updates are
+        # disabled before the child is actually added.
         if isinstance(child, ConstraintsWidget):
             self.request_relayout()
+        super(Container, self).child_added(child)
 
     def child_removed(self, child):
         """ Handle the child removed event on the container.
@@ -140,9 +142,11 @@ class Container(Frame):
         is an instance of 'ConstraintsWidget'.
 
         """
-        super(Container, self).child_removed(child)
+        # Request the relayout first so that the widget's updates are
+        # disabled before the child is actually removed.
         if isinstance(child, ConstraintsWidget):
             self.request_relayout()
+        super(Container, self).child_removed(child)
 
     #--------------------------------------------------------------------------
     # Observers
