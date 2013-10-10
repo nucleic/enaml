@@ -188,11 +188,12 @@ def fetch_globals(cg):
     cg.store_fast(F_GLOBALS)
 
 
-def load_helper(cg, name):
+def load_helper(cg, name, from_globals=False):
     """ Load a compiler helper onto the TOS.
 
     The caller should have already invoked the 'fetch_locals' function
-    for the code generator before using this function.
+    for the code generator before using this function, unless the
+    'from_globals' keyword is set to True.
 
     Parameters
     ----------
@@ -202,8 +203,14 @@ def load_helper(cg, name):
     name : str
         The name of the compiler helper to load onto the TOS.
 
+    from_globals : bool, optional
+        If True, the helpers will be loaded from the globals instead of
+        the fast locals. The default is False.
     """
-    cg.load_fast(C_HELPERS)
+    if from_globals:
+        cg.load_global(COMPILER_HELPERS)
+    else:
+        cg.load_fast(C_HELPERS)
     cg.load_const(name)
     cg.binary_subscr()
 
