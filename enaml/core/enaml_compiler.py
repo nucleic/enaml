@@ -8,8 +8,8 @@
 import sys
 
 from . import compiler_common as cmn
-from .block_compiler import BlockCompiler
 from .enaml_ast import Module
+from .enamldef_compiler import EnamlDefCompiler
 from .template_compiler import TemplateCompiler
 
 # Increment this number whenever the compiler changes the code which it
@@ -155,7 +155,7 @@ class EnamlCompiler(cmn.CompilerBase):
             The code object for the compiled module.
 
         """
-        assert isinstance(node, Module), "invalid node"
+        assert isinstance(node, Module), 'invalid node'
 
         # Protect against unicode filenames, which are incompatible
         # with code objects created via types.CodeType
@@ -166,9 +166,6 @@ class EnamlCompiler(cmn.CompilerBase):
         compiler = cls(filename=filename)
         return compiler.visit(node)
 
-    #--------------------------------------------------------------------------
-    # Visitors
-    #--------------------------------------------------------------------------
     def visit_Module(self, node):
         cg = self.code_generator
 
@@ -206,7 +203,7 @@ class EnamlCompiler(cmn.CompilerBase):
     def visit_EnamlDef(self, node):
         # Invoke the enamldef code and store result in the namespace.
         cg = self.code_generator
-        code = BlockCompiler.compile(node, cg.filename)
+        code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
         cg.make_function()
         cg.call_function()
