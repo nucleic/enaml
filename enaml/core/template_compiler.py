@@ -5,10 +5,10 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import List, Str, Typed
+from atom.api import List, Typed
 
 from . import compiler_common as cmn
-from .enaml_ast import ConstExpr
+from .enaml_ast import ConstExpr, Template
 
 
 def collect_local_names(node):
@@ -38,7 +38,7 @@ def collect_local_names(node):
     return const_names, param_names
 
 
-class FirstPassCompiler(cmn.CompilerBase):
+class FirstPassTemplateCompiler(cmn.CompilerBase):
     """ The first pass template compiler.
 
     This compiler generates the code which builds the compiler nodes
@@ -46,15 +46,18 @@ class FirstPassCompiler(cmn.CompilerBase):
     class method.
 
     """
+    #: The set of local names for the compiler.
+    _local_names = Typed(set, ())
+
     #: A mapping of ast node -> compiler node index for the block. This
     #: mapping is updated as the compiler progresses.
-    index_map = Typed(dict, ())
+    _index_map = Typed(dict, ())
 
     #: A mapping of auxiliary ast node -> compiler node index.
-    aux_index_map = Typed(dict, ())
+    _aux_index_map = Typed(dict, ())
 
     #: The const names collected during traversal.
-    const_names = List()
+    _const_names = List()
 
     @classmethod
     def compile(cls, node, args, local_names, filename):
@@ -67,7 +70,7 @@ class FirstPassCompiler(cmn.CompilerBase):
         Parameters
         ----------
         node : Template
-            The ast template node of interest.
+            The enaml ast Template node of interest.
 
         args : list
             The list of argument names which will be passed to the
@@ -89,7 +92,9 @@ class FirstPassCompiler(cmn.CompilerBase):
             node to relevant compiler node index.
 
         """
-        compiler = cls(filename=filename, local_names=local_names)
+        compiler = cls()
+        compiler.filename = filename
+        compiler._local_names = local_names
         cg = compiler.code_generator
 
         # Setup the block for execution.
@@ -107,24 +112,36 @@ class FirstPassCompiler(cmn.CompilerBase):
         code = cg.to_code()
 
         # Union the two index maps for use by the second compiler pass.
-        final_index_map = dict(compiler.index_map)
-        final_index_map.update(compiler.aux_index_map)
+        final_index_map = dict(compiler._index_map)
+        final_index_map.update(compiler._aux_index_map)
 
         return (code, final_index_map)
+
+    #--------------------------------------------------------------------------
+    # Utilities
+    #--------------------------------------------------------------------------
+    def parent_index(self):
+        """ Get the node index for the parent node.
+
+        Returns
+        -------
+        result : int
+            The compiler node index for the node represented by the
+            current parent ast node.
+
+        """
+        return self._index_map[self.ancestor()]
 
     #--------------------------------------------------------------------------
     # Visitors
     #--------------------------------------------------------------------------
     def visit_Template(self, node):
-        """ The visitor for a Template node.
-
-        """
         # No pragmas are supported yet for template nodes.
         cmn.warn_pragmas(node, self.filename)
 
         # Claim the index for the compiler node
-        index = len(self.index_map)
-        self.index_map[node] = index
+        index = len(self._index_map)
+        self._index_map[node] = index
 
         # Setup the line number for the template.
         cg = self.code_generator
@@ -150,28 +167,25 @@ class FirstPassCompiler(cmn.CompilerBase):
         cg.load_fast(cmn.NODE_LIST)
 
         # Load the const names for returning.
-        for name in self.const_names:
+        for name in self._const_names:
             cg.load_fast(name)
-        cg.build_tuple(len(self.const_names))
+        cg.build_tuple(len(self._const_names))
 
         # Create and return the return value tuple.
         cg.build_tuple(2)
         cg.return_value()
 
     def visit_ChildDef(self, node):
-        """ The visitor for a ChildDef node.
-
-        """
         # Claim the index for the compiler node.
-        index = len(self.index_map)
-        self.index_map[node] = index
+        index = len(self._index_map)
+        self._index_map[node] = index
 
         # Setup the line number for the child def.
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
         # Generate the child def compiler node.
-        cmn.gen_child_def_node(cg, node, self.local_names)
+        cmn.gen_child_def_node(cg, node, self._local_names)
 
         # Store the compiler node in the node list.
         cmn.store_node(cg, index)
@@ -184,22 +198,19 @@ class FirstPassCompiler(cmn.CompilerBase):
             self.visit(item)
 
     def visit_TemplateInst(self, node):
-        """ The visitor for a TemplateInst node.
-
-        """
         # No pragmas are supported yet for template inst nodes.
         cmn.warn_pragmas(node, self.filename)
 
         # Claim the index for the compiler node.
-        index = len(self.index_map)
-        self.index_map[node] = index
+        index = len(self._index_map)
+        self._index_map[node] = index
 
         # Setup the line number for the template inst.
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
         # Generate the template inst compiler node.
-        cmn.gen_template_inst_node(cg, node, self.local_names)
+        cmn.gen_template_inst_node(cg, node, self._local_names)
 
         # Store the compiler node in the node list.
         cmn.store_node(cg, index)
@@ -212,18 +223,15 @@ class FirstPassCompiler(cmn.CompilerBase):
             self.visit(item)
 
     def visit_ConstExpr(self, node):
-        """ The visitor for a ConstExpr node.
-
-        """
         # Keep track of the const name for loading for return.
-        self.const_names.append(node.name)
+        self._const_names.append(node.name)
 
         # Setup the line number for the const expr.
         cg = self.code_generator
         cg.set_lineno(node.lineno)
 
         # Generate the code for the expression.
-        names = self.local_names
+        names = self._local_names
         cmn.safe_eval_ast(cg, node.expr.ast, node.name, node.lineno, names)
 
         # Validate the type of the expression value.
@@ -240,51 +248,27 @@ class FirstPassCompiler(cmn.CompilerBase):
         cg.store_fast(node.name)
 
     def visit_TemplateInstBinding(self, node):
-        """ The visitor for a TemplateInstBinding node.
-
-        """
         # Grab the index of the parent node for later use.
-        self.aux_index_map[node] = self.parent_index()
+        self._aux_index_map[node] = self.parent_index()
 
     def visit_Binding(self, node):
-        """ The visitor for a Binding node.
-
-        """
         # Grab the index of the parent node for later use.
-        self.aux_index_map[node] = self.parent_index()
+        self._aux_index_map[node] = self.parent_index()
 
     def visit_ExBinding(self, node):
-        """ The visitor for an ExBinding node.
-
-        """
         # Grab the index of the parent node for later use.
-        self.aux_index_map[node] = self.parent_index()
+        self._aux_index_map[node] = self.parent_index()
 
     def visit_AliasExpr(self, node):
-        """ The visitor for an AliasExpr node.
-
-        """
         # Grab the index of the parent node for later use.
-        self.aux_index_map[node] = self.parent_index()
+        self._aux_index_map[node] = self.parent_index()
 
     def visit_StorageExpr(self, node):
-        """ The visitor for a StorageExpr node.
-
-        """
         # Grab the index of the parent node for later use.
-        self.aux_index_map[node] = self.parent_index()
-
-    #--------------------------------------------------------------------------
-    # Utilities
-    #--------------------------------------------------------------------------
-    def parent_index(self):
-        """ Get the node index for the parent node.
-
-        """
-        return self.index_map[self.ancestor()]
+        self._aux_index_map[node] = self.parent_index()
 
 
-class SecondPassCompiler(cmn.CompilerBase):
+class SecondPassTemplateCompiler(cmn.CompilerBase):
     """ The second pass template compiler.
 
     This compiler generates code which binds the data to the compiler
@@ -292,11 +276,14 @@ class SecondPassCompiler(cmn.CompilerBase):
     'compile' class method.
 
     """
+    #: The set of local names for the compiler.
+    _local_names = Typed(set, ())
+
     #: A mapping of ast node -> compiler node index for the block.
-    index_map = Typed(dict, ())
+    _index_map = Typed(dict, ())
 
     #: A mapping of const names to their value index.
-    const_indices = Typed(dict, ())
+    _const_indices = Typed(dict, ())
 
     @classmethod
     def compile(cls, node, args, local_names, index_map, consts, filename):
@@ -308,7 +295,7 @@ class SecondPassCompiler(cmn.CompilerBase):
         Parameters
         ----------
         node : Template
-            The ast template node of interest.
+            The enaml ast Template node of interest.
 
         args : list
             The list of argument names which will be passed to the
@@ -336,10 +323,10 @@ class SecondPassCompiler(cmn.CompilerBase):
         """
         compiler = cls()
         compiler.filename = filename
-        compiler.local_names = local_names
-        compiler.index_map = index_map
+        compiler._local_names = local_names
+        compiler._index_map = index_map
         for index, name in enumerate(consts):
-            compiler.const_indices[name] = index
+            compiler._const_indices[name] = index
 
         cg = compiler.code_generator
 
@@ -358,12 +345,24 @@ class SecondPassCompiler(cmn.CompilerBase):
         return cg.to_code()
 
     #--------------------------------------------------------------------------
+    # Utilities
+    #--------------------------------------------------------------------------
+    def parent_index(self):
+        """ Get the node index for the parent node.
+
+        Returns
+        -------
+        result : int
+            The compiler node index for the node represented by the
+            current parent ast node.
+
+        """
+        return self._index_map[self.ancestor()]
+
+    #--------------------------------------------------------------------------
     # Visitors
     #--------------------------------------------------------------------------
     def visit_Template(self, node):
-        """ The visitor for a Template node.
-
-        """
         # Visit the body of the template.
         for item in node.body:
             self.visit(item)
@@ -374,21 +373,15 @@ class SecondPassCompiler(cmn.CompilerBase):
         cg.return_value()
 
     def visit_ChildDef(self, node):
-        """ The visitor for a ChildDef node.
-
-        """
         # Visit the body of the child def.
         for item in node.body:
             self.visit(item)
 
     def visit_TemplateInst(self, node):
-        """ The visitor for a TemplateInst node.
-
-        """
         if node.body:
             # Create the unpack map.
             cg = self.code_generator
-            index = self.index_map[node]
+            index = self._index_map[node]
             cmn.load_helper(cg, 'make_unpack_map')
             cmn.load_node(cg, index)
             cg.call_function(1)
@@ -399,71 +392,44 @@ class SecondPassCompiler(cmn.CompilerBase):
                 self.visit(item)
 
     def visit_ConstExpr(self, node):
-        """ The visitor for a ConstExpr node.
-
-        """
         # Store the value of the const expr into fast locals.
         cg = self.code_generator
         cg.set_lineno(node.lineno)
         cg.load_fast(cmn.T_CONSTS)
-        cg.load_const(self.const_indices[node.name])
+        cg.load_const(self._const_indices[node.name])
         cg.binary_subscr()
         cg.store_fast(node.name)
 
     def visit_TemplateInstBinding(self, node):
-        """ The visitor for a TemplateInstBinding node.
-
-        """
         # Generate the code for the template inst binding.
         cg = self.code_generator
         cmn.gen_template_inst_binding(cg, node)
 
     def visit_Binding(self, node):
-        """ The visitor for a Binding node.
-
-        """
         # Generate the code for the operator binding.
         cg = self.code_generator
         index = self.parent_index()
         cmn.gen_operator_binding(cg, node.expr, index, node.name)
 
     def visit_ExBinding(self, node):
-        """ The visitor for an ExBinding node.
-
-        """
         # Generate the code for the operator binding.
         cg = self.code_generator
         index = self.parent_index()
         cmn.gen_operator_binding(cg, node.expr, index, node.name)
 
     def visit_AliasExpr(self, node):
-        """ The visitor for an AliasExpr node.
-
-        """
         # Generate the code for the alias expression.
         cg = self.code_generator
         index = self.parent_index()
         cmn.gen_alias_expr(cg, node, index)
 
     def visit_StorageExpr(self, node):
-        """ The visitor for a StorageExpr node.
-
-        """
         # Generate the code for the storage expression.
         cg = self.code_generator
         index = self.parent_index()
-        cmn.gen_storage_expr(cg, node, index, self.local_names)
+        cmn.gen_storage_expr(cg, node, index, self._local_names)
         if node.expr is not None:
             cmn.gen_operator_binding(cg, node.expr, index, node.name)
-
-    #--------------------------------------------------------------------------
-    # Utilities
-    #--------------------------------------------------------------------------
-    def parent_index(self):
-        """ Get the node index for the parent node.
-
-        """
-        return self.index_map[self.ancestor()]
 
 
 class TemplateCompiler(cmn.CompilerBase):
@@ -474,9 +440,6 @@ class TemplateCompiler(cmn.CompilerBase):
     instance compiler node when invoked.
 
     """
-    #: The filename for the code being generated.
-    filename = Str()
-
     @classmethod
     def compile(cls, node, filename):
         """ The main entry point to the compiler.
@@ -484,7 +447,7 @@ class TemplateCompiler(cmn.CompilerBase):
         Parameters
         ----------
         node : Template
-            The enaml ast node to compile.
+            The enaml ast Template node to compile.
 
         filename : str
             The filename of the node being compiled.
@@ -495,27 +458,14 @@ class TemplateCompiler(cmn.CompilerBase):
             The compiled code object for the node.
 
         """
+        assert isinstance(node, Template), "invalid node"
         compiler = cls(filename=filename)
         return compiler.visit(node)
 
     #--------------------------------------------------------------------------
-    # Visitor
+    # Visitors
     #--------------------------------------------------------------------------
     def visit_Template(self, node):
-        """ The compiler visitor for a Template node.
-
-        Parameters
-        ----------
-        node : Template
-            The ast template node of interest.
-
-        Returns
-        -------
-        result : CodeType
-            The compiled code object for the template. This code, when
-            invoked, will return the template instantiation object.
-
-        """
         cg = self.code_generator
         filename = self.filename
 
@@ -525,13 +475,13 @@ class TemplateCompiler(cmn.CompilerBase):
 
         # Generate the code for the first pass.
         first_args = [cmn.SCOPE_KEY] + param_names
-        first_code, index_map = FirstPassCompiler.compile(
+        first_code, index_map = FirstPassTemplateCompiler.compile(
             node, first_args, local_names, filename
         )
 
         # Generate the code for the second pass.
         second_args = [cmn.NODE_LIST, cmn.T_CONSTS] + param_names
-        second_code = SecondPassCompiler.compile(
+        second_code = SecondPassTemplateCompiler.compile(
             node, second_args, local_names, index_map, const_names, filename
         )
 

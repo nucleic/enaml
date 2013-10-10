@@ -626,9 +626,6 @@ class CompilerBase(ASTVisitor):
     #: The filename for the code being generated.
     filename = Str()
 
-    #: The set of local names for the compiler.
-    local_names = Typed(set, ())
-
     #: The code generator to use for this compiler.
     code_generator = Typed(CodeGenerator)
 
