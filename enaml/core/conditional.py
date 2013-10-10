@@ -33,7 +33,7 @@ class Conditional(Pattern):
     # Lifetime API
     #--------------------------------------------------------------------------
     def destroy(self):
-        """ A reimplemented destructor
+        """ A reimplemented destructor.
 
         The conditional will release the owned items on destruction.
 
