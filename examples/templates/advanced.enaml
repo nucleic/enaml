@@ -15,11 +15,11 @@ is then used to unroll a list of these controls into the body of a form.
 """
 from atom.api import Atom, Bool, Enum, Event, Float, Int, Str, Unicode
 
-from enaml.core.api import Include
+from enaml.core.api import DynamicTemplate
 from enaml.stdlib.fields import FloatField
 from enaml.widgets.api import (
-    CheckBox, Container, Field, Form, GroupBox, Label, PushButton,
-    RadioButton, SpinBox, Window,
+    CheckBox, Container, Field, Form, GroupBox, Label, ObjectCombo, PushButton,
+    SpinBox, Window,
 )
 
 
@@ -112,61 +112,23 @@ template FormControl(Attr, MemberType: Event):
         clicked :: getattr(model, Attr)()
 
 
-enamldef RadioItem(RadioButton):
-    """ A radio button which operators on an enum attribute.
-
-    """
-    attr model_attr
-    checked << getattr(model, model_attr) == text
-    checked ::
-        if checked:
-            setattr(model, model_attr, text)
-
-
-template RadioItemList(Attr, Items):
-    """ A template which generates a list of radio items.
-
-    Parameters
-    ----------
-    Attr : str
-        The attribute name of the enum member on the model.
-
-    Items : tuple
-        The tuple of strings representing the enum items.
-
-    """
-    RadioItemList(Attr, Items[:-1]):
-        pass
-    RadioItem:
-        model_attr = Attr
-        text = Items[-1]
-
-
-template RadioItemList(Attr, Items: ()):
-    """ The terminating condition for the radio item list.
-
-    """
-    pass
-
-
-def radio_items(model, attr):
-    """ Return the tuple of radio items for the model.
+def enum_labels(model, attr):
+    """ Return the list of enum labels for the given model and attr.
 
     """
     items = getattr(type(model), attr).items
-    return tuple(sorted(items))
+    return sorted(items)
 
 
 template FormControl(Attr, MemberType: Enum):
     """ A form control template specialization for Enum members.
 
-    This control uses a Container of RadioButtons to represent the
-    value.
+    This control uses an ObjectCombo to represent the value.
 
     """
-    Container:
-        Include:
-            objects = RadioItemList(Attr, radio_items(model, Attr))()
+    ObjectCombo:
+        items = enum_labels(model, Attr)
+        selected := getattr(model, Attr)
 
 
 template FormItem(Attr, MemberType):
@@ -262,8 +224,9 @@ enamldef AutoForm(Form):
 
     """
     attr model: Atom
-    Include:
-        objects = AutoFormBody(type(model))()
+    DynamicTemplate:
+        base = AutoFormBody
+        args = (type(model),)
 
 
 #------------------------------------------------------------------------------
