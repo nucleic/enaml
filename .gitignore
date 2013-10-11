@@ -6,11 +6,11 @@
 *.pyd
 *.DS_Store
 *.enamlc
-*.c
 /build
 /dist
 /docs/build
-/docs/source/api_ref/widgets/*.rst
+/tools/pygments/build
+/tools/pygments/dist
 
 .gitignore~
 *.orig
