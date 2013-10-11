@@ -9,6 +9,8 @@ class ObjectDict(dict):
     """ A dict subclass which allows access by named attribute.
 
     """
+    __slots__ = ()
+
     def __getattr__(self, attr):
         if attr in self:
             return self[attr]
