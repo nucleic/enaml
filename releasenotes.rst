@@ -1,6 +1,18 @@
 Enaml Release Notes
 ===================
 
+0.8.2 - 10/11/2013
+------------------
+- Add a DynamicTemplate declarative object. ede76a778a86_
+- Add 'window' mode to PopupView. f37263fd7b7d_
+- Add 'selected_tab' attribute to the Notebook. 45ca092e7222_
+- Overhaul of the docs and doc build system.
+- Various bug fixes and performance improvements.
+
+.. _ede76a778a86: https://github.com/nucleic/enaml/commit/ede76a778a864dbb79636f38a15fd6b24e975228
+.. _f37263fd7b7d: https://github.com/nucleic/enaml/commit/f37263fd7b7db22c0a404660ccaea3f444b8a171
+.. _45ca092e7222: https://github.com/nucleic/enaml/commit/45ca092e722209163c4dad81741d2f09595efade
+
 0.8.1 - 09/25/2013
 ------------------
 - Update the PopupView to automatically reposition on-screen. 3225683f9411_
