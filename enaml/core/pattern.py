@@ -50,7 +50,7 @@ class Pattern(Declarative):
 
         """
         parent = self.parent
-        destroy_items = parent is not None and not parent.is_destroyed
+        destroy_items = parent is None or not parent.is_destroyed
         super(Pattern, self).destroy()
         if destroy_items:
             for item in self.pattern_items():
