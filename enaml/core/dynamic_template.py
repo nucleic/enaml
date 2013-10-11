@@ -14,6 +14,52 @@ from .declarative import Declarative, d_
 from .template import Template
 
 
+class Tagged(ObjectDict):
+    """ An empty ObjectDict subclass.
+
+    This subclass helps provide more informative error messages by
+    having a class name which reflects it's used.
+
+    """
+    __slots__ = ()
+
+
+def make_tagged(items, tags, startag):
+    """ Create a Tagged object for the given items.
+
+    Parameters
+    ----------
+    items : list
+        The list of objects which should be tagged.
+
+    tags : tuple
+        A tuple of string tag names. This should be an empty tuple if
+        no named tags are available.
+
+    startag : str
+        The star tag name. This should be an empty string if there is
+        no star tag available.
+
+    Returns
+    -------
+    result : Tagged
+        The tagged object for the given items.
+
+    """
+    if tags and len(tags) > len(items):
+        msg = 'need more than %d values to unpack'
+        raise ValueError(msg % len(items))
+    if tags and not startag and len(items) > len(tags):
+        raise ValueError('too many values to unpack')
+    tagged = Tagged()
+    if tags:
+        for name, item in zip(tags, items):
+            tagged[name] = item
+    if startag:
+        tagged[startag] = tuple(items[len(tags):])
+    return tagged
+
+
 class DynamicTemplate(Declarative):
     """ An object which dynamically instantiates a template.
 
@@ -64,10 +110,17 @@ class DynamicTemplate(Declarative):
     def destroy(self):
         """ A reimplemented destructor.
 
-        The DynamicTemplate will release its owned references.
+        This method will ensure that the instantiated tempalte items are
+        destroyed and that any potential reference cycles are released.
 
         """
+        parent = self.parent
+        destroy_items = parent is None or not parent.is_destroyed
         super(DynamicTemplate, self).destroy()
+        if destroy_items:
+            for item in self._items:
+                if not item.is_destroyed:
+                    item.destroy()
         del self.data
         del self.tagged
         if self._update_task is not None:
@@ -78,7 +131,7 @@ class DynamicTemplate(Declarative):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    @observe('base', 'args', 'data')
+    @observe('base', 'args', 'tags', 'startag', 'data')
     def _schedule_refresh(self, change):
         """ Schedule an item refresh when the item dependencies change.
 
@@ -86,34 +139,6 @@ class DynamicTemplate(Declarative):
         if change['type'] == 'update':
             if self._update_task is None:
                 self._update_task = schedule(self._refresh)
-
-    @observe('tags', 'startag')
-    def _update_tags(self, change):
-        """ Update the tagged object when the tag names change.
-
-        """
-        if change['type'] == 'update':
-            self._rebuild_tags()
-
-    def _rebuild_tags(self):
-        """ Rebuild the tagged object for the current items list.
-
-        """
-        tags = self.tags
-        startag = self.startag
-        items = self._items
-        tagged = ObjectDict()
-        if tags and len(tags) > len(items):
-            msg = 'need more than %d values to unpack'
-            raise ValueError(msg % len(items))
-        if tags and not startag and len(items) > len(tags):
-            raise ValueError('too many values to unpack')
-        if tags:
-            for name, item in zip(tags, items):
-                tagged[name] = item
-        if startag:
-            tagged[startag] = tuple(items[len(tags):])
-        self.tagged = tagged
 
     def _refresh(self):
         """ Refresh the template instantiation.
@@ -137,4 +162,4 @@ class DynamicTemplate(Declarative):
             self.parent.insert_children(self, items)
 
         self._items = items
-        self._rebuild_tags()
+        self.tagged = make_tagged(items, self.tags, self.startag)
