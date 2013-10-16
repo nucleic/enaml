@@ -5,22 +5,39 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.core.declarative import Declarative
+from atom.api import Str, Unicode
 
-from .property import Property
+from enaml.core.declarative import Declarative, d_
+
+from .setter import Setter
 
 
 class Style(Declarative):
-    """ A declarative class for defining Enaml style sheet styles.
+    """ A declarative class for defining a style in a style sheet
 
     """
-    def properties(self):
-        """ Get the properties comprising the style.
+    #: The name of the widget type which will match this style. This
+    #: can be a comma-separated string to match more than one type.
+    #: An empty string will match all widget types.
+    typename = d_(Str())
+
+    #: The name of the widget group which will match this style. This
+    #: can be a comma-separated string to match more than one group.
+    #: An empty string will match all widget groups.
+    group = d_(Unicode())
+
+    #: The object name of the widget which will match this style. This
+    #: can be a comma-separated string to match more than one name.
+    #: An empty string will match all widget names.
+    name = d_(Unicode())
+
+    def setters(self):
+        """ Get the property setters declared for the style.
 
         Returns
         -------
         result : list
-            The list of Property objects declared for the style.
+            The list of Setter objects declared for the style.
 
         """
-        return [c for c in self.children if isinstance(c, Property)]
+        return [c for c in self.children if isinstance(c, Setter)]

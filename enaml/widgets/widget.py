@@ -11,6 +11,9 @@ from enaml.colors import ColorMember
 from enaml.core.declarative import d_
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
+from enaml.styling.style import Style
+from enaml.styling.stylesheet import StyleSheet
+from enaml.styling.styledata import StyleData
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
@@ -69,6 +72,18 @@ class Widget(ToolkitObject):
     #: Whether or not the widget is visible.
     visible = d_(Bool(True))
 
+    #: The style to apply directly to this object. The selectors for
+    #: the style are ignored and the setters are assigned the highest
+    #: precedence during styling. This value will be overridden by any
+    #: Style object declared as a child.
+    style = d_(Typed(Style))
+
+    #: The stylesheet to apply to the widget and its children. The
+    #: styles defined on this stylesheet will have a higher precedence
+    #: than those defined on the widget's ancestors. This value will be
+    #: overridden by any StyleSheet object declared as a child.
+    stylesheet = d_(Typed(StyleSheet))
+
     #: The background color of the widget.
     background = d_(ColorMember())
 
@@ -97,6 +112,11 @@ class Widget(ToolkitObject):
     #: on all clients. A value of None indicates to use the default as
     #: supplied by the client.
     show_focus_rect = d_(Enum(None, True, False))
+
+    #: The resolved style data for the widget. This value is updated
+    #: during a styling pass and consumed by the toolkit backend. It
+    #: should not be modified directly by user code.
+    styledata = Typed(StyleData)
 
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)

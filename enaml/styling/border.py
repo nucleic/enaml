@@ -13,7 +13,7 @@ from enaml.core.declarative import d_
 from .property import Property
 
 
-BorderStyles = (
+BorderStyle = (
     '', 'dot-dash', 'dot-dot-dash', 'dotted', 'double', 'groove', 'inset',
     'outset', 'ridge', 'solid', 'none'
 )
@@ -81,20 +81,20 @@ class Border(Property):
     bottom_color = d_(ColorMember())
 
     #: The style for the border. The default is the empty string.
-    style = d_(Enum(BorderStyles))
+    style = d_(Enum(BorderStyle))
 
     #: The style to apply to the left border. This will override the
     #: value set by the 'style' attribute.
-    left_style = d_(Enum(BorderStyles))
+    left_style = d_(Enum(BorderStyle))
 
     #: The style to apply to the right border. This will override the
     #: value set by the 'style' attribute.
-    right_style = d_(Enum(BorderStyles))
+    right_style = d_(Enum(BorderStyle))
 
     #: The style to apply to the top border. This will override the
     #: value set by the 'style' attribute.
-    top_style = d_(Enum(BorderStyles))
+    top_style = d_(Enum(BorderStyle))
 
     #: The style to apply to the bottom border. This will override the
     #: value set by the 'style' attribute.
-    bottom_style = d_(Enum(BorderStyles))
+    bottom_style = d_(Enum(BorderStyle))

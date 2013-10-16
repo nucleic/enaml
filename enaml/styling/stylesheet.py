@@ -7,20 +7,20 @@
 #------------------------------------------------------------------------------
 from enaml.core.declarative import Declarative
 
-from .rule import Rule
+from .style import Style
 
 
 class StyleSheet(Declarative):
     """ A declarative class for defining Enaml style sheets.
 
     """
-    def rules(self):
-        """ Get the rules comprising this style sheet.
+    def styles(self):
+        """ Get the styles declared for the style sheet.
 
         Returns
         -------
         result : list
-            The list of Rule objects declared for the style sheet.
+            The list of Style objects declared for the style sheet.
 
         """
-        return [c for c in self.children if isinstance(c, Rule)]
+        return [c for c in self.children if isinstance(c, Style)]
