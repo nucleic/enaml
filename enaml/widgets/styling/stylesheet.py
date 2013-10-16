@@ -11,7 +11,7 @@ from .style import Style
 
 
 class StyleSheet(Declarative):
-    """ A declarative class for defining Enaml style sheets.
+    """ A declarative class for defining Enaml widget style sheets.
 
     """
     def styles(self):
