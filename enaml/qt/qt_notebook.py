@@ -354,9 +354,11 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         if d.selected_tab:
             self.set_selected_tab(d.selected_tab)
         else:
+            current = self.widget.currentWidget()
+            name = current.objectName() if current is not None else u''
             self._guard |= CHANGE_GUARD
             try:
-                d.selected_tab = self.widget.currentWidget().objectName()
+                d.selected_tab = name
             finally:
                 self._guard &= ~CHANGE_GUARD
 
