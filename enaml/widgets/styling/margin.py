@@ -7,12 +7,10 @@
 #------------------------------------------------------------------------------
 from atom.api import Int
 
-from enaml.core.declarative import d_
-
-from .property import Property
+from enaml.core.declarative import Declarative, d_
 
 
-class Margin(Property):
+class Margin(Declarative):
     """ A style sheet property for defining a widget's margin.
 
     """

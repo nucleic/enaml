@@ -8,9 +8,8 @@
 from atom.api import Int, Enum
 
 from enaml.colors import ColorMember
-from enaml.core.declarative import d_
+from enaml.core.declarative import Declarative, d_
 
-from .property import Property
 
 
 BorderStyle = (
@@ -19,7 +18,7 @@ BorderStyle = (
 )
 
 
-class Border(Property):
+class Border(Declarative):
     """ A style sheet property for defining a widget's border.
 
     """

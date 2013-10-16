@@ -22,7 +22,7 @@ class Setter(Declarative):
     #: must be compatible with the specified style property. A value of
     #: None indicates that the style property should be reverted to the
     #: the default. This value will be overridden by any child defined
-    #: on the setter.
+    #: on the setter object.
     value = d_(Value())
 
     def child_added(self, child):

@@ -11,11 +11,12 @@ from enaml.colors import ColorMember
 from enaml.core.declarative import d_
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
-from enaml.styling.style import Style
-from enaml.styling.stylesheet import StyleSheet
-from enaml.styling.styledata import StyleData
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
+
+from .styling.style import Style
+from .styling.styledata import StyleData
+from .styling.stylesheet import StyleSheet
 
 
 class ProxyWidget(ProxyToolkitObject):
@@ -61,6 +62,9 @@ class ProxyWidget(ProxyToolkitObject):
     def ensure_hidden(self):
         raise NotImplementedError
 
+    def restyle(self):
+        raise NotImplementedError
+
 
 class Widget(ToolkitObject):
     """ The base class of visible widgets in Enaml.
@@ -72,16 +76,18 @@ class Widget(ToolkitObject):
     #: Whether or not the widget is visible.
     visible = d_(Bool(True))
 
-    #: The style to apply directly to this object. The selectors for
-    #: the style are ignored and the setters are assigned the highest
-    #: precedence during styling. This value will be overridden by any
-    #: Style object declared as a child.
+    #: The style to apply directly to this object. The selector rules
+    #: for the style will be ignored and the setters will be assigned
+    #: the highest precedence during the styling passes. This will be
+    #: overridden by any Style object declared as a widget child. For
+    #: all but the simplest cases, a StyleSheet should be preferred
+    #: over a direct style assignment.
     style = d_(Typed(Style))
 
     #: The stylesheet to apply to the widget and its children. The
-    #: styles defined on this stylesheet will have a higher precedence
-    #: than those defined on the widget's ancestors. This value will be
-    #: overridden by any StyleSheet object declared as a child.
+    #: styles defined on the stylesheet will have a higher precedence
+    #: than those defined on the widget's ancestors. This will be
+    #: overridden by any StyleSheet object declared as a widget child.
     stylesheet = d_(Typed(StyleSheet))
 
     #: The background color of the widget.
@@ -138,8 +144,95 @@ class Widget(ToolkitObject):
         super(Widget, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def child_added(self, child):
+        """ A reimplemented child added event handler.
+
+        This handler will update the Style and StyleSheet attributes
+        if children of the given type are added.
+
+        """
+        super(Widget, self).child_added(child)
+        if isinstance(child, Style):
+            self.style = child
+        elif isinstance(child, StyleSheet):
+            self.stylesheet = child
+
+    def child_removed(self, child):
+        """ A reimplemented child removed event handler.
+
+        This handler will update the Style and StyleSheet attributes
+        if children of the given type are removed.
+
+        """
+        super(Widget, self).child_removed(child)
+        if isinstance(child, Style) and child is self.style:
+            new = None
+            for child in reversed(self.children):
+                if isinstance(child, Style):
+                    new = child
+            self.style = new
+        elif isinstance(child, StyleSheet) and child is self.stylesheet:
+            new = None
+            for child in reversed(self.children):
+                if isinstance(child, StyleSheet):
+                    new = child
+            self.stylesheet = new
+
+    #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
+    def restyle(self, ancestors=None):
+        """ Restyle the widget and all of it's decendants.
+
+        Parameters
+        ----------
+        ancestors : list or None
+            The style rules for the ancestors of this widget. If given
+            the list elements should be the list of styles for the
+            ancestor stylesheets of this widget. The ancestor sheets
+            will be processed in order according to the within-group
+            specificity of the style.
+
+        """
+        current = ancestors or []
+        sheet = self.stylesheet
+        if sheet is not None:
+            styles = sheet.styles()
+            if styles:
+                current += [styles]
+
+        for child in self.children:
+            if isinstance(child, Widget):
+                child.restyle(current)
+
+        matches = []
+
+        for group in current:
+            group_matches = []
+            for style in group:
+                match, spec = style.match(self)
+                if match:
+                    group_matches.append((spec, style))
+            if matches:
+                matches.sort()
+                matches.extend(match for _, match in group_matches)
+
+        if self.style is not None:
+            matches.append(self.style)
+
+        if matches:
+            data = self.styledata
+            if data is None:
+                data = self.stylesdata = StyleData()
+            for style in matches:
+                for setter in style.setters():
+                    data.apply(setter)
+
+        #if self.proxy_is_active:
+        #    self.proxy.restyle()
+
     def show(self):
         """ Ensure the widget is shown.
 

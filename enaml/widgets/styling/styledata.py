@@ -5,30 +5,29 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed
-
-from enaml.core.declarative import Declarative, d_
+from atom.api import Atom, Typed
 
 from .border import Border
 from .margin import Margin
 from .padding import Padding
 
 
-class StyleData(Declarative):
-    """ A declarative class for defining Enaml style data objects.
+class StyleData(Atom):
+    """ A class for storing a widget's style data.
 
-    A style data object is used to store the fully resolved values for
-    the style properties.
+    A style data object defines the available properties which can be
+    set by style sheet setters. The object is managed internally by a
+    widget and will not typically be used directly by user code.
 
     """
-    #: The margin definition for the widget. This will be overridden by
-    #: any Margin child defined on the style.
-    margin = d_(Typed(Margin))
+    #: The resolved margin definition for the widget.
+    margin = Typed(Margin)
 
-    #: The padding for the widget. This will be overridden by any
-    #: Padding child defined on the style.
-    padding = d_(Typed(Padding))
+    #: The resolved padding definition for the widget.
+    padding = Typed(Padding)
 
-    #: The border definition for the widget. This will be overridden by
-    #: any Border child defined on the style.
-    border = d_(Typed(Border))
+    #: The resolved border definition for the widget.
+    border = Typed(Border)
+
+    def apply(self, setter):
+        print 'apply', setter
