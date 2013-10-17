@@ -9,7 +9,7 @@ from atom.api import Str, Unicode
 
 from enaml.core.declarative import Declarative, d_
 
-from .setter import Setter
+from .property import Property
 
 
 class Style(Declarative):
@@ -31,13 +31,13 @@ class Style(Declarative):
     #: An empty string will match all widget names.
     name = d_(Unicode())
 
-    def setters(self):
-        """ Get the property setters declared for the style.
+    def properties(self):
+        """ Get the properties declared for the style.
 
         Returns
         -------
         result : list
-            The list of Setter objects declared for the style.
+            The list of Property objects declared for the style.
 
         """
-        return [c for c in self.children if isinstance(c, Setter)]
+        return [c for c in self.children if isinstance(c, Property)]
