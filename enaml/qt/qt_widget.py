@@ -16,6 +16,7 @@ from .QtGui import QFont, QWidget, QWidgetItem, QApplication
 
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
+from .styleutil import translate_style_property
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):
@@ -180,3 +181,25 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setVisible(False)
+
+    def restyle(self, styles):
+        """ Restyle the widget with the given style data.
+
+        """
+        parts = []
+        for style in styles:
+            translated = []
+            for prop in style.properties():
+                item = translate_style_property(prop)
+                if item:
+                    translated.append(item)
+            t = '#%s'
+            if style.subcontrol:
+                t += '::%s' % style.subcontrol
+            if style.state:
+                t += ':%s' % style.state
+            t += '{%s}'
+            p = t % (self.widget.objectName(), ''.join(translated))
+            parts.append(p)
+        stylesheet = ''.join(parts)
+        self.widget.setStyleSheet(stylesheet)

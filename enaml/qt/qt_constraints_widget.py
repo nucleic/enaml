@@ -228,3 +228,7 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
         # container can know the object on which the updater operates.
         update_geometry.item = self
         return update_geometry
+
+    def restyle(self, styles):
+        with size_hint_guard(self):
+            super(QtConstraintsWidget, self).restyle(styles)
