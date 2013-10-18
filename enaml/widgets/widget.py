@@ -5,18 +5,18 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
+from atom.api import (
+    Bool, Enum, Unicode, Coerced, Str, Typed, ForwardTyped, observe
+)
 
+from enaml.application import Application
 from enaml.colors import ColorMember
 from enaml.core.declarative import d_
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
 
+from .styling import Style, StyleSheet
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
-
-from .styling.style import Style
-from .styling.styledata import StyleData
-from .styling.stylesheet import StyleSheet
 
 
 class ProxyWidget(ProxyToolkitObject):
@@ -62,7 +62,7 @@ class ProxyWidget(ProxyToolkitObject):
     def ensure_hidden(self):
         raise NotImplementedError
 
-    def restyle(self):
+    def restyle(self, styles):
         raise NotImplementedError
 
 
@@ -76,19 +76,9 @@ class Widget(ToolkitObject):
     #: Whether or not the widget is visible.
     visible = d_(Bool(True))
 
-    #: The style to apply directly to this object. The selector rules
-    #: for the style will be ignored and the setters will be assigned
-    #: the highest precedence during the styling passes. This will be
-    #: overridden by any Style object declared as a widget child. For
-    #: all but the simplest cases, a StyleSheet should be preferred
-    #: over a direct style assignment.
-    style = d_(Typed(Style))
-
-    #: The stylesheet to apply to the widget and its children. The
-    #: styles defined on the stylesheet will have a higher precedence
-    #: than those defined on the widget's ancestors. This will be
-    #: overridden by any StyleSheet object declared as a widget child.
-    stylesheet = d_(Typed(StyleSheet))
+    #: The style class to which this widget belongs. An empty string
+    #: indicates the widget does not belong to any style class.
+    styleclass = d_(Str())
 
     #: The background color of the widget.
     background = d_(ColorMember())
@@ -119,11 +109,6 @@ class Widget(ToolkitObject):
     #: supplied by the client.
     show_focus_rect = d_(Enum(None, True, False))
 
-    #: The resolved style data for the widget. This value is updated
-    #: during a styling pass and consumed by the toolkit backend. It
-    #: should not be modified directly by user code.
-    styledata = Typed(StyleData)
-
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
 
@@ -144,95 +129,8 @@ class Widget(ToolkitObject):
         super(Widget, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
-    # Reimplementations
-    #--------------------------------------------------------------------------
-    def child_added(self, child):
-        """ A reimplemented child added event handler.
-
-        This handler will update the Style and StyleSheet attributes
-        if children of the given type are added.
-
-        """
-        super(Widget, self).child_added(child)
-        if isinstance(child, Style):
-            self.style = child
-        elif isinstance(child, StyleSheet):
-            self.stylesheet = child
-
-    def child_removed(self, child):
-        """ A reimplemented child removed event handler.
-
-        This handler will update the Style and StyleSheet attributes
-        if children of the given type are removed.
-
-        """
-        super(Widget, self).child_removed(child)
-        if isinstance(child, Style) and child is self.style:
-            new = None
-            for child in reversed(self.children):
-                if isinstance(child, Style):
-                    new = child
-            self.style = new
-        elif isinstance(child, StyleSheet) and child is self.stylesheet:
-            new = None
-            for child in reversed(self.children):
-                if isinstance(child, StyleSheet):
-                    new = child
-            self.stylesheet = new
-
-    #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def restyle(self, ancestors=None):
-        """ Restyle the widget and all of it's decendants.
-
-        Parameters
-        ----------
-        ancestors : list or None
-            The style rules for the ancestors of this widget. If given
-            the list elements should be the list of styles for the
-            ancestor stylesheets of this widget. The ancestor sheets
-            will be processed in order according to the within-group
-            specificity of the style.
-
-        """
-        current = ancestors or []
-        sheet = self.stylesheet
-        if sheet is not None:
-            styles = sheet.styles()
-            if styles:
-                current += [styles]
-
-        for child in self.children:
-            if isinstance(child, Widget):
-                child.restyle(current)
-
-        matches = []
-
-        for group in current:
-            group_matches = []
-            for style in group:
-                match, spec = style.match(self)
-                if match:
-                    group_matches.append((spec, style))
-            if matches:
-                matches.sort()
-                matches.extend(match for _, match in group_matches)
-
-        if self.style is not None:
-            matches.append(self.style)
-
-        if matches:
-            data = self.styledata
-            if data is None:
-                data = self.stylesdata = StyleData()
-            for style in matches:
-                for setter in style.setters():
-                    data.apply(setter)
-
-        #if self.proxy_is_active:
-        #    self.proxy.restyle()
-
     def show(self):
         """ Ensure the widget is shown.
 
@@ -252,3 +150,112 @@ class Widget(ToolkitObject):
         self.visible = False
         if self.proxy_is_active:
             self.proxy.ensure_hidden()
+
+    def get_style(self):
+        """ Get the style defined on the item.
+
+        Returns
+        -------
+        result : Style or None
+            The last Style child defined on the widget, or None if the
+            widget has no such child.
+
+        """
+        for child in reversed(self.children):
+            if isinstance(child, Style):
+                return child
+
+    def get_stylesheet(self):
+        """ Get the style sheet defined on the item.
+
+        Returns
+        -------
+        result : StyleSheet or None
+            The last StyleSheet child defined on the widget, or None if
+            the widget has no such child.
+
+        """
+        for child in reversed(self.children):
+            if isinstance(child, StyleSheet):
+                return child
+
+    def restyle(self):
+        """ Restyle the widget hierarchy starting with this widget.
+
+        This method is called automatically by the framework at the
+        appropriate times. It will not typically need to be called
+        directly by user code.
+
+        """
+        self._restyle()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _restyle(self, ancestors=None):
+        """ The restyle implementation method.
+
+        Parameters
+        ----------
+        ancestors : list or None
+            The list of ancestor style sheets. If this is None, the
+            ancestor hierarchy will be traversed to collect the style
+            sheets.
+
+        """
+        if not self.proxy_is_active:
+            return
+
+        if ancestors is None:
+            sheets = self._get_ancestor_stylesheets()
+        else:
+            sheets = ancestors[:]
+
+        this_sheet = self.get_stylesheet()
+        if this_sheet is not None:
+            sheets.append(this_sheet)
+
+        # Style the children bottom-up.
+        for child in self.children:
+            if isinstance(child, Widget):
+                child._restyle(sheets)
+
+        these_styles = []
+        for sheet in sheets:
+            matches = []
+            for style in sheet.styles():
+                specificity = style.match(self)
+                if specificity > 0:
+                    matches.append((specificity, style))
+            if matches:
+                matches.sort()
+                these_styles.extend(style for _, style in matches)
+
+        this_style = self.get_style()
+        if this_style is not None:
+            these_styles.append(this_style)
+
+        self.proxy.restyle(these_styles)
+
+    def _get_ancestor_stylesheets(self):
+        """ Get a list of ancestor stylesheets.
+
+        Returns
+        -------
+        result : list
+            A list of stylesheet objects for the ancestors of this
+            widget, in order of increasing precedence.
+
+        """
+        sheets = []
+        for w in self.traverse_ancestors():
+            if isinstance(w, Widget):
+                sheet = w.get_stylesheet()
+                if sheet is not None:
+                    sheets.append(w)
+        app = Application.instance()
+        if app is not None and app.stylesheet is not None:
+            sheets.append(app.stylesheet)
+        if sheets:
+            sheets.reverse()
+        return sheets
