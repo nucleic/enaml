@@ -9,8 +9,9 @@ from atom.api import Typed
 
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 
-from .QtCore import QObject
 from . import QT_API
+from .nameutil import make_name
+from .QtCore import QObject
 
 
 class QtToolkitObject(ProxyToolkitObject):
@@ -47,9 +48,13 @@ class QtToolkitObject(ProxyToolkitObject):
         """
         widget = self.widget
         if widget is not None:
+            # Each object gets a unique name. This is required so that
+            # stylesheet cascading can be prevented (Enaml's styling
+            # engine applies the cascade itself). This means that any
+            # code which needs to pass an object name back into Enaml
+            # must clean the name with a call to clean_name(...).
             name = self.declaration.name
-            if name:
-                widget.setObjectName(name)
+            widget.setObjectName(make_name(name))
 
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.
