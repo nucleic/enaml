@@ -9,7 +9,9 @@ from heapq import heappush, heappop
 from itertools import count
 from threading import Lock
 
-from atom.api import Atom, Bool, Typed, Tuple, Dict, Callable, Value, List
+from atom.api import (
+    Atom, Bool, Typed, ForwardTyped, Tuple, Dict, Callable, Value, List
+)
 
 
 class ScheduledTask(Atom):
@@ -144,6 +146,14 @@ class ProxyResolver(Atom):
             return factory()
 
 
+def StyleSheet():
+    """ A lazy importer for the widget StyleSheet class.
+
+    """
+    from enaml.widgets.styling import StyleSheet
+    return StyleSheet
+
+
 class Application(Atom):
     """ The application object which manages the top-level communication
     protocol for serving Enaml views.
@@ -153,6 +163,9 @@ class Application(Atom):
     #: be supplied by application subclasses, but can also be supplied
     #: by the developer to supply custom proxy resolution behavior.
     resolver = Typed(ProxyResolver)
+
+    #: The stylesheet to apply to the application.
+    stylesheet = ForwardTyped(StyleSheet)
 
     #: The task heap for application tasks.
     _task_heap = List()
