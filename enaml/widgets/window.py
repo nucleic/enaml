@@ -329,6 +329,7 @@ class Window(Widget):
             self.initialize()
         if not self.proxy_is_active:
             self.activate_proxy()
+        self.restyle()
         super(Window, self).show()
 
     #--------------------------------------------------------------------------
