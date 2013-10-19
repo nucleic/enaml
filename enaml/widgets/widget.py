@@ -15,7 +15,7 @@ from enaml.core.declarative import d_
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
 
-from .styling import Style, StyleSheet
+from .styling import StyleSheet
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
@@ -151,21 +151,7 @@ class Widget(ToolkitObject):
         if self.proxy_is_active:
             self.proxy.ensure_hidden()
 
-    def get_style(self):
-        """ Get the style defined on the item.
-
-        Returns
-        -------
-        result : Style or None
-            The last Style child defined on the widget, or None if the
-            widget has no such child.
-
-        """
-        for child in reversed(self.children):
-            if isinstance(child, Style):
-                return child
-
-    def get_stylesheet(self):
+    def stylesheet(self):
         """ Get the style sheet defined on the item.
 
         Returns
@@ -207,11 +193,11 @@ class Widget(ToolkitObject):
             return
 
         if ancestors is None:
-            sheets = self._get_ancestor_stylesheets()
+            sheets = self._ancestor_stylesheets()
         else:
             sheets = ancestors[:]
 
-        this_sheet = self.get_stylesheet()
+        this_sheet = self.stylesheet()
         if this_sheet is not None:
             sheets.append(this_sheet)
 
@@ -225,19 +211,15 @@ class Widget(ToolkitObject):
             matches = []
             for style in sheet.styles():
                 specificity = style.match(self)
-                if specificity > 0:
+                if specificity >= 0:
                     matches.append((specificity, style))
             if matches:
                 matches.sort()
                 these_styles.extend(style for _, style in matches)
 
-        this_style = self.get_style()
-        if this_style is not None:
-            these_styles.append(this_style)
-
         self.proxy.restyle(these_styles)
 
-    def _get_ancestor_stylesheets(self):
+    def _ancestor_stylesheets(self):
         """ Get a list of ancestor stylesheets.
 
         Returns
@@ -250,7 +232,7 @@ class Widget(ToolkitObject):
         sheets = []
         for w in self.traverse_ancestors():
             if isinstance(w, Widget):
-                sheet = w.get_stylesheet()
+                sheet = w.stylesheet()
                 if sheet is not None:
                     sheets.append(w)
         app = Application.instance()
