@@ -10,18 +10,18 @@ from atom.api import Coerced, Str, Value, observe
 from enaml.core.declarative import Declarative, d_
 
 
-class Property(Declarative):
-    """ A declarative class for defining a property in a style.
+class Rule(Declarative):
+    """ A declarative class for defining a rule in a style.
 
     The supported style properties and the types of values supported
     for the style depend upon the implementation of a given toolkit
-    backend. In all cases, empty names and None values are ignored.
+    backend. In all cases, empty names and values are ignored.
 
     """
-    #: The name of the style property.
+    #: The name of the rule's style property.
     name = d_(Str())
 
-    #: The value to apply to the style property.
+    #: The value to apply to the rule's style property.
     value = d_(Str())
 
     #: Private storage for the toolkit backend. This value is cleared
@@ -79,16 +79,16 @@ class Style(Declarative):
     #: dependent.
     subcontrol = d_(Str())
 
-    def properties(self):
-        """ Get the properties declared for the style.
+    def rules(self):
+        """ Get the rules declared for the style.
 
         Returns
         -------
         result : list
-            The list of Property objects declared for the style.
+            The list of Rule objects declared for the style.
 
         """
-        return [c for c in self.children if isinstance(c, Property)]
+        return [c for c in self.children if isinstance(c, Rule)]
 
     def match(self, item):
         """ Get the whether or not an item matches this style.

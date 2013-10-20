@@ -103,16 +103,16 @@ MAY_HAVE_GRADIENT = set([
 ])
 
 
-def translate_style_property(prop):
-    tkdata = prop._tkdata
+def translate_style_rule(rule):
+    tkdata = rule._tkdata
     if tkdata is not None:
         return tkdata
-    name = prop.name
+    name = rule.name
     if name in KNOWN_PROPERTIES:
-        tkdata = prop.value
+        tkdata = rule.value
         if tkdata:
             if name in MAY_HAVE_GRADIENT:
                 tkdata = _translate_gradient(tkdata)
             tkdata = '%s:%s;' % (name, tkdata)
-        prop._tkdata = tkdata
+        rule._tkdata = tkdata
     return tkdata
