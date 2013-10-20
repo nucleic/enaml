@@ -259,3 +259,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
 
         """
         self.manager.update_layout(ops)
+
+    def restyle(self, styles):
+        # Temporarily disable Enaml stylesheet styling
+        pass
