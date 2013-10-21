@@ -234,7 +234,7 @@ class Widget(ToolkitObject):
             if isinstance(w, Widget):
                 sheet = w.stylesheet()
                 if sheet is not None:
-                    sheets.append(w)
+                    sheets.append(sheet)
         app = Application.instance()
         if app is not None and app.stylesheet is not None:
             sheets.append(app.stylesheet)
