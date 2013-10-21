@@ -7,6 +7,8 @@
 #------------------------------------------------------------------------------
 import re
 
+from enaml.widgets.styling import StyleCache
+
 
 _grad_re = re.compile('(lineargradient|radialgradient)')
 
@@ -104,15 +106,11 @@ MAY_HAVE_GRADIENT = set([
 
 
 def translate_style_rule(rule):
-    tkdata = rule._tkdata
-    if tkdata is not None:
-        return tkdata
     name = rule.name
     if name in KNOWN_PROPERTIES:
-        tkdata = rule.value
-        if tkdata:
+        value = rule.value
+        if value:
             if name in MAY_HAVE_GRADIENT:
-                tkdata = _translate_gradient(tkdata)
-            tkdata = '%s:%s;' % (name, tkdata)
-        rule._tkdata = tkdata
-    return tkdata
+                value = _translate_gradient(value)
+            value = '%s:%s;' % (name, value)
+        return value

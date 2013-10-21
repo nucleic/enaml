@@ -229,6 +229,6 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
         update_geometry.item = self
         return update_geometry
 
-    def restyle(self, styles):
-        with size_hint_guard(self):
-            super(QtConstraintsWidget, self).restyle(styles)
+    #def restyle(self):
+    #    with size_hint_guard(self):
+    #        super(QtConstraintsWidget, self).restyle()

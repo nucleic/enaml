@@ -9,6 +9,7 @@ import sys
 
 from atom.api import Typed
 
+from enaml.widgets.styling import StyleCache
 from enaml.widgets.widget import ProxyWidget
 
 from .QtCore import Qt, QSize
@@ -65,6 +66,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         if d.status_tip:
             self.set_status_tip(d.status_tip)
         self.set_enabled(d.enabled)
+        self.restyle()
         # Don't make toplevel widgets visible during init or they will
         # flicker onto the screen. This applies particularly for things
         # like status bar widgets which are created with no parent and
@@ -182,22 +184,22 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """
         self.widget.setVisible(False)
 
-    def restyle(self, styles):
+    def restyle(self):
         """ Restyle the widget with the given style data.
 
         """
         parts = []
-        for style in styles:
+        for style in StyleCache.styles(self.declaration):
             translated = []
             for rule in style.rules():
-                item = translate_style_rule(rule)
-                if item:
+                item = StyleCache.toolkit_rule(rule, translate_style_rule)
+                if item is not None:
                     translated.append(item)
             t = '#%s'
             if style.subcontrol:
                 t += '::%s' % style.subcontrol
-            if style.state:
-                t += ':%s' % style.state
+            if style.pseudostate:
+                t += ':%s' % style.pseudostate
             t += '{%s}'
             p = t % (self.widget.objectName(), ''.join(translated))
             parts.append(p)
