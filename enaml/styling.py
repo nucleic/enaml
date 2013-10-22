@@ -387,10 +387,10 @@ class StyleCache(object):
             for style in sheet.styles():
                 specificity = style.match(item)
                 if specificity >= 0:
-                    matches.append((specificity, style))
+                    matches.append((specificity, len(matches), style))
             if matches:
                 matches.sort()
-                styles.extend(style for _, style in matches)
+                styles.extend(style for _1, _2, style in matches)
         items = cls._style_items
         for style in styles:
             items[style].add(item)
