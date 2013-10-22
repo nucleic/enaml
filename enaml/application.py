@@ -10,7 +10,8 @@ from itertools import count
 from threading import Lock
 
 from atom.api import (
-    Atom, Bool, Typed, ForwardTyped, Tuple, Dict, Callable, Value, List
+    Atom, Bool, Typed, ForwardTyped, Tuple, Dict, Callable, Value, List,
+    observe
 )
 
 
@@ -228,6 +229,15 @@ class Application(Atom):
             if heap:
                 priority, ignored, task = heappop(heap)
                 self.deferred_call(self._process_task, task)
+
+    @observe('style_sheet')
+    def _invalidate_style_cache(self, change):
+        """ An observer which invalidates the style sheet cache.
+
+        """
+        if change['type'] == 'update':
+            from enaml.styling import StyleCache
+            StyleCache.app_sheet_changed()
 
     #--------------------------------------------------------------------------
     # Abstract API

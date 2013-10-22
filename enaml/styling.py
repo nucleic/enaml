@@ -279,19 +279,22 @@ class StyleCache(object):
 
     """
     #: A private mapping of item to tuple of matching StyleSheet.
-    _style_sheet_cache = {}
+    _item_style_sheets = {}
 
     #: A private mapping of item to tuple of matching Style.
-    _style_cache = {}
+    _item_styles = {}
 
     #: A private mapping of Setter to toolkit data.
-    _toolkit_setter_cache = {}
+    _toolkit_setters = {}
 
     #: A private mapping of StyleSheet to set of matched items.
     _style_sheet_items = defaultdict(set)
 
     #: A private mapping of Style to set of matched items.
     _style_items = defaultdict(set)
+
+    #: The set of all items which have been queried for style.
+    _queried_items = set()
 
     #: A RestyleTask which collapses item restyle requests.
     _restyle_task = None
@@ -315,7 +318,7 @@ class StyleCache(object):
             order of ascending precedence.
 
         """
-        cache = cls._style_sheet_cache
+        cache = cls._item_style_sheets
         if item in cache:
             return cache[item]
         sheets = []
@@ -334,6 +337,7 @@ class StyleCache(object):
             for sheet in sheets:
                 items[sheet].add(item)
         sheets = cache[item] = tuple(sheets)
+        cls._queried_items.add(item)
         return sheets
 
     @classmethod
@@ -352,7 +356,7 @@ class StyleCache(object):
             of ascending precedence.
 
         """
-        cache = cls._style_cache
+        cache = cls._item_styles
         if item in cache:
             return cache[item]
         styles = []
@@ -395,7 +399,7 @@ class StyleCache(object):
             The toolkit representation of the setter.
 
         """
-        cache = cls._toolkit_setter_cache
+        cache = cls._toolkit_setters
         if setter in cache:
             return cache[setter]
         result = cache[setter] = translate(setter)
@@ -430,10 +434,10 @@ class StyleCache(object):
             The setter object of interest.
 
         """
-        cls._toolkit_setter_cache.pop(setter, None)
+        cls._toolkit_setters.pop(setter, None)
         items = cls._style_items.get(setter.parent)
         if items is not None:
-            cls._request_items_restyle(items)
+            cls._request_restyle(items)
 
     @classmethod
     def style_match_invalidated(cls, style):
@@ -448,10 +452,10 @@ class StyleCache(object):
         cls._style_items.pop(style, None)
         items = cls._style_sheet_items.get(style.parent)
         if items is not None:
-            cache = cls._style_cache
+            cache = cls._item_styles
             for item in items:
                 cache.pop(item, None)
-            cls._request_items_restyle(items)
+            cls._request_restyle(items)
 
     @classmethod
     def style_data_invalidated(cls, style):
@@ -465,7 +469,7 @@ class StyleCache(object):
         """
         items = cls._style_items.get(style)
         if items is not None:
-            cls._request_items_restyle(items)
+            cls._request_restyle(items)
 
     @classmethod
     def item_style_class_invalidated(cls, item):
@@ -477,12 +481,23 @@ class StyleCache(object):
             The item of interest.
 
         """
-        styles = cls._style_cache.pop(item, None)
+        styles = cls._item_styles.pop(item, None)
         if styles is not None:
             items = cls._style_items
             for style in styles:
                 items[style].discard(item)
-        cls._request_items_restyle((item,))
+        cls._request_restyle((item,))
+
+    @classmethod
+    def app_sheet_changed(cls):
+        """ Notify the cache that the app style sheet has changed.
+
+        """
+        cls._item_style_sheets.clear()
+        cls._item_styles.clear()
+        cls._style_sheet_items.clear()
+        cls._style_items.clear()
+        cls._request_restyle(cls._queried_items)
 
     #--------------------------------------------------------------------------
     # Private API
@@ -491,7 +506,7 @@ class StyleCache(object):
         raise TypeError('Cannot create instances of StyleCache')
 
     @classmethod
-    def _request_items_restyle(cls, items):
+    def _request_restyle(cls, items):
         """ Request a restyle of the given items.
 
         This method will post a task on the event queue to collapse
