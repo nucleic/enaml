@@ -288,6 +288,28 @@ class Stylable(Declarative):
         """
         pass
 
+    def child_added(self, child):
+        """ A reimplemented child added event handler.
+
+        This handler notifies the style cache that the style sheet
+        child of the stylable has changed.
+
+        """
+        super(Stylable, self).child_added(child)
+        if self.is_initialized and isinstance(child, StyleSheet):
+            StyleCache.item_style_sheet_changed(self)
+
+    def child_removed(self, child):
+        """ A reimplemented child removed event handler.
+
+        This handler notifies the style cache that the style sheet
+        child of the stylable has changed.
+
+        """
+        super(Stylable, self).child_added(child)
+        if self.is_initialized and isinstance(child, StyleSheet):
+            StyleCache.item_style_sheet_changed(self)
+
     @observe('style_class')
     def _invalidate_style_class(self, change):
         """ An observer which invalidates the style class cache.
@@ -450,7 +472,7 @@ class StyleCache(object):
         return result
 
     #--------------------------------------------------------------------------
-    # Framework API
+    # Protected Framework API
     #--------------------------------------------------------------------------
     @classmethod
     def setter_destroyed(cls, setter):
@@ -470,14 +492,6 @@ class StyleCache(object):
 
     @classmethod
     def setter_invalidated(cls, setter):
-        """ Notify the cache that the setter is invalid.
-
-        Parameters
-        ----------
-        setter : Setter
-            The setter object of interest.
-
-        """
         cls._toolkit_setters.pop(setter, None)
         items = cls._style_items.get(setter.parent)
         if items is not None:
@@ -485,14 +499,6 @@ class StyleCache(object):
 
     @classmethod
     def style_match_invalidated(cls, style):
-        """ Notify the cache that the style match is invalid.
-
-        Parameters
-        ----------
-        style : Style
-            The style object of interest.
-
-        """
         cls._style_items.pop(style, None)
         items = cls._style_sheet_items.get(style.parent)
         if items is not None:
@@ -503,28 +509,12 @@ class StyleCache(object):
 
     @classmethod
     def style_pseudo_invalidated(cls, style):
-        """ Notify the cache that the style pseudo data is invalid.
-
-        Parameters
-        ----------
-        style : Style
-            The style object of interest.
-
-        """
         items = cls._style_items.get(style)
         if items is not None:
             cls._request_restyle(items)
 
     @classmethod
     def item_style_class_invalidated(cls, item):
-        """ Notify the cache that the item style class is invalid.
-
-        Parameters
-        ----------
-        item : Stylable
-            The item of interest.
-
-        """
         styles = cls._item_styles.pop(item, None)
         if styles is not None:
             items = cls._style_items
@@ -534,28 +524,12 @@ class StyleCache(object):
 
     @classmethod
     def style_setters_changed(cls, style):
-        """ Notify the cache that the style setters have changed.
-
-        Parameters
-        ----------
-        style : Style
-            The style object of interest.
-
-        """
         items = cls._style_items.get(style)
         if items is not None:
             cls._request_restyle(items)
 
     @classmethod
     def style_sheet_styles_changed(cls, sheet):
-        """ Notify the cache that the sheet styles have changed.
-
-        Parameters
-        ----------
-        sheet : StyleSheet
-            The style sheet object of interest.
-
-        """
         items = cls._style_sheet_items.get(sheet, None)
         if items is not None:
             styles = cls._item_styles
@@ -564,10 +538,25 @@ class StyleCache(object):
             cls._request_restyle(items)
 
     @classmethod
-    def app_sheet_changed(cls):
-        """ Notify the cache that the app style sheet has changed.
+    def item_style_sheet_changed(cls, item):
+        item_styles = cls._item_styles
+        item_sheets = cls._item_style_sheets
+        style_items = cls._style_items
+        sheet_items = cls._style_sheet_items
+        items = [i for i in item.traverse() if i in cls._queried_items]
+        for item in items:
+            sheets = item_sheets.pop(item, None)
+            if sheets is not None:
+                for sheet in sheets:
+                    sheet_items[sheet].discard(item)
+            styles = item_styles.pop(item, None)
+            if styles is not None:
+                for style in styles:
+                    style_items[style].discard(item)
+        cls._request_restyle(items)
 
-        """
+    @classmethod
+    def app_sheet_changed(cls):
         cls._item_style_sheets.clear()
         cls._item_styles.clear()
         cls._style_sheet_items.clear()
@@ -582,17 +571,6 @@ class StyleCache(object):
 
     @classmethod
     def _request_restyle(cls, items):
-        """ Request a restyle of the given items.
-
-        This method will post a task on the event queue to collapse
-        multiple restyle requests for the same objects.
-
-        Parameters
-        ----------
-        items : iterable
-            An iterable of Stylable items which should be restyled.
-
-        """
         task = cls._restyle_task
         if task is None:
             task = cls._restyle_task = _RestyleTask()
