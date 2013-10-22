@@ -59,7 +59,7 @@ class ProxyWidget(ProxyToolkitObject):
     def ensure_hidden(self):
         raise NotImplementedError
 
-    def restyle(self, styles):
+    def restyle(self):
         raise NotImplementedError
 
 
