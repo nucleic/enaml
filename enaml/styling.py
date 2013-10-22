@@ -30,7 +30,7 @@ class Setter(Declarative):
 
         """
         super(Setter, self).destroy()
-        StyleCache.setter_destroyed(self)
+        StyleCache._setter_destroyed(self)
 
     @observe('property', 'value')
     def _invalidate_cache(self, change):
@@ -38,7 +38,7 @@ class Setter(Declarative):
 
         """
         if change['type'] == 'update':
-            StyleCache.setter_invalidated(self)
+            StyleCache._setter_invalidated(self)
 
 
 # Internal string split cache
@@ -155,7 +155,7 @@ class Style(Declarative):
 
         """
         super(Style, self).destroy()
-        StyleCache.style_destroyed(self)
+        StyleCache._style_destroyed(self)
 
     def child_added(self, child):
         """ A reimplemented child added event handler.
@@ -166,7 +166,7 @@ class Style(Declarative):
         """
         super(Style, self).child_added(child)
         if self.is_initialized and isinstance(child, Setter):
-            StyleCache.style_setters_changed(self)
+            StyleCache._style_setters_changed(self)
 
     def child_removed(self, child):
         """ A reimplemented child removed event handler.
@@ -177,7 +177,7 @@ class Style(Declarative):
         """
         super(Style, self).child_removed(child)
         if self.is_initialized and isinstance(child, Setter):
-            StyleCache.style_setters_changed(self)
+            StyleCache._style_setters_changed(self)
 
     @observe('element', 'style_class', 'object_name')
     def _invalidate_match_cache(self, change):
@@ -185,7 +185,7 @@ class Style(Declarative):
 
         """
         if change['type'] == 'update':
-            StyleCache.style_match_invalidated(self)
+            StyleCache._style_match_invalidated(self)
 
     @observe('pseudo_class', 'pseudo_element')
     def _invalidate_pseudo_cache(self, change):
@@ -193,7 +193,7 @@ class Style(Declarative):
 
         """
         if change['type'] == 'update':
-            StyleCache.style_pseudo_invalidated(self)
+            StyleCache._style_pseudo_invalidated(self)
 
 
 class StyleSheet(Declarative):
@@ -207,7 +207,7 @@ class StyleSheet(Declarative):
 
         """
         super(StyleSheet, self).destroy()
-        StyleCache.style_sheet_destroyed(self)
+        StyleCache._style_sheet_destroyed(self)
 
     def styles(self):
         """ Get the styles declared for the style sheet.
@@ -229,7 +229,7 @@ class StyleSheet(Declarative):
         """
         super(StyleSheet, self).child_added(child)
         if self.is_initialized and isinstance(child, Style):
-            StyleCache.style_sheet_styles_changed(self)
+            StyleCache._style_sheet_styles_changed(self)
 
     def child_removed(self, child):
         """ A reimplemented child removed event handler.
@@ -240,7 +240,7 @@ class StyleSheet(Declarative):
         """
         super(StyleSheet, self).child_removed(child)
         if self.is_initialized and isinstance(child, Style):
-            StyleCache.style_sheet_styles_changed(self)
+            StyleCache._style_sheet_styles_changed(self)
 
 
 class Stylable(Declarative):
@@ -262,7 +262,7 @@ class Stylable(Declarative):
 
         """
         super(Stylable, self).destroy()
-        StyleCache.item_destroyed(self)
+        StyleCache._item_destroyed(self)
 
     def style_sheet(self):
         """ Get the style sheet defined on the item.
@@ -297,7 +297,7 @@ class Stylable(Declarative):
         """
         super(Stylable, self).child_added(child)
         if self.is_initialized and isinstance(child, StyleSheet):
-            StyleCache.item_style_sheet_changed(self)
+            StyleCache._item_style_sheet_changed(self)
 
     def child_removed(self, child):
         """ A reimplemented child removed event handler.
@@ -308,7 +308,7 @@ class Stylable(Declarative):
         """
         super(Stylable, self).child_added(child)
         if self.is_initialized and isinstance(child, StyleSheet):
-            StyleCache.item_style_sheet_changed(self)
+            StyleCache._item_style_sheet_changed(self)
 
     @observe('style_class')
     def _invalidate_style_class(self, change):
@@ -316,7 +316,7 @@ class Stylable(Declarative):
 
         """
         if change['type'] == 'update':
-            StyleCache.item_style_class_invalidated(self)
+            StyleCache._item_style_class_invalidated(self)
 
 
 class _RestyleTask(Atom):
@@ -475,30 +475,30 @@ class StyleCache(object):
     # Protected Framework API
     #--------------------------------------------------------------------------
     @classmethod
-    def setter_destroyed(cls, setter):
+    def _setter_destroyed(cls, setter):
         pass
 
     @classmethod
-    def style_destroyed(cls, style):
+    def _style_destroyed(cls, style):
         pass
 
     @classmethod
-    def style_sheet_destroyed(cls, sheet):
+    def _style_sheet_destroyed(cls, sheet):
         pass
 
     @classmethod
-    def item_destroyed(cls, item):
+    def _item_destroyed(cls, item):
         pass
 
     @classmethod
-    def setter_invalidated(cls, setter):
+    def _setter_invalidated(cls, setter):
         cls._toolkit_setters.pop(setter, None)
         items = cls._style_items.get(setter.parent)
         if items is not None:
             cls._request_restyle(items)
 
     @classmethod
-    def style_match_invalidated(cls, style):
+    def _style_match_invalidated(cls, style):
         cls._style_items.pop(style, None)
         items = cls._style_sheet_items.get(style.parent)
         if items is not None:
@@ -508,13 +508,13 @@ class StyleCache(object):
             cls._request_restyle(items)
 
     @classmethod
-    def style_pseudo_invalidated(cls, style):
+    def _style_pseudo_invalidated(cls, style):
         items = cls._style_items.get(style)
         if items is not None:
             cls._request_restyle(items)
 
     @classmethod
-    def item_style_class_invalidated(cls, item):
+    def _item_style_class_invalidated(cls, item):
         styles = cls._item_styles.pop(item, None)
         if styles is not None:
             items = cls._style_items
@@ -523,13 +523,13 @@ class StyleCache(object):
         cls._request_restyle((item,))
 
     @classmethod
-    def style_setters_changed(cls, style):
+    def _style_setters_changed(cls, style):
         items = cls._style_items.get(style)
         if items is not None:
             cls._request_restyle(items)
 
     @classmethod
-    def style_sheet_styles_changed(cls, sheet):
+    def _style_sheet_styles_changed(cls, sheet):
         items = cls._style_sheet_items.get(sheet, None)
         if items is not None:
             styles = cls._item_styles
@@ -538,7 +538,7 @@ class StyleCache(object):
             cls._request_restyle(items)
 
     @classmethod
-    def item_style_sheet_changed(cls, item):
+    def _item_style_sheet_changed(cls, item):
         item_styles = cls._item_styles
         item_sheets = cls._item_style_sheets
         style_items = cls._style_items
@@ -556,12 +556,13 @@ class StyleCache(object):
         cls._request_restyle(items)
 
     @classmethod
-    def app_sheet_changed(cls):
-        cls._item_style_sheets.clear()
-        cls._item_styles.clear()
-        cls._style_sheet_items.clear()
-        cls._style_items.clear()
-        cls._request_restyle(cls._queried_items)
+    def _app_sheet_changed(cls):
+        if cls._queried_items:
+            cls._item_style_sheets.clear()
+            cls._item_styles.clear()
+            cls._style_sheet_items.clear()
+            cls._style_items.clear()
+            cls._request_restyle(cls._queried_items)
 
     #--------------------------------------------------------------------------
     # Private API

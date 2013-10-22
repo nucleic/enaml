@@ -237,7 +237,7 @@ class Application(Atom):
         """
         if change['type'] == 'update':
             from enaml.styling import StyleCache
-            StyleCache.app_sheet_changed()
+            StyleCache._app_sheet_changed()
 
     #--------------------------------------------------------------------------
     # Abstract API
