@@ -5,9 +5,9 @@ _tabversion = '3.2'
 
 _lr_method = 'LALR'
 
-_lr_signature = '\xdc\xfa\xde(/h\xfe\xf8\x1f6\x0b\xaa\xa6Ee4'
+_lr_signature = 'M\x0b\x9d\xe4\xf6\xe5f\xec\xa7\xad\xafb\xb6\xae\xe8\xd1'
     
-_lr_action_items = {'ENDMARKER':([1,2,3,4,6,7,8,10,13,15,18,19,20,21,24,25,27,28,29,30,36,37,39,40,45,46,51,52,54,],[-18,-19,-14,-15,-23,-20,-5,-17,-12,30,-22,-21,-16,-7,-25,-29,-27,-13,-24,-1,-8,-6,-28,46,-9,-2,-26,-36,-37,]),'STAR':([0,21,22,23,31,32,35,38,41,],[6,6,6,-10,6,-3,6,-11,-4,]),'NAME':([0,9,11,12,14,16,17,21,22,23,26,31,32,34,35,38,41,],[18,24,25,27,29,33,-30,18,18,-10,39,18,-3,-31,18,-11,-4,]),'WS':([1,2,3,4,6,7,8,10,13,17,18,19,20,23,24,25,27,28,29,32,33,39,42,48,49,51,52,54,],[-18,-19,-14,-15,-23,-20,21,-17,-12,34,-22,-21,-16,38,-25,-29,-27,-13,-24,41,44,-28,47,50,53,-26,-36,-37,]),'EQUAL':([33,44,],[42,49,]),'BANG':([12,],[26,]),'DOUBLE_COLON':([0,1,2,4,6,7,10,13,18,19,21,22,23,24,25,27,29,31,32,35,38,39,41,51,52,54,],[11,-18,-19,11,-23,-20,-17,11,-22,-21,11,11,-10,-25,-29,-27,-24,11,-3,11,-11,-28,-4,-26,-36,-37,]),'COLON':([0,1,2,4,6,7,10,13,18,19,21,22,23,24,25,27,29,31,32,35,38,39,41,51,52,54,],[12,-18,-19,12,-23,-20,-17,12,-22,-21,12,12,-10,-25,-29,-27,-24,12,-3,12,-11,-28,-4,-26,-36,-37,]),'STRING':([42,43,47,49,53,],[-32,48,-34,-33,-35,]),'HASH':([0,1,2,4,6,7,10,13,18,19,21,22,23,24,25,27,29,31,32,35,38,39,41,51,52,54,],[14,-18,-19,14,-23,-20,-17,14,-22,-21,14,14,-10,-25,-29,-27,-24,14,-3,14,-11,-28,-4,-26,-36,-37,]),'LSQB':([0,1,2,4,6,7,10,13,18,19,21,22,23,24,25,27,29,31,32,35,38,39,41,51,52,54,],[17,-18,-19,17,-23,-20,-17,17,-22,-21,17,17,-10,-25,-29,-27,-24,17,-3,17,-11,-28,-4,-26,-36,-37,]),'COMMA':([1,2,3,4,6,7,8,10,13,15,18,19,20,21,24,25,27,28,29,36,37,39,45,51,52,54,],[-18,-19,-14,-15,-23,-20,-5,-17,-12,32,-22,-21,-16,-7,-25,-29,-27,-13,-24,-8,-6,-28,-9,-26,-36,-37,]),'RSQB':([48,50,],[52,54,]),'$end':([5,30,46,],[0,-1,-2,]),'DOT':([0,1,2,4,6,7,10,13,18,19,21,22,23,24,25,27,29,31,32,35,38,39,41,51,52,54,],[9,-18,-19,9,-23,-20,-17,9,-22,-21,9,9,-10,-25,-29,-27,-24,9,-3,9,-11,-28,-4,-26,-36,-37,]),'GREATER':([1,2,3,4,6,7,8,10,13,18,19,20,21,24,25,27,28,29,39,51,52,54,],[-18,-19,-14,-15,-23,-20,23,-17,-12,-22,-21,-16,23,-25,-29,-27,-13,-24,-28,-26,-36,-37,]),}
+_lr_action_items = {'IDENT':([0,7,9,10,13,18,26,27,28,29,30,37,40,42,44,50,],[12,21,22,23,25,12,12,-10,-8,12,-9,12,12,-11,-12,-13,]),'STAR':([0,18,26,27,28,29,30,37,40,42,44,50,],[1,1,1,-10,-8,1,-9,1,1,-11,-12,-13,]),'GREATER':([1,3,4,5,6,8,11,12,15,16,17,19,20,21,22,23,24,25,30,43,46,],[-20,-15,-18,-21,-23,-26,-14,-19,27,-24,-25,-17,-22,-28,-30,-29,-16,-27,44,27,-31,]),'WS':([1,3,4,5,6,8,11,12,15,16,17,18,19,20,21,22,23,24,25,26,27,32,33,34,35,38,39,43,44,46,47,],[-20,-15,-18,-21,-23,-26,-14,-19,30,-24,-25,37,-17,-22,-28,-30,-29,-16,-27,40,42,-38,45,-37,-40,-36,-39,30,50,-31,51,]),'RPAR':([1,12,21,22,23,25,32,33,34,35,36,38,39,45,47,51,],[-20,-19,-28,-30,-29,-27,-38,-32,-37,-40,46,-36,-39,-33,-34,-35,]),'DOUBLE_COLON':([0,1,3,5,6,8,11,12,16,17,18,21,22,23,25,26,27,28,29,30,37,40,42,44,46,50,],[9,-20,9,9,-23,-26,9,-19,-24,-25,9,-28,-30,-29,-27,9,-10,-8,9,-9,9,9,-11,-12,-31,-13,]),'COLON':([0,1,3,5,6,8,11,12,16,17,18,21,22,23,25,26,27,28,29,30,37,40,42,44,46,50,],[10,-20,10,10,-23,-26,10,-19,-24,-25,10,-28,-30,-29,-27,10,-10,-8,10,-9,10,10,-11,-12,-31,-13,]),'NOT':([0,1,3,5,6,8,11,12,16,17,21,22,23,25,26,27,28,29,30,40,42,44,46,50,],[18,-20,18,18,-23,-26,18,-19,-24,-25,-28,-30,-29,-27,18,-10,-8,18,-9,18,-11,-12,-31,-13,]),'HASH':([0,1,3,5,6,8,11,12,16,17,18,21,22,23,25,26,27,28,29,30,37,40,42,44,46,50,],[13,-20,13,13,-23,-26,13,-19,-24,-25,13,-28,-30,-29,-27,13,-10,-8,13,-9,13,13,-11,-12,-31,-13,]),'COMMA':([1,3,4,5,6,8,11,12,14,15,16,17,19,20,21,22,23,24,25,31,43,46,49,],[-20,-15,-18,-21,-23,-26,-14,-19,26,-4,-24,-25,-17,-22,-28,-30,-29,-16,-27,-5,-6,-31,-7,]),'DOT':([0,1,3,5,6,8,11,12,16,17,18,21,22,23,25,26,27,28,29,30,37,40,42,44,46,50,],[7,-20,7,7,-23,-26,7,-19,-24,-25,7,-28,-30,-29,-27,7,-10,-8,7,-9,7,7,-11,-12,-31,-13,]),'$end':([1,2,3,4,5,6,8,11,12,14,15,16,17,19,20,21,22,23,24,25,31,41,43,46,48,49,],[-20,0,-15,-18,-21,-23,-26,-14,-19,-1,-4,-24,-25,-17,-22,-28,-30,-29,-16,-27,-5,-2,-6,-31,-3,-7,]),}
 
 _lr_action = { }
 for _k, _v in _lr_action_items.items():
@@ -16,7 +16,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'selector_comma':([15,],[31,]),'hash_name':([0,4,13,21,22,31,35,],[10,10,10,10,10,10,10,]),'class_name':([0,4,13,21,22,31,35,],[1,1,1,1,1,1,1,]),'attribute':([0,4,13,21,22,31,35,],[2,2,2,2,2,2,2,]),'secondary_list':([0,4,13,21,22,31,35,],[3,20,28,3,3,3,3,]),'combinator':([8,21,],[22,35,]),'equals':([33,],[43,]),'secondary_item':([0,4,13,21,22,31,35,],[4,4,4,4,4,4,4,]),'selector':([0,21,22,31,35,],[15,36,37,15,45,]),'lbracket':([0,4,13,21,22,31,35,],[16,16,16,16,16,16,16,]),'selector_list':([0,31,],[5,40,]),'subcontrol':([0,4,13,21,22,31,35,],[19,19,19,19,19,19,19,]),'rbracket':([48,],[51,]),'pseudostate':([0,4,13,21,22,31,35,],[7,7,7,7,7,7,7,]),'simple_selector':([0,21,22,31,35,],[8,8,8,8,8,]),'element_name':([0,21,22,31,35,],[13,13,13,13,13,]),}
+_lr_goto_items = {'greater_opt':([15,43,],[28,28,]),'hash':([0,3,5,11,18,26,29,37,40,],[6,6,6,6,32,6,6,32,6,]),'selectors_group':([0,],[2,]),'negation_arg':([18,37,],[33,47,]),'combinator':([15,43,],[29,29,]),'universal':([0,18,26,29,37,40,],[3,34,3,3,34,3,]),'secondary_list':([0,3,5,11,26,29,40,],[4,19,20,24,4,4,4,]),'pseudo':([0,3,5,11,18,26,29,37,40,],[17,17,17,17,35,17,17,35,17,]),'negation':([0,3,5,11,26,29,40,],[8,8,8,8,8,8,8,]),'secondary_item':([0,3,5,11,26,29,40,],[5,5,5,5,5,5,5,]),'selector':([0,26,40,],[14,41,48,]),'negation_arg_opt':([18,],[36,]),'simple_selector_seq':([0,26,29,40,],[15,15,43,15,]),'type_selector':([0,18,26,29,37,40,],[11,38,11,11,38,11,]),'combinator_list':([15,43,],[31,49,]),'class':([0,3,5,11,18,26,29,37,40,],[16,16,16,16,39,16,16,39,16,]),}
 
 _lr_goto = { }
 for _k, _v in _lr_goto_items.items():
@@ -25,42 +25,45 @@ for _k, _v in _lr_goto_items.items():
        _lr_goto[_x][_k] = _y
 del _lr_goto_items
 _lr_productions = [
-  ("S' -> selector_list","S'",1,None,None,None),
-  ('selector_list -> selector ENDMARKER','selector_list',2,'p_selector_list1','enaml\\styling\\selector_parser.py',186),
-  ('selector_list -> selector selector_comma selector_list ENDMARKER','selector_list',4,'p_selector_list2','enaml\\styling\\selector_parser.py',190),
-  ('selector_comma -> COMMA','selector_comma',1,'p_selector_comma1','enaml\\styling\\selector_parser.py',194),
-  ('selector_comma -> COMMA WS','selector_comma',2,'p_selector_comma2','enaml\\styling\\selector_parser.py',198),
-  ('selector -> simple_selector','selector',1,'p_selector1','enaml\\styling\\selector_parser.py',202),
-  ('selector -> simple_selector combinator selector','selector',3,'p_selector2','enaml\\styling\\selector_parser.py',206),
-  ('selector -> simple_selector WS','selector',2,'p_selector3','enaml\\styling\\selector_parser.py',210),
-  ('selector -> simple_selector WS selector','selector',3,'p_selector4','enaml\\styling\\selector_parser.py',214),
-  ('selector -> simple_selector WS combinator selector','selector',4,'p_selector5','enaml\\styling\\selector_parser.py',218),
-  ('combinator -> GREATER','combinator',1,'p_combinator1','enaml\\styling\\selector_parser.py',222),
-  ('combinator -> GREATER WS','combinator',2,'p_combinator2','enaml\\styling\\selector_parser.py',226),
-  ('simple_selector -> element_name','simple_selector',1,'p_simple_selector1','enaml\\styling\\selector_parser.py',230),
-  ('simple_selector -> element_name secondary_list','simple_selector',2,'p_simple_selector2','enaml\\styling\\selector_parser.py',234),
-  ('simple_selector -> secondary_list','simple_selector',1,'p_simple_selector3','enaml\\styling\\selector_parser.py',238),
-  ('secondary_list -> secondary_item','secondary_list',1,'p_secondary_list1','enaml\\styling\\selector_parser.py',242),
-  ('secondary_list -> secondary_item secondary_list','secondary_list',2,'p_secondary_list2','enaml\\styling\\selector_parser.py',246),
-  ('secondary_item -> hash_name','secondary_item',1,'p_secondary_item','enaml\\styling\\selector_parser.py',250),
-  ('secondary_item -> class_name','secondary_item',1,'p_secondary_item','enaml\\styling\\selector_parser.py',251),
-  ('secondary_item -> attribute','secondary_item',1,'p_secondary_item','enaml\\styling\\selector_parser.py',252),
-  ('secondary_item -> pseudostate','secondary_item',1,'p_secondary_item','enaml\\styling\\selector_parser.py',253),
-  ('secondary_item -> subcontrol','secondary_item',1,'p_secondary_item','enaml\\styling\\selector_parser.py',254),
-  ('element_name -> NAME','element_name',1,'p_element_name','enaml\\styling\\selector_parser.py',258),
-  ('element_name -> STAR','element_name',1,'p_element_name','enaml\\styling\\selector_parser.py',259),
-  ('hash_name -> HASH NAME','hash_name',2,'p_hash_name','enaml\\styling\\selector_parser.py',263),
-  ('class_name -> DOT NAME','class_name',2,'p_class_name','enaml\\styling\\selector_parser.py',267),
-  ('attribute -> lbracket NAME equals STRING rbracket','attribute',5,'p_attribute','enaml\\styling\\selector_parser.py',271),
-  ('pseudostate -> COLON NAME','pseudostate',2,'p_pseudostate1','enaml\\styling\\selector_parser.py',275),
-  ('pseudostate -> COLON BANG NAME','pseudostate',3,'p_pseudostate2','enaml\\styling\\selector_parser.py',279),
-  ('subcontrol -> DOUBLE_COLON NAME','subcontrol',2,'p_subcontrol','enaml\\styling\\selector_parser.py',283),
-  ('lbracket -> LSQB','lbracket',1,'p_lbracket1','enaml\\styling\\selector_parser.py',287),
-  ('lbracket -> LSQB WS','lbracket',2,'p_lbacket2','enaml\\styling\\selector_parser.py',291),
-  ('equals -> EQUAL','equals',1,'p_equals1','enaml\\styling\\selector_parser.py',295),
-  ('equals -> WS EQUAL','equals',2,'p_equals2','enaml\\styling\\selector_parser.py',299),
-  ('equals -> EQUAL WS','equals',2,'p_equals3','enaml\\styling\\selector_parser.py',303),
-  ('equals -> WS EQUAL WS','equals',3,'p_equals4','enaml\\styling\\selector_parser.py',307),
-  ('rbracket -> RSQB','rbracket',1,'p_rbracket1','enaml\\styling\\selector_parser.py',311),
-  ('rbracket -> WS RSQB','rbracket',2,'p_rbracket2','enaml\\styling\\selector_parser.py',315),
+  ("S' -> selectors_group","S'",1,None,None,None),
+  ('selectors_group -> selector','selectors_group',1,'p_selectors_group1','enaml\\styling\\selectorparser.py',178),
+  ('selectors_group -> selector COMMA selector','selectors_group',3,'p_selectors_group2','enaml\\styling\\selectorparser.py',182),
+  ('selectors_group -> selector COMMA WS selector','selectors_group',4,'p_selectors_group3','enaml\\styling\\selectorparser.py',186),
+  ('selector -> simple_selector_seq','selector',1,'p_selector1','enaml\\styling\\selectorparser.py',190),
+  ('selector -> simple_selector_seq combinator_list','selector',2,'p_selector2','enaml\\styling\\selectorparser.py',194),
+  ('combinator_list -> combinator simple_selector_seq','combinator_list',2,'p_combinator_list1','enaml\\styling\\selectorparser.py',198),
+  ('combinator_list -> combinator simple_selector_seq combinator_list','combinator_list',3,'p_combinator_list2','enaml\\styling\\selectorparser.py',202),
+  ('combinator -> greater_opt','combinator',1,'p_combinator1','enaml\\styling\\selectorparser.py',206),
+  ('combinator -> WS','combinator',1,'p_combinator2','enaml\\styling\\selectorparser.py',210),
+  ('greater_opt -> GREATER','greater_opt',1,'p_greater_opt1','enaml\\styling\\selectorparser.py',214),
+  ('greater_opt -> GREATER WS','greater_opt',2,'p_greater_opt2','enaml\\styling\\selectorparser.py',218),
+  ('greater_opt -> WS GREATER','greater_opt',2,'p_greater_opt3','enaml\\styling\\selectorparser.py',222),
+  ('greater_opt -> WS GREATER WS','greater_opt',3,'p_greater_opt4','enaml\\styling\\selectorparser.py',226),
+  ('simple_selector_seq -> type_selector','simple_selector_seq',1,'p_simple_selector_seq1','enaml\\styling\\selectorparser.py',230),
+  ('simple_selector_seq -> universal','simple_selector_seq',1,'p_simple_selector_seq2','enaml\\styling\\selectorparser.py',234),
+  ('simple_selector_seq -> type_selector secondary_list','simple_selector_seq',2,'p_simple_selector_seq3','enaml\\styling\\selectorparser.py',238),
+  ('simple_selector_seq -> universal secondary_list','simple_selector_seq',2,'p_simple_selector_seq4','enaml\\styling\\selectorparser.py',242),
+  ('simple_selector_seq -> secondary_list','simple_selector_seq',1,'p_simple_selector_seq5','enaml\\styling\\selectorparser.py',246),
+  ('type_selector -> IDENT','type_selector',1,'p_type_selector','enaml\\styling\\selectorparser.py',250),
+  ('universal -> STAR','universal',1,'p_universal','enaml\\styling\\selectorparser.py',254),
+  ('secondary_list -> secondary_item','secondary_list',1,'p_secondary_list1','enaml\\styling\\selectorparser.py',258),
+  ('secondary_list -> secondary_item secondary_list','secondary_list',2,'p_secondary_list2','enaml\\styling\\selectorparser.py',262),
+  ('secondary_item -> hash','secondary_item',1,'p_secondary_item','enaml\\styling\\selectorparser.py',266),
+  ('secondary_item -> class','secondary_item',1,'p_secondary_item','enaml\\styling\\selectorparser.py',267),
+  ('secondary_item -> pseudo','secondary_item',1,'p_secondary_item','enaml\\styling\\selectorparser.py',268),
+  ('secondary_item -> negation','secondary_item',1,'p_secondary_item','enaml\\styling\\selectorparser.py',269),
+  ('hash -> HASH IDENT','hash',2,'p_hash','enaml\\styling\\selectorparser.py',273),
+  ('class -> DOT IDENT','class',2,'p_class','enaml\\styling\\selectorparser.py',277),
+  ('pseudo -> COLON IDENT','pseudo',2,'p_pseudo1','enaml\\styling\\selectorparser.py',281),
+  ('pseudo -> DOUBLE_COLON IDENT','pseudo',2,'p_pseudo2','enaml\\styling\\selectorparser.py',285),
+  ('negation -> NOT negation_arg_opt RPAR','negation',3,'p_negation','enaml\\styling\\selectorparser.py',289),
+  ('negation_arg_opt -> negation_arg','negation_arg_opt',1,'p_negation_arg_opt1','enaml\\styling\\selectorparser.py',293),
+  ('negation_arg_opt -> negation_arg WS','negation_arg_opt',2,'p_negation_arg_opt2','enaml\\styling\\selectorparser.py',297),
+  ('negation_arg_opt -> WS negation_arg','negation_arg_opt',2,'p_negation_arg_opt3','enaml\\styling\\selectorparser.py',301),
+  ('negation_arg_opt -> WS negation_arg WS','negation_arg_opt',3,'p_negation_arg_opt4','enaml\\styling\\selectorparser.py',305),
+  ('negation_arg -> type_selector','negation_arg',1,'p_negation_arg','enaml\\styling\\selectorparser.py',309),
+  ('negation_arg -> universal','negation_arg',1,'p_negation_arg','enaml\\styling\\selectorparser.py',310),
+  ('negation_arg -> hash','negation_arg',1,'p_negation_arg','enaml\\styling\\selectorparser.py',311),
+  ('negation_arg -> class','negation_arg',1,'p_negation_arg','enaml\\styling\\selectorparser.py',312),
+  ('negation_arg -> pseudo','negation_arg',1,'p_negation_arg','enaml\\styling\\selectorparser.py',313),
 ]
