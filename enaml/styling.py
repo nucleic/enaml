@@ -399,9 +399,9 @@ class StyleCache(object):
             sheet = item.style_sheet()
             if sheet is not None:
                 sheets.append(sheet)
-            items = cls._style_sheet_items
+            sheet_items = cls._style_sheet_items
             for sheet in sheets:
-                items[sheet].add(item)
+                sheet_items[sheet].add(item)
         sheets = cache[item] = tuple(sheets)
         cls._queried_items.add(item)
         return sheets
@@ -435,9 +435,9 @@ class StyleCache(object):
             if matches:
                 matches.sort()
                 styles.extend(style for _1, _2, style in matches)
-        items = cls._style_items
+        style_items = cls._style_items
         for style in styles:
-            items[style].add(item)
+            style_items[style].add(item)
         styles = cache[item] = tuple(styles)
         return styles
 
@@ -476,19 +476,40 @@ class StyleCache(object):
     #--------------------------------------------------------------------------
     @classmethod
     def _setter_destroyed(cls, setter):
-        pass
+        # If the parent of the setter is not being destroyed, it will
+        # get a child_removed event which will trigger a restyle pass.
+        # That logic does not need to be repeated here.
+        cls._toolkit_setters.pop(setter, None)
 
     @classmethod
     def _style_destroyed(cls, style):
-        pass
+        # If the parent of the style is not being destroyed, it will
+        # get a child_removed event which will trigger a restyle pass.
+        # That logic does not need to be repeated here.
+        cls._style_items.pop(style, None)
 
     @classmethod
     def _style_sheet_destroyed(cls, sheet):
-        pass
+        # If the parent of the sheet is not being destroyed, it will
+        # get a child_removed event which will trigger a restyle pass.
+        # That logic does not need to be repeated here.
+        cls._style_sheet_items.pop(sheet, None)
 
     @classmethod
     def _item_destroyed(cls, item):
-        pass
+        cls._queried_items.discard(item)
+        sheets = cls._item_style_sheets.pop(item, None)
+        if sheets is not None:
+            sheet_items = cls._style_sheet_items
+            for sheet in sheets:
+                if sheet in sheet_items:
+                    sheet_items[sheet].discard(item)
+        styles = cls._item_styles.pop(item, None)
+        if styles is not None:
+            style_items = cls._style_items
+            for style in styles:
+                if style in style_items:
+                    style_items[style].discard(item)
 
     @classmethod
     def _setter_invalidated(cls, setter):
@@ -517,9 +538,10 @@ class StyleCache(object):
     def _item_style_class_invalidated(cls, item):
         styles = cls._item_styles.pop(item, None)
         if styles is not None:
-            items = cls._style_items
+            style_items = cls._style_items
             for style in styles:
-                items[style].discard(item)
+                if style in style_items:
+                    style_items[style].discard(item)
         cls._request_restyle((item,))
 
     @classmethod
@@ -541,18 +563,20 @@ class StyleCache(object):
     def _item_style_sheet_changed(cls, item):
         item_styles = cls._item_styles
         item_sheets = cls._item_style_sheets
-        style_items = cls._style_items
-        sheet_items = cls._style_sheet_items
         items = [i for i in item.traverse() if i in cls._queried_items]
         for item in items:
             sheets = item_sheets.pop(item, None)
             if sheets is not None:
+                sheet_items = cls._style_sheet_items
                 for sheet in sheets:
-                    sheet_items[sheet].discard(item)
+                    if sheet in sheet_items:
+                        sheet_items[sheet].discard(item)
             styles = item_styles.pop(item, None)
             if styles is not None:
+                style_items = cls._style_items
                 for style in styles:
-                    style_items[style].discard(item)
+                    if style in style_items:
+                        style_items[style].discard(item)
         cls._request_restyle(items)
 
     @classmethod

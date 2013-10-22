@@ -230,6 +230,13 @@ class Application(Atom):
                 priority, ignored, task = heappop(heap)
                 self.deferred_call(self._process_task, task)
 
+    @observe('style_sheet.destroyed')
+    def _clear_destroyed_style_sheet(self, change):
+        """ An observer which clears a destroyed style sheet.
+
+        """
+        self.style_sheet = None
+
     @observe('style_sheet')
     def _invalidate_style_cache(self, change):
         """ An observer which invalidates the style sheet cache.
