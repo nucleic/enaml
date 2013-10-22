@@ -9,7 +9,7 @@ import sys
 
 from atom.api import Typed
 
-from enaml.widgets.styling import StyleCache
+from enaml.styling import StyleCache
 from enaml.widgets.widget import ProxyWidget
 
 from .QtCore import Qt, QSize
@@ -17,7 +17,7 @@ from .QtGui import QFont, QWidget, QWidgetItem, QApplication
 
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
-from .styleutil import translate_style_rule
+from .styleutil import translate_setter
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):
@@ -191,17 +191,17 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         parts = []
         for style in StyleCache.styles(self.declaration):
             translated = []
-            for rule in style.rules():
-                item = StyleCache.toolkit_rule(rule, translate_style_rule)
-                if item is not None:
-                    translated.append(item)
-            t = '#%s'
-            if style.subcontrol:
-                t += '::%s' % style.subcontrol
-            if style.pseudostate:
-                t += ':%s' % style.pseudostate
-            t += '{%s}'
-            p = t % (self.widget.objectName(), ''.join(translated))
+            for setter in style.setters():
+                tks = StyleCache.toolkit_setter(setter, translate_setter)
+                if tks is not None:
+                    translated.append(tks)
+            t = u'#%s'
+            if style.pseudo_element:
+                t += u'::%s' % style.pseudo_element
+            if style.pseudo_class:
+                t += u':%s' % style.pseudo_class
+            t += u'{%s}'
+            p = t % (self.widget.objectName(), u''.join(translated))
             parts.append(p)
-        stylesheet = ''.join(parts)
+        stylesheet = u''.join(parts)
         self.widget.setStyleSheet(stylesheet)

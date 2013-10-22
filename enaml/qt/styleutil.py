@@ -7,110 +7,108 @@
 #------------------------------------------------------------------------------
 import re
 
-from enaml.widgets.styling import StyleCache
 
-
-_grad_re = re.compile('(lineargradient|radialgradient)')
+_grad_re = re.compile(ur'(lineargradient|radialgradient)')
 
 
 def _translate_gradient(v):
-    return _grad_re.sub(r'q\1', v)
+    return _grad_re.sub(ur'q\1', v)
 
 
 KNOWN_PROPERTIES = set([
-    'alternate-background-color',
-    'background',
-    'background-clip',
-    'background-color',
-    'border',
-    'border-top',
-    'border-right',
-    'border-bottom',
-    'border-left',
-    'border-color',
-    'border-top-color',
-    'border-right-color',
-    'border-bottom-color',
-    'border-left-color',
-    'border-radius',
-    'border-top-left-radius',
-    'border-top-right-radius',
-    'border-bottom-right-radius',
-    'border-bottom-left-radius',
-    'border-style',
-    'border-top-style',
-    'border-right-style',
-    'border-bottom-style',
-    'border-left-style',
-    'border-width',
-    'border-top-width',
-    'border-right-width',
-    'border-bottom-width',
-    'border-left-width',
-    'bottom',
-    'color',
-    'font',
-    'font-family',
-    'font-size',
-    'font-style',
-    'font-weight',
-    'height',
-    'icon-size',
-    'left',
-    'line-edit-password-character',
-    'margin',
-    'margin-top',
-    'margin-right',
-    'margin-bottom',
-    'margin-left',
-    'max-height',
-    'max-width',
-    'min-height',
-    'min-width',
-    'padding',
-    'padding-top',
-    'padding-right',
-    'padding-bottom',
-    'padding-left',
-    'position',
-    'right',
-    'selection-background-color',
-    'selection-color',
-    'spacing',
-    'subcontrol-origin',
-    'subcontrol-position',
-    'text-align',
-    'text-decoration',
-    'top',
-    'width',
+    u'alternate-background-color',
+    u'background',
+    u'background-clip',
+    u'background-color',
+    u'border',
+    u'border-top',
+    u'border-right',
+    u'border-bottom',
+    u'border-left',
+    u'border-color',
+    u'border-top-color',
+    u'border-right-color',
+    u'border-bottom-color',
+    u'border-left-color',
+    u'border-radius',
+    u'border-top-left-radius',
+    u'border-top-right-radius',
+    u'border-bottom-right-radius',
+    u'border-bottom-left-radius',
+    u'border-style',
+    u'border-top-style',
+    u'border-right-style',
+    u'border-bottom-style',
+    u'border-left-style',
+    u'border-width',
+    u'border-top-width',
+    u'border-right-width',
+    u'border-bottom-width',
+    u'border-left-width',
+    u'bottom',
+    u'color',
+    u'font',
+    u'font-family',
+    u'font-size',
+    u'font-style',
+    u'font-weight',
+    u'height',
+    u'icon-size',
+    u'left',
+    u'line-edit-password-character',
+    u'margin',
+    u'margin-top',
+    u'margin-right',
+    u'margin-bottom',
+    u'margin-left',
+    u'max-height',
+    u'max-width',
+    u'min-height',
+    u'min-width',
+    u'padding',
+    u'padding-top',
+    u'padding-right',
+    u'padding-bottom',
+    u'padding-left',
+    u'position',
+    u'right',
+    u'selection-background-color',
+    u'selection-color',
+    u'spacing',
+    u'subcontrol-origin',
+    u'subcontrol-position',
+    u'text-align',
+    u'text-decoration',
+    u'top',
+    u'width',
 ])
 
 
 MAY_HAVE_GRADIENT = set([
-    'background',
-    'background-color',
-    'border',
-    'border-top',
-    'border-right',
-    'border-bottom',
-    'border-left',
-    'border-color',
-    'border-top-color',
-    'border-right-color',
-    'border-bottom-color',
-    'border-left-color',
-    'color',
-    'selection-background-color',
-    'selection-color',
+    u'background',
+    u'background-color',
+    u'border',
+    u'border-top',
+    u'border-right',
+    u'border-bottom',
+    u'border-left',
+    u'border-color',
+    u'border-top-color',
+    u'border-right-color',
+    u'border-bottom-color',
+    u'border-left-color',
+    u'color',
+    u'selection-background-color',
+    u'selection-color',
 ])
 
 
-def translate_style_rule(rule):
-    name = rule.name
-    if name in KNOWN_PROPERTIES:
-        value = rule.value
+def translate_setter(setter):
+    prop = setter.property
+    if prop in KNOWN_PROPERTIES:
+        value = setter.value
         if value:
-            if name in MAY_HAVE_GRADIENT:
+            if prop in MAY_HAVE_GRADIENT:
                 value = _translate_gradient(value)
-            value = '%s:%s;' % (name, value)
+            value = u'%s:%s;' % (prop, value)
         return value

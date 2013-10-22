@@ -11,8 +11,8 @@ from enaml.colors import ColorMember
 from enaml.core.declarative import d_
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
+from enaml.styling import Stylable
 
-from .styling import Stylable
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
