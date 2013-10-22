@@ -147,10 +147,10 @@ class ProxyResolver(Atom):
 
 
 def StyleSheet():
-    """ A lazy importer for the widget StyleSheet class.
+    """ A lazy importer for the Enaml StyleSheet class.
 
     """
-    from enaml.widgets.styling import StyleSheet
+    from enaml.styling import StyleSheet
     return StyleSheet
 
 
@@ -164,8 +164,8 @@ class Application(Atom):
     #: by the developer to supply custom proxy resolution behavior.
     resolver = Typed(ProxyResolver)
 
-    #: The stylesheet to apply to the application.
-    stylesheet = ForwardTyped(StyleSheet)
+    #: The style sheet to apply to the entire application.
+    style_sheet = ForwardTyped(StyleSheet)
 
     #: The task heap for application tasks.
     _task_heap = List()

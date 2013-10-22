@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from atom.api import Atom, Unicode, Typed, observe
 
-from enaml.application import deferred_call
+from enaml.application import Application, deferred_call
 from enaml.core.declarative import Declarative, d_
 
 
@@ -266,6 +266,12 @@ class _RestyleTask(Atom):
             item.restyle()
 
 
+def _app_style_sheet():
+    app = Application.instance()
+    if app is not None:
+        return app.style_sheet
+
+
 class StyleCache(object):
     """ An object which manages the styling caches.
 
@@ -316,6 +322,10 @@ class StyleCache(object):
         parent = item.parent
         if parent is not None:
             sheets.extend(cls.style_sheets(parent))
+        else:
+            app_sheet = _app_style_sheet()
+            if app_sheet is not None:
+                sheets.append(app_sheet)
         if isinstance(item, Stylable):  # parent may not be a Stylable
             sheet = item.style_sheet()
             if sheet is not None:
