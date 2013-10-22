@@ -122,6 +122,21 @@ class Widget(ToolkitObject, Stylable):
         super(Widget, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def restyle(self):
+        """ Restyle the toolkit widget.
+
+        This method is invoked by the Stylable class when the style
+        dependencies have changed for the widget. This will trigger a
+        proxy restyle if necessary. This method should not typically be
+        called directly by user code.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.restyle()
+
+    #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
     def show(self):
@@ -144,6 +159,4 @@ class Widget(ToolkitObject, Stylable):
         if self.proxy_is_active:
             self.proxy.ensure_hidden()
 
-    def restyle(self):
-        if self.proxy_is_active:
-            self.proxy.restyle()
+
