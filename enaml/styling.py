@@ -17,19 +17,16 @@ class Setter(Declarative):
     """ A declarative class for defining a setter in a Style.
 
     """
-    #: The name of the property to set. An empty property name will
-    #: cause the setter to be ignored. The properties supported by a
-    #: widget are toolkit dependent.
+    #: The name of the property to set.
     property = d_(Unicode())
 
-    #: The value to apply to the property. An empty value will cause
-    #: the setter to be ignored.
+    #: The value to apply to the property.
     value = d_(Unicode())
 
     def destroy(self):
         """ A reimplemented destructor.
 
-        This will inform the style cache when the setter is destroyed.
+        This will notify the style cache when the setter is destroyed.
 
         """
         super(Setter, self).destroy()
@@ -65,29 +62,27 @@ class Style(Declarative):
 
     """
     #: The type name of the element which will match the style. An
-    #: empty string will match all elements. Separate multiple
-    #: elements with a comma.
+    #: empty string will match all elements. Multiple elements can
+    #: be separated by a comma.
     element = d_(Unicode())
 
     #: The name of the widget style class which will match the style.
-    #: An empty string will match all style classes. Separate multiple
-    #: classes with a comma.
+    #: An empty string will match all style classes. Multiple classes
+    #: can be separated by a comma.
     style_class = d_(Unicode())
 
     #: The object name of the widget which will match the style. An
-    #: empty string will match all object names. Separate multiple
-    #: object names with a comma.
+    #: empty string will match all object names. Multiple object names
+    #: can be separated by a comma.
     object_name = d_(Unicode())
 
-    #: The pseudo-class which must be active for the style to apply. If
-    #: more than one pseudo-class must apply, separate them with a colon.
-    #: An empty string will apply the syle for all pseudo-classes. The
-    #: pseudo-classes supported by a widget are toolkit dependent.
+    #: The pseudo-class which must be active for the style to apply. An
+    #: empty string will apply the syle for all pseudo-classes. Multiple
+    #: psuedo-classes should be joined by a colon.
     pseudo_class = d_(Unicode())
 
     #: The pseudo-element to which the style applies. An empty string
-    #: indicates the style applies to the main element. The pseudo-
-    #: elements supported by a widget are toolkit dependent.
+    #: indicates the style applies to the main element.
     pseudo_element = d_(Unicode())
 
     def setters(self):
@@ -114,7 +109,7 @@ class Style(Declarative):
         result : int
             An integer indicating the match for the given item. A value
             less than zero indicates no match. A value greater than or
-            equal to zero indicates a match and the specificity of that
+            equal to zero indicates a match and the specificity of the
             match.
 
         """
@@ -156,7 +151,7 @@ class Style(Declarative):
     def destroy(self):
         """ A reimplemented destructor.
 
-        This will inform the style cache when the style is destroyed.
+        This will notify the style cache when the style is destroyed.
 
         """
         super(Style, self).destroy()
@@ -180,13 +175,13 @@ class Style(Declarative):
 
 
 class StyleSheet(Declarative):
-    """ A declarative class for defining Enaml widget style sheets.
+    """ A declarative class for defining an Enaml style sheet.
 
     """
     def destroy(self):
         """ A reimplemented destructor.
 
-        This method informs the style cache when the sheet is destroyed.
+        This will notify the style cache when the sheet is destroyed.
 
         """
         super(StyleSheet, self).destroy()
@@ -207,19 +202,19 @@ class StyleSheet(Declarative):
 class Stylable(Declarative):
     """ A mixin class for defining stylable declarative objects.
 
-    This class should be mixed-in to any declarative class which wishes
-    to support Enaml stylesheets.
+    This class should be mixed-in to any declarative class which
+    should support Enaml style sheets.
 
     """
-    #: The style class to which this item belongs. Separate multiple
-    #: classes with whitespace. An empty string indicates the widget
-    #: does not belong to any style class.
+    #: The style class to which this item belongs. Multiple classes
+    #: can be separated with whitespace. An empty string indicates
+    #: the widget does not belong to any style class.
     style_class = d_(Unicode())
 
     def destroy(self):
         """ A reimplemented destructor.
 
-        This method informs the style cache when the item is destroyed.
+        This will notify the style cache when the item is destroyed.
 
         """
         super(Stylable, self).destroy()
@@ -244,7 +239,7 @@ class Stylable(Declarative):
 
         This method will be called when the style dependencies for the
         object have changed. It should be reimplemented in a subclass
-        to forward the call to the toolkit as needed.
+        to forward the call to the toolkit proxy.
 
         """
         pass
@@ -258,7 +253,7 @@ class Stylable(Declarative):
             StyleCache.item_style_class_invalidated(self)
 
 
-class RestyleTask(Atom):
+class _RestyleTask(Atom):
     """ A task which is posted to collapse item restyle requests.
 
     """
@@ -426,7 +421,9 @@ class StyleCache(object):
 
         """
         cls._toolkit_setter_cache.pop(setter, None)
-        cls._refresh_style_data(setter.parent)
+        items = cls._style_items.get(setter.parent)
+        if items is not None:
+            cls._request_items_restyle(items)
 
     @classmethod
     def style_match_invalidated(cls, style):
@@ -438,7 +435,13 @@ class StyleCache(object):
             The style object of interest.
 
         """
-        cls._refresh_style_match(style)
+        cls._style_items.pop(style, None)
+        items = cls._style_sheet_items.get(style.parent)
+        if items is not None:
+            cache = cls._style_cache
+            for item in items:
+                cache.pop(item, None)
+            cls._request_items_restyle(items)
 
     @classmethod
     def style_data_invalidated(cls, style):
@@ -450,7 +453,9 @@ class StyleCache(object):
             The style object of interest.
 
         """
-        cls._refresh_style_data(style)
+        items = cls._style_items.get(style)
+        if items is not None:
+            cls._request_items_restyle(items)
 
     @classmethod
     def item_style_class_invalidated(cls, item):
@@ -490,46 +495,6 @@ class StyleCache(object):
         """
         task = cls._restyle_task
         if task is None:
-            task = cls._restyle_task = RestyleTask()
+            task = cls._restyle_task = _RestyleTask()
             deferred_call(task)
         task.dirty.update(items)
-
-    @classmethod
-    def _refresh_style_data(cls, style):
-        """ Refresh the items styled by a given style.
-
-        This method will request a restyle of all items styled by the
-        given style. This should be called when the data of a Style
-        changes, but not when the match specification has changed.
-
-        Parameters
-        ----------
-        style : Style
-            The style object of interest.
-
-        """
-        items = cls._style_items.get(style)
-        if items is not None:
-            cls._request_items_restyle(items)
-
-    @classmethod
-    def _refresh_style_match(cls, style):
-        """ Restyle the items styled by a given style.
-
-        This method will request a restyle of all items styled by the
-        style sheet owning the style. This should be called only when
-        the match specification of the style has changed.
-
-        Parameters
-        ----------
-        style : Style
-            The style object of interest.
-
-        """
-        cls._style_items.pop(style, None)
-        items = cls._style_sheet_items.get(style.parent)
-        if items is not None:
-            cache = cls._style_cache
-            for item in items:
-                cache.pop(item, None)
-            cls._request_items_restyle(items)
