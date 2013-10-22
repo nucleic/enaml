@@ -157,6 +157,28 @@ class Style(Declarative):
         super(Style, self).destroy()
         StyleCache.style_destroyed(self)
 
+    def child_added(self, child):
+        """ A reimplemented child added event handler.
+
+        This handler notifies the style cache that the setter children
+        of the style have changed.
+
+        """
+        super(Style, self).child_added(child)
+        if self.is_initialized and isinstance(child, Setter):
+            StyleCache.style_setters_changed(self)
+
+    def child_removed(self, child):
+        """ A reimplemented child removed event handler.
+
+        This handler notifies the style cache that the setter children
+        of the style have changed.
+
+        """
+        super(Style, self).child_removed(child)
+        if self.is_initialized and isinstance(child, Setter):
+            StyleCache.style_setters_changed(self)
+
     @observe('element', 'style_class', 'object_name')
     def _invalidate_match_cache(self, change):
         """ An observer which invalidates the style match cache.
@@ -171,7 +193,7 @@ class Style(Declarative):
 
         """
         if change['type'] == 'update':
-            StyleCache.style_data_invalidated(self)
+            StyleCache.style_pseudo_invalidated(self)
 
 
 class StyleSheet(Declarative):
@@ -480,8 +502,8 @@ class StyleCache(object):
             cls._request_restyle(items)
 
     @classmethod
-    def style_data_invalidated(cls, style):
-        """ Notify the cache that the style data is invalid.
+    def style_pseudo_invalidated(cls, style):
+        """ Notify the cache that the style pseudo data is invalid.
 
         Parameters
         ----------
@@ -509,6 +531,20 @@ class StyleCache(object):
             for style in styles:
                 items[style].discard(item)
         cls._request_restyle((item,))
+
+    @classmethod
+    def style_setters_changed(cls, style):
+        """ Notify the cache that the style setters have changed.
+
+        Parameters
+        ----------
+        style : Style
+            The style object of interest.
+
+        """
+        items = cls._style_items.get(style)
+        if items is not None:
+            cls._request_restyle(items)
 
     @classmethod
     def style_sheet_styles_changed(cls, sheet):
