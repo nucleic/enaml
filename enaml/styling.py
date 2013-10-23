@@ -217,34 +217,6 @@ class StyleSheet(Declarative):
     children. The child style objects are applied to a widget in the
     order of their match specificity within the style sheet.
 
-    **Example**
-
-    .. code-block:: enaml
-
-        enamldef Main(Window):
-            StyleSheet:
-                Style:
-                    element = 'PushButton'
-                    Setter:
-                        property = 'background'
-                        value = 'lightskyblue'
-                Style:
-                    style_class = 'bold-font'
-                    Setter:
-                        property = 'font'
-                        value = 'bold 12pt Consolas'
-            Container:
-                PushButton:
-                    text = 'foo'
-                Field:
-                    style_class = 'bold-font'
-                Container:
-                    StyleSheet:
-                        Style:
-                            Setter:
-                                property = 'background'
-                                value = 'goldenrod'
-
     """
     def destroy(self):
         """ A reimplemented destructor.
