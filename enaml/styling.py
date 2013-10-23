@@ -14,13 +14,18 @@ from enaml.core.declarative import Declarative, d_
 
 
 class Setter(Declarative):
-    """ A declarative class for defining a setter in a Style.
+    """ A declarative class for defining a setter for a Style.
+
+    A Setter is declared as a child of a Style object in a StyleSheet
+    to declare the value to be applied to a style property.
+
+    .. seealso:: :class:`Style`, :class:`StyleSheet`
 
     """
-    #: The name of the property to set.
+    #: The name of the style property to which this setter applies.
     property = d_(Unicode())
 
-    #: The value to apply to the property.
+    #: The value to apply to the style property.
     value = d_(Unicode())
 
     def destroy(self):
@@ -60,6 +65,13 @@ def _comma_split(text):
 class Style(Declarative):
     """ A declarative class for defining a style in a StyleSheet.
 
+    A Style is declared as a child of a StyleSheet object and is used
+    to define the list of Setters which will apply to the widgets which
+    match the Style's selectors. A Style can have an arbitrary number
+    of Setter children.
+
+    .. seealso:: :class:`Setter`, :class:`StyleSheet`
+
     """
     #: The type name of the element which will match the style. An
     #: empty string will match all elements. Multiple elements can
@@ -82,7 +94,7 @@ class Style(Declarative):
     pseudo_class = d_(Unicode())
 
     #: The pseudo-element to which the style applies. An empty string
-    #: indicates the style applies to the main element.
+    #: indicates the style applies to the primary element.
     pseudo_element = d_(Unicode())
 
     def setters(self):
@@ -199,6 +211,45 @@ class Style(Declarative):
 class StyleSheet(Declarative):
     """ A declarative class for defining an Enaml style sheet.
 
+    A StyleSheet is declared as a child of a widget and used to apply
+    styling to that widget *and all of its decendents*. A StyleSheet
+    can also be defined for the global application object and will be
+    applied to all widgets in the application. A widget's effective
+    style sheet is the union of all it's ancestor StyleSheet object.
+    A StyleSheet can have an arbitrary number of Style children. The
+    child Style objects are applied to a widget in the order of their
+    match specificity within their StyleSheet.
+
+    **Example**:
+
+    .. code-block:: enaml
+
+        enamldef Main(Window):
+            StyleSheet:
+                Style:
+                    element = 'PushButton'
+                    Setter:
+                        property = 'background'
+                        value = 'lightskyblue'
+                Style:
+                    style_class = 'bold-font'
+                    Setter:
+                        property = 'font'
+                        value = 'bold 12pt Consolas'
+            Container:
+                PushButton:
+                    text = 'foo'
+                Field:
+                    style_class = 'bold-font'
+                Container:
+                    StyleSheet:
+                        Style:
+                            Setter:
+                                property = 'background'
+                                value = 'goldenrod'
+
+    .. seealso:: :class:`Setter`, :class:`Style`
+
     """
     def destroy(self):
         """ A reimplemented destructor.
@@ -246,8 +297,8 @@ class StyleSheet(Declarative):
 class Stylable(Declarative):
     """ A mixin class for defining stylable declarative objects.
 
-    This class should be mixed-in to any declarative class which
-    should support Enaml style sheets.
+    This class should be mixed-in to any declarative class which wishes
+    to support Enaml style sheets.
 
     """
     #: The style class to which this item belongs. Multiple classes
@@ -283,7 +334,7 @@ class Stylable(Declarative):
 
         This method will be called when the style dependencies for the
         object have changed. It should be reimplemented in a subclass
-        to forward the call to the toolkit proxy.
+        to handle the restyling as needed.
 
         """
         pass
@@ -342,6 +393,9 @@ class StyleCache(object):
     """ An object which manages the styling caches.
 
     All interaction with this class is through public class methods.
+    This class should be used by code which implements the styling for
+    a given stylable item. The public API methods can be used to query
+    for the Style object which match a given Stylable item.
 
     """
     #: A private mapping of item to tuple of matching StyleSheet.
