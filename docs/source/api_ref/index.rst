@@ -18,6 +18,7 @@ API Reference
     nodevisitor <nodevisitor>
     scintilla <scintilla/index>
     stdlib <stdlib/index>
+    styling <styling>
     validator <validator>
     version <version>
     widgets <widgets/index>
@@ -34,6 +35,7 @@ API Reference
     icon
     image
     nodevisitor
+    styling
     validator
     version
 
