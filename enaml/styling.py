@@ -5,6 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+""" Declarative classes which implement style sheet styling.
+
+"""
 from collections import defaultdict
 
 from atom.api import Atom, Unicode, Typed, observe
@@ -14,12 +17,10 @@ from enaml.core.declarative import Declarative, d_
 
 
 class Setter(Declarative):
-    """ A declarative class for defining a setter for a Style.
+    """ A declarative class for defining a style property setter.
 
-    A Setter is declared as a child of a Style object in a StyleSheet
-    to declare the value to be applied to a style property.
-
-    .. seealso:: :class:`Style`, :class:`StyleSheet`
+    A :class:`Setter` is declared as a child of a :class:`Style`.
+    It defines the value to be applied to a style property.
 
     """
     #: The name of the style property to which this setter applies.
@@ -31,7 +32,8 @@ class Setter(Declarative):
     def destroy(self):
         """ A reimplemented destructor.
 
-        This will notify the style cache when the setter is destroyed.
+        This will notify the :class:`StyleCache` when the setter is
+        destroyed.
 
         """
         super(Setter, self).destroy()
@@ -39,9 +41,6 @@ class Setter(Declarative):
 
     @observe('property', 'value')
     def _invalidate_cache(self, change):
-        """ An observer which invalidates the style setter cache.
-
-        """
         if change['type'] == 'update':
             StyleCache._setter_invalidated(self)
 
@@ -63,14 +62,14 @@ def _comma_split(text):
 
 
 class Style(Declarative):
-    """ A declarative class for defining a style in a StyleSheet.
+    """ A declarative class for defining a style sheet style.
 
-    A Style is declared as a child of a StyleSheet object and is used
-    to define the list of Setters which will apply to the widgets which
-    match the Style's selectors. A Style can have an arbitrary number
-    of Setter children.
+    A :class:`Style` is declared as a child of a :class:`StyleSheet`.
+    It uses child :class:`Setter` objects to define the style properties
+    to apply to widgets which are a match for the style.
 
-    .. seealso:: :class:`Setter`, :class:`StyleSheet`
+    A :class:`Style` may have an arbitrary number of :class:`Setter`
+    children.
 
     """
     #: The type name of the element which will match the style. An
@@ -98,12 +97,12 @@ class Style(Declarative):
     pseudo_element = d_(Unicode())
 
     def setters(self):
-        """ Get the setters declared for the style.
+        """ Get the :class:`Setter` objects declared for the style.
 
         Returns
         -------
         result : list
-            The list of Setter objects declared for the style.
+            The :class:`Setter` objects declared for the style.
 
         """
         return [c for c in self.children if isinstance(c, Setter)]
@@ -113,16 +112,15 @@ class Style(Declarative):
 
         Parameters
         ----------
-        item : Stylable
-            The stylable item to test for a match.
+        item : :class:`Stylable`
+            The item to test for a style match.
 
         Returns
         -------
         result : int
-            An integer indicating the match for the given item. A value
-            less than zero indicates no match. A value greater than or
-            equal to zero indicates a match and the specificity of the
-            match.
+            The match value for the item. A value less than zero
+            indicates no match. A value greater than or equal to zero
+            indicates a match and the specificity of the match.
 
         """
         specificity = 0
@@ -163,7 +161,8 @@ class Style(Declarative):
     def destroy(self):
         """ A reimplemented destructor.
 
-        This will notify the style cache when the style is destroyed.
+        This will notify the :class:`StyleCache` when the style is
+        destroyed.
 
         """
         super(Style, self).destroy()
@@ -172,8 +171,8 @@ class Style(Declarative):
     def child_added(self, child):
         """ A reimplemented child added event handler.
 
-        This handler notifies the style cache that the setter children
-        of the style have changed.
+        This will notify the :class:`StyleCache` if the :class:`Setter`
+        children of the style have changed.
 
         """
         super(Style, self).child_added(child)
@@ -183,8 +182,8 @@ class Style(Declarative):
     def child_removed(self, child):
         """ A reimplemented child removed event handler.
 
-        This handler notifies the style cache that the setter children
-        of the style have changed.
+        This will notify the :class:`StyleCache` if the :class:`Setter`
+        children of the style have changed.
 
         """
         super(Style, self).child_removed(child)
@@ -193,34 +192,32 @@ class Style(Declarative):
 
     @observe('element', 'style_class', 'object_name')
     def _invalidate_match_cache(self, change):
-        """ An observer which invalidates the style match cache.
-
-        """
         if change['type'] == 'update':
             StyleCache._style_match_invalidated(self)
 
     @observe('pseudo_class', 'pseudo_element')
     def _invalidate_pseudo_cache(self, change):
-        """ An observer which invalidates the style pseudo cache.
-
-        """
         if change['type'] == 'update':
             StyleCache._style_pseudo_invalidated(self)
 
 
 class StyleSheet(Declarative):
-    """ A declarative class for defining an Enaml style sheet.
+    """ A declarative class for defining a widget style sheet.
 
-    A StyleSheet is declared as a child of a widget and used to apply
-    styling to that widget *and all of its decendents*. A StyleSheet
-    can also be defined for the global application object and will be
-    applied to all widgets in the application. A widget's effective
-    style sheet is the union of all it's ancestor StyleSheet object.
-    A StyleSheet can have an arbitrary number of Style children. The
-    child Style objects are applied to a widget in the order of their
-    match specificity within their StyleSheet.
+    A :class:`StyleSheet` is declared as a child of a :class:`Stylable`
+    widget. It uses child :class:`Style` objects to apply styling to its
+    parent widget **and all of the widget's decendents**. A
+    :class:`StyleSheet` can also be provided to the global
+    :class:`Application <enaml.application.Application>`, in which case
+    the styling will be applied to all stylable widgets. The effective
+    style sheet for a widget is the union of all its ancestor style
+    sheets plus the application style sheet.
 
-    **Example**:
+    A :class:`StyleSheet` may have an arbitrary number of :class:`Style`
+    children. The child style objects are applied to a widget in the
+    order of their match specificity within the style sheet.
+
+    **Example**
 
     .. code-block:: enaml
 
@@ -248,25 +245,24 @@ class StyleSheet(Declarative):
                                 property = 'background'
                                 value = 'goldenrod'
 
-    .. seealso:: :class:`Setter`, :class:`Style`
-
     """
     def destroy(self):
         """ A reimplemented destructor.
 
-        This will notify the style cache when the sheet is destroyed.
+        This will notify the :class:`StyleCache` when the style sheet
+        is destroyed.
 
         """
         super(StyleSheet, self).destroy()
         StyleCache._style_sheet_destroyed(self)
 
     def styles(self):
-        """ Get the styles declared for the style sheet.
+        """ Get the :class:`Style` objects declared for the style sheet.
 
         Returns
         -------
         result : list
-            The list of Style objects declared for the style sheet.
+            The :class:`Style` objects declared for the style sheet.
 
         """
         return [c for c in self.children if isinstance(c, Style)]
@@ -274,8 +270,9 @@ class StyleSheet(Declarative):
     def child_added(self, child):
         """ A reimplemented child added event handler.
 
-        This handler notifies the style cache that the style children
-        of the style sheet have changed.
+        This will notify the :class:`StyleCache` if the :class:`Style`
+        children of the style sheet have changed.
+
 
         """
         super(StyleSheet, self).child_added(child)
@@ -285,8 +282,8 @@ class StyleSheet(Declarative):
     def child_removed(self, child):
         """ A reimplemented child removed event handler.
 
-        This handler notifies the style cache that the style children
-        of the style sheet have changed.
+        This will notify the :class:`StyleCache` if the :class:`Style`
+        children of the style sheet have changed.
 
         """
         super(StyleSheet, self).child_removed(child)
@@ -297,8 +294,9 @@ class StyleSheet(Declarative):
 class Stylable(Declarative):
     """ A mixin class for defining stylable declarative objects.
 
-    This class should be mixed-in to any declarative class which wishes
-    to support Enaml style sheets.
+    This class can be used as a mixin with any
+    :class:`Declarative <enaml.core.Declarative>` class which wishes
+    to support style sheets.
 
     """
     #: The style class to which this item belongs. Multiple classes
@@ -309,20 +307,21 @@ class Stylable(Declarative):
     def destroy(self):
         """ A reimplemented destructor.
 
-        This will notify the style cache when the item is destroyed.
+        This will notify the :class:`StyleCache` when the stylable item
+        is destroyed.
 
         """
         super(Stylable, self).destroy()
         StyleCache._item_destroyed(self)
 
     def style_sheet(self):
-        """ Get the style sheet defined on the item.
+        """ Get the :class:`StyleSheet` defined on the item.
 
         Returns
         -------
-        result : StyleSheet or None
-            The last StyleSheet child defined on the item, or None if
-            the item has no such child.
+        result : :class:`StyleSheet` or None
+            The last :class:`StyleSheet` child defined on the item,
+            or None if the item has no such child.
 
         """
         for child in reversed(self.children):
@@ -334,7 +333,7 @@ class Stylable(Declarative):
 
         This method will be called when the style dependencies for the
         object have changed. It should be reimplemented in a subclass
-        to handle the restyling as needed.
+        to take appropriate action for the restyle.
 
         """
         pass
@@ -342,8 +341,8 @@ class Stylable(Declarative):
     def child_added(self, child):
         """ A reimplemented child added event handler.
 
-        This handler notifies the style cache that the style sheet
-        child of the stylable has changed.
+        This will notify the :class:`StyleCache` if the
+        :class:`StyleSheet` children of the item have changed.
 
         """
         super(Stylable, self).child_added(child)
@@ -353,8 +352,8 @@ class Stylable(Declarative):
     def child_removed(self, child):
         """ A reimplemented child removed event handler.
 
-        This handler notifies the style cache that the style sheet
-        child of the stylable has changed.
+        This will notify the :class:`StyleCache` if the
+        :class:`StyleSheet` children of the item have changed.
 
         """
         super(Stylable, self).child_added(child)
@@ -363,20 +362,12 @@ class Stylable(Declarative):
 
     @observe('style_class')
     def _invalidate_style_class(self, change):
-        """ An observer which invalidates the style class cache.
-
-        """
         if change['type'] == 'update':
             StyleCache._item_style_class_invalidated(self)
 
 
 class _RestyleTask(Atom):
-    """ A task which is posted to collapse item restyle requests.
-
-    """
-    #: The set of stylable items which require restyling.
     dirty = Typed(set, ())
-
     def __call__(self):
         StyleCache._restyle_task = None
         for item in self.dirty:
@@ -394,8 +385,8 @@ class StyleCache(object):
 
     All interaction with this class is through public class methods.
     This class should be used by code which implements the styling for
-    a given stylable item. The public API methods can be used to query
-    for the Style object which match a given Stylable item.
+    a stylable item. The public API methods can be used to query for
+    the Style object which matchs a :class:`Stylable` item.
 
     """
     #: A private mapping of item to tuple of matching StyleSheet.
@@ -424,18 +415,18 @@ class StyleCache(object):
     #--------------------------------------------------------------------------
     @classmethod
     def style_sheets(cls, item):
-        """ Get the style sheets which apply to the given item.
+        """ Get the :class:`StyleSheet` objects which apply to an item.
 
         Parameters
         ----------
-        item : Stylable
+        item : :class:`Stylable`
             The stylable item of interest.
 
         Returns
         -------
         result : tuple
-            A tuple of StyleSheet objects which apply to the item, in
-            order of ascending precedence.
+            The :class:`StyleSheet` objects which apply to the item,
+            in order of ascending precedence.
 
         """
         cache = cls._item_style_sheets
@@ -462,18 +453,18 @@ class StyleCache(object):
 
     @classmethod
     def styles(cls, item):
-        """ Get the styles which apply to the given item.
+        """ Get the :class:`Style` objects which apply to an item.
 
         Parameters
         ----------
-        item : Stylable
+        item : :class:`Stylable`
             The stylable item of interest.
 
         Returns
         -------
         result : tuple
-            A tuple of Style objects which apply to the item, in order
-            of ascending precedence.
+            The :class:`Style` objects which apply to the item, in
+            order of ascending precedence.
 
         """
         cache = cls._item_styles
@@ -505,12 +496,12 @@ class StyleCache(object):
 
         Parameters
         ----------
-        setter : Setter
+        setter : :class:`Setter`
             The style setter of interest.
 
         translate : callable
-            A callable which accepts a single Setter argument and
-            returns a toolkit representation of the setter. The
+            A callable which accepts a single :class:`Setter` argument
+            and returns a toolkit representation of the setter. The
             returned value is cached until the setter is invalidated.
 
         Returns
