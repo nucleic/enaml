@@ -43,6 +43,22 @@ blockquote {
 }
 
 
+.code-and-img {
+  padding: 0;
+}
+
+
+.code-and-img .highlight-enaml {
+  float: left;
+  width: 30em;
+}
+
+
+.code-and-img pre {
+  overflow-x: hidden;
+}
+
+
 .highlighttable {
   width: 100%;
 }
