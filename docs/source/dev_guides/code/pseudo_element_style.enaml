@@ -1,0 +1,25 @@
+from enaml.widgets.api import (
+    Window, Container, GroupBox, PushButton
+)
+from enaml.styling import (
+    StyleSheet, Style, Setter
+)
+
+enamldef Main(Window):
+    title = 'Style Sheet'
+    StyleSheet:
+        Style:
+            element = 'GroupBox'
+            pseudo_element = 'title'
+            Setter:
+                field = 'color'
+                value = 'indianred'
+    Container:
+        GroupBox:
+            title = 'Group Box'
+            PushButton:
+                text = 'One'
+            PushButton:
+                text = 'Two'
+            PushButton:
+                text = 'Three'

@@ -1,0 +1,29 @@
+from enaml.widgets.api import (
+    Window, Container, Field, CheckBox
+)
+from enaml.styling import (
+    StyleSheet, Style, Setter
+)
+
+enamldef Main(Window):
+    title = 'Style Sheet'
+    StyleSheet:
+        Style:
+            element = 'CheckBox'
+            pseudo_class = 'checked'
+            Setter:
+                field = 'color'
+                value = 'indianred'
+        Style:
+            element = 'Field'
+            pseudo_class = 'focus'
+            Setter:
+                field = 'color'
+                value = 'green'
+    Container:
+        CheckBox:
+            text = 'One'
+        CheckBox:
+            text = 'Two'
+        Field:
+            text = 'Three'

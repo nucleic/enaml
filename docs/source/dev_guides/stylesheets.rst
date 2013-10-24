@@ -49,23 +49,8 @@ a :class:`Window <enaml.widgets.window.Window>` to blue:
 
 .. container:: code-and-img
 
-    .. code-block:: enaml
-
-        enamldef Main(Window):
-            title = 'Style Sheet'
-            StyleSheet:
-                element = 'PushButton'
-                Style:
-                    Setter:
-                        field = 'color'
-                        value = 'blue'
-            Container:
-                PushButton:
-                    text = 'First'
-                PushButton:
-                    text = 'Second'
-                PushButton:
-                    text = 'Third'
+    .. literalinclude:: code/simple_style.enaml
+        :language: enaml
 
     .. image:: /images/simple_style.png
         :align: center
@@ -150,44 +135,8 @@ The following simple example shows each of the selectors in use:
 
 .. container:: code-and-img
 
-    .. code-block:: enaml
-
-        enamldef Main(Window):
-            title = 'Style Sheet'
-            StyleSheet:
-                Style:
-                    element = 'PushButton'
-                    Setter:
-                        field = 'color'
-                        value = 'red'
-                Style:
-                    style_class = 'blue-class'
-                    Setter:
-                        field = 'color'
-                        value = 'blue'
-                Style:
-                    object_name = 'special'
-                    Setter:
-                        field = 'color'
-                        value = 'green'
-                    Setter:
-                        field = 'font-weight'
-                        value = 'bold'
-            Container:
-                PushButton:
-                    text = 'One'
-                PushButton:
-                    text = 'Two'
-                Field:
-                    style_class = 'blue-class'
-                    text = 'Three'
-                CheckBox:
-                    style_class = 'blue-class'
-                    text = 'Four'
-                    checked = True
-                PushButton:
-                    text = 'Five'
-                    name = 'special'
+    .. literalinclude:: code/selector_style.enaml
+        :language: enaml
 
     .. image:: /images/selector_style.png
         :align: center
@@ -226,57 +175,8 @@ The following simple example demonstrates specificity:
 
 .. container:: code-and-img
 
-    .. code-block:: enaml
-
-        enamldef Main(Window):
-            title = 'Style Sheet'
-            StyleSheet:
-                Style:
-                    element = 'PushButton'
-                    Setter:
-                        field = 'color'
-                        value = 'blue'
-                Style:
-                    element = 'PushButton'
-                    style_class = 'alpha'
-                    Setter:
-                        field = 'color'
-                        value = 'red'
-                Style:
-                    element = 'PushButton'
-                    style_class = 'beta'
-                    Setter:
-                        field = 'color'
-                        value = 'green'
-                Style:
-                    style_class = 'alpha, beta'
-                    Setter:
-                        field = 'color'
-                        value = 'steelblue'
-                    Setter:
-                        field = 'font'
-                        value = 'bold 12pt Arial'
-                Style:
-                    object_name = 'special'
-                    Setter:
-                        field = 'color'
-                        value = 'goldenrod'
-            Container:
-                PushButton:
-                    text = 'One'
-                PushButton:
-                    text = 'Two'
-                    style_class = 'alpha'
-                PushButton:
-                    text = 'Three'
-                    style_class = 'beta'
-                Field:
-                    text = 'Four'
-                    style_class = 'alpha beta'
-                PushButton:
-                    text = 'Five'
-                    style_class = 'alpha beta'
-                    name = 'special'
+    .. literalinclude:: code/specificity_style.enaml
+        :language: enaml
 
     .. image:: /images/specificity_style.png
         :align: center
@@ -308,50 +208,8 @@ The following simple example shows style sheet cascading in action:
 
 .. container:: code-and-img
 
-    .. code-block:: enaml
-
-        enamldef AppSheet(StyleSheet):
-            Style:
-                element = 'PushButton'
-                Setter:
-                    field = 'color'
-                    value = 'blue'
-
-
-        enamldef View(Window):
-            title = 'Style Sheet'
-            Container:
-                Container:
-                    padding = 0
-                    StyleSheet:
-                        Style:
-                            element = 'PushButton'
-                            Setter:
-                                field = 'color'
-                                value = 'red'
-                    PushButton:
-                        text = 'One'
-                    PushButton:
-                        text = 'Two'
-                PushButton:
-                    text = 'Three'
-                PushButton:
-                    text = 'Four'
-                PushButton:
-                    text = 'Five'
-                    StyleSheet:
-                        Style:
-                            Setter:
-                                field = 'color'
-                                value = 'green'
-
-
-        def main():
-            app = QtApplication()
-            app.style_sheet = AppSheet()
-            view = View()
-            view.show()
-            app.start()
+    .. literalinclude:: code/cascade_style.enaml
+        :language: enaml
 
     .. image:: /images/cascade_style.png
         :align: center
@@ -380,30 +238,8 @@ The following simple example demonstrates the use of pseudo-classes:
 
 .. container:: code-and-img
 
-    .. code-block:: enaml
-
-        enamldef Main(Window):
-            title = 'Style Sheet'
-            StyleSheet:
-                Style:
-                    element = 'CheckBox'
-                    pseudo_class = 'checked'
-                    Setter:
-                        field = 'color'
-                        value = 'indianred'
-                Style:
-                    element = 'Field'
-                    pseudo_class = 'focus'
-                    Setter:
-                        field = 'color'
-                        value = 'green'
-            Container:
-                CheckBox:
-                    text = 'One'
-                CheckBox:
-                    text = 'Two'
-                Field:
-                    text = 'Three'
+    .. literalinclude:: code/pseudo_class_style.enaml
+        :language: enaml
 
     .. image:: /images/pseudo_class_style.png
         :align: center
@@ -428,26 +264,8 @@ The following simple example demonstrates the use of pseudo-elements:
 
 .. container:: code-and-img
 
-    .. code-block:: enaml
-
-        enamldef Main(Window):
-            title = 'Style Sheet'
-            StyleSheet:
-                Style:
-                    element = 'GroupBox'
-                    pseudo_element = 'title'
-                    Setter:
-                        field = 'color'
-                        value = 'indianred'
-            Container:
-                GroupBox:
-                    title = 'Group Box'
-                    PushButton:
-                        text = 'One'
-                    PushButton:
-                        text = 'Two'
-                    PushButton:
-                        text = 'Three'
+    .. literalinclude:: code/pseudo_element_style.enaml
+        :language: enaml
 
     .. image:: /images/pseudo_element_style.png
         :align: center
@@ -480,6 +298,7 @@ Examples
 --------
 
 To-Do
+
 
 .. _list_of_fields:
 
