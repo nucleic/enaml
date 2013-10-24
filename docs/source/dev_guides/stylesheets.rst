@@ -61,7 +61,7 @@ a :class:`Window <enaml.widgets.window.Window>` to blue:
                 element = 'PushButton'
                 Style:
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'blue'
             Container:
                 PushButton:
@@ -89,15 +89,15 @@ is governed by the rules of :ref:`selectors`, :ref:`specificity`, and
 :ref:`cascading`.
 
 The :class:`Setter <enaml.styling.Setter>` class provides the information
-needed to style a single facet of an object in the form of ``property`` and
+needed to style a single aspect of an object in the form of ``field`` and
 ``value`` attributes. Both attributes accept strings values and represent the
-property name and value to apply to a style property. A setter is declared as
+field name and value to apply to a widget's style. A setter is declared as
 a child of a :class:`Style <enaml.styling.Style>` object and is applied to any
 widget which matches the style rule. Multiple setters may be defined on a
 single style, and they are applied in the order in which they are declared.
 
-See the :ref:`list_of_properties` reference section for the list of supported
-style property names.
+See the :ref:`list_of_fields` reference section for the list of supported
+style field names.
 
 
 .. _selectors:
@@ -162,20 +162,20 @@ The following simple example shows each of the selectors in use:
                 Style:
                     element = 'PushButton'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'red'
                 Style:
                     style_class = 'blue-class'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'blue'
                 Style:
                     object_name = 'special'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'green'
                     Setter:
-                        property = 'font-weight'
+                        field = 'font-weight'
                         value = 'bold'
             Container:
                 PushButton:
@@ -207,7 +207,7 @@ multiple widgets, and a widget can be matched to multiple styles. This is the
 main feature which makes style sheets so powerful and expressive! However, this
 flexibility presents the possibility for conflicts in a widget's style
 specification. What to do if a widget matches multiple styles, all of which
-have a setter which defines a value for the ``color`` property? These sorts of
+have a setter which defines a value for the ``color`` field? These sorts of
 conflicts are resolved by examining the specificity of a selector match.
 
 A selector's specificity is nothing more than an integer which indicates how
@@ -238,32 +238,32 @@ The following simple example demonstrates specificity:
                 Style:
                     element = 'PushButton'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'blue'
                 Style:
                     element = 'PushButton'
                     style_class = 'alpha'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'red'
                 Style:
                     element = 'PushButton'
                     style_class = 'beta'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'green'
                 Style:
                     style_class = 'alpha, beta'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'steelblue'
                     Setter:
-                        property = 'font'
+                        field = 'font'
                         value = 'bold 12pt Arial'
                 Style:
                     object_name = 'special'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'goldenrod'
             Container:
                 PushButton:
@@ -318,7 +318,7 @@ The following simple example shows style sheet cascading in action:
             Style:
                 element = 'PushButton'
                 Setter:
-                    property = 'color'
+                    field = 'color'
                     value = 'blue'
 
 
@@ -331,7 +331,7 @@ The following simple example shows style sheet cascading in action:
                         Style:
                             element = 'PushButton'
                             Setter:
-                                property = 'color'
+                                field = 'color'
                                 value = 'red'
                     PushButton:
                         text = 'One'
@@ -346,7 +346,7 @@ The following simple example shows style sheet cascading in action:
                     StyleSheet:
                         Style:
                             Setter:
-                                property = 'color'
+                                field = 'color'
                                 value = 'green'
 
 
@@ -361,14 +361,15 @@ The following simple example shows style sheet cascading in action:
         :align: center
 
 
-Pseudeo-Classes
-^^^^^^^^^^^^^^^
+Pseudo-Classes
+^^^^^^^^^^^^^^
 
 A pseudo-class augments a style selector to require that an element have a
-special state in order for the style to be a match. Usually, this state will
-be the result of some external user interaction and may not be reflected in
-the structure of the view. For example the ``'hover'`` pseudo-state will cause
-the style to only match an element when the user hovers the mouse over it.
+special state in order for it to be a match for the style. Usually, this state
+will be the result of some external user interaction and may not be reflected
+in the structure of the view. For example the ``'hover'`` pseudo-class will
+cause an element to be a match for the style only when the user hovers over
+the element with the mouse.
 
 Pseudo-classes are specified by assigning a string to the ``pseudo_class``
 attribute of a :class:`Style <enaml.styling.Style>` object. Multiple
@@ -379,7 +380,7 @@ operator.
 See the :ref:`list_of_pseudo_classes` reference section for the list of
 supported pseudo-classes.
 
-A following simple example demonstrates the use of pseudo-classes.
+The following simple example demonstrates the use of pseudo-classes:
 
 .. container:: code-and-img
 
@@ -392,13 +393,13 @@ A following simple example demonstrates the use of pseudo-classes.
                     element = 'CheckBox'
                     pseudo_class = 'checked'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'indianred'
                 Style:
                     element = 'Field'
                     pseudo_class = 'focus'
                     Setter:
-                        property = 'color'
+                        field = 'color'
                         value = 'green'
             Container:
                 CheckBox:
@@ -412,8 +413,22 @@ A following simple example demonstrates the use of pseudo-classes.
         :align: center
 
 
-Pseduo-Elements
+Pseudo-Elements
 ^^^^^^^^^^^^^^^
+
+A pseudo-element is similar to a pseudo-class, but instead of specifying a
+special state, it is used to specify a subcontrol of a complex control. For
+example, the ``'title'`` pseudo-element can be used to style the title text
+of a :class:`GroupBox <enaml.widgets.group_box.GroupBox>` widget.
+
+Pseudo-elements are specified by assigning a string to the ``pseudo_element``
+attribute of a :class:`Style <enaml.styling.Style>` object. Only one
+pseudo-element can be specified for a given style.
+
+See the :ref:`list_of_pseudo_elements` reference section for the list of
+supported pseudo-elements.
+
+The following simple example demonstrates the use of pseudo-elements:
 
 
 Dynamism
@@ -432,32 +447,33 @@ flexibility in defining the styling for an application.
 Inheritance
 ^^^^^^^^^^^
 
-In typical CSS, properties like ``font`` and ``color``, unless specified,
-will be inherited from a parent element. Other properties can be forcibly
-inherited with the ``inherit`` keyword. With Enaml stylesheets, inhertance is
-not supported in any form. Developers should rely on :ref:`cascading` and
-:ref:`specificity` to style their applications appropriately.
+In typical CSS, fields like ``font`` and ``color``, unless specified, will be
+inherited from a parent element. Other fields can be forcibly inherited with
+the ``inherit`` keyword. With Enaml stylesheets, inhertance is not supported in
+any form. Developers should rely on :ref:`cascading` and :ref:`specificity` to
+style their applications appropriately.
 
 
 Reference
 ---------
 
-.. _list_of_properties:
 
-List of Properties
-^^^^^^^^^^^^^^^^^^
+.. _list_of_fields:
+
+Field List
+^^^^^^^^^^
 
 
 .. _list_of_pseudo_classes:
 
-List of Pseudo-Classes
-^^^^^^^^^^^^^^^^^^^^^^
+Pseudo-Class List
+^^^^^^^^^^^^^^^^^
 
 
 .. _list_of_pseudo_elements:
 
-List of Pseudo-Elements
-^^^^^^^^^^^^^^^^^^^^^^^
+Pseudo-Element List
+^^^^^^^^^^^^^^^^^^^
 
 
 Examples
