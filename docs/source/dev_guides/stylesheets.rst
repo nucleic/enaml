@@ -75,25 +75,29 @@ a :class:`Window <enaml.widgets.window.Window>` to blue:
         :align: center
 
 The :class:`StyleSheet <enaml.styling.StyleSheet>` class forms the root
-of the hiearchy for a style sheet. Its sole purpose is to provide an
+of the hierarchy for a style sheet. Its sole purpose is to provide an
 aggregation point for the :class:`Style <enaml.styling.Style>` objects
 defined for the style sheet.
 
 The :class:`Style <enaml.styling.Style>` class serves the role of the selector
 in typical CSS parlance. It also serves as an aggregation point for the style
 :class:`Setter <enaml.styling.Setter>` objects. The various attributes of the
-style combine to form a match rule against which all the widgets for the style
-sheet are tested. If a widget is a match for the rule, then the style setters
-are applied to that widget. The order in which multiple matching styles are
-applied is governed by the rules of :ref:`selectors`, :ref:`specificity`,
-and :ref:`cascading`.
+style combine to form a rule against which all the widgets for the style sheet
+are tested. If a widget is a match for the rule, then the style setters are
+applied to that widget. The order in which multiple matching styles are applied
+is governed by the rules of :ref:`selectors`, :ref:`specificity`, and
+:ref:`cascading`.
 
 The :class:`Setter <enaml.styling.Setter>` class provides the information
-needed to style a single facet of an object, such as text color, background,
-border, font, etc. It is declared as a child of a
-:class:`Style <enaml.styling.Style>` object and is applied to any widget which
-matches the style rule. Multiple setters may be defined on a single style, and
-they are applied in the order in which they are declared.
+needed to style a single facet of an object in the form of ``property`` and
+``value`` attributes. Both attributes accept strings values and represent the
+property name and value to apply to a style property. A setter is declared as
+a child of a :class:`Style <enaml.styling.Style>` object and is applied to any
+widget which matches the style rule. Multiple setters may be defined on a
+single style, and they are applied in the order in which they are declared.
+
+See the :ref:`list_of_properties` reference section for the list of supported
+style property names.
 
 
 .. _selectors:
@@ -360,6 +364,53 @@ The following simple example shows style sheet cascading in action:
 Pseudeo-Classes
 ^^^^^^^^^^^^^^^
 
+A pseudo-class augments a style selector to require that an element have a
+special state in order for the style to be a match. Usually, this state will
+be the result of some external user interaction and may not be reflected in
+the structure of the view. For example the ``'hover'`` pseudo-state will cause
+the style to only match an element when the user hovers the mouse over it.
+
+Pseudo-classes are specified by assigning a string to the ``pseudo_class``
+attribute of a :class:`Style <enaml.styling.Style>` object. Multiple
+pseudo-classes can be chained together with a colon, which will match using
+logical AND semantics. A pseudo-class can also be negated with the exclamation
+operator.
+
+See the :ref:`list_of_pseudo_classes` reference section for the list of
+supported pseudo-classes.
+
+A following simple example demonstrates the use of pseudo-classes.
+
+.. container:: code-and-img
+
+    .. code-block:: enaml
+
+        enamldef Main(Window):
+            title = 'Style Sheet'
+            StyleSheet:
+                Style:
+                    element = 'CheckBox'
+                    pseudo_class = 'checked'
+                    Setter:
+                        property = 'color'
+                        value = 'indianred'
+                Style:
+                    element = 'Field'
+                    pseudo_class = 'focus'
+                    Setter:
+                        property = 'color'
+                        value = 'green'
+            Container:
+                CheckBox:
+                    text = 'One'
+                CheckBox:
+                    text = 'Two'
+                Field:
+                    text = 'Three'
+
+    .. image:: /images/pseudo_class_style.png
+        :align: center
+
 
 Pseduo-Elements
 ^^^^^^^^^^^^^^^
@@ -390,6 +441,23 @@ not supported in any form. Developers should rely on :ref:`cascading` and
 
 Reference
 ---------
+
+.. _list_of_properties:
+
+List of Properties
+^^^^^^^^^^^^^^^^^^
+
+
+.. _list_of_pseudo_classes:
+
+List of Pseudo-Classes
+^^^^^^^^^^^^^^^^^^^^^^
+
+
+.. _list_of_pseudo_elements:
+
+List of Pseudo-Elements
+^^^^^^^^^^^^^^^^^^^^^^^
 
 
 Examples
