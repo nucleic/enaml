@@ -163,7 +163,7 @@ html_theme = 'bootstrap'
 html_theme_options = {
     #'navbar_class': 'navbar-inverse',
     'navbar_sidebarrel': False,
-    #'bootswatch_theme': 'cosmo',
+    'bootswatch_theme': 'cosmo',
     'bootstrap_version': '3',
 }
 
