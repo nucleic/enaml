@@ -53,8 +53,12 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.autosummary',
-    'enamldoc'
+    #'enamldoc'
+    'numpydoc'
     ]
+
+# Disable numpy auto-gen class members.
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -159,7 +163,7 @@ html_theme = 'bootstrap'
 html_theme_options = {
     #'navbar_class': 'navbar-inverse',
     'navbar_sidebarrel': False,
-    'bootswatch_theme': 'cosmo',
+    #'bootswatch_theme': 'cosmo',
     'bootstrap_version': '3',
 }
 
