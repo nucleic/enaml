@@ -15,7 +15,7 @@ def _translate_gradient(v):
     return _grad_re.sub(ur'q\1', v)
 
 
-KNOWN_PROPERTIES = set([
+KNOWN_FIELDS = set([
     u'alternate-background-color',
     u'background',
     u'background-clip',
@@ -104,11 +104,11 @@ MAY_HAVE_GRADIENT = set([
 
 
 def translate_setter(setter):
-    prop = setter.property
-    if prop in KNOWN_PROPERTIES:
+    field = setter.field
+    if field in KNOWN_FIELDS:
         value = setter.value
         if value:
-            if prop in MAY_HAVE_GRADIENT:
+            if field in MAY_HAVE_GRADIENT:
                 value = _translate_gradient(value)
-            value = u'%s:%s;' % (prop, value)
+            value = u'%s:%s;' % (field, value)
         return value

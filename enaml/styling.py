@@ -17,16 +17,21 @@ from enaml.core.declarative import Declarative, d_
 
 
 class Setter(Declarative):
-    """ A declarative class for defining a style property setter.
+    """ A declarative class for defining a style field setter.
 
     A :class:`Setter` is declared as a child of a :class:`Style`.
-    It defines the value to be applied to a style property.
+    It defines the value to be applied to a style field.
 
     """
-    #: The name of the style property to which this setter applies.
-    property = d_(Unicode())
+    # The name 'field' was chosen since 'property' is a Python builtin.
+    # 'field' also has the added benefit of being the same length as
+    # 'value' which means that a group of Setter objects will be nicely
+    # aligned in an Enaml source definition.
+    #
+    #: The style field to which this setter applies.
+    field = d_(Unicode())
 
-    #: The value to apply to the style property.
+    #: The value to apply to the style field.
     value = d_(Unicode())
 
     def destroy(self):
@@ -39,7 +44,7 @@ class Setter(Declarative):
         super(Setter, self).destroy()
         StyleCache._setter_destroyed(self)
 
-    @observe('property', 'value')
+    @observe('field', 'value')
     def _invalidate_cache(self, change):
         if change['type'] == 'update':
             StyleCache._setter_invalidated(self)
@@ -65,7 +70,7 @@ class Style(Declarative):
     """ A declarative class for defining a style sheet style.
 
     A :class:`Style` is declared as a child of a :class:`StyleSheet`.
-    It uses child :class:`Setter` objects to define the style properties
+    It uses child :class:`Setter` objects to define the style fields
     to apply to widgets which are a match for the style.
 
     A :class:`Style` may have an arbitrary number of :class:`Setter`
