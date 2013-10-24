@@ -37,11 +37,7 @@ Style sheets:
 .. _Cascading Style Sheets: http://en.wikipedia.org/wiki/Cascading_Style_Sheets
 .. _WPF Styling: http://msdn.microsoft.com/en-us/library/ms745683.aspx
 
-
-Structure
----------
-
-There are three classes which comprise the definition of a style sheet:
+There are three classes involved in creating a style sheet:
 :class:`StyleSheet <enaml.styling.StyleSheet>`,
 :class:`Style <enaml.styling.Style>`, and
 :class:`Setter <enaml.styling.Setter>`. The developer arranges these classes
@@ -103,7 +99,7 @@ style field names.
 .. _selectors:
 
 Selectors
-^^^^^^^^^
+---------
 
 A style sheet consists of a list of :class:`Style <enaml.styling.Style>`
 objects, each having a list of :class:`Setter <enaml.styling.Setter>` objects
@@ -200,7 +196,7 @@ The following simple example shows each of the selectors in use:
 .. _specificity:
 
 Specificity
-^^^^^^^^^^^
+-----------
 
 The nature of style selectors is such that a single style can be matched to
 multiple widgets, and a widget can be matched to multiple styles. This is the
@@ -289,7 +285,7 @@ The following simple example demonstrates specificity:
 .. _cascading:
 
 Cascading
-^^^^^^^^^
+---------
 
 A style sheet can be applied to the global
 :class:`Application <enaml.application.Application>` and to any
@@ -362,7 +358,7 @@ The following simple example shows style sheet cascading in action:
 
 
 Pseudo-Classes
-^^^^^^^^^^^^^^
+--------------
 
 A pseudo-class augments a style selector to require that an element have a
 special state in order for it to be a match for the style. Usually, this state
@@ -414,7 +410,7 @@ The following simple example demonstrates the use of pseudo-classes:
 
 
 Pseudo-Elements
-^^^^^^^^^^^^^^^
+---------------
 
 A pseudo-element is similar to a pseudo-class, but instead of specifying a
 special state, it is used to specify a subcontrol of a complex control. For
@@ -430,9 +426,35 @@ supported pseudo-elements.
 
 The following simple example demonstrates the use of pseudo-elements:
 
+.. container:: code-and-img
+
+    .. code-block:: enaml
+
+        enamldef Main(Window):
+            title = 'Style Sheet'
+            StyleSheet:
+                Style:
+                    element = 'GroupBox'
+                    pseudo_element = 'title'
+                    Setter:
+                        field = 'color'
+                        value = 'indianred'
+            Container:
+                GroupBox:
+                    title = 'Group Box'
+                    PushButton:
+                        text = 'One'
+                    PushButton:
+                        text = 'Two'
+                    PushButton:
+                        text = 'Three'
+
+    .. image:: /images/pseudo_element_style.png
+        :align: center
+
 
 Dynamism
-^^^^^^^^
+--------
 
 As the examples in this article have shown, all of the classes which are used
 to define an Enaml style sheet are declarative; just like the standard Enaml
@@ -440,12 +462,12 @@ widget classes. This means that all of Enaml's language and framework features,
 such as subscription operators, templates,
 :class:`Include <enaml.core.include.Include>`,
 :class:`Looper <enaml.core.looper.Looper>`, etc. work with style sheets in the
-same way that they work with widgets. This gives the developer unlimited
-flexibility in defining the styling for an application.
+same way that they work with widgets. This gives the developer virtually
+unlimited flexibility in defining the styling for an application.
 
 
 Inheritance
-^^^^^^^^^^^
+-----------
 
 In typical CSS, fields like ``font`` and ``color``, unless specified, will be
 inherited from a parent element. Other fields can be forcibly inherited with
@@ -454,26 +476,22 @@ any form. Developers should rely on :ref:`cascading` and :ref:`specificity` to
 style their applications appropriately.
 
 
-Reference
----------
-
-
 .. _list_of_fields:
 
-Field List
-^^^^^^^^^^
+List of Fields
+--------------
 
 
 .. _list_of_pseudo_classes:
 
-Pseudo-Class List
-^^^^^^^^^^^^^^^^^
+List of Pseudo-Classes
+----------------------
 
 
 .. _list_of_pseudo_elements:
 
-Pseudo-Element List
-^^^^^^^^^^^^^^^^^^^
+List of Pseudo-Elements
+-----------------------
 
 
 Examples
