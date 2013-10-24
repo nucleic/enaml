@@ -3,6 +3,11 @@ blockquote {
 }
 
 
+.ffms, #style-field-type-table td:nth-of-type(2) {
+  font-family: monospace;
+}
+
+
 .table th.field-name {
   white-space: nowrap;
   background-color: #F0F0F0;
