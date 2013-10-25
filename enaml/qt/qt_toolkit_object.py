@@ -9,8 +9,8 @@ from atom.api import Typed
 
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 
-from .QtCore import QObject
 from . import QT_API
+from .QtCore import QObject
 
 
 class QtToolkitObject(ProxyToolkitObject):
@@ -47,9 +47,14 @@ class QtToolkitObject(ProxyToolkitObject):
         """
         widget = self.widget
         if widget is not None:
-            name = self.declaration.name
-            if name:
-                widget.setObjectName(name)
+            # Each Qt object gets a name. If one is not provided by the
+            # widget author, one is generated. This is required so that
+            # Qt stylesheet cascading can be prevented (Enaml's styling
+            # engine applies the cascade itself). Names provided by the
+            # widget author are assumed to be unique.
+            d = self.declaration
+            name = d.name or u'obj-%d' % id(d)
+            widget.setObjectName(name)
 
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.

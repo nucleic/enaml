@@ -11,6 +11,7 @@ from enaml.colors import ColorMember
 from enaml.core.declarative import d_
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
+from enaml.styling import Stylable
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
@@ -58,8 +59,11 @@ class ProxyWidget(ProxyToolkitObject):
     def ensure_hidden(self):
         raise NotImplementedError
 
+    def restyle(self):
+        raise NotImplementedError
 
-class Widget(ToolkitObject):
+
+class Widget(ToolkitObject, Stylable):
     """ The base class of visible widgets in Enaml.
 
     """
@@ -116,6 +120,21 @@ class Widget(ToolkitObject):
         """
         # The superclass implementation is sufficient.
         super(Widget, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def restyle(self):
+        """ Restyle the toolkit widget.
+
+        This method is invoked by the Stylable class when the style
+        dependencies have changed for the widget. This will trigger a
+        proxy restyle if necessary. This method should not typically be
+        called directly by user code.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.restyle()
 
     #--------------------------------------------------------------------------
     # Public API

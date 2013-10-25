@@ -9,6 +9,7 @@ import sys
 
 from atom.api import Typed
 
+from enaml.styling import StyleCache
 from enaml.widgets.widget import ProxyWidget
 
 from .QtCore import Qt, QSize
@@ -16,6 +17,7 @@ from .QtGui import QFont, QWidget, QWidgetItem, QApplication
 
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
+from .styleutil import translate_setter
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):
@@ -64,6 +66,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         if d.status_tip:
             self.set_status_tip(d.status_tip)
         self.set_enabled(d.enabled)
+        self.refresh_style_sheet()
         # Don't make toplevel widgets visible during init or they will
         # flicker onto the screen. This applies particularly for things
         # like status bar widgets which are created with no parent and
@@ -72,6 +75,31 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         # are created.
         if self.widget.parent() or not d.visible:
             self.set_visible(d.visible)
+
+    #--------------------------------------------------------------------------
+    # Protected API
+    #--------------------------------------------------------------------------
+    def refresh_style_sheet(self):
+        """ Refresh the widget style sheet with the current style data.
+
+        """
+        parts = []
+        for style in StyleCache.styles(self.declaration):
+            translated = []
+            for setter in style.setters():
+                tks = StyleCache.toolkit_setter(setter, translate_setter)
+                if tks is not None:
+                    translated.append(tks)
+            t = u'#%s'
+            if style.pseudo_element:
+                t += u'::%s' % style.pseudo_element
+            if style.pseudo_class:
+                t += u':%s' % style.pseudo_class
+            t += u'{%s}'
+            p = t % (self.widget.objectName(), u''.join(translated))
+            parts.append(p)
+        stylesheet = u''.join(parts)
+        self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
     # ProxyWidget API
@@ -180,3 +208,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setVisible(False)
+
+    def restyle(self):
+        """ Restyle the widget with the current style data.
+
+        """
+        self.refresh_style_sheet()

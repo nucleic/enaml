@@ -9,7 +9,10 @@ from heapq import heappush, heappop
 from itertools import count
 from threading import Lock
 
-from atom.api import Atom, Bool, Typed, Tuple, Dict, Callable, Value, List
+from atom.api import (
+    Atom, Bool, Typed, ForwardTyped, Tuple, Dict, Callable, Value, List,
+    observe
+)
 
 
 class ScheduledTask(Atom):
@@ -144,6 +147,14 @@ class ProxyResolver(Atom):
             return factory()
 
 
+def StyleSheet():
+    """ A lazy importer for the Enaml StyleSheet class.
+
+    """
+    from enaml.styling import StyleSheet
+    return StyleSheet
+
+
 class Application(Atom):
     """ The application object which manages the top-level communication
     protocol for serving Enaml views.
@@ -153,6 +164,9 @@ class Application(Atom):
     #: be supplied by application subclasses, but can also be supplied
     #: by the developer to supply custom proxy resolution behavior.
     resolver = Typed(ProxyResolver)
+
+    #: The style sheet to apply to the entire application.
+    style_sheet = ForwardTyped(StyleSheet)
 
     #: The task heap for application tasks.
     _task_heap = List()
@@ -215,6 +229,22 @@ class Application(Atom):
             if heap:
                 priority, ignored, task = heappop(heap)
                 self.deferred_call(self._process_task, task)
+
+    @observe('style_sheet.destroyed')
+    def _clear_destroyed_style_sheet(self, change):
+        """ An observer which clears a destroyed style sheet.
+
+        """
+        self.style_sheet = None
+
+    @observe('style_sheet')
+    def _invalidate_style_cache(self, change):
+        """ An observer which invalidates the style sheet cache.
+
+        """
+        if change['type'] == 'update':
+            from enaml.styling import StyleCache
+            StyleCache._app_sheet_changed()
 
     #--------------------------------------------------------------------------
     # Abstract API

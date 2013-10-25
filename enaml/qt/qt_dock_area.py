@@ -169,6 +169,13 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         super(QtDockArea, self).destroy()
 
     #--------------------------------------------------------------------------
+    # Overrides
+    #--------------------------------------------------------------------------
+    def refresh_style_sheet(self):
+        # Temporarily disable Enaml stylesheet styling
+        pass
+
+    #--------------------------------------------------------------------------
     # Utility Methods
     #--------------------------------------------------------------------------
     def dock_items(self):

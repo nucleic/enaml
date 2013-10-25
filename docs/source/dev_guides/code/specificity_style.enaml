@@ -1,0 +1,56 @@
+from enaml.widgets.api import (
+    Window, Container, PushButton, Field
+)
+from enaml.styling import (
+    StyleSheet, Style, Setter
+)
+
+enamldef Main(Window):
+    title = 'Style Sheet'
+    StyleSheet:
+        Style:
+            element = 'PushButton'
+            Setter:
+                field = 'color'
+                value = 'blue'
+        Style:
+            element = 'PushButton'
+            style_class = 'alpha'
+            Setter:
+                field = 'color'
+                value = 'red'
+        Style:
+            element = 'PushButton'
+            style_class = 'beta'
+            Setter:
+                field = 'color'
+                value = 'green'
+        Style:
+            style_class = 'alpha, beta'
+            Setter:
+                field = 'color'
+                value = 'steelblue'
+            Setter:
+                field = 'font'
+                value = 'bold 12pt Arial'
+        Style:
+            object_name = 'special'
+            Setter:
+                field = 'color'
+                value = 'goldenrod'
+    Container:
+        PushButton:
+            text = 'One'
+        PushButton:
+            text = 'Two'
+            style_class = 'alpha'
+        PushButton:
+            text = 'Three'
+            style_class = 'beta'
+        Field:
+            text = 'Four'
+            style_class = 'alpha beta'
+        PushButton:
+            text = 'Five'
+            style_class = 'alpha beta'
+            name = 'special'

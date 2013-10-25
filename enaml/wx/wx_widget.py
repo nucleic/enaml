@@ -162,3 +162,9 @@ class WxWidget(WxToolkitObject, ProxyWidget):
 
         """
         self.widget.Show(False)
+
+    def restyle(self):
+        """ Stylesheets are not supported on Wx.
+
+        """
+        pass

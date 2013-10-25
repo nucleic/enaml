@@ -441,7 +441,7 @@ class WxNotebook(WxConstraintsWidget, ProxyNotebook):
         """
         super(WxNotebook, self).child_removed(child)
         if isinstance(child, WxPage):
-            self.widget().RemoveWxPage(child.widget)
+            self.widget.RemoveWxPage(child.widget)
             self.size_hint_updated()
 
     #--------------------------------------------------------------------------
