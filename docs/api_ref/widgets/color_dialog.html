@@ -14,7 +14,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.color_dialog &mdash; Enaml 0.8.1 documentation</title>
+    <title>enaml.widgets.color_dialog &mdash; Enaml 0.8.3 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.1',
+        VERSION:     '0.8.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.1 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.8.3 documentation" href="../../index.html" />
     <link rel="up" title="enaml.widgets" href="index.html" />
     <link rel="next" title="enaml.widgets.combo_box" href="combo_box.html" />
     <link rel="prev" title="enaml.widgets.check_box" href="check_box.html" />
@@ -66,7 +66,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.3</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -143,6 +143,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../nodevisitor.html">nodevisitor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../scintilla/index.html">scintilla</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../styling.html">styling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../validator.html">validator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../version.html">version</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">widgets</a><ul class="current">
@@ -281,16 +282,20 @@ This value is output only.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>parent</strong> (<em>ToolkitObject or None</em>) &#8211; The parent toolkit object for this dialog.</li>
-<li><strong>kwargs</strong> &#8211; Additional data to pass to the dialog constructor.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>parent</strong> : ToolkitObject or None</p>
+<blockquote>
+<div><p>The parent toolkit object for this dialog.</p>
+</div></blockquote>
+<p><strong>**kwargs</strong> :</p>
+<blockquote>
+<div><p>Additional data to pass to the dialog constructor.</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">Color or None</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The selected color or None if no color was selected.</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : Color or None</p>
+<blockquote class="last">
+<div><p>The selected color or None if no color was selected.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -306,12 +311,15 @@ This value is output only.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The number of available custom colors.</td>
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : int</p>
+<blockquote class="last">
+<div><p>The number of available custom colors.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 <p>The Application object must exist before calling this method.</p>
 </dd></dl>
 
@@ -324,14 +332,21 @@ This value is output only.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>index</strong> (<em>int</em>) &#8211; The integer index of the custom color.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>index</strong> : int</p>
+<blockquote>
+<div><p>The integer index of the custom color.</p>
+</div></blockquote>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Color</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The custom color for the index.</td>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : Color</p>
+<blockquote class="last">
+<div><p>The custom color for the index.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 <p>The Application object must exist before calling this method.</p>
 </dd></dl>
 
@@ -344,14 +359,19 @@ This value is output only.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>index</strong> (<em>int</em>) &#8211; The integer index of the custom color.</li>
-<li><strong>color</strong> (<em>Color</em>) &#8211; The custom color to set for the index</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>index</strong> : int</p>
+<blockquote>
+<div><p>The integer index of the custom color.</p>
+</div></blockquote>
+<p><strong>color</strong> : Color</p>
+<blockquote class="last">
+<div><p>The custom color to set for the index</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 <p>The Application object must exist before calling this method.</p>
 </dd></dl>
 
@@ -372,8 +392,8 @@ This value is output only.</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 08, 2013.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+      Last updated on Oct 25, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
 </footer>

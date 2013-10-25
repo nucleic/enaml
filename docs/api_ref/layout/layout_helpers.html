@@ -14,7 +14,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.layout.layout_helpers &mdash; Enaml 0.8.1 documentation</title>
+    <title>enaml.layout.layout_helpers &mdash; Enaml 0.8.3 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.1',
+        VERSION:     '0.8.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.1 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.8.3 documentation" href="../../index.html" />
     <link rel="up" title="enaml.layout" href="index.html" />
     <link rel="next" title="enaml.nodevisitor" href="../nodevisitor.html" />
     <link rel="prev" title="enaml.layout.dock_layout" href="dock_layout.html" />
@@ -66,7 +66,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.3</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -147,6 +147,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../nodevisitor.html">nodevisitor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../scintilla/index.html">scintilla</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../styling.html">styling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../validator.html">validator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../version.html">version</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../widgets/index.html">widgets</a></li>
@@ -168,18 +169,6 @@
 <dd><p>A function which expands any DeferredConstraints in the provided
 list. This is a generator function which yields the flattened stream
 of constraints.</p>
-<dl class="docutils">
-<dt>component <span class="classifier-delimiter">:</span> <span class="classifier">Constrainable</span></dt>
-<dd>The constrainable component with which the constraints are
-associated. This will be passed to the .get_constraints()
-method of any DeferredConstraint instance.</dd>
-<dt>constraints <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>The list of constraints.</dd>
-</dl>
-<dl class="docutils">
-<dt>constraints</dt>
-<dd>The stream of expanded constraints.</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -229,11 +218,20 @@ constraints depending on a boolean value.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>component</strong> (<em>Component or None</em>) &#8211; The component that owns this DeferredConstraints. It can be None for contexts in which there is not a containing component, such as in certain nested DeferredConstraints.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>component</strong> : Component or None</p>
+<blockquote>
+<div><p>The component that owns this DeferredConstraints. It can
+be None for contexts in which there is not a containing
+component, such as in certain nested DeferredConstraints.</p>
+</div></blockquote>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of LinearConstraints</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The list of LinearConstraint objects which have been weighted by any provided strengths and weights.</td>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : list of LinearConstraints</p>
+<blockquote class="last">
+<div><p>The list of LinearConstraint objects which have been
+weighted by any provided strengths and weights.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -261,11 +259,18 @@ call a function to get the constraint list upon request.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>func</strong> (<em>callable</em>) &#8211; A callable object which will return the list of constraints.</li>
-<li><strong>args</strong> &#8211; The arguments to pass to &#8216;func&#8217;.</li>
-<li><strong>kwds</strong> &#8211; The keyword arguments to pass to &#8216;func&#8217;.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>func</strong> : callable</p>
+<blockquote>
+<div><p>A callable object which will return the list of constraints.</p>
+</div></blockquote>
+<p><strong>*args</strong> :</p>
+<blockquote>
+<div><p>The arguments to pass to &#8216;func&#8217;.</p>
+</div></blockquote>
+<p><strong>**kwds</strong> :</p>
+<blockquote class="last">
+<div><p>The keyword arguments to pass to &#8216;func&#8217;.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -284,23 +289,35 @@ lay out its components by abutting them in a given orientation.</p>
 <dt id="enaml.layout.layout_helpers.AbutmentHelper.__init__">
 <tt class="descname">__init__</tt><big>(</big><em>orientation</em>, <em>*items</em>, <em>**config</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/layout_helpers.html#AbutmentHelper.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.layout_helpers.AbutmentHelper.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize an AbutmentHelper.</p>
-<dl class="docutils">
-<dt>orientation</dt>
-<dd>A string which is either &#8216;horizontal&#8217; or &#8216;vertical&#8217; which
-indicates the abutment orientation.</dd>
-<dt><a href="#id1"><span class="problematic" id="id2">*</span></a>items</dt>
-<dd>The components to abut in the given orientation.</dd>
-<dt><a href="#id3"><span class="problematic" id="id4">**</span></a>config</dt>
-<dd><p class="first">Configuration options for how this helper should behave.
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>orientation</strong> :</p>
+<blockquote>
+<div><p>A string which is either &#8216;horizontal&#8217; or &#8216;vertical&#8217; which
+indicates the abutment orientation.</p>
+</div></blockquote>
+<p><strong>*items</strong> :</p>
+<blockquote>
+<div><p>The components to abut in the given orientation.</p>
+</div></blockquote>
+<p><strong>**config</strong> :</p>
+<blockquote class="last">
+<div><p>Configuration options for how this helper should behave.
 The following options are currently supported:</p>
-<dl class="last docutils">
+<dl class="docutils">
 <dt>spacing</dt>
-<dd>An integer &gt;= 0 which indicates how many pixels of
+<dd><p class="first last">An integer &gt;= 0 which indicates how many pixels of
 inter-element spacing to use during abutment. The
-default is the value of DefaultSpacing.ABUTMENT.</dd>
-</dl>
+default is the value of DefaultSpacing.ABUTMENT.</p>
 </dd>
 </dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -321,23 +338,35 @@ anchor to align.</p>
 <dt id="enaml.layout.layout_helpers.AlignmentHelper.__init__">
 <tt class="descname">__init__</tt><big>(</big><em>anchor</em>, <em>*items</em>, <em>**config</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/layout_helpers.html#AlignmentHelper.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.layout_helpers.AlignmentHelper.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize an AlignmentHelper.</p>
-<dl class="docutils">
-<dt>anchor</dt>
-<dd>A string which is either &#8216;left&#8217;, &#8216;right&#8217;, &#8216;top&#8217;, &#8216;bottom&#8217;,
-&#8216;v_center&#8217;, or &#8216;h_center&#8217;.</dd>
-<dt><a href="#id5"><span class="problematic" id="id6">*</span></a>items</dt>
-<dd>The components to align on the given anchor.</dd>
-<dt><a href="#id7"><span class="problematic" id="id8">**</span></a>config</dt>
-<dd><p class="first">Configuration options for how this helper should behave.
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>anchor</strong> :</p>
+<blockquote>
+<div><p>A string which is either &#8216;left&#8217;, &#8216;right&#8217;, &#8216;top&#8217;, &#8216;bottom&#8217;,
+&#8216;v_center&#8217;, or &#8216;h_center&#8217;.</p>
+</div></blockquote>
+<p><strong>*items</strong> :</p>
+<blockquote>
+<div><p>The components to align on the given anchor.</p>
+</div></blockquote>
+<p><strong>**config</strong> :</p>
+<blockquote class="last">
+<div><p>Configuration options for how this helper should behave.
 The following options are currently supported:</p>
-<dl class="last docutils">
+<dl class="docutils">
 <dt>spacing</dt>
-<dd>An integer &gt;= 0 which indicates how many pixels of
+<dd><p class="first last">An integer &gt;= 0 which indicates how many pixels of
 inter-element spacing to use during alignement. The
-default is the value of DefaultSpacing.ALIGNMENT.</dd>
-</dl>
+default is the value of DefaultSpacing.ALIGNMENT.</p>
 </dd>
 </dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -365,7 +394,12 @@ instances to be nested.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; A string name to prepend to a unique owner id generated for this box helper, to aid in debugging.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote class="last">
+<div><p>A string name to prepend to a unique owner id generated
+for this box helper, to aid in debugging.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -399,24 +433,33 @@ constraints on the containing component.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>orientation</strong> (<em>string</em>) &#8211; The layout orientation of the box. This must be either &#8216;horizontal&#8217; or &#8216;vertical&#8217;.</li>
-<li><strong>items</strong> &#8211; The components to align on the given anchor.</li>
-<li><strong>config</strong> &#8211; <p>Configuration options for how this helper should behave. The following options are currently supported:
-spacing</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>orientation</strong> : string</p>
 <blockquote>
-<div>An integer &gt;= 0 which indicates how many pixels of
-inter-element spacing to use during abutment. The
-default is the value of DefaultSpacing.ABUTMENT.</div></blockquote>
+<div><p>The layout orientation of the box. This must be either
+&#8216;horizontal&#8217; or &#8216;vertical&#8217;.</p>
+</div></blockquote>
+<p><strong>*items</strong> :</p>
+<blockquote>
+<div><p>The components to align on the given anchor.</p>
+</div></blockquote>
+<p><strong>**config</strong> :</p>
+<blockquote class="last">
+<div><p>Configuration options for how this helper should behave.
+The following options are currently supported:</p>
 <dl class="docutils">
+<dt>spacing</dt>
+<dd><p class="first last">An integer &gt;= 0 which indicates how many pixels of
+inter-element spacing to use during abutment. The
+default is the value of DefaultSpacing.ABUTMENT.</p>
+</dd>
 <dt>margins</dt>
-<dd>A int, tuple of ints, or Box of ints &gt;= 0 which
+<dd><p class="first last">A int, tuple of ints, or Box of ints &gt;= 0 which
 indicate how many pixels of margin to add around
 the bounds of the box. The default is the value of
-DefaultSpacing.BOX_MARGIN.</dd>
+DefaultSpacing.BOX_MARGIN.</p>
+</dd>
 </dl>
-</li>
-</ul>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -440,41 +483,55 @@ DefaultSpacing.BOX_MARGIN.</dd>
 <dt id="enaml.layout.layout_helpers.GridHelper.__init__">
 <tt class="descname">__init__</tt><big>(</big><em>*rows</em>, <em>**config</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/layout_helpers.html#GridHelper.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.layout_helpers.GridHelper.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a GridHelper.</p>
-<dl class="docutils">
-<dt><a href="#id9"><span class="problematic" id="id10">*</span></a>rows: iterable of lists</dt>
-<dd>The rows to layout in the grid. A row must be composed of
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>*rows: iterable of lists</strong> :</p>
+<blockquote>
+<div><p>The rows to layout in the grid. A row must be composed of
 constrainable objects and None. An item will be expanded
-to span all of the cells in which it appears.</dd>
-<dt><a href="#id11"><span class="problematic" id="id12">**</span></a>config</dt>
-<dd><p class="first">Configuration options for how this helper should behave.
+to span all of the cells in which it appears.</p>
+</div></blockquote>
+<p><strong>**config</strong> :</p>
+<blockquote class="last">
+<div><p>Configuration options for how this helper should behave.
 The following options are currently supported:</p>
-<dl class="last docutils">
+<dl class="docutils">
 <dt>row_align</dt>
-<dd>A string which is the name of a constraint variable on
+<dd><p class="first last">A string which is the name of a constraint variable on
 a item. If given, it is used to add constraints on the
 alignment of items in a row. The constraints will only
-be applied to items that do not span rows.</dd>
+be applied to items that do not span rows.</p>
+</dd>
 <dt>row_spacing</dt>
-<dd>An integer &gt;= 0 which indicates how many pixels of
+<dd><p class="first last">An integer &gt;= 0 which indicates how many pixels of
 space should be placed between rows in the grid. The
-default is the value of DefaultSpacing.ABUTMENT.</dd>
+default is the value of DefaultSpacing.ABUTMENT.</p>
+</dd>
 <dt>column_align</dt>
-<dd>A string which is the name of a constraint variable on
+<dd><p class="first last">A string which is the name of a constraint variable on
 a item. If given, it is used to add constraints on the
 alignment of items in a column. The constraints will
-only be applied to items that do not span columns.</dd>
+only be applied to items that do not span columns.</p>
+</dd>
 <dt>column_spacing</dt>
-<dd>An integer &gt;= 0 which indicates how many pixels of
+<dd><p class="first last">An integer &gt;= 0 which indicates how many pixels of
 space should be placed between columns in the grid.
-The default is the value of DefaultSpacing.ABUTMENT.</dd>
+The default is the value of DefaultSpacing.ABUTMENT.</p>
+</dd>
 <dt>margins</dt>
-<dd>A int, tuple of ints, or Box of ints &gt;= 0 which
+<dd><p class="first last">A int, tuple of ints, or Box of ints &gt;= 0 which
 indicate how many pixels of margin to add around
 the bounds of the grid. The default is the value of
-DefaultSpacing.BOX_MARGIN.</dd>
-</dl>
+DefaultSpacing.BOX_MARGIN.</p>
 </dd>
 </dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -547,11 +604,18 @@ subclassed to be useful.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>first_anchor</strong> (<em>LinearSymbolic</em>) &#8211; A symbolic object that can be used in a constraint expression.</li>
-<li><strong>spacer</strong> (<em>Spacer</em>) &#8211; A spacer instance to put space between the items.</li>
-<li><strong>second_anchor</strong> (<em>LinearSymbolic</em>) &#8211; The second anchor for the constraint expression.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>first_anchor</strong> : LinearSymbolic</p>
+<blockquote>
+<div><p>A symbolic object that can be used in a constraint expression.</p>
+</div></blockquote>
+<p><strong>spacer</strong> : Spacer</p>
+<blockquote>
+<div><p>A spacer instance to put space between the items.</p>
+</div></blockquote>
+<p><strong>second_anchor</strong> : LinearSymbolic</p>
+<blockquote class="last">
+<div><p>The second anchor for the constraint expression.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -604,21 +668,33 @@ given a sequence of items, an orientation, and default spacing.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>items</strong> (<em>sequence</em>) &#8211; A valid sequence of constrainable objects. These inclue instances of Constrainable, LinearSymbolic, Spacer, and int.</li>
-<li><strong>orientation</strong> (<em>string</em>) &#8211; Either &#8216;vertical&#8217; or &#8216;horizontal&#8217;, which represents the orientation in which to abut the items.</li>
-<li><strong>spacing</strong> (<em>int</em>) &#8211; The spacing to use between items if no spacing is explicitly provided by in the sequence of items.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>items</strong> : sequence</p>
+<blockquote>
+<div><p>A valid sequence of constrainable objects. These inclue
+instances of Constrainable, LinearSymbolic, Spacer,
+and int.</p>
+</div></blockquote>
+<p><strong>orientation</strong> : string</p>
+<blockquote>
+<div><p>Either &#8216;vertical&#8217; or &#8216;horizontal&#8217;, which represents the
+orientation in which to abut the items.</p>
+</div></blockquote>
+<p><strong>spacing</strong> : int</p>
+<blockquote>
+<div><p>The spacing to use between items if no spacing is explicitly
+provided by in the sequence of items.</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of AbutmentConstraint instances.</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : list</p>
+<blockquote class="last">
+<div><p>A list of AbutmentConstraint instances.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 <p>The order of abutment is left-to-right for horizontal direction
 and top-to-bottom for vertical direction.</p>
 </dd></dl>
@@ -645,21 +721,34 @@ a default spacing.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>items</strong> (<em>sequence</em>) &#8211; A valid sequence of constrainable objects. These inclue instances of Constrainable, LinearSymbolic, Spacer, and int.</li>
-<li><strong>anchor_name</strong> (<em>string</em>) &#8211; The name of the anchor on the components which should be aligned. Either &#8216;left&#8217;, &#8216;right&#8217;, &#8216;top&#8217;, &#8216;bottom&#8217;, &#8216;v_center&#8217;, or &#8216;h_center&#8217;.</li>
-<li><strong>spacing</strong> (<em>int</em>) &#8211; The spacing to use between items if no spacing is explicitly provided by in the sequence of items.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>items</strong> : sequence</p>
+<blockquote>
+<div><p>A valid sequence of constrainable objects. These inclue
+instances of Constrainable, LinearSymbolic, Spacer,
+and int.</p>
+</div></blockquote>
+<p><strong>anchor_name</strong> : string</p>
+<blockquote>
+<div><p>The name of the anchor on the components which should be
+aligned. Either &#8216;left&#8217;, &#8216;right&#8217;, &#8216;top&#8217;, &#8216;bottom&#8217;, &#8216;v_center&#8217;,
+or &#8216;h_center&#8217;.</p>
+</div></blockquote>
+<p><strong>spacing</strong> : int</p>
+<blockquote>
+<div><p>The spacing to use between items if no spacing is explicitly
+provided by in the sequence of items.</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of AbutmentConstraint instances.</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : list</p>
+<blockquote class="last">
+<div><p>A list of AbutmentConstraint instances.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 <p>For every item in the sequence, if the item is a component, then
 anchor for the given anchor_name on that component will be used.
 If a LinearSymbolic is given, then that symbolic will be used and
@@ -811,8 +900,8 @@ grid.</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 08, 2013.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+      Last updated on Oct 25, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
 </footer>

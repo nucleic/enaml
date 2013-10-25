@@ -14,7 +14,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.application &mdash; Enaml 0.8.1 documentation</title>
+    <title>enaml.application &mdash; Enaml 0.8.3 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.1',
+        VERSION:     '0.8.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.1 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.8.3 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +64,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.3</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -147,7 +147,10 @@
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">count</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
 
-<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Atom</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span>
+    <span class="n">observe</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="ScheduledTask"><a class="viewcode-back" href="../../api_ref/application.html#enaml.application.ScheduledTask">[docs]</a><span class="k">class</span> <span class="nc">ScheduledTask</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
@@ -282,6 +285,14 @@
             <span class="k">return</span> <span class="n">factory</span><span class="p">()</span>
 
 </div></div>
+<span class="k">def</span> <span class="nf">StyleSheet</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; A lazy importer for the Enaml StyleSheet class.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="n">StyleSheet</span>
+    <span class="k">return</span> <span class="n">StyleSheet</span>
+
+
 <div class="viewcode-block" id="Application"><a class="viewcode-back" href="../../api_ref/application.html#enaml.application.Application">[docs]</a><span class="k">class</span> <span class="nc">Application</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The application object which manages the top-level communication</span>
 <span class="sd">    protocol for serving Enaml views.</span>
@@ -291,6 +302,9 @@
     <span class="c">#: be supplied by application subclasses, but can also be supplied</span>
     <span class="c">#: by the developer to supply custom proxy resolution behavior.</span>
     <span class="n">resolver</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyResolver</span><span class="p">)</span>
+
+    <span class="c">#: The style sheet to apply to the entire application.</span>
+    <span class="n">style_sheet</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">)</span>
 
     <span class="c">#: The task heap for application tasks.</span>
     <span class="n">_task_heap</span> <span class="o">=</span> <span class="n">List</span><span class="p">()</span>
@@ -353,6 +367,22 @@
             <span class="k">if</span> <span class="n">heap</span><span class="p">:</span>
                 <span class="n">priority</span><span class="p">,</span> <span class="n">ignored</span><span class="p">,</span> <span class="n">task</span> <span class="o">=</span> <span class="n">heappop</span><span class="p">(</span><span class="n">heap</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">deferred_call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_process_task</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;style_sheet.destroyed&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_clear_destroyed_style_sheet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which clears a destroyed style sheet.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style_sheet</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;style_sheet&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_invalidate_style_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which invalidates the style sheet cache.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;update&#39;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="n">StyleCache</span>
+            <span class="n">StyleCache</span><span class="o">.</span><span class="n">_app_sheet_changed</span><span class="p">()</span>
 
     <span class="c">#--------------------------------------------------------------------------</span>
     <span class="c"># Abstract API</span>
@@ -668,8 +698,8 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 08, 2013.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+      Last updated on Oct 25, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
 </footer>

@@ -1,0 +1,1442 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Style Sheets &mdash; Enaml 0.8.3 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.3 documentation" href="../index.html" />
+    <link rel="up" title="Developer Guides" href="index.html" />
+    <link rel="next" title="Architecture Reference" href="../arch_ref/index.html" />
+    <link rel="prev" title="Developer Guides" href="index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.3</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Style Sheets</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#selectors">Selectors</a></li>
+<li><a class="reference internal" href="#specificity">Specificity</a></li>
+<li><a class="reference internal" href="#cascading">Cascading</a></li>
+<li><a class="reference internal" href="#pseudo-classes">Pseudo-Classes</a></li>
+<li><a class="reference internal" href="#pseudo-elements">Pseudo-Elements</a></li>
+<li><a class="reference internal" href="#dynamism">Dynamism</a></li>
+<li><a class="reference internal" href="#inheritance">Inheritance</a></li>
+<li><a class="reference internal" href="#list-of-fields">List of Fields</a></li>
+<li><a class="reference internal" href="#list-of-field-types">List of Field Types</a></li>
+<li><a class="reference internal" href="#list-of-pseudo-classes">List of Pseudo-Classes</a></li>
+<li><a class="reference internal" href="#list-of-pseudo-elements">List of Pseudo-Elements</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guides</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Style Sheets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#selectors">Selectors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specificity">Specificity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cascading">Cascading</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pseudo-classes">Pseudo-Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pseudo-elements">Pseudo-Elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dynamism">Dynamism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inheritance">Inheritance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-fields">List of Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-field-types">List of Field Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-pseudo-classes">List of Pseudo-Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-pseudo-elements">List of Pseudo-Elements</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="style-sheets">
+<span id="stylesheets"></span><h1>Style Sheets<a class="headerlink" href="#style-sheets" title="Permalink to this headline">¶</a></h1>
+<p>Enaml style sheets are a powerful feature which allow the developer to
+customize the visual appearance of a view independent from the view&#8217;s
+structural definition. The concepts and nomenclature used in Enaml style
+sheets are heavily based on CSS and WPF, but are adapted to the dynamic
+and declarative world of Enaml.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Cascading_Style_Sheets">Cascading Style Sheets</a> is a well known technology for specificing the look
+and feel of documents written in XML markup, and is most commonly used to
+style HTML web pages. The primary design goal of CSS is to separate document
+content from document presentation, resulting in more scalable, flexible, and
+maintainable code.</p>
+<p><a class="reference external" href="http://msdn.microsoft.com/en-us/library/ms745683.aspx">WPF Styling</a> shares the same documents separation goals as CSS, but is
+implemented using the same markup language as the document structure. WPF
+styles also include development features which are not present in CSS
+(such as data-driven style striggers), but which are immensely useful in
+desktop application development.</p>
+<p>Enaml style sheets combine the successful concepts from both CSS and WPF.
+Style sheets:</p>
+<ul class="simple">
+<li>use selectors to match style rules to widgets</li>
+<li>cascade across the object hierarchy of the view</li>
+<li>are written with the same language as the rest of view</li>
+<li>are fully dynamic and data-driven</li>
+</ul>
+<p>There are three classes involved in creating a style sheet:
+<a class="reference internal" href="../api_ref/styling.html#enaml.styling.StyleSheet" title="enaml.styling.StyleSheet"><tt class="xref py py-class docutils literal"><span class="pre">StyleSheet</span></tt></a>,
+<a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a>, and
+<a class="reference internal" href="../api_ref/styling.html#enaml.styling.Setter" title="enaml.styling.Setter"><tt class="xref py py-class docutils literal"><span class="pre">Setter</span></tt></a>. The developer arranges these classes
+into a hiearchy declared on a <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Stylable" title="enaml.styling.Stylable"><tt class="xref py py-class docutils literal"><span class="pre">Stylable</span></tt></a>
+widget in order to apply the styling to that widget hierarchy. The following
+simple example shows how to set the text color of all
+<a class="reference internal" href="../api_ref/widgets/push_button.html#enaml.widgets.push_button.PushButton" title="enaml.widgets.push_button.PushButton"><tt class="xref py py-class docutils literal"><span class="pre">PushButton</span></tt></a> widgets in
+a <a class="reference internal" href="../api_ref/widgets/window.html#enaml.widgets.window.Window" title="enaml.widgets.window.Window"><tt class="xref py py-class docutils literal"><span class="pre">Window</span></tt></a> to blue:</p>
+<div class="code-and-img container">
+<div class="highlight-enaml"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
+<span class="p">)</span>
+
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Style Sheet&#39;</span>
+    <span class="nt">StyleSheet</span><span class="p">:</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;blue&#39;</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;First&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Second&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Third&#39;</span>
+</pre></div>
+</div>
+<img alt="../_images/simple_style.png" class="align-center" src="../_images/simple_style.png" />
+</div>
+<p>The <a class="reference internal" href="../api_ref/styling.html#enaml.styling.StyleSheet" title="enaml.styling.StyleSheet"><tt class="xref py py-class docutils literal"><span class="pre">StyleSheet</span></tt></a> class forms the root
+of the hierarchy for a style sheet. Its sole purpose is to provide an
+aggregation point for the <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> objects
+defined for the style sheet.</p>
+<p>The <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> class serves the role of the selector
+in typical CSS parlance. It also serves as an aggregation point for the style
+<a class="reference internal" href="../api_ref/styling.html#enaml.styling.Setter" title="enaml.styling.Setter"><tt class="xref py py-class docutils literal"><span class="pre">Setter</span></tt></a> objects. The various attributes of the
+style combine to form a rule against which all the widgets for the style sheet
+are tested. If a widget is a match for the rule, then the style setters are
+applied to that widget. The order in which multiple matching styles are applied
+is governed by the rules of <a class="reference internal" href="#selectors"><em>Selectors</em></a>, <a class="reference internal" href="#specificity"><em>Specificity</em></a>, and
+<a class="reference internal" href="#cascading"><em>Cascading</em></a>.</p>
+<p>The <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Setter" title="enaml.styling.Setter"><tt class="xref py py-class docutils literal"><span class="pre">Setter</span></tt></a> class provides the information
+needed to style a single aspect of an object in the form of <tt class="docutils literal"><span class="pre">field</span></tt> and
+<tt class="docutils literal"><span class="pre">value</span></tt> attributes. Both attributes accept strings values and represent the
+field name and value to apply to a widget&#8217;s style. A setter is declared as
+a child of a <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> object and is applied to any
+widget which matches the style rule. Multiple setters may be defined on a
+single style, and they are applied in the order in which they are declared.</p>
+<p>See the <a class="reference internal" href="#list-of-fields"><em>List of Fields</em></a> reference section for the list of supported
+style field names.</p>
+</div>
+<div class="section" id="selectors">
+<span id="id1"></span><h2>Selectors<a class="headerlink" href="#selectors" title="Permalink to this headline">¶</a></h2>
+<p>A style sheet consists of a list of <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a>
+objects, each having a list of <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Setter" title="enaml.styling.Setter"><tt class="xref py py-class docutils literal"><span class="pre">Setter</span></tt></a> objects
+which will be applied to any <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Stylable" title="enaml.styling.Stylable"><tt class="xref py py-class docutils literal"><span class="pre">Stylable</span></tt></a> widgets
+which match the style&#8217;s selector.</p>
+<p>The style selector is made up of three attributes on the
+<a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> object:</p>
+<ul class="simple">
+<li><strong>element</strong> - This is a string which will match the name of the type of the
+stylable object or any of its subtypes. For example, <tt class="docutils literal"><span class="pre">&quot;Field&quot;</span></tt> will match
+all instances of <a class="reference internal" href="../api_ref/widgets/field.html#enaml.widgets.field.Field" title="enaml.widgets.field.Field"><tt class="xref py py-class docutils literal"><span class="pre">Field</span></tt></a> or any of its
+subtypes. An empty string will match all types. Multiple types can be
+specified by separating them with a comma, which will match using logical
+OR semantics.</li>
+<li><strong>style_class</strong> - This is a string which will match the <tt class="docutils literal"><span class="pre">style_class</span></tt>
+attribute on a stylable object. This is very similar to the concept of CSS
+classes. An empty string will match all style classes. Multiple style classes
+can be specified by separating them with a comma, which will match using
+logical OR semantics.</li>
+<li><strong>object_name</strong> - This is a string which match the <tt class="docutils literal"><span class="pre">name</span></tt> attribute on a
+stylable object. This is very similar to the concept of CSS identifiers.
+An empty string will match all object names. Multiple object names can be
+specified by separating them with a comma, which will match using logical
+OR semantics.</li>
+</ul>
+<p>All three selector must be a match for a given widget for the style to be
+considered a match. See the section on <a class="reference internal" href="#specificity"><em>Specificity</em></a> for details on
+how the strength of the match is computed.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The <tt class="docutils literal"><span class="pre">style_class</span></tt> attribute on a
+<a class="reference internal" href="../api_ref/styling.html#enaml.styling.Stylable" title="enaml.styling.Stylable"><tt class="xref py py-class docutils literal"><span class="pre">Stylable</span></tt></a> object can be assigned a
+space-separated string, which indicates that the object belongs to
+more than one style class. Combined with the comma-separated style
+selectors, this provides a very powerful mechanism for targeted
+selection.</p>
+<p class="last">Unlike CSS and WPF, Enaml style sheets do not provide selectors which
+match based on object attribute values. Developers should instead use
+Enaml&#8217;s dynamic operators to update the style class of an object at
+runtime. The styling engine is optimized for this mode of operation.</p>
+</div>
+<p>The following simple example shows each of the selectors in use:</p>
+<div class="code-and-img container">
+<div class="highlight-enaml"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span>
+    <span class="n">CheckBox</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
+<span class="p">)</span>
+
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Style Sheet&#39;</span>
+    <span class="nt">StyleSheet</span><span class="p">:</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;blue-class&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;blue&#39;</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">object_name</span> <span class="o">=</span> <span class="s">&#39;special&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;green&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;font-weight&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;bold&#39;</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;One&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Two&#39;</span>
+        <span class="nt">Field</span><span class="p">:</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;blue-class&#39;</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Three&#39;</span>
+        <span class="nt">CheckBox</span><span class="p">:</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;blue-class&#39;</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Four&#39;</span>
+            <span class="n">checked</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Five&#39;</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;special&#39;</span>
+</pre></div>
+</div>
+<img alt="../_images/selector_style.png" class="align-center" src="../_images/selector_style.png" />
+</div>
+</div>
+<div class="section" id="specificity">
+<span id="id2"></span><h2>Specificity<a class="headerlink" href="#specificity" title="Permalink to this headline">¶</a></h2>
+<p>The nature of style selectors is such that a single style can be matched to
+multiple widgets, and a widget can be matched to multiple styles. This is the
+main feature which makes style sheets so powerful and expressive! However, this
+flexibility presents the possibility for conflicts in a widget&#8217;s style
+specification. What to do if a widget matches multiple styles, all of which
+have a setter which defines a value for the <tt class="docutils literal"><span class="pre">color</span></tt> field? These sorts of
+conflicts are resolved by examining the specificity of a selector match.</p>
+<p>A selector&#8217;s specificity is nothing more than an integer which indicates how
+strongly a given widget is a match for the style. It is computed according to
+the following formula:</p>
+<ol class="arabic simple">
+<li>Start with a specificty of 0.</li>
+<li>Add 1 if the <tt class="docutils literal"><span class="pre">element</span></tt> selector matches the item.</li>
+<li>Add 16 for every <tt class="docutils literal"><span class="pre">style_class</span></tt> which matches the item.</li>
+<li>Add 256 if the <tt class="docutils literal"><span class="pre">object_name</span></tt> selector matches the item.</li>
+<li>The final value is the specificity of the match.</li>
+</ol>
+<p>When the styling engine is computing the style to apply to a widget for a
+given style sheet, it computes the specificity for all matching styles and
+then sorts them according to that specificity. Ties are broken by the order
+in which the styles were declared. The styles are then applied in order from
+least-specific to most-specific.</p>
+<p>The following simple example demonstrates specificity:</p>
+<div class="code-and-img container">
+<div class="highlight-enaml"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Field</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
+<span class="p">)</span>
+
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Style Sheet&#39;</span>
+    <span class="nt">StyleSheet</span><span class="p">:</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;blue&#39;</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;alpha&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;beta&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;green&#39;</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;alpha, beta&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;steelblue&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;font&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;bold 12pt Arial&#39;</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">object_name</span> <span class="o">=</span> <span class="s">&#39;special&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;goldenrod&#39;</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;One&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Two&#39;</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;alpha&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Three&#39;</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;beta&#39;</span>
+        <span class="nt">Field</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Four&#39;</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;alpha beta&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Five&#39;</span>
+            <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;alpha beta&#39;</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;special&#39;</span>
+</pre></div>
+</div>
+<img alt="../_images/specificity_style.png" class="align-center" src="../_images/specificity_style.png" />
+</div>
+</div>
+<div class="section" id="cascading">
+<span id="id3"></span><h2>Cascading<a class="headerlink" href="#cascading" title="Permalink to this headline">¶</a></h2>
+<p>A style sheet can be applied to the global
+<a class="reference internal" href="../api_ref/application.html#enaml.application.Application" title="enaml.application.Application"><tt class="xref py py-class docutils literal"><span class="pre">Application</span></tt></a> and to any
+<a class="reference internal" href="../api_ref/styling.html#enaml.styling.Stylable" title="enaml.styling.Stylable"><tt class="xref py py-class docutils literal"><span class="pre">Stylable</span></tt></a> object. The base
+<a class="reference internal" href="../api_ref/widgets/widget.html#enaml.widgets.widget.Widget" title="enaml.widgets.widget.Widget"><tt class="xref py py-class docutils literal"><span class="pre">Widget</span></tt></a> class inherits the
+<a class="reference internal" href="../api_ref/styling.html#enaml.styling.Stylable" title="enaml.styling.Stylable"><tt class="xref py py-class docutils literal"><span class="pre">Stylable</span></tt></a> class, so all standard Enaml
+widgets support style sheets. A widgets effective style sheet is computed
+by merging the widget&#8217;s style sheet with all ancestor style sheets, and
+finally with the application stylesheet.</p>
+<p>When a conflict arises between style sheets, a widget&#8217;s own style sheet takes
+precedence over any ancestor style sheet or the application style sheet,
+regardless of the specifity of the match in the conflicting sheet. This chain
+of stylesheets is know as the cascade, and provides a very powerful and
+flexible approach to styling. For example, it allows a developer to write an
+application-wide style sheet which covers most cases, and selectively override
+rules for particular widgets on a case-by-case basis.</p>
+<p>The following simple example shows style sheet cascading in action:</p>
+<div class="code-and-img container">
+<div class="highlight-enaml"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.qt.qt_application</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">QtApplication</span>
+<span class="p">)</span>
+
+<span class="k">enamldef</span> <span class="nc">AppSheet</span><span class="p">(</span>StyleSheet<span class="p">):</span>
+    <span class="nt">Style</span><span class="p">:</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
+        <span class="nt">Setter</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;blue&#39;</span>
+
+<span class="k">enamldef</span> <span class="nc">View</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Style Sheet&#39;</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">Container</span><span class="p">:</span>
+            <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="nt">StyleSheet</span><span class="p">:</span>
+                <span class="nt">Style</span><span class="p">:</span>
+                    <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
+                    <span class="nt">Setter</span><span class="p">:</span>
+                        <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+            <span class="nt">PushButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;One&#39;</span>
+            <span class="nt">PushButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Two&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Three&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Four&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Five&#39;</span>
+            <span class="nt">StyleSheet</span><span class="p">:</span>
+                <span class="nt">Style</span><span class="p">:</span>
+                    <span class="nt">Setter</span><span class="p">:</span>
+                        <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;green&#39;</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QtApplication</span><span class="p">()</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">style_sheet</span> <span class="o">=</span> <span class="n">AppSheet</span><span class="p">()</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="n">View</span><span class="p">()</span>
+    <span class="n">view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/cascade_style.png" class="align-center" src="../_images/cascade_style.png" />
+</div>
+</div>
+<div class="section" id="pseudo-classes">
+<h2>Pseudo-Classes<a class="headerlink" href="#pseudo-classes" title="Permalink to this headline">¶</a></h2>
+<p>A pseudo-class augments a style selector to require that an element have a
+special state in order for it to be a match for the style. Usually, this state
+will be the result of some external user interaction and may not be reflected
+in the structure of the view. For example the <tt class="docutils literal"><span class="pre">'hover'</span></tt> pseudo-class will
+cause an element to be a match for the style only when the user hovers over
+the element with the mouse.</p>
+<p>Pseudo-classes are specified by assigning a string to the <tt class="docutils literal"><span class="pre">pseudo_class</span></tt>
+attribute of a <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> object. Multiple
+pseudo-classes can be chained together with a colon, which will match using
+logical AND semantics. A pseudo-class can also be negated with the exclamation
+operator.</p>
+<p>See the <a class="reference internal" href="#list-of-pseudo-classes"><em>List of Pseudo-Classes</em></a> reference section for the list of
+supported pseudo-classes.</p>
+<p>The following simple example demonstrates the use of pseudo-classes:</p>
+<div class="code-and-img container">
+<div class="highlight-enaml"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">CheckBox</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
+<span class="p">)</span>
+
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Style Sheet&#39;</span>
+    <span class="nt">StyleSheet</span><span class="p">:</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;CheckBox&#39;</span>
+            <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;checked&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;indianred&#39;</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;Field&#39;</span>
+            <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;focus&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;green&#39;</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">CheckBox</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;One&#39;</span>
+        <span class="nt">CheckBox</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Two&#39;</span>
+        <span class="nt">Field</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Three&#39;</span>
+</pre></div>
+</div>
+<img alt="../_images/pseudo_class_style.png" class="align-center" src="../_images/pseudo_class_style.png" />
+</div>
+</div>
+<div class="section" id="pseudo-elements">
+<h2>Pseudo-Elements<a class="headerlink" href="#pseudo-elements" title="Permalink to this headline">¶</a></h2>
+<p>A pseudo-element is similar to a pseudo-class, but instead of specifying a
+special state, it is used to specify a subcontrol of a complex control. For
+example, the <tt class="docutils literal"><span class="pre">'title'</span></tt> pseudo-element can be used to style the title text
+of a <a class="reference internal" href="../api_ref/widgets/group_box.html#enaml.widgets.group_box.GroupBox" title="enaml.widgets.group_box.GroupBox"><tt class="xref py py-class docutils literal"><span class="pre">GroupBox</span></tt></a> widget.</p>
+<p>Pseudo-elements are specified by assigning a string to the <tt class="docutils literal"><span class="pre">pseudo_element</span></tt>
+attribute of a <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> object. Only one
+pseudo-element can be specified for a given style.</p>
+<p>See the <a class="reference internal" href="#list-of-pseudo-elements"><em>List of Pseudo-Elements</em></a> reference section for the list of
+supported pseudo-elements.</p>
+<p>The following simple example demonstrates the use of pseudo-elements:</p>
+<div class="code-and-img container">
+<div class="highlight-enaml"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">GroupBox</span><span class="p">,</span> <span class="n">PushButton</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
+<span class="p">)</span>
+
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Style Sheet&#39;</span>
+    <span class="nt">StyleSheet</span><span class="p">:</span>
+        <span class="nt">Style</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;GroupBox&#39;</span>
+            <span class="n">pseudo_element</span> <span class="o">=</span> <span class="s">&#39;title&#39;</span>
+            <span class="nt">Setter</span><span class="p">:</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;indianred&#39;</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">GroupBox</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Group Box&#39;</span>
+            <span class="nt">PushButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;One&#39;</span>
+            <span class="nt">PushButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Two&#39;</span>
+            <span class="nt">PushButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Three&#39;</span>
+</pre></div>
+</div>
+<img alt="../_images/pseudo_element_style.png" class="align-center" src="../_images/pseudo_element_style.png" />
+</div>
+</div>
+<div class="section" id="dynamism">
+<h2>Dynamism<a class="headerlink" href="#dynamism" title="Permalink to this headline">¶</a></h2>
+<p>As the examples in this article have shown, all of the classes which are used
+to define an Enaml style sheet are declarative; just like the standard Enaml
+widget classes. This means that all of Enaml&#8217;s language and framework features,
+such as subscription operators, templates,
+<a class="reference internal" href="../api_ref/core/include.html#enaml.core.include.Include" title="enaml.core.include.Include"><tt class="xref py py-class docutils literal"><span class="pre">Include</span></tt></a>,
+<a class="reference internal" href="../api_ref/core/looper.html#enaml.core.looper.Looper" title="enaml.core.looper.Looper"><tt class="xref py py-class docutils literal"><span class="pre">Looper</span></tt></a>, etc. work with style sheets in the
+same way that they work with widgets. This gives the developer virtually
+unlimited flexibility in defining the styling for an application.</p>
+</div>
+<div class="section" id="inheritance">
+<h2>Inheritance<a class="headerlink" href="#inheritance" title="Permalink to this headline">¶</a></h2>
+<p>In typical CSS, fields like <tt class="docutils literal"><span class="pre">font</span></tt> and <tt class="docutils literal"><span class="pre">color</span></tt>, unless specified, will be
+inherited from a parent element. Other fields can be forcibly inherited with
+the <tt class="docutils literal"><span class="pre">inherit</span></tt> keyword. With Enaml stylesheets, inhertance is not supported in
+any form. Developers should rely on <a class="reference internal" href="#cascading"><em>Cascading</em></a> and <a class="reference internal" href="#specificity"><em>Specificity</em></a> to
+style their applications appropriately.</p>
+</div>
+<div class="section" id="list-of-fields">
+<span id="id4"></span><h2>List of Fields<a class="headerlink" href="#list-of-fields" title="Permalink to this headline">¶</a></h2>
+<p>The following table lists all of the fields supported by Enaml style sheets.
+The value accepted by a field depends on the field&#8217;s type. Unless specified
+in the description, the fields below are supported by all widgets. Fields
+marked with an asterisk have no equivalent in CSS.</p>
+<div id="style-field-name-table">
+    <table class="table">
+        <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Description</th>
+        <tr>
+            <td>background</td>
+            <td><a href="#background">Background</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>background-clip</td>
+            <td><a href="#origin">Origin</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>background-color</td>
+            <td><a href="#brush">Brush</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border</td>
+            <td><a href="#border">Border</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-top</td>
+            <td><a href="#border">Border</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-right</td>
+            <td><a href="#border">Border</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-bottom</td>
+            <td><a href="#border">Border</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-left</td>
+            <td><a href="#border">Border</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-color</td>
+            <td><a href="#box-colors">Box Colors</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-top-color</td>
+            <td><a href="#brush">Brush</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-right-color</td>
+            <td><a href="#brush">Brush</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-bottom-color</td>
+            <td><a href="#brush">Brush</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-left-color</td>
+            <td><a href="#brush">Brush</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-radius</td>
+            <td><a href="#radius">Radius</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-top-left-radius</td>
+            <td><a href="#radius">Radius</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-top-right-radius</td>
+            <td><a href="#radius">Radius</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-bottom-right-radius</td>
+            <td><a href="#radius">Radius</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-bottom-left-radius</td>
+            <td><a href="#radius">Radius</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-style</td>
+            <td><a href="#border-style">Border Style</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-top-style</td>
+            <td><a href="#border-style">Border Style</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-right-style</td>
+            <td><a href="#border-style">Border Style</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-bottom-style</td>
+            <td><a href="#border-style">Border Style</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-left-style</td>
+            <td><a href="#border-style">Border Style</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-width</td>
+            <td><a href="#box-lengths">Box Lengths</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-top-width</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-right-width</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-bottom-width</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>border-left-width</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>bottom</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>color</td>
+            <td><a href="#brush">Brush</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>font</td>
+            <td><a href="#font">Font</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>font-family</td>
+            <td class="ffms">String</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>font-size</td>
+            <td><a href="#font-size">Font Size</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>font-style</td>
+            <td><a href="#font-style">Font Style</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>font-weight</td>
+            <td><a href="#font-weight">Font Weight</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>height</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>icon-size</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>left</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>line-edit-password-character</td>
+            <td><a href="#number">Number</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>margin</td>
+            <td><a href="#box-lengths">Box Lengths</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>margin-top</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>margin-right</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>margin-bottom</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>margin-left</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>max-height</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>max-width</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>min-height</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>min-width</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>padding</td>
+            <td><a href="#box-lengths">Box Lengths</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>padding-top</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>padding-right</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>padding-bottom</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>padding-left</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>position</td>
+            <td class="ffms">relative | absolute</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>right</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>selection-background-color</td>
+            <td><a href="#brush">Brush</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>selection-color</td>
+            <td><a href="#brush">Brush</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>spacing</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>subcontrol-origin</td>
+            <td><a href="#origin">Origin</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>subcontrol-position</td>
+            <td><a href="#alignment">Alignment</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>text-align</td>
+            <td><a href="#alignment">Alignment</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>text-decoration</td>
+            <td class="ffms">none<br>
+                underline<br>
+                overline<br>
+                line-through
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>top</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>width</td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+    </table>
+</div>
+</div>
+<div class="section" id="list-of-field-types">
+<h2>List of Field Types<a class="headerlink" href="#list-of-field-types" title="Permalink to this headline">¶</a></h2>
+<p>The following table describes the syntax and meaning of the style field types.</p>
+<div id="style-field-type-table">
+    <table class="table">
+        <tr>
+            <th>Type</th>
+            <th>Syntax</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Alignment<a id="alignment"></a></td>
+            <td>{ top<br>
+                | bottom<br>
+                | left<br>
+                | right<br>
+                | center }*
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Background<a id="background"></a></td>
+            <td>{ <a href="#brush">Brush</a><br>
+                | <a href="#alignment">Alignment</a>
+                }*
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Border<a id="border"></a></td>
+            <td>{ <a href="#border-style">Border Style</a><br>
+                | <a href="#length">Length</a><br>
+                | <a href="#brush">Brush</a>
+                }*
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Border Style<a id="border-style"></a></td>
+            <td>dashed<br>
+                | dot-dash<br>
+                | dot-dot-dash<br>
+                | dotted<br>
+                | double<br>
+                | groove<br>
+                | inset<br>
+                | outset<br>
+                | ridge<br>
+                | solid<br>
+                | none
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Box Colors<a id="box-colors"></a></td>
+            <td><a href="#brush">Brush</a>{1, 4}</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Box Lengths<a id="box-lengths"></a></td>
+            <td><a href="#length">Length</a>{1, 4}</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Brush<a id="brush"></a></td>
+            <td>
+                <a href="#color">Color</a> |
+                <a href="#gradient">Gradient</a>
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Color<a id="color"></a></td>
+            <td>{ rgb(r, g, b)<br>
+                | rgba(r, g, b, a)<br>
+                | hsv(h, s, v)<br>
+                | hsva(h, s, v, a)<br>
+                | #rrggbb<br>
+                | CSS Color Name }*
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Font<a id="font"></a></td>
+            <td>( <a href="font-style">Font Style</a><br>
+                | <a href="font-weight">Font Weight</a> ){0, 2}<br>
+                <a href="font-size">Font Size</a> String
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Font Size<a id="font-size"></a></td>
+            <td><a href="#length">Length</a></td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Font Style<a id="font-style"></a></td>
+            <td>normal<br>
+                | italic<br>
+                | oblique
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Font Weight<a id="font-weight"></a></td>
+            <td>normal<br>
+                | bold<br>
+                | 100<br>
+                | 200<br>
+                | ...<br>
+                | 900
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Gradient<a id="gradient"></a></td>
+            <td>lineargradient<br>
+                | radialgradient
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Length<a id="length"></a></td>
+            <td><a href="#number">Number</a>( px | pt<br>| em | ex )?</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Number<a id="number"></a></td>
+            <td>integer | real</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Origin<a id="origin"></a></td>
+            <td>margin<br>
+                | border<br>
+                | padding<br>
+                | content
+            </td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>Radius<a id="radius"></a></td>
+            <td><a href="#length">Length</a>{1, 2}</td>
+            <td>To-Do</td>
+        </tr>
+    </table>
+</div>
+</div>
+<div class="section" id="list-of-pseudo-classes">
+<span id="id5"></span><h2>List of Pseudo-Classes<a class="headerlink" href="#list-of-pseudo-classes" title="Permalink to this headline">¶</a></h2>
+<p>The following pseudo-classes are supported in Enaml style sheets.</p>
+<div id="style-pseudo-class-table">
+    <table class="table">
+        <tr>
+            <th>Pseudo-Class</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>active</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>bottom</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>checked</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>closable</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>closed</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>default</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>disabled</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>editable</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>enabled</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>exclusive</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>first</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>flat</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>floatable</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>focus</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>horizontal</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>hover</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>last</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>left</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>maximized</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>middle</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>minimized</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>movable</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>no-frame</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>non-exclusive</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>off</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>on</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>only-one</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>open</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>next-selected</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>pressed</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>previous-selected</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>read-only</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>right</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>selected</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>top</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>unchecked</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>vertical</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>window</td>
+            <td>To-Do</td>
+        </tr>
+    </table>
+</div>
+</div>
+<div class="section" id="list-of-pseudo-elements">
+<span id="id6"></span><h2>List of Pseudo-Elements<a class="headerlink" href="#list-of-pseudo-elements" title="Permalink to this headline">¶</a></h2>
+<p>The following pseudo-elements are supported in Enaml style sheets.</p>
+<div id="style-pseudo-class-table">
+    <table class="table">
+        <tr>
+            <th>Pseudo-Element</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>add-line</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>add-page</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>chunk</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>close-button</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>corner</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>down-arrow</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>down-button</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>drop-down</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>float-button</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>groove</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>indicator</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>handle</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>icon</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>item</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>left-arrow</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>left-corner</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>menu-arrow</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>menu-button</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>menu-indicator</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>right-arrow</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>pane</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>right-corner</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>scroller</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>separator</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>sub-line</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>sub-page</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>tab</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>tab-bar</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>tear</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>tearoff</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>title</td>
+            <td>To-Do</td>
+        </tr>
+            <tr>
+            <td>up-arrow</td>
+            <td>To-Do</td>
+        </tr>
+        <tr>
+            <td>up-button</td>
+            <td>To-Do</td>
+        </tr>
+    </table>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Oct 25, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

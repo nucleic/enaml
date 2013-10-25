@@ -14,7 +14,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.core.object &mdash; Enaml 0.8.1 documentation</title>
+    <title>enaml.core.object &mdash; Enaml 0.8.3 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.1',
+        VERSION:     '0.8.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.1 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.8.3 documentation" href="../../index.html" />
     <link rel="up" title="enaml.core" href="index.html" />
     <link rel="next" title="enaml.core.pattern" href="pattern.html" />
     <link rel="prev" title="enaml.core.looper" href="looper.html" />
@@ -66,7 +66,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.3</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -151,6 +151,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../nodevisitor.html">nodevisitor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../scintilla/index.html">scintilla</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../styling.html">styling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../validator.html">validator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../version.html">version</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../widgets/index.html">widgets</a></li>
@@ -207,7 +208,7 @@ provides methods for navigating, searching, and destroying the tree.</p>
 <dt id="enaml.core.object.Object.name">
 <tt class="descname">name</tt><a class="headerlink" href="#enaml.core.object.Object.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>An optional name to give to this object to assist in finding it
-in the tree (see . the &#8216;find&#8217; method. There is no guarantee of
+in the tree (see . the &#8216;find&#8217; method). There is no guarantee of
 uniqueness for an object <cite>name</cite>. It is left to the developer to
 choose an appropriate name.</p>
 </dd></dl>
@@ -251,10 +252,16 @@ removed from the tree structure.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>parent</strong> (<em>Object or None, optional</em>) &#8211; The Object instance which is the parent of this object, or None if the object has no parent. Defaults to None.</li>
-<li><strong>kwargs</strong> &#8211; Additional keyword arguments to apply as attributes to the object.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>parent</strong> : Object or None, optional</p>
+<blockquote>
+<div><p>The Object instance which is the parent of this object, or
+None if the object has no parent. Defaults to None.</p>
+</div></blockquote>
+<p><strong>**kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Additional keyword arguments to apply as attributes to the
+object.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -282,10 +289,16 @@ has a parent, then it will be properly reparented.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parent</strong> (<em>Object or None</em>) &#8211; The Object instance to use for the parent, or None if this object should be unparented.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>parent</strong> : Object or None</p>
+<blockquote class="last">
+<div><p>The Object instance to use for the parent, or None if this
+object should be unparented.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 <p>It is the responsibility of the caller to initialize and activate
 the object as needed, if it is reparented dynamically at runtime.</p>
 </dd></dl>
@@ -301,14 +314,23 @@ this object, then they will be moved appropriately.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>before</strong> (<em>Object, int or None</em>) &#8211; A child object or int to use as the marker for inserting the new children. The new children will be inserted before this marker. If the Object is None or not a child, or if the int is not a valid index, then the new children will be added to the end of the children.</li>
-<li><strong>insert</strong> (<em>iterable</em>) &#8211; An iterable of Object children to insert into this object.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>before</strong> : Object, int or None</p>
+<blockquote>
+<div><p>A child object or int to use as the marker for inserting
+the new children. The new children will be inserted before
+this marker. If the Object is None or not a child, or if
+the int is not a valid index, then the new children will be
+added to the end of the children.</p>
+</div></blockquote>
+<p><strong>insert</strong> : iterable</p>
+<blockquote class="last">
+<div><p>An iterable of Object children to insert into this object.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 <p>It is the responsibility of the caller to initialize and activate
 the object as needed, if it is reparented dynamically at runtime.</p>
 </dd></dl>
@@ -324,10 +346,14 @@ Sublasses may reimplement this method as required.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>old</strong> (<em>Object or None</em>) &#8211; The old parent of the object.</li>
-<li><strong>new</strong> (<em>Object or None</em>) &#8211; the new parent of the object.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>old</strong> : Object or None</p>
+<blockquote>
+<div><p>The old parent of the object.</p>
+</div></blockquote>
+<p><strong>new</strong> : Object or None</p>
+<blockquote class="last">
+<div><p>the new parent of the object.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -343,7 +369,11 @@ Sublasses may reimplement this method as required.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>child</strong> (<em>Object</em>) &#8211; The child added to this object.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>child</strong> : Object</p>
+<blockquote class="last">
+<div><p>The child added to this object.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -358,7 +388,11 @@ Sublasses may reimplement this method as required.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>child</strong> (<em>Object</em>) &#8211; The child removed from the object.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>child</strong> : Object</p>
+<blockquote class="last">
+<div><p>The child removed from the object.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -372,9 +406,12 @@ Sublasses may reimplement this method as required.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Object</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The top-most object in the hierarchy to which this object belongs.</td>
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : Object</p>
+<blockquote class="last">
+<div><p>The top-most object in the hierarchy to which this object
+belongs.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -388,7 +425,12 @@ Sublasses may reimplement this method as required.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>depth_first</strong> (<em>bool, optional</em>) &#8211; If True, yield the nodes in depth first order. If False, yield the nodes in breadth first order. Defaults to False.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>depth_first</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>If True, yield the nodes in depth first order. If False,
+yield the nodes in breadth first order. Defaults to False.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -402,7 +444,11 @@ Sublasses may reimplement this method as required.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>root</strong> (<em>Object, optional</em>) &#8211; The object at which to stop traversal. Defaults to None.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>root</strong> : Object, optional</p>
+<blockquote class="last">
+<div><p>The object at which to stop traversal. Defaults to None.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -420,16 +466,23 @@ if no object is found with the given name.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<em>string</em>) &#8211; The name of the object for which to search.</li>
-<li><strong>regex</strong> (<em>bool, optional</em>) &#8211; Whether the given name is a regex string which should be matched against the names of children instead of tested for equality. Defaults to False.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote>
+<div><p>The name of the object for which to search.</p>
+</div></blockquote>
+<p><strong>regex</strong> : bool, optional</p>
+<blockquote>
+<div><p>Whether the given name is a regex string which should be
+matched against the names of children instead of tested
+for equality. Defaults to False.</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">Object or None</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The first object found with the given name, or None if no object is found with the given name.</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : Object or None</p>
+<blockquote class="last">
+<div><p>The first object found with the given name, or None if no
+object is found with the given name.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -448,16 +501,23 @@ list.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<em>string</em>) &#8211; The name of the objects for which to search.</li>
-<li><strong>regex</strong> (<em>bool, optional</em>) &#8211; Whether the given name is a regex string which should be matched against the names of objects instead of testing for equality. Defaults to False.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote>
+<div><p>The name of the objects for which to search.</p>
+</div></blockquote>
+<p><strong>regex</strong> : bool, optional</p>
+<blockquote>
+<div><p>Whether the given name is a regex string which should be
+matched against the names of objects instead of testing
+for equality. Defaults to False.</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list of Object</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The list of objects found with the given name, or an empty list if no objects are found with the given name.</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : list of Object</p>
+<blockquote class="last">
+<div><p>The list of objects found with the given name, or an empty
+list if no objects are found with the given name.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -481,8 +541,8 @@ list.</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 08, 2013.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+      Last updated on Oct 25, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
 </footer>

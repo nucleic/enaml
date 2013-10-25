@@ -14,7 +14,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.application &mdash; Enaml 0.8.1 documentation</title>
+    <title>enaml.application &mdash; Enaml 0.8.3 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.8.1',
+        VERSION:     '0.8.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.1 documentation" href="../index.html" />
+    <link rel="top" title="Enaml 0.8.3 documentation" href="../index.html" />
     <link rel="up" title="API Reference" href="index.html" />
     <link rel="next" title="enaml.colors" href="colors.html" />
     <link rel="prev" title="enaml.applib.live_editor_view" href="applib/live_editor_view.html" />
@@ -66,7 +66,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.3</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -143,6 +143,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nodevisitor.html">nodevisitor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scintilla/index.html">scintilla</a></li>
 <li class="toctree-l2"><a class="reference internal" href="stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="styling.html">styling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="validator.html">validator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="version.html">version</a></li>
 <li class="toctree-l2"><a class="reference internal" href="widgets/index.html">widgets</a></li>
@@ -209,15 +210,19 @@ exist, a RuntimeError will be raised.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<em>callable</em>) &#8211; The callable object to execute at some point in the future.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to execute at some point in the future.</p>
+</div></blockquote>
+<p><strong>*args, **kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Any additional positional and keyword arguments to pass to
+the callback.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt><a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs</dt>
-<dd>Any additional positional and keyword arguments to pass to
-the callback.</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -231,9 +236,11 @@ exist, a RuntimeError will be raised.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if called from the main gui thread. False otherwise.</td>
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : bool</p>
+<blockquote class="last">
+<div><p>True if called from the main gui thread. False otherwise.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -251,18 +258,32 @@ exist, a RuntimeError will be raised.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>callback</strong> (<em>callable</em>) &#8211; The callable object to be executed.</li>
-<li><strong>args</strong> (<em>tuple, optional</em>) &#8211; The positional arguments to pass to the callable.</li>
-<li><strong>kwargs</strong> (<em>dict, optional</em>) &#8211; The keyword arguments to pass to the callable.</li>
-<li><strong>priority</strong> (<em>int, optional</em>) &#8211; The queue priority for the callable. Smaller values indicate lower priority, larger values indicate higher priority. The default priority is zero.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to be executed.</p>
+</div></blockquote>
+<p><strong>args</strong> : tuple, optional</p>
+<blockquote>
+<div><p>The positional arguments to pass to the callable.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict, optional</p>
+<blockquote>
+<div><p>The keyword arguments to pass to the callable.</p>
+</div></blockquote>
+<p><strong>priority</strong> : int, optional</p>
+<blockquote>
+<div><p>The queue priority for the callable. Smaller values indicate
+lower priority, larger values indicate higher priority. The
+default priority is zero.</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ScheduledTask</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A task object which can be used to unschedule the task or retrieve the results of the callback after the task has been executed.</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : ScheduledTask</p>
+<blockquote class="last">
+<div><p>A task object which can be used to unschedule the task or
+retrieve the results of the callback after the task has
+been executed.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -281,19 +302,24 @@ exist, a RuntimeError will be raised.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ms</strong> (<em>int</em>) &#8211; The time to delay, in milliseconds, before executing the callable.</li>
-<li><strong>callback</strong> (<em>callable</em>) &#8211; The callable object to execute at some point in the future.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>ms</strong> : int</p>
+<blockquote>
+<div><p>The time to delay, in milliseconds, before executing the
+callable.</p>
+</div></blockquote>
+<p><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to execute at some point in the future.</p>
+</div></blockquote>
+<p><strong>*args, **kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Any additional positional and keyword arguments to pass to
+the callback.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt><a href="#id5"><span class="problematic" id="id6">*</span></a>args, <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs</dt>
-<dd>Any additional positional and keyword arguments to pass to
-the callback.</dd>
-</dl>
 </dd></dl>
 
 <dl class="class">
@@ -310,6 +336,12 @@ be supplied by application subclasses, but can also be supplied
 by the developer to supply custom proxy resolution behavior.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="enaml.application.Application.style_sheet">
+<tt class="descname">style_sheet</tt><a class="headerlink" href="#enaml.application.Application.style_sheet" title="Permalink to this definition">¶</a></dt>
+<dd><p>The style sheet to apply to the entire application.</p>
+</dd></dl>
+
 <dl class="staticmethod">
 <dt id="enaml.application.Application.instance">
 <em class="property">static </em><tt class="descname">instance</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.instance" title="Permalink to this definition">¶</a></dt>
@@ -318,9 +350,12 @@ by the developer to supply custom proxy resolution behavior.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Application or None</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The global application instance, or None if one has not yet been created.</td>
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : Application or None</p>
+<blockquote class="last">
+<div><p>The global application instance, or None if one has not yet
+been created.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -356,15 +391,19 @@ thread.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<em>callable</em>) &#8211; The callable object to execute at some point in the future.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to execute at some point in the future.</p>
+</div></blockquote>
+<p><strong>*args, **kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Any additional positional and keyword arguments to pass to
+the callback.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt><a href="#id9"><span class="problematic" id="id10">*</span></a>args, <a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs</dt>
-<dd>Any additional positional and keyword arguments to pass to
-the callback.</dd>
-</dl>
 </dd></dl>
 
 <dl class="method">
@@ -376,19 +415,24 @@ specified time in the future.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ms</strong> (<em>int</em>) &#8211; The time to delay, in milliseconds, before executing the callable.</li>
-<li><strong>callback</strong> (<em>callable</em>) &#8211; The callable object to execute at some point in the future.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>ms</strong> : int</p>
+<blockquote>
+<div><p>The time to delay, in milliseconds, before executing the
+callable.</p>
+</div></blockquote>
+<p><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to execute at some point in the future.</p>
+</div></blockquote>
+<p><strong>*args, **kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Any additional positional and keyword arguments to pass to
+the callback.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt><a href="#id13"><span class="problematic" id="id14">*</span></a>args, <a href="#id15"><span class="problematic" id="id16">**</span></a>kwargs</dt>
-<dd>Any additional positional and keyword arguments to pass to
-the callback.</dd>
-</dl>
 </dd></dl>
 
 <dl class="method">
@@ -399,9 +443,11 @@ the callback.</dd>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if called from the main gui thread. False otherwise.</td>
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : bool</p>
+<blockquote class="last">
+<div><p>True if called from the main gui thread. False otherwise.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -417,11 +463,19 @@ control is needed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>declaration_class</strong> (<em>type</em>) &#8211; A ToolkitObject subclass for which the proxy implementation class should be resolved.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>declaration_class</strong> : type</p>
+<blockquote>
+<div><p>A ToolkitObject subclass for which the proxy implementation
+class should be resolved.</p>
+</div></blockquote>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">type</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A ProxyToolkitObject subclass for the given class, or None if one could not be resolved.</td>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : type</p>
+<blockquote class="last">
+<div><p>A ProxyToolkitObject subclass for the given class, or None
+if one could not be resolved.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -437,11 +491,18 @@ control is needed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>declaration</strong> (<em>ToolkitObject</em>) &#8211; The object for which a toolkit proxy should be created.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>declaration</strong> : ToolkitObject</p>
+<blockquote>
+<div><p>The object for which a toolkit proxy should be created.</p>
+</div></blockquote>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ProxyToolkitObject or None</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An appropriate toolkit proxy object, or None if one cannot be create for the given declaration object.</td>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : ProxyToolkitObject or None</p>
+<blockquote class="last">
+<div><p>An appropriate toolkit proxy object, or None if one cannot
+be create for the given declaration object.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -456,18 +517,32 @@ control is needed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>callback</strong> (<em>callable</em>) &#8211; The callable object to be executed.</li>
-<li><strong>args</strong> (<em>tuple, optional</em>) &#8211; The positional arguments to pass to the callable.</li>
-<li><strong>kwargs</strong> (<em>dict, optional</em>) &#8211; The keyword arguments to pass to the callable.</li>
-<li><strong>priority</strong> (<em>int, optional</em>) &#8211; The queue priority for the callable. Smaller values indicate lower priority, larger values indicate higher priority. The default priority is zero.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to be executed.</p>
+</div></blockquote>
+<p><strong>args</strong> : tuple, optional</p>
+<blockquote>
+<div><p>The positional arguments to pass to the callable.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict, optional</p>
+<blockquote>
+<div><p>The keyword arguments to pass to the callable.</p>
+</div></blockquote>
+<p><strong>priority</strong> : int, optional</p>
+<blockquote>
+<div><p>The queue priority for the callable. Smaller values indicate
+lower priority, larger values indicate higher priority. The
+default priority is zero.</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ScheduledTask</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A task object which can be used to unschedule the task or retrieve the results of the callback after the task has been executed.</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : ScheduledTask</p>
+<blockquote class="last">
+<div><p>A task object which can be used to unschedule the task or
+retrieve the results of the callback after the task has
+been executed.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -482,9 +557,11 @@ control is needed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if there are pending tasks. False otherwise.</td>
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : bool</p>
+<blockquote class="last">
+<div><p>True if there are pending tasks. False otherwise.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -523,11 +600,18 @@ the ProxyField interface.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; The name of the proxy object to resolve.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote>
+<div><p>The name of the proxy object to resolve.</p>
+</div></blockquote>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">type or None</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A class which implements the proxy interface, or None if no class can be found for the given name.</td>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : type or None</p>
+<blockquote class="last">
+<div><p>A class which implements the proxy interface, or None if
+no class can be found for the given name.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -548,11 +632,18 @@ the ProxyField interface.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>callback</strong> (<em>callable</em>) &#8211; The callable to run when the task is executed.</li>
-<li><strong>args</strong> (<em>tuple</em>) &#8211; The tuple of positional arguments to pass to the callback.</li>
-<li><strong>kwargs</strong> (<em>dict</em>) &#8211; The dict of keyword arguments to pass to the callback.</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable to run when the task is executed.</p>
+</div></blockquote>
+<p><strong>args</strong> : tuple</p>
+<blockquote>
+<div><p>The tuple of positional arguments to pass to the callback.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict</p>
+<blockquote class="last">
+<div><p>The dict of keyword arguments to pass to the callback.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -567,7 +658,13 @@ the ProxyField interface.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<em>callable</em>) &#8211; A callable which accepts a single argument which is the results of the task. It will be invoked immediate after the task is executed, on the main event loop thread.</td>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote class="last">
+<div><p>A callable which accepts a single argument which is the
+results of the task. It will be invoked immediate after
+the task is executed, on the main event loop thread.</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -612,8 +709,8 @@ execution, or raised an exception on execution.</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 08, 2013.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+      Last updated on Oct 25, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
 </footer>

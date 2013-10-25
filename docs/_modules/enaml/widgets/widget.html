@@ -14,7 +14,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.widget &mdash; Enaml 0.8.1 documentation</title>
+    <title>enaml.widgets.widget &mdash; Enaml 0.8.3 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.8.1',
+        VERSION:     '0.8.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.1 documentation" href="../../../index.html" />
+    <link rel="top" title="Enaml 0.8.3 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +64,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.1</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.3</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -149,6 +149,7 @@
 <span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
 <span class="kn">from</span> <span class="nn">enaml.fonts</span> <span class="kn">import</span> <span class="n">FontMember</span>
 <span class="kn">from</span> <span class="nn">enaml.layout.geometry</span> <span class="kn">import</span> <span class="n">Size</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="n">Stylable</span>
 
 <span class="kn">from</span> <span class="nn">.toolkit_object</span> <span class="kn">import</span> <span class="n">ToolkitObject</span><span class="p">,</span> <span class="n">ProxyToolkitObject</span>
 
@@ -196,8 +197,11 @@
     <span class="k">def</span> <span class="nf">ensure_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
+    <span class="k">def</span> <span class="nf">restyle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="Widget"><a class="viewcode-back" href="../../../api_ref/widgets/widget.html#enaml.widgets.widget.Widget">[docs]</a><span class="k">class</span> <span class="nc">Widget</span><span class="p">(</span><span class="n">ToolkitObject</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Widget"><a class="viewcode-back" href="../../../api_ref/widgets/widget.html#enaml.widgets.widget.Widget">[docs]</a><span class="k">class</span> <span class="nc">Widget</span><span class="p">(</span><span class="n">ToolkitObject</span><span class="p">,</span> <span class="n">Stylable</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The base class of visible widgets in Enaml.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -256,8 +260,23 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">Widget</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
 
     <span class="c">#--------------------------------------------------------------------------</span>
-    <span class="c"># Public API</span>
+    <span class="c"># Reimplementations</span>
     <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Widget.restyle"><a class="viewcode-back" href="../../../api_ref/widgets/widget.html#enaml.widgets.widget.Widget.restyle">[docs]</a>    <span class="k">def</span> <span class="nf">restyle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Restyle the toolkit widget.</span>
+
+<span class="sd">        This method is invoked by the Stylable class when the style</span>
+<span class="sd">        dependencies have changed for the widget. This will trigger a</span>
+<span class="sd">        proxy restyle if necessary. This method should not typically be</span>
+<span class="sd">        called directly by user code.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">restyle</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
 <div class="viewcode-block" id="Widget.show"><a class="viewcode-back" href="../../../api_ref/widgets/widget.html#enaml.widgets.widget.Widget.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Ensure the widget is shown.</span>
 
@@ -291,8 +310,8 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 08, 2013.<br/>
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.<br/>
+      Last updated on Oct 25, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
 </footer>
