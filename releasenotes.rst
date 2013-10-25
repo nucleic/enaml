@@ -1,6 +1,14 @@
 Enaml Release Notes
 ===================
 
+0.8.3 - 10/25/2013
+------------------
+- Add support for style sheets. 77e2a0afbd56_
+- Fix a bug with a null widget and the notebook selected tab. 64cfe8789838_
+
+.. _77e2a0afbd56: https://github.com/nucleic/enaml/commit/77e2a0afbd56489fe457c13c0b3e12e0187393ce
+.. _64cfe8789838: https://github.com/nucleic/enaml/commit/64cfe87898382b9a76a0450914d40272b6fa6d02
+
 0.8.2 - 10/11/2013
 ------------------
 - Add a DynamicTemplate declarative object. ede76a778a86_
