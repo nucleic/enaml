@@ -294,12 +294,6 @@ any form. Developers should rely on :ref:`cascading` and :ref:`specificity` to
 style their applications appropriately.
 
 
-Examples
---------
-
-To-Do
-
-
 .. _list_of_fields:
 
 List of Fields
