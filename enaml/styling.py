@@ -315,6 +315,17 @@ class Stylable(Declarative):
         """
         pass
 
+    def parent_changed(self, old, new):
+        """ A reimplemented parent changed event handler.
+
+        This will notifiy the :class:`StyleCache` if the parent of
+        the item has changed.
+
+        """
+        super(Stylable, self).parent_changed(old, new)
+        if self.is_initialized:
+            StyleCache._item_parent_changed(self)
+
     def child_added(self, child):
         """ A reimplemented child added event handler.
 
@@ -580,6 +591,11 @@ class StyleCache(object):
             for item in items:
                 styles.pop(item, None)
             cls._request_restyle(items)
+
+    @classmethod
+    def _item_parent_changed(cls, item):
+        # changing a parent is equivalent to changing style sheets
+        cls._item_style_sheet_changed(item)
 
     @classmethod
     def _item_style_sheet_changed(cls, item):
