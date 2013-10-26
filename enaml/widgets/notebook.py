@@ -37,6 +37,9 @@ class ProxyNotebook(ProxyConstraintsWidget):
     def set_selected_tab(self, name):
         raise NotImplementedError
 
+    def set_size_hint_mode(self, mode):
+        raise NotImplementedError
+
 
 class Notebook(ConstraintsWidget):
     """ A component which displays its children as tabbed pages.
@@ -60,6 +63,12 @@ class Notebook(ConstraintsWidget):
     #: The object name for the selected tab in the notebook.
     selected_tab = d_(Unicode())
 
+    #: The size hint mode for the stack. The default is 'union' and
+    #: means that the size hint of the notebook is the union of all
+    #: the tab size hints. 'current' means the size hint of the
+    #: notebook will be the size hint of the current tab.
+    size_hint_mode = d_(Enum('union', 'current'))
+
     #: A notebook expands freely in height and width by default.
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
@@ -77,7 +86,7 @@ class Notebook(ConstraintsWidget):
     # Observers
     #--------------------------------------------------------------------------
     @observe('tab_style', 'tab_position', 'tabs_closable', 'tabs_movable',
-        'selected_tab')
+        'selected_tab', 'size_hint_mode')
     def _update_proxy(self, change):
         """ Send the state change to the proxy.
 
