@@ -503,3 +503,9 @@ class WxNotebook(WxConstraintsWidget, ProxyNotebook):
             else:
                flags &= ~aui.AUI_NB_TAB_MOVE
             widget.SetAGWWindowStyleFlag(flags)
+
+    def set_size_hint_mode(self, mode):
+        """ This is not supported on Wx.
+
+        """
+        pass
