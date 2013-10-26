@@ -188,29 +188,8 @@ that the structure of the UI is reflected directly in the structure of the
 code. This makes the code easier to read, write, and maintain; which in turn
 slashes development time and leads to more robust applications.
 
-.. code-block:: enaml
-
-    enamldef Main(MainWindow):
-        title = 'Window'
-        MenuBar:
-            Menu:
-                title = 'Item 1'
-            Menu:
-                title = 'Item 2'
-            Menu:
-                title = 'Item 3'
-        Container:
-            Form:
-                Label:
-                    text = 'Label 1'
-                Field:
-                    pass
-                Label:
-                    text = 'Label 2'
-                Field:
-                    pass
-            PushButton:
-                text = 'Button'
+.. literalinclude:: code/win_hierarchy.enaml
+    :language: enaml
 
 
 Enaml Advantages

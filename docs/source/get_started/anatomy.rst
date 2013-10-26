@@ -27,20 +27,9 @@ and visualizing user interfaces. The simplest way to become familiar with the
 syntax is to look at a code sample and break it down piece by piece. The
 snippet below is the code that will be used for the example in this article.
 
-.. code-block:: enaml
-
-    enamldef PersonView(Window):
-        attr person
-        title = 'Person View'
-        Form:
-            Label:
-                text = 'First Name'
-            Field:
-                text := person.first_name
-            Label:
-                text = 'Last Name'
-            Field:
-                text = person.last_name
+.. literalinclude:: code/person_view.enaml
+    :language: enaml
+    :lines: 4-
 
 Before going any further, take a glance over the code and see if you can
 visualize how the UI will look and behave, despite the fact that you have no
@@ -125,24 +114,9 @@ The definition of the view for this example was provided above. The only thing
 it needs to become a fully functional ``.enaml`` file is the addition of the
 imports for the builtin elements:
 
-.. code-block:: enaml
+.. literalinclude:: code/person_view.enaml
+    :language: enaml
     :emphasize-lines: 2
-
-    # person_view.enaml
-    from enaml.widgets.api import Window, Form, Label, Field
-
-    enamldef PersonView(Window):
-        attr person
-        title = 'Person View'
-        Form:
-            Label:
-                text = 'First Name'
-            Field:
-                text := person.first_name
-            Label:
-                text = 'Last Name'
-            Field:
-                text = person.last_name
 
 
 Model Files
@@ -157,14 +131,8 @@ example, and should be fairly self-explanatory.
 
 .. _Atom: https://github.com/nucleic/atom
 
-.. code-block:: python
-
-    # person_model.py
-    from atom.api import Atom, Unicode
-
-    class Person(Atom):
-        first_name = Unicode()
-        last_name = Unicode()
+.. literalinclude:: code/person_model.py
+    :language: python
 
 
 Startup File
@@ -180,27 +148,8 @@ must do three things:
 
 For the current example, the following startup file is used:
 
-.. code-block:: python
-
-    # main.py
-    import enaml
-    from enaml.qt.qt_application import QtApplication
-
-    from person_model import Person
-
-
-    if __name__ == '__main__':
-        with enaml.imports():
-            from person_view import PersonView
-
-        john = Person(first_name='John', last_name='Doe')
-
-        app = QtApplication()
-
-        view = PersonView(person=john)
-        view.show()
-
-        app.start()
+.. literalinclude:: code/main.py
+    :language: python
 
 In the startup file, there are a couple of things to note:
 
