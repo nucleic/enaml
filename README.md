@@ -15,3 +15,5 @@ A few highlights of the framework:
 * A well documented and easy to follow code base
 
 See [the docs](http://nucleic.github.io/enaml/docs) for more information.
+
+[Ask questions](http://groups.google.com/d/forum/enaml) on the Q&A forum.
