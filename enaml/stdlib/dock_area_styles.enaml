@@ -1,0 +1,347 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" A collection of standard style templates for the DockArea widget.
+
+"""
+from enaml.styling import StyleSheet, Style, Setter
+
+
+template VS2010Style():
+
+    # Primary Area
+    Style:
+        element = 'DockArea'
+        Setter:
+            field = 'padding'
+            value = '4px'
+        Setter:
+            field = 'spacing'
+            value = '5px'
+        Setter:
+            field = 'background'
+            value = 'rgb(49, 67, 98)'
+        Setter:
+            field = 'border'
+            value = '1px solid rgb(40, 60, 90)'
+
+    # Splitter Handle
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'splitter-handle'
+        Setter:
+            field = 'background'
+            value = 'rgba(0, 0, 0, 0)'
+
+    # Rubber Band
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'rubber-band'
+        Setter:
+            field = 'background'
+            value = 'rgba(69, 147, 209, 130)'
+        Setter:
+            field = 'border'
+            value = '2px solid rgb(69, 147, 209)'
+
+    # Dock Window
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window'
+        Setter:
+            field = 'background'
+            value = 'rgb(53, 73, 106)'
+        Setter:
+            field = 'border'
+            value = '1px solid rgb(40, 60, 90)'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-button'
+        Setter:
+            field = 'color'
+            value = 'rgb(250, 251, 254)'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-button'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'background'
+            value = '#3665B3'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-button'
+        pseudo_class = 'pressed'
+        Setter:
+            field = 'background'
+            value = '#3D6099'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        Setter:
+            field = 'background'
+            value = '#C75050'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'background'
+            value = '#E04343'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        pseudo_class = 'pressed'
+        Setter:
+            field = 'background'
+            value = '#993D3D'
+
+    # Dock Container
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-container'
+        Setter:
+            field = 'background'
+            value = 'rgb(53, 73, 106)'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-container'
+        pseudo_class = 'floating'
+        Setter:
+            field = 'border'
+            value = '1px solid rgb(40, 60, 90)'
+
+    # Dock Item
+    Style:
+        element = 'DockItem'
+        Setter:
+            field = 'background'
+            value = 'rgb(240, 240, 240)'
+    Style:
+        element = 'DockItem'
+        pseudo_element = 'title-bar'
+        Setter:
+            field = 'background'
+            value = 'rgb(77, 96, 130)'
+    Style:
+        element = 'DockItem'
+        pseudo_element = 'title-bar-label'
+        Setter:
+            field = 'color'
+            value = 'rgb(250, 251, 254)'
+        Setter:
+            field = 'font'
+            value = '9pt "Segoe UI"'
+    Style:
+        element = 'DockItem'
+        pseudo_element = 'title-bar-button'
+        Setter:
+            field = 'color'
+            value = 'rgb(250, 251, 254)'
+    Style:
+        element = 'DockItem'
+        pseudo_element = 'title-bar-button'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'border'
+            value = '1px solid rgb(229, 195, 101)'
+        Setter:
+            field = 'background'
+            value = 'rgb(250, 251, 254)'
+        Setter:
+            field = 'color'
+            value = 'black'
+    Style:
+        element = 'DockItem'
+        pseudo_element = 'title-bar-button'
+        pseudo_class = 'pressed'
+        Setter:
+            field = 'background'
+            value = 'rgb(255, 229, 128)'
+
+    # Tab Bar
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar'
+        Setter:
+            field = 'font'
+            value = '9pt "Segoe UI"'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        Setter:
+            field = 'background'
+            value = 'rgba(255, 255, 255, 15)'
+        Setter:
+            field = 'color'
+            value = 'rgb(250, 251, 254)'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'background'
+            value = 'rgba(255, 255, 255, 70)'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        pseudo_class = 'selected'
+        Setter:
+            field = 'background'
+            value = 'rgb(240, 240, 240)'
+        Setter:
+            field = 'color'
+            value = 'black'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        pseudo_class = 'top, bottom'
+        Setter:
+            field = 'margin-right'
+            value = '1px'
+        Setter:
+            field = 'padding-left'
+            value = '5px'
+        Setter:
+            field = 'padding-right'
+            value = '5px'
+        Setter:
+            field = 'height'
+            value = '19px'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        pseudo_class = 'left, right'
+        Setter:
+            field = 'margin-bottom'
+            value = '1px'
+        Setter:
+            field = 'padding-top'
+            value = '5px'
+        Setter:
+            field = 'padding-bottom'
+            value = '5px'
+        Setter:
+            field = 'width'
+            value = '20px'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-close-button'
+        Setter:
+            field = 'color'
+            value = 'rgb(250, 251, 254)'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-close-button'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'border'
+            value = '1px solid rgb(229, 195, 101)'
+        Setter:
+            field = 'background'
+            value = 'rgb(250, 251, 254)'
+        Setter:
+            field = 'color'
+            value = 'black'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-close-button'
+        pseudo_class = 'pressed'
+        Setter:
+            field = 'background'
+            value = 'rgb(255, 229, 128)'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-close-button'
+        pseudo_class = 'selected'
+        Setter:
+            field = 'color'
+            value = 'black'
+
+    # Dock Bar
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar'
+        Setter:
+            field = 'spacing'
+            value = '3px'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-button'
+        Setter:
+            field = 'padding'
+            value = '1px 10px 2px 10px'
+        Setter:
+            field = 'border'
+            value = '1px solid rgba(0, 0, 0, 0)'
+        Setter:
+            field = 'background'
+            value = 'rgb(77, 96, 130)'
+        Setter:
+            field = 'color'
+            value = 'rgb(250, 251, 254)'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-button'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'border'
+            value = '1px solid rgb(229, 195, 101)'
+        Setter:
+            field = 'background'
+            value = 'rgb(250, 251, 254)'
+        Setter:
+            field = 'color'
+            value = 'black'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-button'
+        pseudo_class = 'checked'
+        Setter:
+            field = 'border'
+            value = '1px solid rgb(229, 195, 101)'
+        Setter:
+            field = 'background'
+            value = 'rgb(255, 229, 128)'
+        Setter:
+            field = 'color'
+            value = 'black'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'top'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:0, x2:0, y2:1,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'right'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:1, y1:0, x2:0, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'bottom'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:1, x2:0, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'left'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:0, x2:1, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
