@@ -1,6 +1,12 @@
 Enaml Release Notes
 ===================
 
+0.8.4 - 10/28/2013
+------------------
+- Add a size hint mode switch to Notebook and Stack. 330c7a337c32d_
+
+- _330c7a337c32d: https://github.com/nucleic/enaml/commit/330c7a337c32d1b15a8d8d50acfc4ea208fd5330
+
 0.8.3 - 10/25/2013
 ------------------
 - Add support for style sheets. 77e2a0afbd56_
