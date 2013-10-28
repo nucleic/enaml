@@ -152,20 +152,20 @@ def _basic_pc(root, pc):
     return root
 
 
-def _base_area(pc):
+def _base_area(name, pc):
     return _basic_pc(u'QDockArea', pc)
 
 
-def _dock_bar(pc):
+def _dock_bar(name, pc):
     return _basic_pc(u'QDockBar', pc)
 
 
-def _dock_bar_button(pc):
+def _dock_bar_button(name, pc):
     return _basic_pc(u'QDockBarButton', pc)
 
 
 _position_map = {'top': '0', 'right': '1', 'bottom': '2', 'left': '3'}
-def _dock_bar_handle(pc):
+def _dock_bar_handle(name, pc):
     rest = []
     position = None
     for part in pc.split(u':'):
@@ -181,48 +181,68 @@ def _dock_bar_handle(pc):
     return _basic_pc(root, u':'.join(rest))
 
 
-def _dock_window(pc):
+def _dock_container(name, pc):
+    rest = []
+    floating = False
+    for part in pc.split(u':'):
+        part = part.strip()
+        if part == 'floating':
+            floating = True
+        else:
+            rest.append(part)
+    if floating:
+        root = u'QDockContainer[floating="true"]'
+    else:
+        root = u'QDockContainer'
+    return _basic_pc(root, u':'.join(rest))
+
+
+def _dock_window(name, pc):
     return _basic_pc(u'QDockWindow', pc)
 
 
-def _dock_window_button(pc):
+def _dock_window_button(name, pc):
     return _basic_pc(u'QDockWindowButtons QBitmapButton', pc)
 
 
-def _dock_window_close_button(pc):
+def _dock_window_close_button(name, pc):
     return _basic_pc(u'QBitmapButton#dockwindow-close-button', pc)
 
 
-def _dock_window_link_button(pc):
+def _dock_window_link_button(name, pc):
     return _basic_pc(u'QBitmapButton#dockwindow-link-button', pc)
 
 
-def _dock_window_maximize_button(pc):
+def _dock_window_maximize_button(name, pc):
     return _basic_pc(u'QBitmapButton#dockwindow-maximize-button', pc)
 
 
-def _dock_window_restore_button(pc):
+def _dock_window_restore_button(name, pc):
     return _basic_pc(u'QBitmapButton#dockwindow-restore-button', pc)
 
 
-def _rubber_band(pc):
+def _rubber_band(name, pc):
     return _basic_pc(u'QDockRubberBand', pc)
 
 
-def _splitter_handle(pc):
+def _splitter_handle(name, pc):
     return _basic_pc(u'QDockSplitter::handle', pc)
 
 
-def _tab_bar(pc):
+def _tab_bar(name, pc):
     return _basic_pc(u'QDockTabBar', pc)
 
 
-def _tab_bar_tab(pc):
+def _tab_bar_tab(name, pc):
     return _basic_pc(u'QDockTabBar::tab', pc)
 
 
-def _tab_bar_close_button(pc):
+def _tab_bar_close_button(name, pc):
     return _basic_pc(u'QBitmapButton#docktab-close-button', pc)
+
+
+def _dock_item(name, pc):
+    return _basic_pc(u'QDockItem#%s' % name, pc)
 
 
 _DOCK_AREA_PSEUDO_ELEMENTS = {
@@ -230,6 +250,7 @@ _DOCK_AREA_PSEUDO_ELEMENTS = {
     u'dock-bar': _dock_bar,
     u'dock-bar-button': _dock_bar_button,
     u'dock-bar-handle': _dock_bar_handle,
+    u'dock-container': _dock_container,
     u'dock-window': _dock_window,
     u'dock-window-button': _dock_window_button,
     u'dock-window-close-button': _dock_window_close_button,
@@ -244,10 +265,15 @@ _DOCK_AREA_PSEUDO_ELEMENTS = {
 }
 
 
-def translate_dock_area_style(name, style):
+_DOCK_ITEM_PSEUDO_ELEMENTS = {
+    u'': _dock_item,
+}
+
+
+def _dock_style_selector(name, style, elements):
     handlers = []
     for pe in style.pseudo_element.split(u','):
-        handler = _DOCK_AREA_PSEUDO_ELEMENTS.get(pe.strip())
+        handler = elements.get(pe.strip())
         if handler:
             handlers.append(handler)
     if not handlers:
@@ -256,8 +282,21 @@ def translate_dock_area_style(name, style):
     for pc in style.pseudo_class.split(u','):
         pc = pc.strip()
         for handler in handlers:
-            parts.append(handler(pc))
-    selector = u','.join(parts)
-    body = u'{%s}' % _translate_style_body(style)
-    extra = u'QDockTabWidget::pane{}'  # workaround win-7 sizing bug
-    return u'%s%s%s' % (extra, selector, body)
+            parts.append(handler(name, pc))
+    return u','.join(parts)
+
+
+def translate_dock_area_style(name, style):
+    selector = _dock_style_selector(name, style, _DOCK_AREA_PSEUDO_ELEMENTS)
+    if not selector:
+        return
+    body = u'{\n%s\n}' % _translate_style_body(style)
+    return u'%s %s' % (selector, body)
+
+
+def translate_dock_item_style(name, style):
+    selector = _dock_style_selector(name, style, _DOCK_ITEM_PSEUDO_ELEMENTS)
+    if not selector:
+        return
+    body = u'{\n%s\n}' % _translate_style_body(style)
+    return u'%s %s' % (selector, body)
