@@ -175,7 +175,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
     def refresh_style_sheet(self):
         """ A reimplemented styling method.
 
-        The dock area usese custom stylesheet processing.
+        The dock area uses custom stylesheet processing.
 
         """
         # workaround win-7 sizing bug
