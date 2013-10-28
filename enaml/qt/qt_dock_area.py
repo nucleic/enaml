@@ -9,6 +9,7 @@ import os
 
 from atom.api import Typed
 
+from enaml.styling import StyleCache
 from enaml.widgets.dock_area import ProxyDockArea
 from enaml.widgets.dock_events import DockItemEvent
 
@@ -21,10 +22,10 @@ from .docking.event_types import (
     DockItemShown, DockItemHidden, DockItemClosed, DockTabSelected
 )
 from .docking.q_dock_area import QDockArea
-from .docking.style_sheets import get_style_sheet
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_dock_item import QtDockItem
+from .styleutil import translate_dock_area_style
 
 
 TAB_POSITIONS = {
@@ -172,8 +173,20 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
     # Overrides
     #--------------------------------------------------------------------------
     def refresh_style_sheet(self):
-        # Temporarily disable Enaml stylesheet styling
-        pass
+        """ A reimplemented styling method.
+
+        This dock area undergoes custom stylesheet processing to handle
+        the dock area pseudo-elements.
+
+        """
+        parts = []
+        name = self.widget.objectName()
+        for style in StyleCache.styles(self.declaration):
+            t = translate_dock_area_style(name, style)
+            if t:
+                parts.append(t)
+        stylesheet = u'\n'.join(parts)
+        self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -229,7 +242,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """ Set the style for the underlying widget.
 
         """
-        self.widget.setStyleSheet(get_style_sheet(style))
+        #self.widget.setStyleSheet(get_style_sheet(style))
 
     def set_dock_events_enabled(self, enabled):
         """ Set whether or not dock events are enabled for the area.

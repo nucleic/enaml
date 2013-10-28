@@ -17,7 +17,7 @@ from .QtGui import QFont, QWidget, QWidgetItem, QApplication
 
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
-from .styleutil import translate_setter
+from .styleutil import translate_style
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):
@@ -84,20 +84,11 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         parts = []
+        name = self.widget.objectName()
         for style in StyleCache.styles(self.declaration):
-            translated = []
-            for setter in style.setters():
-                tks = StyleCache.toolkit_setter(setter, translate_setter)
-                if tks is not None:
-                    translated.append(tks)
-            t = u'#%s'
-            if style.pseudo_element:
-                t += u'::%s' % style.pseudo_element
-            if style.pseudo_class:
-                t += u':%s' % style.pseudo_class
-            t += u'{%s}'
-            p = t % (self.widget.objectName(), u''.join(translated))
-            parts.append(p)
+            t = translate_style(name, style)
+            if t:
+                parts.append(t)
         stylesheet = u''.join(parts)
         self.widget.setStyleSheet(stylesheet)
 
