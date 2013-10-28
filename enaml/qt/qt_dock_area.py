@@ -179,13 +179,14 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         the dock area pseudo-elements.
 
         """
-        parts = []
+        # workaround win-7 sizing bug
+        parts = [u'QDockTabWidget::pane {}']
         name = self.widget.objectName()
         for style in StyleCache.styles(self.declaration):
             t = translate_dock_area_style(name, style)
             if t:
                 parts.append(t)
-        stylesheet = u'\n'.join(parts)
+        stylesheet = u'\n\n'.join(parts)
         self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
