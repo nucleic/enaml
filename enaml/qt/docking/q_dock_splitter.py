@@ -5,20 +5,22 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.qt.QtCore import Qt
 from enaml.qt.QtGui import QSplitter, QSplitterHandle
 
 from .q_dock_area import QDockArea
 
 
 class QDockSplitterHandle(QSplitterHandle):
-    """ A sentinel subclass for dock splitter handles.
+    """ A subclass for dock splitter handles.
 
-    This subclass allows selecting the splitter handle in a stylesheet
-    and otherwise distinguishing dock splitter handles from standard
-    QSplitterHandle instances used elsewhere in the application.
+    This subclass sets the hover flag on the splitter handle so that
+    the hover rules in a style sheet work correctly.
 
     """
-    pass
+    def __init__(self, orientation, parent):
+        super(QSplitterHandle, self).__init__(orientation, parent)
+        self.setAttribute(Qt.WA_Hover)
 
 
 class QDockSplitter(QSplitter):
