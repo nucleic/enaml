@@ -152,7 +152,7 @@ def _basic_pc(root, pc):
     return root
 
 
-def _base_area(name, pc):
+def _base_dock_area(name, pc):
     return _basic_pc(u'QDockArea', pc)
 
 
@@ -169,7 +169,6 @@ def _dock_bar_handle(name, pc):
     rest = []
     position = None
     for part in pc.split(u':'):
-        part = part.strip()
         if part in _position_map:
             position = _position_map[part]
         else:
@@ -185,7 +184,6 @@ def _dock_container(name, pc):
     rest = []
     floating = False
     for part in pc.split(u':'):
-        part = part.strip()
         if part == 'floating':
             floating = True
         else:
@@ -241,12 +239,44 @@ def _tab_bar_close_button(name, pc):
     return _basic_pc(u'QBitmapButton#docktab-close-button', pc)
 
 
-def _dock_item(name, pc):
-    return _basic_pc(u'QDockItem#%s' % name, pc)
+def _base_dock_item(name, pc):
+    return _basic_pc(u'QDockItem', pc)
+
+
+def _title_bar(name, pc):
+    return _basic_pc(u'QDockTitleBar', pc)
+
+
+def _title_bar_label(name, pc):
+    return _basic_pc(u'QDockTitleBar > QTextLabel', pc)
+
+
+def _title_bar_button(name, pc):
+    return _basic_pc(u'QDockTitleBar > QBitmapButton', pc)
+
+
+def _title_bar_close_button(name, pc):
+    return _basic_pc(u'QBitmapButton#docktitlebar-close-button', pc)
+
+
+def _title_bar_link_button(name, pc):
+    return _basic_pc(u'QBitmapButton#docktitlebar-link-button', pc)
+
+
+def _title_bar_maximize_button(name, pc):
+    return _basic_pc(u'QBitmapButton#docktitlebar-maximize-button', pc)
+
+
+def _title_bar_pin_button(name, pc):
+    return _basic_pc(u'QBitmapButton#docktitlebar-pin-button', pc)
+
+
+def _title_bar_restore_button(name, pc):
+    return _basic_pc(u'QBitmapButton#docktitlebar-restore-button', pc)
 
 
 _DOCK_AREA_PSEUDO_ELEMENTS = {
-    u'': _base_area,
+    u'': _base_dock_area,
     u'dock-bar': _dock_bar,
     u'dock-bar-button': _dock_bar_button,
     u'dock-bar-handle': _dock_bar_handle,
@@ -266,7 +296,15 @@ _DOCK_AREA_PSEUDO_ELEMENTS = {
 
 
 _DOCK_ITEM_PSEUDO_ELEMENTS = {
-    u'': _dock_item,
+    u'': _base_dock_item,
+    u'title-bar': _title_bar,
+    u'title-bar-label': _title_bar_label,
+    u'title-bar-button': _title_bar_button,
+    u'title-bar-close-button': _title_bar_close_button,
+    u'title-bar-link-button': _title_bar_link_button,
+    u'title-bar-maximize-button': _title_bar_maximize_button,
+    u'title-bar-pin-button': _title_bar_pin_button,
+    u'title-bar-restore-button': _title_bar_restore_button,
 }
 
 
