@@ -112,7 +112,7 @@ def _translate_setter(setter):
         if value:
             if field in _MAY_HAVE_GRADIENT:
                 value = _translate_gradient(value)
-            value = u'%s:%s;' % (field, value)
+            value = u'    %s: %s;' % (field, value)
         return value
 
 
@@ -122,7 +122,7 @@ def _translate_style_body(style):
         tks = StyleCache.toolkit_setter(setter, _translate_setter)
         if tks is not None:
             translated.append(tks)
-    return u''.join(translated)
+    return u'\n'.join(translated)
 
 
 def translate_style(name, style):
@@ -139,8 +139,8 @@ def translate_style(name, style):
             for this in these:
                 parts.append(this + u':%s' % pc)
     selector = u','.join(parts)
-    body = u'{%s}' % _translate_style_body(style)
-    return selector + body
+    body = u'{\n%s\n}' % _translate_style_body(style)
+    return u'%s %s' % (selector, body)
 
 
 #------------------------------------------------------------------------------
