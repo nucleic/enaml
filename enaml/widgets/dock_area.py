@@ -6,7 +6,6 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
-import os
 
 from atom.api import (
     Bool, Coerced, Enum, Typed, ForwardTyped, Unicode, Event, observe,
@@ -84,25 +83,19 @@ class DockArea(ConstraintsWidget):
     """ A component which aranges dock item children.
 
     """
-    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+    #: The layout of dock items for the area. This attribute is *not*
+    #: kept in sync with the layout state of the widget at runtime. The
+    #: 'save_layout' method should be called to retrieve the current
+    #: layout state.
+    layout = d_(Coerced(DockLayout, ()))
 
-        layout = d_(Coerced(docklayout, (None,), coercer=coerce_layout))
+    def _post_validate_layout(self, old, new):
+        """ Post validate the layout using the DockLayoutValidator.
 
-    else:
-
-        #: The layout of dock items for the area. This attribute is *not*
-        #: kept in sync with the layout state of the widget at runtime. The
-        #: 'save_layout' method should be called to retrieve the current
-        #: layout state.
-        layout = d_(Coerced(DockLayout, ()))
-
-        def _post_validate_layout(self, old, new):
-            """ Post validate the layout using the DockLayoutValidator.
-
-            """
-            available = (i.name for i in self.dock_items())
-            DockLayoutValidator(available)(new)
-            return new
+        """
+        available = (i.name for i in self.dock_items())
+        DockLayoutValidator(available)(new)
+        return new
 
     #: The default tab position for newly created dock tabs.
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
@@ -159,12 +152,9 @@ class DockArea(ConstraintsWidget):
             The docklayout to apply to the dock area.
 
         """
-        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-            assert isinstance(layout, docklayout), 'layout must be a docklayout'
-        else:
-            assert isinstance(layout, DockLayout), 'layout must be a DockLayout'
-            available = (i.name for i in self.dock_items())
-            DockLayoutValidator(available)(layout)
+        assert isinstance(layout, DockLayout), 'layout must be a DockLayout'
+        available = (i.name for i in self.dock_items())
+        DockLayoutValidator(available)(layout)
         if self.proxy_is_active:
             return self.proxy.apply_layout(layout)
 
@@ -185,49 +175,6 @@ class DockArea(ConstraintsWidget):
             assert isinstance(op, DockLayoutOp)
         if self.proxy_is_active:
             self.proxy.update_layout(ops)
-
-    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-
-        def apply_layout_op(self, op, direction, *item_names):
-            """ This method is deprecated.
-
-            """
-            assert op in ('split_item', 'tabify_item', 'split_area')
-            assert direction in ('left', 'right', 'top', 'bottom')
-            if not self.proxy_is_active:
-                return
-
-            from enaml.layout.dock_layout import (
-                InsertItem, InsertBorderItem, InsertTab
-            )
-
-            ops = []
-            item_names = list(item_names)
-            if op == 'split_item':
-                target = item_names.pop(0)
-                for name in item_names:
-                    l_op = InsertItem(
-                        target=target, item=name, position=direction
-                    )
-                    ops.append(l_op)
-            elif op == 'split_area':
-                for name in item_names:
-                    l_op = InsertBorderItem(item=name, position=direction)
-                    ops.append(l_op)
-            else:
-                target = item_names.pop(0)
-                for name in item_names:
-                    l_op = InsertTab(
-                        target=target, item=name, tab_position=direction
-                    )
-                    ops.append(l_op)
-            self.proxy.update_layout(ops)
-
-        def split(self, direction, *item_names):
-            """ This method is deprecated.
-
-            """
-            self.apply_layout_op('split_area', direction, *item_names)
 
     @contextmanager
     def suppress_dock_events(self):
