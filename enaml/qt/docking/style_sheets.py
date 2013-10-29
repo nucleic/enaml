@@ -255,7 +255,6 @@ register_style_sheet(u'grey-wind', u"""
     }
 
     QDockWindow {
-        background: rgb(139, 131, 129);
         background: rgb(149, 141, 139);
         border: 1px solid rgb(129, 121, 119);
     }
