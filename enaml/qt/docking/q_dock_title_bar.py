@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
-
 from enaml.qt.QtCore import Qt, QSize, QPoint, QMargins, Signal
 from enaml.qt.QtGui import QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
 
@@ -364,9 +362,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
         restore_button.clicked.connect(self.restoreButtonClicked)
         close_button.clicked.connect(self.closeButtonClicked)
         link_button.toggled.connect(self.linkButtonToggled)
-
-        if not os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-            pin_button.toggled.connect(self.pinButtonToggled)
+        pin_button.toggled.connect(self.pinButtonToggled)
 
     #--------------------------------------------------------------------------
     # Event Handlers
