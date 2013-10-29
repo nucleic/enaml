@@ -153,7 +153,18 @@ def _basic_pc(root, pc):
 
 
 def _base_dock_area(name, pc):
-    return _basic_pc(u'QDockArea', pc)
+    rest = []
+    floating = False
+    for part in pc.split(u':'):
+        if part == 'floating':
+            floating = True
+        else:
+            rest.append(part)
+    if floating:
+        root = u'QDockWindow > QDockArea'
+    else:
+        root = u'QDockArea'
+    return _basic_pc(root, u':'.join(rest))
 
 
 def _dock_bar(name, pc):
