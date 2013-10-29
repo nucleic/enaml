@@ -16,38 +16,23 @@ from enaml.core.declarative import d_
 from enaml.layout.dock_layout import (
     DockLayout, DockLayoutValidator, DockLayoutOp
 )
+from enaml.styling import StyleSheet
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .dock_events import DockEvent
 from .dock_item import DockItem
 
 
-
-if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-
-    from enaml.layout.dock_layout import (
-        docklayout, dockarea, dockitem, docksplit, docktabs
-    )
-
-    def coerce_layout(thing):
-        """ Coerce a variety of objects into a docklayout.
-
-        Parameters
-        ----------
-        thing : dict, basetring, dockitem, dockarea, split, or tabs
-            Something that can be coerced into a dock layout.
-
-        """
-        if thing is None:
-            return docklayout(None)
-        if isinstance(thing, basestring):
-            thing = dockitem(thing)
-        if isinstance(thing, (dockitem, docksplit, docktabs)):
-            return docklayout(dockarea(thing))
-        if isinstance(thing, dockarea):
-            return docklayout(thing)
-        msg = "cannot coerce '%s' to a 'docklayout'"
-        raise TypeError(msg % type(thing).__name__)
+_dock_area_styles = None
+def get_registered_styles(name):
+    # lazy import the stdlib module in case it's never needed.
+    global _dock_area_styles
+    if _dock_area_styles is None:
+        import enaml
+        with enaml.imports():
+            from enaml.stdlib import dock_area_styles
+        _dock_area_styles = dock_area_styles
+    return _dock_area_styles.get_registered_styles(name)
 
 
 class ProxyDockArea(ProxyConstraintsWidget):
@@ -105,9 +90,12 @@ class DockArea(ConstraintsWidget):
     #: is released (False). The default is True.
     live_drag = d_(Bool(True))
 
-    #: The style to apply to the dock area. The default style resembles
-    #: Visual Studio 2010. The builtin styles are: 'vs-2010', 'grey-wind',
-    #: 'new-moon', and 'metro'.
+    #: The name of the registered styles to apply to the dock area. The
+    #: list of available styles can be had by calling the function
+    #: `available_styles` in `enaml.stdlib.dock_area_styles`. Users can
+    #: also define and use their own custom style sheets with the dock
+    #: area: set this value to an empty string to disable the default
+    #: styling, and proceed with style sheets like normal.
     style = d_(Unicode('vs-2010'))
 
     #: Whether or not dock events are enabled for the area.
@@ -123,6 +111,18 @@ class DockArea(ConstraintsWidget):
 
     #: A reference to the ProxyStack widget.
     proxy = Typed(ProxyDockArea)
+
+    #: The style sheet created from the 'style' attribute.
+    _internal_style = Typed(StyleSheet)
+
+    def initialized(self):
+        """ A reimplemented initializer method.
+
+        This method ensures the internal style sheet is created.
+
+        """
+        super(DockArea, self).initialized()
+        self._refresh_internal_style()
 
     def dock_items(self):
         """ Get the dock items defined on the stack
@@ -192,6 +192,15 @@ class DockArea(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
+    @observe('style')
+    def _update_style(self, change):
+        """ An observer which updates the internal style sheet.
+
+        """
+        change_t = change['type']
+        if change_t == 'update' or change_t == 'delete':
+            self._refresh_internal_style()
+
     @observe('layout')
     def _update_layout(self, change):
         """ An observer which updates the layout when it changes.
@@ -207,3 +216,19 @@ class DockArea(ConstraintsWidget):
         """
         # The superclass implementation is sufficient.
         super(DockArea, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _refresh_internal_style(self):
+        old = self._internal_style
+        if old is not None:
+            old.destroy()
+            self._internal_style = None
+        if self.style:
+            style_t = get_registered_styles(self.style)
+            if style_t is not None:
+                sheet = StyleSheet()
+                style_t()(sheet)
+                self._internal_style = sheet
+                sheet.set_parent(self)
