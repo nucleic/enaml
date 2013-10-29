@@ -183,7 +183,10 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
             t = translate_dock_area_style(name, style)
             if t:
                 parts.append(t)
-        stylesheet = u'\n\n'.join(parts)
+        if len(parts) > 1:
+            stylesheet = u'\n\n'.join(parts)
+        else:
+            stylesheet = u''
         self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
