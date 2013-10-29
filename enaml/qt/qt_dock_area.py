@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
-
 from atom.api import Typed
 
 from enaml.styling import StyleCache
@@ -259,19 +257,12 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """ Save the current layout on the underlying widget.
 
         """
-        layout = self.manager.save_layout()
-        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-            from enaml.layout.dock_layout import convert_to_old_docklayout
-            layout = convert_to_old_docklayout(layout)
-        return layout
+        return self.manager.save_layout()
 
     def apply_layout(self, layout):
         """ Apply a new layout to the underlying widget.
 
         """
-        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-            from enaml.layout.dock_layout import convert_to_new_docklayout
-            layout = convert_to_new_docklayout(layout)
         self.manager.apply_layout(layout)
 
     def update_layout(self, ops):
