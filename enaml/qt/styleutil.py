@@ -321,7 +321,7 @@ def _dock_style_selector(name, style, elements):
         pc = pc.strip()
         for handler in handlers:
             parts.append(handler(name, pc))
-    return u','.join(parts)
+    return u', '.join(parts)
 
 
 def translate_dock_area_style(name, style):
