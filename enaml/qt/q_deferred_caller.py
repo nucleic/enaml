@@ -15,7 +15,8 @@ class DeferredCallEvent(QEvent):
     """
     __slots__ = ('callback', 'args', 'kwargs')
 
-    Type = QEvent.registerEventType()
+    # Explicitly coerce to QEvent.Type for PySide compatibility.
+    Type = QEvent.Type(QEvent.registerEventType())
 
     def __init__(self, callback, args, kwargs):
         super(DeferredCallEvent, self).__init__(self.Type)
