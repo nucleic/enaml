@@ -20,6 +20,7 @@ from .docking.event_types import (
     DockItemShown, DockItemHidden, DockItemClosed, DockTabSelected
 )
 from .docking.q_dock_area import QDockArea
+from .docking.style_sheets import get_style_sheet
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_dock_item import QtDockItem
@@ -243,7 +244,12 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """ Set the style for the underlying widget.
 
         """
-        #self.widget.setStyleSheet(get_style_sheet(style))
+        # If get_style_sheet returns something, it means the user will
+        # have already called register_style_sheet, which will raise
+        # a deprecation warning. This will be removed in Enaml 1.0
+        sheet = get_style_sheet(style)
+        if sheet:
+            self.widget.setStyleSheet(sheet)
 
     def set_dock_events_enabled(self, enabled):
         """ Set whether or not dock events are enabled for the area.
