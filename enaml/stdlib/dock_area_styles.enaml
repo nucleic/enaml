@@ -249,7 +249,9 @@ template CommonStyles():
 template VS2010Style():
     """ DockArea style sheet styles inspired by Visual Studio 2010.
 
-    This template should be invoked in the body of a StyleSheet.
+    This template can be invoked in the body of a StyleSheet in order
+    to add these styles to a style sheet which contains other app-level
+    style definitions.
 
     """
     CommonStyles():
@@ -361,7 +363,9 @@ template GreyWindStyle():
 
     Inspired by http://www.colourlovers.com/palette/2866138/Grey_Wind
 
-    This template should be invoked in the body of a StyleSheet.
+    This template can be invoked in the body of a StyleSheet in order
+    to add these styles to a style sheet which contains other app-level
+    style definitions.
 
     """
     CommonStyles():
@@ -469,7 +473,9 @@ template NewMoonStyle():
 
     Inspired by http://www.colourlovers.com/palette/90734/Newly_Risen_Moon
 
-    This template should be invoked in the body of a StyleSheet.
+    This template can be invoked in the body of a StyleSheet in order
+    to add these styles to a style sheet which contains other app-level
+    style definitions.
 
     """
     CommonStyles():
@@ -577,7 +583,9 @@ template NewMoonStyle():
 template MetroStyle():
     """ DockArea style sheet styles inspired by windows Metro.
 
-    This template should be invoked in the body of a StyleSheet.
+    This template can be invoked in the body of a StyleSheet in order
+    to add these styles to a style sheet which contains other app-level
+    style definitions.
 
     """
     CommonStyles():

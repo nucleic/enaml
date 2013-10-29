@@ -138,7 +138,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         d = self.declaration
         self.set_tab_position(d.tab_position)
         self.set_live_drag(d.live_drag)
-        if d.style:
+        if d.style:  # TODO remove this in Enaml 1.0
             self.set_style(d.style)
         self.set_dock_events_enabled(d.dock_events_enabled)
 
@@ -246,7 +246,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """
         # If get_style_sheet returns something, it means the user will
         # have already called register_style_sheet, which will raise
-        # a deprecation warning. This will be removed in Enaml 1.0
+        # a deprecation warning. TODO remove this method in Enaml 1.0.
         sheet = get_style_sheet(style)
         if sheet:
             self.widget.setStyleSheet(sheet)

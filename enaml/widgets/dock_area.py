@@ -65,7 +65,7 @@ class ProxyDockArea(ProxyConstraintsWidget):
 
 
 class DockArea(ConstraintsWidget):
-    """ A component which aranges dock item children.
+    """ A component which arranges dock item children.
 
     """
     #: The layout of dock items for the area. This attribute is *not*
@@ -90,12 +90,18 @@ class DockArea(ConstraintsWidget):
     #: is released (False). The default is True.
     live_drag = d_(Bool(True))
 
-    #: The name of the registered styles to apply to the dock area. The
-    #: list of available styles can be had by calling the function
-    #: `available_styles` in `enaml.stdlib.dock_area_styles`. Users can
-    #: also define and use their own custom style sheets with the dock
-    #: area: set this value to an empty string to disable the default
-    #: styling, and proceed with style sheets like normal.
+    #: The name of the registered style to apply to the dock area. The
+    #: list of available styles can be retrieved by calling the function
+    #: `available_styles` in the `enaml.stdlib.dock_area_styles` module.
+    #: The default is a style inspired by Visual Studio 2010
+    #:
+    #: Users can also define and use their own custom style sheets with
+    #: the dock area. Simply set this attribute to an empty string so
+    #: the default styling is disabled, and proceed to use style sheets
+    #: as with any other widget (see the stdlib styles for inspiration).
+    #:
+    #: Only one mode of styling should be used for the dock area at a
+    #: time. Using both modes simultaneously is undefined.
     style = d_(Unicode('vs-2010'))
 
     #: Whether or not dock events are enabled for the area.
