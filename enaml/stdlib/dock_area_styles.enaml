@@ -15,6 +15,7 @@ ignore these styles in their entirety.
 
 """
 from atom.api import Atom, Typed, Unicode
+from enaml.core.template_ import Template
 from enaml.styling import StyleSheet, Style, Setter
 
 
@@ -92,6 +93,154 @@ enamldef TitleBarLabelStyle(BasicStyle):
 enamldef TitleBarButtonStyle(BasicStyle):
     element = 'DockItem'
     pseudo_element = 'title-bar-button'
+
+
+#------------------------------------------------------------------------------
+# Common Styles
+#------------------------------------------------------------------------------
+template CommonStyles():
+    """ A template of common styles for the other style templates.
+
+    This template should be invoked in the body of a style sheet or a
+    style template to setup the common styling rules for the dock area.
+
+    """
+    # Primary Area
+    Style:
+        element = 'DockArea'
+        Setter:
+            field = 'padding'
+            value = '4px'
+        Setter:
+            field = 'spacing'
+            value = '5px'
+
+    # Splitter Handle
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'splitter-handle'
+        Setter:
+            field = 'background'
+            value = 'rgba(0, 0, 0, 0)'
+
+    # Dock Window Close Button
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        Setter:
+            field = 'color'
+            value = 'rgb(250, 251, 254)'
+        Setter:
+            field = 'background'
+            value = '#C75050'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'background'
+            value = '#E04343'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        pseudo_class = 'pressed'
+        Setter:
+            field = 'background'
+            value = '#993D3D'
+
+    # Tab Bar
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar'
+        Setter:
+            field = 'font'
+            value = '9pt "Segoe UI"'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        pseudo_class = 'top, bottom'
+        Setter:
+            field = 'margin-right'
+            value = '1px'
+        Setter:
+            field = 'padding-left'
+            value = '5px'
+        Setter:
+            field = 'padding-right'
+            value = '5px'
+        Setter:
+            field = 'height'
+            value = '19px'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        pseudo_class = 'left, right'
+        Setter:
+            field = 'margin-bottom'
+            value = '1px'
+        Setter:
+            field = 'padding-top'
+            value = '5px'
+        Setter:
+            field = 'padding-bottom'
+            value = '5px'
+        Setter:
+            field = 'width'
+            value = '20px'
+
+    # Dock Bar
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar'
+        Setter:
+            field = 'spacing'
+            value = '3px'
+
+    # Dock Bar Button
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-button'
+        Setter:
+            field = 'padding'
+            value = '1px 10px 2px 10px'
+
+    # Dock Bar Handle
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'top'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:0, x2:0, y2:1,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'right'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:1, y1:0, x2:0, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'bottom'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:1, x2:0, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'left'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:0, x2:1, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
 
 
 #------------------------------------------------------------------------------
@@ -522,148 +671,67 @@ template MetroStyle():
 
 
 #------------------------------------------------------------------------------
-# Common Styles
+# Registry
 #------------------------------------------------------------------------------
-template CommonStyles():
-    """ A template of common styles for the other style templates.
+__STYLE_REGISTRY = {
+    u'vs-2010': VS2010Style,
+    u'grey-wind': GreyWindStyle,
+    u'new-moon': NewMoonStyle,
+    u'metro': MetroStyle
+}
 
-    This template should be invoked in the body of a style sheet or a
-    style template to setup the common styling rules for the dock area.
+
+def available_styles():
+    """ Get the list of names of registered styles.
+
+    Returns
+    -------
+    result : list
+        The list of names of registered style templates.
 
     """
-    # Primary Area
-    Style:
-        element = 'DockArea'
-        Setter:
-            field = 'padding'
-            value = '4px'
-        Setter:
-            field = 'spacing'
-            value = '5px'
+    return sorted(__STYLE_REGISTRY.keys())
 
-    # Splitter Handle
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'splitter-handle'
-        Setter:
-            field = 'background'
-            value = 'rgba(0, 0, 0, 0)'
 
-    # Dock Window Close Button
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-window-close-button'
-        Setter:
-            field = 'color'
-            value = 'rgb(250, 251, 254)'
-        Setter:
-            field = 'background'
-            value = '#C75050'
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-window-close-button'
-        pseudo_class = 'hover'
-        Setter:
-            field = 'background'
-            value = '#E04343'
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-window-close-button'
-        pseudo_class = 'pressed'
-        Setter:
-            field = 'background'
-            value = '#993D3D'
+def register_styles(name, styles):
+    """ Register dock area styles with the given name.
 
-    # Tab Bar
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'tab-bar'
-        Setter:
-            field = 'font'
-            value = '9pt "Segoe UI"'
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'tab-bar-tab'
-        pseudo_class = 'top, bottom'
-        Setter:
-            field = 'margin-right'
-            value = '1px'
-        Setter:
-            field = 'padding-left'
-            value = '5px'
-        Setter:
-            field = 'padding-right'
-            value = '5px'
-        Setter:
-            field = 'height'
-            value = '19px'
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'tab-bar-tab'
-        pseudo_class = 'left, right'
-        Setter:
-            field = 'margin-bottom'
-            value = '1px'
-        Setter:
-            field = 'padding-top'
-            value = '5px'
-        Setter:
-            field = 'padding-bottom'
-            value = '5px'
-        Setter:
-            field = 'width'
-            value = '20px'
+    Parameters
+    ----------
+    name : basestring
+        The name to associate with the styles.
 
-    # Dock Bar
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-bar'
-        Setter:
-            field = 'spacing'
-            value = '3px'
+    styles : template
+        An Enaml template which will generate the dock area styles
+        when invoked.
 
-    # Dock Bar Button
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-bar-button'
-        Setter:
-            field = 'padding'
-            value = '1px 10px 2px 10px'
+    Raises
+    ------
+    ValueError
+        This will be raised the name is already registered.
 
-    # Dock Bar Handle
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-bar-handle'
-        pseudo_class = 'top'
-        Setter:
-            field = 'background'
-            value = ('lineargradient(x1:0, y1:0, x2:0, y2:1,'
-                        'stop:0 rgba(50, 50, 50, 175),'
-                        'stop:1 rgba(50, 50, 50, 0))')
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-bar-handle'
-        pseudo_class = 'right'
-        Setter:
-            field = 'background'
-            value = ('lineargradient(x1:1, y1:0, x2:0, y2:0,'
-                        'stop:0 rgba(50, 50, 50, 175),'
-                        'stop:1 rgba(50, 50, 50, 0))')
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-bar-handle'
-        pseudo_class = 'bottom'
-        Setter:
-            field = 'background'
-            value = ('lineargradient(x1:0, y1:1, x2:0, y2:0,'
-                        'stop:0 rgba(50, 50, 50, 175),'
-                        'stop:1 rgba(50, 50, 50, 0))')
-    Style:
-        element = 'DockArea'
-        pseudo_element = 'dock-bar-handle'
-        pseudo_class = 'left'
-        Setter:
-            field = 'background'
-            value = ('lineargradient(x1:0, y1:0, x2:1, y2:0,'
-                        'stop:0 rgba(50, 50, 50, 175),'
-                        'stop:1 rgba(50, 50, 50, 0))')
+    """
+    assert isinstance(name, basestring)
+    assert isinstance(styles, Template)
+    if name in __STYLE_REGISTRY:
+        raise ValueError("The '%s' name is already registered." % name)
+    __STYLE_REGISTRY[unicode(name)] = styles
+
+
+def get_registered_styles(name):
+    """ Get the styles registered for the given name.
+
+    Parameters
+    ----------
+    name : unicode
+        The name of the registered styles.
+
+    Returns
+    -------
+    result : template or None
+        An Enaml template which will generated the dock area styles
+        when instantiated. It should be invoked with no arguments in
+        the body of a StyleSheet.
+
+    """
+    return __STYLE_REGISTRY.get(name)
