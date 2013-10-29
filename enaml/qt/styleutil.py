@@ -113,7 +113,7 @@ def _translate_setter(setter):
             if field in _MAY_HAVE_GRADIENT:
                 value = _translate_gradient(value)
             value = u'    %s: %s;' % (field, value)
-        return value
+            return value
 
 
 def _translate_style_body(style):
