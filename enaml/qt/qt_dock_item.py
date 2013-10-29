@@ -116,7 +116,10 @@ class QtDockItem(QtWidget, ProxyDockItem):
             t = translate_dock_item_style(name, style)
             if t:
                 parts.append(t)
-        stylesheet = u'\n\n'.join(parts)
+        if len(parts) > 0:
+            stylesheet = u'\n\n'.join(parts)
+        else:
+            stylesheet = u''
         self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
