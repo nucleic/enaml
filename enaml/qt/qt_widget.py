@@ -89,7 +89,10 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             t = translate_style(name, style)
             if t:
                 parts.append(t)
-        stylesheet = u''.join(parts)
+        if len(parts) > 0:
+            stylesheet = u'\n\n'.join(parts)
+        else:
+            stylesheet = u''
         self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
