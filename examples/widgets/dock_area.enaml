@@ -9,10 +9,7 @@
 
 The DockArea widget provides a canvas into which DockItems can be docked
 and undocked at will. The layout configuration of the area can be saved
-and restored using a form that can be easily serialized to json.
-
-Tabbed dock items can be torn out of the dock area by holding the shift
-key while dragging a tab.
+and restored using a layout object which can be easily pickled.
 
 """
 import cPickle
@@ -22,18 +19,15 @@ from atom.api import Atom, ContainerList, Unicode
 from enaml.layout.api import (
     HSplitLayout, VSplitLayout, TabLayout, InsertItem, hbox, vbox, spacer
 )
+from enaml.stdlib.dock_area_styles import available_styles
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
     ObjectCombo, CheckBox, MultilineField
 )
 
 
-STYLES = {
-    'VS 2010': 'vs-2010',
-    'Grey Wind': 'grey-wind',
-    'New Moon': 'new-moon',
-    'Metro': 'metro',
-}
+def cap_case(name):
+    return ' '.join(s.capitalize() for s in name.split('-'))
 
 
 class LineCollector(Atom):
@@ -74,77 +68,77 @@ enamldef MyDockArea(DockArea):
     layout = HSplitLayout(
         VSplitLayout(
             HSplitLayout(
-                VSplitLayout('Item 1', 'Item 3'),
-                'Item 4',
+                VSplitLayout('item_1', 'item_3'),
+                'item_4',
             ),
-            'Logger',
+            'logger',
         ),
         VSplitLayout(
-            TabLayout('Item 6', 'Item 7', 'Item 8', 'Item 9'),
-            'Item 5',
-            'Item 2',
+            TabLayout('item_6', 'item_7', 'item_8', 'item_9'),
+            'item_5',
+            'item_2',
         ),
     )
     DockItem:
-        name = 'Item 1'
-        title = name
+        name = 'item_1'
+        title = 'Item 1'
         Container:
             Field: pass
             Field: pass
             Field: pass
     DockItem:
-        name = 'Item 2'
-        title = name
+        name = 'item_2'
+        title = 'Item 2'
         Container:
             PushButton: text = 'foo'
             PushButton: text = 'bar'
             PushButton: text = 'baz'
     DockItem:
-        name = 'Item 3'
-        title = name
+        name = 'item_3'
+        title = 'Item 3'
         Container:
             Html: source = '<h1><center>Hello World!</center></h1>'
     DockItem:
-        name = 'Item 4'
-        title = name
+        name = 'item_4'
+        title = 'Item 4'
         Container:
             Html: source = '<h1><center>Hello Enaml!</center></h1>'
     DockItem:
-        name = 'Item 5'
-        title = name
+        name = 'item_5'
+        title = 'Item 5'
         Container:
             Slider: pass
             Slider: pass
             Slider: pass
     DockItem:
-        name = 'Item 6'
-        title = name
+        name = 'item_6'
+        title = 'Item 6'
         Container:
             Html: source = u'<h1><center>Guten Tag!</center></h1>'
     DockItem:
-        name = 'Item 7'
-        title = name
+        name = 'item_7'
+        title = 'Item 7'
         Container:
             Field: pass
             Field: pass
             Field: pass
             Field: pass
     DockItem:
-        name = 'Item 8'
-        title = name
+        name = 'item_8'
+        title = 'Item 8'
         Container:
             PushButton: text = 'spam'
             PushButton: text = 'ham'
             PushButton: text = 'green'
             PushButton: text = 'eggs'
     DockItem:
-        name = 'Item 9'
-        title = name
+        name = 'item_9'
+        title = 'Item 9'
         Container:
             Html: source = '<h1><center>Bonjour!</center></h1>'
     DockItem:
-        name = 'Logger'
-        title = 'Event Logger'
+        name = 'logger'
+        title = 'Logger'
         Container:
             MultilineField:
                 attr collector = LineCollector()
@@ -155,7 +149,6 @@ enamldef MyDockArea(DockArea):
 
 
 enamldef MyItem(DockItem): owner:
-    title = name
     Container:
         Field: text = owner.name
         Field: text = owner.name
@@ -189,18 +182,21 @@ enamldef Main(Window):
             text = 'Add Items'
             clicked ::
                 for _ in xrange(3):
-                    name = 'Item %d' % (len(area.children) + 1)
-                    MyItem(area, name=name)
-                    op = InsertItem(item=name, target='Item 1')
+                    n = (len(area.children) + 1)
+                    name = 'item_%d' % n
+                    title = 'Item %d' % n
+                    item = MyItem(area, name=name, title=title)
+                    op = InsertItem(item=name, target='item_1')
                     area.update_layout(op)
         ObjectCombo: style_c:
-            items = STYLES.keys()
-            selected = 'VS 2010'
+            items = available_styles()
+            to_string = cap_case
+            selected = 'vs-2010'
         CheckBox: c_box:
             text = 'Enable Dock Events'
             checked := area.dock_events_enabled
         MyDockArea: area:
-            style << STYLES[style_c.selected]
+            style << style_c.selected
             dock_event ::
                 event = change['value']
                 field = area.find('line-collector')
