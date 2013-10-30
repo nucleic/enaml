@@ -74,6 +74,22 @@ def hard_constraints(d):
     return [d.left >= 0, d.top >= 0, d.width >= 0, d.height >= 0]
 
 
+def can_shrink_in_width(d):
+    """ Get whether a declarative container can shrink in width.
+
+    """
+    shrink = ('ignore', 'weak')
+    return d.resist_width in shrink and d.hug_width in shrink
+
+
+def can_shrink_in_height(d):
+    """ Get whether a declarative container can shrink in height.
+
+    """
+    shrink = ('ignore', 'weak')
+    return d.resist_height in shrink and d.hug_height in shrink
+
+
 def can_expand_in_width(d):
     """ Get whether a declarative container can expand in width.
 
@@ -538,14 +554,15 @@ class QtContainer(QtFrame, ProxyContainer):
 
         """
         d = self.declaration
-        shrink = ('ignore', 'weak')
-        if d.resist_width in shrink and d.resist_height in shrink:
+        shrink_w = can_shrink_in_width(d)
+        shrink_h = can_shrink_in_height(d)
+        if shrink_w and shrink_h:
             return QSize(0, 0)
         if self._owns_layout and self._layout_manager is not None:
             w, h = self._layout_manager.get_min_size(d.width, d.height)
-            if d.resist_width in shrink:
+            if shrink_w:
                 w = 0
-            if d.resist_height in shrink:
+            if shrink_h:
                 h = 0
             return QSize(w, h)
         return QSize()
