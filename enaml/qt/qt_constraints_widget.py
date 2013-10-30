@@ -77,11 +77,15 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
                     cns.append((d.width == width_hint) | d.hug_width)
                 if d.resist_width != 'ignore':
                     cns.append((d.width >= width_hint) | d.resist_width)
+                if d.limit_width != 'ignore':
+                    cns.append((d.width <= width_hint) | d.limit_width)
             if height_hint >= 0:
                 if d.hug_height != 'ignore':
                     cns.append((d.height == height_hint) | d.hug_height)
                 if d.resist_height != 'ignore':
                     cns.append((d.height >= height_hint) | d.resist_height)
+                if d.limit_height != 'ignore':
+                    cns.append((d.height <= height_hint) | d.limit_height)
         return cns
 
     #--------------------------------------------------------------------------

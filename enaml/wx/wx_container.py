@@ -61,6 +61,22 @@ def hard_constraints(d):
     return [d.left >= 0, d.top >= 0, d.width >= 0, d.height >= 0]
 
 
+def can_expand_in_width(d):
+    """ Get whether a declarative container can expand in width.
+
+    """
+    expand = ('ignore', 'weak')
+    return d.hug_width in expand and d.limit_width in expand
+
+
+def can_expand_in_height(d):
+    """ Get whether a declarative container can expand in height.
+
+    """
+    expand = ('ignore', 'weak')
+    return d.hug_height in expand and d.limit_height in expand
+
+
 class WxContainer(WxFrame, ProxyContainer):
     """ A Wx implementation of an Enaml ProxyContainer.
 
@@ -560,14 +576,15 @@ class WxContainer(WxFrame, ProxyContainer):
 
         """
         d = self.declaration
-        expanding = ('ignore', 'weak')
-        if d.hug_width in expanding and d.hug_height in expanding:
+        expand_w = can_expand_in_width(d)
+        expand_h = can_expand_in_height(d)
+        if expand_w and expand_h:
             return wx.Size(-1, -1)
         if self._owns_layout and self._layout_manager is not None:
             w, h = self._layout_manager.get_max_size(d.width, d.height)
-            if w < 0 or d.hug_width in expanding:
+            if w < 0 or expand_w:
                 w = -1
-            if h < 0 or d.hug_height in expanding:
+            if h < 0 or expand_h:
                 h = -1
             return wx.Size(w, h)
         return wx.Size(-1, -1)
