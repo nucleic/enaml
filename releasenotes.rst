@@ -1,6 +1,12 @@
 Enaml Release Notes
 ===================
 
+0.8.5 - 10/29/2013
+------------------
+- Add support for style sheets to the DockArea. 5e38c591ad55_
+
+.. _5e38c591ad55: https://github.com/nucleic/enaml/commit/5e38c591ad55683d367b652460f70b75f3f087b2
+
 0.8.4 - 10/28/2013
 ------------------
 - Add a size hint mode switch to Notebook and Stack. 330c7a337c32d_
