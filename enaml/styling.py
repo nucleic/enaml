@@ -79,26 +79,33 @@ class Style(Declarative):
     """
     #: The type name of the element which will match the style. An
     #: empty string will match all elements. Multiple elements can
-    #: be separated by a comma.
+    #: be separated by a comma and will match using logical OR
+    #: semantics.
     element = d_(Unicode())
 
     #: The name of the widget style class which will match the style.
     #: An empty string will match all style classes. Multiple classes
-    #: can be separated by a comma.
+    #: can be separated by a comma and will match using logical OR
+    #: semantics.
     style_class = d_(Unicode())
 
     #: The object name of the widget which will match the style. An
     #: empty string will match all object names. Multiple object names
-    #: can be separated by a comma.
+    #: can be separated by a comma and will match using logical OR
+    #: semantics.
     object_name = d_(Unicode())
 
     #: The pseudo-class which must be active for the style to apply. An
     #: empty string will apply the syle for all pseudo-classes. Multiple
-    #: psuedo-classes should be joined by a colon.
+    #: classes can be separated by a colon will match using logical AND
+    #: semantics. Commas can be used to separate multiple classes which
+    #: will match using logical OR semantics.
     pseudo_class = d_(Unicode())
 
     #: The pseudo-element to which the style applies. An empty string
-    #: indicates the style applies to the primary element.
+    #: indicates the style applies to the primary element. Multiple
+    #: pseudo elements can be separated comma and match using logical
+    #: OR semantics.
     pseudo_element = d_(Unicode())
 
     def setters(self):

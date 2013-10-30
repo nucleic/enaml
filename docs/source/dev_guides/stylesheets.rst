@@ -228,8 +228,9 @@ the element with the mouse.
 Pseudo-classes are specified by assigning a string to the ``pseudo_class``
 attribute of a :class:`Style <enaml.styling.Style>` object. Multiple
 pseudo-classes can be chained together with a colon, which will match using
-logical AND semantics. A pseudo-class can also be negated with the exclamation
-operator.
+logical AND semantics. Comma separated classes are also allowed, which will
+match using logical OR semantics. A pseudo-class can also be negated with
+the exclamation operator.
 
 See the :ref:`list_of_pseudo_classes` reference section for the list of
 supported pseudo-classes.
@@ -254,8 +255,9 @@ example, the ``'title'`` pseudo-element can be used to style the title text
 of a :class:`GroupBox <enaml.widgets.group_box.GroupBox>` widget.
 
 Pseudo-elements are specified by assigning a string to the ``pseudo_element``
-attribute of a :class:`Style <enaml.styling.Style>` object. Only one
-pseudo-element can be specified for a given style.
+attribute of a :class:`Style <enaml.styling.Style>` object. Multiple pseudo-
+elements can be specified by separating them with a comma, which will match
+using logical OR semantics.
 
 See the :ref:`list_of_pseudo_elements` reference section for the list of
 supported pseudo-elements.
