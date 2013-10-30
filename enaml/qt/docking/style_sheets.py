@@ -28,7 +28,7 @@ def register_style_sheet(name, sheet):
     msg = "Toolkit specific styling for the DockArea is deprecated "
     msg += "and will be removed in Enaml version 1.0. Use stylesheets "
     msg += "to style the Dock Area instead."
-    warnings.warn(msg, FutureWarning)
+    warnings.warn(msg, FutureWarning, stacklevel=2)
 
     assert isinstance(sheet, unicode), 'style sheet must a unicode string'
     if name in _style_sheets:
