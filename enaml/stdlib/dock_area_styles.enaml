@@ -1,0 +1,745 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" A collection of standard style templates for the DockArea widget.
+
+The style templates defined in this file are by no means the final word on
+what is possible in terms of styling the dock area. They exist simply to
+provide the application developer with some predefined dock area styles. A
+developer is free to define their own styles completely from scratch, and
+ignore these styles in their entirety.
+
+"""
+from atom.api import Atom, Typed, Unicode
+from enaml.core.template_ import Template
+from enaml.styling import StyleSheet, Style, Setter
+
+
+#------------------------------------------------------------------------------
+# Convenience Enamldefs
+#------------------------------------------------------------------------------
+enamldef BasicStyle(Style):
+    alias background: background.value
+    alias border: border.value
+    alias color: color.value
+    alias font: font.value
+    Setter: background:
+        field = 'background'
+    Setter: border:
+        field = 'border'
+    Setter: color:
+        field = 'color'
+    Setter: font:
+        field = 'font'
+
+
+enamldef AreaStyle(BasicStyle):
+    element = 'DockArea'
+
+
+enamldef RubberBandStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'rubber-band'
+
+
+enamldef WindowStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'dock-window'
+
+
+enamldef WindowButtonStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'dock-window-button'
+
+
+enamldef ContainerStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'dock-container'
+
+
+enamldef TabBarTabStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'tab-bar-tab'
+
+
+enamldef TabBarCloseButtonStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'tab-bar-close-button'
+
+
+enamldef DockBarButtonStyle(BasicStyle):
+    element = 'DockArea'
+    pseudo_element = 'dock-bar-button'
+
+
+enamldef ItemStyle(BasicStyle):
+    element = 'DockItem'
+
+
+enamldef TitleBarStyle(BasicStyle):
+    element = 'DockItem'
+    pseudo_element = 'title-bar'
+
+
+enamldef TitleBarLabelStyle(BasicStyle):
+    element = 'DockItem'
+    pseudo_element = 'title-bar-label'
+
+
+enamldef TitleBarButtonStyle(BasicStyle):
+    element = 'DockItem'
+    pseudo_element = 'title-bar-button'
+
+
+#------------------------------------------------------------------------------
+# Common Styles
+#------------------------------------------------------------------------------
+template CommonStyles():
+    """ A template of common styles for the other style templates.
+
+    This template should be invoked in the body of a style sheet or a
+    style template to setup the common styling rules for the dock area.
+
+    """
+    # Primary Area
+    Style:
+        element = 'DockArea'
+        Setter:
+            field = 'padding'
+            value = '4px'
+        Setter:
+            field = 'spacing'
+            value = '5px'
+
+    # Splitter Handle
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'splitter-handle'
+        Setter:
+            field = 'background'
+            value = 'rgba(0, 0, 0, 0)'
+
+    # Dock Window Close Button
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        Setter:
+            field = 'color'
+            value = 'rgb(250, 251, 254)'
+        Setter:
+            field = 'background'
+            value = '#C75050'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'background'
+            value = '#E04343'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-window-close-button'
+        pseudo_class = 'pressed'
+        Setter:
+            field = 'background'
+            value = '#993D3D'
+
+    # Tab Bar
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar'
+        Setter:
+            field = 'font'
+            value = '9pt "Segoe UI"'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        pseudo_class = 'top, bottom'
+        Setter:
+            field = 'margin-right'
+            value = '1px'
+        Setter:
+            field = 'padding-left'
+            value = '5px'
+        Setter:
+            field = 'padding-right'
+            value = '5px'
+        Setter:
+            field = 'height'
+            value = '19px'
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'tab-bar-tab'
+        pseudo_class = 'left, right'
+        Setter:
+            field = 'margin-bottom'
+            value = '1px'
+        Setter:
+            field = 'padding-top'
+            value = '5px'
+        Setter:
+            field = 'padding-bottom'
+            value = '5px'
+        Setter:
+            field = 'width'
+            value = '20px'
+
+    # Dock Bar
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar'
+        Setter:
+            field = 'spacing'
+            value = '3px'
+
+    # Dock Bar Button
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-button'
+        Setter:
+            field = 'padding'
+            value = '1px 10px 2px 10px'
+
+    # Dock Bar Handle
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'top'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:0, x2:0, y2:1,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'right'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:1, y1:0, x2:0, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'bottom'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:1, x2:0, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+    Style:
+        element = 'DockArea'
+        pseudo_element = 'dock-bar-handle'
+        pseudo_class = 'left'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1:0, y1:0, x2:1, y2:0,'
+                        'stop:0 rgba(50, 50, 50, 175),'
+                        'stop:1 rgba(50, 50, 50, 0))')
+
+
+#------------------------------------------------------------------------------
+# Concrete Styles
+#------------------------------------------------------------------------------
+template VS2010Style():
+    """ DockArea style sheet styles inspired by Visual Studio 2010.
+
+    This template can be invoked in the body of a StyleSheet in order
+    to add these styles to a style sheet which contains other app-level
+    style definitions.
+
+    """
+    CommonStyles():
+        pass
+
+    AreaStyle:
+        background = 'rgb(49, 67, 98)'
+        border = '1px solid rgb(40, 60, 90)'
+
+    RubberBandStyle:
+        background = 'rgba(69, 147, 209, 130)'
+        border = '1px solid rgb(69, 147, 209)'
+
+    WindowStyle:
+        background = 'rgb(53, 73, 106)'
+        border = '1px solid rgb(40, 60, 90)'
+
+    WindowButtonStyle:
+        color = 'rgb(250, 251, 254)'
+
+    WindowButtonStyle:
+        pseudo_class = 'hover'
+        background = 'rgb(54, 101, 179)'
+
+    WindowButtonStyle:
+        pseudo_class = 'pressed'
+        background = 'rgb(61, 96, 153)'
+
+    ContainerStyle:
+        background = 'rgb(53, 73, 106)'
+
+    ContainerStyle:
+        pseudo_class = 'floating'
+        border = '1px solid rgb(40, 60, 90)'
+
+    ItemStyle:
+        background = 'rgb(240, 240, 240)'
+
+    TitleBarStyle:
+        background = 'rgb(77, 96, 130)'
+
+    TitleBarLabelStyle:
+        color = 'rgb(250, 251, 254)'
+        font = '9pt "Segoe UI"'
+
+    TitleBarButtonStyle:
+        color = 'rgb(250, 251, 254)'
+
+    TitleBarButtonStyle:
+        pseudo_class = 'hover'
+        border = '1px solid rgb(229, 195, 101)'
+        background = 'rgb(250, 251, 254)'
+        color = 'black'
+
+    TitleBarButtonStyle:
+        pseudo_class = 'pressed'
+        background = 'rgb(255, 229, 128)'
+
+    TabBarTabStyle:
+        background = 'rgba(255, 255, 255, 15)'
+        color = 'rgb(250, 251, 254)'
+
+    TabBarTabStyle:
+        pseudo_class = 'hover'
+        background = 'rgba(255, 255, 255, 70)'
+
+    TabBarTabStyle:
+        pseudo_class = 'selected'
+        background = 'rgb(240, 240, 240)'
+        color = 'black'
+
+    TabBarCloseButtonStyle:
+        color = 'rgb(250, 251, 254)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'hover'
+        border = '1px solid rgb(229, 195, 101)'
+        background = 'rgb(250, 251, 254)'
+        color = 'black'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'pressed'
+        background = 'rgb(255, 229, 128)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'selected'
+        color = 'black'
+
+    DockBarButtonStyle:
+        border = '1px solid rgba(0, 0, 0, 0)'
+        background = 'rgb(77, 96, 130)'
+        color = 'rgb(250, 251, 254)'
+
+    DockBarButtonStyle:
+        pseudo_class = 'hover'
+        border = '1px solid rgb(229, 195, 101)'
+        background = 'rgb(250, 251, 254)'
+        color = 'black'
+
+    DockBarButtonStyle:
+        pseudo_class = 'checked'
+        border = '1px solid rgb(229, 195, 101)'
+        background = 'rgb(255, 229, 128)'
+        color = 'black'
+
+
+template GreyWindStyle():
+    """ DockArea style sheet styles in a mild grey and brown.
+
+    Inspired by http://www.colourlovers.com/palette/2866138/Grey_Wind
+
+    This template can be invoked in the body of a StyleSheet in order
+    to add these styles to a style sheet which contains other app-level
+    style definitions.
+
+    """
+    CommonStyles():
+        pass
+
+    AreaStyle:
+        background = 'rgb(175, 178, 183)'
+        border = '1px solid rgb(161, 164, 168)'
+
+    AreaStyle:
+        pseudo_class = 'floating'
+        border = '1px solid rgb(129, 121, 119)'
+
+    RubberBandStyle:
+        background = 'rgba(175, 178, 183, 130)'
+        border = '2px solid rgb(100, 100, 100)'
+
+    WindowStyle:
+        background = 'rgb(149, 141, 139)'
+        border = '1px solid rgb(129, 121, 119)'
+
+    WindowButtonStyle:
+        pseudo_class = 'hover'
+        background = 'rgb(175, 178, 183)'
+
+    WindowButtonStyle:
+        pseudo_class = 'pressed'
+        background = 'rgb(144, 144, 152)'
+
+    ContainerStyle:
+        background = 'rgb(175, 178, 183)'
+
+    ContainerStyle:
+        pseudo_class = 'floating'
+        border = '1px solid rgb(144, 144, 152)'
+
+    ItemStyle:
+        background = 'rgb(244, 244, 244)'
+
+    TitleBarStyle:
+        background = 'rgb(144, 144, 152)'
+
+    TitleBarLabelStyle:
+        color = 'rgb(250, 251, 254)'
+        font = '9pt "Segoe UI"'
+
+    TitleBarButtonStyle:
+        color = 'rgb(250, 251, 254)'
+
+    TitleBarButtonStyle:
+        pseudo_class = 'hover'
+        color = 'rgb(80, 80, 80)'
+
+    TitleBarButtonStyle:
+        pseudo_class = 'pressed'
+        color = 'black'
+
+    TabBarTabStyle:
+        background = 'rgba(0, 0, 0, 20)'
+        color = 'rgb(250, 251, 254)'
+
+    TabBarTabStyle:
+        pseudo_class = 'hover'
+        background = 'rgb(144, 144, 152)'
+
+    TabBarTabStyle:
+        pseudo_class = 'selected'
+        background = 'rgb(244, 244, 244)'
+        color = 'black'
+
+    TabBarCloseButtonStyle:
+        color = 'rgb(250, 251, 254)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'hover'
+        color = 'rgb(80, 80, 80)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'pressed'
+        color = 'black'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'selected'
+        color = 'black'
+
+    DockBarButtonStyle:
+        border = '1px solid rgba(0, 0, 0, 0)'
+        background = 'rgb(144, 144, 152)'
+        color = 'rgb(244, 244, 244)'
+
+    DockBarButtonStyle:
+        pseudo_class = 'hover'
+        border = '1px solid rgb(129, 121, 119)'
+        background = 'rgb(149, 141, 139)'
+
+    DockBarButtonStyle:
+        pseudo_class = 'checked'
+        border = '1px solid rgb(129, 121, 119)'
+        background = 'rgb(149, 141, 139)'
+        color = 'black'
+
+
+template NewMoonStyle():
+    """ DockArea style sheet styles in yellow, brown, and grey.
+
+    Inspired by http://www.colourlovers.com/palette/90734/Newly_Risen_Moon
+
+    This template can be invoked in the body of a StyleSheet in order
+    to add these styles to a style sheet which contains other app-level
+    style definitions.
+
+    """
+    CommonStyles():
+        pass
+
+    AreaStyle:
+        background = 'rgb(54, 57, 59)'
+        border = '1px solid rgb(45, 45, 45)'
+
+    AreaStyle:
+        pseudo_class = 'floating'
+        border = '1px solid rgb(158, 147, 93)'
+
+    RubberBandStyle:
+        background = 'rgba(197, 188, 142, 130)'
+        border = '2px solid rgb(197, 188, 142)'
+
+    WindowStyle:
+        background = 'rgb(197, 188, 142)'
+        border = '1px solid rgb(158, 147, 93)'
+
+    WindowButtonStyle:
+        pseudo_class = 'hover'
+        background = 'rgb(158, 147, 93)'
+
+    WindowButtonStyle:
+        pseudo_class = 'pressed'
+        background = 'rgb(105, 103, 88)'
+
+    ContainerStyle:
+        background = 'rgb(54, 57, 59)'
+
+    ContainerStyle:
+        pseudo_class = 'floating'
+        border = '1px solid rgb(45, 45, 45)'
+
+    ItemStyle:
+        background = 'rgb(240, 240, 240)'
+
+    TitleBarStyle:
+        background = 'rgb(105, 103, 88)'
+
+    TitleBarLabelStyle:
+        color = 'rgb(240, 240, 240)'
+        font = '9pt "Segoe UI"'
+
+    TitleBarButtonStyle:
+        color = 'rgb(240, 240, 240)'
+
+    TitleBarButtonStyle:
+        pseudo_class = 'hover'
+        color = 'rgb(50, 50, 50)'
+
+    TitleBarButtonStyle:
+        pseudo_class = 'pressed'
+        color = 'black'
+
+    TabBarTabStyle:
+        background = 'rgba(255, 255, 255, 30)'
+        color = 'rgb(240, 240, 240)'
+
+    TabBarTabStyle:
+        pseudo_class = 'hover'
+        background = 'rgba(197, 188, 142, 170)'
+
+    TabBarTabStyle:
+        pseudo_class = 'selected'
+        background = 'rgb(240, 240, 240)'
+        color = 'black'
+
+    TabBarCloseButtonStyle:
+        color = 'rgb(240, 240, 240)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'hover'
+        color = 'rgb(50, 50, 50)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'pressed'
+        color = 'black'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'selected'
+        color = 'rgb(100, 100, 100)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'selected:hover'
+        color = 'black'
+
+    DockBarButtonStyle:
+        border = '1px solid rgba(0, 0, 0, 0)'
+        background = 'rgb(105, 103, 88)'
+        color = 'rgb(240, 240, 240)'
+
+    DockBarButtonStyle:
+        pseudo_class = 'hover'
+        background = 'rgba(197, 188, 142, 170)'
+
+    DockBarButtonStyle:
+        pseudo_class = 'checked'
+        background = 'rgb(197, 188, 142)'
+        color = 'black'
+
+
+template MetroStyle():
+    """ DockArea style sheet styles inspired by windows Metro.
+
+    This template can be invoked in the body of a StyleSheet in order
+    to add these styles to a style sheet which contains other app-level
+    style definitions.
+
+    """
+    CommonStyles():
+        pass
+
+    AreaStyle:
+        background = '#C0C0C0'
+        border = '1px solid #B0B0B0'
+
+    RubberBandStyle:
+        background = 'rgba(255, 255, 255, 130)'
+        border = '2px solid #666666'
+
+    WindowStyle:
+        background = 'white'
+        border = '1px solid #B0B0B0'
+
+    WindowButtonStyle:
+        pseudo_class = 'hover'
+        background = '#3665B3'
+        color = 'white'
+
+    WindowButtonStyle:
+        pseudo_class = 'pressed'
+        background = '#3D6099'
+
+    ContainerStyle:
+        background = '#C0C0C0'
+
+    ContainerStyle:
+        pseudo_class = 'floating'
+        border = '1px solid #B0B0B0'
+
+    ItemStyle:
+        background = 'rgb(240, 240, 240)'
+
+    TitleBarStyle:
+        background = 'rgb(53, 139, 202)'
+
+    TitleBarLabelStyle:
+        color = 'rgb(240, 240, 240)'
+        font = '9pt "Segoe UI"'
+
+    TitleBarButtonStyle:
+        color = 'rgb(240, 240, 240)'
+
+    TitleBarButtonStyle:
+        pseudo_class = 'hover'
+        color = 'black'
+
+    TabBarTabStyle:
+        background = '#838587'
+        color = 'rgb(240, 240, 240)'
+
+    TabBarTabStyle:
+        pseudo_class = 'hover'
+        background = '#959799'
+
+    TabBarTabStyle:
+        pseudo_class = 'selected'
+        background = 'rgb(240, 240, 240)'
+        color = 'black'
+
+    TabBarCloseButtonStyle:
+        color = 'rgb(240, 240, 240)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'hover'
+        color = 'black'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'selected'
+        color = 'rgb(100, 100, 100)'
+
+    TabBarCloseButtonStyle:
+        pseudo_class = 'selected:hover'
+        color = 'black'
+
+    DockBarButtonStyle:
+        border = '1px solid rgba(0, 0, 0, 0)'
+        background = 'rgb(53, 139, 202)'
+        color = 'rgb(240, 240, 240)'
+
+    DockBarButtonStyle:
+        pseudo_class = 'hover'
+        background = 'rgb(61, 159, 229)'
+
+    DockBarButtonStyle:
+        pseudo_class = 'checked'
+        background = '#838587'
+
+
+#------------------------------------------------------------------------------
+# Registry
+#------------------------------------------------------------------------------
+__STYLE_REGISTRY = {
+    u'vs-2010': VS2010Style,
+    u'grey-wind': GreyWindStyle,
+    u'new-moon': NewMoonStyle,
+    u'metro': MetroStyle
+}
+
+
+def available_styles():
+    """ Get the list of names of registered styles.
+
+    Returns
+    -------
+    result : list
+        The list of names of registered style templates.
+
+    """
+    return sorted(__STYLE_REGISTRY.keys())
+
+
+def register_styles(name, styles):
+    """ Register dock area styles with the given name.
+
+    Parameters
+    ----------
+    name : basestring
+        The name to associate with the styles.
+
+    styles : template
+        An Enaml template which will generate the dock area styles
+        when invoked.
+
+    Raises
+    ------
+    ValueError
+        This will be raised the name is already registered.
+
+    """
+    assert isinstance(name, basestring)
+    assert isinstance(styles, Template)
+    if name in __STYLE_REGISTRY:
+        raise ValueError("The '%s' name is already registered." % name)
+    __STYLE_REGISTRY[unicode(name)] = styles
+
+
+def get_registered_styles(name):
+    """ Get the styles registered for the given name.
+
+    Parameters
+    ----------
+    name : unicode
+        The name of the registered styles.
+
+    Returns
+    -------
+    result : template or None
+        An Enaml template which will generated the dock area styles
+        when instantiated. It should be invoked with no arguments in
+        the body of a StyleSheet.
+
+    """
+    return __STYLE_REGISTRY.get(name)

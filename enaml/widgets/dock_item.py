@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
-
 from atom.api import (
     Coerced, Event, Unicode, Bool, Range, Typed, ForwardTyped, observe
 )
@@ -96,22 +94,6 @@ class DockItem(Widget):
         for child in reversed(self.children):
             if isinstance(child, Container):
                 return child
-
-    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-
-        def split(self, direction, *names):
-            """ This method is deprecated.
-
-            """
-            args = ('split_item', direction, self.name) + names
-            self._call_parent('apply_layout_op', *args)
-
-        def tabify(self, direction, *names):
-            """ This method is deprecated.
-
-            """
-            args = ('tabify_item', direction, self.name) + names
-            self._call_parent('apply_layout_op', *args)
 
     #--------------------------------------------------------------------------
     # Observers

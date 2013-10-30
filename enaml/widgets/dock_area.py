@@ -6,7 +6,6 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
-import os
 
 from atom.api import (
     Bool, Coerced, Enum, Typed, ForwardTyped, Unicode, Event, observe,
@@ -17,38 +16,23 @@ from enaml.core.declarative import d_
 from enaml.layout.dock_layout import (
     DockLayout, DockLayoutValidator, DockLayoutOp
 )
+from enaml.styling import StyleSheet
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .dock_events import DockEvent
 from .dock_item import DockItem
 
 
-
-if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-
-    from enaml.layout.dock_layout import (
-        docklayout, dockarea, dockitem, docksplit, docktabs
-    )
-
-    def coerce_layout(thing):
-        """ Coerce a variety of objects into a docklayout.
-
-        Parameters
-        ----------
-        thing : dict, basetring, dockitem, dockarea, split, or tabs
-            Something that can be coerced into a dock layout.
-
-        """
-        if thing is None:
-            return docklayout(None)
-        if isinstance(thing, basestring):
-            thing = dockitem(thing)
-        if isinstance(thing, (dockitem, docksplit, docktabs)):
-            return docklayout(dockarea(thing))
-        if isinstance(thing, dockarea):
-            return docklayout(thing)
-        msg = "cannot coerce '%s' to a 'docklayout'"
-        raise TypeError(msg % type(thing).__name__)
+_dock_area_styles = None
+def get_registered_styles(name):
+    # lazy import the stdlib module in case it's never needed.
+    global _dock_area_styles
+    if _dock_area_styles is None:
+        import enaml
+        with enaml.imports():
+            from enaml.stdlib import dock_area_styles
+        _dock_area_styles = dock_area_styles
+    return _dock_area_styles.get_registered_styles(name)
 
 
 class ProxyDockArea(ProxyConstraintsWidget):
@@ -81,28 +65,22 @@ class ProxyDockArea(ProxyConstraintsWidget):
 
 
 class DockArea(ConstraintsWidget):
-    """ A component which aranges dock item children.
+    """ A component which arranges dock item children.
 
     """
-    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+    #: The layout of dock items for the area. This attribute is *not*
+    #: kept in sync with the layout state of the widget at runtime. The
+    #: 'save_layout' method should be called to retrieve the current
+    #: layout state.
+    layout = d_(Coerced(DockLayout, ()))
 
-        layout = d_(Coerced(docklayout, (None,), coercer=coerce_layout))
+    def _post_validate_layout(self, old, new):
+        """ Post validate the layout using the DockLayoutValidator.
 
-    else:
-
-        #: The layout of dock items for the area. This attribute is *not*
-        #: kept in sync with the layout state of the widget at runtime. The
-        #: 'save_layout' method should be called to retrieve the current
-        #: layout state.
-        layout = d_(Coerced(DockLayout, ()))
-
-        def _post_validate_layout(self, old, new):
-            """ Post validate the layout using the DockLayoutValidator.
-
-            """
-            available = (i.name for i in self.dock_items())
-            DockLayoutValidator(available)(new)
-            return new
+        """
+        available = (i.name for i in self.dock_items())
+        DockLayoutValidator(available)(new)
+        return new
 
     #: The default tab position for newly created dock tabs.
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
@@ -112,9 +90,18 @@ class DockArea(ConstraintsWidget):
     #: is released (False). The default is True.
     live_drag = d_(Bool(True))
 
-    #: The style to apply to the dock area. The default style resembles
-    #: Visual Studio 2010. The builtin styles are: 'vs-2010', 'grey-wind',
-    #: 'new-moon', and 'metro'.
+    #: The name of the registered style to apply to the dock area. The
+    #: list of available styles can be retrieved by calling the function
+    #: `available_styles` in the `enaml.stdlib.dock_area_styles` module.
+    #: The default is a style inspired by Visual Studio 2010
+    #:
+    #: Users can also define and use their own custom style sheets with
+    #: the dock area. Simply set this attribute to an empty string so
+    #: the default styling is disabled, and proceed to use style sheets
+    #: as with any other widget (see the stdlib styles for inspiration).
+    #:
+    #: Only one mode of styling should be used for the dock area at a
+    #: time. Using both modes simultaneously is undefined.
     style = d_(Unicode('vs-2010'))
 
     #: Whether or not dock events are enabled for the area.
@@ -130,6 +117,18 @@ class DockArea(ConstraintsWidget):
 
     #: A reference to the ProxyStack widget.
     proxy = Typed(ProxyDockArea)
+
+    #: The style sheet created from the 'style' attribute.
+    _internal_style = Typed(StyleSheet)
+
+    def initialized(self):
+        """ A reimplemented initializer method.
+
+        This method ensures the internal style sheet is created.
+
+        """
+        super(DockArea, self).initialized()
+        self._refresh_internal_style()
 
     def dock_items(self):
         """ Get the dock items defined on the stack
@@ -159,12 +158,9 @@ class DockArea(ConstraintsWidget):
             The docklayout to apply to the dock area.
 
         """
-        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-            assert isinstance(layout, docklayout), 'layout must be a docklayout'
-        else:
-            assert isinstance(layout, DockLayout), 'layout must be a DockLayout'
-            available = (i.name for i in self.dock_items())
-            DockLayoutValidator(available)(layout)
+        assert isinstance(layout, DockLayout), 'layout must be a DockLayout'
+        available = (i.name for i in self.dock_items())
+        DockLayoutValidator(available)(layout)
         if self.proxy_is_active:
             return self.proxy.apply_layout(layout)
 
@@ -186,49 +182,6 @@ class DockArea(ConstraintsWidget):
         if self.proxy_is_active:
             self.proxy.update_layout(ops)
 
-    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-
-        def apply_layout_op(self, op, direction, *item_names):
-            """ This method is deprecated.
-
-            """
-            assert op in ('split_item', 'tabify_item', 'split_area')
-            assert direction in ('left', 'right', 'top', 'bottom')
-            if not self.proxy_is_active:
-                return
-
-            from enaml.layout.dock_layout import (
-                InsertItem, InsertBorderItem, InsertTab
-            )
-
-            ops = []
-            item_names = list(item_names)
-            if op == 'split_item':
-                target = item_names.pop(0)
-                for name in item_names:
-                    l_op = InsertItem(
-                        target=target, item=name, position=direction
-                    )
-                    ops.append(l_op)
-            elif op == 'split_area':
-                for name in item_names:
-                    l_op = InsertBorderItem(item=name, position=direction)
-                    ops.append(l_op)
-            else:
-                target = item_names.pop(0)
-                for name in item_names:
-                    l_op = InsertTab(
-                        target=target, item=name, tab_position=direction
-                    )
-                    ops.append(l_op)
-            self.proxy.update_layout(ops)
-
-        def split(self, direction, *item_names):
-            """ This method is deprecated.
-
-            """
-            self.apply_layout_op('split_area', direction, *item_names)
-
     @contextmanager
     def suppress_dock_events(self):
         """ A context manager which supresses dock events.
@@ -245,6 +198,15 @@ class DockArea(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
+    @observe('style')
+    def _update_style(self, change):
+        """ An observer which updates the internal style sheet.
+
+        """
+        change_t = change['type']
+        if change_t == 'update' or change_t == 'delete':
+            self._refresh_internal_style()
+
     @observe('layout')
     def _update_layout(self, change):
         """ An observer which updates the layout when it changes.
@@ -260,3 +222,19 @@ class DockArea(ConstraintsWidget):
         """
         # The superclass implementation is sufficient.
         super(DockArea, self)._update_proxy(change)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _refresh_internal_style(self):
+        old = self._internal_style
+        if old is not None:
+            old.destroy()
+            self._internal_style = None
+        if self.style:
+            style_t = get_registered_styles(self.style)
+            if style_t is not None:
+                sheet = StyleSheet()
+                style_t()(sheet)
+                self._internal_style = sheet
+                sheet.set_parent(self)

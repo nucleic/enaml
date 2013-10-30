@@ -7,17 +7,12 @@
 #------------------------------------------------------------------------------
 import os
 
-if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-    from .dock_layout import (
-        dockitem, docktabs, docksplit, hdocksplit, vdocksplit, dockarea, docklayout
-    )
-else:
-    from .dock_layout import (
-        ItemLayout, TabLayout, SplitLayout, HSplitLayout, VSplitLayout,
-        DockBarLayout, AreaLayout, DockLayout, DockLayoutWarning,
-        InsertItem, InsertBorderItem, InsertDockBarItem, InsertTab,
-        FloatItem, FloatArea, RemoveItem, ExtendItem, RetractItem
-    )
+from .dock_layout import (
+    ItemLayout, TabLayout, SplitLayout, HSplitLayout, VSplitLayout,
+    DockBarLayout, AreaLayout, DockLayout, DockLayoutWarning,
+    InsertItem, InsertBorderItem, InsertDockBarItem, InsertTab,
+    FloatItem, FloatArea, RemoveItem, ExtendItem, RetractItem
+)
 from .layout_helpers import (
     align, hbox, vbox, horizontal, vertical, grid, spacer,
 )

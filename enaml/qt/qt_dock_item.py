@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Int, Typed
 
+from enaml.styling import StyleCache
 from enaml.widgets.dock_item import ProxyDockItem
 
 from .QtCore import Qt, QSize, Signal
@@ -16,6 +17,7 @@ from .docking.q_dock_item import QDockItem
 
 from .q_resource_helpers import get_cached_qicon
 from .qt_widget import QtWidget
+from .styleutil import translate_dock_item_style
 
 
 class QCustomDockItem(QDockItem):
@@ -98,6 +100,27 @@ class QtDockItem(QtWidget, ProxyDockItem):
         d = self.declaration.dock_widget()
         if d is not None:
             return d.proxy.widget
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def refresh_style_sheet(self):
+        """ A reimplemented styling method.
+
+        The dock item uses custom stylesheet processing.
+
+        """
+        parts = []
+        name = self.widget.objectName()
+        for style in StyleCache.styles(self.declaration):
+            t = translate_dock_item_style(name, style)
+            if t:
+                parts.append(t)
+        if len(parts) > 0:
+            stylesheet = u'\n\n'.join(parts)
+        else:
+            stylesheet = u''
+        self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
     # Signal Handlers

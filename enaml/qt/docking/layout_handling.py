@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
-
 from enaml.qt.QtCore import Qt, QEvent
 from enaml.qt.QtGui import QApplication
 
@@ -599,9 +597,6 @@ def _plug_border_ex(area, frame, dock_bar_pos):
     """ Plug the frame into the specified dock bar.
 
     """
-    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-        return False
-
     containers = []
     if isinstance(frame, QDockWindow):
         temp_area = frame.dockArea()
