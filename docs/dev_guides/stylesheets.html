@@ -14,7 +14,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Style Sheets &mdash; Enaml 0.8.3 documentation</title>
+    <title>Style Sheets &mdash; Enaml 0.8.5 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.8.3',
+        VERSION:     '0.8.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.3 documentation" href="../index.html" />
+    <link rel="top" title="Enaml 0.8.5 documentation" href="../index.html" />
     <link rel="up" title="Developer Guides" href="index.html" />
     <link rel="next" title="Architecture Reference" href="../arch_ref/index.html" />
     <link rel="prev" title="Developer Guides" href="index.html" />
@@ -66,7 +66,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.3</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -521,8 +521,9 @@ the element with the mouse.</p>
 <p>Pseudo-classes are specified by assigning a string to the <tt class="docutils literal"><span class="pre">pseudo_class</span></tt>
 attribute of a <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> object. Multiple
 pseudo-classes can be chained together with a colon, which will match using
-logical AND semantics. A pseudo-class can also be negated with the exclamation
-operator.</p>
+logical AND semantics. Comma separated classes are also allowed, which will
+match using logical OR semantics. A pseudo-class can also be negated with
+the exclamation operator.</p>
 <p>See the <a class="reference internal" href="#list-of-pseudo-classes"><em>List of Pseudo-Classes</em></a> reference section for the list of
 supported pseudo-classes.</p>
 <p>The following simple example demonstrates the use of pseudo-classes:</p>
@@ -568,8 +569,9 @@ special state, it is used to specify a subcontrol of a complex control. For
 example, the <tt class="docutils literal"><span class="pre">'title'</span></tt> pseudo-element can be used to style the title text
 of a <a class="reference internal" href="../api_ref/widgets/group_box.html#enaml.widgets.group_box.GroupBox" title="enaml.widgets.group_box.GroupBox"><tt class="xref py py-class docutils literal"><span class="pre">GroupBox</span></tt></a> widget.</p>
 <p>Pseudo-elements are specified by assigning a string to the <tt class="docutils literal"><span class="pre">pseudo_element</span></tt>
-attribute of a <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> object. Only one
-pseudo-element can be specified for a given style.</p>
+attribute of a <a class="reference internal" href="../api_ref/styling.html#enaml.styling.Style" title="enaml.styling.Style"><tt class="xref py py-class docutils literal"><span class="pre">Style</span></tt></a> object. Multiple pseudo-
+elements can be specified by separating them with a comma, which will match
+using logical OR semantics.</p>
 <p>See the <a class="reference internal" href="#list-of-pseudo-elements"><em>List of Pseudo-Elements</em></a> reference section for the list of
 supported pseudo-elements.</p>
 <p>The following simple example demonstrates the use of pseudo-elements:</p>
@@ -1433,7 +1435,7 @@ marked with an asterisk have no equivalent in CSS.</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 26, 2013.<br/>
+      Last updated on Oct 29, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
