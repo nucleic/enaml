@@ -1,6 +1,12 @@
 Enaml Release Notes
 ===================
 
+0.8.6 - 10/30/2013
+------------------
+- Add 'limit_width' and 'limit_height' virtual constraints. 8722be90844e_
+
+.. _8722be90844e: https://github.com/nucleic/enaml/commit/8722be90844ed68809de792b818cd399bbb8bfa2
+
 0.8.5 - 10/29/2013
 ------------------
 - Add support for style sheets to the DockArea. 5e38c591ad55_
