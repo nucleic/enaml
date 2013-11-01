@@ -606,6 +606,8 @@ class QDockContainer(QDockFrame):
         if obj is not self._dock_item:
             return False
         if event.type() == QEvent.MouseButtonPress:
+            if event.button() == Qt.LeftButton:
+                self._dock_item.clearAlert()  # likely a no-op, but just in case
             return self.filteredMousePressEvent(event)
         elif event.type() == QEvent.MouseMove:
             return self.filteredMouseMoveEvent(event)
