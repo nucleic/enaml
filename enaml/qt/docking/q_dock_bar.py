@@ -701,6 +701,14 @@ class QDockBarManager(QObject):
             event = QDockItemEvent(DockItemRetracted, container.objectName())
             QApplication.postEvent(area, event)
 
+    def _onButtonPressed(self):
+        """ Handle the 'pressed' signal from a dock bar button.
+
+        """
+        button = self.sender()
+        container = self._widgets[button].widget()
+        container.dockItem().clearAlert()  # likey a no-op, but just in case
+
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
@@ -732,6 +740,7 @@ class QDockBarManager(QObject):
         button.setText(container.title())
         button.setIcon(container.icon())
         button.toggled.connect(self._onButtonToggled)
+        button.pressed.connect(self._onButtonPressed)
         container.alerted.connect(button.onAlerted)
 
         dock_bar = self._getDockBar(position)
