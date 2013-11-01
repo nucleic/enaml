@@ -45,6 +45,8 @@ class _TabData(object):
     """ A private class which holds data about a tab in a tab bar.
 
     """
+    __slots__ = ('ref', 'normal', 'selected', 'alerted')
+
     def __init__(self, container):
         self.ref = ref(container)
         self.normal = None

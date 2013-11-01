@@ -99,6 +99,32 @@ class DockItem(Widget):
                 return child
 
     def alert(self, level, on=250, off=250, repeat=4, persist=False):
+        """ Set the alert level on the dock item.
+
+        This will override any currently applied alert level.
+
+        Parameters
+        ----------
+        level : unicode
+            The alert level token to apply to the dock item.
+
+        on : int
+            The duration of the 'on' cycle, in ms. A value of -1 means
+            always on.
+
+        off : int
+            The duration of the 'off' cycle, in ms. If 'on' is -1, this
+            value is ignored.
+
+        repeat : int
+            The number of times to repeat the on-off cycle. If 'on' is
+            -1, this value is ignored.
+
+        persist : bool
+            Whether to leave the alert in the 'on' state when the cycles
+            finish. If 'on' is -1, this value is ignored.
+
+        """
         if self.proxy_is_active:
             self.proxy.alert(level, on, off, repeat, persist)
 
