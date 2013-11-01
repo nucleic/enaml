@@ -245,7 +245,19 @@ def _tab_bar(name, pc):
 
 
 def _tab_bar_tab(name, pc):
-    return _basic_pc(u'QDockTabBar::tab', pc)
+    rest = []
+    alert = u''
+    for part in pc.split(u':'):
+        match = _alert_re.match(part)
+        if match is not None:
+            alert = match.group(1)
+        else:
+            rest.append(part)
+    if alert:
+        root = u'QDockTabBar[alert="%s"]::tab' % alert
+    else:
+        root = u'QDockTabBar::tab'
+    return _basic_pc(root, pc)
 
 
 def _tab_bar_close_button(name, pc):
