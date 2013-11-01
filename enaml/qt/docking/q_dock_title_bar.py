@@ -107,6 +107,17 @@ class IDockTitleBar(QWidget):
         """
         raise NotImplementedError
 
+    def label(self):
+        """ Get the label for the title bar.
+
+        Returns
+        -------
+        result : QTextLabel
+            The label for the title bar.
+
+        """
+        raise NotImplementedError
+
     def icon(self):
         """ Get the icon for the title bar.
 
@@ -535,6 +546,17 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         """
         self._title_label.setText(title)
+
+    def label(self):
+        """ Get the label which holds the title string.
+
+        Returns
+        -------
+        result : QTextLabel
+            The label widget which holds the title string.
+
+        """
+        return self._title_label
 
     def icon(self):
         """ Get the icon for the title bar.

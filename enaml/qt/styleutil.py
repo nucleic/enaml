@@ -12,6 +12,8 @@ from enaml.styling import StyleCache
 
 _grad_re = re.compile(ur'(lineargradient|radialgradient)')
 
+_alert_re = re.compile(ur'alert\((-?[_a-zA-Z][_a-zA-Z0-9-]*)\)')
+
 
 def _translate_gradient(v):
     return _grad_re.sub(ur'q\1', v)
@@ -172,7 +174,7 @@ def _dock_bar(name, pc):
 
 
 def _dock_bar_button(name, pc):
-    return _basic_pc(u'QDockBarButton', pc)
+    return _maybe_alert(u'QDockBarButton', name, pc)
 
 
 _position_map = {'top': '0', 'right': '1', 'bottom': '2', 'left': '3'}
@@ -203,7 +205,7 @@ def _dock_container(name, pc):
         root = u'QDockContainer[floating="true"]'
     else:
         root = u'QDockContainer'
-    return _basic_pc(root, u':'.join(rest))
+    return _maybe_alert(root, name, u':'.join(rest))
 
 
 def _dock_window(name, pc):
@@ -243,23 +245,49 @@ def _tab_bar(name, pc):
 
 
 def _tab_bar_tab(name, pc):
-    return _basic_pc(u'QDockTabBar::tab', pc)
+    rest = []
+    alert = u''
+    for part in pc.split(u':'):
+        match = _alert_re.match(part)
+        if match is not None:
+            alert = match.group(1)
+        else:
+            rest.append(part)
+    if alert:
+        root = u'QDockTabBar[alert="%s"]::tab' % alert
+    else:
+        root = u'QDockTabBar::tab'
+    return _basic_pc(root, pc)
 
 
 def _tab_bar_close_button(name, pc):
     return _basic_pc(u'QBitmapButton#docktab-close-button', pc)
 
 
+def _maybe_alert(root, name, pc):
+    rest = []
+    alert = u''
+    for part in pc.split(u':'):
+        match = _alert_re.match(part)
+        if match is not None:
+            alert = match.group(1)
+        else:
+            rest.append(part)
+    if alert:
+        root = u'%s[alert="%s"]' % (root, alert)
+    return _basic_pc(root, u':'.join(rest))
+
+
 def _base_dock_item(name, pc):
-    return _basic_pc(u'QDockItem', pc)
+    return _maybe_alert(u'QDockItem', name, pc)
 
 
 def _title_bar(name, pc):
-    return _basic_pc(u'QDockTitleBar', pc)
+    return _maybe_alert(u'QDockTitleBar', name, pc)
 
 
 def _title_bar_label(name, pc):
-    return _basic_pc(u'QDockTitleBar > QTextLabel', pc)
+    return _maybe_alert(u'QDockTitleBar > QTextLabel', name, pc)
 
 
 def _title_bar_button(name, pc):

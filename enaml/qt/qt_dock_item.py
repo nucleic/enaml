@@ -222,3 +222,9 @@ class QtDockItem(QtWidget, ProxyDockItem):
 
         """
         self.widget.setClosable(closable)
+
+    def alert(self, level, on, off, repeat, persist):
+        """ Set the alert level on the underlying widget.
+
+        """
+        self.widget.alert(level, on, off, repeat, persist)
