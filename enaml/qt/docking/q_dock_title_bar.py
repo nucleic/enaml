@@ -112,8 +112,8 @@ class IDockTitleBar(QWidget):
 
         Returns
         -------
-        result : QLabel
-            The label for the title bar, or None if it has no label.
+        result : QTextLabel
+            The label for the title bar.
 
         """
         raise NotImplementedError
@@ -552,7 +552,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
 
         Returns
         -------
-        result : QLabel
+        result : QTextLabel
             The label widget which holds the title string.
 
         """
