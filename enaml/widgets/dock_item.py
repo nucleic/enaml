@@ -46,6 +46,9 @@ class ProxyDockItem(ProxyWidget):
     def set_closable(self, closable):
         raise NotImplementedError
 
+    def alert(self, level, on, off, repeat, persist):
+        raise NotImplementedError
+
 
 class DockItem(Widget):
     """ A widget which can be docked in a DockArea.
@@ -94,6 +97,10 @@ class DockItem(Widget):
         for child in reversed(self.children):
             if isinstance(child, Container):
                 return child
+
+    def alert(self, level, on=250, off=250, repeat=4, persist=False):
+        if self.proxy_is_active:
+            self.proxy.alert(level, on, off, repeat, persist)
 
     #--------------------------------------------------------------------------
     # Observers

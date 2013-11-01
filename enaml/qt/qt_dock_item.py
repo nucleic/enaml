@@ -222,3 +222,6 @@ class QtDockItem(QtWidget, ProxyDockItem):
 
         """
         self.widget.setClosable(closable)
+
+    def alert(self, level, on, off, repeat, persist):
+        self.widget.alert(level, on, off, repeat, persist)
