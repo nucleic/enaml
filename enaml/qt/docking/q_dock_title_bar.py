@@ -107,6 +107,17 @@ class IDockTitleBar(QWidget):
         """
         raise NotImplementedError
 
+    def label(self):
+        """ Get the label for the title bar.
+
+        Returns
+        -------
+        result : QLabel
+            The label for the title bar, or None if it has no label.
+
+        """
+        raise NotImplementedError
+
     def icon(self):
         """ Get the icon for the title bar.
 
