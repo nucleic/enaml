@@ -174,7 +174,7 @@ def _dock_bar(name, pc):
 
 
 def _dock_bar_button(name, pc):
-    return _basic_pc(u'QDockBarButton', pc)
+    return _maybe_alert(u'QDockBarButton', name, pc)
 
 
 _position_map = {'top': '0', 'right': '1', 'bottom': '2', 'left': '3'}
