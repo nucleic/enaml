@@ -21,6 +21,7 @@ from .event_types import (
     QDockItemEvent, DockItemExtended, DockItemRetracted,
     DockAreaContentsChanged
 )
+from .utils import repolish
 
 
 class QDockBar(QFrame):
@@ -201,6 +202,13 @@ class QDockBarButton(QPushButton):
         if isinstance(parent, QDockBar):
             return parent.position()
         return QDockBar.North
+
+    def onAlerted(self, level):
+        """ A slot which can be connected to an 'alerted' signal.
+
+        """
+        self.setProperty(u'alert', level or None)
+        repolish(self)
 
     #--------------------------------------------------------------------------
     # Reimplementations
@@ -724,6 +732,7 @@ class QDockBarManager(QObject):
         button.setText(container.title())
         button.setIcon(container.icon())
         button.toggled.connect(self._onButtonToggled)
+        container.alerted.connect(button.onAlerted)
 
         dock_bar = self._getDockBar(position)
         dock_bar.insertButton(index, button)
@@ -753,6 +762,7 @@ class QDockBarManager(QObject):
             container.setParent(None)
             container.setPinned(False, quiet=True)
             container.frame_state.in_dock_bar = False
+            container.alerted.disconnect(button.onAlerted)
 
             item = self._widgets.pop(button)
             item.setParent(None)
