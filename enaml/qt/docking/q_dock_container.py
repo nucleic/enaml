@@ -107,6 +107,9 @@ class QDockContainer(QDockFrame):
     #: A signal emitted when the container changes its toplevel state.
     topLevelChanged = Signal(bool)
 
+    #: A signal emitted when the container is alerted.
+    alerted = Signal(unicode)
+
     class FrameState(QDockFrame.FrameState):
         """ A private class for managing container drag state.
 
@@ -141,6 +144,7 @@ class QDockContainer(QDockFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setProperty('floating', False)
+        self.alerted.connect(self.onAlerted)
         self._dock_item = None
 
     def titleBarGeometry(self):
@@ -256,6 +260,7 @@ class QDockContainer(QDockFrame):
             old.linkButtonToggled.disconnect(self.linkButtonToggled)
             old.pinButtonToggled.disconnect(self.onPinButtonToggled)
             old.titleBarLeftDoubleClicked.disconnect(self.toggleMaximized)
+            old.alerted.disconnect(self.onAlerted)
         if dock_item is not None:
             dock_item.maximizeButtonClicked.connect(self.showMaximized)
             dock_item.restoreButtonClicked.connect(self.showNormal)
@@ -263,6 +268,7 @@ class QDockContainer(QDockFrame):
             dock_item.linkButtonToggled.connect(self.linkButtonToggled)
             dock_item.pinButtonToggled.connect(self.onPinButtonToggled)
             dock_item.titleBarLeftDoubleClicked.connect(self.toggleMaximized)
+            dock_item.alerted.connect(self.onAlerted)
         layout.setWidget(dock_item)
         self._dock_item = dock_item
 
@@ -591,6 +597,13 @@ class QDockContainer(QDockFrame):
                             QGuideRose.Guide.BorderWest
                         )[position]
                     plug_frame(area, None, self, guide)
+
+    def onAlerted(self, level):
+        """ A signal handler for the 'alerted' signal.
+
+        """
+        self.setProperty('alert', level or None)
+        repolish(self)
 
     #--------------------------------------------------------------------------
     # Event Handlers

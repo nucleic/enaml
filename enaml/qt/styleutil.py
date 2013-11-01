@@ -205,7 +205,7 @@ def _dock_container(name, pc):
         root = u'QDockContainer[floating="true"]'
     else:
         root = u'QDockContainer'
-    return _basic_pc(root, u':'.join(rest))
+    return _maybe_alert(root, name, u':'.join(rest))
 
 
 def _dock_window(name, pc):
