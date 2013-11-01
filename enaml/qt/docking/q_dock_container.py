@@ -260,7 +260,7 @@ class QDockContainer(QDockFrame):
             old.linkButtonToggled.disconnect(self.linkButtonToggled)
             old.pinButtonToggled.disconnect(self.onPinButtonToggled)
             old.titleBarLeftDoubleClicked.disconnect(self.toggleMaximized)
-            old.alerted.disconnect(self.onAlerted)
+            old.alerted.disconnect(self.alerted)
         if dock_item is not None:
             dock_item.maximizeButtonClicked.connect(self.showMaximized)
             dock_item.restoreButtonClicked.connect(self.showNormal)
@@ -268,7 +268,7 @@ class QDockContainer(QDockFrame):
             dock_item.linkButtonToggled.connect(self.linkButtonToggled)
             dock_item.pinButtonToggled.connect(self.onPinButtonToggled)
             dock_item.titleBarLeftDoubleClicked.connect(self.toggleMaximized)
-            dock_item.alerted.connect(self.onAlerted)
+            dock_item.alerted.connect(self.alerted)
         layout.setWidget(dock_item)
         self._dock_item = dock_item
 
