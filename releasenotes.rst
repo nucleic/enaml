@@ -1,6 +1,12 @@
 Enaml Release Notes
 ===================
 
+0.8.7 - 11/4/2013
+-----------------
+- Add an alerting api for dock items in a dock area. ba766d773090_
+
+.. _ba766d773090: https://github.com/nucleic/enaml/commit/ba766d7730908c7370727da8713a74f7d1380ed2
+
 0.8.6 - 10/30/2013
 ------------------
 - Add 'limit_width' and 'limit_height' virtual constraints. 8722be90844e_
