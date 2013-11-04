@@ -41,6 +41,24 @@ class Include(Declarative):
         for obj in self.objects:
             obj.initialize()
 
+    def destroy(self):
+        """ A reimplemented destructor.
+
+        The Include will destroy all of its objects if the 'destroy_old'
+        flag is set and the parent is not also being destroyed.
+
+        """
+        destroy_items = self.destroy_old
+        if destroy_items:
+            parent = self.parent
+            destroy_items = parent is None or not parent.is_destroyed
+        super(Include, self).destroy()
+        if destroy_items:
+            for item in self.objects:
+                if not item.is_destroyed:
+                    item.destroy()
+        del self.objects
+
     def _observe_objects(self, change):
         """ A change handler for the 'objects' list of the Include.
 
