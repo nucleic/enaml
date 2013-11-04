@@ -351,7 +351,7 @@ class Stylable(Declarative):
         :class:`StyleSheet` children of the item have changed.
 
         """
-        super(Stylable, self).child_added(child)
+        super(Stylable, self).child_removed(child)
         if self.is_initialized and isinstance(child, StyleSheet):
             StyleCache._item_style_sheet_changed(self)
 
