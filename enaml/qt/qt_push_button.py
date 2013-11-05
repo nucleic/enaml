@@ -31,6 +31,13 @@ class QtPushButton(QtAbstractButton, ProxyPushButton):
         """
         self.widget = QPushButton(self.parent_widget())
 
+    def init_widget(self):
+        """ Initialize the state of the widget.
+
+        """
+        super(QtPushButton, self).init_widget()
+        self.set_default(self.declaration.default)
+
     def init_layout(self):
         """ Handle layout initialization for the push button.
 
@@ -72,3 +79,14 @@ class QtPushButton(QtAbstractButton, ProxyPushButton):
         super(QtPushButton, self).child_removed(child)
         if isinstance(child, QtMenu):
             self.widget.setMenu(self.menu())
+
+    #--------------------------------------------------------------------------
+    # ProxyPushButton API
+    #--------------------------------------------------------------------------
+    def set_default(self, default):
+        """ Set the default button behavior for the widget.
+
+        """
+        self.widget.setDefault(default)
+        if default:
+            self.widget.setFocus()

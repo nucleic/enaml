@@ -5,7 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, ForwardTyped
+from atom.api import Bool, Typed, ForwardTyped
+
+from enaml.core.declarative import d_
 
 from .abstract_button import AbstractButton, ProxyAbstractButton
 from .menu import Menu
@@ -18,11 +20,17 @@ class ProxyPushButton(ProxyAbstractButton):
     #: A reference to the PushButton declaration.
     declaration = ForwardTyped(lambda: PushButton)
 
+    def set_default(self, default):
+        raise NotImplementedError
+
 
 class PushButton(AbstractButton):
     """ A button control represented by a standard push button widget.
 
     """
+    #: Whether this button is the default action button in a dialog.
+    default = d_(Bool(False))
+
     #: A reference to the ProxyPushButton object.
     proxy = Typed(ProxyPushButton)
 
