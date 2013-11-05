@@ -1,0 +1,289 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from atom.api import Atom, Bool, Unicode
+from enaml.core.looper import Looper
+from enaml.image import Image
+from enaml.layout.layout_helpers import align, hbox, spacer, vbox
+from enaml.styling import StyleSheet, Style, Setter
+from enaml.widgets.container import Container
+from enaml.widgets.label import Label
+from enaml.widgets.image_view import ImageView
+from enaml.widgets.push_button import PushButton
+from enaml.widgets.separator import Separator
+
+
+#------------------------------------------------------------------------------
+# Base Definitions
+#------------------------------------------------------------------------------
+enamldef MainArea(Container):
+    pass
+
+
+enamldef ContentArea(Container):
+    pass
+
+
+enamldef CommandArea(Container):
+    pass
+
+
+enamldef DetailsArea(Container):
+    pass
+
+
+enamldef FootnoteArea(Container):
+    pass
+
+
+template TaskDialog(Content: ContentArea, Command: CommandArea):
+    Container:
+        alias content
+        alias command
+        constraints = [vbox(content, command, spacing=0)]
+        Content: content:
+            pass
+        Command: command:
+            pass
+
+
+template TaskDialog(Content: ContentArea, Command: CommandArea, Details: DetailsArea):
+    Container:
+        alias content
+        alias command
+        alias details
+        attr show_details: bool = False
+        constraints << [vbox(content, details.when(show_details), command, spacing=0)]
+        Content: content:
+            pass
+        Command: command:
+            pass
+        Details: details:
+            visible << show_details
+
+
+template TaskDialog(Content: ContentArea, Command: CommandArea, Footnote: FootnoteArea):
+    Container:
+        alias content
+        alias command
+        alias footnote
+        constraints = [vbox(content, command, separator, footnote, spacing=0)]
+        Content: content:
+            pass
+        Command: command:
+            pass
+        Separator: separator:
+            pass
+        Footnote: footnote:
+            pass
+
+
+template TaskDialog(Content: ContentArea, Command: CommandArea, Details: DetailsArea, Footnote: FootnoteArea):
+    Container:
+        alias content
+        alias command
+        alias details
+        alias footnote
+        attr show_details: bool = False
+        constraints << [vbox(content, details.when(show_details), command, separator, footnote, spacing=0)]
+        Content: content:
+            pass
+        Command: command:
+            pass
+        Details: details:
+            visible << show_details
+        Separator: separator:
+            pass
+        Footnote: footnote:
+            pass
+
+
+template TaskDialog(Main: MainArea, Content: ContentArea, Command: CommandArea):
+    Container:
+        alias main
+        alias content
+        alias command
+        constraints = [vbox(main, content, command, spacing=0)]
+        Main: main:
+            pass
+        Content: content:
+            pass
+        Command: command:
+            pass
+
+
+template TaskDialog(Main: MainArea, Content: ContentArea, Command: CommandArea, Details: DetailsArea):
+    Container:
+        alias main
+        alias content
+        alias command
+        alias details
+        attr show_details: bool = False
+        constraints << [vbox(main, content, details.when(show_details), command, spacing=0)]
+        Main: main:
+            pass
+        Content: content:
+            pass
+        Command: command:
+            pass
+        Details: details:
+            visible << show_details
+
+
+template TaskDialog(Main: MainArea, Content: ContentArea, Command: CommandArea, Footnote: FootnoteArea):
+    Container:
+        alias main
+        alias content
+        alias command
+        alias footnote
+        constraints = [vbox(main, content, command, separator, footnote, spacing=0)]
+        Main: main:
+            pass
+        Content: content:
+            pass
+        Command: command:
+            pass
+        Separator: separator:
+            pass
+        Footnote: footnote:
+            pass
+
+
+template TaskDialog(Main: MainArea, Content: ContentArea, Command: CommandArea, Details: DetailsArea, Footnote: FootnoteArea):
+    Container:
+        alias main
+        alias content
+        alias command
+        alias details
+        alias footnote
+        attr show_details: bool = False
+        constraints << [vbox(main, content, details.when(show_details), command, separator, footnote, spacing=0)]
+        Main: main:
+            pass
+        Content: content:
+            pass
+        Command: command:
+            pass
+        Details: details:
+            visible << show_details
+        Separator: separator:
+            pass
+        Footnote: footnote:
+            pass
+
+
+#------------------------------------------------------------------------------
+# Standard Main Area
+#------------------------------------------------------------------------------
+enamldef StandardMain(MainArea):
+    alias label
+    attr text: basestring
+    hug_height = 'strong'
+    Label: label:
+        text = parent.text
+        style_class = 'main-label'
+
+
+enamldef StandardImageMain(MainArea):
+    alias label
+    alias image_view
+    attr text: basestring
+    attr image: Image
+    hug_height = 'strong'
+    constraints = [hbox(image_view, label), align('top', image_view, label)]
+    ImageView: image_view:
+        hug_width = 'strong'
+        image = parent.image
+        style_class = 'main-image'
+    Label: label:
+        text = parent.text
+        style_class = 'main-label'
+
+
+#------------------------------------------------------------------------------
+# Dialog Buttons
+#------------------------------------------------------------------------------
+class ButtonData(Atom):
+    text = Unicode()
+    default = Bool(False)
+    enabled = Bool(True)
+
+
+enamldef DialogButtonBox(Container):
+    attr buttons: list
+    event button_clicked
+    hug_width = 'strong'
+    hug_height = 'strong'
+    constraints = [hbox(*widgets(), spacing=6)]
+    Looper:
+        iterable = buttons
+        PushButton:
+            style_class = 'dialog-button'
+            text = loop_item.text
+            default = loop_item.default
+            enabled << loop_item.enabled
+            clicked :: button_clicked(loop_item)
+
+
+#------------------------------------------------------------------------------
+# Standard Command Area
+#------------------------------------------------------------------------------
+enamldef StandardCommand(CommandArea):
+    alias buttons: button_box.buttons
+    constraints = [hbox(spacer, button_box)]
+    DialogButtonBox: button_box:
+        padding = 0
+
+from enaml.widgets.check_box import CheckBox
+
+enamldef StandardDetailCommand(CommandArea):
+    alias buttons: button_box.buttons
+    alias show_details: detail.checked
+    attr detail_button: ButtonData
+    constraints = [hbox(detail, spacer, button_box), align('v_center', detail, button_box)]
+    CheckBox: detail:
+        style_class = 'detail-button'
+        text = detail_button.text
+        enabled << detail_button.enabled
+        #checkable = True
+        checked = False
+    DialogButtonBox: button_box:
+        padding = 0
+
+
+#------------------------------------------------------------------------------
+# Task Dialog Style Sheet
+#------------------------------------------------------------------------------
+enamldef TaskDialogStyleSheet(StyleSheet):
+    Style:
+        element = 'MainArea'
+        Setter:
+            field = 'background'
+            value = 'white'
+    Style:
+        element = 'ContentArea'
+        Setter:
+            field = 'background'
+            value = 'white'
+    Style:
+        element = 'DetailsArea'
+        Setter:
+            field = 'background'
+            value = 'white'
+    Style:
+        element = 'CommandArea'
+        Setter:
+            field = 'border-top'
+            value = '1px solid #DEDEDE'
+    Style:
+        style_class = 'main-label'
+        Setter:
+            field = 'font'
+            value = '13pt Verdana'
+        Setter:
+            field = 'color'
+            value = '#052A8E'

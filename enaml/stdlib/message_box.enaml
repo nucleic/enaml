@@ -1,0 +1,38 @@
+from atom.api import Atom, Bool, List, Unicode
+from enaml.stdlib.task_dialog import *
+from enaml.widgets.api import *
+from enaml.styling import Style, Setter
+
+enamldef MyFootnote(FootnoteArea):
+    hug_height = 'strong'
+    Label:
+        text = 'This is a footnote'
+
+
+enamldef MyContent(ContentArea):
+    hug_height = 'strong'
+    Label:
+        text = 'This is some content'
+
+enamldef MyDetails(DetailsArea):
+    hug_height = 'strong'
+    padding = (0, 10, 10, 10)
+    Field: pass
+    Field: pass
+    Field: pass
+
+
+enamldef Main(Dialog):
+    attr foo = False
+    TaskDialogStyleSheet:
+        pass
+    TaskDialog(StandardMain, MyContent, StandardDetailCommand, MyDetails, MyFootnote): td:
+        td.padding = 0
+        td.main.text = 'Do you wish to continue?'
+        td.hug_height = 'strong'
+        td.command.buttons = [ButtonData(text='Ok')]
+        td.command.detail_button = ButtonData(text='More details')
+        td.command.show_details := foo
+        td.command.hug_height = 'strong'
+        td.show_details << foo
+        td.footnote.hug_height = 'strong'
