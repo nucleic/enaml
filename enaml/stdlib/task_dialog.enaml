@@ -166,17 +166,17 @@ class TaskDialogBody(Container):
 enamldef TaskDialogStyleSheet(StyleSheet):
     """ A style sheet which provides basic styling for a task dialog.
 
-    This stylesheet can be declared, and optional extended, in the body
-    of a Dialog which contains a TaskDialogBody as its central widget.
-    It provides a styling theme which is consistent with the look and
-    feel of Windows 7/8 task dialogs.
+    This stylesheet can be declared, and optionally extended, in the
+    body of a Dialog which contains a TaskDialogBody as its central
+    widget. It provides a styling theme which is consistent with the
+    look and feel of Windows 7/8 task dialogs.
 
     """
     Style:
-        element = ('TaskDialogIconArea, '
-                   'TaskDialogInstructionArea, '
-                   'TaskDialogContentArea, '
-                   'TaskDialogDetailsArea')
+        element = (
+            'TaskDialogIconArea, TaskDialogInstructionArea, '
+            'TaskDialogContentArea, TaskDialogDetailsArea'
+        )
         Setter:
             field = 'background'
             value = 'white'
