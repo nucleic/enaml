@@ -33,6 +33,9 @@ class TaskDialogInstructionArea(Container):
     #: The instruction area hugs its height hint strongly by default.
     hug_height = set_default('strong')
 
+    #: The default padding is set appropriate for common use cases.
+    padding = set_default((10, 10, 15, 10))
+
 
 class TaskDialogContentArea(Container):
     """ A custom container for use in a task dialog.
@@ -43,6 +46,9 @@ class TaskDialogContentArea(Container):
     """
     #: The content area hugs its height hint strongly by default.
     hug_height = set_default('strong')
+
+    #: The default padding is set appropriate for common use cases.
+    padding = set_default((0, 10, 15, 10))
 
 
 class TaskDialogCommandArea(Container):
@@ -65,6 +71,9 @@ class TaskDialogDetailsArea(Container):
     """
     #: The details area hugs its height hint strongly by default.
     hug_height = set_default('strong')
+
+    #: The default padding is set appropriate for common use cases.
+    padding = set_default((0, 10, 15, 10))
 
     def _observe_visible(self, change):
         if change['type'] == 'update':
@@ -184,13 +193,19 @@ enamldef TaskDialogStyleSheet(StyleSheet):
         element = 'TaskDialogCommandArea'
         Setter:
             field = 'border-top'
-            value = '1px solid #DEDEDE'
+            value = '1px solid #D9D9D9'
     Style:
         element = 'Label'
-        style_class = 'task-dialog-main-area-label'
+        style_class = 'task-dialog-instructions'
         Setter:
             field = 'font'
-            value = '13pt Verdana'
+            value = '12pt "Segoe UI"'
         Setter:
             field = 'color'
-            value = '#052A8E'
+            value = '#003399'
+    Style:
+        element = 'Label'
+        style_class = 'task-dialog-content'
+        Setter:
+            field = 'font'
+            value = '9pt "Segoe UI"'
