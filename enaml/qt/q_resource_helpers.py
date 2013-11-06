@@ -69,9 +69,13 @@ def QImage_from_Image(image):
 
     """
     format = image.format
-    if format == 'auto':
-        format = ''
-    qimage = QImage.fromData(image.data, format)
+    if format == 'argb32':
+        w, h = image.raw_size
+        qimage = QImage(image.data, w, h, QImage.Format_ARGB32)
+    else:
+        if format == 'auto':
+            format = ''
+        qimage = QImage.fromData(image.data, format)
     if -1 not in image.size and not qimage.isNull():
         qsize = QSize(*image.size)
         if qsize != qimage.size():
