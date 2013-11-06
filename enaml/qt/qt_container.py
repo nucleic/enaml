@@ -347,12 +347,10 @@ class QtContainer(QtFrame, ProxyContainer):
         """
         widget = self.widget
         widget.setSizeHint(self.compute_best_size())
-        parent = widget.parent()
-        if parent is not None and parent.isWindow():
-            # Only set min and max size if the widget is a central
-            # widget in a window. Otherwise, it can interere with
-            # the rendering of geometry when required constraints
-            # overrule strong constraints.
+        if not isinstance(widget.parent(), QContainer):
+            # Only set min and max size if the parent is not a container.
+            # The layout manager needs to be the ultimate authority when
+            # dealing with nested containers.
             widget.setMinimumSize(self.compute_min_size())
             widget.setMaximumSize(self.compute_max_size())
 
