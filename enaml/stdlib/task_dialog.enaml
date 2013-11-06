@@ -6,13 +6,23 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import set_default
-from enaml.layout.layout_helpers import grid
+from enaml.layout.layout_helpers import align, vertical
 from enaml.styling import StyleSheet, Style, Setter
 from enaml.widgets.container import Container
 from enaml.widgets.separator import Separator
 
 
-class TaskDialogIconArea(Container):
+class _RigidContainer(Container):
+    """ A container which can never be size smaller than its size hint.
+
+    This is used as a base class for the task dialog areas.
+
+    """
+    resist_width = set_default('required')
+    resist_height = set_default('required')
+
+
+class TaskDialogIconArea(_RigidContainer):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -22,8 +32,11 @@ class TaskDialogIconArea(Container):
     #: The icon area hugs its width hint strongly by default.
     hug_width = set_default('strong')
 
+    #: The default padding is set appropriate for common use cases.
+    padding = set_default((10, 0, 15, 10))
 
-class TaskDialogInstructionArea(Container):
+
+class TaskDialogInstructionArea(_RigidContainer):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -37,7 +50,7 @@ class TaskDialogInstructionArea(Container):
     padding = set_default((10, 10, 15, 10))
 
 
-class TaskDialogContentArea(Container):
+class TaskDialogContentArea(_RigidContainer):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -51,7 +64,7 @@ class TaskDialogContentArea(Container):
     padding = set_default((0, 10, 15, 10))
 
 
-class TaskDialogCommandArea(Container):
+class TaskDialogCommandArea(_RigidContainer):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -62,7 +75,7 @@ class TaskDialogCommandArea(Container):
     hug_height = set_default('strong')
 
 
-class TaskDialogDetailsArea(Container):
+class TaskDialogDetailsArea(_RigidContainer):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -80,7 +93,7 @@ class TaskDialogDetailsArea(Container):
             self.parent.request_relayout()
 
 
-class TaskDialogFootnoteArea(Container):
+class TaskDialogFootnoteArea(_RigidContainer):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -129,6 +142,7 @@ class TaskDialogBody(Container):
         for child in self.children:
             if isinstance(child, TaskDialogFootnoteArea):
                 separator = Separator(self)
+                separator.style_class = 'footnote-separator'
                 separator.initialize()
                 break
 
@@ -158,18 +172,25 @@ class TaskDialogBody(Container):
                 sepr = item
         if dtls is not None and not dtls.visible:
             dtls = None
-        rows = [[inst], [ctnt], [dtls], [cmnd], [sepr], [ftnt]]
-        if icon is not None:
-            rows[0].insert(0, icon)
-            rows[1].insert(0, icon)
-            rows[2].insert(0, icon)
-            rows[3] *= 2
-            rows[4] *= 2
-            rows[5] *= 2
-            rows = filter(lambda row: row[1], rows)
+        t = self.contents_top
+        r = self.contents_right
+        b = self.contents_bottom
+        l = self.contents_left
+        cns = [
+            vertical(t, inst, ctnt, dtls, cmnd, sepr, ftnt, b, spacing=0),
+            align('right', r, inst, ctnt, dtls, cmnd, sepr, ftnt),
+            align('left', l, cmnd, sepr, ftnt),
+            align('left', inst, ctnt, dtls),
+        ]
+        if icon is None:
+            cns.append(align('left', l, inst or ctnt or dtls))
         else:
-            rows = filter(lambda row: row[0], rows)
-        return [grid(*rows, row_spacing=0, column_spacing=0)]
+            cns.extend([
+                vertical(t, icon, cmnd, spacing=0),
+                align('left', l, icon),
+                align('left', icon.right, inst or ctnt or dtls),
+            ])
+        return cns
 
 
 enamldef TaskDialogStyleSheet(StyleSheet):
@@ -182,13 +203,21 @@ enamldef TaskDialogStyleSheet(StyleSheet):
 
     """
     Style:
-        element = (
-            'TaskDialogIconArea, TaskDialogInstructionArea, '
-            'TaskDialogContentArea, TaskDialogDetailsArea'
-        )
+        element = 'TaskDialogBody'
         Setter:
             field = 'background'
             value = 'white'
+    Style:
+        element = 'TaskDialogCommandArea, TaskDialogFootnoteArea'
+        Setter:
+            field = 'background'
+            value = '#F0F0F0'
+    Style:
+        element = 'Separator'
+        style_class = 'footnote-separator'
+        Setter:
+            field = 'background'
+            value = '#F0F0F0'
     Style:
         element = 'TaskDialogCommandArea'
         Setter:
