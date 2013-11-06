@@ -1,38 +1,109 @@
-from atom.api import Atom, Bool, List, Unicode
-from enaml.stdlib.task_dialog import *
-from enaml.widgets.api import *
-from enaml.styling import Style, Setter
-
-enamldef MyFootnote(FootnoteArea):
-    hug_height = 'strong'
-    Label:
-        text = 'This is a footnote'
-
-
-enamldef MyContent(ContentArea):
-    hug_height = 'strong'
-    Label:
-        text = 'This is some content'
-
-enamldef MyDetails(DetailsArea):
-    hug_height = 'strong'
-    padding = (0, 10, 10, 10)
-    Field: pass
-    Field: pass
-    Field: pass
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.core.dynamic_template import DynamicTemplate
+from enaml.image import Image
+from enaml.layout.layout_helpers import align, hbox, spacer
+from enaml.stdlib.dialog_buttons import DialogButtonBox, DialogButton
+from enaml.stdlib.task_dialog import (
+    TaskDialogBody, TaskDialogContentArea, TaskDialogCommandArea,
+    TaskDialogDetailsArea, TaskDialogIconArea, TaskDialogInstructionArea,
+    TaskDialogStyleSheet
+)
+from enaml.widgets.check_box import CheckBox
+from enaml.widgets.dialog import Dialog
 
 
-enamldef Main(Dialog):
-    attr foo = False
+template _BodyImage(HasImage: False): pass
+template _BodyImage(HasImage: True):
+    TaskDialogIconArea:
+        Label:
+            text = 'An image'
+
+
+template _BodyContent(HasContent: False): pass
+template _BodyContent(HasContent: True):
+    TaskDialogContentArea:
+        Label:
+            text = content
+            style_class = 'task-dialog-content'
+
+
+template _BodyDetails(HasDetails: False): pass
+template _BodyDetails(HasDetails: True):
+    TaskDialogDetailsArea:
+        visible << _show_details
+        hug_height = 'ignore'
+        Html:
+            source = details
+
+
+template _BodyCommand(HasDetails: False):
+    TaskDialogCommandArea:
+        constraints = [hbox(spacer, buttons)]
+        DialogButtonBox: buttons:
+            buttons = nonlocals(1).buttons
+
+
+template _BodyCommand(HasDetails: True):
+    TaskDialogCommandArea:
+        constraints = [
+            hbox(details_cb, spacer, buttons),
+            align('v_center', details_cb, buttons),
+        ]
+        CheckBox: details_cb:
+            text = 'More details'
+            checked := _show_details
+        DialogButtonBox: buttons:
+            buttons = nonlocals(1).buttons
+
+
+template _MessageBoxBody(HasImage, HasContent, HasDetails):
+    TaskDialogInstructionArea:
+        Label:
+            text = nonlocals(1).text or u''
+            style_class = 'task-dialog-instructions'
+    _BodyImage(HasImage): pass
+    _BodyContent(HasContent): pass
+    _BodyDetails(HasDetails): pass
+    _BodyCommand(HasDetails): pass
+
+
+enamldef MessageBox(Dialog):
+    attr image: Image
+    attr text: basestring
+    attr content: basestring
+    attr details: basestring
+    attr buttons: list = []
     TaskDialogStyleSheet:
         pass
-    TaskDialog(StandardMain, MyContent, StandardDetailCommand, MyDetails, MyFootnote): td:
-        td.padding = 0
-        td.main.text = 'Do you wish to continue?'
-        td.hug_height = 'strong'
-        td.command.buttons = [ButtonData(text='Ok')]
-        td.command.detail_button = ButtonData(text='More details')
-        td.command.show_details := foo
-        td.command.hug_height = 'strong'
-        td.show_details << foo
-        td.footnote.hug_height = 'strong'
+    TaskDialogBody:
+        attr _show_details = False
+        DynamicTemplate:
+            base = _MessageBoxBody
+            args = (bool(image), bool(content), bool(details))
+
+
+# testing code
+from enaml.widgets.api import *
+
+enamldef Main(Window):
+    Container:
+        PushButton:
+            text = 'Launch dialog'
+            clicked ::
+                MessageBox(
+                    text='Internet Explorer',
+                    details='<h3>this is more details</h3>',
+                    content='If you restart or close the program, you might lose information.',
+                    buttons=[
+                        DialogButton('OK', 'accept'),
+                        DialogButton('Cancel', 'reject', default=True),
+                        DialogButton('Apply', 'accept'),
+                    ]
+                ).exec_()
+                close()
