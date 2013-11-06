@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import sys
 from setuptools import setup, find_packages, Extension
 
 
@@ -50,6 +51,17 @@ ext_modules = [
         language='c++',
     )
 ]
+
+
+if sys.platform == 'win32':
+    ext_modules.append(
+        Extension(
+            'enaml.winutil',
+            ['enaml/src/winutil.cpp'],
+            libraries=['user32', 'gdi32'],
+            language='c++'
+        )
+    )
 
 
 setup(
