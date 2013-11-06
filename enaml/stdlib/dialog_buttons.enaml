@@ -76,7 +76,7 @@ enamldef DialogButtonBox(Container): box:
         instance for the button which was clicked.
 
     """
-    attr buttons: list
+    attr buttons: list = []
     event clicked: DialogButton
     padding = 0
     hug_width = 'strong'
