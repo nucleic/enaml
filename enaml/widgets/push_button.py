@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Typed, ForwardTyped
+from atom.api import Bool, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
 
@@ -41,3 +41,14 @@ class PushButton(AbstractButton):
         for child in reversed(self.children):
             if isinstance(child, Menu):
                 return child
+
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe('default')
+    def _update_proxy(self, change):
+        """ Send the member state change to the proxy.
+
+        """
+        # The superclass implementation is suffient
+        super(PushButton, self)._update_proxy(change)
