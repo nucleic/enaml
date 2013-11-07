@@ -50,5 +50,5 @@ class PushButton(AbstractButton):
         """ Send the member state change to the proxy.
 
         """
-        # The superclass implementation is suffient
+        # The superclass implementation is sufficient
         super(PushButton, self)._update_proxy(change)
