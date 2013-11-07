@@ -13,8 +13,6 @@ class DeferredCallEvent(QEvent):
     """ A custom event type for deferred call events.
 
     """
-    __slots__ = ('callback', 'args', 'kwargs')
-
     # Explicitly coerce to QEvent.Type for PySide compatibility.
     Type = QEvent.Type(QEvent.registerEventType())
 
