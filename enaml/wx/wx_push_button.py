@@ -59,3 +59,12 @@ class WxPushButton(WxAbstractButton, ProxyPushButton):
 
         """
         pass
+
+    #--------------------------------------------------------------------------
+    # ProxyPushButton API
+    #--------------------------------------------------------------------------
+    def set_default(self, default):
+        """ This is not supported on Wx.
+
+        """
+        pass

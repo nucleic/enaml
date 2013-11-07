@@ -32,8 +32,13 @@ class Image(Atom):
         'pgm',      # Portable Graymap
         'ppm',      # Portable Pixmap
         'tiff',     # Tagged Image File Format
-        # 'array',    # A numpy array with an appropriate image dtype.
+        'argb32',   # Raw data in the 0xAARRGGBB format.
+                    # The `raw_size` of the image must be provided.
     )
+
+    #: The (width, height) raw size of the image. This must be provided
+    #: for images where the size is not encoded in the data stream.
+    raw_size = Coerced(Size, (0, 0))
 
     #: The (width, height) size of the image. An invalid size indicates
     #: that the size of the image should be automatically inferred. A

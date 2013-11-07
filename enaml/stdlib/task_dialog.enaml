@@ -1,0 +1,230 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from atom.api import set_default
+from enaml.layout.layout_helpers import align, vertical
+from enaml.styling import StyleSheet, Style, Setter
+from enaml.widgets.container import Container
+from enaml.widgets.separator import Separator
+
+
+class _RigidContainer(Container):
+    """ A container which can never be size smaller than its size hint.
+
+    This is used as a base class for the task dialog areas.
+
+    """
+    resist_width = set_default('required')
+    resist_height = set_default('required')
+
+
+class TaskDialogIconArea(_RigidContainer):
+    """ A custom container for use in a task dialog.
+
+    User code can declare and instance of this element in the body of a
+    TaskDialogBody in order to provide icon area content.
+
+    """
+    #: The icon area hugs its width hint strongly by default.
+    hug_width = set_default('strong')
+
+    #: The default padding is set appropriate for common use cases.
+    padding = set_default((10, 0, 15, 10))
+
+
+class TaskDialogInstructionArea(_RigidContainer):
+    """ A custom container for use in a task dialog.
+
+    User code can declare and instance of this element in the body of a
+    TaskDialogBody in order to provide instruction area content.
+
+    """
+    #: The instruction area hugs its height hint strongly by default.
+    hug_height = set_default('strong')
+
+    #: The default padding is set appropriate for common use cases.
+    padding = set_default((10, 10, 15, 10))
+
+
+class TaskDialogContentArea(_RigidContainer):
+    """ A custom container for use in a task dialog.
+
+    User code can declare and instance of this element in the body of a
+    TaskDialogBody in order to provide content area content.
+
+    """
+    #: The content area hugs its height hint strongly by default.
+    hug_height = set_default('strong')
+
+    #: The default padding is set appropriate for common use cases.
+    padding = set_default((0, 10, 15, 10))
+
+
+class TaskDialogCommandArea(_RigidContainer):
+    """ A custom container for use in a task dialog.
+
+    User code can declare and instance of this element in the body of a
+    TaskDialogBody in order to provide command area content.
+
+    """
+    #: The command area hugs its height hint strongly by default.
+    hug_height = set_default('strong')
+
+
+class TaskDialogDetailsArea(_RigidContainer):
+    """ A custom container for use in a task dialog.
+
+    User code can declare and instance of this element in the body of a
+    TaskDialogBody in order to provide details area content.
+
+    """
+    #: The details area hugs its height hint strongly by default.
+    hug_height = set_default('strong')
+
+    #: The default padding is set appropriate for common use cases.
+    padding = set_default((0, 10, 15, 10))
+
+    def _observe_visible(self, change):
+        if change['type'] == 'update':
+            self.parent.request_relayout()
+
+
+class TaskDialogFootnoteArea(_RigidContainer):
+    """ A custom container for use in a task dialog.
+
+    User code can declare and instance of this element in the body of a
+    TaskDialogBody in order to provide footnote area content.
+
+    """
+    #: The footnote area hugs its height hint strongly by default.
+    hug_height = set_default('strong')
+
+
+class TaskDialogBody(Container):
+    """ A custom container used to create a task dialog body.
+
+    A TaskDialogBody element should be declared as the central widget
+    of a Dialog widget. The element layout logic which automatically
+    arranges the dialog area containers declared as children.
+
+    The dialog body supports the following area children, all of which
+    are optional. User code should declare at most one of each type
+    of child:
+
+    - TaskDialogIconArea
+    - TaskDialogInstructionArea
+    - TaskDialogContentArea
+    - TaskDialogDetailsArea
+    - TaskDialogCommandArea
+    - TaskDialogFootnoteArea
+
+    No other widget types should be used as children of the dialog body.
+
+    """
+    #: The dialog body has no padding by default.
+    padding = set_default(0)
+
+    #: The dialog body hugs its height hint strongly by default.
+    hug_height = set_default('strong')
+
+    def initialize(self):
+        """ A reimplemented initialization method.
+
+        This initializer will add a horizontal separator as a child of
+        the element if it detects a child footnote area.
+
+        """
+        super(TaskDialogBody, self).initialize()
+        for child in self.children:
+            if isinstance(child, TaskDialogFootnoteArea):
+                separator = Separator(self)
+                separator.style_class = 'footnote-separator'
+                separator.initialize()
+                break
+
+    def layout_constraints(self):
+        """ A reimplemented constraints generation method.
+
+        This method will setup a grid layout which is appropriate for
+        the task dialog area children defined for the dialog body. The
+        'constraints' attribute is ignored entirely.
+
+        """
+        icon = inst = ctnt = dtls = cmnd = sepr = ftnt = None
+        for item in self.widgets():
+            if isinstance(item, TaskDialogIconArea):
+                icon = item
+            elif isinstance(item, TaskDialogInstructionArea):
+                inst = item
+            elif isinstance(item, TaskDialogContentArea):
+                ctnt = item
+            elif isinstance(item, TaskDialogCommandArea):
+                cmnd = item
+            elif isinstance(item, TaskDialogDetailsArea):
+                dtls = item
+            elif isinstance(item, TaskDialogFootnoteArea):
+                ftnt = item
+            elif isinstance(item, Separator):
+                sepr = item
+        if dtls is not None and not dtls.visible:
+            dtls = None
+        t = self.contents_top
+        r = self.contents_right
+        b = self.contents_bottom
+        l = self.contents_left
+        cns = [
+            vertical(t, inst, ctnt, dtls, cmnd, sepr, ftnt, b, spacing=0),
+            align('right', r, inst, ctnt, dtls, cmnd, sepr, ftnt),
+            align('left', l, cmnd, sepr, ftnt),
+            align('left', inst, ctnt, dtls),
+        ]
+        if icon is None:
+            cns.append(align('left', l, inst or ctnt or dtls))
+        else:
+            cns.extend([
+                vertical(t, icon, cmnd, spacing=0),
+                align('left', l, icon),
+                align('left', icon.right, inst or ctnt or dtls),
+            ])
+        return cns
+
+
+enamldef TaskDialogStyleSheet(StyleSheet):
+    """ A style sheet which provides basic styling for a task dialog.
+
+    This stylesheet can be declared, and optionally extended, in the
+    body of a Dialog which contains a TaskDialogBody as its central
+    widget. It provides a styling theme which is consistent with the
+    look and feel of Windows 7/8 task dialogs.
+
+    """
+    Style:
+        element = ('TaskDialogIconArea, TaskDialogInstructionArea, '
+                   'TaskDialogContentArea, TaskDialogDetailsArea')
+        Setter:
+            field = 'background'
+            value = 'white'
+    Style:
+        element = 'TaskDialogCommandArea'
+        Setter:
+            field = 'border-top'
+            value = '1px solid #D9D9D9'
+    Style:
+        element = 'Label'
+        style_class = 'task-dialog-instructions'
+        Setter:
+            field = 'font'
+            value = '12pt "Segoe UI"'
+        Setter:
+            field = 'color'
+            value = '#003399'
+    Style:
+        element = 'Label'
+        style_class = 'task-dialog-content'
+        Setter:
+            field = 'font'
+            value = '9pt "Segoe UI"'

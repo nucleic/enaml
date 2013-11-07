@@ -76,7 +76,7 @@ class Page(Widget):
         """ Send the member state change to the proxy.
 
         """
-        # The superclass implementation is suffient
+        # The superclass implementation is sufficient
         super(Page, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------

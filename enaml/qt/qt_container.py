@@ -347,8 +347,12 @@ class QtContainer(QtFrame, ProxyContainer):
         """
         widget = self.widget
         widget.setSizeHint(self.compute_best_size())
-        widget.setMinimumSize(self.compute_min_size())
-        widget.setMaximumSize(self.compute_max_size())
+        if not isinstance(widget.parent(), QContainer):
+            # Only set min and max size if the parent is not a container.
+            # The layout manager needs to be the ultimate authority when
+            # dealing with nested containers.
+            widget.setMinimumSize(self.compute_min_size())
+            widget.setMaximumSize(self.compute_max_size())
 
     def _build_refresher(self, manager):
         """ Build the refresh function for the container.
