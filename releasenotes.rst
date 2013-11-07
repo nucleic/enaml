@@ -1,6 +1,12 @@
 Enaml Release Notes
 ===================
 
+0.8.8 - 11/7/2013
+-----------------
+- Add a task dialog mini-framework and a MessageBox stlib component. 5583808f293a_
+
+.. _5583808f293a: https://github.com/nucleic/enaml/commit/5583808f293a881ea52b00907fd3d85cc2b3e7b0
+
 0.8.7 - 11/4/2013
 -----------------
 - Add an alerting api for dock items in a dock area. ba766d773090_
