@@ -203,21 +203,11 @@ enamldef TaskDialogStyleSheet(StyleSheet):
 
     """
     Style:
-        element = 'TaskDialogBody'
+        element = ('TaskDialogIconArea, TaskDialogInstructionArea, '
+                   'TaskDialogContentArea, TaskDialogDetailsArea')
         Setter:
             field = 'background'
             value = 'white'
-    Style:
-        element = 'TaskDialogCommandArea, TaskDialogFootnoteArea'
-        Setter:
-            field = 'background'
-            value = '#F0F0F0'
-    Style:
-        element = 'Separator'
-        style_class = 'footnote-separator'
-        Setter:
-            field = 'background'
-            value = '#F0F0F0'
     Style:
         element = 'TaskDialogCommandArea'
         Setter:
