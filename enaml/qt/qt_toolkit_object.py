@@ -9,7 +9,6 @@ from atom.api import Typed
 
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 
-from . import QT_API
 from .QtCore import QObject
 
 
@@ -17,9 +16,9 @@ class QtToolkitObject(ProxyToolkitObject):
     """ A Qt implementation of an Enaml ProxyToolkitObject.
 
     """
-    # PySide requires weakrefs for using bound methods as slots
-    if QT_API == 'pyside':
-        __slots__ = '__weakref__'
+    # PySide requires weakrefs for using bound methods as slots.
+    # PyQt doesn't, but executes unsafe code if not using weakrefs.
+    __slots__ = '__weakref__'
 
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QObject)
