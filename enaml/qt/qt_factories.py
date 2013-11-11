@@ -115,6 +115,11 @@ def html_factory():
     return QtHtml
 
 
+def histogram_slider_factory():
+    from .qt_histogram_slider import QtHistogramSlider
+    return QtHistogramSlider
+
+
 def image_factory():
     from .qt_image import QtImage
     return QtImage
@@ -183,6 +188,11 @@ def page_factory():
 def popup_view_factory():
     from .qt_popup_view import QtPopupView
     return QtPopupView
+
+
+def pivot_selector_factory():
+    from .qt_pivot_selector import QtPivotSelector
+    return QtPivotSelector
 
 
 def push_button_factory():
@@ -307,6 +317,7 @@ QT_FACTORIES = {
     'FlowItem': flow_item_factory,
     'GroupBox': group_box_factory,
     'Html': html_factory,
+    'HistogramSlider': histogram_slider_factory,
     'Image': image_factory,
     'ImageView': image_view_factory,
     'Label': label_factory,
@@ -321,6 +332,7 @@ QT_FACTORIES = {
     'ObjectCombo': object_combo_factory,
     'Page': page_factory,
     'PopupView': popup_view_factory,
+    'PivotSelector': pivot_selector_factory,
     'PushButton': push_button_factory,
     'ProgressBar': progress_bar_factory,
     'RadioButton': radio_button_factory,
