@@ -90,6 +90,7 @@ class QtToolkitObject(ProxyToolkitObject):
         """
         if self.widget is not None:
             self.widget.setParent(None)
+            self.widget.deleteLater()
             del self.widget
         super(QtToolkitObject, self).destroy()
 
