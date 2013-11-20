@@ -52,8 +52,11 @@ class QFocusLineEdit(QLineEdit):
         """Allow user to drop file types"""
         urls = []
         if event.mimeData().hasUrls:
-            for url in event.mimeData().urls():
-                urls.append(str(url.toString()))
+            for q_url in event.mimeData().urls():
+                url = str(q_url.toString())
+                if url.startswith('file:'):
+                    url = url[8:]
+                urls.append(url)
         if urls:
             event.setDropAction(Qt.CopyAction)
             event.accept()
@@ -178,6 +181,8 @@ class QtField(QtControl, ProxyField):
         if len(urls) == 1:
             urls = urls[0]
         self.set_text(str(urls))
+        self._validate_and_apply()
+        self.on_text_edited()
 
     #--------------------------------------------------------------------------
     # ProxyField API
