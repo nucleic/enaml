@@ -11,6 +11,7 @@ from enaml.widgets.file_dialog_ex import ProxyFileDialogEx
 
 from .QtGui import QFileDialog
 
+from .q_file_dialog_helper import get_file_dialog_exec_func
 from .qt_toolkit_dialog import QtToolkitDialog
 
 
@@ -166,19 +167,23 @@ class QtFileDialogEx(QtToolkitDialog, ProxyFileDialogEx):
         selected_filter = d.selected_name_filter
         parent = self.parent_widget()
         if d.file_mode == 'directory':
-            path = QFileDialog.getExistingDirectory(parent, caption, path)
+            exec_func = get_file_dialog_exec_func('directory')
+            path = exec_func(parent, caption, path)
             paths = [path] if path else []
         elif d.accept_mode == 'save':
-            path, selected_filter = QFileDialog.getSaveFileNameAndFilter(
+            exec_func = get_file_dialog_exec_func('save_file')
+            path, selected_filter = exec_func(
                 parent, caption, path, filters, selected_filter
             )
             paths = [path] if path else []
         elif d.file_mode == 'existing_files':
-            paths, selected_filter = QFileDialog.getOpenFileNamesAndFilter(
+            exec_func = get_file_dialog_exec_func('open_files')
+            paths, selected_filter = exec_func(
                 parent, caption, path, filters, selected_filter
             )
         else:
-            path, selected_filter = QFileDialog.getOpenFileNameAndFilter(
+            exec_func = get_file_dialog_exec_func('open_file')
+            path, selected_filter = exec_func(
                 parent, caption, path, filters, selected_filter
             )
             paths = [path] if path else []
