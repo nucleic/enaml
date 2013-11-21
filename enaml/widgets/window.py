@@ -71,6 +71,9 @@ class ProxyWindow(ProxyWidget):
     def send_to_back(self):
         raise NotImplementedError
 
+    def activate_window(self):
+        raise NotImplementedError
+
     def center_on_screen(self):
         raise NotImplementedError
 
@@ -121,7 +124,8 @@ class Window(Widget):
     #: The title bar icon.
     icon = d_(Typed(Icon))
 
-    #: Whether or not the window remains on top of all others.
+    #: Whether the window styas on top of other windows on the desktop.
+    #: Changes to this value after the window is shown will be ignored.
     always_on_top = d_(Bool(False))
 
     #: An event fired when the window is closed. This event is triggered
@@ -275,18 +279,38 @@ class Window(Widget):
             self.proxy.restore()
 
     def send_to_front(self):
-        """ Send the window to the top of the Z order.
+        """ Send the window to the top of the Z-order.
+
+        This will only affect the Z-order of the window relative to the
+        Z-order of other windows in the same application.
 
         """
         if self.proxy_is_active:
             self.proxy.send_to_front()
 
     def send_to_back(self):
-        """ Send the window to the bottom of the Z order.
+        """ Send the window to the bottom of the Z-order.
+
+        This will only affect the Z-order of the window relative to the
+        Z-order of other windows in the same application.
 
         """
         if self.proxy_is_active:
             self.proxy.send_to_back()
+
+    def activate_window(self):
+        """ Set this window to be the active application window.
+
+        This performs the same operation as clicking the mouse on the
+        title bar of the window, except that it will not effect the Z
+        order of the window.
+
+        On Windows, this will cause the taskbar icon to flash if the
+        window does not belong to the active application.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.activate_window()
 
     def center_on_screen(self):
         """ Center the window on the screen.
