@@ -302,17 +302,29 @@ class WxWindow(WxWidget, ProxyWindow):
         """
         self.widget.Maximize(True)
 
+    def is_maximized(self):
+        """ Get whether the window is maximized.
+
+        """
+        return self.widget.IsMaximized()
+
     def minimize(self):
         """ Minimize the window.
 
         """
         self.widget.Iconize(True)
 
+    def is_minimized(self):
+        """ Get whether the window is minimized.
+
+        """
+        return self.widget.IsIconized()
+
     def restore(self):
         """ Restore the window after a minimize or maximize.
 
         """
-        self.widget.maximize(False)
+        self.widget.Maximize(False)
 
     def send_to_front(self):
         """ Move the window to the top of the Z order.

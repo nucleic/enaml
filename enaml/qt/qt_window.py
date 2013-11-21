@@ -233,11 +233,23 @@ class QtWindow(QtWidget, ProxyWindow):
         """
         self.widget.showMaximized()
 
+    def is_maximized(self):
+        """ Get whether the window is maximized.
+
+        """
+        return bool(self.widget.windowState() & Qt.WindowMaximized)
+
     def minimize(self):
         """ Minimize the window.
 
         """
         self.widget.showMinimized()
+
+    def is_minimized(self):
+        """ Get whether the window is minimized.
+
+        """
+        return bool(self.widget.windowState() & Qt.WindowMinimized)
 
     def restore(self):
         """ Restore the window after a minimize or maximize.
