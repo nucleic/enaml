@@ -108,7 +108,8 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         """ Create the underlying widget QMainWindow widget.
 
         """
-        widget = QCustomMainWindow(self.parent_widget())
+        flags = self.creation_flags()
+        widget = QCustomMainWindow(self.parent_widget(), flags)
         widget.setDocumentMode(True)
         widget.setDockNestingEnabled(True)
         self.widget = widget
