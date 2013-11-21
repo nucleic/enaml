@@ -12,7 +12,7 @@ from atom.api import Typed
 from enaml.styling import StyleCache
 from enaml.widgets.widget import ProxyWidget
 
-from .QtCore import Qt, QSize
+from .QtCore import Qt, QSize, QObject, Signal, QEvent
 from .QtGui import QFont, QWidget, QWidgetItem, QApplication
 
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
@@ -20,6 +20,39 @@ from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
 
 
+class DragFilter(QObject):
+    
+    dropEvent = Signal(object)
+    
+    def __init__(self, parent, proxy):
+        super(DragFilter, self).__init__(parent)
+        
+    def eventFilter(self, obj, event):
+        if not obj is self.parent():
+            return
+        etype = event.type()
+        if etype == QEvent.DragEnter or etype == QEvent.DragMove:
+            mimeData = event.mimeData()
+            if mimeData.hasUrls or mimeData.hasFormat('text/plain'):
+                event.accept()
+                return True
+            else:
+                return False
+        elif etype == QEvent.Drop:
+            urls = [url.toString() for url in event.mimeData().urls()]
+            text = event.mimeData().text()
+            if not urls or text:
+                return False
+            data = dict(text=text, urls=urls, position=0)
+            if hasattr(obj, 'cursorForPosition'):
+                cursor = obj.cursorForPosition(event.pos())
+                data['position'] = cursor.position()
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+            self.dropEvent.emit(data)
+        return False
+
+    
 class QtWidget(QtToolkitObject, ProxyWidget):
     """ A Qt implementation of an Enaml ProxyWidget.
 
@@ -30,6 +63,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     #: A QWidgetItem created on-demand for the widget. This is used by
     #: the layout engine to compute correct size hints for the widget.
     widget_item = Typed(QWidgetItem)
+    
+    _drag_filter = Typed(DragFilter)
 
     def _default_widget_item(self):
         return QWidgetItem(self.widget)
@@ -75,7 +110,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         # are created.
         if self.widget.parent() or not d.visible:
             self.set_visible(d.visible)
-
+        self._drag_filter = DragFilter(self.widget, self)
+        self.widget.installEventFilter(self._drag_filter)
+        self._drag_filter.dropEvent.connect(self.on_drop_event)
     #--------------------------------------------------------------------------
     # Protected API
     #--------------------------------------------------------------------------
@@ -94,6 +131,15 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         else:
             stylesheet = u''
         self.widget.setStyleSheet(stylesheet)
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def on_drop_event(self, event):
+        """ Handle the link activated signal.
+
+        """
+        self.declaration.drop_event(event)
 
     #--------------------------------------------------------------------------
     # ProxyWidget API

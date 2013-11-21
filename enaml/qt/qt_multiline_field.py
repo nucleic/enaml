@@ -23,8 +23,6 @@ class QMultilineEdit(QTextEdit):
     #: enabled for this signal to be fired.
     delayedTextChanged = Signal()
     
-    fileDropped = Signal(object, object)
-
     #: Internal storage for the timer object.
     _dtimer = None
 
@@ -51,37 +49,6 @@ class QMultilineEdit(QTextEdit):
                 self._dtimer.timeout.disconnect(self.delayedTextChanged)
                 self._dtimer = None
 
-    def dragEnterEvent(self, event):
-        """Allow user to drag file types"""
-        if event.mimeData().hasUrls:
-            event.accept()
-        else:
-            event.ignore()
-            
-    def dragMoveEvent(self, event):
-        """Allow user to move file types"""
-        if event.mimeData().hasUrls:
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event):
-        """Allow user to drop file types"""
-        urls = []
-        if event.mimeData().hasUrls:
-            for q_url in event.mimeData().urls():
-                url = str(q_url.toString())
-                if url.startswith('file:'):
-                    url = url[8:]
-                urls.append(url)
-        if urls:
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
-            cursor = self.cursorForPosition(event.pos())
-            self.fileDropped.emit(urls, cursor.position())
-        else:
-            event.ignore()
 
 #: cyclic notification guard flag
 TEXT_GUARD = 0x1
@@ -116,7 +83,6 @@ class QtMultilineField(QtControl, ProxyMultilineField):
         self.set_read_only(d.read_only)
         self.set_auto_sync_text(d.auto_sync_text)
         self.widget.delayedTextChanged.connect(self.on_delayed_text_changed)
-        self.widget.fileDropped.connect(self.on_file_dropped)
         
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -130,18 +96,6 @@ class QtMultilineField(QtControl, ProxyMultilineField):
         """
         self.sync_text()
         
-    def on_file_dropped(self, urls, position):
-        """ The signal handler for the 'fileDropped' signal.
-        
-        """
-        if len(urls) == 1:
-            urls = urls[0]
-        text = self.field_text()
-        text = text[:position] + str(urls) + text[position:]
-        self.set_text(text)
-        self._validate_and_apply()
-        self.on_text_edited()
-
     #--------------------------------------------------------------------------
     # ProxyMultilineField API
     #--------------------------------------------------------------------------

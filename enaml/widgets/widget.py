@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
+from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe, Event
 
 from enaml.colors import ColorMember
 from enaml.core.declarative import d_
@@ -22,7 +22,7 @@ class ProxyWidget(ProxyToolkitObject):
     """
     #: A reference to the Widget declaration.
     declaration = ForwardTyped(lambda: Widget)
-
+    
     def set_enabled(self, enabled):
         raise NotImplementedError
 
@@ -101,6 +101,9 @@ class Widget(ToolkitObject, Stylable):
     #: on all clients. A value of None indicates to use the default as
     #: supplied by the client.
     show_focus_rect = d_(Enum(None, True, False))
+    
+    
+    drop_event = d_(Event(), writable=False)
 
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)

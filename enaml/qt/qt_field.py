@@ -27,42 +27,6 @@ class QFocusLineEdit(QLineEdit):
 
     """
     lostFocus = Signal()
-    fileDropped = Signal(object)
-
-    def focusOutEvent(self, event):
-        self.lostFocus.emit()
-        return super(QFocusLineEdit, self).focusOutEvent(event)
-        
-    def dragEnterEvent(self, event):
-        """Allow user to drag file types"""
-        if event.mimeData().hasUrls:
-            event.accept()
-        else:
-            event.ignore()
-            
-    def dragMoveEvent(self, event):
-        """Allow user to move file types"""
-        if event.mimeData().hasUrls:
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event):
-        """Allow user to drop file types"""
-        urls = []
-        if event.mimeData().hasUrls:
-            for q_url in event.mimeData().urls():
-                url = str(q_url.toString())
-                if url.startswith('file:'):
-                    url = url[8:]
-                urls.append(url)
-        if urls:
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
-            self.fileDropped.emit(urls)
-        else:
-            event.ignore()
 
 
 # Guard flags
@@ -109,7 +73,6 @@ class QtField(QtControl, ProxyField):
         self.set_read_only(d.read_only)
         self.set_submit_triggers(d.submit_triggers)
         self.widget.textEdited.connect(self.on_text_edited)
-        self.widget.fileDropped.connect(self.on_file_dropped)
 
     #--------------------------------------------------------------------------
     # Private API
@@ -173,16 +136,6 @@ class QtField(QtControl, ProxyField):
             self.widget.setToolTip(u'')
         if self._text_timer is not None:
             self._text_timer.start()
-            
-    def on_file_dropped(self, urls):
-        """ The signal handler for the 'fileDropped' signal.
-        
-        """
-        if len(urls) == 1:
-            urls = urls[0]
-        self.set_text(str(urls))
-        self._validate_and_apply()
-        self.on_text_edited()
 
     #--------------------------------------------------------------------------
     # ProxyField API
