@@ -102,7 +102,8 @@ class Widget(ToolkitObject, Stylable):
     #: supplied by the client.
     show_focus_rect = d_(Enum(None, True, False))
     
-    
+    #: An event emitted when the user drags an item into the widget
+    #: The payload will be a dictionary with the urls, text, and position
     drop_event = d_(Event(), writable=False)
 
     #: A reference to the ProxyWidget object.

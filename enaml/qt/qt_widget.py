@@ -31,7 +31,7 @@ class DragFilter(QObject):
         if not obj is self.parent():
             return
         etype = event.type()
-        if etype == QEvent.DragEnter or etype == QEvent.DragMove:
+        if etype in [QEvent.DragEnter, QEvent.DragMove]:
             mimeData = event.mimeData()
             if mimeData.hasUrls or mimeData.hasFormat('text/plain'):
                 event.accept()
@@ -50,6 +50,7 @@ class DragFilter(QObject):
             event.setDropAction(Qt.CopyAction)
             event.accept()
             self.dropEvent.emit(data)
+            return True
         return False
 
     
@@ -64,6 +65,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     #: the layout engine to compute correct size hints for the widget.
     widget_item = Typed(QWidgetItem)
     
+    #: An event filter for catching drag and drop events
     _drag_filter = Typed(DragFilter)
 
     def _default_widget_item(self):
