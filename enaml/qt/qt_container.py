@@ -244,6 +244,24 @@ class QtContainer(QtFrame, ProxyContainer):
         self._refresh()
 
     #--------------------------------------------------------------------------
+    # ProxyConstraintsWidget API
+    #--------------------------------------------------------------------------
+    def request_relayout(self):
+        """ A reimplemented layout request handler.
+
+        This method drops the references to layout tables and layout
+        refresh function. This prevents edge case scenarios where a parent
+        container layout will occur before a child container, causing the
+        child to resize (potentially) deleted widgets still held as refs
+        in the layout table.
+
+        """
+        super(QtContainer, self).request_relayout()
+        del self._layout_table
+        del self._offset_table
+        del self._refresh
+
+    #--------------------------------------------------------------------------
     # Public Layout Handling
     #--------------------------------------------------------------------------
     def relayout(self):
