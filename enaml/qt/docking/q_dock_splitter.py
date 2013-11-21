@@ -19,7 +19,7 @@ class QDockSplitterHandle(QSplitterHandle):
 
     """
     def __init__(self, orientation, parent):
-        super(QSplitterHandle, self).__init__(orientation, parent)
+        super(QDockSplitterHandle, self).__init__(orientation, parent)
         self.setAttribute(Qt.WA_Hover)
 
 
