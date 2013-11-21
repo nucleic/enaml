@@ -59,7 +59,13 @@ class ProxyWindow(ProxyWidget):
     def minimize(self):
         raise NotImplementedError
 
+    def is_minimized(self):
+        raise NotImplementedError
+
     def maximize(self):
+        raise NotImplementedError
+
+    def is_maximized(self):
         raise NotImplementedError
 
     def restore(self):
@@ -258,21 +264,37 @@ class Window(Widget):
         return Rect(-1, -1, -1, -1)
 
     def maximize(self):
-        """ Send the 'maximize' action to the client widget.
+        """ Maximize the window.
 
         """
         if self.proxy_is_active:
             self.proxy.maximize()
 
+    def is_maximized(self):
+        """ Get whether the window is maximized.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.is_maximized()
+        return False
+
     def minimize(self):
-        """ Send the 'minimize' action to the client widget.
+        """ Minimize the window.
 
         """
         if self.proxy_is_active:
             self.proxy.minimize()
 
+    def is_minimized(self):
+        """ Get whether the window is minimized.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.is_minimized()
+        return False
+
     def restore(self):
-        """ Send the 'restore' action to the client widget.
+        """ Restore the window from a maximized or minimized state.
 
         """
         if self.proxy_is_active:
