@@ -25,21 +25,21 @@ class DropFilter(QObject):
 
     """
     __slots__ = ('dropEvent', 'validator')
-    
+
     dropEvent = Signal(object)
-    
+
     def __init__(self, parent, validator):
         """ Initialize the DropFilter with a validator callable.
-        
+
         """
         super(DropFilter, self).__init__(parent)
         self.validator = validator
-        
+
     def eventFilter(self, obj, event):
         """ Handle drag and drop events, validate and emit data.
-        
-        """        
-        if self.validator is None: 
+
+        """
+        if self.validator is None:
             return False
         if event.type() in [QEvent.DragEnter, QEvent.DragMove, QEvent.Drop]:
             data = self.get_data(obj, event)
@@ -51,10 +51,10 @@ class DropFilter(QObject):
                 event.accept()
                 return True
         return False
-        
+
     def get_data(self, obj, event):
         """ Gather data from a drag or drop event.
-        
+
         """
         data = event.mimeData()
         urls = [url.toString() for url in data.urls()]
@@ -72,7 +72,7 @@ class DropFilter(QObject):
             data['position'] = obj.cursorPositionAt(event.pos())
         return data
 
-    
+
 class QtWidget(QtToolkitObject, ProxyWidget):
     """ A Qt implementation of an Enaml ProxyWidget.
 
@@ -83,7 +83,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     #: A QWidgetItem created on-demand for the widget. This is used by
     #: the layout engine to compute correct size hints for the widget.
     widget_item = Typed(QWidgetItem)
-    
+
     #: An event filter for catching drag and drop events
     _drop_filter = Typed(DropFilter)
 
@@ -133,7 +133,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         # are created.
         if self.widget.parent() or not d.visible:
             self.set_visible(d.visible)
-        
+
     #--------------------------------------------------------------------------
     # Protected API
     #--------------------------------------------------------------------------
@@ -257,12 +257,12 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setStatusTip(status_tip)
-        
+
     def set_drop_validator(self, validator):
         """ Set the drop event filter for the widget.
-        
+
         Create a drop event filter if necessary.
-        
+
         """
         if not validator is None:
             if self._drop_filter is None:

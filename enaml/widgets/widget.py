@@ -22,7 +22,7 @@ class ProxyWidget(ProxyToolkitObject):
     """
     #: A reference to the Widget declaration.
     declaration = ForwardTyped(lambda: Widget)
-    
+
     def set_enabled(self, enabled):
         raise NotImplementedError
 
@@ -52,7 +52,7 @@ class ProxyWidget(ProxyToolkitObject):
 
     def set_show_focus_rect(self, show_focus_rect):
         raise NotImplementedError
-        
+
     def set_drop_validator(self, drop_validator):
         raise NotImplementedError
 
@@ -104,12 +104,12 @@ class Widget(ToolkitObject, Stylable):
     #: on all clients. A value of None indicates to use the default as
     #: supplied by the client.
     show_focus_rect = d_(Enum(None, True, False))
-    
+
     #: An event emitted when the user drags an item into the widget
     #: The payload will be a dictionary with the following fields:
     #     urls, text, html, has_image, has_color, mime_data, and position
     drop_event = d_(Event(), writable=False)
-    
+
     #: A validator that determines whether to accept drag and drop events
     #: Return True to allow drops, and False otherwise
     drop_event_validator = d_(Callable())
