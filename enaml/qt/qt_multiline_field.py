@@ -8,6 +8,7 @@
 from atom.api import Int, Typed
 
 from enaml.widgets.multiline_field import ProxyMultilineField
+from enaml.application import deferred_call
 
 from .QtCore import QTimer, Signal
 from .QtGui import QTextEdit
@@ -103,6 +104,19 @@ class QtMultilineField(QtControl, ProxyMultilineField):
         """ Set the text in the underlying widget.
 
         """
+        # Use a deferred call because this is not thread-safe
+        deferred_call(self._set_text, text)
+        
+    def _set_text(self, text):
+        """ Set the text on the main thread.
+        
+        """
+        if not self._guard & TEXT_GUARD:
+            self._guard |= TEXT_GUARD
+            try:
+                self.widget.setText(text)
+            finally:
+                self._guard &= ~TEXT_GUARD
         if not self._guard & TEXT_GUARD:
             self._guard |= TEXT_GUARD
             try:
