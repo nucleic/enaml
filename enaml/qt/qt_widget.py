@@ -21,7 +21,7 @@ from .styleutil import translate_style
 
 
 class DropFilter(QObject):
-    """ A Qt event filter to monitor drag and drop events.
+    """ A Qt event filter to handle drag and drop events.
 
     """
     __slots__ = ('dropEvent', 'validator')
@@ -29,7 +29,7 @@ class DropFilter(QObject):
     dropEvent = Signal(object)
     
     def __init__(self, parent, validator):
-        """ Initialize the DropFilter with a drop validator.
+        """ Initialize the DropFilter with a validator callable.
         
         """
         super(DropFilter, self).__init__(parent)
