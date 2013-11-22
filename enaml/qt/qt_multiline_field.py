@@ -22,7 +22,7 @@ class QMultilineEdit(QTextEdit):
     #: A signal emitted on a collapsing timer. Delayed text must be
     #: enabled for this signal to be fired.
     delayedTextChanged = Signal()
-    
+
     #: Internal storage for the timer object.
     _dtimer = None
 
@@ -83,7 +83,7 @@ class QtMultilineField(QtControl, ProxyMultilineField):
         self.set_read_only(d.read_only)
         self.set_auto_sync_text(d.auto_sync_text)
         self.widget.delayedTextChanged.connect(self.on_delayed_text_changed)
-        
+
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
@@ -95,7 +95,7 @@ class QtMultilineField(QtControl, ProxyMultilineField):
 
         """
         self.sync_text()
-        
+
     #--------------------------------------------------------------------------
     # ProxyMultilineField API
     #--------------------------------------------------------------------------
