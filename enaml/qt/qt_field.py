@@ -29,8 +29,8 @@ class QFocusLineEdit(QLineEdit):
     lostFocus = Signal()
 
     def focusOutEvent(self, event):
-         self.lostFocus.emit()
-         return super(QFocusLineEdit, self).focusOutEvent(event)
+        self.lostFocus.emit()
+        return super(QFocusLineEdit, self).focusOutEvent(event)
 
 
 # Guard flags
