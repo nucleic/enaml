@@ -21,16 +21,24 @@ from .styleutil import translate_style
 
 
 class DropFilter(QObject):
-    
+    """ A Qt event filter to monitor drag and drop events.
+
+    """
     __slots__ = ('dropEvent', 'validator')
     
     dropEvent = Signal(object)
     
     def __init__(self, parent, validator):
+        """ Initialize the DropFilter with a drop validator.
+        
+        """
         super(DropFilter, self).__init__(parent)
         self.validator = validator
         
     def eventFilter(self, obj, event):
+        """ Handle drag and drop events, validate and emit data.
+        
+        """        
         if self.validator is None: 
             return False
         if event.type() in [QEvent.DragEnter, QEvent.DragMove, QEvent.Drop]:
@@ -45,6 +53,9 @@ class DropFilter(QObject):
         return False
         
     def get_data(self, obj, event):
+        """ Gather data from a drag or drop event.
+        
+        """
         data = event.mimeData()
         urls = [url.toString() for url in data.urls()]
         text = data.text()
