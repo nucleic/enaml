@@ -26,18 +26,20 @@ class DragFilter(QObject):
     
     def __init__(self, parent, proxy):
         super(DragFilter, self).__init__(parent)
+        self.validator = None
         
     def eventFilter(self, obj, event):
-        if not obj is self.parent():
-            return
+        if (self.validator is None) or (not obj is self.parent()): 
+            return False
         etype = event.type()
         if etype in [QEvent.DragEnter, QEvent.DragMove]:
-            mimeData = event.mimeData()
-            if mimeData.hasUrls or mimeData.hasFormat('text/plain'):
-                event.accept()
-                return True
-            else:
+            urls = [url.toString() for url in event.mimeData().urls()]
+            text = event.mimeData().text()
+            if not urls or text:
                 return False
+            data = dict(text=text, urls=urls)
+            if self.validator(data):
+                event.accept()
         elif etype == QEvent.Drop:
             urls = [url.toString() for url in event.mimeData().urls()]
             text = event.mimeData().text()
@@ -50,7 +52,6 @@ class DragFilter(QObject):
             event.setDropAction(Qt.CopyAction)
             event.accept()
             self.dropEvent.emit(data)
-            return True
         return False
 
     
@@ -66,7 +67,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     widget_item = Typed(QWidgetItem)
     
     #: An event filter for catching drag and drop events
-    _drag_filter = Typed(DragFilter)
+    _drop_filter = Typed(DragFilter)
 
     def _default_widget_item(self):
         return QWidgetItem(self.widget)
@@ -102,6 +103,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.set_tool_tip(d.tool_tip)
         if d.status_tip:
             self.set_status_tip(d.status_tip)
+        if d.drop_event_validator:
+            self.set_drop_validator(d.drop_event_validator)
         self.set_enabled(d.enabled)
         self.refresh_style_sheet()
         # Don't make toplevel widgets visible during init or they will
@@ -112,9 +115,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         # are created.
         if self.widget.parent() or not d.visible:
             self.set_visible(d.visible)
-        self._drag_filter = DragFilter(self.widget, self)
-        self.widget.installEventFilter(self._drag_filter)
-        self._drag_filter.dropEvent.connect(self.on_drop_event)
+        
     #--------------------------------------------------------------------------
     # Protected API
     #--------------------------------------------------------------------------
@@ -238,6 +239,21 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setStatusTip(status_tip)
+        
+    def set_drop_validator(self, validator):
+        """ Set the drop event filter for the widget.
+        
+        Create a drop event filter if necessary.
+        
+        """
+        if not validator is None:
+            if self._drop_filter is None:
+                self._drop_filter = DragFilter(self.widget, self)
+                self.widget.installEventFilter(self._drop_filter)
+                self._drop_filter.dropEvent.connect(self.on_drop_event)
+            self._drop_filter.validator = validator
+        elif not self._drop_filter is None:
+            self._drop_filter.validator = None
 
     def ensure_visible(self):
         """ Ensure the widget is visible.
