@@ -9,7 +9,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.field import ProxyField
 
-from .QtCore import QTimer, Signal, Qt
+from .QtCore import QTimer, Signal
 from .QtGui import QLineEdit
 
 from .qt_control import QtControl
