@@ -106,7 +106,8 @@ class Widget(ToolkitObject, Stylable):
     show_focus_rect = d_(Enum(None, True, False))
     
     #: An event emitted when the user drags an item into the widget
-    #: The payload will be a dictionary with the urls, text, and position
+    #: The payload will be a dictionary with the following fields:
+    #     urls, text, html, has_image, has_color, mime_data, and position
     drop_event = d_(Event(), writable=False)
     
     #: A validator that determines whether to accept drag and drop events

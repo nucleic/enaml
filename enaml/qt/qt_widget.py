@@ -20,39 +20,46 @@ from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
 
 
-class DragFilter(QObject):
+class DropFilter(QObject):
+    
+    __slots__ = ('dropEvent', 'validator')
     
     dropEvent = Signal(object)
     
-    def __init__(self, parent, proxy):
-        super(DragFilter, self).__init__(parent)
-        self.validator = None
+    def __init__(self, parent, validator):
+        super(DropFilter, self).__init__(parent)
+        self.validator = validator
         
     def eventFilter(self, obj, event):
-        if (self.validator is None) or (not obj is self.parent()): 
+        if self.validator is None: 
             return False
-        etype = event.type()
-        if etype in [QEvent.DragEnter, QEvent.DragMove]:
-            urls = [url.toString() for url in event.mimeData().urls()]
-            text = event.mimeData().text()
-            if not urls or text:
-                return False
-            data = dict(text=text, urls=urls)
-            if self.validator(data):
+        if event.type() in [QEvent.DragEnter, QEvent.DragMove, QEvent.Drop]:
+            data = self.get_data(obj, event)
+            if event.type() == QEvent.Drop:
+                event.setDropAction(Qt.CopyAction)
                 event.accept()
-        elif etype == QEvent.Drop:
-            urls = [url.toString() for url in event.mimeData().urls()]
-            text = event.mimeData().text()
-            if not urls or text:
-                return False
-            data = dict(text=text, urls=urls, position=0)
-            if hasattr(obj, 'cursorForPosition'):
-                cursor = obj.cursorForPosition(event.pos())
-                data['position'] = cursor.position()
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
-            self.dropEvent.emit(data)
+                self.dropEvent.emit(data)
+            elif self.validator(data):
+                event.accept()
+                return True
         return False
+        
+    def get_data(self, obj, event):
+        data = event.mimeData()
+        urls = [url.toString() for url in data.urls()]
+        text = data.text()
+        html = data.html()
+        has_image = data.hasImage()
+        has_color = data.hasColor()
+        data = dict(text=text, urls=urls, html=html, mime_data=data,
+                    has_image=has_image, has_color=has_color,
+                    position=0)
+        if hasattr(obj, 'cursorForPosition'):
+            cursor = obj.cursorForPosition(event.pos())
+            data['position'] = cursor.position()
+        elif hasattr(obj, 'cursorPositionAt'):
+            data['position'] = obj.cursorPositionAt(event.pos())
+        return data
 
     
 class QtWidget(QtToolkitObject, ProxyWidget):
@@ -67,7 +74,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     widget_item = Typed(QWidgetItem)
     
     #: An event filter for catching drag and drop events
-    _drop_filter = Typed(DragFilter)
+    _drop_filter = Typed(DropFilter)
 
     def _default_widget_item(self):
         return QWidgetItem(self.widget)
@@ -248,10 +255,11 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """
         if not validator is None:
             if self._drop_filter is None:
-                self._drop_filter = DragFilter(self.widget, self)
+                self._drop_filter = DropFilter(self.widget, validator)
                 self.widget.installEventFilter(self._drop_filter)
                 self._drop_filter.dropEvent.connect(self.on_drop_event)
-            self._drop_filter.validator = validator
+            else:
+                self._drop_filter.validator = validator
         elif not self._drop_filter is None:
             self._drop_filter.validator = None
 
