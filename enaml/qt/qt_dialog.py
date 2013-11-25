@@ -9,7 +9,7 @@ from atom.api import Typed
 
 from enaml.widgets.dialog import ProxyDialog
 
-from .QtCore import Signal
+from .QtCore import Qt, Signal
 from .QtGui import QDialog
 
 from .q_window_base import QWindowBase
@@ -26,7 +26,7 @@ class QWindowDialog(QDialog, QWindowBase):
     # it is here only for API compatibility with the base class.
     closed = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, flags=Qt.Widget):
         """ Initialize a QWindowDialog.
 
         Parameters
@@ -35,7 +35,7 @@ class QWindowDialog(QDialog, QWindowBase):
             The parent of the dialog.
 
         """
-        super(QWindowDialog, self).__init__(parent)
+        super(QWindowDialog, self).__init__(parent, flags)
 
 
 class QtDialog(QtWindow, ProxyDialog):
@@ -48,7 +48,8 @@ class QtDialog(QtWindow, ProxyDialog):
         """ Create the underlying QFileDialog widget.
 
         """
-        self.widget = QWindowDialog(self.parent_widget())
+        flags = self.creation_flags()
+        self.widget = QWindowDialog(self.parent_widget(), flags)
 
     def init_widget(self):
         """ Initialize the underlying widget.

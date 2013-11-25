@@ -59,7 +59,13 @@ class ProxyWindow(ProxyWidget):
     def minimize(self):
         raise NotImplementedError
 
+    def is_minimized(self):
+        raise NotImplementedError
+
     def maximize(self):
+        raise NotImplementedError
+
+    def is_maximized(self):
         raise NotImplementedError
 
     def restore(self):
@@ -69,6 +75,9 @@ class ProxyWindow(ProxyWidget):
         raise NotImplementedError
 
     def send_to_back(self):
+        raise NotImplementedError
+
+    def activate_window(self):
         raise NotImplementedError
 
     def center_on_screen(self):
@@ -121,7 +130,8 @@ class Window(Widget):
     #: The title bar icon.
     icon = d_(Typed(Icon))
 
-    #: Whether or not the window remains on top of all others.
+    #: Whether the window styas on top of other windows on the desktop.
+    #: Changes to this value after the window is shown will be ignored.
     always_on_top = d_(Bool(False))
 
     #: An event fired when the window is closed. This event is triggered
@@ -254,39 +264,75 @@ class Window(Widget):
         return Rect(-1, -1, -1, -1)
 
     def maximize(self):
-        """ Send the 'maximize' action to the client widget.
+        """ Maximize the window.
 
         """
         if self.proxy_is_active:
             self.proxy.maximize()
 
+    def is_maximized(self):
+        """ Get whether the window is maximized.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.is_maximized()
+        return False
+
     def minimize(self):
-        """ Send the 'minimize' action to the client widget.
+        """ Minimize the window.
 
         """
         if self.proxy_is_active:
             self.proxy.minimize()
 
+    def is_minimized(self):
+        """ Get whether the window is minimized.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.is_minimized()
+        return False
+
     def restore(self):
-        """ Send the 'restore' action to the client widget.
+        """ Restore the window from a maximized or minimized state.
 
         """
         if self.proxy_is_active:
             self.proxy.restore()
 
     def send_to_front(self):
-        """ Send the window to the top of the Z order.
+        """ Send the window to the top of the Z-order.
+
+        This will only affect the Z-order of the window relative to the
+        Z-order of other windows in the same application.
 
         """
         if self.proxy_is_active:
             self.proxy.send_to_front()
 
     def send_to_back(self):
-        """ Send the window to the bottom of the Z order.
+        """ Send the window to the bottom of the Z-order.
+
+        This will only affect the Z-order of the window relative to the
+        Z-order of other windows in the same application.
 
         """
         if self.proxy_is_active:
             self.proxy.send_to_back()
+
+    def activate_window(self):
+        """ Set this window to be the active application window.
+
+        This performs the same operation as clicking the mouse on the
+        title bar of the window, except that it will not effect the Z
+        order of the window.
+
+        On Windows, this will cause the taskbar icon to flash if the
+        window does not belong to the active application.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.activate_window()
 
     def center_on_screen(self):
         """ Center the window on the screen.
