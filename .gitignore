@@ -6,6 +6,7 @@
 *.pyd
 *.DS_Store
 *.enamlc
+*.pdb
 /build
 /dist
 /docs/build
