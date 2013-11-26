@@ -1,6 +1,15 @@
 Enaml Release Notes
 ===================
 
+0.8.9 - 11/25/2013
+------------------
+- Add ability to query window minimized/maximized state. 713feb85952a_
+- Implement 'always_on_top' window flag. 3ac3e6955579_
+- A handful of bug fixes.
+
+.. _713feb85952a: https://github.com/nucleic/enaml/commit/713feb85952ab93094d6f06a8af457871355207c
+.. _3ac3e6955579: https://github.com/nucleic/enaml/commit/3ac3e6955579595c1c2ce2a74e79c1f96fe4a21e
+
 0.8.8 - 11/7/2013
 -----------------
 - Add a task dialog mini-framework and a MessageBox stlib component. 5583808f293a_
