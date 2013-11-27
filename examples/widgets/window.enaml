@@ -10,6 +10,7 @@
 This example shows how to create a bare bones window with a title. For
 this simple example, the `Window` has no children.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import Window
 

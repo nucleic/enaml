@@ -10,6 +10,7 @@
 The PopupView is useful for displaying transient configuration dialogs
 and notification windows. The widget supports a transparent background.
 
+<< autodoc-me >>
 """
 from enaml.core.api import Include
 from enaml.widgets.api import (

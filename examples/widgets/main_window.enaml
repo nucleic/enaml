@@ -22,6 +22,7 @@ Implementation Notes:
     are required for a particular application, strongly prefer the Qt
     backend over Wx (this is generally a good life-rule).
 
+<< autodoc-me >>
 """
 from enaml.layout.api import vbox
 from enaml.widgets.api import (

@@ -80,6 +80,7 @@ items. Items can be added and removed, and each individual item is
 configurable. There is a single item which cannot be removed, and which
 controls the parameters for the entire area.
 
+<< autodoc-me >>
 """
 import random
 from enaml.widgets.api import (

@@ -25,6 +25,7 @@ Creating a task dialog from scratch using the area elements is flexible,
 but can be a bit tedious. For the more common use cases, Enaml provides
 some predefined task dialogs. See `message_box.enaml` for an example.
 
+<< autodoc-me >>
 """
 import sys
 if sys.platform == 'win32':

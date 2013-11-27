@@ -12,6 +12,7 @@ generate the body of a form. Template specialization is used to select
 the proper control for a model attribute at runtime. Template recursion
 is then used to unroll a list of these controls into the body of a form.
 
+<< autodoc-me >>
 """
 from atom.api import Atom, Bool, Enum, Event, Float, Int, Str, Unicode
 

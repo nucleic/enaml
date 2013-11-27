@@ -22,6 +22,7 @@ primary means of making `Action` widgets exclusive. The default behavior
 of the group is to make all child `Action` widgets mutually exclusive.
 This can be disabled by setting `exclusive = False` on the `ActionGroup`.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import MainWindow, MenuBar, Menu, Action, ActionGroup
 

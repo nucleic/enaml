@@ -9,6 +9,7 @@
 
 This example shows how a PNG image (in an enaml Image object) can displayed.
 
+<< autodoc-me >>
 """
 import os
 

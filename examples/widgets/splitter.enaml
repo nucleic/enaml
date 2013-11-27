@@ -21,6 +21,7 @@ Implementation notes:
     application requires splitter support, prefer the Qt backend over
     Wx (this is generally a good life-rule).
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import (
     Splitter, SplitItem, Form, Container, Window, Label, Field, Html,

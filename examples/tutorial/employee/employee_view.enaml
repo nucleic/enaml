@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.layout.api import vertical, horizontal, align, spacer, vbox
+from enaml.layout.api import vertical, horizontal, align, spacer, vbox, hbox
 from enaml.widgets.api import (
     Window, Label, Field, Form, DateSelector, CheckBox, GroupBox, Container,
     PushButton
@@ -64,17 +64,26 @@ enamldef EmployeeForm(Form):
 
 enamldef EmployerForm(Form):
     attr employer
-    Label:
+    constraints = [
+        vbox(
+            hbox(cmp_lbl, mng_lbl, edit_lbl),
+            hbox(cmp_fld, mng_fld, en_cb),
+        ),
+        cmp_lbl.width == cmp_fld.width,
+        mng_lbl.width == mng_fld.width,
+        edit_lbl.width == en_cb.width,
+    ]
+    Label: cmp_lbl:
         text = "Company:"
-    Field:
+    Field: cmp_fld:
         text << employer.company_name
         enabled << en_cb.checked
-    Label:
+    Label: mng_lbl:
         text = "Reporting Manager:"
-    Field:
+    Field: mng_fld:
         text << "%s %s" % (employer.first_name, employer.last_name)
         enabled << en_cb.checked
-    Label:
+    Label: edit_lbl:
         text = "Allow Editing:"
     CheckBox: en_cb:
         checked = True
@@ -91,7 +100,6 @@ enamldef EmployeeView(Window): main:
             ),
             horizontal(left, spacer.flex(), top_box, spacer.flex(), right),
             horizontal(left, spacer.flex(), btm_box, spacer.flex(), right),
-            align('midline', top_form, btm_form),
         ]
         GroupBox: top_box:
             share_layout = True
@@ -104,10 +112,7 @@ enamldef EmployeeView(Window): main:
                 # found first.
                 employee = main.employee
         GroupBox: btm_box:
-            share_layout = True
             title = "Employer Details"
             visible << top_form.show_employer
             EmployerForm: btm_form:
-                share_layout = True
                 employer << employee.boss
-

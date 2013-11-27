@@ -10,6 +10,7 @@
 This example shows how Enaml templates can be used to define a control
 "template" and then populate that template with user-defined widgets.
 
+<< autodoc-me >>
 """
 from atom.api import Atom, Str
 

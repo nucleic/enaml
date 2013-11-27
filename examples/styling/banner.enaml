@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 """ An example of using style sheets to create a banner from a Label.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import (
     Window, Container, Label, Form, Field, Html, MultilineField, CheckBox

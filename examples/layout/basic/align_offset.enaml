@@ -11,6 +11,7 @@ This is example is nearly identical to the `align.enaml` example. This
 example adds to the other by showing how the `align` layout helper
 accepts spacing offsets for its layout items.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import align
 from enaml.widgets.api import Window, Container, Field, PushButton

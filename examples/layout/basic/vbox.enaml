@@ -14,6 +14,7 @@ content boundaries of its parent. It also provides the necessary layout
 spacers in the horizontal direction to allow for children of various
 widths.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import vbox
 from enaml.widgets.api import Window, Container, PushButton

@@ -21,6 +21,7 @@ Implementation Notes:
     supported on Wx. Close buttons on tabs is not supported on
     Wx when using the 'preferences' tab style.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import (
     Window, Notebook, Page, Container, PushButton, Field, Html, CheckBox

@@ -17,6 +17,7 @@ but it will always leave a gap between it and its two neighbors. This
 type of behavior (selective centering) is difficult-if-not-impossible to
 acheive with traditional box style layouts.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import hbox, vbox, spacer, align
 from enaml.widgets.api import Window, Html, Container, PushButton

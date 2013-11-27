@@ -12,6 +12,7 @@ This example uses the `vertical` layout helper to arrange a series of
 on the horizontal position of the `PushButton` widgets so their
 horizontal location in this example is non-deterministic.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import vertical
 from enaml.widgets.api import Window, Container, PushButton

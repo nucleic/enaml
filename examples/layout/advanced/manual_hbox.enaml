@@ -14,6 +14,7 @@ The intent of this example is to demonstrate that all of the layout
 helper functions can be distilled down to a list of primitive
 constraints.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, PushButton
 

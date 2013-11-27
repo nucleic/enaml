@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 """ An example of using an Enaml alias to expose an internal widget.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, PushButton
 

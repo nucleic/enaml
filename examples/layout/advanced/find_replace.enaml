@@ -16,6 +16,7 @@ PushButton labels "Replace" and "Replace & Find" take up more space than
 because that would take up a bunch of extra space, but the top row's
 buttons do expand equally to take up the available space.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import hbox, vbox, spacer, align
 from enaml.widgets.api import Window, Container, PushButton, Field

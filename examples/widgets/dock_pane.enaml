@@ -24,6 +24,7 @@ Implementation Notes:
     strongly prefer the Qt backend over Wx (this is generally a good
     life-rule).
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import (
     MainWindow, DockPane, Container, PushButton, Html,

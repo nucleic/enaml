@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 """ An example of using style sheets to create a gradient PushButton.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, PushButton
 from enaml.styling import StyleSheet, Style, Setter

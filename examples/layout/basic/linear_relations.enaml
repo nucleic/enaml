@@ -15,6 +15,7 @@ other `PushButton`.
 
 This is a contrieved example, but serves to demonstrate the feature.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, PushButton
 
