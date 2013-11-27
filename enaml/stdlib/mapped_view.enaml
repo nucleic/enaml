@@ -31,7 +31,7 @@ enamldef MappedView(Include):
     """ A custom Include subtype which will automatically create a
     view based on the type of a given model object.
 
-    Attributes
+    Parameters
     ----------
     model : object
         The object acting as the model for this view. The mro of the

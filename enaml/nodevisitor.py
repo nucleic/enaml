@@ -19,8 +19,8 @@ class NodeVisitor(object):
         call the setup and teardown methods before and after invoking
         the visit method on the node.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         node : object
             The toplevel node of interest.
 

@@ -29,11 +29,14 @@ class ProxyMdiWindow(ProxyWidget):
 
 class MdiWindow(Widget):
     """ A widget which can be used as a window in an MdiArea.
-        Returns
-        -------
-        result : QWidget or None
-            The mdi widget defined for this widget, or None if one is
-            not defined.
+    
+
+    Returns
+    -------
+    result : QWidget or None
+        The mdi widget defined for this widget, or None if one is
+        not defined.
+        
     An MdiWindow is a widget which can be used as an independent window
     in an MdiArea. It can have at most a single child widget which is
     an instance of Widget.

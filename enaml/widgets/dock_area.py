@@ -167,8 +167,8 @@ class DockArea(ConstraintsWidget):
     def update_layout(self, ops):
         """ Update the layout configuration using layout operations.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         ops : DockLayoutOp or iterable
             A single DockLayoutOp instance or an iterable of the same.
             The operations will be executed in order. If a given op is

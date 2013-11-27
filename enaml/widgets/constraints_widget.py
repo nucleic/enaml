@@ -119,6 +119,7 @@ class ConstraintsWidget(Widget):
     #: default is 'strong'. This can be overridden on a per-control
     #: basis to specify a logical default for the given control. This
     #: is equivalent to the following constraint:
+    #:
     #:     (width == hint) | hug_width
     hug_width = d_(PolicyEnum('strong'))
 
@@ -127,6 +128,7 @@ class ConstraintsWidget(Widget):
     #: default is 'strong'. This can be overridden on a per-control
     #: basis to specify a logical default for the given control. This
     #: is equivalent to the following constraint:
+    #:
     #:     (height == hint) | hug_height
     hug_height = d_(PolicyEnum('strong'))
 
@@ -135,6 +137,7 @@ class ConstraintsWidget(Widget):
     #: The default is 'strong'. This can be overridden on a per-control
     #: basis to specify a logical default for the given control. This
     #: is equivalent to the following constraint:
+    #:
     #:     (width >= hint) | resist_width
     resist_width = d_(PolicyEnum('strong'))
 
@@ -143,6 +146,7 @@ class ConstraintsWidget(Widget):
     #: The default is 'strong'. This can be overridden on a per-control
     #: basis to specify a logical default for the given control. This
     #: is equivalent to the following constraint:
+    #:
     #:     (height >= hint) | resist_height
     resist_height = d_(PolicyEnum('strong'))
 
@@ -151,6 +155,7 @@ class ConstraintsWidget(Widget):
     #: The default is 'ignore'. This can be overridden on a per-control
     #: basis to specify a logical default for the given control. This
     #: is equivalent to the following constraint:
+    #:
     #:     (width <= hint) | limit_width
     limit_width = d_(PolicyEnum('ignore'))
 
@@ -159,6 +164,7 @@ class ConstraintsWidget(Widget):
     #: The default is 'strong'. This can be overridden on a per-control
     #: basis to specify a logical default for the given control. This
     #: is equivalent to the following constraint:
+    #:
     #:     (height <= hint) | limit_height
     limit_height = d_(PolicyEnum('ignore'))
 
