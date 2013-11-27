@@ -35,8 +35,9 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
-
-html:
+ 
+html: 
+	python source/examples/example_doc_generator.py
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
