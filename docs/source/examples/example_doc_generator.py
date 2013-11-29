@@ -20,8 +20,47 @@ import os
 os.environ['QT_API'] = 'pyqt'
 import shutil
 
+from atom.api import Atom, Unicode, Value
 import enaml
 from enaml.qt.qt_application import QtApplication
+from enaml.qt.QtGui import QApplication, QPixmap
+from enaml.application import timed_call
+
+
+class SnapShot(Atom):
+    """Generate a snapshot of an enaml view"""
+    
+    #: The snapshot save path
+    path = Unicode()
+    
+    #: The enaml view object
+    view = Value()
+        
+    def _observe_path(self, change):
+        """Upon creation of the view, create a timed event to start snapshot.
+        """
+        if change['type'] == 'create':
+            timed_call(10, self.update_geometry)
+     
+    def update_geometry(self):
+        """Once the window is drawn, move it to the top left corner.
+        """
+        widget = self.view.proxy.widget
+        window = widget.window()
+        framesize = window.frameSize()
+        width, height = framesize.width(), framesize.height()
+        window.setGeometry(10, 50, widget.width(), widget.height())
+        timed_call(300, self.snapshot)
+
+    def snapshot(self):
+        """Take a snapshot of the window and close it.
+        """
+        widget = self.view.proxy.widget
+        framesize =  widget.window().frameSize()
+        QPixmap.grabWindow(QApplication.desktop().winId(), widget.x(),
+                           widget.y(), framesize.width(),
+                           framesize.height() ).save(self.path)
+        widget.close()
 
 
 def generate_example_doc(app, docs_path, script_path):
@@ -79,35 +118,10 @@ def generate_example_doc(app, docs_path, script_path):
     with open(rst_path, 'wb') as fid:
         fid.write(rst_template.lstrip())
 
-    screenshot_saver = """
-    event update_geometry
-    event snapshot
-    always_on_top = True
-    activated ::
-        from enaml.application import timed_call
-        timed_call(10, update_geometry)
-    update_geometry ::
-        from enaml.application import timed_call
-        widget = self.proxy.widget
-        window = widget.window()
-        framesize = window.frameSize()
-        width, height = framesize.width(), framesize.height()
-        window.setGeometry(10, 50, widget.width(), widget.height())
-        timed_call(300, snapshot)
-    snapshot ::
-        from enaml.qt.QtGui import QApplication, QPixmap
-        widget = self.proxy.widget
-        framesize =  widget.window().frameSize()
-        QPixmap.grabWindow(QApplication.desktop().winId(), widget.x(),
-                           widget.y(), framesize.width(),
-                           framesize.height() ).save(r"{0}")
-        widget.close()
-    """.format(image_path)
-
     temp_path = os.path.join(docs_path, os.path.basename(script_path))
 
     with open(temp_path, 'wb') as fid:
-        fid.write(script_text + screenshot_saver)
+        fid.write(script_text)
 
     with enaml.imports():
         try:
@@ -119,6 +133,7 @@ def generate_example_doc(app, docs_path, script_path):
             return
     try:
         view = mod.Main()
+        snapshot = SnapShot(path=image_path, view=view)
         view.show()
         app.start()
     except Exception as err:
@@ -137,11 +152,12 @@ def main():
     If the line appears in the script, generate an RST and PNG for the example.
     """
     app = QtApplication()
-    base_path = '../examples'
-    base_path = os.path.realpath(base_path)
     docs_path = os.path.dirname(__file__)
+    base_path = '../../../examples'
+    base_path = os.path.realpath(os.path.join(docs_path, base_path))
+    
     enaml_cache_dir = os.path.join(docs_path, '__enamlcache__')
-
+    
     for dirname, dirnames, filenames in os.walk(base_path):
         files = [os.path.join(dirname, f)
                  for f in filenames if f.endswith('.enaml')]
