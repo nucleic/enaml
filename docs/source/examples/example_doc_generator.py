@@ -8,11 +8,11 @@
 """ Generate the Example Documentation for the Enaml Examples
 
 Run as part of the documentation build script. Requires PyQt4.
-Looks for example enaml files with the line:
+Look for example enaml files with the line:
 
 << autodoc-me >>
 
-Generate an rst file, then opens the app and take a snapshot.
+Generate an rst file, then open the app and take a snapshot.
 
 """
 from __future__ import print_function
@@ -28,16 +28,19 @@ from enaml.application import timed_call
 
 
 class SnapShot(Atom):
-    """Generate a snapshot of an enaml view"""
+    """ Generate a snapshot of an enaml view
     
-    #: The snapshot save path
+    """
+    
+    #: The snapshot save path.
     path = Unicode()
     
-    #: The enaml view object
+    #: The enaml view object.
     view = Value()
         
     def _observe_view(self, change):
-        """Move window and allow it to draw before taking the snapshot.
+        """ Move window and allow it to draw before taking the snapshot.
+        
         """
         if change['type'] == 'create':
             self.view.initial_position = (10, 10)
@@ -45,7 +48,8 @@ class SnapShot(Atom):
             timed_call(300, self.snapshot)
 
     def snapshot(self):
-        """Take a snapshot of the window and close it.
+        """ Take a snapshot of the window and close it.
+        
         """
         widget = self.view.proxy.widget
         framesize =  widget.window().frameSize()
