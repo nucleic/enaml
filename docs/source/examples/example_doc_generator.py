@@ -36,21 +36,13 @@ class SnapShot(Atom):
     #: The enaml view object
     view = Value()
         
-    def _observe_path(self, change):
-        """Upon creation of the view, create a timed event to start snapshot.
+    def _observe_view(self, change):
+        """Move window and allow it to draw before taking the snapshot.
         """
         if change['type'] == 'create':
-            timed_call(10, self.update_geometry)
-     
-    def update_geometry(self):
-        """Once the window is drawn, move it to the top left corner.
-        """
-        widget = self.view.proxy.widget
-        window = widget.window()
-        framesize = window.frameSize()
-        width, height = framesize.width(), framesize.height()
-        window.setGeometry(10, 50, widget.width(), widget.height())
-        timed_call(300, self.snapshot)
+            self.view.initial_position = (10, 10)
+            self.view.always_on_top = True
+            timed_call(300, self.snapshot)
 
     def snapshot(self):
         """Take a snapshot of the window and close it.
@@ -138,7 +130,7 @@ def generate_example_doc(app, docs_path, script_path):
         app.start()
     except Exception as err:
         print('Could not create: {}'.format(script_name))
-        print('    ' + err)
+        print('    %s' % err)
     finally:
         os.remove(temp_path)
 
