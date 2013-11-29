@@ -12,12 +12,65 @@ from atom.api import Typed
 from enaml.styling import StyleCache
 from enaml.widgets.widget import ProxyWidget
 
-from .QtCore import Qt, QSize
+from .QtCore import Qt, QSize, QObject, Signal, QEvent
 from .QtGui import QFont, QWidget, QWidgetItem, QApplication
 
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
+
+
+class DropFilter(QObject):
+    """ A Qt event filter to handle drag and drop events.
+
+    """
+    __slots__ = ('dropEvent', 'validator')
+
+    dropEvent = Signal(object)
+
+    def __init__(self, parent, validator):
+        """ Initialize the DropFilter with a validator callable.
+
+        """
+        super(DropFilter, self).__init__(parent)
+        self.validator = validator
+
+    def eventFilter(self, obj, event):
+        """ Handle drag and drop events, validate and emit data.
+
+        """
+        if self.validator is None:
+            return False
+        if event.type() in [QEvent.DragEnter, QEvent.DragMove, QEvent.Drop]:
+            data = self.get_data(obj, event)
+            if event.type() == QEvent.Drop:
+                event.setDropAction(Qt.CopyAction)
+                event.accept()
+                self.dropEvent.emit(data)
+            elif self.validator(data):
+                event.accept()
+                return True
+        return False
+
+    def get_data(self, obj, event):
+        """ Gather data from a drag or drop event.
+
+        """
+        data = event.mimeData()
+        urls = [url.toString() for url in data.urls()]
+        text = data.text()
+        html = data.html()
+        has_image = data.hasImage()
+        has_color = data.hasColor()
+        data = dict(text=text, urls=urls, html=html, mime_data=data,
+                    has_image=has_image, has_color=has_color,
+                    position=0)
+        if hasattr(obj, 'cursorForPosition'):
+            cursor = obj.cursorForPosition(event.pos())
+            data['position'] = cursor.position()
+        elif hasattr(obj, 'cursorPositionAt'):
+            data['position'] = obj.cursorPositionAt(event.pos())
+        return data
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):
@@ -30,6 +83,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     #: A QWidgetItem created on-demand for the widget. This is used by
     #: the layout engine to compute correct size hints for the widget.
     widget_item = Typed(QWidgetItem)
+
+    #: An event filter for catching drag and drop events
+    _drop_filter = Typed(DropFilter)
 
     def _default_widget_item(self):
         return QWidgetItem(self.widget)
@@ -65,6 +121,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.set_tool_tip(d.tool_tip)
         if d.status_tip:
             self.set_status_tip(d.status_tip)
+        if d.drop_event_validator:
+            self.set_drop_validator(d.drop_event_validator)
         self.set_enabled(d.enabled)
         self.refresh_style_sheet()
         # Don't make toplevel widgets visible during init or they will
@@ -94,6 +152,15 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         else:
             stylesheet = u''
         self.widget.setStyleSheet(stylesheet)
+
+    #--------------------------------------------------------------------------
+    # Signal Handlers
+    #--------------------------------------------------------------------------
+    def on_drop_event(self, event):
+        """ Handle the link activated signal.
+
+        """
+        self.declaration.drop_event(event)
 
     #--------------------------------------------------------------------------
     # ProxyWidget API
@@ -190,6 +257,22 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setStatusTip(status_tip)
+
+    def set_drop_validator(self, validator):
+        """ Set the drop event filter for the widget.
+
+        Create a drop event filter if necessary.
+
+        """
+        if not validator is None:
+            if self._drop_filter is None:
+                self._drop_filter = DropFilter(self.widget, validator)
+                self.widget.installEventFilter(self._drop_filter)
+                self._drop_filter.dropEvent.connect(self.on_drop_event)
+            else:
+                self._drop_filter.validator = validator
+        elif not self._drop_filter is None:
+            self._drop_filter.validator = None
 
     def ensure_visible(self):
         """ Ensure the widget is visible.

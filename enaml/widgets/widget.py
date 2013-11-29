@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
+from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe, Event, Callable
 
 from enaml.colors import ColorMember
 from enaml.core.declarative import d_
@@ -51,6 +51,9 @@ class ProxyWidget(ProxyToolkitObject):
         raise NotImplementedError
 
     def set_show_focus_rect(self, show_focus_rect):
+        raise NotImplementedError
+
+    def set_drop_validator(self, drop_validator):
         raise NotImplementedError
 
     def ensure_visible(self):
@@ -101,6 +104,15 @@ class Widget(ToolkitObject, Stylable):
     #: on all clients. A value of None indicates to use the default as
     #: supplied by the client.
     show_focus_rect = d_(Enum(None, True, False))
+
+    #: An event emitted when the user drags an item into the widget
+    #: The payload will be a dictionary with the following fields:
+    #     urls, text, html, has_image, has_color, mime_data, and position
+    drop_event = d_(Event(), writable=False)
+
+    #: A validator that determines whether to accept drag and drop events
+    #: Return True to allow drops, and False otherwise
+    drop_event_validator = d_(Callable())
 
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
