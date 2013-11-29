@@ -157,7 +157,7 @@ def main():
     base_path = os.path.realpath(os.path.join(docs_path, base_path))
     
     enaml_cache_dir = os.path.join(docs_path, '__enamlcache__')
-    
+
     for dirname, dirnames, filenames in os.walk(base_path):
         files = [os.path.join(dirname, f)
                  for f in filenames if f.endswith('.enaml')]
