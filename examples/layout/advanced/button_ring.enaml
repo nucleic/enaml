@@ -19,6 +19,7 @@ Note that this example also demonstrates that constraints may be defined
 on any subclass of `ConstraintsWidget`. They need not be confined to a
 `Container`.
 
+<< autodoc-me >>
 """
 import numpy as np
 from enaml.widgets.api import MainWindow, Container, PushButton, Label

@@ -13,4 +13,3 @@ enamldef Main(Window):
     Container:
         Label:
             text = message
-

@@ -71,7 +71,7 @@ class Dialog(Window):
     def done(self, result):
         """ Close the dialog and set the result value.
 
-        This will cause a call to 'exec_' to return.
+        This will cause a call to `exec_` to return.
 
         Parameters
         ----------

@@ -30,4 +30,3 @@ enamldef PersonView(Window):
     attr person
     PersonForm:
         person := parent.person
-

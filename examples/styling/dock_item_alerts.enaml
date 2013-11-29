@@ -15,6 +15,7 @@ runtime. This gives the developer complete freed over the how they style
 their alerts, and does not force them in to a pre-defined hierarchy of
 alert levels.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import (
     HSplitLayout, VSplitLayout, TabLayout, hbox, vbox, spacer

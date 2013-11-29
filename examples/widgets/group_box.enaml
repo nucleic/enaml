@@ -10,6 +10,7 @@
 A `GroupBox` is a simple subclass of `Container` which draws itself with
 an optional bounding box and title.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import vbox, hbox, spacer, align
 from enaml.widgets.api import (

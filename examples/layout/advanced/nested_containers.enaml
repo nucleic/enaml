@@ -16,6 +16,7 @@ The Container on the bottom contains the more complicated example from
 `fluid.enaml` to demonstrate that a complicated layout works inside
 a nested Container, too.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import hbox, vbox, spacer, align
 from enaml.widgets.api import Window, Html, Container, PushButton, Label, Field

@@ -29,6 +29,7 @@ which are supplied to the `align` layout helper for the items in a given
 row or column. However, these constraints are only applied to items which
 span a single row or column, respectively.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import grid
 from enaml.widgets.api import  Window, Container, PushButton, Label, Field, Html

@@ -11,6 +11,7 @@ The DockArea widget provides a canvas into which DockItems can be docked
 and undocked at will. The layout configuration of the area can be saved
 and restored using a layout object which can be easily pickled.
 
+<< autodoc-me >>
 """
 import cPickle
 

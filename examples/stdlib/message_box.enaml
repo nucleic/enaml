@@ -13,6 +13,7 @@ See the `task_dialog` example for a demonstration of those elements.
 This example shows how to use the MessageBox directly along with various
 convenience functions which are available for 1-line notifications.
 
+<< autodoc-me >>
 """
 import sys
 if sys.platform == 'win32':

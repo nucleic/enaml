@@ -47,8 +47,8 @@ def expand_constraints(component, constraints):
     list. This is a generator function which yields the flattened stream
     of constraints.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     component : Constrainable
         The constrainable component with which the constraints are
         associated. This will be passed to the .get_constraints()
@@ -57,8 +57,8 @@ def expand_constraints(component, constraints):
     constraints : list
         The list of constraints.
 
-    Yields
-    ------
+    Returns
+    -------
     constraints
         The stream of expanded constraints.
 

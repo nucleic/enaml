@@ -10,6 +10,7 @@
 There are three columns in the example, each showing one of the many
 ways that the Include component may be used.
 
+<< autodoc-me >>
 """
 import random
 

@@ -12,6 +12,7 @@ this time we add some auxiliary constraints to make the buttons equal
 widths. When resizing the window, each button is therefore guaranteed
 to expand by the same amount.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import hbox
 from enaml.widgets.api import Window, Container, PushButton

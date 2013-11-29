@@ -14,6 +14,7 @@ policy can be changed through the attributes 'horizontal_scrollbar' and
 'vertical_scrollbar'. These attributes can be set to 'as_needed',
 'always_on', and 'always_off'. The default is 'as_needed'.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import (
     Window, ScrollArea, Form, Label, Field, Container,

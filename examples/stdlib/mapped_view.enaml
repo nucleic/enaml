@@ -16,6 +16,7 @@ the hierararchy, a custom view is created. These views are provided as
 a typemap to a `MappedView` so that when a given object is selected, the
 proper view is displayed.
 
+<< autodoc-me >>
 """
 from atom.api import Atom, Unicode, Int, List, Range, Value, observe
 

@@ -20,6 +20,7 @@ print the central widget of the window to the shell.
 This example focuses on features of the `Window` widget, see the other
 examples for explanations of the other widgets and language features.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, PushButton
 

@@ -11,6 +11,7 @@ The layout in this example is not necessarily one that would be used
 in a production application. However, it serves to demonstrate the idea
 that the `hbox` and `vbox` layout helpers can be arbitrarily nested.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import vbox, hbox, align, spacer
 from enaml.widgets.api import Window, Container, Label, PushButton

@@ -10,6 +10,7 @@
 This examples shows how the various applib live editor components can be
 stitched together to form a live Enaml code editor application.
 
+<< autodoc-me >>
 """
 from enaml.applib.live_editor_model import LiveEditorModel
 from enaml.applib.live_editor_view import (

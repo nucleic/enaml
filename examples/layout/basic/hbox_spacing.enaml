@@ -10,6 +10,7 @@
 This example is nearly identical to the `hbox.enaml` example. However,
 this time we change the default inter-element spacing from 10 to 30.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import hbox
 from enaml.widgets.api import Window, Container, PushButton

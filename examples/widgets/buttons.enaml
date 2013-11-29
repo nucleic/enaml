@@ -14,6 +14,7 @@ The intent of this example is to demonstrate the use of the button
 widgets. See the other examples for explanations of layout and other
 language features.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import (
     Window, Container, PushButton, CheckBox, RadioButton

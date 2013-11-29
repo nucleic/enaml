@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 """ An example of embedding a maplotlib plot inside an Enaml application.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import vbox, hbox, spacer
 from enaml.widgets.api import Window, Container, MPLCanvas, CheckBox, ComboBox
