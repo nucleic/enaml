@@ -28,7 +28,7 @@ from enaml.application import timed_call
 
 
 class SnapShot(Atom):
-    """ Generate a snapshot of an enaml view
+    """ Generate a snapshot of an enaml view.
     
     """
     
@@ -45,7 +45,7 @@ class SnapShot(Atom):
         if change['type'] == 'create':
             self.view.initial_position = (10, 10)
             self.view.always_on_top = True
-            timed_call(300, self.snapshot)
+            timed_call(500, self.snapshot)
 
     def snapshot(self):
         """ Take a snapshot of the window and close it.
