@@ -72,8 +72,8 @@ def generate_example_doc(app, docs_path, script_path):
     """
     script_name = os.path.basename(script_path)
     script_name = script_name[:script_name.find('.')]
-    print('generating doc for {0}'.format(script_name))
-
+    print('generating doc for %s' % script_name)
+    
     script_title = script_name.replace('_', ' ').title()
     script_image_name = 'ex_' + script_name + '.png'
     image_path = os.path.join(docs_path, 'images', script_image_name)
@@ -123,8 +123,8 @@ def generate_example_doc(app, docs_path, script_path):
         try:
             mod = __import__(script_name)
         except Exception as err:
-            print('Could not create: {}'.format(script_name))
-            print('    ' + err)
+            print('Could not create: %s' % script_name)
+            print('    %s' % err)
             os.remove(temp_path)
             return
     try:
@@ -133,7 +133,7 @@ def generate_example_doc(app, docs_path, script_path):
         view.show()
         app.start()
     except Exception as err:
-        print('Could not create: {}'.format(script_name))
+        print('Could not create: %s' % script_name)
         print('    %s' % err)
     finally:
         os.remove(temp_path)
