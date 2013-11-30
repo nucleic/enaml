@@ -6,7 +6,7 @@ all:
 
 clean:
 	rm -rf build
-	find . -name "*.pyc" -o -name "*.py,cover"| xargs rm -f
+	find . -name "*.pyc" -o -name "*.py,cover" | xargs rm -f
 
 test: 
 	make clean
@@ -21,5 +21,4 @@ cover:
 release:
 	make clean
 	python setup.py register
-	python setup.py bdist_wheel upload
 	python setup.py sdist --formats=gztar,zip upload
