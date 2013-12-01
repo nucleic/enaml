@@ -30,7 +30,7 @@ gh-pages:
 	rm -rf ../enaml_docs
 	mkdir ../enaml_docs
 	rm -rf build
-	make -C docs html
+	-make -C docs html
 	cp -R docs/build/html/ ../enaml_docs
 	mv ../enaml_docs/html ../enaml_docs/docs
 	git checkout gh-pages
