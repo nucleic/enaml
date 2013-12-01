@@ -1,0 +1,18 @@
+Gradient Push Button Example
+===============================================================================
+
+:download:`gradient_push_button <../../../examples/styling/gradient_push_button.enaml>`
+
+::
+
+    An example of using style sheets to create a gradient PushButton.
+
+::
+
+ $ enaml-run gradient_push_button
+
+.. image:: images/ex_gradient_push_button.png
+
+.. literalinclude:: ../../../examples/styling/gradient_push_button.enaml
+    :language: python
+

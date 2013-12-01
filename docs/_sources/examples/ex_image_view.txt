@@ -1,0 +1,20 @@
+Image View Example
+===============================================================================
+
+:download:`image_view <../../../examples/widgets/image_view.enaml>`
+
+::
+
+    An example of the `ImageView` widget.
+    
+    This example shows how a PNG image (in an enaml Image object) can displayed.
+
+::
+
+ $ enaml-run image_view
+
+.. image:: images/ex_image_view.png
+
+.. literalinclude:: ../../../examples/widgets/image_view.enaml
+    :language: python
+

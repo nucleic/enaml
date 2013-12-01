@@ -1,0 +1,26 @@
+Dock Item Alerts Example
+===============================================================================
+
+:download:`dock_item_alerts <../../../examples/styling/dock_item_alerts.enaml>`
+
+::
+
+    This example demonstrates the use of alerts on the DockItem widget.
+    
+    The DockItem widget and related bits in the DockArea support a style
+    sheet pseudo-class named 'alert'. This pseudo-class is very powerful in
+    that it allows the developer to provide their own arbitrary token to the
+    pseudo-class as an argument, and then apply that token to a dock item at
+    runtime. This gives the developer complete freed over the how they style
+    their alerts, and does not force them in to a pre-defined hierarchy of
+    alert levels.
+
+::
+
+ $ enaml-run dock_item_alerts
+
+.. image:: images/ex_dock_item_alerts.png
+
+.. literalinclude:: ../../../examples/styling/dock_item_alerts.enaml
+    :language: python
+

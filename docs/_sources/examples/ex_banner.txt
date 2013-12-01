@@ -1,0 +1,18 @@
+Banner Example
+===============================================================================
+
+:download:`banner <../../../examples/styling/banner.enaml>`
+
+::
+
+    An example of using style sheets to create a banner from a Label.
+
+::
+
+ $ enaml-run banner
+
+.. image:: images/ex_banner.png
+
+.. literalinclude:: ../../../examples/styling/banner.enaml
+    :language: python
+

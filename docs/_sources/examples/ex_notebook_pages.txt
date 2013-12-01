@@ -1,0 +1,21 @@
+Notebook Pages Example
+===============================================================================
+
+:download:`notebook_pages <../../../examples/dynamic/notebook_pages.enaml>`
+
+::
+
+    An example of using dynamic notebook pages.
+    
+    This example demonstrates using the `Include` component to dynamically
+    insert and remove pages from a notebook.
+
+::
+
+ $ enaml-run notebook_pages
+
+.. image:: images/ex_notebook_pages.png
+
+.. literalinclude:: ../../../examples/dynamic/notebook_pages.enaml
+    :language: python
+

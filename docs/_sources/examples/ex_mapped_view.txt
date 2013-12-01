@@ -1,0 +1,27 @@
+Mapped View Example
+===============================================================================
+
+:download:`mapped_view <../../../examples/stdlib/mapped_view.enaml>`
+
+::
+
+    An example of using the Enaml stdlib `MappedView` component.
+    
+    The `MappedView` is an enamldef subtype of the `Include` type which will
+    automatically create a view for an object based on it's type and a given
+    typemap. See the documentation for `MappedView` for a full description.
+    
+    In this example, a simple class hierarchy is created. For each type in
+    the hierararchy, a custom view is created. These views are provided as
+    a typemap to a `MappedView` so that when a given object is selected, the
+    proper view is displayed.
+
+::
+
+ $ enaml-run mapped_view
+
+.. image:: images/ex_mapped_view.png
+
+.. literalinclude:: ../../../examples/stdlib/mapped_view.enaml
+    :language: python
+
