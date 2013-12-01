@@ -1,5 +1,6 @@
 include *.txt
 include *.rst
+include *.md
 include Makefile
 recursive-include docs *.rst
 recursive-include docs *.png
