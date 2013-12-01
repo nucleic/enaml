@@ -40,3 +40,4 @@ gh-pages:
 	git push upstream-rw gh-pages
 	rm -rf ../enaml_docs
 	git checkout master
+	rm docs/.buildinfo
