@@ -24,7 +24,7 @@ release:
 	python setup.py register
 	python setup.py sdist --formats=gztar,zip upload
 
-docs:
+gh-pages:
 	git checkout master
 	git pull origin master
 	rm -rf ~/enaml_docs
