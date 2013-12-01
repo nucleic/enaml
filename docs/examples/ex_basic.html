@@ -166,89 +166,89 @@ This example shows how Enaml templates can be used to define a control
 <div class="highlight-python"><pre>$ enaml-run basic</pre>
 </div>
 <img alt="../_images/ex_basic.png" src="../_images/ex_basic.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; A basic example of Enaml templates.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" A basic example of Enaml templates.
 
-<span class="sd">This example shows how Enaml templates can be used to define a control</span>
-<span class="sd">&quot;template&quot; and then populate that template with user-defined widgets.</span>
+This example shows how Enaml templates can be used to define a control
+"template" and then populate that template with user-defined widgets.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Str</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from atom.api import Atom, Str
 
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">spacer</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">Window</span>
-
-
-<span class="n">template</span> <span class="n">OkCancelPanel</span><span class="p">(</span><span class="n">Content</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Create a container with Ok | Cancel buttons.</span>
-
-<span class="sd">    The generated panel will contain Ok and Cancel buttons in the</span>
-<span class="sd">    lower right-hand corner. The panel exposes two button clicked</span>
-<span class="sd">    events named (appropriately) &#39;ok_clicked&#39; and &#39;cancel_clicked&#39;.</span>
-<span class="sd">    The user provided widget is aliased as &#39;content&#39;.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    Content : widget type</span>
-<span class="sd">        A widget which will be used as the central content of the</span>
-<span class="sd">        panel.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">alias</span> <span class="n">content</span>
-        <span class="n">event</span> <span class="n">ok_clicked</span>
-        <span class="n">event</span> <span class="n">cancel_clicked</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">vbox</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">hbox</span><span class="p">(</span><span class="n">spacer</span><span class="p">,</span> <span class="n">ok</span><span class="p">,</span> <span class="n">cancel</span><span class="p">))</span>
-        <span class="p">]</span>
-        <span class="n">Content</span><span class="p">:</span> <span class="n">content</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">ok</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Ok&#39;</span>
-            <span class="n">clicked</span> <span class="p">::</span> <span class="n">ok_clicked</span><span class="p">()</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">cancel</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Cancel&#39;</span>
-            <span class="n">clicked</span> <span class="p">::</span> <span class="n">cancel_clicked</span><span class="p">()</span>
+from enaml.layout.api import vbox, hbox, spacer
+from enaml.widgets.api import Container, PushButton, Html, Window
 
 
-<span class="k">class</span> <span class="nc">SampleModel</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A sample model which is used to bind data to the content.</span>
+template OkCancelPanel(Content):
+    """ Create a container with Ok | Cancel buttons.
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c">#: The string to display in the content.</span>
-    <span class="n">text</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+    The generated panel will contain Ok and Cancel buttons in the
+    lower right-hand corner. The panel exposes two button clicked
+    events named (appropriately) 'ok_clicked' and 'cancel_clicked'.
+    The user provided widget is aliased as 'content'.
+
+    Parameters
+    ----------
+    Content : widget type
+        A widget which will be used as the central content of the
+        panel.
+
+    """
+    Container:
+        alias content
+        event ok_clicked
+        event cancel_clicked
+        constraints = [
+            vbox(content, hbox(spacer, ok, cancel))
+        ]
+        Content: content:
+            pass
+        PushButton: ok:
+            text = 'Ok'
+            clicked :: ok_clicked()
+        PushButton: cancel:
+            text = 'Cancel'
+            clicked :: cancel_clicked()
 
 
-<span class="n">enamldef</span> <span class="n">SampleContent</span><span class="p">(</span><span class="n">Html</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A sample widget used as the content of the button panel.</span>
+class SampleModel(Atom):
+    """ A sample model which is used to bind data to the content.
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">attr</span> <span class="n">model</span><span class="p">:</span> <span class="n">SampleModel</span>
-    <span class="n">source</span> <span class="o">=</span> <span class="s">&quot;&lt;h1&gt;&lt;center&gt;</span><span class="si">%s</span><span class="s">&lt;/center&gt;&lt;/h1&gt;&quot;</span> <span class="o">%</span> <span class="n">model</span><span class="o">.</span><span class="n">text</span>
+    """
+    #: The string to display in the content.
+    text = Str()
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; The main application window.</span>
+enamldef SampleContent(Html):
+    """ A sample widget used as the content of the button panel.
 
-<span class="sd">    This window uses a ButtonPanel instantiated with SampleContent</span>
-<span class="sd">    as the central widget. The click handlers for the panel buttons</span>
-<span class="sd">    are bound to print a message to the shell.</span>
+    """
+    attr model: SampleModel
+    source = "&lt;h1&gt;&lt;center&gt;%s&lt;/center&gt;&lt;/h1&gt;" % model.text
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Basic Templates&#39;</span>
-    <span class="n">OkCancelPanel</span><span class="p">(</span><span class="n">SampleContent</span><span class="p">):</span> <span class="n">panel</span><span class="p">:</span>
-        <span class="n">panel</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="mi">5</span>
-        <span class="n">panel</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">SampleModel</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s">&#39;Hello Templates&#39;</span><span class="p">)</span>
-        <span class="n">panel</span><span class="o">.</span><span class="n">ok_clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Ok clicked!&#39;</span>
-        <span class="n">panel</span><span class="o">.</span><span class="n">cancel_clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Cancel clicked!&#39;</span>
-</pre></div>
+
+enamldef Main(Window):
+    """ The main application window.
+
+    This window uses a ButtonPanel instantiated with SampleContent
+    as the central widget. The click handlers for the panel buttons
+    are bound to print a message to the shell.
+
+    """
+    title = 'Basic Templates'
+    OkCancelPanel(SampleContent): panel:
+        panel.padding = 5
+        panel.content.model = SampleModel(text='Hello Templates')
+        panel.ok_clicked :: print 'Ok clicked!'
+        panel.cancel_clicked :: print 'Cancel clicked!'
+</pre>
 </div>
 </div>
 

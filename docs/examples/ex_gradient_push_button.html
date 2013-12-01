@@ -164,7 +164,7 @@
 <div class="highlight-python"><pre>$ enaml-run gradient_push_button</pre>
 </div>
 <img alt="../_images/ex_gradient_push_button.png" src="../_images/ex_gradient_push_button.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c">#  Copyright (c) 2013, Nucleic Development Team</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -179,60 +179,60 @@
 <span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
 
 
-<span class="n">enamldef</span> <span class="n">GradientButtonSheet</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">):</span>
-    <span class="n">Style</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">GradientButtonSheet</span><span class="p">(</span>StyleSheet<span class="p">):</span>
+    <span class="nt">Style</span><span class="p">:</span>
         <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
         <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;gradient-button&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
+        <span class="nt">Setter</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;background&#39;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;lineargradient(x1: 0, y1:0, x2:0, y2:1, &#39;</span>
                         <span class="s">&#39;stop: 0 #5CA9FA, stop: 0.49 #4790DE, &#39;</span>
                         <span class="s">&#39;stop: 0.50 #2C82DE, stop: 1 #045CBA)&#39;</span><span class="p">)</span>
-        <span class="n">Setter</span><span class="p">:</span>
+        <span class="nt">Setter</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;border&#39;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;1px solid #034994&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
+        <span class="nt">Setter</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;padding&#39;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;5px&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
+        <span class="nt">Setter</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
-    <span class="n">Style</span><span class="p">:</span>
+    <span class="nt">Style</span><span class="p">:</span>
         <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
         <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;gradient-button&#39;</span>
         <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;hover&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
+        <span class="nt">Setter</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;border&#39;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;1px solid #007BFF&#39;</span>
-    <span class="n">Style</span><span class="p">:</span>
+    <span class="nt">Style</span><span class="p">:</span>
         <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;PushButton&#39;</span>
         <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;gradient-button&#39;</span>
         <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;pressed&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
+        <span class="nt">Setter</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;background&#39;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;lineargradient(x1: 0, y1:0, x2:0, y2:1, &#39;</span>
                         <span class="s">&#39;stop: 0 #166BC7, stop: 1 #2C82DE)&#39;</span><span class="p">)</span>
-    <span class="n">Style</span><span class="p">:</span>
+    <span class="nt">Style</span><span class="p">:</span>
         <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;large-font&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
+        <span class="nt">Setter</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;font&#39;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;14pt Verdana&#39;</span>
-    <span class="n">Style</span><span class="p">:</span>
+    <span class="nt">Style</span><span class="p">:</span>
         <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;rounded&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
+        <span class="nt">Setter</span><span class="p">:</span>
             <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;border-radius&#39;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;5px&#39;</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
     <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Gradient Button&#39;</span>
-    <span class="n">GradientButtonSheet</span><span class="p">:</span>
+    <span class="nt">GradientButtonSheet</span><span class="p">:</span>
         <span class="k">pass</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Gradient Button&#39;</span>
             <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;gradient-button large-font&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Rounded Button&#39;</span>
             <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;gradient-button large-font rounded&#39;</span>
 </pre></div>

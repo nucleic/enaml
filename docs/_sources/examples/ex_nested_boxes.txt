@@ -18,5 +18,5 @@ Nested Boxes Example
 .. image:: images/ex_nested_boxes.png
 
 .. literalinclude:: ../../../examples/layout/advanced/nested_boxes.enaml
-    :language: python
+    :language: enaml
 

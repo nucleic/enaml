@@ -14,5 +14,5 @@ File Dialog Example
 .. image:: images/ex_file_dialog.png
 
 .. literalinclude:: ../../../examples/widgets/file_dialog.enaml
-    :language: python
+    :language: enaml
 

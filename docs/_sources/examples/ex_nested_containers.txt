@@ -23,5 +23,5 @@ Nested Containers Example
 .. image:: images/ex_nested_containers.png
 
 .. literalinclude:: ../../../examples/layout/advanced/nested_containers.enaml
-    :language: python
+    :language: enaml
 

@@ -23,5 +23,5 @@ Mapped View Example
 .. image:: images/ex_mapped_view.png
 
 .. literalinclude:: ../../../examples/stdlib/mapped_view.enaml
-    :language: python
+    :language: enaml
 

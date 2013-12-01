@@ -21,5 +21,5 @@ Buttons Example
 .. image:: images/ex_buttons.png
 
 .. literalinclude:: ../../../examples/widgets/buttons.enaml
-    :language: python
+    :language: enaml
 

@@ -14,5 +14,5 @@ Chained Widget Alias Example
 .. image:: images/ex_chained_widget_alias.png
 
 .. literalinclude:: ../../../examples/aliases/chained_widget_alias.enaml
-    :language: python
+    :language: enaml
 

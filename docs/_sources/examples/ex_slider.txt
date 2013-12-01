@@ -17,5 +17,5 @@ Slider Example
 .. image:: images/ex_slider.png
 
 .. literalinclude:: ../../../examples/widgets/slider.enaml
-    :language: python
+    :language: enaml
 

@@ -200,7 +200,7 @@ This can be disabled by setting `exclusive = False` on the `ActionGroup`.</pre>
 <div class="highlight-python"><pre>$ enaml-run menu_bar</pre>
 </div>
 <img alt="../_images/ex_menu_bar.png" src="../_images/ex_menu_bar.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -229,63 +229,63 @@ This can be disabled by setting `exclusive = False` on the `ActionGroup`.</pre>
 <span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">MainWindow</span><span class="p">,</span> <span class="n">MenuBar</span><span class="p">,</span> <span class="n">Menu</span><span class="p">,</span> <span class="n">Action</span><span class="p">,</span> <span class="n">ActionGroup</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">MainWindow</span><span class="p">):</span>
-    <span class="n">MenuBar</span><span class="p">:</span>
-        <span class="n">Menu</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>MainWindow<span class="p">):</span>
+    <span class="nt">MenuBar</span><span class="p">:</span>
+        <span class="nt">Menu</span><span class="p">:</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;&amp;File&#39;</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;New File</span><span class="se">\t</span><span class="s">Ctrl+N&#39;</span>
                 <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;New File triggered&#39;</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Open File</span><span class="se">\t</span><span class="s">Ctrl+O&#39;</span>
                 <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Open File triggered&#39;</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Open Folder...&#39;</span>
                 <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Open Folder triggered&#39;</span>
-        <span class="n">Menu</span><span class="p">:</span>
+        <span class="nt">Menu</span><span class="p">:</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;&amp;Edit&#39;</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Undo</span><span class="se">\t</span><span class="s">Ctrl+Z&#39;</span>
                 <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Undo triggered&#39;</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Redo</span><span class="se">\t</span><span class="s">Ctrl+R&#39;</span>
                 <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Redo triggered&#39;</span>
-            <span class="n">Menu</span><span class="p">:</span>
+            <span class="nt">Menu</span><span class="p">:</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Undo Selection&#39;</span>
-                <span class="n">Action</span><span class="p">:</span>
+                <span class="nt">Action</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Undo Insert</span><span class="se">\t</span><span class="s">Ctrl+U&#39;</span>
                     <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Undo Insert triggered&#39;</span>
-                <span class="n">Action</span><span class="p">:</span>
+                <span class="nt">Action</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Redo Insert</span><span class="se">\t</span><span class="s">Ctrl+Shift+U&#39;</span>
                     <span class="n">enabled</span> <span class="o">=</span> <span class="bp">False</span>
                     <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Redo Insert triggered&#39;</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">separator</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Cut</span><span class="se">\t</span><span class="s">Ctrl+X&#39;</span>
                 <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&quot;Cut triggered&quot;</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Copy</span><span class="se">\t</span><span class="s">Ctrl+C&#39;</span>
                 <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Copy triggered&#39;</span>
-            <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Paste</span><span class="se">\t</span><span class="s">Ctrl+V&#39;</span>
                 <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Paste triggered&#39;</span>
-        <span class="n">Menu</span><span class="p">:</span>
+        <span class="nt">Menu</span><span class="p">:</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;&amp;View&#39;</span>
-            <span class="n">ActionGroup</span><span class="p">:</span>
-                <span class="n">Action</span><span class="p">:</span>
+            <span class="nt">ActionGroup</span><span class="p">:</span>
+                <span class="nt">Action</span><span class="p">:</span>
                     <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Center&#39;</span>
                     <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> toggled </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">)</span>
-                <span class="n">Action</span><span class="p">:</span>
+                <span class="nt">Action</span><span class="p">:</span>
                     <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Left&#39;</span>
                     <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> toggled </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">)</span>
-                <span class="n">Action</span><span class="p">:</span>
+                <span class="nt">Action</span><span class="p">:</span>
                     <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Right&#39;</span>
                     <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> toggled </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">)</span>
-                <span class="n">Action</span><span class="p">:</span>
+                <span class="nt">Action</span><span class="p">:</span>
                     <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Justify&#39;</span>
                     <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> toggled </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">)</span>

@@ -19,5 +19,5 @@ Hbox Equal Widths Example
 .. image:: images/ex_hbox_equal_widths.png
 
 .. literalinclude:: ../../../examples/layout/basic/hbox_equal_widths.enaml
-    :language: python
+    :language: enaml
 

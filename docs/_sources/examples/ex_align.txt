@@ -20,5 +20,5 @@ Align Example
 .. image:: images/ex_align.png
 
 .. literalinclude:: ../../../examples/layout/basic/align.enaml
-    :language: python
+    :language: enaml
 

@@ -188,72 +188,73 @@ an optional bounding box and title.</pre>
 <div class="highlight-python"><pre>$ enaml-run group_box</pre>
 </div>
 <img alt="../_images/ex_group_box.png" src="../_images/ex_group_box.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of the `GroupBox` widget.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `GroupBox` widget.
 
-<span class="sd">A `GroupBox` is a simple subclass of `Container` which draws itself with</span>
-<span class="sd">an optional bounding box and title.</span>
+A `GroupBox` is a simple subclass of `Container` which draws itself with
+an optional bounding box and title.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">align</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">GroupBox</span><span class="p">,</span> <span class="n">Form</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">CheckBox</span><span class="p">,</span> <span class="n">ComboBox</span><span class="p">,</span>
-    <span class="n">MultilineField</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span>
-<span class="p">)</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import vbox, hbox, spacer, align
+from enaml.widgets.api import (
+    Window, Container, GroupBox, Form, Label, Field, CheckBox, ComboBox,
+    MultilineField, PushButton,
+)
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&quot;Group Boxes&quot;</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">vbox</span><span class="p">(</span>
-                <span class="n">grp_box</span><span class="p">,</span>
-                <span class="n">hbox</span><span class="p">(</span><span class="n">push</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">title_check</span><span class="p">,</span> <span class="n">flat_check</span><span class="p">,</span> <span class="n">combo_box</span><span class="p">),</span>
-                <span class="n">multiline</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">title_check</span><span class="p">,</span> <span class="n">flat_check</span><span class="p">,</span> <span class="n">combo_box</span><span class="p">),</span>
-        <span class="p">]</span>
-        <span class="n">GroupBox</span><span class="p">:</span> <span class="n">grp_box</span><span class="p">:</span>
-            <span class="n">title</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Personal Details&quot;</span> <span class="k">if</span> <span class="n">title_check</span><span class="o">.</span><span class="n">checked</span> <span class="k">else</span> <span class="s">&quot;&quot;</span>
-            <span class="n">title_align</span> <span class="o">&lt;&lt;</span> <span class="n">combo_box</span><span class="o">.</span><span class="n">items</span><span class="p">[</span><span class="n">combo_box</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
-            <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-            <span class="n">Form</span><span class="p">:</span>
-                <span class="n">Label</span><span class="p">:</span>
-                    <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;First name:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
-                    <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
-                    <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Last name:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
-                    <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
-                    <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Home phone:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
-                    <span class="k">pass</span>
-        <span class="n">CheckBox</span><span class="p">:</span> <span class="n">title_check</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Show Title&quot;</span>
-            <span class="n">checked</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="n">CheckBox</span><span class="p">:</span> <span class="n">flat_check</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Flat&quot;</span>
-            <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="n">grp_box</span><span class="o">.</span><span class="n">flat</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">push</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Submit&quot;</span>
-            <span class="n">clicked</span> <span class="p">::</span>
-                <span class="k">print</span> <span class="s">&#39;Submit&#39;</span>
-                <span class="k">print</span> <span class="n">multiline</span><span class="o">.</span><span class="n">text</span>
-        <span class="n">ComboBox</span><span class="p">:</span> <span class="n">combo_box</span><span class="p">:</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">]</span>
-        <span class="n">MultilineField</span><span class="p">:</span> <span class="n">multiline</span><span class="p">:</span>
-            <span class="k">pass</span>
-</pre></div>
+enamldef Main(Window):
+    title = "Group Boxes"
+    Container:
+        constraints = [
+            vbox(
+                grp_box,
+                hbox(push, spacer, title_check, flat_check, combo_box),
+                multiline,
+            ),
+            align('v_center', title_check, flat_check, combo_box),
+        ]
+        GroupBox: grp_box:
+            title &lt;&lt; "Personal Details" if title_check.checked else ""
+            title_align &lt;&lt; combo_box.items[combo_box.index]
+            hug_height = 'strong'
+            Form:
+                Label:
+                    text = "First name:"
+                Field:
+                    pass
+                Label:
+                    text = "Last name:"
+                Field:
+                    pass
+                Label:
+                    text = "Home phone:"
+                Field:
+                    pass
+        CheckBox: title_check:
+            text = "Show Title"
+            checked = True
+        CheckBox: flat_check:
+            text = "Flat"
+            checked := grp_box.flat
+        PushButton: push:
+            text = "Submit"
+            clicked ::
+                print 'Submit'
+                print multiline.text
+        ComboBox: combo_box:
+            index = 0
+            items = ['left', 'center', 'right']
+        MultilineField: multiline:
+            pass
+
+</pre>
 </div>
 </div>
 

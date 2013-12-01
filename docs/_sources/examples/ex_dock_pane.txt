@@ -31,5 +31,5 @@ Dock Pane Example
 .. image:: images/ex_dock_pane.png
 
 .. literalinclude:: ../../../examples/widgets/dock_pane.enaml
-    :language: python
+    :language: enaml
 

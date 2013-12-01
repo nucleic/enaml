@@ -165,56 +165,57 @@
 <div class="highlight-python"><pre>$ enaml-run looper</pre>
 </div>
 <img alt="../_images/ex_looper.png" src="../_images/ex_looper.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of using Looper to generate widgets from an iterable.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using Looper to generate widgets from an iterable.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.core.api</span> <span class="kn">import</span> <span class="n">Looper</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">align</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">ScrollArea</span><span class="p">,</span> <span class="n">Slider</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span>
-<span class="p">)</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.core.api import Looper
+from enaml.layout.api import vbox, hbox, align
+from enaml.widgets.api import (
+    Window, Container, Label, Field, PushButton, ScrollArea, Slider, Html,
+)
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">vbox</span><span class="p">(</span>
-                <span class="n">hbox</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">field</span><span class="p">),</span>
-                <span class="n">button</span><span class="p">,</span>
-                <span class="n">scroller</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">field</span><span class="p">),</span>
-        <span class="p">]</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">label</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Items&#39;</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">field</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;foo bar baz spam ham&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">button</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Print Items&#39;</span>
-            <span class="n">clicked</span> <span class="p">::</span>
-                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">looper</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
-                    <span class="k">print</span> <span class="n">item</span>
-        <span class="n">ScrollArea</span><span class="p">:</span> <span class="n">scroller</span><span class="p">:</span>
-            <span class="n">Container</span><span class="p">:</span>
-                <span class="n">Looper</span><span class="p">:</span> <span class="n">looper</span><span class="p">:</span>
-                    <span class="n">iterable</span> <span class="o">&lt;&lt;</span> <span class="n">field</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-                    <span class="n">Field</span><span class="p">:</span>
-                        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;Field </span><span class="si">%d</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">loop_index</span><span class="p">,</span> <span class="n">loop_item</span><span class="p">)</span>
-                    <span class="n">PushButton</span><span class="p">:</span>
-                        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;pb </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">loop_index</span>
-                    <span class="n">Slider</span><span class="p">:</span>
-                        <span class="n">value</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Slider </span><span class="si">%d</span><span class="s"> changed&#39;</span> <span class="o">%</span> <span class="n">loop_index</span>
-                    <span class="n">Html</span><span class="p">:</span>
-                        <span class="n">source</span> <span class="o">&lt;&lt;</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;</span><span class="si">%s</span><span class="s">&lt;/center&gt;&lt;/h1&gt;&#39;</span> <span class="o">%</span> <span class="n">loop_item</span>
-</pre></div>
+enamldef Main(Window):
+    Container:
+        constraints = [
+            vbox(
+                hbox(label, field),
+                button,
+                scroller,
+            ),
+            align('v_center', label, field),
+        ]
+        Label: label:
+            text = 'Items'
+        Field: field:
+            text = 'foo bar baz spam ham'
+        PushButton: button:
+            text = 'Print Items'
+            clicked ::
+                for item in looper.items:
+                    print item
+        ScrollArea: scroller:
+            Container:
+                Looper: looper:
+                    iterable &lt;&lt; field.text.split()
+                    Field:
+                        placeholder = 'Field %d: %s' % (loop_index, loop_item)
+                    PushButton:
+                        text = 'pb %s' % loop_index
+                    Slider:
+                        value :: print 'Slider %d changed' % loop_index
+                    Html:
+                        source &lt;&lt; '&lt;h1&gt;&lt;center&gt;%s&lt;/center&gt;&lt;/h1&gt;' % loop_item
+
+</pre>
 </div>
 </div>
 

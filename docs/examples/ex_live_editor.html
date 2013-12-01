@@ -165,7 +165,7 @@ stitched together to form a live Enaml code editor application.</pre>
 <div class="highlight-python"><pre>$ enaml-run live_editor</pre>
 </div>
 <img alt="../_images/ex_live_editor.png" src="../_images/ex_live_editor.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -208,10 +208,10 @@ stitched together to form a live Enaml code editor application.</pre>
 <span class="s">&quot;&quot;&quot;</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
     <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Live Editor Demo&#39;</span>
     <span class="n">initial_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">768</span><span class="p">)</span>
-    <span class="n">attr</span> <span class="n">editor_model</span> <span class="o">=</span> <span class="n">LiveEditorModel</span><span class="p">(</span>
+    <span class="k">attr</span> <span class="n">editor_model</span> <span class="o">=</span> <span class="n">LiveEditorModel</span><span class="p">(</span>
         <span class="n">model_text</span><span class="o">=</span><span class="n">MODEL_TEXT</span><span class="p">,</span>
         <span class="n">model_item</span><span class="o">=</span><span class="s">&#39;DemoModel&#39;</span><span class="p">,</span>
         <span class="n">model_filename</span><span class="o">=</span><span class="s">&#39;demo.py&#39;</span><span class="p">,</span>
@@ -219,46 +219,46 @@ stitched together to form a live Enaml code editor application.</pre>
         <span class="n">view_item</span><span class="o">=</span><span class="s">&#39;DemoContainer&#39;</span><span class="p">,</span>
         <span class="n">view_filename</span><span class="o">=</span><span class="s">&#39;demo.enaml&#39;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">Container</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
         <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">DockArea</span><span class="p">:</span>
+        <span class="nt">DockArea</span><span class="p">:</span>
             <span class="n">layout</span> <span class="o">=</span> <span class="n">AreaLayout</span><span class="p">(</span>
-                <span class="n">HSplitLayout</span><span class="p">(</span>
+                <span class="nt">HSplitLayout</span><span class="p">(</span>
                     <span class="s">&#39;view-editor-item&#39;</span><span class="p">,</span>
                     <span class="s">&#39;view-item&#39;</span><span class="p">,</span>
                     <span class="n">sizes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
                 <span class="p">),</span>
                 <span class="n">dock_bars</span><span class="o">=</span><span class="p">[</span>
-                    <span class="n">DockBarLayout</span><span class="p">(</span>
+                    <span class="nt">DockBarLayout</span><span class="p">(</span>
                         <span class="s">&#39;model-editor-item&#39;</span><span class="p">,</span>
                         <span class="s">&#39;traceback-item&#39;</span><span class="p">,</span>
                         <span class="n">position</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">,</span>
                     <span class="p">),</span>
                 <span class="p">],</span>
             <span class="p">)</span>
-            <span class="n">DockItem</span><span class="p">:</span>
+            <span class="nt">DockItem</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;model-editor-item&#39;</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Model Editor&#39;</span>
                 <span class="n">stretch</span> <span class="o">=</span> <span class="mi">1</span>
-                <span class="n">ModelEditorPanel</span><span class="p">:</span>
+                <span class="nt">ModelEditorPanel</span><span class="p">:</span>
                     <span class="n">model</span> <span class="o">=</span> <span class="n">editor_model</span>
-            <span class="n">DockItem</span><span class="p">:</span>
+            <span class="nt">DockItem</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;view-editor-item&#39;</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;View Editor&#39;</span>
                 <span class="n">stretch</span> <span class="o">=</span> <span class="mi">1</span>
-                <span class="n">ViewEditorPanel</span><span class="p">:</span>
+                <span class="nt">ViewEditorPanel</span><span class="p">:</span>
                     <span class="n">model</span> <span class="o">=</span> <span class="n">editor_model</span>
-            <span class="n">DockItem</span><span class="p">:</span>
+            <span class="nt">DockItem</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;traceback-item&#39;</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Errors&#39;</span>
                 <span class="n">stretch</span> <span class="o">=</span> <span class="mi">1</span>
-                <span class="n">TracebackPanel</span><span class="p">:</span>
+                <span class="nt">TracebackPanel</span><span class="p">:</span>
                     <span class="n">model</span> <span class="o">=</span> <span class="n">editor_model</span>
-            <span class="n">DockItem</span><span class="p">:</span>
+            <span class="nt">DockItem</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;view-item&#39;</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Live View&#39;</span>
                 <span class="n">stretch</span> <span class="o">=</span> <span class="mi">4</span>
-                <span class="n">ViewPanel</span><span class="p">:</span>
+                <span class="nt">ViewPanel</span><span class="p">:</span>
                     <span class="n">model</span> <span class="o">=</span> <span class="n">editor_model</span>
 </pre></div>
 </div>

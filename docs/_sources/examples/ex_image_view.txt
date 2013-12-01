@@ -16,5 +16,5 @@ Image View Example
 .. image:: images/ex_image_view.png
 
 .. literalinclude:: ../../../examples/widgets/image_view.enaml
-    :language: python
+    :language: enaml
 

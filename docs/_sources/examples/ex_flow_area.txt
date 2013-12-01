@@ -87,5 +87,5 @@ Flow Area Example
 .. image:: images/ex_flow_area.png
 
 .. literalinclude:: ../../../examples/widgets/flow_area.enaml
-    :language: python
+    :language: enaml
 

@@ -21,5 +21,5 @@ Scroll Area Example
 .. image:: images/ex_scroll_area.png
 
 .. literalinclude:: ../../../examples/widgets/scroll_area.enaml
-    :language: python
+    :language: enaml
 

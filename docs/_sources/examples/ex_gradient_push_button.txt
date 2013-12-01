@@ -14,5 +14,5 @@ Gradient Push Button Example
 .. image:: images/ex_gradient_push_button.png
 
 .. literalinclude:: ../../../examples/styling/gradient_push_button.enaml
-    :language: python
+    :language: enaml
 

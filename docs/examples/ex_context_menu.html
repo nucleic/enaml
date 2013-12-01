@@ -185,46 +185,47 @@
 <div class="highlight-python"><pre>$ enaml-run context_menu</pre>
 </div>
 <img alt="../_images/ex_context_menu.png" src="../_images/ex_context_menu.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of using the `Menu` widget as a context menu.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using the `Menu` widget as a context menu.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Menu</span><span class="p">,</span> <span class="n">Action</span>
-
-
-<span class="n">enamldef</span> <span class="n">SampleAction</span><span class="p">(</span><span class="n">Action</span><span class="p">):</span>
-    <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> action </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">parent</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
-    <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="n">text</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.widgets.api import Window, Container, Field, Menu, Action
 
 
-<span class="n">enamldef</span> <span class="n">SampleMenu</span><span class="p">(</span><span class="n">Menu</span><span class="p">):</span>
-    <span class="n">SampleAction</span><span class="p">:</span> <span class="k">pass</span>
-    <span class="n">SampleAction</span><span class="p">:</span> <span class="k">pass</span>
-    <span class="n">SampleAction</span><span class="p">:</span> <span class="k">pass</span>
+enamldef SampleAction(Action):
+    text = '%s action %d' % (parent.title, parent.children.index(self))
+    triggered :: print text
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">Field</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
-        <span class="n">Field</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>
-            <span class="n">SampleMenu</span><span class="p">:</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>
-                <span class="n">context_menu</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="n">Field</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;baz&#39;</span>
-            <span class="n">SampleMenu</span><span class="p">:</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;baz&#39;</span>
-                <span class="n">context_menu</span> <span class="o">=</span> <span class="bp">True</span>
-</pre></div>
+enamldef SampleMenu(Menu):
+    SampleAction: pass
+    SampleAction: pass
+    SampleAction: pass
+
+
+enamldef Main(Window):
+    Container:
+        Field:
+            text = 'foo'
+        Field:
+            text = 'bar'
+            SampleMenu:
+                title = 'bar'
+                context_menu = True
+        Field:
+            text = 'baz'
+            SampleMenu:
+                title = 'baz'
+                context_menu = True
+
+</pre>
 </div>
 </div>
 

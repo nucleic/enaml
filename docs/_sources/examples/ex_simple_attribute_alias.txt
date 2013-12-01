@@ -18,5 +18,5 @@ Simple Attribute Alias Example
 .. image:: images/ex_simple_attribute_alias.png
 
 .. literalinclude:: ../../../examples/aliases/simple_attribute_alias.enaml
-    :language: python
+    :language: enaml
 

@@ -18,5 +18,5 @@ Chained Attribute Alias Example
 .. image:: images/ex_chained_attribute_alias.png
 
 .. literalinclude:: ../../../examples/aliases/chained_attribute_alias.enaml
-    :language: python
+    :language: enaml
 

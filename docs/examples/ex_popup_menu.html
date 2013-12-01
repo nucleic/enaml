@@ -190,7 +190,7 @@ second method is by creating the menu on-demand, and then invoking it's
 <div class="highlight-python"><pre>$ enaml-run popup_menu</pre>
 </div>
 <img alt="../_images/ex_popup_menu.png" src="../_images/ex_popup_menu.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -211,33 +211,33 @@ second method is by creating the menu on-demand, and then invoking it's
 <span class="p">)</span>
 
 
-<span class="n">enamldef</span> <span class="n">PopupMenu</span><span class="p">(</span><span class="n">Menu</span><span class="p">):</span>
-    <span class="n">Action</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">PopupMenu</span><span class="p">(</span>Menu<span class="p">):</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
         <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="n">text</span> <span class="o">+</span> <span class="s">&#39; triggered&#39;</span>
-    <span class="n">Action</span><span class="p">:</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>
         <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="n">text</span> <span class="o">+</span> <span class="s">&#39; triggered&#39;</span>
-    <span class="n">Action</span><span class="p">:</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;baz&#39;</span>
         <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="n">text</span> <span class="o">+</span> <span class="s">&#39; triggered&#39;</span>
-    <span class="n">Action</span><span class="p">:</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;spam&#39;</span>
         <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="n">text</span> <span class="o">+</span> <span class="s">&#39; triggered&#39;</span>
-    <span class="n">Action</span><span class="p">:</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;ham&#39;</span>
         <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="n">text</span> <span class="o">+</span> <span class="s">&#39; triggered&#39;</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Popup Menu&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="n">PopupMenu</span><span class="p">()</span><span class="o">.</span><span class="n">popup</span><span class="p">()</span>
-        <span class="n">Field</span><span class="p">:</span>
+        <span class="nt">Field</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Context Menu&#39;</span>
             <span class="n">read_only</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">PopupMenu</span><span class="p">:</span>
+            <span class="nt">PopupMenu</span><span class="p">:</span>
                 <span class="n">context_menu</span> <span class="o">=</span> <span class="bp">True</span>
 </pre></div>
 </div>

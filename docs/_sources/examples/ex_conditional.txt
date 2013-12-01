@@ -17,5 +17,5 @@ Conditional Example
 .. image:: images/ex_conditional.png
 
 .. literalinclude:: ../../../examples/dynamic/conditional.enaml
-    :language: python
+    :language: enaml
 

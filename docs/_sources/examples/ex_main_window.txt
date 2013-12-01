@@ -29,5 +29,5 @@ Main Window Example
 .. image:: images/ex_main_window.png
 
 .. literalinclude:: ../../../examples/widgets/main_window.enaml
-    :language: python
+    :language: enaml
 

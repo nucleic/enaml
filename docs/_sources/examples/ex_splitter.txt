@@ -28,5 +28,5 @@ Splitter Example
 .. image:: images/ex_splitter.png
 
 .. literalinclude:: ../../../examples/widgets/splitter.enaml
-    :language: python
+    :language: enaml
 

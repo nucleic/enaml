@@ -17,5 +17,5 @@ Progress Bar Example
 .. image:: images/ex_progress_bar.png
 
 .. literalinclude:: ../../../examples/widgets/progress_bar.enaml
-    :language: python
+    :language: enaml
 

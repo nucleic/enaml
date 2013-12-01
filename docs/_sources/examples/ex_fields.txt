@@ -17,5 +17,5 @@ Fields Example
 .. image:: images/ex_fields.png
 
 .. literalinclude:: ../../../examples/dynamic/fields.enaml
-    :language: python
+    :language: enaml
 

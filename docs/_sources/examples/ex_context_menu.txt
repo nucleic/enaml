@@ -14,5 +14,5 @@ Context Menu Example
 .. image:: images/ex_context_menu.png
 
 .. literalinclude:: ../../../examples/widgets/context_menu.enaml
-    :language: python
+    :language: enaml
 

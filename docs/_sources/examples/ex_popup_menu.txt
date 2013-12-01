@@ -19,5 +19,5 @@ Popup Menu Example
 .. image:: images/ex_popup_menu.png
 
 .. literalinclude:: ../../../examples/widgets/popup_menu.enaml
-    :language: python
+    :language: enaml
 

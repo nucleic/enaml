@@ -188,7 +188,7 @@ used to select from a discrete range of integer values.</pre>
 <div class="highlight-python"><pre>$ enaml-run spin_box</pre>
 </div>
 <img alt="../_images/ex_spin_box.png" src="../_images/ex_spin_box.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -206,16 +206,16 @@ used to select from a discrete range of integer values.</pre>
 <span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">vbox</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
     <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;SpinBox Example&#39;</span>
-    <span class="n">Container</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">vbox</span><span class="p">(</span><span class="n">hbox</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="n">sbox</span><span class="p">),</span> <span class="n">fld</span><span class="p">)]</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">lbl</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span> <span class="ni">lbl</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Select Age&#39;</span>
-        <span class="n">SpinBox</span><span class="p">:</span> <span class="n">sbox</span><span class="p">:</span>
+        <span class="nt">SpinBox</span><span class="p">:</span> <span class="ni">sbox</span><span class="p">:</span>
             <span class="n">maximum</span> <span class="o">=</span> <span class="mi">100</span>
             <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">fld</span><span class="p">:</span>
+        <span class="nt">Field</span><span class="p">:</span> <span class="ni">fld</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="s">u&#39;Age: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sbox</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
             <span class="n">read_only</span> <span class="o">=</span> <span class="bp">True</span>
 </pre></div>

@@ -182,40 +182,40 @@ widths.</pre>
 <div class="highlight-python"><pre>$ enaml-run vbox</pre>
 </div>
 <img alt="../_images/ex_vbox.png" src="../_images/ex_vbox.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example which demonstrates the use of the `vbox` layout helper.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example which demonstrates the use of the `vbox` layout helper.
 
-<span class="sd">In this example, we use the `vbox` layout helper to layout the children</span>
-<span class="sd">of the Container in a vertical group. The `vbox` function is a fairly</span>
-<span class="sd">sophisticated layout helper which automatically takes into account the</span>
-<span class="sd">content boundaries of its parent. It also provides the necessary layout</span>
-<span class="sd">spacers in the horizontal direction to allow for children of various</span>
-<span class="sd">widths.</span>
+In this example, we use the `vbox` layout helper to layout the children
+of the Container in a vertical group. The `vbox` function is a fairly
+sophisticated layout helper which automatically takes into account the
+content boundaries of its parent. It also provides the necessary layout
+spacers in the horizontal direction to allow for children of various
+widths.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vbox</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import vbox
+from enaml.widgets.api import Window, Container, PushButton
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">vbox</span><span class="p">(</span><span class="n">pb1</span><span class="p">,</span> <span class="n">pb2</span><span class="p">,</span> <span class="n">pb3</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb1</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Spam&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb2</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Long Name Foo&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb3</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Bar&#39;</span>
-</pre></div>
+enamldef Main(Window):
+    Container:
+        constraints = [
+            vbox(pb1, pb2, pb3)
+        ]
+        PushButton: pb1:
+            text = 'Spam'
+        PushButton: pb2:
+            text = 'Long Name Foo'
+        PushButton: pb3:
+            text = 'Bar'
+</pre>
 </div>
 </div>
 

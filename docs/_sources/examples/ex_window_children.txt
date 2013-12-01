@@ -27,5 +27,5 @@ Window Children Example
 .. image:: images/ex_window_children.png
 
 .. literalinclude:: ../../../examples/widgets/window_children.enaml
-    :language: python
+    :language: enaml
 

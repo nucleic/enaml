@@ -14,5 +14,5 @@ Dual Slider Example
 .. image:: images/ex_dual_slider.png
 
 .. literalinclude:: ../../../examples/widgets/dual_slider.enaml
-    :language: python
+    :language: enaml
 

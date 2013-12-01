@@ -17,5 +17,5 @@ Hbox Spacing Example
 .. image:: images/ex_hbox_spacing.png
 
 .. literalinclude:: ../../../examples/layout/basic/hbox_spacing.enaml
-    :language: python
+    :language: enaml
 

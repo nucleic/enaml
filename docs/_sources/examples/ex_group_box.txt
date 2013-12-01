@@ -17,5 +17,5 @@ Group Box Example
 .. image:: images/ex_group_box.png
 
 .. literalinclude:: ../../../examples/widgets/group_box.enaml
-    :language: python
+    :language: enaml
 

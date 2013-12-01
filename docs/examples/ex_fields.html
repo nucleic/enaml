@@ -168,89 +168,89 @@ ways that the Include component may be used.</pre>
 <div class="highlight-python"><pre>$ enaml-run fields</pre>
 </div>
 <img alt="../_images/ex_fields.png" src="../_images/ex_fields.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of using Include to generate Field widgets on demand.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using Include to generate Field widgets on demand.
 
-<span class="sd">There are three columns in the example, each showing one of the many</span>
-<span class="sd">ways that the Include component may be used.</span>
+There are three columns in the example, each showing one of the many
+ways that the Include component may be used.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">random</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+import random
 
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">align</span><span class="p">,</span> <span class="n">spacer</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">SpinBox</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">enaml.core.api</span> <span class="kn">import</span> <span class="n">Include</span>
+from enaml.layout.api import hbox, vbox, align, spacer
+from enaml.widgets.api import (
+    Window, Container, Label, Field, SpinBox, PushButton,
+)
+from enaml.core.api import Include
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">hbox</span><span class="p">(</span><span class="n">cont1</span><span class="p">,</span> <span class="n">cont2</span><span class="p">,</span> <span class="n">cont3</span><span class="p">),</span>
-            <span class="n">align</span><span class="p">(</span><span class="s">&#39;width&#39;</span><span class="p">,</span> <span class="n">cont1</span><span class="p">,</span> <span class="n">cont2</span><span class="p">,</span> <span class="n">cont3</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-        <span class="n">Container</span><span class="p">:</span> <span class="n">cont1</span><span class="p">:</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Replace All&#39;</span>
-                <span class="n">align</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span>
-            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">spin1</span><span class="p">:</span>
-                <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="n">maximum</span> <span class="o">=</span> <span class="mi">20</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="mi">3</span>
-            <span class="n">Include</span><span class="p">:</span>
-                <span class="c"># This generates a completely new list of widgets each</span>
-                <span class="c"># time the spin box is changed. All the old widgets</span>
-                <span class="c"># will be destroyed. This is the simplest way to use</span>
-                <span class="c"># the Include, albeit not the most efficient.</span>
-                <span class="n">objects</span> <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="n">Field</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">spin1</span><span class="o">.</span><span class="n">value</span><span class="p">)]</span>
-        <span class="n">Container</span><span class="p">:</span> <span class="n">cont2</span><span class="p">:</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Random Shuffle&#39;</span>
-                <span class="n">align</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Shuffle&#39;</span>
-                <span class="c"># This randomly shuffles the Fields of the Include. It</span>
-                <span class="c"># could also have been done in-place to the same effect,</span>
-                <span class="c"># but we do it on a copy to demonstrate that the Include</span>
-                <span class="c"># is intelligent enought to deal with assigning it an</span>
-                <span class="c"># object or objects which it already owns.</span>
-                <span class="n">clicked</span> <span class="p">::</span>
-                    <span class="n">new</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">inc2</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span>
-                    <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
-                    <span class="n">inc2</span><span class="o">.</span><span class="n">objects</span> <span class="o">=</span> <span class="n">new</span>
-                    <span class="n">cont2</span><span class="o">.</span><span class="n">request_relayout</span><span class="p">()</span>
-            <span class="n">Include</span><span class="p">:</span> <span class="n">inc2</span><span class="p">:</span>
-                <span class="c"># The Fields are initialized with the spin box value.</span>
-                <span class="n">objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">Field</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
-        <span class="n">Container</span><span class="p">:</span> <span class="n">cont3</span><span class="p">:</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Modify In-Place&#39;</span>
-                <span class="n">align</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Append&#39;</span>
-                <span class="c"># This appends a new Field to the Include in-place.</span>
-                <span class="n">clicked</span> <span class="p">::</span>
-                    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inc3</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span>
-                    <span class="n">inc3</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Field</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
-            <span class="n">PushButton</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Pop&#39;</span>
-                <span class="c"># This pops a Field from the Include in-place.</span>
-                <span class="n">clicked</span> <span class="p">::</span>
-                    <span class="k">if</span> <span class="n">inc3</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span>
-                        <span class="n">inc3</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-            <span class="n">Include</span><span class="p">:</span> <span class="n">inc3</span><span class="p">:</span>
-                <span class="n">objects</span> <span class="o">=</span>  <span class="p">[</span><span class="n">Field</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>
-</pre></div>
+enamldef Main(Window):
+    Container:
+        padding = 0
+        constraints = [
+            hbox(cont1, cont2, cont3),
+            align('width', cont1, cont2, cont3)
+        ]
+        hug_height = 'strong'
+        Container: cont1:
+            Label:
+                text = 'Replace All'
+                align = 'center'
+            SpinBox: spin1:
+                minimum = 0
+                maximum = 20
+                value = 3
+            Include:
+                # This generates a completely new list of widgets each
+                # time the spin box is changed. All the old widgets
+                # will be destroyed. This is the simplest way to use
+                # the Include, albeit not the most efficient.
+                objects &lt;&lt; [Field(text=str(i)) for i in xrange(spin1.value)]
+        Container: cont2:
+            Label:
+                text = 'Random Shuffle'
+                align = 'center'
+            PushButton:
+                text = 'Shuffle'
+                # This randomly shuffles the Fields of the Include. It
+                # could also have been done in-place to the same effect,
+                # but we do it on a copy to demonstrate that the Include
+                # is intelligent enought to deal with assigning it an
+                # object or objects which it already owns.
+                clicked ::
+                    new = list(inc2.objects)
+                    random.shuffle(new)
+                    inc2.objects = new
+                    cont2.request_relayout()
+            Include: inc2:
+                # The Fields are initialized with the spin box value.
+                objects = [Field(text=str(i)) for i in xrange(10)]
+        Container: cont3:
+            Label:
+                text = 'Modify In-Place'
+                align = 'center'
+            PushButton:
+                text = 'Append'
+                # This appends a new Field to the Include in-place.
+                clicked ::
+                    n = len(inc3.objects)
+                    inc3.objects.append(Field(text=str(n)))
+            PushButton:
+                text = 'Pop'
+                # This pops a Field from the Include in-place.
+                clicked ::
+                    if inc3.objects:
+                        inc3.objects.pop()
+            Include: inc3:
+                objects =  [Field(text=str(i)) for i in xrange(5)]
+</pre>
 </div>
 </div>
 

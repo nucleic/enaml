@@ -19,5 +19,5 @@ Advanced Example
 .. image:: images/ex_advanced.png
 
 .. literalinclude:: ../../../examples/templates/advanced.enaml
-    :language: python
+    :language: enaml
 

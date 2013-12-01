@@ -19,5 +19,5 @@ Horizontal Example
 .. image:: images/ex_horizontal.png
 
 .. literalinclude:: ../../../examples/layout/basic/horizontal.enaml
-    :language: python
+    :language: enaml
 

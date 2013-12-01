@@ -17,5 +17,5 @@ Popup View Example
 .. image:: images/ex_popup_view.png
 
 .. literalinclude:: ../../../examples/widgets/popup_view.enaml
-    :language: python
+    :language: enaml
 

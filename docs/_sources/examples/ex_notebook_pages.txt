@@ -17,5 +17,5 @@ Notebook Pages Example
 .. image:: images/ex_notebook_pages.png
 
 .. literalinclude:: ../../../examples/dynamic/notebook_pages.enaml
-    :language: python
+    :language: enaml
 

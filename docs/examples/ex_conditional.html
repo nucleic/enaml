@@ -168,95 +168,95 @@ objects which are not known until runtime.</pre>
 <div class="highlight-python"><pre>$ enaml-run conditional</pre>
 </div>
 <img alt="../_images/ex_conditional.png" src="../_images/ex_conditional.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of using Conditional to generate the views.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using Conditional to generate the views.
 
-<span class="sd">This example shows how Conditional can be used to generate views for</span>
-<span class="sd">objects which are not known until runtime.</span>
+This example shows how Conditional can be used to generate views for
+objects which are not known until runtime.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">random</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+import random
 
-<span class="kn">from</span> <span class="nn">enaml.core.api</span> <span class="kn">import</span> <span class="n">Conditional</span><span class="p">,</span> <span class="n">Looper</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">CheckBox</span><span class="p">,</span> <span class="n">Separator</span><span class="p">,</span> <span class="n">ScrollArea</span>
-<span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span> <span class="k">pass</span>
-<span class="k">class</span> <span class="nc">Bar</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span> <span class="k">pass</span>
-<span class="k">class</span> <span class="nc">Baz</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span> <span class="k">pass</span>
+from enaml.core.api import Conditional, Looper
+from enaml.widgets.api import (
+    Window, Container, Field, PushButton, CheckBox, Separator, ScrollArea
+)
 
 
-<span class="n">enamldef</span> <span class="n">FooView</span><span class="p">(</span><span class="n">Container</span><span class="p">):</span>
-    <span class="n">attr</span> <span class="n">model</span><span class="p">:</span> <span class="n">Foo</span>
-    <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-    <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+class Foo(object): pass
+class Bar(object): pass
+class Baz(object): pass
 
 
-<span class="n">enamldef</span> <span class="n">BarView</span><span class="p">(</span><span class="n">Container</span><span class="p">):</span>
-    <span class="n">attr</span> <span class="n">model</span><span class="p">:</span> <span class="n">Bar</span>
-    <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-    <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+enamldef FooView(Container):
+    attr model: Foo
+    hug_height = 'strong'
+    PushButton: text = str(model)
+    PushButton: text = str(model)
+    PushButton: text = str(model)
 
 
-<span class="n">enamldef</span> <span class="n">BazView</span><span class="p">(</span><span class="n">Container</span><span class="p">):</span>
-    <span class="n">attr</span> <span class="n">model</span><span class="p">:</span> <span class="n">Baz</span>
-    <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-    <span class="n">CheckBox</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="n">CheckBox</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="n">CheckBox</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+enamldef BarView(Container):
+    attr model: Bar
+    hug_height = 'strong'
+    Field: text = str(model)
+    Field: text = str(model)
+    Field: text = str(model)
 
 
-<span class="n">CLASSES</span> <span class="o">=</span> <span class="p">[</span><span class="n">Foo</span><span class="p">,</span> <span class="n">Bar</span><span class="p">,</span> <span class="n">Baz</span><span class="p">]</span>
-<span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">CLASSES</span><span class="p">)()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+enamldef BazView(Container):
+    attr model: Baz
+    hug_height = 'strong'
+    CheckBox: text = str(model)
+    CheckBox: text = str(model)
+    CheckBox: text = str(model)
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span> <span class="n">main</span><span class="p">:</span>
-    <span class="n">attr</span> <span class="n">models</span> <span class="o">=</span> <span class="n">generate</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">CheckBox</span><span class="p">:</span> <span class="n">show_bar</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Show Bar Views&#39;</span>
-            <span class="n">checked</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="n">PushButton</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Regenerate Models&#39;</span>
-            <span class="n">clicked</span> <span class="p">::</span> <span class="n">main</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="n">generate</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-        <span class="n">ScrollArea</span><span class="p">:</span>
-            <span class="n">Container</span><span class="p">:</span>
-                <span class="n">Looper</span><span class="p">:</span>
-                    <span class="n">iterable</span> <span class="o">&lt;&lt;</span> <span class="n">models</span>
-                    <span class="n">Conditional</span><span class="p">:</span>
-                        <span class="n">condition</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loop_item</span><span class="p">,</span> <span class="n">Foo</span><span class="p">)</span>
-                        <span class="n">FooView</span><span class="p">:</span>
-                            <span class="n">model</span> <span class="o">=</span> <span class="n">loop_item</span>
-                    <span class="n">Conditional</span><span class="p">:</span>
-                        <span class="n">condition</span> <span class="o">&lt;&lt;</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loop_item</span><span class="p">,</span> <span class="n">Bar</span><span class="p">)</span> <span class="ow">and</span> <span class="n">show_bar</span><span class="o">.</span><span class="n">checked</span>
-                        <span class="n">BarView</span><span class="p">:</span>
-                            <span class="n">model</span> <span class="o">=</span> <span class="n">loop_item</span>
-                    <span class="n">Conditional</span><span class="p">:</span>
-                        <span class="n">condition</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loop_item</span><span class="p">,</span> <span class="n">Baz</span><span class="p">)</span>
-                        <span class="n">BazView</span><span class="p">:</span>
-                            <span class="n">model</span> <span class="o">=</span> <span class="n">loop_item</span>
-                    <span class="n">Conditional</span><span class="p">:</span>
-                        <span class="n">condition</span> <span class="o">&lt;&lt;</span> <span class="p">(</span>
-                            <span class="p">(</span><span class="n">loop_index</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">main</span><span class="o">.</span><span class="n">models</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span>
-                            <span class="p">(</span><span class="n">show_bar</span><span class="o">.</span><span class="n">checked</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loop_item</span><span class="p">,</span> <span class="n">Bar</span><span class="p">)</span> <span class="k">else</span> <span class="bp">True</span><span class="p">)</span>
-                        <span class="p">)</span>
-                        <span class="n">Separator</span><span class="p">:</span>
-                            <span class="n">orientation</span> <span class="o">=</span> <span class="s">&#39;horizontal&#39;</span>
-</pre></div>
+CLASSES = [Foo, Bar, Baz]
+def generate(n):
+    return [random.choice(CLASSES)() for _ in xrange(n)]
+
+
+enamldef Main(Window): main:
+    attr models = generate(5)
+    Container:
+        CheckBox: show_bar:
+            text = 'Show Bar Views'
+            checked = True
+        PushButton:
+            text = 'Regenerate Models'
+            clicked :: main.models = generate(random.randint(1, 10))
+        ScrollArea:
+            Container:
+                Looper:
+                    iterable &lt;&lt; models
+                    Conditional:
+                        condition = isinstance(loop_item, Foo)
+                        FooView:
+                            model = loop_item
+                    Conditional:
+                        condition &lt;&lt; isinstance(loop_item, Bar) and show_bar.checked
+                        BarView:
+                            model = loop_item
+                    Conditional:
+                        condition = isinstance(loop_item, Baz)
+                        BazView:
+                            model = loop_item
+                    Conditional:
+                        condition &lt;&lt; (
+                            (loop_index != len(main.models) - 1) and
+                            (show_bar.checked if isinstance(loop_item, Bar) else True)
+                        )
+                        Separator:
+                            orientation = 'horizontal'
+</pre>
 </div>
 </div>
 

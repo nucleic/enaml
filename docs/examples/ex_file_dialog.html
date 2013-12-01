@@ -185,44 +185,44 @@
 <div class="highlight-python"><pre>$ enaml-run file_dialog</pre>
 </div>
 <img alt="../_images/ex_file_dialog.png" src="../_images/ex_file_dialog.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; Example demonstrating a File Dialog</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" Example demonstrating a File Dialog
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">align</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Container</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">FileDialogEx</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Window</span>
-<span class="p">)</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import hbox, align
+from enaml.widgets.api import (
+    Container, Field, FileDialogEx, Label, PushButton, Window
+)
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span> <span class="n">window</span><span class="p">:</span>
-    <span class="n">attr</span> <span class="n">path</span> <span class="p">:</span> <span class="nb">unicode</span> <span class="o">=</span> <span class="s">u&quot;&quot;</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;File Chooser&#39;</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">hbox</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="n">fld</span><span class="p">,</span> <span class="n">pb</span><span class="p">),</span>
-            <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">fld</span><span class="p">,</span> <span class="n">pb</span><span class="p">),</span>
-            <span class="n">pb</span><span class="o">.</span><span class="n">height</span> <span class="o">==</span> <span class="n">fld</span><span class="o">.</span><span class="n">height</span><span class="p">,</span>
-        <span class="p">]</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">lbl</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;File&#39;</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">fld</span><span class="p">:</span>
-            <span class="n">read_only</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="n">window</span><span class="o">.</span><span class="n">path</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Browse&#39;</span>
-            <span class="n">clicked</span> <span class="p">::</span>
-                <span class="n">path</span> <span class="o">=</span> <span class="n">FileDialogEx</span><span class="o">.</span><span class="n">get_open_file_name</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
-                    <span class="n">window</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
-</pre></div>
+enamldef Main(Window): window:
+    attr path : unicode = u""
+    title = 'File Chooser'
+    Container:
+        constraints = [
+            hbox(lbl, fld, pb),
+            align('v_center', lbl, fld, pb),
+            pb.height == fld.height,
+        ]
+        Label: lbl:
+            text = 'File'
+        Field: fld:
+            read_only = True
+            text &lt;&lt; window.path
+        PushButton: pb:
+            text = 'Browse'
+            clicked ::
+                path = FileDialogEx.get_open_file_name(window)
+                if path:
+                    window.path = path
+</pre>
 </div>
 </div>
 

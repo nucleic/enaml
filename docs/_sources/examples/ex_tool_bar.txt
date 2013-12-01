@@ -31,5 +31,5 @@ Tool Bar Example
 .. image:: images/ex_tool_bar.png
 
 .. literalinclude:: ../../../examples/widgets/tool_bar.enaml
-    :language: python
+    :language: enaml
 

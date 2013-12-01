@@ -17,5 +17,5 @@ Basic Example
 .. image:: images/ex_basic.png
 
 .. literalinclude:: ../../../examples/templates/basic.enaml
-    :language: python
+    :language: enaml
 

@@ -14,5 +14,5 @@ Banner Example
 .. image:: images/ex_banner.png
 
 .. literalinclude:: ../../../examples/styling/banner.enaml
-    :language: python
+    :language: enaml
 

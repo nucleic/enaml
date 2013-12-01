@@ -258,7 +258,7 @@ controls the parameters for the entire area.</pre>
 <div class="highlight-python"><pre>$ enaml-run flow_area</pre>
 </div>
 <img alt="../_images/ex_flow_area.png" src="../_images/ex_flow_area.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -350,108 +350,108 @@ controls the parameters for the entire area.</pre>
 <span class="kn">from</span> <span class="nn">enaml.core.api</span> <span class="kn">import</span> <span class="n">Include</span>
 
 
-<span class="n">enamldef</span> <span class="n">Item</span><span class="p">(</span><span class="n">FlowItem</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">Item</span><span class="p">(</span>FlowItem<span class="p">):</span>
     <span class="n">align</span> <span class="o">&lt;&lt;</span> <span class="n">align_box</span><span class="o">.</span><span class="n">selected_item</span>
     <span class="n">stretch</span> <span class="o">&lt;&lt;</span> <span class="n">flow_spin</span><span class="o">.</span><span class="n">value</span>
     <span class="n">ortho_stretch</span> <span class="o">&lt;&lt;</span> <span class="n">ortho_spin</span><span class="o">.</span><span class="n">value</span>
     <span class="n">preferred_size</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">pref_width</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">pref_height</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-    <span class="n">GroupBox</span><span class="p">:</span>
-        <span class="n">Form</span><span class="p">:</span>
+    <span class="nt">GroupBox</span><span class="p">:</span>
+        <span class="nt">Form</span><span class="p">:</span>
             <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-            <span class="n">Label</span><span class="p">:</span>
+            <span class="nt">Label</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Preferred Width&#39;</span>
-            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">pref_width</span><span class="p">:</span>
+            <span class="nt">SpinBox</span><span class="p">:</span> <span class="ni">pref_width</span><span class="p">:</span>
                 <span class="n">minimum</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
                 <span class="n">maximum</span> <span class="o">=</span> <span class="mi">800</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-            <span class="n">Label</span><span class="p">:</span>
+            <span class="nt">Label</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Preferred Height&#39;</span>
-            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">pref_height</span><span class="p">:</span>
+            <span class="nt">SpinBox</span><span class="p">:</span> <span class="ni">pref_height</span><span class="p">:</span>
                 <span class="n">minimum</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
                 <span class="n">maximum</span> <span class="o">=</span> <span class="mi">800</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-            <span class="n">Label</span><span class="p">:</span>
+            <span class="nt">Label</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Flow Stretch&#39;</span>
-            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">flow_spin</span><span class="p">:</span>
+            <span class="nt">SpinBox</span><span class="p">:</span> <span class="ni">flow_spin</span><span class="p">:</span>
                 <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">maximum</span> <span class="o">=</span> <span class="mi">100</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">Label</span><span class="p">:</span>
+            <span class="nt">Label</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Ortho Stretch&#39;</span>
-            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">ortho_spin</span><span class="p">:</span>
+            <span class="nt">SpinBox</span><span class="p">:</span> <span class="ni">ortho_spin</span><span class="p">:</span>
                 <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">maximum</span> <span class="o">=</span> <span class="mi">100</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">Label</span><span class="p">:</span>
+            <span class="nt">Label</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Ortho Align&#39;</span>
-            <span class="n">ComboBox</span><span class="p">:</span> <span class="n">align_box</span><span class="p">:</span>
+            <span class="nt">ComboBox</span><span class="p">:</span> <span class="ni">align_box</span><span class="p">:</span>
                 <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;leading&#39;</span><span class="p">,</span> <span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="s">&#39;trailing&#39;</span><span class="p">]</span>
                 <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">Html</span><span class="p">:</span>
-                <span class="n">attr</span> <span class="n">fixed_height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+            <span class="nt">Html</span><span class="p">:</span>
+                <span class="k">attr</span> <span class="n">fixed_height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
                 <span class="n">resist_height</span> <span class="o">=</span> <span class="s">&#39;weak&#39;</span>
                 <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">height</span> <span class="o">==</span> <span class="n">fixed_height</span><span class="p">]</span>
                 <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;center&gt;Height == </span><span class="si">%d</span><span class="s">&lt;/center&gt;&#39;</span><span class="o">%</span><span class="n">fixed_height</span>
 
-<span class="n">enamldef</span> <span class="n">AreaControls</span><span class="p">(</span><span class="n">GroupBox</span><span class="p">):</span>
-    <span class="n">attr</span> <span class="n">area</span><span class="p">:</span> <span class="n">FlowArea</span>
-    <span class="n">event</span> <span class="n">add_item</span>
-    <span class="n">event</span> <span class="n">remove_item</span>
+<span class="k">enamldef</span> <span class="nc">AreaControls</span><span class="p">(</span>GroupBox<span class="p">):</span>
+    <span class="k">attr</span> <span class="n">area</span><span class="p">:</span> <span class="n">FlowArea</span>
+    <span class="k">event</span> <span class="n">add_item</span>
+    <span class="k">event</span> <span class="n">remove_item</span>
     <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Area Controls&#39;</span>
-    <span class="n">Label</span><span class="p">:</span>
+    <span class="nt">Label</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;Add new items to see how the flow area works.</span>
 <span class="s">You can also tweak the flow parameters&quot;&quot;&quot;</span>
-    <span class="n">PushButton</span><span class="p">:</span>
+    <span class="nt">PushButton</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Add Item&#39;</span>
         <span class="n">clicked</span> <span class="p">::</span> <span class="n">add_item</span><span class="p">()</span>
-    <span class="n">PushButton</span><span class="p">:</span>
+    <span class="nt">PushButton</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Remove Item&#39;</span>
         <span class="n">clicked</span> <span class="p">::</span> <span class="n">remove_item</span><span class="p">()</span>
-    <span class="n">Form</span><span class="p">:</span>
+    <span class="nt">Form</span><span class="p">:</span>
         <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Horizontal Spacing&#39;</span>
-        <span class="n">Slider</span><span class="p">:</span>
+        <span class="nt">Slider</span><span class="p">:</span>
             <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">maximum</span> <span class="o">=</span> <span class="mi">150</span>
-            <span class="n">value</span> <span class="p">:</span><span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">horizontal_spacing</span>
-        <span class="n">Label</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">:=</span> <span class="n">area</span><span class="o">.</span><span class="n">horizontal_spacing</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Vertical Spacing&#39;</span>
-        <span class="n">Slider</span><span class="p">:</span>
+        <span class="nt">Slider</span><span class="p">:</span>
             <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">maximum</span> <span class="o">=</span> <span class="mi">150</span>
-            <span class="n">value</span> <span class="p">:</span><span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">vertical_spacing</span>
-        <span class="n">Label</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">:=</span> <span class="n">area</span><span class="o">.</span><span class="n">vertical_spacing</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Direction&#39;</span>
-        <span class="n">ComboBox</span><span class="p">:</span>
+        <span class="nt">ComboBox</span><span class="p">:</span>
             <span class="n">items</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="s">&#39;left_to_right&#39;</span><span class="p">,</span> <span class="s">&#39;right_to_left&#39;</span><span class="p">,</span>
                 <span class="s">&#39;top_to_bottom&#39;</span><span class="p">,</span> <span class="s">&#39;bottom_to_top&#39;</span><span class="p">,</span>
             <span class="p">]</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">area</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span>
             <span class="n">selected_item</span> <span class="o">&gt;&gt;</span> <span class="n">area</span><span class="o">.</span><span class="n">direction</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Align&#39;</span>
-        <span class="n">ComboBox</span><span class="p">:</span>
+        <span class="nt">ComboBox</span><span class="p">:</span>
             <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;leading&#39;</span><span class="p">,</span> <span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="s">&#39;justify&#39;</span><span class="p">,</span> <span class="s">&#39;trailing&#39;</span><span class="p">]</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">area</span><span class="o">.</span><span class="n">align</span><span class="p">)</span>
             <span class="n">selected_item</span> <span class="o">&gt;&gt;</span> <span class="n">area</span><span class="o">.</span><span class="n">align</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
     <span class="n">initial_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">800</span><span class="p">,</span><span class="mi">800</span><span class="p">)</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">FlowArea</span><span class="p">:</span> <span class="n">flow_area</span><span class="p">:</span>
-            <span class="n">FlowItem</span><span class="p">:</span>
-                <span class="n">AreaControls</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">FlowArea</span><span class="p">:</span> <span class="ni">flow_area</span><span class="p">:</span>
+            <span class="nt">FlowItem</span><span class="p">:</span>
+                <span class="nt">AreaControls</span><span class="p">:</span>
                     <span class="n">area</span> <span class="o">=</span> <span class="n">flow_area</span>
                     <span class="n">add_item</span> <span class="p">::</span>
                         <span class="n">inc</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Item</span><span class="p">())</span>
                     <span class="n">remove_item</span> <span class="p">::</span>
                         <span class="k">if</span> <span class="n">inc</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span>
                             <span class="n">inc</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-            <span class="n">Include</span><span class="p">:</span> <span class="n">inc</span><span class="p">:</span>
+            <span class="nt">Include</span><span class="p">:</span> <span class="ni">inc</span><span class="p">:</span>
                 <span class="k">pass</span>
 </pre></div>
 </div>

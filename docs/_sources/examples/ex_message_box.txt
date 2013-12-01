@@ -20,5 +20,5 @@ Message Box Example
 .. image:: images/ex_message_box.png
 
 .. literalinclude:: ../../../examples/stdlib/message_box.enaml
-    :language: python
+    :language: enaml
 

@@ -202,7 +202,7 @@ Implementation Notes:
 <div class="highlight-python"><pre>$ enaml-run tool_bar</pre>
 </div>
 <img alt="../_images/ex_tool_bar.png" src="../_images/ex_tool_bar.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -236,45 +236,45 @@ Implementation Notes:
 <span class="p">)</span>
 
 
-<span class="n">enamldef</span> <span class="n">MyToolBar</span><span class="p">(</span><span class="n">ToolBar</span><span class="p">):</span>
-    <span class="n">Action</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">MyToolBar</span><span class="p">(</span>ToolBar<span class="p">):</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Button&#39;</span>
         <span class="n">tool_tip</span> <span class="o">=</span> <span class="n">text</span>
-    <span class="n">ActionGroup</span><span class="p">:</span>
-        <span class="n">Action</span><span class="p">:</span>
+    <span class="nt">ActionGroup</span><span class="p">:</span>
+        <span class="nt">Action</span><span class="p">:</span>
             <span class="n">separator</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="n">Action</span><span class="p">:</span>
+        <span class="nt">Action</span><span class="p">:</span>
             <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Exclusive&#39;</span>
             <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;triggered&#39;</span>
             <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;toggled&#39;</span>
-        <span class="n">Action</span><span class="p">:</span>
+        <span class="nt">Action</span><span class="p">:</span>
             <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;ToolBar&#39;</span>
-        <span class="n">Action</span><span class="p">:</span>
+        <span class="nt">Action</span><span class="p">:</span>
             <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Buttons&#39;</span>
-        <span class="n">Action</span><span class="p">:</span>
+        <span class="nt">Action</span><span class="p">:</span>
             <span class="n">separator</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="n">Action</span><span class="p">:</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Checkable&#39;</span>
-    <span class="n">Action</span><span class="p">:</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;ToolBar&#39;</span>
-    <span class="n">Action</span><span class="p">:</span>
+    <span class="nt">Action</span><span class="p">:</span>
         <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Buttons&#39;</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">MainWindow</span><span class="p">):</span>
-    <span class="n">MyToolBar</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>MainWindow<span class="p">):</span>
+    <span class="nt">MyToolBar</span><span class="p">:</span>
         <span class="k">pass</span>
-    <span class="n">Container</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">vbox</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="n">tbar</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
-        <span class="n">Html</span><span class="p">:</span> <span class="n">html</span><span class="p">:</span>
+        <span class="nt">Html</span><span class="p">:</span> <span class="ni">html</span><span class="p">:</span>
             <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Hello World!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
-        <span class="n">MyToolBar</span><span class="p">:</span> <span class="n">tbar</span><span class="p">:</span>
+        <span class="nt">MyToolBar</span><span class="p">:</span> <span class="ni">tbar</span><span class="p">:</span>
             <span class="k">pass</span>
 </pre></div>
 </div>

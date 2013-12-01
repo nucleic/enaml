@@ -17,5 +17,5 @@ Live Editor Example
 .. image:: images/ex_live_editor.png
 
 .. literalinclude:: ../../../examples/applib/live_editor.enaml
-    :language: python
+    :language: enaml
 

@@ -18,5 +18,5 @@ Align Offset Example
 .. image:: images/ex_align_offset.png
 
 .. literalinclude:: ../../../examples/layout/basic/align_offset.enaml
-    :language: python
+    :language: enaml
 

@@ -164,89 +164,89 @@
 <div class="highlight-python"><pre>$ enaml-run banner</pre>
 </div>
 <img alt="../_images/ex_banner.png" src="../_images/ex_banner.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c">#  Copyright (c) 2013, Nucleic Development Team</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of using style sheets to create a banner from a Label.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using style sheets to create a banner from a Label.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Form</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">MultilineField</span><span class="p">,</span> <span class="n">CheckBox</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">align</span>
-
-
-<span class="n">enamldef</span> <span class="n">BannerSheet</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">):</span>
-    <span class="n">Style</span><span class="p">:</span>
-        <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;Label&#39;</span>
-        <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;banner&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;background&#39;</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;lineargradient(x1: 0, y1:0, x2:0, y2:1, &#39;</span>
-                        <span class="s">&#39;stop: 0 #222222, stop: 0.5 #1A1A1A, stop: 1 #111111)&#39;</span><span class="p">)</span>
-        <span class="n">Setter</span><span class="p">:</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;#FFFFEF&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;padding&#39;</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;5px&#39;</span>
-        <span class="n">Setter</span><span class="p">:</span>
-            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;font&#39;</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;18pt Verdana&#39;</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.widgets.api import (
+    Window, Container, Label, Form, Field, Html, MultilineField, CheckBox
+)
+from enaml.styling import StyleSheet, Style, Setter
+from enaml.layout.api import vbox, hbox, align
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Banner Example&#39;</span>
-    <span class="n">BannerSheet</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">vbox</span><span class="p">(</span><span class="n">hbox</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">description</span><span class="p">),</span> <span class="n">primary</span><span class="p">),</span>
-            <span class="n">banner</span><span class="o">.</span><span class="n">top</span> <span class="o">==</span> <span class="n">top</span><span class="p">,</span>
-            <span class="n">banner</span><span class="o">.</span><span class="n">left</span> <span class="o">==</span> <span class="n">left</span><span class="p">,</span>
-            <span class="n">banner</span><span class="o">.</span><span class="n">right</span> <span class="o">==</span> <span class="n">right</span><span class="p">,</span>
-            <span class="n">banner</span><span class="o">.</span><span class="n">bottom</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">==</span> <span class="n">form</span><span class="o">.</span><span class="n">top</span><span class="p">,</span>
-            <span class="n">align</span><span class="p">(</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">description</span><span class="p">),</span>
-        <span class="p">]</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">banner</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Banner Text&#39;</span>
-            <span class="n">style_class</span> <span class="o">&lt;&lt;</span> <span class="s">&#39;banner&#39;</span> <span class="k">if</span> <span class="n">cbox</span><span class="o">.</span><span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
-        <span class="n">Form</span><span class="p">:</span> <span class="n">form</span><span class="p">:</span>
-            <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;required&#39;</span>
-            <span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;First&#39;</span>
-            <span class="n">Field</span><span class="p">:</span>
-                <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;First Value&#39;</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Second&#39;</span>
-            <span class="n">Field</span><span class="p">:</span>
-                <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;Second Value&#39;</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Third&#39;</span>
-            <span class="n">Field</span><span class="p">:</span>
-                <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;Third Value&#39;</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Fourth&#39;</span>
-            <span class="n">Field</span><span class="p">:</span>
-                <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;Fourth Value&#39;</span>
-            <span class="n">CheckBox</span><span class="p">:</span> <span class="n">cbox</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Toggle Banner Style&#39;</span>
-                <span class="n">checked</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="n">MultilineField</span><span class="p">:</span> <span class="n">description</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;description...&#39;</span>
-            <span class="n">enabled</span> <span class="o">=</span> <span class="bp">False</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">height</span> <span class="o">==</span> <span class="n">form</span><span class="o">.</span><span class="n">height</span><span class="p">]</span>
-        <span class="n">Html</span><span class="p">:</span> <span class="n">primary</span><span class="p">:</span>
-            <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Primary Content&lt;/center&gt;&lt;/h1&gt;&#39;</span>
-</pre></div>
+enamldef BannerSheet(StyleSheet):
+    Style:
+        element = 'Label'
+        style_class = 'banner'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1: 0, y1:0, x2:0, y2:1, '
+                        'stop: 0 #222222, stop: 0.5 #1A1A1A, stop: 1 #111111)')
+        Setter:
+            field = 'color'
+            value = '#FFFFEF'
+        Setter:
+            field = 'padding'
+            value = '5px'
+        Setter:
+            field = 'font'
+            value = '18pt Verdana'
+
+
+enamldef Main(Window):
+    title = 'Banner Example'
+    BannerSheet:
+        pass
+    Container:
+        constraints = [
+            vbox(hbox(form, description), primary),
+            banner.top == top,
+            banner.left == left,
+            banner.right == right,
+            banner.bottom + 10 == form.top,
+            align('top', form, description),
+        ]
+        Label: banner:
+            text = 'Banner Text'
+            style_class &lt;&lt; 'banner' if cbox.checked else ''
+        Form: form:
+            padding = 0
+            hug_height = 'required'
+            hug_width = 'strong'
+            Label:
+                text = 'First'
+            Field:
+                placeholder = 'First Value'
+            Label:
+                text = 'Second'
+            Field:
+                placeholder = 'Second Value'
+            Label:
+                text = 'Third'
+            Field:
+                placeholder = 'Third Value'
+            Label:
+                text = 'Fourth'
+            Field:
+                placeholder = 'Fourth Value'
+            CheckBox: cbox:
+                text = 'Toggle Banner Style'
+                checked = True
+        MultilineField: description:
+            text = 'description...'
+            enabled = False
+            constraints = [height == form.height]
+        Html: primary:
+            source = '&lt;h1&gt;&lt;center&gt;Primary Content&lt;/center&gt;&lt;/h1&gt;'
+</pre>
 </div>
 </div>
 

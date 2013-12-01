@@ -180,38 +180,39 @@ location in this example is non-deterministic.</pre>
 <div class="highlight-python"><pre>$ enaml-run horizontal</pre>
 </div>
 <img alt="../_images/ex_horizontal.png" src="../_images/ex_horizontal.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of the `horizontal` layout helper.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `horizontal` layout helper.
 
-<span class="sd">This example uses the `horizontal` layout helper to arrange a series of</span>
-<span class="sd">`PushButton` widgets in a horizontal layout. No constraints are placed</span>
-<span class="sd">on the vertical position of the `PushButton` widgets so their vertical</span>
-<span class="sd">location in this example is non-deterministic.</span>
+This example uses the `horizontal` layout helper to arrange a series of
+`PushButton` widgets in a horizontal layout. No constraints are placed
+on the vertical position of the `PushButton` widgets so their vertical
+location in this example is non-deterministic.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">horizontal</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import horizontal
+from enaml.widgets.api import Window, Container, PushButton
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">horizontal</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">pb1</span><span class="p">,</span> <span class="n">pb2</span><span class="p">,</span> <span class="n">pb3</span><span class="p">,</span> <span class="n">right</span><span class="p">),</span>
-        <span class="p">]</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb1</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Spam&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb2</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Long Name Foo&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb3</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Bar&#39;</span>
-</pre></div>
+enamldef Main(Window):
+    Container:
+        constraints = [
+            horizontal(left, pb1, pb2, pb3, right),
+        ]
+        PushButton: pb1:
+            text = 'Spam'
+        PushButton: pb2:
+            text = 'Long Name Foo'
+        PushButton: pb3:
+            text = 'Bar'
+
+</pre>
 </div>
 </div>
 

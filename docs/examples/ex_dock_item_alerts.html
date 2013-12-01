@@ -172,183 +172,183 @@ alert levels.</pre>
 <div class="highlight-python"><pre>$ enaml-run dock_item_alerts</pre>
 </div>
 <img alt="../_images/ex_dock_item_alerts.png" src="../_images/ex_dock_item_alerts.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c">#  Copyright (c) 2013, Nucleic Development Team</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; This example demonstrates the use of alerts on the DockItem widget.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" This example demonstrates the use of alerts on the DockItem widget.
 
-<span class="sd">The DockItem widget and related bits in the DockArea support a style</span>
-<span class="sd">sheet pseudo-class named &#39;alert&#39;. This pseudo-class is very powerful in</span>
-<span class="sd">that it allows the developer to provide their own arbitrary token to the</span>
-<span class="sd">pseudo-class as an argument, and then apply that token to a dock item at</span>
-<span class="sd">runtime. This gives the developer complete freed over the how they style</span>
-<span class="sd">their alerts, and does not force them in to a pre-defined hierarchy of</span>
-<span class="sd">alert levels.</span>
+The DockItem widget and related bits in the DockArea support a style
+sheet pseudo-class named 'alert'. This pseudo-class is very powerful in
+that it allows the developer to provide their own arbitrary token to the
+pseudo-class as an argument, and then apply that token to a dock item at
+runtime. This gives the developer complete freed over the how they style
+their alerts, and does not force them in to a pre-defined hierarchy of
+alert levels.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">HSplitLayout</span><span class="p">,</span> <span class="n">VSplitLayout</span><span class="p">,</span> <span class="n">TabLayout</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">spacer</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="n">StyleSheet</span>
-<span class="kn">from</span> <span class="nn">enaml.stdlib.dock_area_styles</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">VS2010Style</span><span class="p">,</span> <span class="n">TitleBarStyle</span><span class="p">,</span> <span class="n">DockBarButtonStyle</span><span class="p">,</span> <span class="n">ContainerStyle</span><span class="p">,</span>
-    <span class="n">ItemStyle</span><span class="p">,</span> <span class="n">TabBarTabStyle</span><span class="p">,</span> <span class="n">TitleBarLabelStyle</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">DockArea</span><span class="p">,</span> <span class="n">DockItem</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">PushButton</span>
-<span class="p">)</span>
-
-
-<span class="n">HTML</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">&lt;h3&gt;&lt;center&gt;</span>
-<span class="s">Drag the dock items to different locations to and then trigger an alert.</span>
-<span class="s">&lt;/center&gt;&lt;/h3&gt;</span>
-<span class="s">&quot;&quot;&quot;</span>
-
-<span class="n">MELTDOWN_HTML</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">&lt;h1&gt;&lt;center&gt;Everything is NOT okay!&lt;/center&gt;&lt;/h1&gt;</span>
-<span class="s">&quot;&quot;&quot;</span>
-
-<span class="n">enamldef</span> <span class="n">MyAlertStyleSheet</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">):</span>
-
-    <span class="c"># Include the base VS 2010 styling rules</span>
-    <span class="n">VS2010Style</span><span class="p">():</span>
-        <span class="k">pass</span>
-
-    <span class="c"># Add alert styles for an &quot;important&quot; alert.</span>
-    <span class="n">TitleBarStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(important)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;orange&#39;</span>
-
-    <span class="n">TitleBarLabelStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(important)&#39;</span>
-        <span class="n">color</span> <span class="o">=</span> <span class="s">&#39;black&#39;</span>
-
-    <span class="n">DockBarButtonStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(important)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;orange&#39;</span>
-
-    <span class="n">TabBarTabStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(important)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;orange&#39;</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import (
+    HSplitLayout, VSplitLayout, TabLayout, hbox, vbox, spacer
+)
+from enaml.styling import StyleSheet
+from enaml.stdlib.dock_area_styles import (
+    VS2010Style, TitleBarStyle, DockBarButtonStyle, ContainerStyle,
+    ItemStyle, TabBarTabStyle, TitleBarLabelStyle
+)
+from enaml.widgets.api import (
+    Window, Container, DockArea, DockItem, Html, Field, PushButton
+)
 
 
-    <span class="c"># Add alert styles for an &quot;information&quot; alert.</span>
-    <span class="n">TitleBarStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(information)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;olivedrab&#39;</span>
+HTML = """
+&lt;h3&gt;&lt;center&gt;
+Drag the dock items to different locations to and then trigger an alert.
+&lt;/center&gt;&lt;/h3&gt;
+"""
 
-    <span class="n">DockBarButtonStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(information)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;olivedrab&#39;</span>
+MELTDOWN_HTML = """
+&lt;h1&gt;&lt;center&gt;Everything is NOT okay!&lt;/center&gt;&lt;/h1&gt;
+"""
 
-    <span class="n">TabBarTabStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(information)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;olivedrab&#39;</span>
+enamldef MyAlertStyleSheet(StyleSheet):
 
+    # Include the base VS 2010 styling rules
+    VS2010Style():
+        pass
 
-    <span class="c"># Add alert styles for a &quot;meltdown&quot; alert.</span>
-    <span class="n">TitleBarStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+    # Add alert styles for an "important" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
 
-    <span class="n">DockBarButtonStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+    TitleBarLabelStyle:
+        pseudo_class = 'alert(important)'
+        color = 'black'
 
-    <span class="n">TabBarTabStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+    DockBarButtonStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
 
-    <span class="n">ContainerStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;yellow&#39;</span>
-
-    <span class="n">ItemStyle</span><span class="p">:</span>
-        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
-        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+    TabBarTabStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
 
 
-<span class="n">enamldef</span> <span class="n">DummyItem</span><span class="p">(</span><span class="n">DockItem</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">))</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+    # Add alert styles for an "information" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
+
+    DockBarButtonStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
+
+    TabBarTabStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Dock Item Alerts&#39;</span>
-    <span class="n">MyAlertStyleSheet</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">DockArea</span><span class="p">:</span>
-            <span class="c"># A custom style sheet is being used, so the default style</span>
-            <span class="c"># sheet must be disabled - IMPORTANT!</span>
-            <span class="n">style</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
-            <span class="n">layout</span> <span class="o">=</span> <span class="n">HSplitLayout</span><span class="p">(</span>
-                <span class="n">VSplitLayout</span><span class="p">(</span><span class="s">&#39;controls&#39;</span><span class="p">,</span> <span class="s">&#39;information&#39;</span><span class="p">),</span>
-                <span class="n">VSplitLayout</span><span class="p">(</span><span class="s">&#39;important&#39;</span><span class="p">,</span> <span class="s">&#39;meltdown&#39;</span><span class="p">),</span>
-                <span class="n">TabLayout</span><span class="p">(</span><span class="s">&#39;dummy_1&#39;</span><span class="p">,</span> <span class="s">&#39;dummy_2&#39;</span><span class="p">,</span> <span class="s">&#39;dummy_3&#39;</span><span class="p">,</span> <span class="s">&#39;dummy_4&#39;</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">DockItem</span><span class="p">:</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Controls&#39;</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;controls&#39;</span>
-                <span class="n">stretch</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="n">Container</span><span class="p">:</span>
-                    <span class="n">PushButton</span><span class="p">:</span>
-                        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Information&#39;</span>
-                        <span class="n">clicked</span> <span class="p">::</span>
-                            <span class="n">info_item</span><span class="o">.</span><span class="n">alert</span><span class="p">(</span><span class="s">&#39;information&#39;</span><span class="p">)</span>
-                    <span class="n">PushButton</span><span class="p">:</span>
-                        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Important&#39;</span>
-                        <span class="n">clicked</span> <span class="p">::</span>
-                            <span class="n">important_item</span><span class="o">.</span><span class="n">alert</span><span class="p">(</span><span class="s">&#39;important&#39;</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-                    <span class="n">PushButton</span><span class="p">:</span>
-                        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Meltdown&#39;</span>
-                        <span class="n">clicked</span> <span class="p">::</span>
-                            <span class="n">meltdown_item</span><span class="o">.</span><span class="n">alert</span><span class="p">(</span>
-                                <span class="s">&#39;meltdown&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">off</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">100</span>
-                            <span class="p">)</span>
-            <span class="n">DockItem</span><span class="p">:</span> <span class="n">info_item</span><span class="p">:</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Information&#39;</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;information&#39;</span>
-                <span class="n">stretch</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="n">Container</span><span class="p">:</span>
-                    <span class="n">Field</span><span class="p">:</span>
-                        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;just&#39;</span>
-                    <span class="n">Field</span><span class="p">:</span>
-                        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;some&#39;</span>
-                    <span class="n">Field</span><span class="p">:</span>
-                        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;information&#39;</span>
-            <span class="n">DockItem</span><span class="p">:</span> <span class="n">important_item</span><span class="p">:</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Important Data&#39;</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;important&#39;</span>
-                <span class="n">Container</span><span class="p">:</span>
-                    <span class="n">Html</span><span class="p">:</span>
-                        <span class="n">source</span> <span class="o">=</span> <span class="n">HTML</span>
-            <span class="n">DockItem</span><span class="p">:</span> <span class="n">meltdown_item</span><span class="p">:</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Meltdown&#39;</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;meltdown&#39;</span>
-                <span class="n">Container</span><span class="p">:</span>
-                    <span class="n">Html</span><span class="p">:</span>
-                        <span class="n">source</span> <span class="o">=</span> <span class="n">MELTDOWN_HTML</span>
-            <span class="n">DummyItem</span><span class="p">:</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;dummy_1&#39;</span>
-            <span class="n">DummyItem</span><span class="p">:</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;dummy_2&#39;</span>
-            <span class="n">DummyItem</span><span class="p">:</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;dummy_3&#39;</span>
-            <span class="n">DummyItem</span><span class="p">:</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;dummy_4&#39;</span>
-</pre></div>
+    # Add alert styles for a "meltdown" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    DockBarButtonStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    TabBarTabStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    ContainerStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'yellow'
+
+    ItemStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+
+enamldef DummyItem(DockItem):
+    title = ' '.join(s.capitalize() for s in name.split('_'))
+    Container:
+        Field: pass
+        Field: pass
+        Field: pass
+        Field: pass
+
+
+enamldef Main(Window):
+    title = 'Dock Item Alerts'
+    MyAlertStyleSheet:
+        pass
+    Container:
+        padding = 0
+        DockArea:
+            # A custom style sheet is being used, so the default style
+            # sheet must be disabled - IMPORTANT!
+            style = ''
+            layout = HSplitLayout(
+                VSplitLayout('controls', 'information'),
+                VSplitLayout('important', 'meltdown'),
+                TabLayout('dummy_1', 'dummy_2', 'dummy_3', 'dummy_4'),
+            )
+            DockItem:
+                title = 'Controls'
+                name = 'controls'
+                stretch = 0
+                Container:
+                    PushButton:
+                        text = 'Information'
+                        clicked ::
+                            info_item.alert('information')
+                    PushButton:
+                        text = 'Important'
+                        clicked ::
+                            important_item.alert('important', persist=True)
+                    PushButton:
+                        text = 'Meltdown'
+                        clicked ::
+                            meltdown_item.alert(
+                                'meltdown', on=60, off=60, repeat=100
+                            )
+            DockItem: info_item:
+                title = 'Information'
+                name = 'information'
+                stretch = 0
+                Container:
+                    Field:
+                        placeholder = 'just'
+                    Field:
+                        placeholder = 'some'
+                    Field:
+                        placeholder = 'information'
+            DockItem: important_item:
+                title = 'Important Data'
+                name = 'important'
+                Container:
+                    Html:
+                        source = HTML
+            DockItem: meltdown_item:
+                title = 'Meltdown'
+                name = 'meltdown'
+                Container:
+                    Html:
+                        source = MELTDOWN_HTML
+            DummyItem:
+                name = 'dummy_1'
+            DummyItem:
+                name = 'dummy_2'
+            DummyItem:
+                name = 'dummy_3'
+            DummyItem:
+                name = 'dummy_4'
+</pre>
 </div>
 </div>
 

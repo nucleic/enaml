@@ -181,86 +181,87 @@ a nested Container, too.</pre>
 <div class="highlight-python"><pre>$ enaml-run nested_containers</pre>
 </div>
 <img alt="../_images/ex_nested_containers.png" src="../_images/ex_nested_containers.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example showing the unified layout across nested Containers.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example showing the unified layout across nested Containers.
 
-<span class="sd">There are three Containers under the window, two sharing space on top and</span>
-<span class="sd">one taking up the entire horizontal space on the bottom. The two on top</span>
-<span class="sd">simply consist of a Label and a Field. The Container on the left is</span>
-<span class="sd">constrained to be slightly larger than the other by a constant multiplier.</span>
+There are three Containers under the window, two sharing space on top and
+one taking up the entire horizontal space on the bottom. The two on top
+simply consist of a Label and a Field. The Container on the left is
+constrained to be slightly larger than the other by a constant multiplier.
 
-<span class="sd">The Container on the bottom contains the more complicated example from</span>
-<span class="sd">`fluid.enaml` to demonstrate that a complicated layout works inside</span>
-<span class="sd">a nested Container, too.</span>
+The Container on the bottom contains the more complicated example from
+`fluid.enaml` to demonstrate that a complicated layout works inside
+a nested Container, too.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">align</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span>
-
-
-<span class="n">enamldef</span> <span class="n">LabeledField</span><span class="p">(</span><span class="n">Container</span><span class="p">):</span>
-    <span class="n">attr</span> <span class="n">label_text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s">&#39;Label&#39;</span>
-    <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">hbox</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">field</span><span class="p">),</span>
-        <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
-    <span class="p">]</span>
-    <span class="n">Label</span><span class="p">:</span> <span class="n">label</span><span class="p">:</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">label_text</span>
-    <span class="n">Field</span><span class="p">:</span> <span class="n">field</span><span class="p">:</span>
-        <span class="n">resist_width</span> <span class="o">=</span> <span class="s">&#39;ignore&#39;</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import hbox, vbox, spacer, align
+from enaml.widgets.api import Window, Html, Container, PushButton, Label, Field
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&quot;Nested Containers&quot;</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">padding</span> <span class="o">=</span> <span class="mi">5</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">vbox</span><span class="p">(</span>
-                <span class="n">hbox</span><span class="p">(</span><span class="n">top_left_cntr</span><span class="p">,</span> <span class="n">top_right_cntr</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="n">bottom_cntr</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="n">top_left_cntr</span><span class="o">.</span><span class="n">width</span> <span class="o">==</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">top_right_cntr</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
-        <span class="p">]</span>
-        <span class="n">LabeledField</span><span class="p">:</span> <span class="n">top_left_cntr</span><span class="p">:</span>
-            <span class="n">label_text</span> <span class="o">=</span> <span class="s">&quot;Left:&quot;</span>
-            <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-        <span class="n">LabeledField</span><span class="p">:</span> <span class="n">top_right_cntr</span><span class="p">:</span>
-            <span class="n">label_text</span> <span class="o">=</span> <span class="s">&quot;Right:&quot;</span>
-            <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-        <span class="n">Container</span><span class="p">:</span> <span class="n">bottom_cntr</span><span class="p">:</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">vbox</span><span class="p">(</span>
-                    <span class="n">html_frame</span><span class="p">,</span>
-                    <span class="n">hbox</span><span class="p">(</span>
-                        <span class="n">add_button</span><span class="p">,</span> <span class="n">remove_button</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span>
-                        <span class="n">change_mode_button</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">share_button</span><span class="p">,</span>
-                    <span class="p">),</span>
-                <span class="p">),</span>
-                <span class="n">align</span><span class="p">(</span><span class="s">&#39;h_center&#39;</span><span class="p">,</span> <span class="n">html_frame</span><span class="p">,</span> <span class="n">change_mode_button</span><span class="p">)</span> <span class="o">|</span> <span class="s">&#39;weak&#39;</span><span class="p">,</span>
-                <span class="n">html_frame</span><span class="o">.</span><span class="n">height</span> <span class="o">&gt;=</span> <span class="mi">150</span><span class="p">,</span>
-            <span class="p">]</span>
-            <span class="c"># XXX ideally, this would not be required, but we&#39;re getting</span>
-            <span class="c"># some competition between best size and min size under the</span>
-            <span class="c"># covers.</span>
-            <span class="n">share_layout</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">Html</span><span class="p">:</span> <span class="n">html_frame</span><span class="p">:</span>
-                <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;center&gt;&lt;h1&gt;Hello Enaml!&lt;/h1&gt;&lt;/center&gt;&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">add_button</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Add&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">remove_button</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Remove&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">change_mode_button</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Change Mode&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">share_button</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Share...&#39;</span>
-</pre></div>
+enamldef LabeledField(Container):
+    attr label_text: str = 'Label'
+    constraints = [
+        hbox(label, field),
+        align('v_center', label, field)
+    ]
+    Label: label:
+        text = label_text
+    Field: field:
+        resist_width = 'ignore'
+
+
+enamldef Main(Window):
+    title = "Nested Containers"
+    Container:
+        padding = 5
+        constraints = [
+            vbox(
+                hbox(top_left_cntr, top_right_cntr), 0,
+                bottom_cntr,
+            ),
+            top_left_cntr.width == 1.4 * top_right_cntr.width,
+        ]
+        LabeledField: top_left_cntr:
+            label_text = "Left:"
+            hug_height = 'strong'
+        LabeledField: top_right_cntr:
+            label_text = "Right:"
+            hug_height = 'strong'
+        Container: bottom_cntr:
+            constraints = [
+                vbox(
+                    html_frame,
+                    hbox(
+                        add_button, remove_button, spacer,
+                        change_mode_button, spacer, share_button,
+                    ),
+                ),
+                align('h_center', html_frame, change_mode_button) | 'weak',
+                html_frame.height &gt;= 150,
+            ]
+            # XXX ideally, this would not be required, but we're getting
+            # some competition between best size and min size under the
+            # covers.
+            share_layout = True
+            Html: html_frame:
+                source = '&lt;center&gt;&lt;h1&gt;Hello Enaml!&lt;/h1&gt;&lt;/center&gt;'
+            PushButton: add_button:
+                text = 'Add'
+            PushButton: remove_button:
+                text = 'Remove'
+            PushButton: change_mode_button:
+                text = 'Change Mode'
+            PushButton: share_button:
+                text = 'Share...'
+
+</pre>
 </div>
 </div>
 

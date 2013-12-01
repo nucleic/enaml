@@ -192,7 +192,7 @@ language features.</pre>
 <div class="highlight-python"><pre>$ enaml-run buttons</pre>
 </div>
 <img alt="../_images/ex_buttons.png" src="../_images/ex_buttons.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -215,34 +215,34 @@ language features.</pre>
 <span class="p">)</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Push Me&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;I was clicked!&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="c"># Note: checkable push buttons are only supported on Qt</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Toggle Me&#39;</span>
             <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;I was toggled&#39;</span>
-        <span class="n">CheckBox</span><span class="p">:</span>
+        <span class="nt">CheckBox</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Check One&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Check One clicked&#39;</span>
-        <span class="n">CheckBox</span><span class="p">:</span>
+        <span class="nt">CheckBox</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Check Two&#39;</span>
             <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Check Two toggled&#39;</span>
-        <span class="n">RadioButton</span><span class="p">:</span>
+        <span class="nt">RadioButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Radio One&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Radio One clicked&#39;</span>
-        <span class="n">RadioButton</span><span class="p">:</span>
+        <span class="nt">RadioButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Radio Two&#39;</span>
             <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Radio Two toggled&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
+        <span class="nt">Container</span><span class="p">:</span>
             <span class="c"># Note: RadioButton widgets are exclusive amongst sibilings</span>
-            <span class="n">RadioButton</span><span class="p">:</span>
+            <span class="nt">RadioButton</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Radio One b&#39;</span>
                 <span class="n">clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Radio One b clicked&#39;</span>
-            <span class="n">RadioButton</span><span class="p">:</span>
+            <span class="nt">RadioButton</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Radio Two b&#39;</span>
                 <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Radio Two b toggled&#39;</span>
 </pre></div>

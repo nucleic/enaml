@@ -198,7 +198,7 @@ examples for explanations of the other widgets and language features.</pre>
 <div class="highlight-python"><pre>$ enaml-run window_children</pre>
 </div>
 <img alt="../_images/ex_window_children.png" src="../_images/ex_window_children.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -225,15 +225,15 @@ examples for explanations of the other widgets and language features.</pre>
 <span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span> <span class="n">main</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span> <span class="ni">main</span><span class="p">:</span>
     <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Hello World!&#39;</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Foo&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="n">main</span><span class="o">.</span><span class="n">central_widget</span><span class="p">()</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Bar&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Baz&#39;</span>
 </pre></div>
 </div>

@@ -36,5 +36,5 @@ Grid Example
 .. image:: images/ex_grid.png
 
 .. literalinclude:: ../../../examples/layout/basic/grid.enaml
-    :language: python
+    :language: enaml
 

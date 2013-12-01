@@ -192,7 +192,7 @@ policy can be changed through the attributes 'horizontal_scrollbar' and
 <div class="highlight-python"><pre>$ enaml-run scroll_area</pre>
 </div>
 <img alt="../_images/ex_scroll_area.png" src="../_images/ex_scroll_area.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -215,76 +215,76 @@ policy can be changed through the attributes 'horizontal_scrollbar' and
 <span class="p">)</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
     <span class="n">title</span> <span class="o">=</span> <span class="s">&quot;Scroll Area&quot;</span>
-    <span class="n">Container</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
         <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">ScrollArea</span><span class="p">:</span>
+        <span class="nt">ScrollArea</span><span class="p">:</span>
             <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">width</span> <span class="o">&gt;=</span> <span class="mi">200</span><span class="p">]</span>
-            <span class="n">Form</span><span class="p">:</span>
-                <span class="n">Label</span><span class="p">:</span>
+            <span class="nt">Form</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;First name:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Last name:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Address:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;City:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;State:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Postal Code:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Country:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Phone number:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Email:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Confirm email:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Confirm email:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Confirm email:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Confirm email:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Confirm email:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="n">Label</span><span class="p">:</span>
+                <span class="nt">Label</span><span class="p">:</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Confirm email:&quot;</span>
-                <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Field</span><span class="p">:</span>
                     <span class="k">pass</span>
 </pre></div>
 </div>

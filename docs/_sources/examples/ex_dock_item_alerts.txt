@@ -22,5 +22,5 @@ Dock Item Alerts Example
 .. image:: images/ex_dock_item_alerts.png
 
 .. literalinclude:: ../../../examples/styling/dock_item_alerts.enaml
-    :language: python
+    :language: enaml
 

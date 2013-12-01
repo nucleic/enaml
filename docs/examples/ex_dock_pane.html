@@ -202,7 +202,7 @@ Implementation Notes:
 <div class="highlight-python"><pre>$ enaml-run dock_pane</pre>
 </div>
 <img alt="../_images/ex_dock_pane.png" src="../_images/ex_dock_pane.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -235,18 +235,18 @@ Implementation Notes:
 <span class="p">)</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">MainWindow</span><span class="p">):</span>
-    <span class="n">DockPane</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>MainWindow<span class="p">):</span>
+    <span class="nt">DockPane</span><span class="p">:</span>
         <span class="n">title</span> <span class="o">&lt;&lt;</span> <span class="s">&#39;Dock Area </span><span class="si">%s</span><span class="s"> | </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dock_area</span><span class="p">,</span> <span class="s">&#39;floating&#39;</span> <span class="k">if</span> <span class="n">floating</span> <span class="k">else</span> <span class="s">&#39;docked&#39;</span><span class="p">)</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">Container</span><span class="p">:</span>
+            <span class="nt">PushButton</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Foo&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span>
+            <span class="nt">PushButton</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Bar&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span>
+            <span class="nt">PushButton</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Baz&#39;</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">Html</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">Html</span><span class="p">:</span>
             <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Hello World!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
 </pre></div>
 </div>

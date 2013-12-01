@@ -189,211 +189,211 @@ and restored using a layout object which can be easily pickled.</pre>
 <div class="highlight-python"><pre>$ enaml-run dock_area</pre>
 </div>
 <img alt="../_images/ex_dock_area.png" src="../_images/ex_dock_area.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c">#  Copyright (c) 2013, Nucleic Development Team</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; This example demonstrates the use of the advanced DockArea widget.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" This example demonstrates the use of the advanced DockArea widget.
 
-<span class="sd">The DockArea widget provides a canvas into which DockItems can be docked</span>
-<span class="sd">and undocked at will. The layout configuration of the area can be saved</span>
-<span class="sd">and restored using a layout object which can be easily pickled.</span>
+The DockArea widget provides a canvas into which DockItems can be docked
+and undocked at will. The layout configuration of the area can be saved
+and restored using a layout object which can be easily pickled.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">cPickle</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+import cPickle
 
-<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">ContainerList</span><span class="p">,</span> <span class="n">Unicode</span>
+from atom.api import Atom, ContainerList, Unicode
 
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">HSplitLayout</span><span class="p">,</span> <span class="n">VSplitLayout</span><span class="p">,</span> <span class="n">TabLayout</span><span class="p">,</span> <span class="n">InsertItem</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">spacer</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">enaml.stdlib.dock_area_styles</span> <span class="kn">import</span> <span class="n">available_styles</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">DockArea</span><span class="p">,</span> <span class="n">DockItem</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">Slider</span><span class="p">,</span>
-    <span class="n">ObjectCombo</span><span class="p">,</span> <span class="n">CheckBox</span><span class="p">,</span> <span class="n">MultilineField</span>
-<span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">cap_case</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="k">return</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">))</span>
+from enaml.layout.api import (
+    HSplitLayout, VSplitLayout, TabLayout, InsertItem, hbox, vbox, spacer
+)
+from enaml.stdlib.dock_area_styles import available_styles
+from enaml.widgets.api import (
+    Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
+    ObjectCombo, CheckBox, MultilineField
+)
 
 
-<span class="k">class</span> <span class="nc">LineCollector</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A simple class used to generate event logging text.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c">#: The header to use as the first lines of the text.</span>
-    <span class="n">HEADER</span> <span class="o">=</span> <span class="s">u&#39;#   Item     Event Type            </span><span class="se">\n</span><span class="s">&#39;</span>\
-             <span class="s">u&#39;-----------------------------------&#39;</span>
-
-    <span class="c">#: The output text of the collector; updated when data changes.</span>
-    <span class="n">text</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="n">HEADER</span><span class="p">)</span>
-
-    <span class="c">#: The data for the collector. This is a list of 2-tuples of</span>
-    <span class="c">#: the form (unicode, DockItemEvent.Type).</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">ContainerList</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_observe_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_text</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">update_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Regenerate the output text from the current data.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">evt_type</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)):</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">count</span> <span class="o">-</span> <span class="n">index</span><span class="p">,</span> <span class="n">evt_type</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
-        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">HEADER</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
-            <span class="n">num</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">enum</span> <span class="o">=</span> <span class="n">item</span>
-            <span class="n">line</span> <span class="o">=</span> <span class="s">u&#39;{0!s: &lt;4}{1: &lt;9}{2: &lt;19}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">enum</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s">u&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+def cap_case(name):
+    return ' '.join(s.capitalize() for s in name.split('-'))
 
 
-<span class="n">enamldef</span> <span class="n">MyDockArea</span><span class="p">(</span><span class="n">DockArea</span><span class="p">):</span>
-    <span class="n">layout</span> <span class="o">=</span> <span class="n">HSplitLayout</span><span class="p">(</span>
-        <span class="n">VSplitLayout</span><span class="p">(</span>
-            <span class="n">HSplitLayout</span><span class="p">(</span>
-                <span class="n">VSplitLayout</span><span class="p">(</span><span class="s">&#39;item_1&#39;</span><span class="p">,</span> <span class="s">&#39;item_3&#39;</span><span class="p">),</span>
-                <span class="s">&#39;item_4&#39;</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="s">&#39;logger&#39;</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="n">VSplitLayout</span><span class="p">(</span>
-            <span class="n">TabLayout</span><span class="p">(</span><span class="s">&#39;item_6&#39;</span><span class="p">,</span> <span class="s">&#39;item_7&#39;</span><span class="p">,</span> <span class="s">&#39;item_8&#39;</span><span class="p">,</span> <span class="s">&#39;item_9&#39;</span><span class="p">),</span>
-            <span class="s">&#39;item_5&#39;</span><span class="p">,</span>
-            <span class="s">&#39;item_2&#39;</span><span class="p">,</span>
-        <span class="p">),</span>
-    <span class="p">)</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_1&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 1&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_2&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 2&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;baz&#39;</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_3&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 3&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">Html</span><span class="p">:</span> <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Hello World!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_4&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 4&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">Html</span><span class="p">:</span> <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Hello Enaml!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_5&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 5&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">Slider</span><span class="p">:</span> <span class="k">pass</span>
-            <span class="n">Slider</span><span class="p">:</span> <span class="k">pass</span>
-            <span class="n">Slider</span><span class="p">:</span> <span class="k">pass</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_6&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 6&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">Html</span><span class="p">:</span> <span class="n">source</span> <span class="o">=</span> <span class="s">u&#39;&lt;h1&gt;&lt;center&gt;Guten Tag!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_7&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 7&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_8&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 8&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;spam&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;ham&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;green&#39;</span>
-            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;eggs&#39;</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_9&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 9&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">Html</span><span class="p">:</span> <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Bonjour!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
-    <span class="n">DockItem</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;logger&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Logger&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">MultilineField</span><span class="p">:</span>
-                <span class="n">attr</span> <span class="n">collector</span> <span class="o">=</span> <span class="n">LineCollector</span><span class="p">()</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;line-collector&#39;</span>
-                <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="n">collector</span><span class="o">.</span><span class="n">text</span>
-                <span class="n">font</span> <span class="o">=</span> <span class="s">&#39;9pt Courier&#39;</span>
-                <span class="n">read_only</span> <span class="o">=</span> <span class="bp">True</span>
+class LineCollector(Atom):
+    """ A simple class used to generate event logging text.
+
+    """
+    #: The header to use as the first lines of the text.
+    HEADER = u'#   Item     Event Type            \n'\
+             u'-----------------------------------'
+
+    #: The output text of the collector; updated when data changes.
+    text = Unicode(HEADER)
+
+    #: The data for the collector. This is a list of 2-tuples of
+    #: the form (unicode, DockItemEvent.Type).
+    data = ContainerList()
+
+    def _observe_data(self, change):
+        self.update_text()
+
+    def update_text(self):
+        """ Regenerate the output text from the current data.
+
+        """
+        parts = []
+        count = len(self.data)
+        for index, (evt_type, name) in enumerate(reversed(self.data)):
+            parts.append((count - index, evt_type, name))
+        lines = [self.HEADER]
+        for item in parts:
+            num, name, enum = item
+            line = u'{0!s: &lt;4}{1: &lt;9}{2: &lt;19}'.format(num, name, enum.name)
+            lines.append(line)
+        self.text = u'\n'.join(lines)
 
 
-<span class="n">enamldef</span> <span class="n">MyItem</span><span class="p">(</span><span class="n">DockItem</span><span class="p">):</span> <span class="n">owner</span><span class="p">:</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">name</span>
+enamldef MyDockArea(DockArea):
+    layout = HSplitLayout(
+        VSplitLayout(
+            HSplitLayout(
+                VSplitLayout('item_1', 'item_3'),
+                'item_4',
+            ),
+            'logger',
+        ),
+        VSplitLayout(
+            TabLayout('item_6', 'item_7', 'item_8', 'item_9'),
+            'item_5',
+            'item_2',
+        ),
+    )
+    DockItem:
+        name = 'item_1'
+        title = 'Item 1'
+        Container:
+            Field: pass
+            Field: pass
+            Field: pass
+    DockItem:
+        name = 'item_2'
+        title = 'Item 2'
+        Container:
+            PushButton: text = 'foo'
+            PushButton: text = 'bar'
+            PushButton: text = 'baz'
+    DockItem:
+        name = 'item_3'
+        title = 'Item 3'
+        Container:
+            Html: source = '&lt;h1&gt;&lt;center&gt;Hello World!&lt;/center&gt;&lt;/h1&gt;'
+    DockItem:
+        name = 'item_4'
+        title = 'Item 4'
+        Container:
+            Html: source = '&lt;h1&gt;&lt;center&gt;Hello Enaml!&lt;/center&gt;&lt;/h1&gt;'
+    DockItem:
+        name = 'item_5'
+        title = 'Item 5'
+        Container:
+            Slider: pass
+            Slider: pass
+            Slider: pass
+    DockItem:
+        name = 'item_6'
+        title = 'Item 6'
+        Container:
+            Html: source = u'&lt;h1&gt;&lt;center&gt;Guten Tag!&lt;/center&gt;&lt;/h1&gt;'
+    DockItem:
+        name = 'item_7'
+        title = 'Item 7'
+        Container:
+            Field: pass
+            Field: pass
+            Field: pass
+            Field: pass
+    DockItem:
+        name = 'item_8'
+        title = 'Item 8'
+        Container:
+            PushButton: text = 'spam'
+            PushButton: text = 'ham'
+            PushButton: text = 'green'
+            PushButton: text = 'eggs'
+    DockItem:
+        name = 'item_9'
+        title = 'Item 9'
+        Container:
+            Html: source = '&lt;h1&gt;&lt;center&gt;Bonjour!&lt;/center&gt;&lt;/h1&gt;'
+    DockItem:
+        name = 'logger'
+        title = 'Logger'
+        Container:
+            MultilineField:
+                attr collector = LineCollector()
+                name = 'line-collector'
+                text &lt;&lt; collector.text
+                font = '9pt Courier'
+                read_only = True
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">attr</span> <span class="n">stored</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">hbox</span><span class="p">(</span>
-                <span class="n">vbox</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">save_b</span><span class="p">,</span> <span class="n">restore_b</span><span class="p">,</span> <span class="n">add_b</span><span class="p">,</span> <span class="n">style_c</span><span class="p">,</span> <span class="n">c_box</span><span class="p">,</span> <span class="n">spacer</span><span class="p">),</span>
-                <span class="n">area</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">]</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">save_b</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Save Layout&#39;</span>
-            <span class="n">clicked</span> <span class="p">::</span>
-                <span class="n">layout</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">save_layout</span><span class="p">()</span>
-                <span class="n">parent</span><span class="o">.</span><span class="n">stored</span> <span class="o">=</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">restore_b</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Restore Layout&#39;</span>
-            <span class="n">enabled</span> <span class="o">&lt;&lt;</span> <span class="n">stored</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
-            <span class="n">clicked</span> <span class="p">::</span>
-                <span class="n">layout</span> <span class="o">=</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stored</span><span class="p">)</span>
-                <span class="k">with</span> <span class="n">area</span><span class="o">.</span><span class="n">suppress_dock_events</span><span class="p">():</span>
-                    <span class="n">area</span><span class="o">.</span><span class="n">apply_layout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">add_b</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Add Items&#39;</span>
-            <span class="n">clicked</span> <span class="p">::</span>
-                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-                    <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">area</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">n</span>
-                    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">n</span>
-                    <span class="n">item</span> <span class="o">=</span> <span class="n">MyItem</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
-                    <span class="n">op</span> <span class="o">=</span> <span class="n">InsertItem</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s">&#39;item_1&#39;</span><span class="p">)</span>
-                    <span class="n">area</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
-        <span class="n">ObjectCombo</span><span class="p">:</span> <span class="n">style_c</span><span class="p">:</span>
-            <span class="n">items</span> <span class="o">=</span> <span class="n">available_styles</span><span class="p">()</span>
-            <span class="n">to_string</span> <span class="o">=</span> <span class="n">cap_case</span>
-            <span class="n">selected</span> <span class="o">=</span> <span class="s">&#39;vs-2010&#39;</span>
-        <span class="n">CheckBox</span><span class="p">:</span> <span class="n">c_box</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Enable Dock Events&#39;</span>
-            <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">dock_events_enabled</span>
-        <span class="n">MyDockArea</span><span class="p">:</span> <span class="n">area</span><span class="p">:</span>
-            <span class="n">style</span> <span class="o">&lt;&lt;</span> <span class="n">style_c</span><span class="o">.</span><span class="n">selected</span>
-            <span class="n">dock_event</span> <span class="p">::</span>
-                <span class="n">event</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
-                <span class="n">field</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;line-collector&#39;</span><span class="p">)</span>
-                <span class="n">field</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
-</pre></div>
+enamldef MyItem(DockItem): owner:
+    Container:
+        Field: text = owner.name
+        Field: text = owner.name
+        Field: text = owner.name
+        Field: text = owner.name
+
+
+enamldef Main(Window):
+    Container:
+        attr stored = None
+        padding = (0, 0, 0, 10)
+        constraints = [
+            hbox(
+                vbox(10, save_b, restore_b, add_b, style_c, c_box, spacer),
+                area,
+            )
+        ]
+        PushButton: save_b:
+            text = 'Save Layout'
+            clicked ::
+                layout = area.save_layout()
+                parent.stored = cPickle.dumps(layout, -1)
+        PushButton: restore_b:
+            text = 'Restore Layout'
+            enabled &lt;&lt; stored is not None
+            clicked ::
+                layout = cPickle.loads(stored)
+                with area.suppress_dock_events():
+                    area.apply_layout(layout)
+        PushButton: add_b:
+            text = 'Add Items'
+            clicked ::
+                for _ in xrange(3):
+                    n = (len(area.children) + 1)
+                    name = 'item_%d' % n
+                    title = 'Item %d' % n
+                    item = MyItem(area, name=name, title=title)
+                    op = InsertItem(item=name, target='item_1')
+                    area.update_layout(op)
+        ObjectCombo: style_c:
+            items = available_styles()
+            to_string = cap_case
+            selected = 'vs-2010'
+        CheckBox: c_box:
+            text = 'Enable Dock Events'
+            checked := area.dock_events_enabled
+        MyDockArea: area:
+            style &lt;&lt; style_c.selected
+            dock_event ::
+                event = change['value']
+                field = area.find('line-collector')
+                field.collector.data.append((event.name, event.type))
+</pre>
 </div>
 </div>
 

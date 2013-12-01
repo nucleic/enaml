@@ -29,5 +29,5 @@ Menu Bar Example
 .. image:: images/ex_menu_bar.png
 
 .. literalinclude:: ../../../examples/widgets/menu_bar.enaml
-    :language: python
+    :language: enaml
 

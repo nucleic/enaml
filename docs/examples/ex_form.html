@@ -192,54 +192,55 @@ with a form, except that they be constrainable.</pre>
 <div class="highlight-python"><pre>$ enaml-run form</pre>
 </div>
 <img alt="../_images/ex_form.png" src="../_images/ex_form.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of the `Form` widget.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `Form` widget.
 
-<span class="sd">A `Form` is a simple subclass of `Container` which automatically lays</span>
-<span class="sd">out it children in two columns, neatly aligning the widget edges. If</span>
-<span class="sd">a `Form` has an odd number of children, the last child will span both</span>
-<span class="sd">columns. The typical use case of a `Form` alternates `Label` and `Field`</span>
-<span class="sd">instances, but there is not restriction on the types of children used</span>
-<span class="sd">with a form, except that they be constrainable.</span>
+A `Form` is a simple subclass of `Container` which automatically lays
+out it children in two columns, neatly aligning the widget edges. If
+a `Form` has an odd number of children, the last child will span both
+columns. The typical use case of a `Form` alternates `Label` and `Field`
+instances, but there is not restriction on the types of children used
+with a form, except that they be constrainable.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">hbox</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Form</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Slider</span><span class="p">,</span> <span class="n">Field</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import hbox
+from enaml.widgets.api import Window, Form, Container, Label, Slider, Field
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Form</span><span class="p">:</span>
-        <span class="n">Label</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;First Name&#39;</span>
-        <span class="n">Field</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="n">Label</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Last Name&#39;</span>
-        <span class="n">Field</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="n">Label</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Age&#39;</span>
-        <span class="n">Container</span><span class="p">:</span>
-            <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">hbox</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="n">sldr</span><span class="p">),</span>
-                <span class="n">lbl</span><span class="o">.</span><span class="n">v_center</span> <span class="o">==</span> <span class="n">sldr</span><span class="o">.</span><span class="n">v_center</span><span class="p">,</span>
-            <span class="p">]</span>
-            <span class="n">Label</span><span class="p">:</span> <span class="n">lbl</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="s">&#39;</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">sldr</span><span class="o">.</span><span class="n">value</span>
-                <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">width</span> <span class="o">==</span> <span class="mi">25</span><span class="p">]</span>
-            <span class="n">Slider</span><span class="p">:</span> <span class="n">sldr</span><span class="p">:</span>
-                <span class="k">pass</span>
-        <span class="n">Field</span><span class="p">:</span>
-            <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;Odd Number Child&#39;</span>
-</pre></div>
+enamldef Main(Window):
+    Form:
+        Label:
+            text = 'First Name'
+        Field:
+            pass
+        Label:
+            text = 'Last Name'
+        Field:
+            pass
+        Label:
+            text = 'Age'
+        Container:
+            padding = 0
+            constraints = [
+                hbox(lbl, sldr),
+                lbl.v_center == sldr.v_center,
+            ]
+            Label: lbl:
+                text &lt;&lt; '%d' % sldr.value
+                constraints = [width == 25]
+            Slider: sldr:
+                pass
+        Field:
+            placeholder = 'Odd Number Child'
+
+</pre>
 </div>
 </div>
 

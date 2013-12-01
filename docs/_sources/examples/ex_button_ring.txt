@@ -26,5 +26,5 @@ Button Ring Example
 .. image:: images/ex_button_ring.png
 
 .. literalinclude:: ../../../examples/layout/advanced/button_ring.enaml
-    :language: python
+    :language: enaml
 

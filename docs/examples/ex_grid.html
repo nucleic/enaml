@@ -197,7 +197,7 @@ span a single row or column, respectively.</pre>
 <div class="highlight-python"><pre>$ enaml-run grid</pre>
 </div>
 <img alt="../_images/ex_grid.png" src="../_images/ex_grid.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -234,10 +234,10 @@ span a single row or column, respectively.</pre>
 <span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span>  <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Html</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="nt">Container</span><span class="p">:</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">grid</span><span class="p">(</span>
+            <span class="nt">grid</span><span class="p">(</span>
                 <span class="p">[</span><span class="n">pb1</span><span class="p">,</span>  <span class="n">fld1</span><span class="p">,</span> <span class="n">pb5</span><span class="p">],</span>
                 <span class="p">[</span><span class="n">pb2</span><span class="p">,</span>  <span class="n">lbl</span><span class="p">,</span>  <span class="n">pb6</span><span class="p">],</span>
                 <span class="p">[</span><span class="n">pb3</span><span class="p">,</span>  <span class="n">lbl</span><span class="p">,</span>  <span class="n">pb7</span><span class="p">],</span>
@@ -247,31 +247,31 @@ span a single row or column, respectively.</pre>
                 <span class="n">row_align</span><span class="o">=</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">]</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb1</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span> <span class="ni">pb1</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Spam&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb2</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span> <span class="ni">pb2</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Long Name Foo&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb3</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span> <span class="ni">pb3</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Bar&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb4</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span> <span class="ni">pb4</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Eggs&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb5</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span> <span class="ni">pb5</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Ham&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb6</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span> <span class="ni">pb6</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Green&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb7</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span> <span class="ni">pb7</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Blue&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span> <span class="n">pb8</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span> <span class="ni">pb8</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Red&#39;</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">fld1</span><span class="p">:</span>
+        <span class="nt">Field</span><span class="p">:</span> <span class="ni">fld1</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">fld2</span><span class="p">:</span>
+        <span class="nt">Field</span><span class="p">:</span> <span class="ni">fld2</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">lbl</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span> <span class="ni">lbl</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;A somewhat long</span><span class="se">\n</span><span class="s">Label which spans</span><span class="se">\n</span><span class="s">2 rows and 1 column&#39;</span>
             <span class="n">align</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span>
             <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;weak&#39;</span>
-        <span class="n">Html</span><span class="p">:</span> <span class="n">html</span><span class="p">:</span>
+        <span class="nt">Html</span><span class="p">:</span> <span class="ni">html</span><span class="p">:</span>
             <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;This spans the entire bottom row!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
 </pre></div>
 </div>

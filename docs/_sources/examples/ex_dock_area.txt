@@ -18,5 +18,5 @@ Dock Area Example
 .. image:: images/ex_dock_area.png
 
 .. literalinclude:: ../../../examples/widgets/dock_area.enaml
-    :language: python
+    :language: enaml
 

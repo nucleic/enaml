@@ -188,7 +188,7 @@ and notification windows. The widget supports a transparent background.</pre>
 <div class="highlight-python"><pre>$ enaml-run popup_view</pre>
 </div>
 <img alt="../_images/ex_popup_view.png" src="../_images/ex_popup_view.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -222,7 +222,7 @@ and notification windows. The widget supports a transparent background.</pre>
 <span class="p">}</span>
 
 
-<span class="n">enamldef</span> <span class="n">ConfigPopup</span><span class="p">(</span><span class="n">PopupView</span><span class="p">):</span> <span class="n">popup</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">ConfigPopup</span><span class="p">(</span>PopupView<span class="p">):</span> <span class="ni">popup</span><span class="p">:</span>
     <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
     <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;rgba(30, 30, 30, 0.85)&#39;</span>
     <span class="n">parent_anchor</span> <span class="o">&lt;&lt;</span> <span class="n">POSITIONS</span><span class="p">[</span><span class="n">parent_box</span><span class="o">.</span><span class="n">selected_item</span><span class="p">]</span>
@@ -230,58 +230,58 @@ and notification windows. The widget supports a transparent background.</pre>
     <span class="n">arrow_size</span> <span class="o">&lt;&lt;</span> <span class="n">sizer</span><span class="o">.</span><span class="n">value</span>
     <span class="n">arrow_edge</span> <span class="o">&lt;&lt;</span> <span class="n">arrow_edge</span><span class="o">.</span><span class="n">selected_item</span>
     <span class="n">offset</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">offset_x</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">offset_y</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-    <span class="n">Form</span><span class="p">:</span>
+    <span class="nt">Form</span><span class="p">:</span>
         <span class="n">padding</span> <span class="o">=</span> <span class="mi">20</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Arrow Size&#39;</span>
-        <span class="n">Slider</span><span class="p">:</span> <span class="n">sizer</span><span class="p">:</span>
+        <span class="nt">Slider</span><span class="p">:</span> <span class="ni">sizer</span><span class="p">:</span>
             <span class="n">minimum</span> <span class="o">=</span> <span class="mi">5</span>
             <span class="n">maximum</span> <span class="o">=</span> <span class="mi">30</span>
             <span class="n">value</span> <span class="o">=</span> <span class="mi">20</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Arrow Edge&#39;</span>
-        <span class="n">ComboBox</span><span class="p">:</span> <span class="n">arrow_edge</span><span class="p">:</span>
+        <span class="nt">ComboBox</span><span class="p">:</span> <span class="ni">arrow_edge</span><span class="p">:</span>
             <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">]</span>
             <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Parent Anchor&#39;</span>
-        <span class="n">ComboBox</span><span class="p">:</span> <span class="n">parent_box</span><span class="p">:</span>
+        <span class="nt">ComboBox</span><span class="p">:</span> <span class="ni">parent_box</span><span class="p">:</span>
             <span class="n">items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">POSITIONS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s">&#39;Center&#39;</span><span class="p">)</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;View Anchor&#39;</span>
-        <span class="n">ComboBox</span><span class="p">:</span> <span class="n">view_box</span><span class="p">:</span>
+        <span class="nt">ComboBox</span><span class="p">:</span> <span class="ni">view_box</span><span class="p">:</span>
             <span class="n">items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">POSITIONS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
             <span class="n">index</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s">&#39;Top Center&#39;</span><span class="p">)</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Offset X&#39;</span>
-        <span class="n">SpinBox</span><span class="p">:</span> <span class="n">offset_x</span><span class="p">:</span>
+        <span class="nt">SpinBox</span><span class="p">:</span> <span class="ni">offset_x</span><span class="p">:</span>
             <span class="n">minimum</span> <span class="o">=</span> <span class="o">-</span><span class="mi">30</span>
             <span class="n">maximum</span> <span class="o">=</span> <span class="mi">30</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Offset Y&#39;</span>
-        <span class="n">SpinBox</span><span class="p">:</span> <span class="n">offset_y</span><span class="p">:</span>
+        <span class="nt">SpinBox</span><span class="p">:</span> <span class="ni">offset_y</span><span class="p">:</span>
             <span class="n">minimum</span> <span class="o">=</span> <span class="o">-</span><span class="mi">30</span>
             <span class="n">maximum</span> <span class="o">=</span> <span class="mi">30</span>
-        <span class="n">Include</span><span class="p">:</span> <span class="n">inc</span><span class="p">:</span>
+        <span class="nt">Include</span><span class="p">:</span> <span class="ni">inc</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Add Row&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span>
                 <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">Label</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s">&#39;Label&#39;</span><span class="p">,</span> <span class="n">foreground</span><span class="o">=</span><span class="s">&#39;white&#39;</span><span class="p">),</span> <span class="n">Field</span><span class="p">()]</span>
                 <span class="n">inc</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Close&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="n">popup</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 
-<span class="n">enamldef</span> <span class="n">NotificationPopup</span><span class="p">(</span><span class="n">PopupView</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">NotificationPopup</span><span class="p">(</span>PopupView<span class="p">):</span>
     <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
     <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;rgba(30, 30, 30, 0.85)&#39;</span>
     <span class="n">window_type</span> <span class="o">=</span> <span class="s">&#39;tool_tip&#39;</span>
@@ -291,27 +291,27 @@ and notification windows. The widget supports a transparent background.</pre>
     <span class="n">timeout</span> <span class="o">=</span> <span class="mi">5</span>
     <span class="n">fade_in_duration</span> <span class="o">=</span> <span class="mi">500</span>
     <span class="n">fade_out_duration</span> <span class="o">=</span> <span class="mi">500</span>
-    <span class="n">Container</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
         <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-        <span class="n">Label</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
             <span class="n">foreground</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Hello Enaml Notifications&#39;</span>
             <span class="n">align</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span> <span class="n">win</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span> <span class="ni">win</span><span class="p">:</span>
     <span class="n">initial_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Show Config Popup&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="n">ConfigPopup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Show Window Notification&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="n">NotificationPopup</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="s">&#39;window&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Show Desktop Notification&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span> <span class="n">NotificationPopup</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="n">PushButton</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Show Mouse Notification&#39;</span>
             <span class="n">clicked</span> <span class="p">::</span>
                 <span class="n">popup</span> <span class="o">=</span> <span class="n">NotificationPopup</span><span class="p">()</span>

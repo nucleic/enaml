@@ -17,5 +17,5 @@ Spin Box Example
 .. image:: images/ex_spin_box.png
 
 .. literalinclude:: ../../../examples/widgets/spin_box.enaml
-    :language: python
+    :language: enaml
 

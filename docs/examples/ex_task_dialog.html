@@ -182,116 +182,116 @@ some predefined task dialogs. See `message_box.enaml` for an example.</pre>
 <div class="highlight-python"><pre>$ enaml-run task_dialog</pre>
 </div>
 <img alt="../_images/ex_task_dialog.png" src="../_images/ex_task_dialog.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; An example of using the Enaml stdlib task dialog components.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using the Enaml stdlib task dialog components.
 
-<span class="sd">The `task_dialog` stdlib module provides a set of components which can be</span>
-<span class="sd">easily assembled for a dialog which follows the style of the Windows 7/8</span>
-<span class="sd">task dialogs.</span>
+The `task_dialog` stdlib module provides a set of components which can be
+easily assembled for a dialog which follows the style of the Windows 7/8
+task dialogs.
 
-<span class="sd">A task dialog is assembled by declaring a `TaskDialogBody` element as the</span>
-<span class="sd">child of a `Dialog`. Within the body, the various special dialog area</span>
-<span class="sd">containers can be declared to add content to the dialog. The dialog body</span>
-<span class="sd">takes care of automatically laying the various areas.</span>
+A task dialog is assembled by declaring a `TaskDialogBody` element as the
+child of a `Dialog`. Within the body, the various special dialog area
+containers can be declared to add content to the dialog. The dialog body
+takes care of automatically laying the various areas.
 
-<span class="sd">This example creates a Dialog which uses all of the task dialog areas,</span>
-<span class="sd">which is not a requirement for user code. In fact, all of the areas are</span>
-<span class="sd">optional, and the developer is free to choose the bits needed for the</span>
-<span class="sd">task at hand.</span>
+This example creates a Dialog which uses all of the task dialog areas,
+which is not a requirement for user code. In fact, all of the areas are
+optional, and the developer is free to choose the bits needed for the
+task at hand.
 
-<span class="sd">Creating a task dialog from scratch using the area elements is flexible,</span>
-<span class="sd">but can be a bit tedious. For the more common use cases, Enaml provides</span>
-<span class="sd">some predefined task dialogs. See `message_box.enaml` for an example.</span>
+Creating a task dialog from scratch using the area elements is flexible,
+but can be a bit tedious. For the more common use cases, Enaml provides
+some predefined task dialogs. See `message_box.enaml` for an example.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;win32&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">enaml</span> <span class="kn">import</span> <span class="n">winutil</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+import sys
+if sys.platform == 'win32':
+    from enaml import winutil
 
-<span class="kn">from</span> <span class="nn">enaml.image</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">align</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">spacer</span>
-<span class="kn">from</span> <span class="nn">enaml.stdlib.dialog_buttons</span> <span class="kn">import</span> <span class="n">DialogButtonBox</span><span class="p">,</span> <span class="n">DialogButton</span>
-<span class="kn">from</span> <span class="nn">enaml.stdlib.task_dialog</span> <span class="kn">import</span> <span class="p">(</span><span class="n">TaskDialogBody</span><span class="p">,</span> <span class="n">TaskDialogCommandArea</span><span class="p">,</span>
-    <span class="n">TaskDialogContentArea</span><span class="p">,</span> <span class="n">TaskDialogDetailsArea</span><span class="p">,</span> <span class="n">TaskDialogFootnoteArea</span><span class="p">,</span>
-    <span class="n">TaskDialogIconArea</span><span class="p">,</span> <span class="n">TaskDialogInstructionArea</span><span class="p">,</span> <span class="n">TaskDialogStyleSheet</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CheckBox</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Dialog</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span>
-    <span class="n">ImageView</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">RadioButton</span><span class="p">,</span> <span class="n">Window</span><span class="p">)</span>
-
-
-<span class="n">template</span> <span class="n">IconContent</span><span class="p">(</span><span class="n">Platform</span><span class="p">):</span>
-    <span class="n">Label</span><span class="p">:</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Icon Area&#39;</span>
+from enaml.image import Image
+from enaml.layout.api import align, hbox, spacer
+from enaml.stdlib.dialog_buttons import DialogButtonBox, DialogButton
+from enaml.stdlib.task_dialog import (TaskDialogBody, TaskDialogCommandArea,
+    TaskDialogContentArea, TaskDialogDetailsArea, TaskDialogFootnoteArea,
+    TaskDialogIconArea, TaskDialogInstructionArea, TaskDialogStyleSheet)
+from enaml.widgets.api import (CheckBox, Container, Dialog, Field, Label,
+    ImageView, PushButton, RadioButton, Window)
 
 
-<span class="n">template</span> <span class="n">IconContent</span><span class="p">(</span><span class="n">Platform</span><span class="p">:</span> <span class="s">&#39;win32&#39;</span><span class="p">):</span>
-    <span class="n">const</span> <span class="n">ico</span> <span class="o">=</span> <span class="n">winutil</span><span class="o">.</span><span class="n">load_icon</span><span class="p">(</span><span class="n">winutil</span><span class="o">.</span><span class="n">OIC_INFORMATION</span><span class="p">)</span>
-    <span class="n">const</span> <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ico</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">raw_size</span><span class="o">=</span><span class="n">ico</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;argb32&#39;</span><span class="p">)</span>
-    <span class="n">ImageView</span><span class="p">:</span>
-        <span class="n">image</span> <span class="o">=</span> <span class="n">img</span>
-        <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-        <span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+template IconContent(Platform):
+    Label:
+        text = 'Icon Area'
 
 
-<span class="n">enamldef</span> <span class="n">MyTaskDialog</span><span class="p">(</span><span class="n">Dialog</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;A Task Dialog&#39;</span>
-    <span class="n">TaskDialogStyleSheet</span><span class="p">:</span>
-            <span class="k">pass</span>
-    <span class="n">TaskDialogBody</span><span class="p">:</span>
-        <span class="n">TaskDialogIconArea</span><span class="p">:</span>
-            <span class="n">IconContent</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="p">):</span>
-                <span class="k">pass</span>
-        <span class="n">TaskDialogInstructionArea</span><span class="p">:</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;task-dialog-instructions&#39;</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;The dialog instruction&#39;</span>
-        <span class="n">TaskDialogContentArea</span><span class="p">:</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;task-dialog-content&#39;</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;This is some additional dialog content.&#39;</span>
-        <span class="n">TaskDialogDetailsArea</span><span class="p">:</span> <span class="n">details</span><span class="p">:</span>
-            <span class="n">visible</span> <span class="o">=</span> <span class="bp">False</span>
-            <span class="n">RadioButton</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;these&#39;</span>
-            <span class="n">RadioButton</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;are&#39;</span>
-            <span class="n">RadioButton</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;more&#39;</span>
-            <span class="n">RadioButton</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;options&#39;</span>
-        <span class="n">TaskDialogCommandArea</span><span class="p">:</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">hbox</span><span class="p">(</span><span class="n">cbox</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">bbox</span><span class="p">),</span>
-                <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">cbox</span><span class="p">,</span> <span class="n">bbox</span><span class="p">),</span>
-            <span class="p">]</span>
-            <span class="n">CheckBox</span><span class="p">:</span> <span class="n">cbox</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;More options&#39;</span>
-                <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">visible</span>
-            <span class="n">DialogButtonBox</span><span class="p">:</span> <span class="n">bbox</span><span class="p">:</span>
-                <span class="n">buttons</span> <span class="o">=</span> <span class="p">[</span>
-                    <span class="n">DialogButton</span><span class="p">(</span><span class="s">&#39;OK&#39;</span><span class="p">,</span> <span class="s">&#39;accept&#39;</span><span class="p">),</span>
-                    <span class="n">DialogButton</span><span class="p">(</span><span class="s">&#39;Cancel&#39;</span><span class="p">,</span> <span class="s">&#39;reject&#39;</span><span class="p">),</span>
-                <span class="p">]</span>
-        <span class="n">TaskDialogFootnoteArea</span><span class="p">:</span>
-            <span class="n">Label</span><span class="p">:</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;This is a footnote. It could be any widget.&#39;</span>
+template IconContent(Platform: 'win32'):
+    const ico = winutil.load_icon(winutil.OIC_INFORMATION)
+    const img = Image(data=ico[0], raw_size=ico[1], format='argb32')
+    ImageView:
+        image = img
+        hug_height = 'strong'
+        hug_width = 'strong'
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Task Dialog Example&#39;</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-        <span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-        <span class="n">PushButton</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Launch Dialog&#39;</span>
-            <span class="n">clicked</span> <span class="p">::</span> <span class="n">MyTaskDialog</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
-</pre></div>
+enamldef MyTaskDialog(Dialog):
+    title = 'A Task Dialog'
+    TaskDialogStyleSheet:
+            pass
+    TaskDialogBody:
+        TaskDialogIconArea:
+            IconContent(sys.platform):
+                pass
+        TaskDialogInstructionArea:
+            Label:
+                style_class = 'task-dialog-instructions'
+                text = 'The dialog instruction'
+        TaskDialogContentArea:
+            Label:
+                style_class = 'task-dialog-content'
+                text = 'This is some additional dialog content.'
+        TaskDialogDetailsArea: details:
+            visible = False
+            RadioButton:
+                text = 'these'
+            RadioButton:
+                text = 'are'
+            RadioButton:
+                text = 'more'
+            RadioButton:
+                text = 'options'
+        TaskDialogCommandArea:
+            constraints = [
+                hbox(cbox, spacer, bbox),
+                align('v_center', cbox, bbox),
+            ]
+            CheckBox: cbox:
+                text = 'More options'
+                checked := details.visible
+            DialogButtonBox: bbox:
+                buttons = [
+                    DialogButton('OK', 'accept'),
+                    DialogButton('Cancel', 'reject'),
+                ]
+        TaskDialogFootnoteArea:
+            Label:
+                text = 'This is a footnote. It could be any widget.'
+
+
+enamldef Main(Window):
+    title = 'Task Dialog Example'
+    Container:
+        hug_height = 'strong'
+        hug_width = 'strong'
+        PushButton:
+            text = 'Launch Dialog'
+            clicked :: MyTaskDialog(self).exec_()
+</pre>
 </div>
 </div>
 

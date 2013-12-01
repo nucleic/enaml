@@ -199,7 +199,7 @@ Implementation Notes:
 <div class="highlight-python"><pre>$ enaml-run notebook</pre>
 </div>
 <img alt="../_images/ex_notebook.png" src="../_images/ex_notebook.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -229,49 +229,49 @@ Implementation Notes:
 <span class="p">)</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">Notebook</span><span class="p">:</span> <span class="n">nbook</span><span class="p">:</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">Notebook</span><span class="p">:</span> <span class="ni">nbook</span><span class="p">:</span>
             <span class="n">tab_style</span> <span class="o">=</span> <span class="s">&#39;preferences&#39;</span>
-            <span class="n">Page</span><span class="p">:</span>
+            <span class="nt">Page</span><span class="p">:</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Foo Page&#39;</span>
                 <span class="n">closable</span> <span class="o">=</span> <span class="bp">False</span>
                 <span class="n">tool_tip</span> <span class="o">=</span> <span class="s">&#39;Foo Page here&#39;</span>
-                <span class="n">Container</span><span class="p">:</span>
-                    <span class="n">PushButton</span><span class="p">:</span>
+                <span class="nt">Container</span><span class="p">:</span>
+                    <span class="nt">PushButton</span><span class="p">:</span>
                         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Open Bar Page&#39;</span>
                         <span class="n">clicked</span> <span class="p">::</span> <span class="n">bar</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
-                    <span class="n">PushButton</span><span class="p">:</span>
+                    <span class="nt">PushButton</span><span class="p">:</span>
                         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Open Baz Page&#39;</span>
                         <span class="n">clicked</span> <span class="p">::</span> <span class="n">baz</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
-                    <span class="n">CheckBox</span><span class="p">:</span>
+                    <span class="nt">CheckBox</span><span class="p">:</span>
                         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Tabs Closable&#39;</span>
-                        <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="n">nbook</span><span class="o">.</span><span class="n">tabs_closable</span>
-                    <span class="n">CheckBox</span><span class="p">:</span>
+                        <span class="n">checked</span> <span class="o">:=</span> <span class="n">nbook</span><span class="o">.</span><span class="n">tabs_closable</span>
+                    <span class="nt">CheckBox</span><span class="p">:</span>
                         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Tabs Movable&#39;</span>
-                        <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="n">nbook</span><span class="o">.</span><span class="n">tabs_movable</span>
-                    <span class="n">CheckBox</span><span class="p">:</span>
+                        <span class="n">checked</span> <span class="o">:=</span> <span class="n">nbook</span><span class="o">.</span><span class="n">tabs_movable</span>
+                    <span class="nt">CheckBox</span><span class="p">:</span>
                         <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Document Style Tabs&#39;</span>
                         <span class="n">checked</span> <span class="o">&lt;&lt;</span> <span class="n">nbook</span><span class="o">.</span><span class="n">tab_style</span> <span class="o">==</span> <span class="s">&#39;document&#39;</span>
                         <span class="n">toggled</span> <span class="p">::</span>
                             <span class="k">if</span> <span class="n">checked</span><span class="p">:</span>
                                 <span class="n">nbook</span><span class="o">.</span><span class="n">tab_style</span> <span class="o">=</span> <span class="s">&#39;document&#39;</span>
-                            <span class="k">else</span><span class="p">:</span>
+                            <span class="nt">else</span><span class="p">:</span>
                                 <span class="n">nbook</span><span class="o">.</span><span class="n">tab_style</span> <span class="o">=</span> <span class="s">&#39;preferences&#39;</span>
-            <span class="n">Page</span><span class="p">:</span> <span class="n">bar</span><span class="p">:</span>
+            <span class="nt">Page</span><span class="p">:</span> <span class="ni">bar</span><span class="p">:</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Bar Page&#39;</span>
-                <span class="n">Container</span><span class="p">:</span>
-                    <span class="n">Field</span><span class="p">:</span>
+                <span class="nt">Container</span><span class="p">:</span>
+                    <span class="nt">Field</span><span class="p">:</span>
                         <span class="k">pass</span>
-                    <span class="n">Field</span><span class="p">:</span>
+                    <span class="nt">Field</span><span class="p">:</span>
                         <span class="k">pass</span>
-                    <span class="n">Field</span><span class="p">:</span>
+                    <span class="nt">Field</span><span class="p">:</span>
                         <span class="k">pass</span>
-            <span class="n">Page</span><span class="p">:</span> <span class="n">baz</span><span class="p">:</span>
+            <span class="nt">Page</span><span class="p">:</span> <span class="ni">baz</span><span class="p">:</span>
                 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Baz Page&#39;</span>
-                <span class="n">Container</span><span class="p">:</span>
+                <span class="nt">Container</span><span class="p">:</span>
                     <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="n">Html</span><span class="p">:</span>
+                    <span class="nt">Html</span><span class="p">:</span>
                         <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Hello World!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
 </pre></div>
 </div>

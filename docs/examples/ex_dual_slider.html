@@ -185,63 +185,63 @@
 <div class="highlight-python"><pre>$ enaml-run dual_slider</pre>
 </div>
 <img alt="../_images/ex_dual_slider.png" src="../_images/ex_dual_slider.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
-<span class="c">#  Copyright (c) 2013, Nucleic Development Team</span>
-<span class="c">#</span>
-<span class="c"># Distributed under the terms of the Modified BSD License.</span>
-<span class="c">#</span>
-<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Example demonstrating a dual slider.</span>
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+"""
+Example demonstrating a dual slider.
 
-<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">align</span><span class="p">,</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">hbox</span>
-<span class="kn">from</span> <span class="nn">enaml.stdlib.fields</span> <span class="kn">import</span> <span class="n">IntField</span>
-<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">DualSlider</span><span class="p">,</span> <span class="n">Slider</span><span class="p">,</span> <span class="n">Form</span>
-<span class="p">)</span>
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import align, vbox, hbox
+from enaml.stdlib.fields import IntField
+from enaml.widgets.api import (
+    Window, Container, Label, Field, DualSlider, Slider, Form
+)
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Dual Slider Example&#39;</span>
-    <span class="n">Container</span><span class="p">:</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">vbox</span><span class="p">(</span>
-                <span class="n">hbox</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">),</span>
-                <span class="n">hbox</span><span class="p">(</span><span class="n">min_lbl</span><span class="p">,</span> <span class="n">dual_slider</span><span class="p">,</span> <span class="n">max_lbl</span><span class="p">),</span>
-                <span class="n">hbox</span><span class="p">(</span><span class="n">sel_lbl</span><span class="p">,</span> <span class="n">sel_field</span><span class="p">,</span> <span class="n">sel_slider</span><span class="p">),</span>
-            <span class="p">),</span>
-            <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">),</span>
-            <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">min_lbl</span><span class="p">,</span> <span class="n">dual_slider</span><span class="p">,</span> <span class="n">max_lbl</span><span class="p">),</span>
-            <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">sel_lbl</span><span class="p">,</span> <span class="n">sel_field</span><span class="p">,</span> <span class="n">sel_slider</span><span class="p">),</span>
-        <span class="p">]</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">label</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Range:&#39;</span>
-        <span class="n">IntField</span><span class="p">:</span> <span class="n">low</span><span class="p">:</span>
-            <span class="n">value</span> <span class="p">:</span><span class="o">=</span> <span class="n">dual_slider</span><span class="o">.</span><span class="n">low_value</span>
-        <span class="n">IntField</span><span class="p">:</span> <span class="n">high</span><span class="p">:</span>
-            <span class="n">value</span> <span class="p">:</span><span class="o">=</span> <span class="n">dual_slider</span><span class="o">.</span><span class="n">high_value</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">min_lbl</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="nb">str</span><span class="p">(</span><span class="n">dual_slider</span><span class="o">.</span><span class="n">minimum</span><span class="p">)</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">max_lbl</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="nb">str</span><span class="p">(</span><span class="n">dual_slider</span><span class="o">.</span><span class="n">maximum</span><span class="p">)</span>
-        <span class="n">DualSlider</span><span class="p">:</span> <span class="n">dual_slider</span><span class="p">:</span>
-            <span class="n">tick_interval</span> <span class="o">=</span> <span class="mi">10</span>
-            <span class="n">minimum</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">maximum</span> <span class="o">=</span> <span class="mi">100</span>
-        <span class="n">Label</span><span class="p">:</span> <span class="n">sel_lbl</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Set Minimum:&#39;</span>
-        <span class="n">Field</span><span class="p">:</span> <span class="n">sel_field</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="nb">str</span><span class="p">(</span><span class="n">sel_slider</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-            <span class="n">read_only</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="n">Slider</span><span class="p">:</span> <span class="n">sel_slider</span><span class="p">:</span>
-            <span class="n">tick_interval</span> <span class="o">=</span> <span class="mi">100</span>
-            <span class="n">minimum</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">maximum</span> <span class="o">=</span> <span class="mi">1000</span>
-            <span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="n">dual_slider</span><span class="o">.</span><span class="n">minimum</span>
-</pre></div>
+enamldef Main(Window):
+    title = 'Dual Slider Example'
+    Container:
+        constraints = [
+            vbox(
+                hbox(label, low, high),
+                hbox(min_lbl, dual_slider, max_lbl),
+                hbox(sel_lbl, sel_field, sel_slider),
+            ),
+            align('v_center', label, low, high),
+            align('v_center', min_lbl, dual_slider, max_lbl),
+            align('v_center', sel_lbl, sel_field, sel_slider),
+        ]
+        Label: label:
+            text = 'Range:'
+        IntField: low:
+            value := dual_slider.low_value
+        IntField: high:
+            value := dual_slider.high_value
+        Label: min_lbl:
+            text &lt;&lt; str(dual_slider.minimum)
+        Label: max_lbl:
+            text &lt;&lt; str(dual_slider.maximum)
+        DualSlider: dual_slider:
+            tick_interval = 10
+            minimum = 1
+            maximum = 100
+        Label: sel_lbl:
+            text = 'Set Minimum:'
+        Field: sel_field:
+            text &lt;&lt; str(sel_slider.value)
+            read_only = True
+        Slider: sel_slider:
+            tick_interval = 100
+            minimum = 1
+            maximum = 1000
+            value &gt;&gt; dual_slider.minimum
+</pre>
 </div>
 </div>
 

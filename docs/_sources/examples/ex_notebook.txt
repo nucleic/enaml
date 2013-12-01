@@ -28,5 +28,5 @@ Notebook Example
 .. image:: images/ex_notebook.png
 
 .. literalinclude:: ../../../examples/widgets/notebook.enaml
-    :language: python
+    :language: enaml
 

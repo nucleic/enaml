@@ -17,5 +17,5 @@ Window Example
 .. image:: images/ex_window.png
 
 .. literalinclude:: ../../../examples/widgets/window.enaml
-    :language: python
+    :language: enaml
 

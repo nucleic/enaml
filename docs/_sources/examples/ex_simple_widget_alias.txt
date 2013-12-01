@@ -14,5 +14,5 @@ Simple Widget Alias Example
 .. image:: images/ex_simple_widget_alias.png
 
 .. literalinclude:: ../../../examples/aliases/simple_widget_alias.enaml
-    :language: python
+    :language: enaml
 

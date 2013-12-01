@@ -29,5 +29,5 @@ Hbox Example
 .. image:: images/ex_hbox.png
 
 .. literalinclude:: ../../../examples/layout/basic/hbox.enaml
-    :language: python
+    :language: enaml
 

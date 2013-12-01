@@ -168,7 +168,7 @@ is then used to unroll a list of these controls into the body of a form.</pre>
 <div class="highlight-python"><pre>$ enaml-run advanced</pre>
 </div>
 <img alt="../_images/ex_advanced.png" src="../_images/ex_advanced.png" />
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
 <span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
 <span class="c">#</span>
 <span class="c"># Distributed under the terms of the Modified BSD License.</span>
@@ -201,7 +201,7 @@ is then used to unroll a list of these controls into the body of a form.</pre>
 <span class="c"># be written once and then used as a library. They are more-or-less fully</span>
 <span class="c"># generic and will work for a large swath of models.</span>
 
-<span class="n">template</span> <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormControl</span><span class="p">(</span>Attr, MemberType<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A template which generates a control for an AutoForm.</span>
 
 <span class="sd">    This default specialization displays read-only text for the value.</span>
@@ -215,94 +215,94 @@ is then used to unroll a list of these controls into the body of a form.</pre>
 <span class="sd">        The type of the member being accessed.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Field</span><span class="p">:</span>
+    <span class="nt">Field</span><span class="p">:</span>
         <span class="n">read_only</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="nb">unicode</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">))</span>
 
 
-<span class="n">template</span> <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">:</span> <span class="n">Int</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormControl</span><span class="p">(</span>Attr, MemberType: Int<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A form control template specialization for Int members.</span>
 
 <span class="sd">    This control uses a spin box to represent the value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">SpinBox</span><span class="p">:</span>
-        <span class="n">value</span> <span class="p">:</span><span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
+    <span class="nt">SpinBox</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
 
 
-<span class="n">template</span> <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">:</span> <span class="n">Str</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormControl</span><span class="p">(</span>Attr, MemberType: Str<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A form control template specialization for Str members.</span>
 
 <span class="sd">    This control uses a Field to represent the value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Field</span><span class="p">:</span>
+    <span class="nt">Field</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
         <span class="n">text</span> <span class="p">::</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
 
 
-<span class="n">template</span> <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">:</span> <span class="n">Unicode</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormControl</span><span class="p">(</span>Attr, MemberType: Unicode<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A form control template specialization for Unicode members.</span>
 
 <span class="sd">    This control uses a Field to represent the value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Field</span><span class="p">:</span>
-        <span class="n">text</span> <span class="p">:</span><span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
+    <span class="nt">Field</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
 
 
-<span class="n">template</span> <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">:</span> <span class="n">Float</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormControl</span><span class="p">(</span>Attr, MemberType: Float<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A form control template specialization for Float members.</span>
 
 <span class="sd">    This control uses a FloatField to represent the value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">FloatField</span><span class="p">:</span>
-        <span class="n">value</span> <span class="p">:</span><span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
+    <span class="nt">FloatField</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
 
 
-<span class="n">template</span> <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">:</span> <span class="n">Bool</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormControl</span><span class="p">(</span>Attr, MemberType: Bool<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A form control template specialization for Bool members.</span>
 
 <span class="sd">    This control uses a CheckBox to represent the value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">CheckBox</span><span class="p">:</span>
-        <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
+    <span class="nt">CheckBox</span><span class="p">:</span>
+        <span class="n">checked</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
 
 
-<span class="n">template</span> <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">:</span> <span class="n">Event</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormControl</span><span class="p">(</span>Attr, MemberType: Event<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A form control template specialization for Event members.</span>
 
 <span class="sd">    This control uses a PushButton to represent the value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">const</span> <span class="n">ButtonText</span> <span class="o">=</span> <span class="n">Attr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">Attr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="n">PushButton</span><span class="p">:</span>
+    <span class="k">const</span> <span class="n">ButtonText</span> <span class="o">=</span> <span class="n">Attr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">Attr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="nt">PushButton</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">ButtonText</span>
         <span class="n">clicked</span> <span class="p">::</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)()</span>
 
 
-<span class="k">def</span> <span class="nf">enum_labels</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">enum_labels</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="k">attr</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Return the list of enum labels for the given model and attr.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">items</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">attr</span><span class="p">)</span><span class="o">.</span><span class="n">items</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="k">attr</span><span class="p">)</span><span class="o">.</span><span class="n">items</span>
     <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
 
 
-<span class="n">template</span> <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">:</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormControl</span><span class="p">(</span>Attr, MemberType: Enum<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A form control template specialization for Enum members.</span>
 
 <span class="sd">    This control uses an ObjectCombo to represent the value.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ObjectCombo</span><span class="p">:</span>
+    <span class="nt">ObjectCombo</span><span class="p">:</span>
         <span class="n">items</span> <span class="o">=</span> <span class="n">enum_labels</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
-        <span class="n">selected</span> <span class="p">:</span><span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
+        <span class="n">selected</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Attr</span><span class="p">)</span>
 
 
-<span class="n">template</span> <span class="n">FormItem</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">FormItem</span><span class="p">(</span>Attr, MemberType<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A template which generates a pair of items for an AutoForm.</span>
 
 <span class="sd">    Parameters</span>
@@ -314,10 +314,10 @@ is then used to unroll a list of these controls into the body of a form.</pre>
 <span class="sd">        The type of the member being accessed.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">const</span> <span class="n">LabelText</span> <span class="o">=</span> <span class="n">Attr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">Attr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="n">Label</span><span class="p">:</span>
+    <span class="k">const</span> <span class="n">LabelText</span> <span class="o">=</span> <span class="n">Attr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">Attr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="nt">Label</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">LabelText</span>
-    <span class="n">FormControl</span><span class="p">(</span><span class="n">Attr</span><span class="p">,</span> <span class="n">MemberType</span><span class="p">):</span>
+    <span class="nt">FormControl</span><span class="p">(</span>Attr, MemberType<span class="p">):</span>
         <span class="k">pass</span>
 
 
@@ -344,7 +344,7 @@ is then used to unroll a list of these controls into the body of a form.</pre>
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
 
 
-<span class="n">template</span> <span class="n">ForEach</span><span class="p">(</span><span class="n">Spec</span><span class="p">,</span> <span class="n">Item</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">ForEach</span><span class="p">(</span>Spec, Item<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A templated loop which maps a template over a sequence.</span>
 
 <span class="sd">    Parameters</span>
@@ -356,20 +356,20 @@ is then used to unroll a list of these controls into the body of a form.</pre>
 <span class="sd">        A template which accepts *values from inner tuples of the spec.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ForEach</span><span class="p">(</span><span class="n">Spec</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Item</span><span class="p">):</span>
+    <span class="nt">ForEach</span><span class="p">(</span>Spec[:-1], Item<span class="p">):</span>
         <span class="k">pass</span>
-    <span class="n">Item</span><span class="p">(</span><span class="o">*</span><span class="n">Spec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+    <span class="nt">Item</span><span class="p">(</span>*Spec[-1]<span class="p">):</span>
         <span class="k">pass</span>
 
 
-<span class="n">template</span> <span class="n">ForEach</span><span class="p">(</span><span class="n">Spec</span><span class="p">:</span> <span class="p">(),</span> <span class="n">Item</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">ForEach</span><span class="p">(</span>Spec: (), Item<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The terminating condition for the templated loop.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span>
 
 
-<span class="n">template</span> <span class="n">AutoFormBody</span><span class="p">(</span><span class="n">ModelType</span><span class="p">):</span>
+<span class="k">template</span> <span class="nf">AutoFormBody</span><span class="p">(</span>ModelType<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A template which builds the body for an AutoForm.</span>
 
 <span class="sd">    Parameters</span>
@@ -378,24 +378,24 @@ is then used to unroll a list of these controls into the body of a form.</pre>
 <span class="sd">        The type of the model. This should be an Atom subclass.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">const</span> <span class="n">Spec</span> <span class="o">=</span> <span class="n">form_spec</span><span class="p">(</span><span class="n">ModelType</span><span class="p">)</span>
-    <span class="n">ForEach</span><span class="p">(</span><span class="n">Spec</span><span class="p">,</span> <span class="n">FormItem</span><span class="p">):</span>
+    <span class="k">const</span> <span class="n">Spec</span> <span class="o">=</span> <span class="n">form_spec</span><span class="p">(</span><span class="n">ModelType</span><span class="p">)</span>
+    <span class="nt">ForEach</span><span class="p">(</span>Spec, FormItem<span class="p">):</span>
         <span class="k">pass</span>
 
 
-<span class="n">template</span> <span class="n">AutoFormBody</span><span class="p">(</span><span class="n">ModelType</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="bp">None</span><span class="p">)):</span>
+<span class="k">template</span> <span class="nf">AutoFormBody</span><span class="p">(</span>ModelType: type(None)<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A template specialization for null models.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span>
 
 
-<span class="n">enamldef</span> <span class="n">AutoForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">AutoForm</span><span class="p">(</span>Form<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A Form which automatically generates its body from a model.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">attr</span> <span class="n">model</span><span class="p">:</span> <span class="n">Atom</span>
-    <span class="n">DynamicTemplate</span><span class="p">:</span>
+    <span class="k">attr</span> <span class="n">model</span><span class="p">:</span> <span class="n">Atom</span>
+    <span class="nt">DynamicTemplate</span><span class="p">:</span>
         <span class="n">base</span> <span class="o">=</span> <span class="n">AutoFormBody</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">),)</span>
 
@@ -422,24 +422,24 @@ is then used to unroll a list of these controls into the body of a form.</pre>
         <span class="k">print</span> <span class="s">&#39;I was triggered&#39;</span>
 
 
-<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
     <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Advanced Templates&#39;</span>
-    <span class="n">attr</span> <span class="n">foo_model</span> <span class="o">=</span> <span class="n">FooModel</span><span class="p">()</span>
-    <span class="n">attr</span> <span class="n">bar_model</span> <span class="o">=</span> <span class="n">BarModel</span><span class="p">()</span>
-    <span class="n">Container</span><span class="p">:</span>
+    <span class="k">attr</span> <span class="n">foo_model</span> <span class="o">=</span> <span class="n">FooModel</span><span class="p">()</span>
+    <span class="k">attr</span> <span class="n">bar_model</span> <span class="o">=</span> <span class="n">BarModel</span><span class="p">()</span>
+    <span class="nt">Container</span><span class="p">:</span>
         <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
-        <span class="n">GroupBox</span><span class="p">:</span>
+        <span class="nt">GroupBox</span><span class="p">:</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Foo Model&#39;</span>
             <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
             <span class="n">flat</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">AutoForm</span><span class="p">:</span>
+            <span class="nt">AutoForm</span><span class="p">:</span>
                 <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">model</span> <span class="o">=</span> <span class="n">foo_model</span>
-        <span class="n">GroupBox</span><span class="p">:</span>
+        <span class="nt">GroupBox</span><span class="p">:</span>
             <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Bar Model&#39;</span>
             <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
             <span class="n">flat</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">AutoForm</span><span class="p">:</span>
+            <span class="nt">AutoForm</span><span class="p">:</span>
                 <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">model</span> <span class="o">=</span> <span class="n">bar_model</span>
 </pre></div>

@@ -22,5 +22,5 @@ Linear Relations Example
 .. image:: images/ex_linear_relations.png
 
 .. literalinclude:: ../../../examples/layout/basic/linear_relations.enaml
-    :language: python
+    :language: enaml
 

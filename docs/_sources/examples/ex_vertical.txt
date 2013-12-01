@@ -19,5 +19,5 @@ Vertical Example
 .. image:: images/ex_vertical.png
 
 .. literalinclude:: ../../../examples/layout/basic/vertical.enaml
-    :language: python
+    :language: enaml
 
