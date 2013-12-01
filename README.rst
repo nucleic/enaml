@@ -16,6 +16,6 @@ A few highlights of the framework:
 
 See `the docs <http://nucleic.github.io/enaml/docs>`_ for more information.
 
-`Ask questions` <http://groups.google.com/d/forum/enaml>`_ on the Q&A forum.
+`Ask questions <http://groups.google.com/d/forum/enaml>`_ on the Q&A forum.
 
 For version information, see `the Revision History <https://github.com/nucleic/enaml/blob/master/releasenotes.rst>`_.
