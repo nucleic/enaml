@@ -37,6 +37,7 @@ gh-pages:
 	rm -rf docs
 	cp -R ../enaml_docs/docs/ .
 	git commit -a -m "rebuild docs"
+	git push upstream-rw gh-pages
 	rm -rf ../enaml_docs
 	rm -rf docs
 	git checkout master
