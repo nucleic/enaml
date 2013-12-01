@@ -1,0 +1,49 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" This example demonstrates how to popup a menu.
+
+A menu can be popped up in 2-ways. The first is by declaring the menu as
+a child of a widget and setting the 'context_menu' attribute to True. The
+second method is by creating the menu on-demand, and then invoking it's
+'popup()' method to show the menu at the current mouse location.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import (
+    Window, Container, PushButton, Menu, Action, Field
+)
+
+
+enamldef PopupMenu(Menu):
+    Action:
+        text = 'foo'
+        triggered :: print text + ' triggered'
+    Action:
+        text = 'bar'
+        triggered :: print text + ' triggered'
+    Action:
+        text = 'baz'
+        triggered :: print text + ' triggered'
+    Action:
+        text = 'spam'
+        triggered :: print text + ' triggered'
+    Action:
+        text = 'ham'
+        triggered :: print text + ' triggered'
+
+
+enamldef Main(Window):
+    Container:
+        PushButton:
+            text = 'Popup Menu'
+            clicked :: PopupMenu().popup()
+        Field:
+            text = 'Context Menu'
+            read_only = True
+            PopupMenu:
+                context_menu = True

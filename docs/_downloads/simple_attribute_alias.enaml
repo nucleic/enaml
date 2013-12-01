@@ -1,0 +1,40 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using an Enaml alias to expose an internal attribute.
+
+This example is similar to 'simple_widget_alias.enaml', but it shows
+how the developer can exert more control over a widget by exposing
+individual attributes instead of entire widgets.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Content(Container):
+    """ The primary application content.
+
+    This 'button_foreground' alias provides access to the internal
+    push button's foreground color.
+
+    """
+    alias button_foreground: button.foreground
+    PushButton: button:
+        text = 'Default Button Text'
+
+
+enamldef Main(Window):
+    """ The main application window.
+
+    This window uses the 'button_foreground' alias of the central
+    content to bind to its internal push button's foreground color.
+
+    """
+    title = 'Simple Attribute Alias'
+    Content:
+        button_foreground = 'blue'

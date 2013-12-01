@@ -1,0 +1,32 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.widgets.api import Window, Label, Field, Form
+from enaml.stdlib.fields import IntField
+
+
+enamldef PersonForm(Form):
+    attr person
+    Label:
+        text = 'First Name'
+    Field:
+        text := person.first_name
+    Label:
+        text = 'Last Name'
+    Field:
+        text := person.last_name
+    Label:
+        text = 'Age'
+    IntField:
+        minimum = 0
+        value := person.age
+
+
+enamldef PersonView(Window):
+    attr person
+    PersonForm:
+        person := parent.person
