@@ -1,0 +1,276 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fields Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Looper Example" href="ex_looper.html" />
+    <link rel="prev" title="Conditional Example" href="ex_conditional.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Fields Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_conditional.html">Conditional Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Fields Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_looper.html">Looper Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_notebook_pages.html">Notebook Pages Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="fields-example">
+<h1>Fields Example<a class="headerlink" href="#fields-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/fields.enaml"><tt class="xref download docutils literal"><span class="pre">fields</span></tt></a></p>
+<div class="highlight-python"><pre>An example of using Include to generate Field widgets on demand.
+
+There are three columns in the example, each showing one of the many
+ways that the Include component may be used.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run fields</pre>
+</div>
+<img alt="../_images/ex_fields.png" src="../_images/ex_fields.png" />
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using Include to generate Field widgets on demand.
+
+There are three columns in the example, each showing one of the many
+ways that the Include component may be used.
+
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+import random
+
+from enaml.layout.api import hbox, vbox, align, spacer
+from enaml.widgets.api import (
+    Window, Container, Label, Field, SpinBox, PushButton,
+)
+from enaml.core.api import Include
+
+
+enamldef Main(Window):
+    Container:
+        padding = 0
+        constraints = [
+            hbox(cont1, cont2, cont3),
+            align('width', cont1, cont2, cont3)
+        ]
+        hug_height = 'strong'
+        Container: cont1:
+            Label:
+                text = 'Replace All'
+                align = 'center'
+            SpinBox: spin1:
+                minimum = 0
+                maximum = 20
+                value = 3
+            Include:
+                # This generates a completely new list of widgets each
+                # time the spin box is changed. All the old widgets
+                # will be destroyed. This is the simplest way to use
+                # the Include, albeit not the most efficient.
+                objects &lt;&lt; [Field(text=str(i)) for i in xrange(spin1.value)]
+        Container: cont2:
+            Label:
+                text = 'Random Shuffle'
+                align = 'center'
+            PushButton:
+                text = 'Shuffle'
+                # This randomly shuffles the Fields of the Include. It
+                # could also have been done in-place to the same effect,
+                # but we do it on a copy to demonstrate that the Include
+                # is intelligent enought to deal with assigning it an
+                # object or objects which it already owns.
+                clicked ::
+                    new = list(inc2.objects)
+                    random.shuffle(new)
+                    inc2.objects = new
+                    cont2.request_relayout()
+            Include: inc2:
+                # The Fields are initialized with the spin box value.
+                objects = [Field(text=str(i)) for i in xrange(10)]
+        Container: cont3:
+            Label:
+                text = 'Modify In-Place'
+                align = 'center'
+            PushButton:
+                text = 'Append'
+                # This appends a new Field to the Include in-place.
+                clicked ::
+                    n = len(inc3.objects)
+                    inc3.objects.append(Field(text=str(n)))
+            PushButton:
+                text = 'Pop'
+                # This pops a Field from the Include in-place.
+                clicked ::
+                    if inc3.objects:
+                        inc3.objects.pop()
+            Include: inc3:
+                objects =  [Field(text=str(i)) for i in xrange(5)]
+</pre>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

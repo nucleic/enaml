@@ -14,17 +14,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.layout.dock_layout &mdash; Enaml 0.8.5 documentation</title>
+    <title>enaml.layout.dock_layout &mdash; Enaml 0.8.9 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.5 documentation" href="../../../index.html" />
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +64,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -852,310 +852,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c">#: The name of the dock item to retract into its dock bar.</span>
-    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
-
-
-<span class="c">#------------------------------------------------------------------------------</span>
-<span class="c"># Deprecated Layout Classes</span>
-<span class="c">#------------------------------------------------------------------------------</span></div>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;ENAML_DEPRECATED_DOCK_LAYOUT&#39;</span><span class="p">):</span>
-
-    <span class="k">class</span> <span class="nc">dockitem</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated. Use ItemLayout instead.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
-        <span class="n">geometry</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">Rect</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">coercer</span><span class="o">=</span><span class="n">_coerce_rect</span><span class="p">)</span>
-        <span class="n">maximized</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
-        <span class="n">linked</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">dockitem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span>
-
-
-    <span class="k">def</span> <span class="nf">_coerce_item</span><span class="p">(</span><span class="n">thing</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This function is deprecated.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">dockitem</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to a &#39;dockitem&#39;&quot;</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-
-
-    <span class="k">class</span> <span class="nc">docktabs</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated. Use TabLayout instead.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">tab_position</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">)</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">children</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">dockitem</span><span class="p">,</span> <span class="n">coercer</span><span class="o">=</span><span class="n">_coerce_item</span><span class="p">))</span>
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">children</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">docktabs</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">children</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span>
-            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
-                    <span class="k">yield</span> <span class="n">item</span>
-
-
-    <span class="k">class</span> <span class="nc">_splitnode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">class</span> <span class="nc">__metaclass__</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
-            <span class="k">def</span> <span class="nf">__instancecheck__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
-                <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="p">(</span><span class="n">dockitem</span><span class="p">,</span> <span class="n">docktabs</span><span class="p">,</span> <span class="n">docksplit</span><span class="p">))</span>
-            <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="n">dockitem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to a &#39;docksplit&#39; child&quot;</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-
-
-    <span class="k">class</span> <span class="nc">docksplit</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated. Use SplitLayout instead.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">orientation</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;horizontal&#39;</span><span class="p">,</span> <span class="s">&#39;vertical&#39;</span><span class="p">)</span>
-        <span class="n">sizes</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">children</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">_splitnode</span><span class="p">))</span>
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">children</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">docksplit</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">children</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span>
-            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
-                    <span class="k">yield</span> <span class="n">item</span>
-
-
-    <span class="k">def</span> <span class="nf">hdocksplit</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This function is deprecated.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;orientation&#39;</span><span class="p">,</span> <span class="s">&#39;horizontal&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">docksplit</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-    <span class="k">def</span> <span class="nf">vdocksplit</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This function is deprecated.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;orientation&#39;</span><span class="p">,</span> <span class="s">&#39;vertical&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">docksplit</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-    <span class="k">class</span> <span class="nc">_areanode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">class</span> <span class="nc">__metaclass__</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
-            <span class="k">def</span> <span class="nf">__instancecheck__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
-                <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="p">(</span><span class="n">dockitem</span><span class="p">,</span> <span class="n">docktabs</span><span class="p">,</span> <span class="n">docksplit</span><span class="p">))</span>
-            <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="n">dockitem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to a &#39;dockarea&#39; child&quot;</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-
-
-    <span class="k">class</span> <span class="nc">dockarea</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated. Use LayoutArea instead.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">geometry</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">Rect</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">coercer</span><span class="o">=</span><span class="n">_coerce_rect</span><span class="p">)</span>
-        <span class="n">maximized</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
-        <span class="n">maximized_item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
-        <span class="n">linked</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
-        <span class="n">child</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">_areanode</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">dockarea</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">child</span><span class="o">=</span><span class="n">child</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
-                <span class="k">yield</span> <span class="n">item</span>
-
-
-    <span class="k">class</span> <span class="nc">_primarynode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">class</span> <span class="nc">__metaclass__</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
-            <span class="k">def</span> <span class="nf">__instancecheck__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
-                <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span> <span class="n">dockarea</span><span class="p">,</span> <span class="n">dockitem</span><span class="p">))</span>
-            <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="n">dockitem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="n">docksplit</span><span class="p">,</span> <span class="n">docktabs</span><span class="p">)):</span>
-                    <span class="k">return</span> <span class="n">dockarea</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to a primary &#39;docklayout&#39; child&quot;</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-
-
-    <span class="k">class</span> <span class="nc">_secondarynode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">class</span> <span class="nc">__metaclass__</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
-            <span class="k">def</span> <span class="nf">__instancecheck__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
-                <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="p">(</span><span class="n">dockarea</span><span class="p">,</span> <span class="n">dockitem</span><span class="p">))</span>
-            <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="n">dockitem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="n">docksplit</span><span class="p">,</span> <span class="n">docktabs</span><span class="p">)):</span>
-                    <span class="k">return</span> <span class="n">dockarea</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to a secondary &#39;docklayout&#39; child&quot;</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-
-
-    <span class="k">class</span> <span class="nc">docklayout</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; This class is deprecated. Use DockLayout instead.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">primary</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">_primarynode</span><span class="p">)</span>
-        <span class="n">secondary</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">_secondarynode</span><span class="p">))</span>
-        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primary</span><span class="p">,</span> <span class="o">*</span><span class="n">secondary</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="n">sup</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">docklayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-            <span class="n">sup</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">primary</span><span class="o">=</span><span class="n">primary</span><span class="p">,</span> <span class="n">secondary</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">secondary</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
-                    <span class="k">yield</span> <span class="n">item</span>
-            <span class="k">for</span> <span class="n">secondary</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">secondary</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">secondary</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
-                    <span class="k">yield</span> <span class="n">item</span>
-
-
-    <span class="k">def</span> <span class="nf">convert_to_new_docklayout</span><span class="p">(</span><span class="n">layout</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; A function which converts a &#39;docklayout&#39; to a &#39;DockLayout&#39;.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">docklayout</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">h_generic</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">dockitem</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">h_dockitem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">docktabs</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">h_docktabs</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">docksplit</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">h_docksplit</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">dockarea</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">h_dockarea</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">h_docklayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">h_dockitem</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
-            <span class="n">n_item</span> <span class="o">=</span> <span class="n">ItemLayout</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">n_item</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">geometry</span>
-            <span class="n">n_item</span><span class="o">.</span><span class="n">maximized</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">maximized</span>
-            <span class="n">n_item</span><span class="o">.</span><span class="n">linked</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">linked</span>
-            <span class="k">return</span> <span class="n">n_item</span>
-
-        <span class="k">def</span> <span class="nf">h_docktabs</span><span class="p">(</span><span class="n">tabs</span><span class="p">):</span>
-            <span class="n">n_tabs</span> <span class="o">=</span> <span class="n">TabLayout</span><span class="p">()</span>
-            <span class="n">n_tabs</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">h_dockitem</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tabs</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
-            <span class="n">n_tabs</span><span class="o">.</span><span class="n">tab_position</span> <span class="o">=</span> <span class="n">tabs</span><span class="o">.</span><span class="n">tab_position</span>
-            <span class="n">n_tabs</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">tabs</span><span class="o">.</span><span class="n">index</span>
-            <span class="k">return</span> <span class="n">n_tabs</span>
-
-        <span class="k">def</span> <span class="nf">h_docksplit</span><span class="p">(</span><span class="n">split</span><span class="p">):</span>
-            <span class="n">n_split</span> <span class="o">=</span> <span class="n">SplitLayout</span><span class="p">()</span>
-            <span class="n">n_split</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">h_generic</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">split</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
-            <span class="n">n_split</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">split</span><span class="o">.</span><span class="n">orientation</span>
-            <span class="n">n_split</span><span class="o">.</span><span class="n">sizes</span> <span class="o">=</span> <span class="n">split</span><span class="o">.</span><span class="n">sizes</span>
-            <span class="k">return</span> <span class="n">n_split</span>
-
-        <span class="k">def</span> <span class="nf">h_dockarea</span><span class="p">(</span><span class="n">area</span><span class="p">):</span>
-            <span class="n">h_area</span> <span class="o">=</span> <span class="n">AreaLayout</span><span class="p">()</span>
-            <span class="n">h_area</span><span class="o">.</span><span class="n">item</span> <span class="o">=</span> <span class="n">h_generic</span><span class="p">(</span><span class="n">area</span><span class="o">.</span><span class="n">child</span><span class="p">)</span>
-            <span class="n">h_area</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">geometry</span>
-            <span class="n">h_area</span><span class="o">.</span><span class="n">linked</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">linked</span>
-            <span class="n">h_area</span><span class="o">.</span><span class="n">maximized</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">maximized</span>
-            <span class="k">if</span> <span class="n">area</span><span class="o">.</span><span class="n">maximized_item</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">h_area</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">ItemLayout</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">area</span><span class="o">.</span><span class="n">maximized_item</span><span class="p">:</span>
-                        <span class="n">item</span><span class="o">.</span><span class="n">maximized</span> <span class="o">=</span> <span class="bp">True</span>
-                        <span class="k">break</span>
-            <span class="k">return</span> <span class="n">h_area</span>
-
-        <span class="k">def</span> <span class="nf">h_docklayout</span><span class="p">(</span><span class="n">layout</span><span class="p">):</span>
-            <span class="n">h_layout</span> <span class="o">=</span> <span class="n">DockLayout</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">layout</span><span class="o">.</span><span class="n">primary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="n">h_layout</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h_generic</span><span class="p">(</span><span class="n">layout</span><span class="o">.</span><span class="n">primary</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">other</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">secondary</span><span class="p">:</span>
-                <span class="n">h_item</span> <span class="o">=</span> <span class="n">h_generic</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-                <span class="n">h_item</span><span class="o">.</span><span class="n">floating</span> <span class="o">=</span> <span class="bp">True</span>
-                <span class="n">h_layout</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h_item</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">h_layout</span>
-
-        <span class="k">return</span> <span class="n">h_generic</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">convert_to_old_docklayout</span><span class="p">(</span><span class="n">layout</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; A function which converts a &#39;DockLayout&#39; to a &#39;docklayout&#39;.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">DockLayout</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">h_generic</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">ItemLayout</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">h_ItemLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">TabLayout</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">h_TabLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">SplitLayout</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">h_SplitLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">AreaLayout</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">h_AreaLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">h_DockLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">h_ItemLayout</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
-            <span class="n">n_item</span> <span class="o">=</span> <span class="n">dockitem</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">n_item</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">geometry</span>
-            <span class="n">n_item</span><span class="o">.</span><span class="n">maximized</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">maximized</span>
-            <span class="n">n_item</span><span class="o">.</span><span class="n">linked</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">linked</span>
-            <span class="k">return</span> <span class="n">n_item</span>
-
-        <span class="k">def</span> <span class="nf">h_TabLayout</span><span class="p">(</span><span class="n">tabs</span><span class="p">):</span>
-            <span class="n">n_tabs</span> <span class="o">=</span> <span class="n">docktabs</span><span class="p">()</span>
-            <span class="n">n_tabs</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">h_ItemLayout</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tabs</span><span class="o">.</span><span class="n">items</span><span class="p">]</span>
-            <span class="n">n_tabs</span><span class="o">.</span><span class="n">tab_position</span> <span class="o">=</span> <span class="n">tabs</span><span class="o">.</span><span class="n">tab_position</span>
-            <span class="n">n_tabs</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">tabs</span><span class="o">.</span><span class="n">index</span>
-            <span class="k">return</span> <span class="n">n_tabs</span>
-
-        <span class="k">def</span> <span class="nf">h_SplitLayout</span><span class="p">(</span><span class="n">split</span><span class="p">):</span>
-            <span class="n">n_split</span> <span class="o">=</span> <span class="n">docksplit</span><span class="p">()</span>
-            <span class="n">n_split</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">h_generic</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">split</span><span class="o">.</span><span class="n">items</span><span class="p">]</span>
-            <span class="n">n_split</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">split</span><span class="o">.</span><span class="n">orientation</span>
-            <span class="n">n_split</span><span class="o">.</span><span class="n">sizes</span> <span class="o">=</span> <span class="n">split</span><span class="o">.</span><span class="n">sizes</span>
-            <span class="k">return</span> <span class="n">n_split</span>
-
-        <span class="k">def</span> <span class="nf">h_AreaLayout</span><span class="p">(</span><span class="n">area</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">area</span><span class="o">.</span><span class="n">item</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="n">n_area</span> <span class="o">=</span> <span class="n">dockarea</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">n_area</span> <span class="o">=</span> <span class="n">dockarea</span><span class="p">(</span><span class="n">h_generic</span><span class="p">(</span><span class="n">area</span><span class="o">.</span><span class="n">item</span><span class="p">))</span>
-            <span class="n">n_area</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">geometry</span>
-            <span class="n">n_area</span><span class="o">.</span><span class="n">linked</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">linked</span>
-            <span class="n">n_area</span><span class="o">.</span><span class="n">maximized</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">maximized</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">area</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="n">ItemLayout</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">maximized</span><span class="p">:</span>
-                    <span class="n">n_area</span><span class="o">.</span><span class="n">maximized_item</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span>
-                    <span class="k">break</span>
-            <span class="k">return</span> <span class="n">n_area</span>
-
-        <span class="k">def</span> <span class="nf">h_DockLayout</span><span class="p">(</span><span class="n">layout</span><span class="p">):</span>
-            <span class="n">primary</span> <span class="o">=</span> <span class="bp">None</span>
-            <span class="n">secondary</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
-                <span class="n">n_item</span> <span class="o">=</span> <span class="n">h_generic</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">floating</span> <span class="ow">or</span> <span class="n">primary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-                    <span class="n">secondary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_item</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">primary</span> <span class="o">=</span> <span class="n">n_item</span>
-            <span class="k">return</span> <span class="n">docklayout</span><span class="p">(</span><span class="n">primary</span><span class="p">,</span> <span class="o">*</span><span class="n">secondary</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">h_generic</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span></div>
 </pre></div>
 
     </div>
@@ -1170,7 +867,7 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 29, 2013.<br/>
+      Last updated on Dec 01, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>

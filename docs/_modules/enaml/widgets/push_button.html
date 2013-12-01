@@ -14,17 +14,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.push_button &mdash; Enaml 0.8.5 documentation</title>
+    <title>enaml.widgets.push_button &mdash; Enaml 0.8.9 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.5 documentation" href="../../../index.html" />
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +64,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -143,7 +143,9 @@
 <span class="c">#</span>
 <span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
 <span class="c">#------------------------------------------------------------------------------</span>
-<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
 
 <span class="kn">from</span> <span class="nn">.abstract_button</span> <span class="kn">import</span> <span class="n">AbstractButton</span><span class="p">,</span> <span class="n">ProxyAbstractButton</span>
 <span class="kn">from</span> <span class="nn">.menu</span> <span class="kn">import</span> <span class="n">Menu</span>
@@ -156,11 +158,17 @@
     <span class="c">#: A reference to the PushButton declaration.</span>
     <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">PushButton</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">set_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
 
 <div class="viewcode-block" id="PushButton"><a class="viewcode-back" href="../../../api_ref/widgets/push_button.html#enaml.widgets.push_button.PushButton">[docs]</a><span class="k">class</span> <span class="nc">PushButton</span><span class="p">(</span><span class="n">AbstractButton</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A button control represented by a standard push button widget.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: Whether this button is the default action button in a dialog.</span>
+    <span class="n">default</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
     <span class="c">#: A reference to the ProxyPushButton object.</span>
     <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyPushButton</span><span class="p">)</span>
 
@@ -170,7 +178,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Menu</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">child</span></div></div>
+                <span class="k">return</span> <span class="n">child</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;default&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send the member state change to the proxy.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass implementation is sufficient</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PushButton</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span></div>
 </pre></div>
 
     </div>
@@ -185,7 +204,7 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 29, 2013.<br/>
+      Last updated on Dec 01, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>

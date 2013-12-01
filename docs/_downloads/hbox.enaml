@@ -1,0 +1,42 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example which demonstrates the use of the `hbox` layout helper.
+
+In this example, we use the `hbox` layout helper to layout the children
+of the Container in a horizontal group. The `hbox` function is a fairly
+sophisticated layout helper which automatically takes into account the
+content boundaries of its parent. It also provides the necessary layout
+spacers in the vertical direction to allow for children of various
+heights.
+
+In this example, all widgets have same native height so there is no need
+for extra alignment constraints in the vertical direction. PushButtons
+expand freely in width by default, so when the Window is expanded, one
+of the PushButtons will be expanded to fill. The particular PushButton
+which is chosen to expand is nondeterministic. To force are particular
+choice would require extra constraints to be defined on the buttons.
+That extra specification is deliberately omitted in this example.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import hbox
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            hbox(pb1, pb2, pb3)
+        ]
+        PushButton: pb1:
+            text = 'Spam'
+        PushButton: pb2:
+            text = 'Long Name Foo'
+        PushButton: pb3:
+            text = 'Bar'
+

@@ -1,0 +1,37 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" Example demonstrating a File Dialog
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import hbox, align
+from enaml.widgets.api import (
+    Container, Field, FileDialogEx, Label, PushButton, Window
+)
+
+
+enamldef Main(Window): window:
+    attr path : unicode = u""
+    title = 'File Chooser'
+    Container:
+        constraints = [
+            hbox(lbl, fld, pb),
+            align('v_center', lbl, fld, pb),
+            pb.height == fld.height,
+        ]
+        Label: lbl:
+            text = 'File'
+        Field: fld:
+            read_only = True
+            text << window.path
+        PushButton: pb:
+            text = 'Browse'
+            clicked ::
+                path = FileDialogEx.get_open_file_name(window)
+                if path:
+                    window.path = path

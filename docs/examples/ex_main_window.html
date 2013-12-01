@@ -1,0 +1,396 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Main Window Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Menu Bar Example" href="ex_menu_bar.html" />
+    <link rel="prev" title="Image View Example" href="ex_image_view.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Main Window Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_buttons.html">Buttons Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_context_menu.html">Context Menu Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dock_area.html">Dock Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dock_pane.html">Dock Pane Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dual_slider.html">Dual Slider Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_file_dialog.html">File Dialog Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_flow_area.html">Flow Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_form.html">Form Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_group_box.html">Group Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_image_view.html">Image View Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Main Window Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_menu_bar.html">Menu Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_mpl_canvas.html">Mpl Canvas Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_notebook.html">Notebook Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_popup_menu.html">Popup Menu Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_popup_view.html">Popup View Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_progress_bar.html">Progress Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_scroll_area.html">Scroll Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_slider.html">Slider Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_spin_box.html">Spin Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_splitter.html">Splitter Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_tool_bar.html">Tool Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_window.html">Window Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_window_children.html">Window Children Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="main-window-example">
+<h1>Main Window Example<a class="headerlink" href="#main-window-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/main_window.enaml"><tt class="xref download docutils literal"><span class="pre">main_window</span></tt></a></p>
+<div class="highlight-python"><pre>An example of the `MainWindow` widget.
+
+This example demonstrates the use of the `MainWindow` widget. This is a
+subclass of the `Window` widget which adds support for dock panes, tool
+bars and a menu bar. The children of a `MainWindow` can be defined in
+any order. Like `Window`, a `MainWindow` has at most one central widget
+which is an instance of `Container`. A `MainWindow` can have any number
+of `DockPane` and `ToolBar` children, and at most one `MenuBar`.
+
+Support for a `StatusBar` will be added in the future.
+
+Implementation Notes:
+
+    The main window facilities in Wx are very weak. If these features
+    are required for a particular application, strongly prefer the Qt
+    backend over Wx (this is generally a good life-rule).</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run main_window</pre>
+</div>
+<img alt="../_images/ex_main_window.png" src="../_images/ex_main_window.png" />
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; An example of the `MainWindow` widget.</span>
+
+<span class="sd">This example demonstrates the use of the `MainWindow` widget. This is a</span>
+<span class="sd">subclass of the `Window` widget which adds support for dock panes, tool</span>
+<span class="sd">bars and a menu bar. The children of a `MainWindow` can be defined in</span>
+<span class="sd">any order. Like `Window`, a `MainWindow` has at most one central widget</span>
+<span class="sd">which is an instance of `Container`. A `MainWindow` can have any number</span>
+<span class="sd">of `DockPane` and `ToolBar` children, and at most one `MenuBar`.</span>
+
+<span class="sd">Support for a `StatusBar` will be added in the future.</span>
+
+<span class="sd">Implementation Notes:</span>
+
+<span class="sd">    The main window facilities in Wx are very weak. If these features</span>
+<span class="sd">    are required for a particular application, strongly prefer the Qt</span>
+<span class="sd">    backend over Wx (this is generally a good life-rule).</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vbox</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MainWindow</span><span class="p">,</span> <span class="n">ToolBar</span><span class="p">,</span> <span class="n">DockPane</span><span class="p">,</span> <span class="n">MenuBar</span><span class="p">,</span> <span class="n">Menu</span><span class="p">,</span> <span class="n">Action</span><span class="p">,</span> <span class="n">ActionGroup</span><span class="p">,</span>
+    <span class="n">StatusBar</span><span class="p">,</span> <span class="n">StatusItem</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">enamldef</span> <span class="nc">MyMenuBar</span><span class="p">(</span>MenuBar<span class="p">):</span>
+    <span class="nt">Menu</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;&amp;File&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;New File</span><span class="se">\t</span><span class="s">Ctrl+N&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;New File triggered&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Open File</span><span class="se">\t</span><span class="s">Ctrl+O&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Open File triggered&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Open Folder...&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Open Folder triggered&#39;</span>
+    <span class="nt">Menu</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;&amp;Edit&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Undo</span><span class="se">\t</span><span class="s">Ctrl+Z&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Undo triggered&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Redo</span><span class="se">\t</span><span class="s">Ctrl+R&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Redo triggered&#39;</span>
+        <span class="nt">Menu</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Undo Selection&#39;</span>
+            <span class="nt">Action</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Undo Insert</span><span class="se">\t</span><span class="s">Ctrl+U&#39;</span>
+                <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Undo Insert triggered&#39;</span>
+            <span class="nt">Action</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Redo Insert</span><span class="se">\t</span><span class="s">Ctrl+Shift+U&#39;</span>
+                <span class="n">enabled</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Redo Insert triggered&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">separator</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Cut</span><span class="se">\t</span><span class="s">Ctrl+X&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&quot;Cut triggered&quot;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Copy</span><span class="se">\t</span><span class="s">Ctrl+C&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Copy triggered&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Paste</span><span class="se">\t</span><span class="s">Ctrl+V&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Paste triggered&#39;</span>
+    <span class="nt">Menu</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;&amp;View&#39;</span>
+        <span class="nt">ActionGroup</span><span class="p">:</span>
+            <span class="nt">Action</span><span class="p">:</span>
+                <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Center&#39;</span>
+                <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> toggled </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">)</span>
+            <span class="nt">Action</span><span class="p">:</span>
+                <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Left&#39;</span>
+                <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> toggled </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">)</span>
+            <span class="nt">Action</span><span class="p">:</span>
+                <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Right&#39;</span>
+                <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> toggled </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">)</span>
+            <span class="nt">Action</span><span class="p">:</span>
+                <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Justify&#39;</span>
+                <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> toggled </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">)</span>
+
+
+<span class="k">enamldef</span> <span class="nc">MyStatusBar</span><span class="p">(</span>StatusBar<span class="p">):</span>
+    <span class="nt">StatusItem</span><span class="p">:</span>
+        <span class="nt">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Status&quot;</span>
+
+
+<span class="k">enamldef</span> <span class="nc">MyToolBar</span><span class="p">(</span>ToolBar<span class="p">):</span>
+    <span class="nt">Action</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Button&#39;</span>
+        <span class="n">tool_tip</span> <span class="o">=</span> <span class="n">text</span>
+    <span class="nt">ActionGroup</span><span class="p">:</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">separator</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Exclusive&#39;</span>
+            <span class="n">triggered</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;triggered&#39;</span>
+            <span class="n">toggled</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;toggled&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;ToolBar&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Buttons&#39;</span>
+        <span class="nt">Action</span><span class="p">:</span>
+            <span class="n">separator</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="nt">Action</span><span class="p">:</span>
+        <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Checkable&#39;</span>
+    <span class="nt">Action</span><span class="p">:</span>
+        <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;ToolBar&#39;</span>
+    <span class="nt">Action</span><span class="p">:</span>
+        <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Buttons&#39;</span>
+
+
+<span class="k">enamldef</span> <span class="nc">MyDockPane</span><span class="p">(</span>DockPane<span class="p">):</span>
+    <span class="n">title</span> <span class="o">&lt;&lt;</span> <span class="s">&#39;Dock Area </span><span class="si">%s</span><span class="s"> | </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dock_area</span><span class="p">,</span> <span class="s">&#39;floating&#39;</span> <span class="k">if</span> <span class="n">floating</span> <span class="k">else</span> <span class="s">&#39;docked&#39;</span><span class="p">)</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Foo&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Bar&#39;</span>
+        <span class="nt">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Baz&#39;</span>
+
+
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>MainWindow<span class="p">):</span>
+    <span class="nt">MyMenuBar</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="nt">MyStatusBar</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="nt">MyToolBar</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="nt">MyToolBar</span><span class="p">:</span>
+        <span class="n">dock_area</span> <span class="o">=</span> <span class="s">&#39;left&#39;</span>
+    <span class="nt">MyToolBar</span><span class="p">:</span>
+        <span class="n">dock_area</span> <span class="o">=</span> <span class="s">&#39;bottom&#39;</span>
+    <span class="nt">MyDockPane</span><span class="p">:</span>
+        <span class="n">dock_area</span> <span class="o">=</span> <span class="s">&#39;left&#39;</span>
+        <span class="n">allowed_dock_areas</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">]</span>
+    <span class="nt">MyDockPane</span><span class="p">:</span>
+        <span class="n">dock_area</span> <span class="o">=</span> <span class="s">&#39;right&#39;</span>
+    <span class="nt">MyDockPane</span><span class="p">:</span>
+        <span class="n">dock_area</span> <span class="o">=</span> <span class="s">&#39;right&#39;</span>
+        <span class="n">movable</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">vbox</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="n">tbar</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
+        <span class="nt">Html</span><span class="p">:</span> <span class="ni">html</span><span class="p">:</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Hello World!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
+        <span class="nt">MyToolBar</span><span class="p">:</span> <span class="ni">tbar</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="nt">MyDockPane</span><span class="p">:</span>
+        <span class="n">dock_area</span> <span class="o">=</span> <span class="s">&#39;bottom&#39;</span>
+        <span class="n">floating</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

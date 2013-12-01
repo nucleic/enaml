@@ -1,0 +1,71 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using style sheets to create a gradient PushButton.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window, Container, PushButton
+from enaml.styling import StyleSheet, Style, Setter
+
+
+enamldef GradientButtonSheet(StyleSheet):
+    Style:
+        element = 'PushButton'
+        style_class = 'gradient-button'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1: 0, y1:0, x2:0, y2:1, '
+                        'stop: 0 #5CA9FA, stop: 0.49 #4790DE, '
+                        'stop: 0.50 #2C82DE, stop: 1 #045CBA)')
+        Setter:
+            field = 'border'
+            value = '1px solid #034994'
+        Setter:
+            field = 'padding'
+            value = '5px'
+        Setter:
+            field = 'color'
+            value = 'white'
+    Style:
+        element = 'PushButton'
+        style_class = 'gradient-button'
+        pseudo_class = 'hover'
+        Setter:
+            field = 'border'
+            value = '1px solid #007BFF'
+    Style:
+        element = 'PushButton'
+        style_class = 'gradient-button'
+        pseudo_class = 'pressed'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1: 0, y1:0, x2:0, y2:1, '
+                        'stop: 0 #166BC7, stop: 1 #2C82DE)')
+    Style:
+        style_class = 'large-font'
+        Setter:
+            field = 'font'
+            value = '14pt Verdana'
+    Style:
+        style_class = 'rounded'
+        Setter:
+            field = 'border-radius'
+            value = '5px'
+
+
+enamldef Main(Window):
+    title = 'Gradient Button'
+    GradientButtonSheet:
+        pass
+    Container:
+        PushButton:
+            text = 'Gradient Button'
+            style_class = 'gradient-button large-font'
+        PushButton:
+            text = 'Rounded Button'
+            style_class = 'gradient-button large-font rounded'

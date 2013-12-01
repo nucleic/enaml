@@ -1,0 +1,18 @@
+Dual Slider Example
+===============================================================================
+
+:download:`dual_slider <../../../examples/widgets/dual_slider.enaml>`
+
+::
+
+    Example demonstrating a dual slider.
+
+::
+
+ $ enaml-run dual_slider
+
+.. image:: images/ex_dual_slider.png
+
+.. literalinclude:: ../../../examples/widgets/dual_slider.enaml
+    :language: enaml
+

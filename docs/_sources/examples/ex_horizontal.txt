@@ -1,0 +1,23 @@
+Horizontal Example
+===============================================================================
+
+:download:`horizontal <../../../examples/layout/basic/horizontal.enaml>`
+
+::
+
+    An example of the `horizontal` layout helper.
+    
+    This example uses the `horizontal` layout helper to arrange a series of
+    `PushButton` widgets in a horizontal layout. No constraints are placed
+    on the vertical position of the `PushButton` widgets so their vertical
+    location in this example is non-deterministic.
+
+::
+
+ $ enaml-run horizontal
+
+.. image:: images/ex_horizontal.png
+
+.. literalinclude:: ../../../examples/layout/basic/horizontal.enaml
+    :language: enaml
+

@@ -1,0 +1,55 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using chained Enaml aliases.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window, Container, Slider, Field, GroupBox
+
+
+enamldef InternalBox(GroupBox):
+    """ The internal content box.
+
+    The slider is aliased via 'slider'.
+
+    """
+    alias slider
+    title = 'Inner Box'
+    Slider: slider:
+        pass
+
+
+enamldef OuterBox(GroupBox):
+    """ The outer content box.
+
+    The internal content box is aliased via 'box'.
+
+    """
+    alias box: internal
+    title = 'Outer Box'
+    InternalBox: internal:
+        pass
+
+
+enamldef Main(Window):
+    """ The main application window.
+
+    This window uses a chained alias to bind the inner slider of the
+    group boxes to the other slider in the main window. It also uses
+    a subscription on the chained alias to update a read only field.
+
+    """
+    title = 'Chained Widget Alias'
+    Container:
+        OuterBox: outer:
+            box.slider.value := slider.value
+        Slider: slider:
+            value = 50
+        Field:
+            read_only = True
+            text << unicode(outer.box.slider.value)

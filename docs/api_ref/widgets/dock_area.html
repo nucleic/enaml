@@ -14,17 +14,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.dock_area &mdash; Enaml 0.8.5 documentation</title>
+    <title>enaml.widgets.dock_area &mdash; Enaml 0.8.9 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.5 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../../index.html" />
     <link rel="up" title="enaml.widgets" href="index.html" />
     <link rel="next" title="enaml.widgets.dock_events" href="dock_events.html" />
     <link rel="prev" title="enaml.widgets.dialog" href="dialog.html" />
@@ -66,7 +66,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -308,7 +308,7 @@ time. Using both modes simultaneously is undefined.</p>
 
 <dl class="method">
 <dt id="enaml.widgets.dock_area.DockArea.initialized">
-<tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.initialized" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initialized</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_area.html#DockArea.initialized"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.initialized" title="Permalink to this definition">¶</a></dt>
 <dd><p>A reimplemented initializer method.</p>
 <p>This method ensures the internal style sheet is created.</p>
 </dd></dl>
@@ -359,6 +359,20 @@ time. Using both modes simultaneously is undefined.</p>
 <dt id="enaml.widgets.dock_area.DockArea.update_layout">
 <tt class="descname">update_layout</tt><big>(</big><em>ops</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_area.html#DockArea.update_layout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_area.DockArea.update_layout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the layout configuration using layout operations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>ops</strong> : DockLayoutOp or iterable</p>
+<blockquote class="last">
+<div><p>A single DockLayoutOp instance or an iterable of the same.
+The operations will be executed in order. If a given op is
+not valid for the current layout state, it will be skipped.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -386,7 +400,7 @@ context, and restore the old value upon exit.</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 29, 2013.<br/>
+      Last updated on Dec 01, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>

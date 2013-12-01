@@ -21,6 +21,10 @@ installed and available on the system path.
     appealing, the free (and unaffiliated) `Anaconda`_ Python distribution
     provides a complete Python environment which comes with a reasonably
     recent version of Enaml and a host of other useful packages.
+    
+    If you have a working C++ compiler, you can install using pip::
+
+    $ pip install enaml
 
 .. _Anaconda: https://store.continuum.io/cshop/anaconda
 

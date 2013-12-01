@@ -14,17 +14,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.image &mdash; Enaml 0.8.5 documentation</title>
+    <title>enaml.image &mdash; Enaml 0.8.9 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.5 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +64,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -170,8 +170,13 @@
         <span class="s">&#39;pgm&#39;</span><span class="p">,</span>      <span class="c"># Portable Graymap</span>
         <span class="s">&#39;ppm&#39;</span><span class="p">,</span>      <span class="c"># Portable Pixmap</span>
         <span class="s">&#39;tiff&#39;</span><span class="p">,</span>     <span class="c"># Tagged Image File Format</span>
-        <span class="c"># &#39;array&#39;,    # A numpy array with an appropriate image dtype.</span>
+        <span class="s">&#39;argb32&#39;</span><span class="p">,</span>   <span class="c"># Raw data in the 0xAARRGGBB format.</span>
+                    <span class="c"># The `raw_size` of the image must be provided.</span>
     <span class="p">)</span>
+
+    <span class="c">#: The (width, height) raw size of the image. This must be provided</span>
+    <span class="c">#: for images where the size is not encoded in the data stream.</span>
+    <span class="n">raw_size</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">Size</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
     <span class="c">#: The (width, height) size of the image. An invalid size indicates</span>
     <span class="c">#: that the size of the image should be automatically inferred. A</span>
@@ -206,7 +211,7 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 29, 2013.<br/>
+      Last updated on Dec 01, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>

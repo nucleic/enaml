@@ -1,0 +1,30 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `hbox` layout helper with inter-element spacing.
+
+This example is nearly identical to the `hbox.enaml` example. However,
+this time we change the default inter-element spacing from 10 to 30.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import hbox
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            hbox(pb1, pb2, pb3, spacing=30)
+        ]
+        PushButton: pb1:
+            text = 'Spam'
+        PushButton: pb2:
+            text = 'Long Name Foo'
+        PushButton: pb3:
+            text = 'Bar'
+

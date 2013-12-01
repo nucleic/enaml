@@ -1,0 +1,49 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `align` layout helper with inter-element offsets.
+
+This is example is nearly identical to the `align.enaml` example. This
+example adds to the other by showing how the `align` layout helper
+accepts spacing offsets for its layout items.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import align
+from enaml.widgets.api import Window, Container, Field, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            # Align the left edges of both PushButtons with a relative
+            # offset between them.
+            align('left', pb1, 20, pb2),
+
+            # Align the top button with the center of the field with
+            # a relative offset between them.
+            align('h_center', fld, 50, pb1),
+
+            # Pin the Field to the top of the Container. This is
+            # orthogonal to the use of `align` for this example,
+            # but is needed to have a well constrained system.
+            contents_top == fld.top, contents_left == fld.left,
+            contents_right == fld.right,
+
+            # Setup the vertical constraints for the widgets. This is
+            # orthogonal to the use of `align` for this example, but
+            # is needed to have a well constrained system.
+            fld.bottom + 10 == pb1.top, pb1.bottom + 10 == pb2.top,
+            pb2.bottom <= contents_bottom,
+        ]
+        Field: fld:
+            pass
+        PushButton: pb1:
+            text = 'Long Name Foo'
+        PushButton: pb2:
+            text = 'Bar'
+

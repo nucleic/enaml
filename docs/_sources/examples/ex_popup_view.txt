@@ -1,0 +1,21 @@
+Popup View Example
+===============================================================================
+
+:download:`popup_view <../../../examples/widgets/popup_view.enaml>`
+
+::
+
+    This is an example of a fully dynamic PopupView widget.
+    
+    The PopupView is useful for displaying transient configuration dialogs
+    and notification windows. The widget supports a transparent background.
+
+::
+
+ $ enaml-run popup_view
+
+.. image:: images/ex_popup_view.png
+
+.. literalinclude:: ../../../examples/widgets/popup_view.enaml
+    :language: enaml
+

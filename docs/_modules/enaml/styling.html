@@ -14,17 +14,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.styling &mdash; Enaml 0.8.5 documentation</title>
+    <title>enaml.styling &mdash; Enaml 0.8.9 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.5 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +64,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -143,7 +143,7 @@
 <span class="c">#</span>
 <span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
 <span class="c">#------------------------------------------------------------------------------</span>
-<span class="sd">&quot;&quot;&quot; Declarative classes which implement style sheet functionality.</span>
+<span class="sd">&quot;&quot;&quot; Declarative classes which implement style sheet styling.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
@@ -155,34 +155,35 @@
 
 
 <div class="viewcode-block" id="Setter"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Setter">[docs]</a><span class="k">class</span> <span class="nc">Setter</span><span class="p">(</span><span class="n">Declarative</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A declarative class for defining a setter for a Style.</span>
+    <span class="sd">&quot;&quot;&quot; A declarative class for defining a style field setter.</span>
 
-<span class="sd">    A Setter is declared as a child of a Style object in a StyleSheet</span>
-<span class="sd">    to declare the value to be applied to a style property.</span>
-
-<span class="sd">    .. seealso:: :class:`Style`, :class:`StyleSheet`</span>
+<span class="sd">    A :class:`Setter` is declared as a child of a :class:`Style`.</span>
+<span class="sd">    It defines the value to be applied to a style field.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c">#: The name of the style property to which this setter applies.</span>
-    <span class="nb">property</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+    <span class="c"># The name &#39;field&#39; was chosen since &#39;property&#39; is a Python builtin.</span>
+    <span class="c"># &#39;field&#39; also has the added benefit of being the same length as</span>
+    <span class="c"># &#39;value&#39; which means that a group of Setter objects will be nicely</span>
+    <span class="c"># aligned in an Enaml source definition.</span>
+    <span class="c">#</span>
+    <span class="c">#: The style field to which this setter applies.</span>
+    <span class="n">field</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
 
-    <span class="c">#: The value to apply to the style property.</span>
+    <span class="c">#: The value to apply to the style field.</span>
     <span class="n">value</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
 
 <div class="viewcode-block" id="Setter.destroy"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Setter.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented destructor.</span>
 
-<span class="sd">        This will notify the style cache when the setter is destroyed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` when the setter is</span>
+<span class="sd">        destroyed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Setter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
         <span class="n">StyleCache</span><span class="o">.</span><span class="n">_setter_destroyed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </div>
-    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;property&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">)</span>
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;field&#39;</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_invalidate_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; An observer which invalidates the style setter cache.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;update&#39;</span><span class="p">:</span>
             <span class="n">StyleCache</span><span class="o">.</span><span class="n">_setter_invalidated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
@@ -204,66 +205,72 @@
 
 
 <div class="viewcode-block" id="Style"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Style">[docs]</a><span class="k">class</span> <span class="nc">Style</span><span class="p">(</span><span class="n">Declarative</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A declarative class for defining a style in a StyleSheet.</span>
+    <span class="sd">&quot;&quot;&quot; A declarative class for defining a style sheet style.</span>
 
-<span class="sd">    A Style is declared as a child of a StyleSheet object and is used</span>
-<span class="sd">    to define the list of Setters which will apply to the widgets which</span>
-<span class="sd">    match the Style&#39;s selectors. A Style can have an arbitrary number</span>
-<span class="sd">    of Setter children.</span>
+<span class="sd">    A :class:`Style` is declared as a child of a :class:`StyleSheet`.</span>
+<span class="sd">    It uses child :class:`Setter` objects to define the style fields</span>
+<span class="sd">    to apply to widgets which are a match for the style.</span>
 
-<span class="sd">    .. seealso:: :class:`Setter`, :class:`StyleSheet`</span>
+<span class="sd">    A :class:`Style` may have an arbitrary number of :class:`Setter`</span>
+<span class="sd">    children.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c">#: The type name of the element which will match the style. An</span>
     <span class="c">#: empty string will match all elements. Multiple elements can</span>
-    <span class="c">#: be separated by a comma.</span>
+    <span class="c">#: be separated by a comma and will match using logical OR</span>
+    <span class="c">#: semantics.</span>
     <span class="n">element</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
 
     <span class="c">#: The name of the widget style class which will match the style.</span>
     <span class="c">#: An empty string will match all style classes. Multiple classes</span>
-    <span class="c">#: can be separated by a comma.</span>
+    <span class="c">#: can be separated by a comma and will match using logical OR</span>
+    <span class="c">#: semantics.</span>
     <span class="n">style_class</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
 
     <span class="c">#: The object name of the widget which will match the style. An</span>
     <span class="c">#: empty string will match all object names. Multiple object names</span>
-    <span class="c">#: can be separated by a comma.</span>
+    <span class="c">#: can be separated by a comma and will match using logical OR</span>
+    <span class="c">#: semantics.</span>
     <span class="n">object_name</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
 
     <span class="c">#: The pseudo-class which must be active for the style to apply. An</span>
     <span class="c">#: empty string will apply the syle for all pseudo-classes. Multiple</span>
-    <span class="c">#: psuedo-classes should be joined by a colon.</span>
+    <span class="c">#: classes can be separated by a colon will match using logical AND</span>
+    <span class="c">#: semantics. Commas can be used to separate multiple classes which</span>
+    <span class="c">#: will match using logical OR semantics.</span>
     <span class="n">pseudo_class</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
 
     <span class="c">#: The pseudo-element to which the style applies. An empty string</span>
-    <span class="c">#: indicates the style applies to the primary element.</span>
+    <span class="c">#: indicates the style applies to the primary element. Multiple</span>
+    <span class="c">#: pseudo elements can be separated comma and match using logical</span>
+    <span class="c">#: OR semantics.</span>
     <span class="n">pseudo_element</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
 
 <div class="viewcode-block" id="Style.setters"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Style.setters">[docs]</a>    <span class="k">def</span> <span class="nf">setters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the setters declared for the style.</span>
+        <span class="sd">&quot;&quot;&quot; Get the :class:`Setter` objects declared for the style.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        result : list</span>
-<span class="sd">            The list of Setter objects declared for the style.</span>
+<span class="sd">            The :class:`Setter` objects declared for the style.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Setter</span><span class="p">)]</span>
 </div>
 <div class="viewcode-block" id="Style.match"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Style.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get whether or not this style matches a given item.</span>
+        <span class="sd">&quot;&quot;&quot; Get whether or not the style matches an item.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        item : Stylable</span>
+<span class="sd">        item : :class:`Stylable`</span>
 <span class="sd">            The item to test for a style match.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        result : int</span>
-<span class="sd">            An integer indicating the match for the given item. A value</span>
-<span class="sd">            less than zero indicates no match. A value greater than or</span>
-<span class="sd">            equal to zero indicates a match and the specificity of the</span>
-<span class="sd">            match.</span>
+<span class="sd">            The match value for the item. A value less than zero</span>
+<span class="sd">            indicates no match. A value greater than or equal to zero</span>
+<span class="sd">            indicates a match and the specificity of the match.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">specificity</span> <span class="o">=</span> <span class="mi">0</span>
@@ -304,7 +311,8 @@
 <div class="viewcode-block" id="Style.destroy"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Style.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented destructor.</span>
 
-<span class="sd">        This will notify the style cache when the style is destroyed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` when the style is</span>
+<span class="sd">        destroyed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Style</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
@@ -313,8 +321,8 @@
 <div class="viewcode-block" id="Style.child_added"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Style.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented child added event handler.</span>
 
-<span class="sd">        This handler notifies the style cache that the setter children</span>
-<span class="sd">        of the style have changed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` if the :class:`Setter`</span>
+<span class="sd">        children of the style have changed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Style</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
@@ -324,8 +332,8 @@
 <div class="viewcode-block" id="Style.child_removed"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Style.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented child removed event handler.</span>
 
-<span class="sd">        This handler notifies the style cache that the setter children</span>
-<span class="sd">        of the style have changed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` if the :class:`Setter`</span>
+<span class="sd">        children of the style have changed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Style</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
@@ -334,80 +342,49 @@
 </div>
     <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;element&#39;</span><span class="p">,</span> <span class="s">&#39;style_class&#39;</span><span class="p">,</span> <span class="s">&#39;object_name&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_invalidate_match_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; An observer which invalidates the style match cache.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;update&#39;</span><span class="p">:</span>
             <span class="n">StyleCache</span><span class="o">.</span><span class="n">_style_match_invalidated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;pseudo_class&#39;</span><span class="p">,</span> <span class="s">&#39;pseudo_element&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_invalidate_pseudo_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; An observer which invalidates the style pseudo cache.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;update&#39;</span><span class="p">:</span>
             <span class="n">StyleCache</span><span class="o">.</span><span class="n">_style_pseudo_invalidated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="StyleSheet"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.StyleSheet">[docs]</a><span class="k">class</span> <span class="nc">StyleSheet</span><span class="p">(</span><span class="n">Declarative</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A declarative class for defining an Enaml style sheet.</span>
+    <span class="sd">&quot;&quot;&quot; A declarative class for defining a widget style sheet.</span>
 
-<span class="sd">    A StyleSheet is declared as a child of a widget and used to apply</span>
-<span class="sd">    styling to that widget *and all of its decendents*. A StyleSheet</span>
-<span class="sd">    can also be defined for the global application object and will be</span>
-<span class="sd">    applied to all widgets in the application. A widget&#39;s effective</span>
-<span class="sd">    style sheet is the union of all it&#39;s ancestor StyleSheet object.</span>
-<span class="sd">    A StyleSheet can have an arbitrary number of Style children. The</span>
-<span class="sd">    child Style objects are applied to a widget in the order of their</span>
-<span class="sd">    match specificity within their StyleSheet.</span>
+<span class="sd">    A :class:`StyleSheet` is declared as a child of a :class:`Stylable`</span>
+<span class="sd">    widget. It uses child :class:`Style` objects to apply styling to its</span>
+<span class="sd">    parent widget **and all of the widget&#39;s decendents**. A</span>
+<span class="sd">    :class:`StyleSheet` can also be provided to the global</span>
+<span class="sd">    :class:`Application &lt;enaml.application.Application&gt;`, in which case</span>
+<span class="sd">    the styling will be applied to all stylable widgets. The effective</span>
+<span class="sd">    style sheet for a widget is the union of all its ancestor style</span>
+<span class="sd">    sheets plus the application style sheet.</span>
 
-<span class="sd">    .. seealso:: :class:`Setter`, :class:`Style`</span>
-
-<span class="sd">    **Example**:</span>
-
-<span class="sd">    .. code-block:: enaml</span>
-
-<span class="sd">        enamldef Main(Window):</span>
-<span class="sd">            StyleSheet:</span>
-<span class="sd">                Style:</span>
-<span class="sd">                    element = &#39;PushButton&#39;</span>
-<span class="sd">                    Setter:</span>
-<span class="sd">                        property = &#39;background&#39;</span>
-<span class="sd">                        value = &#39;lightskyblue&#39;</span>
-<span class="sd">                Style:</span>
-<span class="sd">                    style_class = &#39;bold-font&#39;</span>
-<span class="sd">                    Setter:</span>
-<span class="sd">                        property = &#39;font&#39;</span>
-<span class="sd">                        value = &#39;bold 12pt Consolas&#39;</span>
-<span class="sd">            Container:</span>
-<span class="sd">                PushButton:</span>
-<span class="sd">                    text = &#39;foo&#39;</span>
-<span class="sd">                Field:</span>
-<span class="sd">                    style_class = &#39;bold-font&#39;</span>
-<span class="sd">                Container:</span>
-<span class="sd">                    StyleSheet:</span>
-<span class="sd">                        Style:</span>
-<span class="sd">                            Setter:</span>
-<span class="sd">                                property = &#39;background&#39;</span>
-<span class="sd">                                value = &#39;goldenrod&#39;</span>
+<span class="sd">    A :class:`StyleSheet` may have an arbitrary number of :class:`Style`</span>
+<span class="sd">    children. The child style objects are applied to a widget in the</span>
+<span class="sd">    order of their match specificity within the style sheet.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="StyleSheet.destroy"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.StyleSheet.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented destructor.</span>
 
-<span class="sd">        This will notify the style cache when the sheet is destroyed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` when the style sheet</span>
+<span class="sd">        is destroyed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
         <span class="n">StyleCache</span><span class="o">.</span><span class="n">_style_sheet_destroyed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="StyleSheet.styles"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.StyleSheet.styles">[docs]</a>    <span class="k">def</span> <span class="nf">styles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the styles declared for the style sheet.</span>
+        <span class="sd">&quot;&quot;&quot; Get the :class:`Style` objects declared for the style sheet.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        result : list</span>
-<span class="sd">            The list of Style objects declared for the style sheet.</span>
+<span class="sd">            The :class:`Style` objects declared for the style sheet.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Style</span><span class="p">)]</span>
@@ -415,8 +392,9 @@
 <div class="viewcode-block" id="StyleSheet.child_added"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.StyleSheet.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented child added event handler.</span>
 
-<span class="sd">        This handler notifies the style cache that the style children</span>
-<span class="sd">        of the style sheet have changed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` if the :class:`Style`</span>
+<span class="sd">        children of the style sheet have changed.</span>
+
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
@@ -426,8 +404,8 @@
 <div class="viewcode-block" id="StyleSheet.child_removed"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.StyleSheet.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented child removed event handler.</span>
 
-<span class="sd">        This handler notifies the style cache that the style children</span>
-<span class="sd">        of the style sheet have changed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` if the :class:`Style`</span>
+<span class="sd">        children of the style sheet have changed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
@@ -438,8 +416,9 @@
 <div class="viewcode-block" id="Stylable"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Stylable">[docs]</a><span class="k">class</span> <span class="nc">Stylable</span><span class="p">(</span><span class="n">Declarative</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A mixin class for defining stylable declarative objects.</span>
 
-<span class="sd">    This class should be mixed-in to any declarative class which wishes</span>
-<span class="sd">    to support Enaml style sheets.</span>
+<span class="sd">    This class can be used as a mixin with any</span>
+<span class="sd">    :class:`Declarative &lt;enaml.core.Declarative&gt;` class which wishes</span>
+<span class="sd">    to support style sheets.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c">#: The style class to which this item belongs. Multiple classes</span>
@@ -450,20 +429,21 @@
 <div class="viewcode-block" id="Stylable.destroy"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Stylable.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented destructor.</span>
 
-<span class="sd">        This will notify the style cache when the item is destroyed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` when the stylable item</span>
+<span class="sd">        is destroyed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Stylable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
         <span class="n">StyleCache</span><span class="o">.</span><span class="n">_item_destroyed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="Stylable.style_sheet"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Stylable.style_sheet">[docs]</a>    <span class="k">def</span> <span class="nf">style_sheet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the style sheet defined on the item.</span>
+        <span class="sd">&quot;&quot;&quot; Get the :class:`StyleSheet` defined on the item.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        result : StyleSheet or None</span>
-<span class="sd">            The last StyleSheet child defined on the item, or None if</span>
-<span class="sd">            the item has no such child.</span>
+<span class="sd">        result : :class:`StyleSheet` or None</span>
+<span class="sd">            The last :class:`StyleSheet` child defined on the item,</span>
+<span class="sd">            or None if the item has no such child.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
@@ -475,16 +455,27 @@
 
 <span class="sd">        This method will be called when the style dependencies for the</span>
 <span class="sd">        object have changed. It should be reimplemented in a subclass</span>
-<span class="sd">        to handle the restyling as needed.</span>
+<span class="sd">        to take appropriate action for the restyle.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span>
 </div>
+<div class="viewcode-block" id="Stylable.parent_changed"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Stylable.parent_changed">[docs]</a>    <span class="k">def</span> <span class="nf">parent_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented parent changed event handler.</span>
+
+<span class="sd">        This will notifiy the :class:`StyleCache` if the parent of</span>
+<span class="sd">        the item has changed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Stylable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">parent_changed</span><span class="p">(</span><span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
+            <span class="n">StyleCache</span><span class="o">.</span><span class="n">_item_parent_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
 <div class="viewcode-block" id="Stylable.child_added"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Stylable.child_added">[docs]</a>    <span class="k">def</span> <span class="nf">child_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented child added event handler.</span>
 
-<span class="sd">        This handler notifies the style cache that the style sheet</span>
-<span class="sd">        child of the stylable has changed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` if the</span>
+<span class="sd">        :class:`StyleSheet` children of the item have changed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Stylable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
@@ -494,30 +485,22 @@
 <div class="viewcode-block" id="Stylable.child_removed"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.Stylable.child_removed">[docs]</a>    <span class="k">def</span> <span class="nf">child_removed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A reimplemented child removed event handler.</span>
 
-<span class="sd">        This handler notifies the style cache that the style sheet</span>
-<span class="sd">        child of the stylable has changed.</span>
+<span class="sd">        This will notify the :class:`StyleCache` if the</span>
+<span class="sd">        :class:`StyleSheet` children of the item have changed.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Stylable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_added</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Stylable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">child_removed</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">StyleSheet</span><span class="p">):</span>
             <span class="n">StyleCache</span><span class="o">.</span><span class="n">_item_style_sheet_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </div>
     <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;style_class&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_invalidate_style_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; An observer which invalidates the style class cache.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;update&#39;</span><span class="p">:</span>
             <span class="n">StyleCache</span><span class="o">.</span><span class="n">_item_style_class_invalidated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 </div>
 <span class="k">class</span> <span class="nc">_RestyleTask</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A task which is posted to collapse item restyle requests.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c">#: The set of stylable items which require restyling.</span>
     <span class="n">dirty</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="nb">set</span><span class="p">,</span> <span class="p">())</span>
-
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">StyleCache</span><span class="o">.</span><span class="n">_restyle_task</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dirty</span><span class="p">:</span>
@@ -535,8 +518,8 @@
 
 <span class="sd">    All interaction with this class is through public class methods.</span>
 <span class="sd">    This class should be used by code which implements the styling for</span>
-<span class="sd">    a given stylable item. The public API methods can be used to query</span>
-<span class="sd">    for the Style object which match a given Stylable item.</span>
+<span class="sd">    a stylable item. The public API methods can be used to query for</span>
+<span class="sd">    the Style object which matchs a :class:`Stylable` item.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c">#: A private mapping of item to tuple of matching StyleSheet.</span>
@@ -565,18 +548,18 @@
     <span class="c">#--------------------------------------------------------------------------</span>
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="StyleCache.style_sheets"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.StyleCache.style_sheets">[docs]</a>    <span class="k">def</span> <span class="nf">style_sheets</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the style sheets which apply to the given item.</span>
+        <span class="sd">&quot;&quot;&quot; Get the :class:`StyleSheet` objects which apply to an item.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        item : Stylable</span>
+<span class="sd">        item : :class:`Stylable`</span>
 <span class="sd">            The stylable item of interest.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        result : tuple</span>
-<span class="sd">            A tuple of StyleSheet objects which apply to the item, in</span>
-<span class="sd">            order of ascending precedence.</span>
+<span class="sd">            The :class:`StyleSheet` objects which apply to the item,</span>
+<span class="sd">            in order of ascending precedence.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cache</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_item_style_sheets</span>
@@ -603,18 +586,18 @@
 </div>
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="StyleCache.styles"><a class="viewcode-back" href="../../api_ref/styling.html#enaml.styling.StyleCache.styles">[docs]</a>    <span class="k">def</span> <span class="nf">styles</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the styles which apply to the given item.</span>
+        <span class="sd">&quot;&quot;&quot; Get the :class:`Style` objects which apply to an item.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        item : Stylable</span>
+<span class="sd">        item : :class:`Stylable`</span>
 <span class="sd">            The stylable item of interest.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        result : tuple</span>
-<span class="sd">            A tuple of Style objects which apply to the item, in order</span>
-<span class="sd">            of ascending precedence.</span>
+<span class="sd">            The :class:`Style` objects which apply to the item, in</span>
+<span class="sd">            order of ascending precedence.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cache</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_item_styles</span>
@@ -646,12 +629,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        setter : Setter</span>
+<span class="sd">        setter : :class:`Setter`</span>
 <span class="sd">            The style setter of interest.</span>
 
 <span class="sd">        translate : callable</span>
-<span class="sd">            A callable which accepts a single Setter argument and</span>
-<span class="sd">            returns a toolkit representation of the setter. The</span>
+<span class="sd">            A callable which accepts a single :class:`Setter` argument</span>
+<span class="sd">            and returns a toolkit representation of the setter. The</span>
 <span class="sd">            returned value is cached until the setter is invalidated.</span>
 
 <span class="sd">        Returns</span>
@@ -755,6 +738,11 @@
             <span class="n">cls</span><span class="o">.</span><span class="n">_request_restyle</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_item_parent_changed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="c"># changing a parent is equivalent to changing style sheets</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_item_style_sheet_changed</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_item_style_sheet_changed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
         <span class="n">item_styles</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_item_styles</span>
         <span class="n">item_sheets</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_item_style_sheets</span>
@@ -810,7 +798,7 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 29, 2013.<br/>
+      Last updated on Dec 01, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>

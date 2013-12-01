@@ -1,0 +1,22 @@
+Nested Boxes Example
+===============================================================================
+
+:download:`nested_boxes <../../../examples/layout/advanced/nested_boxes.enaml>`
+
+::
+
+    An example of how the `hbox` and `vbox` layout helpers can be nested.
+    
+    The layout in this example is not necessarily one that would be used
+    in a production application. However, it serves to demonstrate the idea
+    that the `hbox` and `vbox` layout helpers can be arbitrarily nested.
+
+::
+
+ $ enaml-run nested_boxes
+
+.. image:: images/ex_nested_boxes.png
+
+.. literalinclude:: ../../../examples/layout/advanced/nested_boxes.enaml
+    :language: enaml
+

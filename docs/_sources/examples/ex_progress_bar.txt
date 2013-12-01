@@ -1,0 +1,21 @@
+Progress Bar Example
+===============================================================================
+
+:download:`progress_bar <../../../examples/widgets/progress_bar.enaml>`
+
+::
+
+    An example of the 'ProgressBar' widget.
+    
+    This example demonstrates the use the `ProgressBar` widget by hooking
+    it up to a `PushButton` widgets which simulates a work update.
+
+::
+
+ $ enaml-run progress_bar
+
+.. image:: images/ex_progress_bar.png
+
+.. literalinclude:: ../../../examples/widgets/progress_bar.enaml
+    :language: enaml
+
