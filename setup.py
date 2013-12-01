@@ -71,7 +71,7 @@ setup(
     author_email='sccolbert@gmail.com',
     url='https://github.com/nucleic/enaml',
     description='Declarative DSL for building rich user interfaces in Python',
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     requires=['atom', 'PyQt', 'ply', 'casuarius'],
     install_requires=['distribute', 'atom >= 0.3.5', 'casuarius >= 1.1', 'ply >= 3.4'],
     packages=find_packages(),
