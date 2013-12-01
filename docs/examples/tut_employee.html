@@ -1,0 +1,639 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Employee tutorial &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Buttons Example" href="ex_buttons.html" />
+    <link rel="prev" title="Person tutorial" href="tut_person.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Employee tutorial</a><ul>
+<li><a class="reference internal" href="#employeeform-definition-block"><tt class="docutils literal"><span class="pre">EmployeeForm</span></tt> Definition block</a></li>
+<li><a class="reference internal" href="#using-validation-on-fields">Using validation on fields</a></li>
+<li><a class="reference internal" href="#dynamic-interaction-with-widgets">Dynamic interaction with widgets</a></li>
+<li><a class="reference internal" href="#customizing-your-layout">Customizing your layout</a><ul>
+<li><a class="reference internal" href="#tweaking-the-layout">Tweaking the layout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tut_hello_world.html">&#8220;Hello World&#8221; tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tut_person.html">Person tutorial</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Employee tutorial</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#employeeform-definition-block"><tt class="docutils literal"><span class="pre">EmployeeForm</span></tt> Definition block</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-validation-on-fields">Using validation on fields</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dynamic-interaction-with-widgets">Dynamic interaction with widgets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#customizing-your-layout">Customizing your layout</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#tweaking-the-layout">Tweaking the layout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="employee-tutorial">
+<span id="tut-employee"></span><h1>Employee tutorial<a class="headerlink" href="#employee-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial shows how we can build more complex and dynamic user interfaces
+based on Enaml. It introduces the concepts of constraints and validators. It
+sets up a GUI to edit employee details.</p>
+<p>Here is the Enaml file (<a class="reference download internal" href="../_downloads/employee_view.enaml"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">here</span></tt></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vertical</span><span class="p">,</span> <span class="n">horizontal</span><span class="p">,</span> <span class="n">align</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">vbox</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Form</span><span class="p">,</span> <span class="n">DateSelector</span><span class="p">,</span> <span class="n">CheckBox</span><span class="p">,</span> <span class="n">GroupBox</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span>
+    <span class="n">PushButton</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">phone_validator</span> <span class="kn">import</span> <span class="n">PhoneNumberValidator</span>
+
+
+<span class="n">enamldef</span> <span class="n">EmployeeForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
+    <span class="n">attr</span> <span class="n">employee</span>
+    <span class="n">attr</span> <span class="n">show_employer</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;First name:&quot;</span>
+    <span class="n">Field</span><span class="p">:</span>
+        <span class="n">text</span> <span class="p">:</span><span class="o">=</span> <span class="n">employee</span><span class="o">.</span><span class="n">first_name</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Last name:&quot;</span>
+    <span class="n">Field</span><span class="p">:</span>
+        <span class="n">text</span> <span class="p">:</span><span class="o">=</span> <span class="n">employee</span><span class="o">.</span><span class="n">last_name</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Home phone:&quot;</span>
+    <span class="n">Field</span><span class="p">:</span>
+        <span class="n">validator</span> <span class="o">=</span> <span class="n">PhoneNumberValidator</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="s">&#39;(</span><span class="si">%s</span><span class="s">) </span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">employee</span><span class="o">.</span><span class="n">phone</span>
+        <span class="n">text</span> <span class="p">::</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">validator</span><span class="o">.</span><span class="n">proper</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">area</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">prefix</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                <span class="n">suffix</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+                <span class="n">employee</span><span class="o">.</span><span class="n">phone</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)))</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Date of Birth:&#39;</span>
+    <span class="n">DateSelector</span><span class="p">:</span>
+        <span class="n">date</span> <span class="p">:</span><span class="o">=</span> <span class="n">employee</span><span class="o">.</span><span class="n">dob</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Age:&#39;</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="nb">str</span><span class="p">(</span><span class="n">employee</span><span class="o">.</span><span class="n">age</span><span class="p">)</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Password:&#39;</span>
+    <span class="n">Field</span><span class="p">:</span>
+        <span class="n">echo_mode</span> <span class="o">&lt;&lt;</span> <span class="s">&#39;password&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">pw_cb</span><span class="o">.</span><span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;normal&#39;</span>
+        <span class="n">text</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Password:&#39;</span><span class="p">,</span> <span class="n">text</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Show Password:&#39;</span>
+    <span class="n">CheckBox</span><span class="p">:</span> <span class="n">pw_cb</span><span class="p">:</span>
+        <span class="n">checked</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">PushButton</span><span class="p">:</span> <span class="n">btn</span><span class="p">:</span>
+        <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="n">show_employer</span>
+        <span class="n">checkable</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="s">&#39;Hide&#39;</span> <span class="k">if</span> <span class="n">show_employer</span> <span class="k">else</span> <span class="s">&#39;Show&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; Employer Details&#39;</span>
+
+
+<span class="n">enamldef</span> <span class="n">EmployerForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
+    <span class="n">attr</span> <span class="n">employer</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Company:&quot;</span>
+    <span class="n">Field</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="n">employer</span><span class="o">.</span><span class="n">company_name</span>
+        <span class="n">enabled</span> <span class="o">&lt;&lt;</span> <span class="n">en_cb</span><span class="o">.</span><span class="n">checked</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Reporting Manager:&quot;</span>
+    <span class="n">Field</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">employer</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">employer</span><span class="o">.</span><span class="n">last_name</span><span class="p">)</span>
+        <span class="n">enabled</span> <span class="o">&lt;&lt;</span> <span class="n">en_cb</span><span class="o">.</span><span class="n">checked</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;Allow Editing:&quot;</span>
+    <span class="n">CheckBox</span><span class="p">:</span> <span class="n">en_cb</span><span class="p">:</span>
+        <span class="n">checked</span> <span class="o">=</span> <span class="bp">True</span>
+
+
+<span class="n">enamldef</span> <span class="n">EmployeeView</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span> <span class="n">main</span><span class="p">:</span>
+    <span class="n">attr</span> <span class="n">employee</span>
+    <span class="n">title</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Employee Record for: </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">employee</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span>
+                                              <span class="n">employee</span><span class="o">.</span><span class="n">first_name</span><span class="p">)</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">constraints</span> <span class="o">&lt;&lt;</span> <span class="p">[</span>
+            <span class="n">vertical</span><span class="p">(</span>
+                <span class="n">top</span><span class="p">,</span> <span class="n">top_box</span><span class="p">,</span> <span class="n">btm_box</span><span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">btm_box</span><span class="o">.</span><span class="n">visible</span><span class="p">),</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">bottom</span>
+            <span class="p">),</span>
+            <span class="n">horizontal</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">spacer</span><span class="o">.</span><span class="n">flex</span><span class="p">(),</span> <span class="n">top_box</span><span class="p">,</span> <span class="n">spacer</span><span class="o">.</span><span class="n">flex</span><span class="p">(),</span> <span class="n">right</span><span class="p">),</span>
+            <span class="n">horizontal</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">spacer</span><span class="o">.</span><span class="n">flex</span><span class="p">(),</span> <span class="n">btm_box</span><span class="p">,</span> <span class="n">spacer</span><span class="o">.</span><span class="n">flex</span><span class="p">(),</span> <span class="n">right</span><span class="p">),</span>
+            <span class="n">align</span><span class="p">(</span><span class="s">&#39;midline&#39;</span><span class="p">,</span> <span class="n">top_form</span><span class="p">,</span> <span class="n">btm_form</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="n">GroupBox</span><span class="p">:</span> <span class="n">top_box</span><span class="p">:</span>
+            <span class="n">share_layout</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&quot;Personal Details&quot;</span>
+            <span class="n">EmployeeForm</span><span class="p">:</span> <span class="n">top_form</span><span class="p">:</span>
+                <span class="n">share_layout</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="c"># We access the employee object through the identifier</span>
+                <span class="c"># &#39;main&#39; here, because the EmployeeForm also has an</span>
+                <span class="c"># &#39;employee&#39; attribute declared, and that would be</span>
+                <span class="c"># found first.</span>
+                <span class="n">employee</span> <span class="o">=</span> <span class="n">main</span><span class="o">.</span><span class="n">employee</span>
+        <span class="n">GroupBox</span><span class="p">:</span> <span class="n">btm_box</span><span class="p">:</span>
+            <span class="n">share_layout</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s">&quot;Employer Details&quot;</span>
+            <span class="n">visible</span> <span class="o">&lt;&lt;</span> <span class="n">top_form</span><span class="o">.</span><span class="n">show_employer</span>
+            <span class="n">EmployerForm</span><span class="p">:</span> <span class="n">btm_form</span><span class="p">:</span>
+                <span class="n">share_layout</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">employer</span> <span class="o">&lt;&lt;</span> <span class="n">employee</span><span class="o">.</span><span class="n">boss</span>
+</pre></div>
+</div>
+<p>Here is the Python code (<a class="reference download internal" href="../_downloads/employee.py"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">here</span></tt></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">observe</span>
+<span class="kn">import</span> <span class="nn">enaml</span>
+<span class="kn">from</span> <span class="nn">enaml.qt.qt_application</span> <span class="kn">import</span> <span class="n">QtApplication</span>
+
+
+<span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A simple class representing a person object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="n">age</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">dob</span> <span class="o">=</span> <span class="n">Value</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">debug</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;age&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">debug_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Prints out a debug message whenever the person&#39;s age changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="n">templ</span> <span class="o">=</span> <span class="s">&quot;{first} {last} is {age} years old.&quot;</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">first</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">print</span> <span class="n">s</span>
+
+
+<span class="k">class</span> <span class="nc">Employer</span><span class="p">(</span><span class="n">Person</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An employer is a person who runs a company.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># The name of the company</span>
+    <span class="n">company_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">Employee</span><span class="p">(</span><span class="n">Person</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An employee is person with a boss and a phone number.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># The employee&#39;s boss</span>
+    <span class="n">boss</span> <span class="o">=</span> <span class="n">Value</span><span class="p">(</span><span class="n">Employer</span><span class="p">)</span>
+
+    <span class="c"># The employee&#39;s phone number as a tuple of 3 ints</span>
+    <span class="n">phone</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">(</span><span class="n">Int</span><span class="p">())</span>
+
+    <span class="c"># This method will be called automatically by atom when the</span>
+    <span class="c"># employee&#39;s phone number changes</span>
+    <span class="k">def</span> <span class="nf">_phone_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;received new phone number for </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c"># Create an employee with a boss</span>
+    <span class="n">boss_john</span> <span class="o">=</span> <span class="n">Employer</span><span class="p">(</span>
+        <span class="n">first_name</span><span class="o">=</span><span class="s">&#39;John&#39;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s">&#39;Paw&#39;</span><span class="p">,</span> <span class="n">company_name</span><span class="o">=</span><span class="s">&quot;Packrat&#39;s Cats&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">employee_mary</span> <span class="o">=</span> <span class="n">Employee</span><span class="p">(</span>
+        <span class="n">first_name</span><span class="o">=</span><span class="s">&#39;Mary&#39;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s">&#39;Sue&#39;</span><span class="p">,</span> <span class="n">boss</span><span class="o">=</span><span class="n">boss_john</span><span class="p">,</span>
+        <span class="n">phone</span> <span class="o">=</span> <span class="p">(</span><span class="mi">555</span><span class="p">,</span> <span class="mi">555</span><span class="p">,</span> <span class="mi">5555</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="c"># Import our Enaml EmployeeView</span>
+    <span class="k">with</span> <span class="n">enaml</span><span class="o">.</span><span class="n">imports</span><span class="p">():</span>
+        <span class="kn">from</span> <span class="nn">employee_view</span> <span class="kn">import</span> <span class="n">EmployeeView</span>
+
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QtApplication</span><span class="p">()</span>
+    <span class="c"># Create a view and show it.</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="n">EmployeeView</span><span class="p">(</span><span class="n">employee</span><span class="o">=</span><span class="n">employee_mary</span><span class="p">)</span>
+    <span class="n">view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="employeeform-definition-block">
+<h2><tt class="docutils literal"><span class="pre">EmployeeForm</span></tt> Definition block<a class="headerlink" href="#employeeform-definition-block" title="Permalink to this headline">¶</a></h2>
+<p>This block summarizes most of the concepts seen in the previous tutorial. It
+creates a new <tt class="docutils literal"><span class="pre">enamldef</span></tt> based on the <a class="reference internal" href="../api_ref/widgets/form.html#enaml.widgets.form.Form" title="enaml.widgets.form.Form"><tt class="xref py py-class docutils literal"><span class="pre">Form</span></tt></a>
+widget. Two attributes are exposed in the widget: an <tt class="docutils literal"><span class="pre">employee</span></tt> attribute and
+a <tt class="docutils literal"><span class="pre">show_employer</span></tt> boolean value that defaults to True. The form itself contains
+a set of <a class="reference internal" href="../api_ref/widgets/label.html#enaml.widgets.label.Label" title="enaml.widgets.label.Label"><tt class="xref py py-class docutils literal"><span class="pre">Label</span></tt></a> widgets with associated
+<a class="reference internal" href="../api_ref/widgets/field.html#enaml.widgets.field.Field" title="enaml.widgets.field.Field"><tt class="xref py py-class docutils literal"><span class="pre">Field</span></tt></a> widgets.</p>
+</div>
+<div class="section" id="using-validation-on-fields">
+<h2>Using validation on fields<a class="headerlink" href="#using-validation-on-fields" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">&quot;Home</span> <span class="pre">phone:&quot;</span></tt> field must be validated to make sure the user can&#8217;t insert
+a phone number that is not valid. The user interface must also signal the user
+when the current entry is invalid.</p>
+<p>A <tt class="docutils literal"><span class="pre">PhoneNumberValidator</span></tt> class implements the <tt class="docutils literal"><span class="pre">validate(...)</span></tt> method of the
+<tt class="xref py py-class docutils literal"><span class="pre">Validator</span></tt> abstract class. If the
+validation succeeds the returned value of the validate call is standardized
+formatted text.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">enaml.validator</span> <span class="kn">import</span> <span class="n">Validator</span>
+
+
+<span class="k">class</span> <span class="nc">PhoneNumberValidator</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A really dumb phone number validator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_digits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;[0-9]{10}$&#39;</span><span class="p">)</span>
+
+    <span class="n">dashes</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;([0-9]{3})\-([0-9]{3})\-([0-9]{4})$&#39;</span><span class="p">)</span>
+
+    <span class="n">proper</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\(([0-9]{3})\)\ ([0-9]{3})\-([0-9]{4})$&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">component</span><span class="p">):</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proper</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dashes</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">area</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">formatted_text</span> <span class="o">=</span> <span class="s">&#39;(</span><span class="si">%s</span><span class="s">) </span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">formatted_text</span><span class="p">,</span> <span class="bp">True</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_digits</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">area</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+            <span class="n">formatted_text</span> <span class="o">=</span> <span class="s">&#39;(</span><span class="si">%s</span><span class="s">) </span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">formatted_text</span><span class="p">,</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="n">text</span><span class="p">,</span> <span class="bp">False</span>
+</pre></div>
+</div>
+<p>In the <tt class="docutils literal"><span class="pre">Field</span></tt> definition, every time the text is updated with a properly
+validated entry, the employee phone attribute is updated.</p>
+<div class="highlight-python"><pre>Field:
+    validator = PhoneNumberValidator()
+    text &lt;&lt; '(%s) %s-%s' % employee.phone
+    text ::
+        match = validator.proper.match(text)
+        if match:
+            area = match.group(1)
+            prefix = match.group(2)
+            suffix = match.group(3)
+            employee.phone = tuple(map(int, (area, prefix, suffix)))</pre>
+</div>
+</div>
+<div class="section" id="dynamic-interaction-with-widgets">
+<h2>Dynamic interaction with widgets<a class="headerlink" href="#dynamic-interaction-with-widgets" title="Permalink to this headline">¶</a></h2>
+<p>The widget attributes all support the special Enaml operators. One can thus
+assign the result of arbitrary Python code to interact with the status of the
+widget:</p>
+<div class="highlight-python"><pre>Label:
+     text = 'Password:'
+ Field:
+     echo_mode &lt;&lt; 'password' if not pw_cb.checked else 'normal'
+     text :: print 'Password:', text
+ Label:
+     text = 'Show Password:'
+ CheckBox: pw_cb:
+     checked = False</pre>
+</div>
+<p>In this example, the user can activate or deactivate the <tt class="docutils literal"><span class="pre">echo_mode</span></tt> of the
+password Field based on the state of another widget, the password <tt class="docutils literal"><span class="pre">CheckBox</span></tt>.
+The user can refer to the password <a class="reference internal" href="../api_ref/widgets/check_box.html#enaml.widgets.check_box.CheckBox" title="enaml.widgets.check_box.CheckBox"><tt class="xref py py-class docutils literal"><span class="pre">CheckBox</span></tt></a>
+using the <cite>id</cite> of the widget.</p>
+<p>Visibility is controled with the <tt class="docutils literal"><span class="pre">visible</span></tt> attribute of a widget. In the
+<tt class="docutils literal"><span class="pre">EmployeeMainView</span></tt>, the <tt class="docutils literal"><span class="pre">btm_box</span></tt> visibility is connected to the
+<tt class="docutils literal"><span class="pre">top_form.show_employer</span></tt> attribute. Enaml will take care of the related
+relayout issues. See the constraints section for more information.</p>
+<p>The very same pattern is used in the <tt class="docutils literal"><span class="pre">EmployerForm</span></tt> to enable or disable a
+group of <tt class="docutils literal"><span class="pre">Field</span></tt> widgets baesd on a <tt class="docutils literal"><span class="pre">CheckBox</span></tt>.</p>
+</div>
+<div class="section" id="customizing-your-layout">
+<h2>Customizing your layout<a class="headerlink" href="#customizing-your-layout" title="Permalink to this headline">¶</a></h2>
+<p>Once you have created the components of your main view, you can assemble them
+using the differeent containers:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="../api_ref/widgets/container.html#enaml.widgets.container.Container" title="enaml.widgets.container.Container"><tt class="xref py py-class docutils literal"><span class="pre">Container</span></tt></a>,</li>
+<li><a class="reference internal" href="../api_ref/widgets/form.html#enaml.widgets.form.Form" title="enaml.widgets.form.Form"><tt class="xref py py-class docutils literal"><span class="pre">Form</span></tt></a>,</li>
+<li><a class="reference internal" href="../api_ref/widgets/group_box.html#enaml.widgets.group_box.GroupBox" title="enaml.widgets.group_box.GroupBox"><tt class="xref py py-class docutils literal"><span class="pre">GroupBox</span></tt></a>,</li>
+</ul>
+</div></blockquote>
+<p>Those widgets take care of aranging the layout of the child widgets using a set
+of constraints. In this tutorial, the only one that defines constraints is the
+outer container:</p>
+<div class="highlight-python"><pre>Container:
+    constraints &lt;&lt; [
+        vertical(
+            top, top_box, btm_box.when(btm_box.visible), spacer, bottom
+        ),
+        horizontal(left, spacer.flex(), top_box, spacer.flex(), right),
+        horizontal(left, spacer.flex(), btm_box, spacer.flex(), right),
+        align('midline', top_form, btm_form)
+    ]</pre>
+</div>
+<img alt="../_images/tut_employee_layout.png" src="../_images/tut_employee_layout.png" />
+<p>The constraints attribute of the <a class="reference internal" href="../api_ref/widgets/container.html#enaml.widgets.container.Container" title="enaml.widgets.container.Container"><tt class="xref py py-class docutils literal"><span class="pre">Container</span></tt></a>
+is populated with a list of constraints. The user expresses how he wants the
+layout to be aranged:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a vertical constraint on the widgets named by id&#8217;s.</li>
+<li>two horizontal constraints on the widgets with spacers</li>
+<li>a special constraint on the two forms that aligns their midline, the line
+between the two columns of the form. Note that we refer to the id&#8217;s of the
+forms and not the ones of the <tt class="docutils literal"><span class="pre">GroupBox</span></tt>. <tt class="docutils literal"><span class="pre">GroupBoxes</span></tt> do not have a
+<tt class="docutils literal"><span class="pre">midline</span></tt> attribute.</li>
+</ul>
+</div></blockquote>
+<p>Using <tt class="docutils literal"><span class="pre">spacer</span></tt>, you can add empty space between widgets. This space could
+either be fixed  space or flexible when using <tt class="docutils literal"><span class="pre">spacer.flex()</span></tt>. In this case,
+the spacer will expose a weaker preference for being the fixed value. The
+following set of constraints will make the first form compressed horizontally
+by setting the target fixed size of the spacer to 50 pixels:</p>
+<div class="highlight-python"><pre>Container:
+    constraints &lt;&lt; [
+        vertical(
+            top, top_box, btm_box.when(btm_box.visible), spacer, bottom
+        ),
+        horizontal(left, spacer(50).flex(), top_box, spacer(50).flex(), right),
+        horizontal(left, spacer.flex(), btm_box, spacer.flex(), right),
+        align('midline', top_form, btm_form)
+    ]</pre>
+</div>
+<p>Specialized containers can expose particular ways of managing their layout. The
+<a class="reference internal" href="../api_ref/widgets/form.html#enaml.widgets.form.Form" title="enaml.widgets.form.Form"><tt class="xref py py-class docutils literal"><span class="pre">Form</span></tt></a> exposes a <tt class="docutils literal"><span class="pre">midline</span></tt> attribute that can be
+used to align the midline of different forms together. If it was not activated,
+the layout would have been:</p>
+<img alt="../_images/tut_employee_layout_no_midline.png" src="../_images/tut_employee_layout_no_midline.png" />
+<div class="section" id="tweaking-the-layout">
+<h3>Tweaking the layout<a class="headerlink" href="#tweaking-the-layout" title="Permalink to this headline">¶</a></h3>
+<p>Enaml provides many different ways of tweaking the constraints to make sure the
+layout engine gives you exactly what you want.</p>
+<p>A user can give a weight to each constraint. Valid weights are: <tt class="docutils literal"><span class="pre">'weak'</span></tt>,
+<tt class="docutils literal"><span class="pre">'medium'</span></tt>, <tt class="docutils literal"><span class="pre">'strong'</span></tt> and <tt class="docutils literal"><span class="pre">'ignore'</span></tt>. If the user wants to make the width
+of the container equal to 233 pixels but with some latitude, he could add the
+following constraint:</p>
+<div class="highlight-python"><pre>Container:
+    constraints &lt;&lt; [
+        vertical(
+            top, top_box, btm_box.when(btm_box.visible), spacer, bottom
+        ),
+        horizontal(left, spacer.flex(), top_box, spacer.flex(), right),
+        horizontal(left, spacer.flex(), btm_box, spacer.flex(), right),
+        align('midline', top_form, btm_form),
+        (width == 233) | 'weak'
+    ]</pre>
+</div>
+<p>The <a class="reference internal" href="../api_ref/widgets/container.html#enaml.widgets.container.Container" title="enaml.widgets.container.Container"><tt class="xref py py-class docutils literal"><span class="pre">Container</span></tt></a> exposes some content related
+attributes to the constraints system: <tt class="docutils literal"><span class="pre">width</span></tt>, <tt class="docutils literal"><span class="pre">height</span></tt>, <tt class="docutils literal"><span class="pre">left</span></tt>, <tt class="docutils literal"><span class="pre">right</span></tt>,
+<tt class="docutils literal"><span class="pre">bottom</span></tt>, <tt class="docutils literal"><span class="pre">top</span></tt>, <tt class="docutils literal"><span class="pre">v_center</span></tt> and <tt class="docutils literal"><span class="pre">h_center</span></tt>. They can be used as shown
+in the previous example.</p>
+<p>Depending on the flexiblity you need, you might want to use some of the other
+layout function like <tt class="docutils literal"><span class="pre">hbox</span></tt> or <tt class="docutils literal"><span class="pre">vbox</span></tt>. You could have created a layout
+pretty close to this one with the following constraints:</p>
+<div class="highlight-python"><pre>Container:
+    constraints = [
+        vbox(top_box, btm_box.when(btm_box.visible)),
+        align('midline', top_form, btm_form)
+    ]</pre>
+</div>
+<p>The advantage of using <tt class="docutils literal"><span class="pre">hbox</span></tt> and <tt class="docutils literal"><span class="pre">vbox</span></tt> is that you can nest them. The
+<tt class="docutils literal"><span class="pre">vertical</span></tt> and <tt class="docutils literal"><span class="pre">horizontal</span></tt> functions cannot be nested.</p>
+<p>The set of constraints can be nested by using the <tt class="docutils literal"><span class="pre">hbox</span></tt>, <tt class="docutils literal"><span class="pre">vbox</span></tt> or by
+providing constraints of containers that belongs to the outer container. The
+<a class="reference internal" href="../api_ref/widgets/group_box.html#enaml.widgets.group_box.GroupBox" title="enaml.widgets.group_box.GroupBox"><tt class="xref py py-class docutils literal"><span class="pre">GroupBox</span></tt></a> provides some internal constraints
+regarding its size to allow the title to be properly displayed. A
+<a class="reference internal" href="../api_ref/widgets/form.html#enaml.widgets.form.Form" title="enaml.widgets.form.Form"><tt class="xref py py-class docutils literal"><span class="pre">Form</span></tt></a> automatically lays out the widgets in two
+columns. If the user wanted to have an <tt class="docutils literal"><span class="pre">EmployerForm</span></tt> laid out in two horizontal
+rows in place of two columns, he could have edited the <tt class="docutils literal"><span class="pre">EmployerForm</span></tt> with the
+following set of changes:</p>
+<ul class="simple">
+<li>update the base class to be a <tt class="docutils literal"><span class="pre">Container</span></tt> instead of a <tt class="docutils literal"><span class="pre">Form</span></tt></li>
+<li>provide ids for each of the child widgets</li>
+<li>provide a list of constraints for the desired layout</li>
+<li>remove the alignment constraint in the main container</li>
+</ul>
+<div class="highlight-python"><pre>enamldef EmployerForm(Container):
+    attr employer
+    constraints = [
+        vbox(
+            hbox(cmp_lbl, mng_lbl, edit_lbl),
+            hbox(cmp_fld, mng_fld, en_cb),
+        ),
+        cmp_lbl.width == cmp_fld.width,
+        mng_lbl.width == mng_fld.width,
+        edit_lbl.width == en_cb.width,
+    ]
+    Label: cmp_lbl:
+        text = "Company:"
+    Field: cmp_fld:
+        text &lt;&lt; employer.company_name
+        enabled &lt;&lt; en_cb.checked
+    Label: mng_lbl:
+        text = "Reporting Manager:"
+    Field: mng_fld:
+        text &lt;&lt; "%s %s" % (employer.first_name, employer.last_name)
+        enabled &lt;&lt; en_cb.checked
+    Label: edit_lbl:
+        text = "Allow Editing:"
+    CheckBox: en_cb:
+        checked = True</pre>
+</div>
+<img alt="../_images/tut_employee_layout_nested_container.png" src="../_images/tut_employee_layout_nested_container.png" />
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

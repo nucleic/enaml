@@ -1,0 +1,272 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Banner Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Dock Item Alerts Example" href="ex_dock_item_alerts.html" />
+    <link rel="prev" title="Simple Widget Alias Example" href="ex_simple_widget_alias.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Banner Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">Banner Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dock_item_alerts.html">Dock Item Alerts Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_gradient_push_button.html">Gradient Push Button Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="banner-example">
+<h1>Banner Example<a class="headerlink" href="#banner-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/banner.enaml"><tt class="xref download docutils literal"><span class="pre">banner</span></tt></a></p>
+<div class="highlight-python"><pre>An example of using style sheets to create a banner from a Label.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run banner</pre>
+</div>
+<img alt="../_images/ex_banner.png" src="../_images/ex_banner.png" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c">#  Copyright (c) 2013, Nucleic Development Team</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; An example of using style sheets to create a banner from a Label.</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Form</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">MultilineField</span><span class="p">,</span> <span class="n">CheckBox</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="n">StyleSheet</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Setter</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">align</span>
+
+
+<span class="n">enamldef</span> <span class="n">BannerSheet</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">):</span>
+    <span class="n">Style</span><span class="p">:</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="s">&#39;Label&#39;</span>
+        <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;banner&#39;</span>
+        <span class="n">Setter</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;background&#39;</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;lineargradient(x1: 0, y1:0, x2:0, y2:1, &#39;</span>
+                        <span class="s">&#39;stop: 0 #222222, stop: 0.5 #1A1A1A, stop: 1 #111111)&#39;</span><span class="p">)</span>
+        <span class="n">Setter</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;color&#39;</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;#FFFFEF&#39;</span>
+        <span class="n">Setter</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;padding&#39;</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;5px&#39;</span>
+        <span class="n">Setter</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="s">&#39;font&#39;</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;18pt Verdana&#39;</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Banner Example&#39;</span>
+    <span class="n">BannerSheet</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">vbox</span><span class="p">(</span><span class="n">hbox</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">description</span><span class="p">),</span> <span class="n">primary</span><span class="p">),</span>
+            <span class="n">banner</span><span class="o">.</span><span class="n">top</span> <span class="o">==</span> <span class="n">top</span><span class="p">,</span>
+            <span class="n">banner</span><span class="o">.</span><span class="n">left</span> <span class="o">==</span> <span class="n">left</span><span class="p">,</span>
+            <span class="n">banner</span><span class="o">.</span><span class="n">right</span> <span class="o">==</span> <span class="n">right</span><span class="p">,</span>
+            <span class="n">banner</span><span class="o">.</span><span class="n">bottom</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">==</span> <span class="n">form</span><span class="o">.</span><span class="n">top</span><span class="p">,</span>
+            <span class="n">align</span><span class="p">(</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">description</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="n">Label</span><span class="p">:</span> <span class="n">banner</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Banner Text&#39;</span>
+            <span class="n">style_class</span> <span class="o">&lt;&lt;</span> <span class="s">&#39;banner&#39;</span> <span class="k">if</span> <span class="n">cbox</span><span class="o">.</span><span class="n">checked</span> <span class="k">else</span> <span class="s">&#39;&#39;</span>
+        <span class="n">Form</span><span class="p">:</span> <span class="n">form</span><span class="p">:</span>
+            <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;required&#39;</span>
+            <span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;First&#39;</span>
+            <span class="n">Field</span><span class="p">:</span>
+                <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;First Value&#39;</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Second&#39;</span>
+            <span class="n">Field</span><span class="p">:</span>
+                <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;Second Value&#39;</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Third&#39;</span>
+            <span class="n">Field</span><span class="p">:</span>
+                <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;Third Value&#39;</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Fourth&#39;</span>
+            <span class="n">Field</span><span class="p">:</span>
+                <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;Fourth Value&#39;</span>
+            <span class="n">CheckBox</span><span class="p">:</span> <span class="n">cbox</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Toggle Banner Style&#39;</span>
+                <span class="n">checked</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">MultilineField</span><span class="p">:</span> <span class="n">description</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;description...&#39;</span>
+            <span class="n">enabled</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">height</span> <span class="o">==</span> <span class="n">form</span><span class="o">.</span><span class="n">height</span><span class="p">]</span>
+        <span class="n">Html</span><span class="p">:</span> <span class="n">primary</span><span class="p">:</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Primary Content&lt;/center&gt;&lt;/h1&gt;&#39;</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

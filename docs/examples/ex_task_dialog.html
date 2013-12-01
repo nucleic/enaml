@@ -1,0 +1,317 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Task Dialog Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Conditional Example" href="ex_conditional.html" />
+    <link rel="prev" title="Message Box Example" href="ex_message_box.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Task Dialog Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_mapped_view.html">Mapped View Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_message_box.html">Message Box Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Task Dialog Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="task-dialog-example">
+<h1>Task Dialog Example<a class="headerlink" href="#task-dialog-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/task_dialog.enaml"><tt class="xref download docutils literal"><span class="pre">task_dialog</span></tt></a></p>
+<div class="highlight-python"><pre>An example of using the Enaml stdlib task dialog components.
+
+The `task_dialog` stdlib module provides a set of components which can be
+easily assembled for a dialog which follows the style of the Windows 7/8
+task dialogs.
+
+A task dialog is assembled by declaring a `TaskDialogBody` element as the
+child of a `Dialog`. Within the body, the various special dialog area
+containers can be declared to add content to the dialog. The dialog body
+takes care of automatically laying the various areas.
+
+This example creates a Dialog which uses all of the task dialog areas,
+which is not a requirement for user code. In fact, all of the areas are
+optional, and the developer is free to choose the bits needed for the
+task at hand.
+
+Creating a task dialog from scratch using the area elements is flexible,
+but can be a bit tedious. For the more common use cases, Enaml provides
+some predefined task dialogs. See `message_box.enaml` for an example.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run task_dialog</pre>
+</div>
+<img alt="../_images/ex_task_dialog.png" src="../_images/ex_task_dialog.png" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; An example of using the Enaml stdlib task dialog components.</span>
+
+<span class="sd">The `task_dialog` stdlib module provides a set of components which can be</span>
+<span class="sd">easily assembled for a dialog which follows the style of the Windows 7/8</span>
+<span class="sd">task dialogs.</span>
+
+<span class="sd">A task dialog is assembled by declaring a `TaskDialogBody` element as the</span>
+<span class="sd">child of a `Dialog`. Within the body, the various special dialog area</span>
+<span class="sd">containers can be declared to add content to the dialog. The dialog body</span>
+<span class="sd">takes care of automatically laying the various areas.</span>
+
+<span class="sd">This example creates a Dialog which uses all of the task dialog areas,</span>
+<span class="sd">which is not a requirement for user code. In fact, all of the areas are</span>
+<span class="sd">optional, and the developer is free to choose the bits needed for the</span>
+<span class="sd">task at hand.</span>
+
+<span class="sd">Creating a task dialog from scratch using the area elements is flexible,</span>
+<span class="sd">but can be a bit tedious. For the more common use cases, Enaml provides</span>
+<span class="sd">some predefined task dialogs. See `message_box.enaml` for an example.</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;win32&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">enaml</span> <span class="kn">import</span> <span class="n">winutil</span>
+
+<span class="kn">from</span> <span class="nn">enaml.image</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">align</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">spacer</span>
+<span class="kn">from</span> <span class="nn">enaml.stdlib.dialog_buttons</span> <span class="kn">import</span> <span class="n">DialogButtonBox</span><span class="p">,</span> <span class="n">DialogButton</span>
+<span class="kn">from</span> <span class="nn">enaml.stdlib.task_dialog</span> <span class="kn">import</span> <span class="p">(</span><span class="n">TaskDialogBody</span><span class="p">,</span> <span class="n">TaskDialogCommandArea</span><span class="p">,</span>
+    <span class="n">TaskDialogContentArea</span><span class="p">,</span> <span class="n">TaskDialogDetailsArea</span><span class="p">,</span> <span class="n">TaskDialogFootnoteArea</span><span class="p">,</span>
+    <span class="n">TaskDialogIconArea</span><span class="p">,</span> <span class="n">TaskDialogInstructionArea</span><span class="p">,</span> <span class="n">TaskDialogStyleSheet</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CheckBox</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Dialog</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span>
+    <span class="n">ImageView</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">RadioButton</span><span class="p">,</span> <span class="n">Window</span><span class="p">)</span>
+
+
+<span class="n">template</span> <span class="n">IconContent</span><span class="p">(</span><span class="n">Platform</span><span class="p">):</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Icon Area&#39;</span>
+
+
+<span class="n">template</span> <span class="n">IconContent</span><span class="p">(</span><span class="n">Platform</span><span class="p">:</span> <span class="s">&#39;win32&#39;</span><span class="p">):</span>
+    <span class="n">const</span> <span class="n">ico</span> <span class="o">=</span> <span class="n">winutil</span><span class="o">.</span><span class="n">load_icon</span><span class="p">(</span><span class="n">winutil</span><span class="o">.</span><span class="n">OIC_INFORMATION</span><span class="p">)</span>
+    <span class="n">const</span> <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ico</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">raw_size</span><span class="o">=</span><span class="n">ico</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;argb32&#39;</span><span class="p">)</span>
+    <span class="n">ImageView</span><span class="p">:</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">img</span>
+        <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+        <span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+
+
+<span class="n">enamldef</span> <span class="n">MyTaskDialog</span><span class="p">(</span><span class="n">Dialog</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;A Task Dialog&#39;</span>
+    <span class="n">TaskDialogStyleSheet</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="n">TaskDialogBody</span><span class="p">:</span>
+        <span class="n">TaskDialogIconArea</span><span class="p">:</span>
+            <span class="n">IconContent</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="p">):</span>
+                <span class="k">pass</span>
+        <span class="n">TaskDialogInstructionArea</span><span class="p">:</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;task-dialog-instructions&#39;</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;The dialog instruction&#39;</span>
+        <span class="n">TaskDialogContentArea</span><span class="p">:</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">style_class</span> <span class="o">=</span> <span class="s">&#39;task-dialog-content&#39;</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;This is some additional dialog content.&#39;</span>
+        <span class="n">TaskDialogDetailsArea</span><span class="p">:</span> <span class="n">details</span><span class="p">:</span>
+            <span class="n">visible</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">RadioButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;these&#39;</span>
+            <span class="n">RadioButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;are&#39;</span>
+            <span class="n">RadioButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;more&#39;</span>
+            <span class="n">RadioButton</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;options&#39;</span>
+        <span class="n">TaskDialogCommandArea</span><span class="p">:</span>
+            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">hbox</span><span class="p">(</span><span class="n">cbox</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">bbox</span><span class="p">),</span>
+                <span class="n">align</span><span class="p">(</span><span class="s">&#39;v_center&#39;</span><span class="p">,</span> <span class="n">cbox</span><span class="p">,</span> <span class="n">bbox</span><span class="p">),</span>
+            <span class="p">]</span>
+            <span class="n">CheckBox</span><span class="p">:</span> <span class="n">cbox</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;More options&#39;</span>
+                <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">visible</span>
+            <span class="n">DialogButtonBox</span><span class="p">:</span> <span class="n">bbox</span><span class="p">:</span>
+                <span class="n">buttons</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">DialogButton</span><span class="p">(</span><span class="s">&#39;OK&#39;</span><span class="p">,</span> <span class="s">&#39;accept&#39;</span><span class="p">),</span>
+                    <span class="n">DialogButton</span><span class="p">(</span><span class="s">&#39;Cancel&#39;</span><span class="p">,</span> <span class="s">&#39;reject&#39;</span><span class="p">),</span>
+                <span class="p">]</span>
+        <span class="n">TaskDialogFootnoteArea</span><span class="p">:</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;This is a footnote. It could be any widget.&#39;</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Task Dialog Example&#39;</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+        <span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+        <span class="n">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Launch Dialog&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span> <span class="n">MyTaskDialog</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,274 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Basic Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Live Editor Example" href="ex_live_editor.html" />
+    <link rel="prev" title="Advanced Example" href="ex_advanced.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Basic Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_advanced.html">Advanced Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Basic Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="basic-example">
+<h1>Basic Example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/basic.enaml"><tt class="xref download docutils literal"><span class="pre">basic</span></tt></a></p>
+<div class="highlight-python"><pre>A basic example of Enaml templates.
+
+This example shows how Enaml templates can be used to define a control
+"template" and then populate that template with user-defined widgets.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run basic</pre>
+</div>
+<img alt="../_images/ex_basic.png" src="../_images/ex_basic.png" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; A basic example of Enaml templates.</span>
+
+<span class="sd">This example shows how Enaml templates can be used to define a control</span>
+<span class="sd">&quot;template&quot; and then populate that template with user-defined widgets.</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Str</span>
+
+<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">spacer</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">Window</span>
+
+
+<span class="n">template</span> <span class="n">OkCancelPanel</span><span class="p">(</span><span class="n">Content</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a container with Ok | Cancel buttons.</span>
+
+<span class="sd">    The generated panel will contain Ok and Cancel buttons in the</span>
+<span class="sd">    lower right-hand corner. The panel exposes two button clicked</span>
+<span class="sd">    events named (appropriately) &#39;ok_clicked&#39; and &#39;cancel_clicked&#39;.</span>
+<span class="sd">    The user provided widget is aliased as &#39;content&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Content : widget type</span>
+<span class="sd">        A widget which will be used as the central content of the</span>
+<span class="sd">        panel.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">alias</span> <span class="n">content</span>
+        <span class="n">event</span> <span class="n">ok_clicked</span>
+        <span class="n">event</span> <span class="n">cancel_clicked</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">vbox</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">hbox</span><span class="p">(</span><span class="n">spacer</span><span class="p">,</span> <span class="n">ok</span><span class="p">,</span> <span class="n">cancel</span><span class="p">))</span>
+        <span class="p">]</span>
+        <span class="n">Content</span><span class="p">:</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">PushButton</span><span class="p">:</span> <span class="n">ok</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Ok&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span> <span class="n">ok_clicked</span><span class="p">()</span>
+        <span class="n">PushButton</span><span class="p">:</span> <span class="n">cancel</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Cancel&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span> <span class="n">cancel_clicked</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">SampleModel</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A sample model which is used to bind data to the content.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The string to display in the content.</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+
+<span class="n">enamldef</span> <span class="n">SampleContent</span><span class="p">(</span><span class="n">Html</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A sample widget used as the content of the button panel.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">attr</span> <span class="n">model</span><span class="p">:</span> <span class="n">SampleModel</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="s">&quot;&lt;h1&gt;&lt;center&gt;</span><span class="si">%s</span><span class="s">&lt;/center&gt;&lt;/h1&gt;&quot;</span> <span class="o">%</span> <span class="n">model</span><span class="o">.</span><span class="n">text</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The main application window.</span>
+
+<span class="sd">    This window uses a ButtonPanel instantiated with SampleContent</span>
+<span class="sd">    as the central widget. The click handlers for the panel buttons</span>
+<span class="sd">    are bound to print a message to the shell.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Basic Templates&#39;</span>
+    <span class="n">OkCancelPanel</span><span class="p">(</span><span class="n">SampleContent</span><span class="p">):</span> <span class="n">panel</span><span class="p">:</span>
+        <span class="n">panel</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">panel</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">SampleModel</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s">&#39;Hello Templates&#39;</span><span class="p">)</span>
+        <span class="n">panel</span><span class="o">.</span><span class="n">ok_clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Ok clicked!&#39;</span>
+        <span class="n">panel</span><span class="o">.</span><span class="n">cancel_clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;Cancel clicked!&#39;</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,277 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Message Box Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Task Dialog Example" href="ex_task_dialog.html" />
+    <link rel="prev" title="Mapped View Example" href="ex_mapped_view.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Message Box Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_mapped_view.html">Mapped View Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Message Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_task_dialog.html">Task Dialog Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="message-box-example">
+<h1>Message Box Example<a class="headerlink" href="#message-box-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/message_box.enaml"><tt class="xref download docutils literal"><span class="pre">message_box</span></tt></a></p>
+<div class="highlight-python"><pre>An example of using the Enaml stdlib MessageBox.
+
+The MessageBox element is built on top of the stdlib task dialog elements.
+See the `task_dialog` example for a demonstration of those elements.
+
+This example shows how to use the MessageBox directly along with various
+convenience functions which are available for 1-line notifications.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run message_box</pre>
+</div>
+<img alt="../_images/ex_message_box.png" src="../_images/ex_message_box.png" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; An example of using the Enaml stdlib MessageBox.</span>
+
+<span class="sd">The MessageBox element is built on top of the stdlib task dialog elements.</span>
+<span class="sd">See the `task_dialog` example for a demonstration of those elements.</span>
+
+<span class="sd">This example shows how to use the MessageBox directly along with various</span>
+<span class="sd">convenience functions which are available for 1-line notifications.</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;win32&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">enaml</span> <span class="kn">import</span> <span class="n">winutil</span>
+
+<span class="kn">from</span> <span class="nn">enaml.image</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">enaml.stdlib.dialog_buttons</span> <span class="kn">import</span> <span class="n">DialogButton</span>
+<span class="kn">from</span> <span class="nn">enaml.stdlib.message_box</span> <span class="kn">import</span> <span class="p">(</span><span class="n">MessageBox</span><span class="p">,</span> <span class="n">about</span><span class="p">,</span> <span class="n">critical</span><span class="p">,</span> <span class="n">information</span><span class="p">,</span>
+    <span class="n">question</span><span class="p">,</span> <span class="n">warning</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Window</span>
+
+
+<span class="k">def</span> <span class="nf">h_result</span><span class="p">(</span><span class="n">button</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">button</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;Dialog button &#39;</span><span class="si">%s</span><span class="s">&#39; clicked.&quot;</span> <span class="o">%</span> <span class="n">button</span><span class="o">.</span><span class="n">text</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Message Box Example&#39;</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+        <span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+        <span class="n">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;About&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span> <span class="n">about</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;About Dialog&#39;</span><span class="p">,</span> <span class="s">&#39;This is about text.&#39;</span><span class="p">)</span>
+        <span class="n">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Critical&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span>
+                <span class="n">btns</span> <span class="o">=</span> <span class="p">[</span><span class="n">DialogButton</span><span class="p">(</span><span class="s">&#39;Custom&#39;</span><span class="p">,</span> <span class="s">&#39;accept&#39;</span><span class="p">),</span>
+                        <span class="n">DialogButton</span><span class="p">(</span><span class="s">&#39;Buttons&#39;</span><span class="p">,</span> <span class="s">&#39;reject&#39;</span><span class="p">)]</span>
+                <span class="n">h_result</span><span class="p">(</span><span class="n">critical</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Critical Dialog&#39;</span><span class="p">,</span> <span class="s">&#39;This is critical text.&#39;</span><span class="p">,</span> <span class="n">btns</span><span class="p">))</span>
+        <span class="n">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Information&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span>
+                <span class="n">h_result</span><span class="p">(</span><span class="n">information</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Info Dialog&#39;</span><span class="p">,</span> <span class="s">&#39;This is info text.&#39;</span><span class="p">))</span>
+        <span class="n">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Question&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span>
+                <span class="n">h_result</span><span class="p">(</span><span class="n">question</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Question Dialog&#39;</span><span class="p">,</span> <span class="s">&#39;This is question text.&#39;</span><span class="p">))</span>
+        <span class="n">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Warning&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span>
+                <span class="n">h_result</span><span class="p">(</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Warning Dialog&#39;</span><span class="p">,</span> <span class="s">&#39;This is warning text.&#39;</span><span class="p">))</span>
+        <span class="n">PushButton</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Custom&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span>
+                <span class="n">box</span> <span class="o">=</span> <span class="n">MessageBox</span><span class="p">()</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Custom Dialog&#39;</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s">&#39;This is custom text.&#39;</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="s">&#39;This is some more content.&#39;</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="s">&#39;&lt;h3&gt;These are some details.&lt;/h3&gt;&#39;</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">buttons</span> <span class="o">=</span> <span class="p">[</span><span class="n">DialogButton</span><span class="p">(</span><span class="s">&#39;Accept&#39;</span><span class="p">,</span> <span class="s">&#39;accept&#39;</span><span class="p">),</span>
+                               <span class="n">DialogButton</span><span class="p">(</span><span class="s">&#39;Reject&#39;</span><span class="p">,</span> <span class="s">&#39;reject&#39;</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;win32&#39;</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">winutil</span><span class="o">.</span><span class="n">load_icon</span><span class="p">(</span><span class="n">winutil</span><span class="o">.</span><span class="n">OIC_INFORMATION</span><span class="p">)</span>
+                    <span class="n">box</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">raw_size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;argb32&#39;</span><span class="p">)</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">set_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">box</span><span class="o">.</span><span class="n">buttons</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">was_clicked</span><span class="p">:</span>
+                        <span class="n">h_result</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

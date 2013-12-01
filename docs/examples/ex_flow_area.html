@@ -1,0 +1,479 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Flow Area Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Form Example" href="ex_form.html" />
+    <link rel="prev" title="File Dialog Example" href="ex_file_dialog.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Flow Area Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_buttons.html">Buttons Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_context_menu.html">Context Menu Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dock_area.html">Dock Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dock_pane.html">Dock Pane Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dual_slider.html">Dual Slider Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_file_dialog.html">File Dialog Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Flow Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_form.html">Form Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_group_box.html">Group Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_image_view.html">Image View Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_main_window.html">Main Window Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_menu_bar.html">Menu Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_mpl_canvas.html">Mpl Canvas Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_notebook.html">Notebook Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_popup_menu.html">Popup Menu Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_popup_view.html">Popup View Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_progress_bar.html">Progress Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_scroll_area.html">Scroll Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_slider.html">Slider Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_spin_box.html">Spin Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_splitter.html">Splitter Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_tool_bar.html">Tool Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_window.html">Window Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_window_children.html">Window Children Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="flow-area-example">
+<h1>Flow Area Example<a class="headerlink" href="#flow-area-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/flow_area.enaml"><tt class="xref download docutils literal"><span class="pre">flow_area</span></tt></a></p>
+<div class="highlight-python"><pre>An example of the `FlowArea` widget.
+
+A `FlowArea` is a very powerful tool for creating a flowing layout of
+widgets. A `FlowArea` accepts an arbitrary number of `FlowItem` children,
+each of which holds a `Container` as its content. The layout of these
+`FlowItem` children is controlled by the `FlowArea` attributes:
+
+    `direction`
+        This is an enum controlling how the items are arranged in the
+        area. Allowable values are 'left_to_right', 'right_to_left',
+        'top_to_bottom', and 'bottom_to_top'; and indicate the direction
+        in which items will be added to the area. When the layout space
+        in a given direction is exhausted, the layout will wrap around
+        to the next line. With horizontal directions, lines are stacked
+        top to bottom. With vertical directions, lines are stacked
+        left to right.
+
+    `align`
+        This is an enum controlling how a layout line is aligned within
+        the layout space. If there is any space leftover after laying
+        out a given line of widgets, that space is distributed according
+        to the value of this enum. Allowable values are 'leading',
+        'trailing', 'center', and 'justify'.
+
+    `horizontal_spacing`
+        This is an int specifying how much horizontal space to place
+        between items or lines in the layout.
+
+    `vertical_spacing`
+        This is an int specifying how much vertical space to place
+        between items or lines in the layout.
+
+    `margins`
+        This is a Box of ints specifying how much margin to place
+        on the outside of the layout.
+
+Each `FlowItem` used in the layout can further customize the behavior:
+
+    `preferred_size`
+        This is a Size specifying the desired layout size for the item.
+        This size will be used whenever possible, but will not override
+        the minimum or maximum size of the item. If set to (-1, -1)
+        (the default), then the size hint for the item will be used.
+
+    `align`
+        This is an enum which controls the orthogonal alignment of the
+        item. When an item has neighbors which are larger than itself
+        in the orhthongonal direction, this value controls how the item
+        aligns within that additional space. The valid values area
+        'leading', 'trailing', and 'center'.
+
+    `stretch`
+        This is an int which controls the amount that the widget should
+        expand to take up additional space in the layout direction. The
+        default is 0 and means that the widget will not expand. When the
+        value is greater than zero, the value is weighted against the
+        stretch factors of the other items in the same line to determine
+        the amount of space given to the item.
+
+    `ortho_stretch`
+        This is an int which controls the amount that the widget should
+        expand to take up additional space orthogonal to the layout
+        direction. The default is 0 and means that the widget will not
+        expand. If no item in a given line can expand in the ortho
+        direction, then the line will not expand. Otherwise, the stretch
+        factor for a line is equivalent to the maximum of the ortho
+        stretch factors for all items in the line. The extra orthogonal
+        space is then proportioned to the lines weighted on this stretch
+        factor.
+
+The code below creates a flow area populated with several initial flow
+items. Items can be added and removed, and each individual item is
+configurable. There is a single item which cannot be removed, and which
+controls the parameters for the entire area.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run flow_area</pre>
+</div>
+<img alt="../_images/ex_flow_area.png" src="../_images/ex_flow_area.png" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; An example of the `FlowArea` widget.</span>
+
+<span class="sd">A `FlowArea` is a very powerful tool for creating a flowing layout of</span>
+<span class="sd">widgets. A `FlowArea` accepts an arbitrary number of `FlowItem` children,</span>
+<span class="sd">each of which holds a `Container` as its content. The layout of these</span>
+<span class="sd">`FlowItem` children is controlled by the `FlowArea` attributes:</span>
+
+<span class="sd">    `direction`</span>
+<span class="sd">        This is an enum controlling how the items are arranged in the</span>
+<span class="sd">        area. Allowable values are &#39;left_to_right&#39;, &#39;right_to_left&#39;,</span>
+<span class="sd">        &#39;top_to_bottom&#39;, and &#39;bottom_to_top&#39;; and indicate the direction</span>
+<span class="sd">        in which items will be added to the area. When the layout space</span>
+<span class="sd">        in a given direction is exhausted, the layout will wrap around</span>
+<span class="sd">        to the next line. With horizontal directions, lines are stacked</span>
+<span class="sd">        top to bottom. With vertical directions, lines are stacked</span>
+<span class="sd">        left to right.</span>
+
+<span class="sd">    `align`</span>
+<span class="sd">        This is an enum controlling how a layout line is aligned within</span>
+<span class="sd">        the layout space. If there is any space leftover after laying</span>
+<span class="sd">        out a given line of widgets, that space is distributed according</span>
+<span class="sd">        to the value of this enum. Allowable values are &#39;leading&#39;,</span>
+<span class="sd">        &#39;trailing&#39;, &#39;center&#39;, and &#39;justify&#39;.</span>
+
+<span class="sd">    `horizontal_spacing`</span>
+<span class="sd">        This is an int specifying how much horizontal space to place</span>
+<span class="sd">        between items or lines in the layout.</span>
+
+<span class="sd">    `vertical_spacing`</span>
+<span class="sd">        This is an int specifying how much vertical space to place</span>
+<span class="sd">        between items or lines in the layout.</span>
+
+<span class="sd">    `margins`</span>
+<span class="sd">        This is a Box of ints specifying how much margin to place</span>
+<span class="sd">        on the outside of the layout.</span>
+
+<span class="sd">Each `FlowItem` used in the layout can further customize the behavior:</span>
+
+<span class="sd">    `preferred_size`</span>
+<span class="sd">        This is a Size specifying the desired layout size for the item.</span>
+<span class="sd">        This size will be used whenever possible, but will not override</span>
+<span class="sd">        the minimum or maximum size of the item. If set to (-1, -1)</span>
+<span class="sd">        (the default), then the size hint for the item will be used.</span>
+
+<span class="sd">    `align`</span>
+<span class="sd">        This is an enum which controls the orthogonal alignment of the</span>
+<span class="sd">        item. When an item has neighbors which are larger than itself</span>
+<span class="sd">        in the orhthongonal direction, this value controls how the item</span>
+<span class="sd">        aligns within that additional space. The valid values area</span>
+<span class="sd">        &#39;leading&#39;, &#39;trailing&#39;, and &#39;center&#39;.</span>
+
+<span class="sd">    `stretch`</span>
+<span class="sd">        This is an int which controls the amount that the widget should</span>
+<span class="sd">        expand to take up additional space in the layout direction. The</span>
+<span class="sd">        default is 0 and means that the widget will not expand. When the</span>
+<span class="sd">        value is greater than zero, the value is weighted against the</span>
+<span class="sd">        stretch factors of the other items in the same line to determine</span>
+<span class="sd">        the amount of space given to the item.</span>
+
+<span class="sd">    `ortho_stretch`</span>
+<span class="sd">        This is an int which controls the amount that the widget should</span>
+<span class="sd">        expand to take up additional space orthogonal to the layout</span>
+<span class="sd">        direction. The default is 0 and means that the widget will not</span>
+<span class="sd">        expand. If no item in a given line can expand in the ortho</span>
+<span class="sd">        direction, then the line will not expand. Otherwise, the stretch</span>
+<span class="sd">        factor for a line is equivalent to the maximum of the ortho</span>
+<span class="sd">        stretch factors for all items in the line. The extra orthogonal</span>
+<span class="sd">        space is then proportioned to the lines weighted on this stretch</span>
+<span class="sd">        factor.</span>
+
+<span class="sd">The code below creates a flow area populated with several initial flow</span>
+<span class="sd">items. Items can be added and removed, and each individual item is</span>
+<span class="sd">configurable. There is a single item which cannot be removed, and which</span>
+<span class="sd">controls the parameters for the entire area.</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FlowArea</span><span class="p">,</span> <span class="n">FlowItem</span><span class="p">,</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Form</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">SpinBox</span><span class="p">,</span> <span class="n">ComboBox</span><span class="p">,</span>
+    <span class="n">Container</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">GroupBox</span><span class="p">,</span> <span class="n">Slider</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.core.api</span> <span class="kn">import</span> <span class="n">Include</span>
+
+
+<span class="n">enamldef</span> <span class="n">Item</span><span class="p">(</span><span class="n">FlowItem</span><span class="p">):</span>
+    <span class="n">align</span> <span class="o">&lt;&lt;</span> <span class="n">align_box</span><span class="o">.</span><span class="n">selected_item</span>
+    <span class="n">stretch</span> <span class="o">&lt;&lt;</span> <span class="n">flow_spin</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">ortho_stretch</span> <span class="o">&lt;&lt;</span> <span class="n">ortho_spin</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">preferred_size</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">pref_width</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">pref_height</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">GroupBox</span><span class="p">:</span>
+        <span class="n">Form</span><span class="p">:</span>
+            <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;strong&#39;</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Preferred Width&#39;</span>
+            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">pref_width</span><span class="p">:</span>
+                <span class="n">minimum</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="n">maximum</span> <span class="o">=</span> <span class="mi">800</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Preferred Height&#39;</span>
+            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">pref_height</span><span class="p">:</span>
+                <span class="n">minimum</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="n">maximum</span> <span class="o">=</span> <span class="mi">800</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Flow Stretch&#39;</span>
+            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">flow_spin</span><span class="p">:</span>
+                <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">maximum</span> <span class="o">=</span> <span class="mi">100</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Ortho Stretch&#39;</span>
+            <span class="n">SpinBox</span><span class="p">:</span> <span class="n">ortho_spin</span><span class="p">:</span>
+                <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">maximum</span> <span class="o">=</span> <span class="mi">100</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">Label</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Ortho Align&#39;</span>
+            <span class="n">ComboBox</span><span class="p">:</span> <span class="n">align_box</span><span class="p">:</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;leading&#39;</span><span class="p">,</span> <span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="s">&#39;trailing&#39;</span><span class="p">]</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">Html</span><span class="p">:</span>
+                <span class="n">attr</span> <span class="n">fixed_height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+                <span class="n">resist_height</span> <span class="o">=</span> <span class="s">&#39;weak&#39;</span>
+                <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">height</span> <span class="o">==</span> <span class="n">fixed_height</span><span class="p">]</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;center&gt;Height == </span><span class="si">%d</span><span class="s">&lt;/center&gt;&#39;</span><span class="o">%</span><span class="n">fixed_height</span>
+
+<span class="n">enamldef</span> <span class="n">AreaControls</span><span class="p">(</span><span class="n">GroupBox</span><span class="p">):</span>
+    <span class="n">attr</span> <span class="n">area</span><span class="p">:</span> <span class="n">FlowArea</span>
+    <span class="n">event</span> <span class="n">add_item</span>
+    <span class="n">event</span> <span class="n">remove_item</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Area Controls&#39;</span>
+    <span class="n">Label</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;Add new items to see how the flow area works.</span>
+<span class="s">You can also tweak the flow parameters&quot;&quot;&quot;</span>
+    <span class="n">PushButton</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Add Item&#39;</span>
+        <span class="n">clicked</span> <span class="p">::</span> <span class="n">add_item</span><span class="p">()</span>
+    <span class="n">PushButton</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Remove Item&#39;</span>
+        <span class="n">clicked</span> <span class="p">::</span> <span class="n">remove_item</span><span class="p">()</span>
+    <span class="n">Form</span><span class="p">:</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Horizontal Spacing&#39;</span>
+        <span class="n">Slider</span><span class="p">:</span>
+            <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">maximum</span> <span class="o">=</span> <span class="mi">150</span>
+            <span class="n">value</span> <span class="p">:</span><span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">horizontal_spacing</span>
+        <span class="n">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Vertical Spacing&#39;</span>
+        <span class="n">Slider</span><span class="p">:</span>
+            <span class="n">minimum</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">maximum</span> <span class="o">=</span> <span class="mi">150</span>
+            <span class="n">value</span> <span class="p">:</span><span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">vertical_spacing</span>
+        <span class="n">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Direction&#39;</span>
+        <span class="n">ComboBox</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s">&#39;left_to_right&#39;</span><span class="p">,</span> <span class="s">&#39;right_to_left&#39;</span><span class="p">,</span>
+                <span class="s">&#39;top_to_bottom&#39;</span><span class="p">,</span> <span class="s">&#39;bottom_to_top&#39;</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">area</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span>
+            <span class="n">selected_item</span> <span class="o">&gt;&gt;</span> <span class="n">area</span><span class="o">.</span><span class="n">direction</span>
+        <span class="n">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Align&#39;</span>
+        <span class="n">ComboBox</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;leading&#39;</span><span class="p">,</span> <span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="s">&#39;justify&#39;</span><span class="p">,</span> <span class="s">&#39;trailing&#39;</span><span class="p">]</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">area</span><span class="o">.</span><span class="n">align</span><span class="p">)</span>
+            <span class="n">selected_item</span> <span class="o">&gt;&gt;</span> <span class="n">area</span><span class="o">.</span><span class="n">align</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+    <span class="n">initial_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">800</span><span class="p">,</span><span class="mi">800</span><span class="p">)</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">FlowArea</span><span class="p">:</span> <span class="n">flow_area</span><span class="p">:</span>
+            <span class="n">FlowItem</span><span class="p">:</span>
+                <span class="n">AreaControls</span><span class="p">:</span>
+                    <span class="n">area</span> <span class="o">=</span> <span class="n">flow_area</span>
+                    <span class="n">add_item</span> <span class="p">::</span>
+                        <span class="n">inc</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Item</span><span class="p">())</span>
+                    <span class="n">remove_item</span> <span class="p">::</span>
+                        <span class="k">if</span> <span class="n">inc</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span>
+                            <span class="n">inc</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">Include</span><span class="p">:</span> <span class="n">inc</span><span class="p">:</span>
+                <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

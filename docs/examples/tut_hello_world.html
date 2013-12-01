@@ -1,0 +1,298 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>“Hello World” tutorial &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Person tutorial" href="tut_person.html" />
+    <link rel="prev" title="Examples" href="index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">&#8220;Hello World&#8221; tutorial</a><ul>
+<li><a class="reference internal" href="#enaml-definitions">Enaml Definitions</a></li>
+<li><a class="reference internal" href="#definition-structure">Definition Structure</a></li>
+<li><a class="reference internal" href="#using-the-enaml-view-in-python">Using the Enaml view in Python</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">&#8220;Hello World&#8221; tutorial</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#enaml-definitions">Enaml Definitions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#definition-structure">Definition Structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-the-enaml-view-in-python">Using the Enaml view in Python</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tut_person.html">Person tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tut_employee.html">Employee tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="hello-world-tutorial">
+<span id="tut-hello-world"></span><h1>&#8220;Hello World&#8221; tutorial<a class="headerlink" href="#hello-world-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Our goal in this tutorial is to show a minimal example of an Enaml user
+interface and introduce a few basic concepts. It sets up a minimal GUI to
+display a simple message.</p>
+<p>Let&#8217;s get started with a minimalist &#8220;hello world&#8221; example. Enaml interfaces
+are described in a file with the &#8221;.enaml&#8221; extension. While the code has some
+similarities to Python, Enaml is a separate language.</p>
+<p>Here is our minimalist .enaml file describing a message-displaying GUI
+(<a class="reference download internal" href="../_downloads/hello_world_view.enaml"><tt class="xref download docutils literal"><span class="pre">download</span> <span class="pre">here</span></tt></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">Label</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+    <span class="n">attr</span> <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;Hello, world!&quot;</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">Label</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">message</span>
+</pre></div>
+</div>
+<p>Use the <tt class="docutils literal"><span class="pre">enaml-run</span></tt> utility to run it from the command line with</p>
+<div class="highlight-python"><pre>$ enaml-run hello_world_view.enaml</pre>
+</div>
+<p>The resulting GUI looks like this (on Windows 7):</p>
+<img alt="../_images/tut_hello_world.png" src="../_images/tut_hello_world.png" />
+<p>Let&#8217;s take a closer look at the Enaml file.</p>
+<div class="section" id="enaml-definitions">
+<h2>Enaml Definitions<a class="headerlink" href="#enaml-definitions" title="Permalink to this headline">¶</a></h2>
+<p>An Enaml view is made up of a series of component <em>definitions</em> that look a
+lot like Python classes. In the first line of code, we are defining a new
+component, <tt class="docutils literal"><span class="pre">Main</span></tt>, which derives from <tt class="docutils literal"><span class="pre">Window</span></tt>, a builtin widget in the
+Enaml library:</p>
+<div class="highlight-python"><pre>enamldef Main(Window):</pre>
+</div>
+<p>With this line of code, we have defined the start of a <em>definition block</em>.</p>
+<p>In general, we could call this almost anything we want, as long as it is a
+Python-valid name. In this case, however, by giving it the special name <tt class="docutils literal"><span class="pre">Main</span></tt>
+we get to run it from the command line with the <tt class="docutils literal"><span class="pre">enaml-run</span></tt> tool.
+<tt class="docutils literal"><span class="pre">enaml-run</span></tt> looks for a component named <tt class="docutils literal"><span class="pre">Main</span></tt> or a function named <tt class="docutils literal"><span class="pre">main</span></tt>
+in an <tt class="docutils literal"><span class="pre">.enaml</span></tt> file and runs it as a standalone application.</p>
+</div>
+<div class="section" id="definition-structure">
+<h2>Definition Structure<a class="headerlink" href="#definition-structure" title="Permalink to this headline">¶</a></h2>
+<p>Inside a definition block, the view is defined in a hierarchical tree of
+widgets. <a class="reference external" href="http://docs.python.org/reference/lexical_analysis.html#indentation">As in Python</a> ,
+indentation is used to specify code block structure. That is, statements
+beginning at a certain indentation level refer to the header line at the next
+lower indentation level. So in our simple example, the <tt class="docutils literal"><span class="pre">Container</span></tt> belongs to
+<tt class="docutils literal"><span class="pre">Main</span></tt> and the <tt class="docutils literal"><span class="pre">Label</span></tt> belongs to the <tt class="docutils literal"><span class="pre">Container</span></tt>:</p>
+<div class="highlight-python"><pre>enamldef Main(Window):
+    attr message = "Hello, world!"
+    Container:
+        Label:
+            text = message</pre>
+</div>
+<p>The view is made up of a <tt class="docutils literal"><span class="pre">Window</span></tt> containing a <tt class="docutils literal"><span class="pre">Container</span></tt> which in
+turn contains a <tt class="docutils literal"><span class="pre">Label</span></tt>, whose <tt class="docutils literal"><span class="pre">text</span></tt> attribute is set equal to the
+<tt class="docutils literal"><span class="pre">message</span></tt> attribute of <tt class="docutils literal"><span class="pre">Main</span></tt>, which has a default value of
+<tt class="docutils literal"><span class="pre">&quot;Hello,</span> <span class="pre">world!&quot;</span></tt>. This default value can be changed by the code which
+creates an instance of <tt class="docutils literal"><span class="pre">Main</span></tt>.
+(We&#8217;ll discuss this in more detail in the <a class="reference internal" href="tut_person.html#tut-person"><em>next tutorial</em></a>.)</p>
+<p>Just like regular Python objects, the widgets used in an Enaml UI must be
+defined and/or imported before they can be used. The widgets used in this
+tutorial are imported from <tt class="docutils literal"><span class="pre">enaml.widgets.api</span></tt>.</p>
+</div>
+<div class="section" id="using-the-enaml-view-in-python">
+<h2>Using the Enaml view in Python<a class="headerlink" href="#using-the-enaml-view-in-python" title="Permalink to this headline">¶</a></h2>
+<p>Now we&#8217;ll take a look at how to use the view in Python code. First, we import
+Enaml:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">enaml</span>
+</pre></div>
+</div>
+<p>Then we use <tt class="docutils literal"><span class="pre">enaml.imports()</span></tt> as a <a class="reference external" href="http://docs.python.org/release/2.5.2/ref/context-managers.html">context manager</a> for importing
+the Enaml view:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">enaml</span><span class="o">.</span><span class="n">imports</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">hello_world_view</span> <span class="kn">import</span> <span class="n">Main</span>
+</pre></div>
+</div>
+<p>Enaml is an inherently asynchronous toolkit, with a server running an
+application which offers UI sessions that a client may view.  For this simple
+example, we&#8217;ll be working with the client and server both running locally and
+in the same process.</p>
+<p>Next we need to create a toolkit specific application.  This is typically the only
+toolkit-specific code in an Enaml application:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">enaml.qt.qt_application</span> <span class="kn">import</span> <span class="n">QtApplication</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">QtApplication</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Then we create a view object, and call its show method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">view</span> <span class="o">=</span> <span class="n">Main</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s">&quot;Hello World, from Python!&quot;</span><span class="p">)</span>
+<span class="n">view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Finally, we start the event loop:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Start the application event loop</span>
+<span class="n">app</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/tut_hello_world_python.png" src="../_images/tut_hello_world_python.png" />
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

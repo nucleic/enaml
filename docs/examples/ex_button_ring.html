@@ -1,0 +1,312 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Button Ring Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Find Replace Example" href="ex_find_replace.html" />
+    <link rel="prev" title="Vertical Example" href="ex_vertical.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Button Ring Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#basic">Basic</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html#advanced">Advanced</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="">Button Ring Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ex_find_replace.html">Find Replace Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ex_fluid.html">Fluid Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ex_manual_hbox.html">Manual Hbox Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ex_manual_vbox.html">Manual Vbox Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ex_nested_boxes.html">Nested Boxes Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ex_nested_containers.html">Nested Containers Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="button-ring-example">
+<h1>Button Ring Example<a class="headerlink" href="#button-ring-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/button_ring.enaml"><tt class="xref download docutils literal"><span class="pre">button_ring</span></tt></a></p>
+<div class="highlight-python"><pre>An example layout which is impossible with typical layout systems.
+
+This example creates a ring of 50 `PushButton` widgets with a `Label` in
+the center. The constraints shown here are generally silly in that the
+resulting layout is more-or-less useless. Nevertheless, it serves well to
+demonstrate the power and flexibility of constraints-based layout.
+
+Note that the 'gen_constraints' function is only called once, not on
+every resize as may be expected when laying out widgets manually.
+
+Note that this example also demonstrates that constraints may be defined
+on any subclass of `ConstraintsWidget`. They need not be confined to a
+`Container`.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run button_ring</pre>
+</div>
+<img alt="../_images/ex_button_ring.png" src="../_images/ex_button_ring.png" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; An example layout which is impossible with typical layout systems.</span>
+
+<span class="sd">This example creates a ring of 50 `PushButton` widgets with a `Label` in</span>
+<span class="sd">the center. The constraints shown here are generally silly in that the</span>
+<span class="sd">resulting layout is more-or-less useless. Nevertheless, it serves well to</span>
+<span class="sd">demonstrate the power and flexibility of constraints-based layout.</span>
+
+<span class="sd">Note that the &#39;gen_constraints&#39; function is only called once, not on</span>
+<span class="sd">every resize as may be expected when laying out widgets manually.</span>
+
+<span class="sd">Note that this example also demonstrates that constraints may be defined</span>
+<span class="sd">on any subclass of `ConstraintsWidget`. They need not be confined to a</span>
+<span class="sd">`Container`.</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">MainWindow</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Label</span>
+<span class="kn">from</span> <span class="nn">enaml.core.include</span> <span class="kn">import</span> <span class="n">Include</span>
+
+
+<span class="k">def</span> <span class="nf">gen_constraints</span><span class="p">(</span><span class="n">comps</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A helper function which generates radial constraints.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    comps : list</span>
+<span class="sd">        A list of ConstraintWidget instances which should be arrange</span>
+<span class="sd">        radially over an intervale of 2-Pi.</span>
+
+<span class="sd">    top : ConstraintVariable</span>
+<span class="sd">        The variable representing the top of the layout area.</span>
+
+<span class="sd">    left : ConstraintVariable</span>
+<span class="sd">        The variable representing the left of the layout area.</span>
+
+<span class="sd">    width : ConstraintVariable</span>
+<span class="sd">        The variable representing the width of the layout area.</span>
+
+<span class="sd">    height : ConstraintVariable</span>
+<span class="sd">        The variable representing the height of the layout area.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : list</span>
+<span class="sd">        The list of primitive constraints which arrange the given</span>
+<span class="sd">        components radially in the layout area.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">nitems</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">comps</span><span class="p">)</span>
+    <span class="n">rads</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">nitems</span><span class="p">)</span>
+    <span class="n">x_coeffs</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rads</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">y_coeffs</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rads</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="k">for</span> <span class="n">comp</span><span class="p">,</span> <span class="n">x_coeff</span><span class="p">,</span> <span class="n">y_coeff</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">comps</span><span class="p">,</span> <span class="n">x_coeffs</span><span class="p">,</span> <span class="n">y_coeffs</span><span class="p">):</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+            <span class="n">comp</span><span class="o">.</span><span class="n">left</span> <span class="o">==</span> <span class="p">(</span><span class="n">left</span> <span class="o">+</span> <span class="n">x_coeff</span> <span class="o">*</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="n">comp</span><span class="o">.</span><span class="n">width</span><span class="p">)),</span>
+            <span class="n">comp</span><span class="o">.</span><span class="n">top</span> <span class="o">==</span> <span class="p">(</span><span class="n">top</span> <span class="o">+</span> <span class="n">y_coeff</span> <span class="o">*</span> <span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="n">comp</span><span class="o">.</span><span class="n">height</span><span class="p">)),</span>
+        <span class="p">])</span>
+    <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="n">enamldef</span> <span class="n">SimpleButton</span><span class="p">(</span><span class="n">PushButton</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom `PushButton` for use in the button ring example.</span>
+
+<span class="sd">    The width and height of this `PushButton` is fixed to its size hint.</span>
+<span class="sd">    This is required since no other constraints are placed on the width</span>
+<span class="sd">    of the button in this example. If these constraints were not added,</span>
+<span class="sd">    then the constraints solver would error with an unbounded system,</span>
+<span class="sd">    indicating an underconstrained system.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hug_width</span> <span class="o">=</span> <span class="s">&#39;required&#39;</span>
+    <span class="n">hug_height</span> <span class="o">=</span> <span class="s">&#39;required&#39;</span>
+    <span class="n">clicked</span> <span class="p">::</span> <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> clicked&#39;</span> <span class="o">%</span> <span class="n">text</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">MainWindow</span><span class="p">):</span>
+    <span class="n">Container</span><span class="p">:</span> <span class="n">cntr</span><span class="p">:</span>
+        <span class="n">constraints</span> <span class="o">&lt;&lt;</span> <span class="n">gen_constraints</span><span class="p">(</span>
+            <span class="n">inc</span><span class="o">.</span><span class="n">objects</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">width</span> <span class="o">&gt;=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">height</span> <span class="o">&gt;=</span> <span class="mi">200</span><span class="p">]</span>
+        <span class="n">Include</span><span class="p">:</span> <span class="n">inc</span><span class="p">:</span>
+            <span class="n">objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">SimpleButton</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">)]</span>
+        <span class="n">Label</span><span class="p">:</span> <span class="n">lbl</span><span class="p">:</span>
+            <span class="c"># Constraints can also be directly defined on a component.</span>
+            <span class="c"># This is provided as a convenience where it makes the code</span>
+            <span class="c"># clearer and easier to understand. It makes no difference</span>
+            <span class="c"># if the constraints are defined here, or on the Container.</span>
+            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">v_center</span> <span class="o">==</span> <span class="n">cntr</span><span class="o">.</span><span class="n">v_center</span><span class="p">,</span>
+                <span class="n">h_center</span> <span class="o">==</span> <span class="n">cntr</span><span class="o">.</span><span class="n">h_center</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Button Ring&#39;</span>
+            <span class="n">font</span> <span class="o">=</span> <span class="s">&#39;arial 12 bold&#39;</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

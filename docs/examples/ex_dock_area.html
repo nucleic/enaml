@@ -1,0 +1,419 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dock Area Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Dock Pane Example" href="ex_dock_pane.html" />
+    <link rel="prev" title="Context Menu Example" href="ex_context_menu.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Dock Area Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_buttons.html">Buttons Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_context_menu.html">Context Menu Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Dock Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dock_pane.html">Dock Pane Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_dual_slider.html">Dual Slider Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_file_dialog.html">File Dialog Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_flow_area.html">Flow Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_form.html">Form Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_group_box.html">Group Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_image_view.html">Image View Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_main_window.html">Main Window Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_menu_bar.html">Menu Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_mpl_canvas.html">Mpl Canvas Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_notebook.html">Notebook Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_popup_menu.html">Popup Menu Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_popup_view.html">Popup View Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_progress_bar.html">Progress Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_scroll_area.html">Scroll Area Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_slider.html">Slider Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_spin_box.html">Spin Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_splitter.html">Splitter Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_tool_bar.html">Tool Bar Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_window.html">Window Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_window_children.html">Window Children Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="dock-area-example">
+<h1>Dock Area Example<a class="headerlink" href="#dock-area-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/dock_area.enaml"><tt class="xref download docutils literal"><span class="pre">dock_area</span></tt></a></p>
+<div class="highlight-python"><pre>This example demonstrates the use of the advanced DockArea widget.
+
+The DockArea widget provides a canvas into which DockItems can be docked
+and undocked at will. The layout configuration of the area can be saved
+and restored using a layout object which can be easily pickled.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run dock_area</pre>
+</div>
+<img alt="../_images/ex_dock_area.png" src="../_images/ex_dock_area.png" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c">#  Copyright (c) 2013, Nucleic Development Team</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; This example demonstrates the use of the advanced DockArea widget.</span>
+
+<span class="sd">The DockArea widget provides a canvas into which DockItems can be docked</span>
+<span class="sd">and undocked at will. The layout configuration of the area can be saved</span>
+<span class="sd">and restored using a layout object which can be easily pickled.</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">cPickle</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">ContainerList</span><span class="p">,</span> <span class="n">Unicode</span>
+
+<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HSplitLayout</span><span class="p">,</span> <span class="n">VSplitLayout</span><span class="p">,</span> <span class="n">TabLayout</span><span class="p">,</span> <span class="n">InsertItem</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">spacer</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.stdlib.dock_area_styles</span> <span class="kn">import</span> <span class="n">available_styles</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">DockArea</span><span class="p">,</span> <span class="n">DockItem</span><span class="p">,</span> <span class="n">PushButton</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">Slider</span><span class="p">,</span>
+    <span class="n">ObjectCombo</span><span class="p">,</span> <span class="n">CheckBox</span><span class="p">,</span> <span class="n">MultilineField</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">cap_case</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">LineCollector</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A simple class used to generate event logging text.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The header to use as the first lines of the text.</span>
+    <span class="n">HEADER</span> <span class="o">=</span> <span class="s">u&#39;#   Item     Event Type            </span><span class="se">\n</span><span class="s">&#39;</span>\
+             <span class="s">u&#39;-----------------------------------&#39;</span>
+
+    <span class="c">#: The output text of the collector; updated when data changes.</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">(</span><span class="n">HEADER</span><span class="p">)</span>
+
+    <span class="c">#: The data for the collector. This is a list of 2-tuples of</span>
+    <span class="c">#: the form (unicode, DockItemEvent.Type).</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">ContainerList</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_observe_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_text</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Regenerate the output text from the current data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">evt_type</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)):</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">count</span> <span class="o">-</span> <span class="n">index</span><span class="p">,</span> <span class="n">evt_type</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">HEADER</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+            <span class="n">num</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">enum</span> <span class="o">=</span> <span class="n">item</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s">u&#39;{0!s: &lt;4}{1: &lt;9}{2: &lt;19}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">enum</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s">u&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+
+<span class="n">enamldef</span> <span class="n">MyDockArea</span><span class="p">(</span><span class="n">DockArea</span><span class="p">):</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">HSplitLayout</span><span class="p">(</span>
+        <span class="n">VSplitLayout</span><span class="p">(</span>
+            <span class="n">HSplitLayout</span><span class="p">(</span>
+                <span class="n">VSplitLayout</span><span class="p">(</span><span class="s">&#39;item_1&#39;</span><span class="p">,</span> <span class="s">&#39;item_3&#39;</span><span class="p">),</span>
+                <span class="s">&#39;item_4&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s">&#39;logger&#39;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">VSplitLayout</span><span class="p">(</span>
+            <span class="n">TabLayout</span><span class="p">(</span><span class="s">&#39;item_6&#39;</span><span class="p">,</span> <span class="s">&#39;item_7&#39;</span><span class="p">,</span> <span class="s">&#39;item_8&#39;</span><span class="p">,</span> <span class="s">&#39;item_9&#39;</span><span class="p">),</span>
+            <span class="s">&#39;item_5&#39;</span><span class="p">,</span>
+            <span class="s">&#39;item_2&#39;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_1&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 1&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_2&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 2&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
+            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;bar&#39;</span>
+            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;baz&#39;</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_3&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 3&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">Html</span><span class="p">:</span> <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Hello World!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_4&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 4&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">Html</span><span class="p">:</span> <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Hello Enaml!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_5&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 5&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">Slider</span><span class="p">:</span> <span class="k">pass</span>
+            <span class="n">Slider</span><span class="p">:</span> <span class="k">pass</span>
+            <span class="n">Slider</span><span class="p">:</span> <span class="k">pass</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_6&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 6&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">Html</span><span class="p">:</span> <span class="n">source</span> <span class="o">=</span> <span class="s">u&#39;&lt;h1&gt;&lt;center&gt;Guten Tag!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_7&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 7&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+            <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_8&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 8&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;spam&#39;</span>
+            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;ham&#39;</span>
+            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;green&#39;</span>
+            <span class="n">PushButton</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;eggs&#39;</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_9&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item 9&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">Html</span><span class="p">:</span> <span class="n">source</span> <span class="o">=</span> <span class="s">&#39;&lt;h1&gt;&lt;center&gt;Bonjour!&lt;/center&gt;&lt;/h1&gt;&#39;</span>
+    <span class="n">DockItem</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;logger&#39;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Logger&#39;</span>
+        <span class="n">Container</span><span class="p">:</span>
+            <span class="n">MultilineField</span><span class="p">:</span>
+                <span class="n">attr</span> <span class="n">collector</span> <span class="o">=</span> <span class="n">LineCollector</span><span class="p">()</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;line-collector&#39;</span>
+                <span class="n">text</span> <span class="o">&lt;&lt;</span> <span class="n">collector</span><span class="o">.</span><span class="n">text</span>
+                <span class="n">font</span> <span class="o">=</span> <span class="s">&#39;9pt Courier&#39;</span>
+                <span class="n">read_only</span> <span class="o">=</span> <span class="bp">True</span>
+
+
+<span class="n">enamldef</span> <span class="n">MyItem</span><span class="p">(</span><span class="n">DockItem</span><span class="p">):</span> <span class="n">owner</span><span class="p">:</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">Field</span><span class="p">:</span> <span class="n">text</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">name</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">attr</span> <span class="n">stored</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">hbox</span><span class="p">(</span>
+                <span class="n">vbox</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">save_b</span><span class="p">,</span> <span class="n">restore_b</span><span class="p">,</span> <span class="n">add_b</span><span class="p">,</span> <span class="n">style_c</span><span class="p">,</span> <span class="n">c_box</span><span class="p">,</span> <span class="n">spacer</span><span class="p">),</span>
+                <span class="n">area</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">PushButton</span><span class="p">:</span> <span class="n">save_b</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Save Layout&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span>
+                <span class="n">layout</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">save_layout</span><span class="p">()</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">stored</span> <span class="o">=</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">PushButton</span><span class="p">:</span> <span class="n">restore_b</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Restore Layout&#39;</span>
+            <span class="n">enabled</span> <span class="o">&lt;&lt;</span> <span class="n">stored</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+            <span class="n">clicked</span> <span class="p">::</span>
+                <span class="n">layout</span> <span class="o">=</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stored</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">area</span><span class="o">.</span><span class="n">suppress_dock_events</span><span class="p">():</span>
+                    <span class="n">area</span><span class="o">.</span><span class="n">apply_layout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+        <span class="n">PushButton</span><span class="p">:</span> <span class="n">add_b</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Add Items&#39;</span>
+            <span class="n">clicked</span> <span class="p">::</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                    <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">area</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;item_</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">n</span>
+                    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Item </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">n</span>
+                    <span class="n">item</span> <span class="o">=</span> <span class="n">MyItem</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+                    <span class="n">op</span> <span class="o">=</span> <span class="n">InsertItem</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s">&#39;item_1&#39;</span><span class="p">)</span>
+                    <span class="n">area</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+        <span class="n">ObjectCombo</span><span class="p">:</span> <span class="n">style_c</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="n">available_styles</span><span class="p">()</span>
+            <span class="n">to_string</span> <span class="o">=</span> <span class="n">cap_case</span>
+            <span class="n">selected</span> <span class="o">=</span> <span class="s">&#39;vs-2010&#39;</span>
+        <span class="n">CheckBox</span><span class="p">:</span> <span class="n">c_box</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Enable Dock Events&#39;</span>
+            <span class="n">checked</span> <span class="p">:</span><span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">dock_events_enabled</span>
+        <span class="n">MyDockArea</span><span class="p">:</span> <span class="n">area</span><span class="p">:</span>
+            <span class="n">style</span> <span class="o">&lt;&lt;</span> <span class="n">style_c</span><span class="o">.</span><span class="n">selected</span>
+            <span class="n">dock_event</span> <span class="p">::</span>
+                <span class="n">event</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s">&#39;value&#39;</span><span class="p">]</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;line-collector&#39;</span><span class="p">)</span>
+                <span class="n">field</span><span class="o">.</span><span class="n">collector</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

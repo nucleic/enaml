@@ -1,0 +1,374 @@
+
+
+  
+  
+ 
+  
+ 
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dock Item Alerts Example &mdash; Enaml 0.8.9 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.8.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Gradient Push Button Example" href="ex_gradient_push_button.html" />
+    <link rel="prev" title="Banner Example" href="ex_banner.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Dock Item Alerts Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_banner.html">Banner Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Dock Item Alerts Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_gradient_push_button.html">Gradient Push Button Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="dock-item-alerts-example">
+<h1>Dock Item Alerts Example<a class="headerlink" href="#dock-item-alerts-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/dock_item_alerts.enaml"><tt class="xref download docutils literal"><span class="pre">dock_item_alerts</span></tt></a></p>
+<div class="highlight-python"><pre>This example demonstrates the use of alerts on the DockItem widget.
+
+The DockItem widget and related bits in the DockArea support a style
+sheet pseudo-class named 'alert'. This pseudo-class is very powerful in
+that it allows the developer to provide their own arbitrary token to the
+pseudo-class as an argument, and then apply that token to a dock item at
+runtime. This gives the developer complete freed over the how they style
+their alerts, and does not force them in to a pre-defined hierarchy of
+alert levels.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run dock_item_alerts</pre>
+</div>
+<img alt="../_images/ex_dock_item_alerts.png" src="../_images/ex_dock_item_alerts.png" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c">#  Copyright (c) 2013, Nucleic Development Team</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; This example demonstrates the use of alerts on the DockItem widget.</span>
+
+<span class="sd">The DockItem widget and related bits in the DockArea support a style</span>
+<span class="sd">sheet pseudo-class named &#39;alert&#39;. This pseudo-class is very powerful in</span>
+<span class="sd">that it allows the developer to provide their own arbitrary token to the</span>
+<span class="sd">pseudo-class as an argument, and then apply that token to a dock item at</span>
+<span class="sd">runtime. This gives the developer complete freed over the how they style</span>
+<span class="sd">their alerts, and does not force them in to a pre-defined hierarchy of</span>
+<span class="sd">alert levels.</span>
+
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HSplitLayout</span><span class="p">,</span> <span class="n">VSplitLayout</span><span class="p">,</span> <span class="n">TabLayout</span><span class="p">,</span> <span class="n">hbox</span><span class="p">,</span> <span class="n">vbox</span><span class="p">,</span> <span class="n">spacer</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.styling</span> <span class="kn">import</span> <span class="n">StyleSheet</span>
+<span class="kn">from</span> <span class="nn">enaml.stdlib.dock_area_styles</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">VS2010Style</span><span class="p">,</span> <span class="n">TitleBarStyle</span><span class="p">,</span> <span class="n">DockBarButtonStyle</span><span class="p">,</span> <span class="n">ContainerStyle</span><span class="p">,</span>
+    <span class="n">ItemStyle</span><span class="p">,</span> <span class="n">TabBarTabStyle</span><span class="p">,</span> <span class="n">TitleBarLabelStyle</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">DockArea</span><span class="p">,</span> <span class="n">DockItem</span><span class="p">,</span> <span class="n">Html</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">PushButton</span>
+<span class="p">)</span>
+
+
+<span class="n">HTML</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">&lt;h3&gt;&lt;center&gt;</span>
+<span class="s">Drag the dock items to different locations to and then trigger an alert.</span>
+<span class="s">&lt;/center&gt;&lt;/h3&gt;</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">MELTDOWN_HTML</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">&lt;h1&gt;&lt;center&gt;Everything is NOT okay!&lt;/center&gt;&lt;/h1&gt;</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">enamldef</span> <span class="n">MyAlertStyleSheet</span><span class="p">(</span><span class="n">StyleSheet</span><span class="p">):</span>
+
+    <span class="c"># Include the base VS 2010 styling rules</span>
+    <span class="n">VS2010Style</span><span class="p">():</span>
+        <span class="k">pass</span>
+
+    <span class="c"># Add alert styles for an &quot;important&quot; alert.</span>
+    <span class="n">TitleBarStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(important)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;orange&#39;</span>
+
+    <span class="n">TitleBarLabelStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(important)&#39;</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s">&#39;black&#39;</span>
+
+    <span class="n">DockBarButtonStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(important)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;orange&#39;</span>
+
+    <span class="n">TabBarTabStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(important)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;orange&#39;</span>
+
+
+    <span class="c"># Add alert styles for an &quot;information&quot; alert.</span>
+    <span class="n">TitleBarStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(information)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;olivedrab&#39;</span>
+
+    <span class="n">DockBarButtonStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(information)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;olivedrab&#39;</span>
+
+    <span class="n">TabBarTabStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(information)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;olivedrab&#39;</span>
+
+
+    <span class="c"># Add alert styles for a &quot;meltdown&quot; alert.</span>
+    <span class="n">TitleBarStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+
+    <span class="n">DockBarButtonStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+
+    <span class="n">TabBarTabStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+
+    <span class="n">ContainerStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;yellow&#39;</span>
+
+    <span class="n">ItemStyle</span><span class="p">:</span>
+        <span class="n">pseudo_class</span> <span class="o">=</span> <span class="s">&#39;alert(meltdown)&#39;</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;red&#39;</span>
+
+
+<span class="n">enamldef</span> <span class="n">DummyItem</span><span class="p">(</span><span class="n">DockItem</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">))</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+        <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+        <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+        <span class="n">Field</span><span class="p">:</span> <span class="k">pass</span>
+
+
+<span class="n">enamldef</span> <span class="n">Main</span><span class="p">(</span><span class="n">Window</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Dock Item Alerts&#39;</span>
+    <span class="n">MyAlertStyleSheet</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">Container</span><span class="p">:</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">DockArea</span><span class="p">:</span>
+            <span class="c"># A custom style sheet is being used, so the default style</span>
+            <span class="c"># sheet must be disabled - IMPORTANT!</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="n">layout</span> <span class="o">=</span> <span class="n">HSplitLayout</span><span class="p">(</span>
+                <span class="n">VSplitLayout</span><span class="p">(</span><span class="s">&#39;controls&#39;</span><span class="p">,</span> <span class="s">&#39;information&#39;</span><span class="p">),</span>
+                <span class="n">VSplitLayout</span><span class="p">(</span><span class="s">&#39;important&#39;</span><span class="p">,</span> <span class="s">&#39;meltdown&#39;</span><span class="p">),</span>
+                <span class="n">TabLayout</span><span class="p">(</span><span class="s">&#39;dummy_1&#39;</span><span class="p">,</span> <span class="s">&#39;dummy_2&#39;</span><span class="p">,</span> <span class="s">&#39;dummy_3&#39;</span><span class="p">,</span> <span class="s">&#39;dummy_4&#39;</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">DockItem</span><span class="p">:</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Controls&#39;</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;controls&#39;</span>
+                <span class="n">stretch</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">Container</span><span class="p">:</span>
+                    <span class="n">PushButton</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Information&#39;</span>
+                        <span class="n">clicked</span> <span class="p">::</span>
+                            <span class="n">info_item</span><span class="o">.</span><span class="n">alert</span><span class="p">(</span><span class="s">&#39;information&#39;</span><span class="p">)</span>
+                    <span class="n">PushButton</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Important&#39;</span>
+                        <span class="n">clicked</span> <span class="p">::</span>
+                            <span class="n">important_item</span><span class="o">.</span><span class="n">alert</span><span class="p">(</span><span class="s">&#39;important&#39;</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                    <span class="n">PushButton</span><span class="p">:</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;Meltdown&#39;</span>
+                        <span class="n">clicked</span> <span class="p">::</span>
+                            <span class="n">meltdown_item</span><span class="o">.</span><span class="n">alert</span><span class="p">(</span>
+                                <span class="s">&#39;meltdown&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">off</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">100</span>
+                            <span class="p">)</span>
+            <span class="n">DockItem</span><span class="p">:</span> <span class="n">info_item</span><span class="p">:</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Information&#39;</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;information&#39;</span>
+                <span class="n">stretch</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">Container</span><span class="p">:</span>
+                    <span class="n">Field</span><span class="p">:</span>
+                        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;just&#39;</span>
+                    <span class="n">Field</span><span class="p">:</span>
+                        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;some&#39;</span>
+                    <span class="n">Field</span><span class="p">:</span>
+                        <span class="n">placeholder</span> <span class="o">=</span> <span class="s">&#39;information&#39;</span>
+            <span class="n">DockItem</span><span class="p">:</span> <span class="n">important_item</span><span class="p">:</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Important Data&#39;</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;important&#39;</span>
+                <span class="n">Container</span><span class="p">:</span>
+                    <span class="n">Html</span><span class="p">:</span>
+                        <span class="n">source</span> <span class="o">=</span> <span class="n">HTML</span>
+            <span class="n">DockItem</span><span class="p">:</span> <span class="n">meltdown_item</span><span class="p">:</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Meltdown&#39;</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;meltdown&#39;</span>
+                <span class="n">Container</span><span class="p">:</span>
+                    <span class="n">Html</span><span class="p">:</span>
+                        <span class="n">source</span> <span class="o">=</span> <span class="n">MELTDOWN_HTML</span>
+            <span class="n">DummyItem</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;dummy_1&#39;</span>
+            <span class="n">DummyItem</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;dummy_2&#39;</span>
+            <span class="n">DummyItem</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;dummy_3&#39;</span>
+            <span class="n">DummyItem</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;dummy_4&#39;</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Dec 01, 2013.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
