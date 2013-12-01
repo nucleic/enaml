@@ -29,13 +29,11 @@ gh-pages:
 	git pull origin master
 	rm -rf ../enaml_docs
 	mkdir ../enaml_docs
-	cd docs
 	rm -rf build
-	make html
-	cp -R build/html/ ../enaml_docs
+	make -C docs html
+	cp -R docs/build/html/ ../enaml_docs
 	mv ../enaml_docs/html ../enaml_docs/docs
 	git checkout gh-pages
-	cd ..
 	rm -rf docs
 	cp -R ../enaml_docs/docs/ .
 	git commit -a -m "rebuild docs"
