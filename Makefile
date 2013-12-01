@@ -1,4 +1,5 @@
 # Note: This is meant for enaml developers, not for end users
+#       To install Enaml, please use setup.py.
 
 .PHONY: all clean test cover
 
