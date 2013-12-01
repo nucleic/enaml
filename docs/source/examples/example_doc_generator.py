@@ -45,7 +45,7 @@ class SnapShot(Atom):
         if change['type'] == 'create':
             self.view.initial_position = (10, 10)
             self.view.always_on_top = True
-            timed_call(500, self.snapshot)
+            timed_call(1000, self.snapshot)
 
     def snapshot(self):
         """ Take a snapshot of the window and close it.
