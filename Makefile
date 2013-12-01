@@ -1,8 +1,10 @@
+# Note: This is meant for enaml developers, not for end users
+
 .PHONY: all clean test cover
 
 all:  
 	make clean
-	python setup.py install
+	pip install -e .
 
 clean:
 	rm -rf build
