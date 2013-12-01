@@ -9,6 +9,8 @@ recursive-include examples *.py
 recursive-include licenses *.txt
 recursive-include tools *.*
 recursive-include tests *.py
+recursive-include atom/src *.cpp
+recursive-include atom/src *.h
 prune .git
 prune docs/build
 prune dist
