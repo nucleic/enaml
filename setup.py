@@ -73,7 +73,7 @@ setup(
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.md').read(),
     requires=['atom', 'PyQt', 'ply', 'casuarius'],
-    install_requires=['distribute'],
+    install_requires=['distribute', 'atom >= 0.3.5', 'casuarius >= 1.1', 'ply 3.4'],
     packages=find_packages(),
     package_data={
         'enaml.applib': ['*.enaml'],
