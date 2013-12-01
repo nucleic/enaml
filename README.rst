@@ -14,6 +14,8 @@ A few highlights of the framework:
 * A design which encourages model-view separation
 * A well documented and easy to follow code base
 
-See [the docs](http://nucleic.github.io/enaml/docs) for more information.
+See `the docs <http://nucleic.github.io/enaml/docs>`_ for more information.
 
-[Ask questions](http://groups.google.com/d/forum/enaml) on the Q&A forum.
+`Ask questions` <http://groups.google.com/d/forum/enaml>`_ on the Q&A forum.
+
+For version information, see `the Revision History <https://github.com/nucleic/enaml/blob/master/releasenotes.rst>`_.
