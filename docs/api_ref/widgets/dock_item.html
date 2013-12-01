@@ -14,17 +14,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.dock_item &mdash; Enaml 0.8.5 documentation</title>
+    <title>enaml.widgets.dock_item &mdash; Enaml 0.8.9 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.5 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../../index.html" />
     <link rel="up" title="enaml.widgets" href="index.html" />
     <link rel="next" title="enaml.widgets.dock_pane" href="dock_pane.html" />
     <link rel="prev" title="enaml.widgets.dock_events" href="dock_events.html" />
@@ -66,7 +66,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -313,6 +313,45 @@ destroyed after this event has completed.</p>
 <p>The last child Container is considered the dock widget.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="enaml.widgets.dock_item.DockItem.alert">
+<tt class="descname">alert</tt><big>(</big><em>level</em>, <em>on=250</em>, <em>off=250</em>, <em>repeat=4</em>, <em>persist=False</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/dock_item.html#DockItem.alert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.dock_item.DockItem.alert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the alert level on the dock item.</p>
+<p>This will override any currently applied alert level.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>level</strong> : unicode</p>
+<blockquote>
+<div><p>The alert level token to apply to the dock item.</p>
+</div></blockquote>
+<p><strong>on</strong> : int</p>
+<blockquote>
+<div><p>The duration of the &#8216;on&#8217; cycle, in ms. A value of -1 means
+always on.</p>
+</div></blockquote>
+<p><strong>off</strong> : int</p>
+<blockquote>
+<div><p>The duration of the &#8216;off&#8217; cycle, in ms. If &#8216;on&#8217; is -1, this
+value is ignored.</p>
+</div></blockquote>
+<p><strong>repeat</strong> : int</p>
+<blockquote>
+<div><p>The number of times to repeat the on-off cycle. If &#8216;on&#8217; is
+-1, this value is ignored.</p>
+</div></blockquote>
+<p><strong>persist</strong> : bool</p>
+<blockquote class="last">
+<div><p>Whether to leave the alert in the &#8216;on&#8217; state when the cycles
+finish. If &#8216;on&#8217; is -1, this value is ignored.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -330,7 +369,7 @@ destroyed after this event has completed.</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 29, 2013.<br/>
+      Last updated on Dec 01, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>

@@ -14,17 +14,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.core.include &mdash; Enaml 0.8.5 documentation</title>
+    <title>enaml.core.include &mdash; Enaml 0.8.9 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.5 documentation" href="../../../index.html" />
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +64,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -179,6 +179,24 @@
         <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
 </div>
+<div class="viewcode-block" id="Include.destroy"><a class="viewcode-back" href="../../../api_ref/core/include.html#enaml.core.include.Include.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; A reimplemented destructor.</span>
+
+<span class="sd">        The Include will destroy all of its objects if the &#39;destroy_old&#39;</span>
+<span class="sd">        flag is set and the parent is not also being destroyed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">destroy_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">destroy_old</span>
+        <span class="k">if</span> <span class="n">destroy_items</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
+            <span class="n">destroy_items</span> <span class="o">=</span> <span class="n">parent</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">parent</span><span class="o">.</span><span class="n">is_destroyed</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Include</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">destroy_items</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">is_destroyed</span><span class="p">:</span>
+                    <span class="n">item</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span>
+</div>
     <span class="k">def</span> <span class="nf">_observe_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; A change handler for the &#39;objects&#39; list of the Include.</span>
 
@@ -260,7 +278,7 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 29, 2013.<br/>
+      Last updated on Dec 01, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>

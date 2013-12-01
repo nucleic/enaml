@@ -14,17 +14,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.window &mdash; Enaml 0.8.5 documentation</title>
+    <title>enaml.widgets.window &mdash; Enaml 0.8.9 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.8.5',
+        VERSION:     '0.8.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +37,7 @@
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.5 documentation" href="../../../index.html" />
+    <link rel="top" title="Enaml 0.8.9 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +64,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.5</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -197,7 +197,13 @@
     <span class="k">def</span> <span class="nf">minimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
+    <span class="k">def</span> <span class="nf">is_minimized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
     <span class="k">def</span> <span class="nf">maximize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">is_maximized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -207,6 +213,9 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">def</span> <span class="nf">send_to_back</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">activate_window</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">def</span> <span class="nf">center_on_screen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -259,7 +268,8 @@
     <span class="c">#: The title bar icon.</span>
     <span class="n">icon</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">Icon</span><span class="p">))</span>
 
-    <span class="c">#: Whether or not the window remains on top of all others.</span>
+    <span class="c">#: Whether the window styas on top of other windows on the desktop.</span>
+    <span class="c">#: Changes to this value after the window is shown will be ignored.</span>
     <span class="n">always_on_top</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
 
     <span class="c">#: An event fired when the window is closed. This event is triggered</span>
@@ -392,39 +402,75 @@
         <span class="k">return</span> <span class="n">Rect</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="Window.maximize"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.maximize">[docs]</a>    <span class="k">def</span> <span class="nf">maximize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Send the &#39;maximize&#39; action to the client widget.</span>
+        <span class="sd">&quot;&quot;&quot; Maximize the window.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">maximize</span><span class="p">()</span>
 </div>
+<div class="viewcode-block" id="Window.is_maximized"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.is_maximized">[docs]</a>    <span class="k">def</span> <span class="nf">is_maximized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether the window is maximized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">is_maximized</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
 <div class="viewcode-block" id="Window.minimize"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.minimize">[docs]</a>    <span class="k">def</span> <span class="nf">minimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Send the &#39;minimize&#39; action to the client widget.</span>
+        <span class="sd">&quot;&quot;&quot; Minimize the window.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">minimize</span><span class="p">()</span>
 </div>
+<div class="viewcode-block" id="Window.is_minimized"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.is_minimized">[docs]</a>    <span class="k">def</span> <span class="nf">is_minimized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether the window is minimized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">is_minimized</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
 <div class="viewcode-block" id="Window.restore"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.restore">[docs]</a>    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Send the &#39;restore&#39; action to the client widget.</span>
+        <span class="sd">&quot;&quot;&quot; Restore the window from a maximized or minimized state.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">restore</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="Window.send_to_front"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.send_to_front">[docs]</a>    <span class="k">def</span> <span class="nf">send_to_front</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Send the window to the top of the Z order.</span>
+        <span class="sd">&quot;&quot;&quot; Send the window to the top of the Z-order.</span>
+
+<span class="sd">        This will only affect the Z-order of the window relative to the</span>
+<span class="sd">        Z-order of other windows in the same application.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">send_to_front</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="Window.send_to_back"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.send_to_back">[docs]</a>    <span class="k">def</span> <span class="nf">send_to_back</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Send the window to the bottom of the Z order.</span>
+        <span class="sd">&quot;&quot;&quot; Send the window to the bottom of the Z-order.</span>
+
+<span class="sd">        This will only affect the Z-order of the window relative to the</span>
+<span class="sd">        Z-order of other windows in the same application.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">send_to_back</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.activate_window"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.activate_window">[docs]</a>    <span class="k">def</span> <span class="nf">activate_window</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set this window to be the active application window.</span>
+
+<span class="sd">        This performs the same operation as clicking the mouse on the</span>
+<span class="sd">        title bar of the window, except that it will not effect the Z</span>
+<span class="sd">        order of the window.</span>
+
+<span class="sd">        On Windows, this will cause the taskbar icon to flash if the</span>
+<span class="sd">        window does not belong to the active application.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">activate_window</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="Window.center_on_screen"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.center_on_screen">[docs]</a>    <span class="k">def</span> <span class="nf">center_on_screen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Center the window on the screen.</span>
@@ -505,7 +551,7 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Oct 29, 2013.<br/>
+      Last updated on Dec 01, 2013.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
