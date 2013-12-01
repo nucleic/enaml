@@ -6,6 +6,8 @@ recursive-include docs *.png
 recursive-include docs *.py
 recursive-include examples *.py
 recursive-include licenses *.txt
+recursive-include tools *.*
+recursive-include tests *.py
 prune .git
 prune docs/build
 prune dist
