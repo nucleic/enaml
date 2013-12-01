@@ -106,7 +106,7 @@ def generate_example_doc(app, docs_path, script_path):
 .. image:: images/{4}
 
 .. literalinclude:: ../../../{2}
-    :language: python
+    :language: enaml
 
 """.format(script_title, script_name, relative_script_path,
            docstring.replace('\n', '\n    '), script_image_name)
