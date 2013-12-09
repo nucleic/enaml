@@ -9,12 +9,13 @@ from atom.api import Typed
 
 from enaml.widgets.dialog import ProxyDialog
 
-from .QtCore import Qt, Signal
-from .QtGui import QDialog
+from .QtCore import Qt, Signal, QSize
+from .QtGui import QDialog, QLayout
 
-from .q_window_base import QWindowBase
+from .q_window_base import QWindowBase, QWindowLayout
 from .qt_window import QtWindow
 
+from . import QT_API 
 
 class QWindowDialog(QDialog, QWindowBase):
     """ A window base subclass which implements dialog behavior.
@@ -36,6 +37,14 @@ class QWindowDialog(QDialog, QWindowBase):
 
         """
         super(QWindowDialog, self).__init__(parent, flags)
+        #Pyside's mro goes off the rails and the QWindowBase.__init__ method does not get called.
+        #Copy in the necessary layout code here. 
+        if QT_API == 'pyside':
+            self._expl_min_size = QSize()
+            self._expl_max_size = QSize()
+            layout = QWindowLayout()
+            layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+            self.setLayout(layout)
 
 
 class QtDialog(QtWindow, ProxyDialog):
