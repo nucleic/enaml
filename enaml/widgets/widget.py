@@ -5,7 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
+from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, List, \
+    Event, observe
 
 from enaml.colors import ColorMember
 from enaml.core.declarative import d_
@@ -102,6 +103,27 @@ class Widget(ToolkitObject, Stylable):
     #: supplied by the client.
     show_focus_rect = d_(Enum(None, True, False))
 
+    #: Whether or not the widget can be dropped on
+    accept_drops = d_(Bool(False))
+
+    #: Whether or not the widget can be dragged
+    accept_drags = d_(Bool(False))
+
+    #: The mime-type associated with the drag
+    drag_type = d_(Unicode())
+
+    #: The data to be dragged
+    drag_data = d_(Unicode())
+
+    #: The mime types that the widget allows to be dropped on itself
+    drop_types = d_(List())
+
+    #: Whether or not to highlight drop areas
+    highlight_drop = d_(Bool(False))
+
+    #: Fired when something is dropped on the widget
+    dropped = d_(Event(), writable=False)
+
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
 
@@ -110,7 +132,8 @@ class Widget(ToolkitObject, Stylable):
     #--------------------------------------------------------------------------
     @observe('enabled', 'visible', 'background', 'foreground', 'font',
         'minimum_size', 'maximum_size', 'show_focus_rect', 'tool_tip',
-        'status_tip')
+        'status_tip', 'accept_drops', 'accept_drags', 'drag_type', 'drag_data',
+        'drop_types', 'highlight_drop')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
 
@@ -158,3 +181,13 @@ class Widget(ToolkitObject, Stylable):
         self.visible = False
         if self.proxy_is_active:
             self.proxy.ensure_hidden()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _handle_drop(self, content):
+        """ A method called by the proxy when the user drops the dragged
+        widget.
+
+        """
+        self.dropped(content)
