@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
-
 from .dock_layout import (
     ItemLayout, TabLayout, SplitLayout, HSplitLayout, VSplitLayout,
     DockBarLayout, AreaLayout, DockLayout, DockLayoutWarning,
