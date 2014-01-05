@@ -15,7 +15,7 @@ from .box_helper import BoxHelper
 from .constrainable import Constrainable
 from .constraint_helper import ConstraintHelper
 from .geometry import Box
-from .spacer import EqSpacer, FlexSpacer
+from .spacers import EqSpacer, FlexSpacer
 from .sequence_helper import SequenceHelper
 
 

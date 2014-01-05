@@ -13,7 +13,7 @@ from .constraint_helper import ConstraintHelper
 from .geometry import Box
 from .linear_symbolic import LinearSymbolic
 from .sequence_helper import SequenceHelper
-from .spacer import Spacer, EqSpacer, FlexSpacer
+from .spacers import Spacer, EqSpacer, FlexSpacer
 
 
 ORIENT_MAP = {
