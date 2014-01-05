@@ -7,16 +7,16 @@
 #------------------------------------------------------------------------------
 from atom.api import set_default
 
+from enaml.layout.constrainable import ConstraintMember
 from enaml.layout.layout_helpers import align, vertical, horizontal, spacer
 
-from .constraints_widget import ConstraintMember
 from .container import Container
 
 
 class Form(Container):
     """ A Container subclass that arranges its children in two columns.
 
-    The left column is typically Labels (but this is not a requirement).
+    The left column is typically Labels, but this is not a requirement.
     The right are the actual widgets for data entry. The children should
     be in alternating label/widget order. If there are an odd number
     of children, the last child will span both columns.
