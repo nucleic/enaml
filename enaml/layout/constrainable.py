@@ -46,9 +46,6 @@ class ConstraintMember(Constant):
         self.set_default_value_mode(mode, 'default')
 
     def default(self, owner):
-        """ Create the constraint variable for the member.
-
-        """
         return kiwi.Variable(self.name)
 
 
