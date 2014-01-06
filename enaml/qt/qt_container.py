@@ -462,7 +462,6 @@ class QtContainer(QtFrame, ProxyContainer):
                     solver.addConstraint(cn)
                 self._update_sizes()
                 self._update_geometries()
-                #self._update_geometries()
 
     def _update_sizes(self):
         """ Update the min, max, and best sizes for the container.
