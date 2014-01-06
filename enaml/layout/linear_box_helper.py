@@ -78,8 +78,6 @@ class LinearBoxHelper(BoxHelper):
         generating box constraints. The following conditions are verified
         of the sequence of items after they are filtered for None:
 
-        * The number of items in the sequence is 0 or >= 2.
-
         * All of the items in the sequence are instances of Spacer, int,
           LinearSymbolic, Constrainable.
 
@@ -100,10 +98,6 @@ class LinearBoxHelper(BoxHelper):
 
         if len(items) == 0:
             return items
-
-        if len(items) < 2:
-            msg = 'Two or more items required to create box constraints.'
-            raise TypeError(msg)
 
         was_spacer = False
         spacers = (int, Spacer)

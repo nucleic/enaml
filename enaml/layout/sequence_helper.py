@@ -64,8 +64,6 @@ class SequenceHelper(ConstraintHelper):
         are verified of the sequence of items after they are filtered
         for None:
 
-        * The number of items in the sequence is 0 or >= 2.
-
         * The first and last items are instances of LinearSymbolic or
           Constrainable.
 
@@ -86,13 +84,8 @@ class SequenceHelper(ConstraintHelper):
 
         """
         items = tuple(item for item in items if item is not None)
-
-        if len(items) == 0:
-            return items
-
         if len(items) < 2:
-            msg = 'Two or more items required to create sequence constraints.'
-            raise TypeError(msg)
+            return items
 
         types = (LinearSymbolic, Constrainable)
         for item in (items[0], items[-1]):
@@ -132,9 +125,16 @@ class SequenceHelper(ConstraintHelper):
         """
         cns = []
 
+        # If there are less than 2 items in the sequence, it is not
+        # possible to generate meaningful constraints. However, it
+        # should not raise an error so that constructs such as
+        # align('h_center', foo, bar.when(bar.visible)) will work.
+        if len(self.items) < 2:
+            return cns
+
         # The list of items is treated as a stack. So a reversed copy
         # is made before items are pushed and popped.
-        items = self.items[::-1]
+        items = list(self.items[::-1])
         first_name = self.first_name
         second_name = self.second_name
 
