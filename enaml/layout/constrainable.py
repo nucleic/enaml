@@ -35,7 +35,7 @@ class ContentsConstrainable(Constrainable):
 
 
 class ConstraintMember(Constant):
-    """ A custom Member class that generates a kiwi Variable.
+    """ A custom Constant member that generates a kiwi Variable.
 
     """
     __slots__ = ()
