@@ -432,11 +432,8 @@ class QtContainer(QtFrame, ProxyContainer):
         if solver is not None:
             d = self.declaration
             widget = self.widget
-            #solver.dump()
             solver.suggestValue(d.width, widget.width())
-            #solver.dump()
             solver.suggestValue(d.height, widget.height())
-            #solver.dump()
             solver.updateVariables()
             for item in self._layout_items:
                 item.update()
@@ -465,15 +462,14 @@ class QtContainer(QtFrame, ProxyContainer):
                     solver.addConstraint(cn)
                 self._update_sizes()
                 self._update_geometries()
+                #self._update_geometries()
 
     def _update_sizes(self):
         """ Update the min, max, and best sizes for the container.
 
         """
         widget = self.widget
-        #widget.setSizeHint(self._compute_best_size())
-        widget.setSizeHint(QSize(438, 242))
-        return
+        widget.setSizeHint(self._compute_best_size())
         if not isinstance(widget.parent(), QContainer):
             # Only set min and max size if the parent is not a container.
             # The layout manager needs to be the ultimate authority when
