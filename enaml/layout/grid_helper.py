@@ -136,7 +136,6 @@ class GridHelper(BoxHelper):
                 pixels on all sides.
 
         """
-        super(GridHelper, self).__init__('grid')
         self.rows = self.validate(rows)
         self.row_align = config.get('row_align', '')
         self.column_align = config.get('col_align', '')  # backwards compat
@@ -233,8 +232,8 @@ class GridHelper(BoxHelper):
             cns.extend(EqSpacer(size).create_constraints(first, second))
 
         # Setup the spacer lists for constraining the cell items
-        row_spacer = FlexSpacer(0.5 * self.row_spacing)
-        col_spacer = FlexSpacer(0.5 * self.column_spacing)
+        row_spacer = FlexSpacer(self.row_spacing / 2)  # floor division
+        col_spacer = FlexSpacer(self.column_spacing / 2)
         rspace = [row_spacer] * len(row_vars)
         cspace = [col_spacer] * len(col_vars)
         rspace[0] = rspace[-1] = cspace[0] = cspace[-1] = 0
@@ -245,8 +244,8 @@ class GridHelper(BoxHelper):
         for cell in cells:
             sr = cell.start_row
             er = cell.end_row + 1
-            sc = cell.start_col
-            ec = cell.end_col + 1
+            sc = cell.start_column
+            ec = cell.end_column + 1
             item = cell.item
             ritems = (row_vars[sr], rspace[sr], item, rspace[er], row_vars[er])
             citems = (col_vars[sc], cspace[sc], item, cspace[ec], col_vars[ec])
@@ -269,8 +268,8 @@ class GridHelper(BoxHelper):
             for items in row_map.itervalues():
                 if len(items) > 1:
                     helper = SequenceHelper(anchor, anchor, (), 0)
-                    helper.items = items
-                    helpers.append(items)
+                    helper.items = tuple(items)
+                    helpers.append(helper)
 
         # Add the column alignment helpers if needed. This will only
         # create the helpers for items which do not span multiple rows.
@@ -278,13 +277,13 @@ class GridHelper(BoxHelper):
         if anchor:
             col_map = defaultdict(list)
             for cell in cells:
-                if cell.start_col == cell.end_col:
-                    col_map[cell.start_col].append(cell.item)
+                if cell.start_column == cell.end_column:
+                    col_map[cell.start_column].append(cell.item)
             for items in col_map.itervalues():
                 if len(items) > 1:
                     helper = SequenceHelper(anchor, anchor, (), 0)
-                    helper.items = items
-                    helpers.append(items)
+                    helper.items = tuple(items)
+                    helpers.append(helper)
 
         # Generate the constraints from the helpers.
         for helper in helpers:
