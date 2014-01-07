@@ -132,11 +132,13 @@ class LinearBoxHelper(BoxHelper):
             The list of Constraint objects for the given component.
 
         """
+        items = self.items
+        if len(items) == 0:
+            return []
+
         # Create the outer boundary box constraints.
         cns = self.box_constraints(component)
 
-        items = self.items
-        spacing = self.spacing
         first, last = ORIENT_MAP[self.orientation]
         first_ortho, last_ortho = ORIENT_MAP[ORTHO_MAP[self.orientation]]
         first_boundary = getattr(self, first)
@@ -171,6 +173,7 @@ class LinearBoxHelper(BoxHelper):
 
         # Create the helper for the primary orientation. The helper
         # validation is bypassed since the sequence is known-valid.
+        spacing = self.spacing
         helper = SequenceHelper(last, first, (), spacing)
         helper.items = pre_items + items + post_items
         helpers = [helper]
