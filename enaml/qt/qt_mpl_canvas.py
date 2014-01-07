@@ -15,7 +15,6 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
 from .QtCore import Qt
 from .QtGui import QFrame, QVBoxLayout
 
-from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
@@ -54,7 +53,7 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
         """ Set the MPL figure for the widget.
 
         """
-        with size_hint_guard(self):
+        with self.size_hint_guard():
             self._refresh_mpl_widget()
 
     def set_toolbar_visible(self, visible):
@@ -63,7 +62,7 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
         """
         layout = self.widget.layout()
         if layout.count() == 2:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 toolbar = layout.itemAt(0).widget()
                 toolbar.setVisible(visible)
 

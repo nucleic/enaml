@@ -16,18 +16,8 @@ from .QtCore import QRect
 from .qt_widget import QtWidget
 
 
+# Keeping around for backwards compatibility
 def size_hint_guard(obj):
-    """ A contenxt manager for guarding the size hint of a widget.
-
-    This manager will call `size_hint_updated` if the size hint of the
-    widget changes during context execution.
-
-    Parameters
-    ----------
-    obj : QtConstraintsWidget
-        The constraints widget with the size hint of interest.
-
-    """
     return obj.size_hint_guard()
 
 

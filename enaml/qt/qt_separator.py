@@ -12,7 +12,6 @@ from enaml.widgets.separator import ProxySeparator
 from .QtCore import QSize
 from .QtGui import QFrame
 
-from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
@@ -88,7 +87,7 @@ class QtSeparator(QtControl, ProxySeparator):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setFrameShape(LINE_SHAPES[orientation])
         else:
             self.widget.setFrameShape(LINE_SHAPES[orientation])
@@ -98,7 +97,7 @@ class QtSeparator(QtControl, ProxySeparator):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setFrameShadow(LINE_STYLES[style])
         else:
             self.widget.setFrameShadow(LINE_STYLES[style])
@@ -108,7 +107,7 @@ class QtSeparator(QtControl, ProxySeparator):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setLineWidth(width)
         else:
             self.widget.setLineWidth(width)
@@ -119,7 +118,7 @@ class QtSeparator(QtControl, ProxySeparator):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setMidLineWidth(width)
         else:
             self.widget.setMidLineWidth(width)

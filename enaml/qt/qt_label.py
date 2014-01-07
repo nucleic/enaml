@@ -12,7 +12,6 @@ from enaml.widgets.label import ProxyLabel
 from .QtCore import Qt
 from .QtGui import QLabel
 
-from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
@@ -75,7 +74,7 @@ class QtLabel(QtControl, ProxyLabel):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setText(text)
         else:
             self.widget.setText(text)

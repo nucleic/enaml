@@ -12,7 +12,6 @@ from enaml.widgets.image_view import ProxyImageView
 from .QtGui import QFrame, QPainter, QPixmap
 
 from .q_resource_helpers import get_cached_qimage
-from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
@@ -241,7 +240,7 @@ class QtImageView(QtControl, ProxyImageView):
             qimage = get_cached_qimage(image)
             qpixmap = QPixmap.fromImage(qimage)
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setPixmap(qpixmap)
         else:
             self.widget.setPixmap(qpixmap)

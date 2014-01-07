@@ -16,7 +16,7 @@ from .QtGui import (
     QSplitter, QSplitterHandle, QVBoxLayout, QFrame, QApplication
 )
 
-from .qt_constraints_widget import QtConstraintsWidget, size_hint_guard
+from .qt_constraints_widget import QtConstraintsWidget
 from .qt_split_item import QtSplitItem
 
 
@@ -214,7 +214,7 @@ class QtSplitter(QtConstraintsWidget, ProxySplitter):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setOrientation(ORIENTATION[orientation])
         else:
             self.widget.setOrientation(ORIENTATION[orientation])
