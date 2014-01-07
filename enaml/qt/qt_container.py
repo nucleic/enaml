@@ -616,7 +616,7 @@ class QtContainer(QtFrame, ProxyContainer):
         """
         solver = self._solver
         if solver is None:
-            return QSize()
+            return QSize(0, 0)
         d = self.declaration
         shrink_w = can_shrink_in_width(d)
         shrink_h = can_shrink_in_height(d)
