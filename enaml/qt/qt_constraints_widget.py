@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from atom.api import Atom, ForwardTyped, List, Typed
+from atom.api import Atom, Callable, List, Typed
 
 from enaml.widgets.constraints_widget import ProxyConstraintsWidget
 
@@ -16,14 +16,9 @@ from .QtCore import QRect
 from .qt_widget import QtWidget
 
 
-# Keeping around for backwards compatibility
+# keep around for backwards compatibility
 def size_hint_guard(obj):
     return obj.size_hint_guard()
-
-
-def QtContainer():
-    from .qt_container import QtContainer
-    return QtContainer
 
 
 class ConstraintCache(Atom):
@@ -40,20 +35,18 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     """ A Qt implementation of an Enaml ProxyConstraintsWidget.
 
     """
-    #: The ancestor QtContainer which handles layout for this widget.
-    layout_container = ForwardTyped(QtContainer)
+    #: The relayout request handler for the widget. This is assigned
+    #: by an ancestor container during the layout building pass.
+    relayout_handler = Callable()
 
-    #: The constraint cache for this constraint widget.
+    #: The size hint update handler for the widget. This is assigned
+    #: by an ancestor container during the layout building pass.
+    size_hint_handler = Callable()
+
+    #: The constraint cache for this constraint widget. This cache is
+    #: used by an ancestor container to store the constraints which are
+    #: frequently added and removed from the solver.
     constraint_cache = Typed(ConstraintCache, ())
-
-    def destroy(self):
-        """ An overridden destructor method.
-
-        This destructor drops the reference to the layout container.
-
-        """
-        del self.layout_container
-        super(QtConstraintsWidget, self).destroy()
 
     #--------------------------------------------------------------------------
     # ProxyConstraintsWidget API
@@ -61,12 +54,12 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     def request_relayout(self):
         """ Request a relayout of the proxy widget.
 
-        This call will forward the request to the layout container.
+        This method forwards the request to the layout handler.
 
         """
-        container = self.layout_container
-        if container is not None:
-            container.request_relayout()
+        handler = self.relayout_handler
+        if handler is not None:
+            handler()
 
     def restyle(self):
         """ Restyle the widget with the current style data.
@@ -80,25 +73,15 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     #--------------------------------------------------------------------------
     # Layout API
     #--------------------------------------------------------------------------
-    def relayout(self):
-        """ Perform an immediate relayout of the proxy widget.
-
-        This call will forward the call to the layout container.
-
-        """
-        container = self.layout_container
-        if container is not None:
-            container.relayout()
-
     def size_hint_updated(self):
         """ Notify the layout system that the size hint has changed.
 
-        This call will inform the layout container of the change.
+        This method forwards the update to the layout notifier.
 
         """
-        container = self.layout_container
-        if container is not None:
-            container.size_hint_changed(self)
+        handler = self.size_hint_handler
+        if handler is not None:
+            handler(self)
 
     @contextmanager
     def size_hint_guard(self):
