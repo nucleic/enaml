@@ -363,9 +363,9 @@ class QtContainer(QtFrame, ProxyContainer):
 
         """
         super(QtContainer, self).init_layout()
-        self.widget.resized.connect(self._update_geometries)
-        self._setup_solver()  # XXX should this be before resized connect?
+        self._setup_solver()
         self._update_sizes()
+        self.widget.resized.connect(self._update_geometries)
 
     #--------------------------------------------------------------------------
     # Child Events
