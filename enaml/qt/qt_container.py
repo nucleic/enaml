@@ -6,6 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from collections import deque
+from contextlib import contextmanager
 
 from atom.api import Atom, Callable, Float, ForwardTyped, List, Tuple, Typed
 
@@ -333,6 +334,9 @@ class QtContainer(QtFrame, ProxyContainer):
     #: the container has transfered layout ownership to an ancestor.
     _solver = Typed(kiwi.Solver)
 
+    #: The stack of edit variables added to the solver.
+    _edit_stack = List()
+
     def destroy(self):
         """ A reimplemented destructor.
 
@@ -481,6 +485,61 @@ class QtContainer(QtFrame, ProxyContainer):
             self._update_geometries()
         self.widget.setUpdatesEnabled(True)
 
+    def _push_edit_vars(self, pairs):
+        """ Push edit variables into the solver.
+
+        The current edit variables will be removed and the new edit
+        variables will be added.
+
+        Parameters
+        ----------
+        pairs : sequence
+            A sequence of 2-tuples of (var, strength) which should be
+            added as edit variables to the solver.
+
+        """
+        solver = self._solver
+        stack = self._edit_stack
+        if len(stack) > 0:
+            for v, strength in stack[-1]:
+                solver.removeEditVariable(v)
+        stack.append(pairs)
+        for v, strength in pairs:
+            solver.addEditVariable(v, strength)
+
+    def _pop_edit_vars(self):
+        """ Restore the previous edit variables in the solver.
+
+        The current edit variables will be removed and the previous
+        edit variables will be re-added.
+
+        """
+        solver = self._solver
+        stack = self._edit_stack
+        for v, strength in stack.pop():
+            solver.removeEditVariable(v)
+        if len(stack) > 0:
+            for v, strength in stack[-1]:
+                solver.addEditVariable(v, strength)
+
+    @contextmanager
+    def _edit_context(self, pairs):
+        """ A context manager for temporary solver edits.
+
+        This manager will push the edit vars into the solver and pop
+        them when the context exits.
+
+        Parameters
+        ----------
+        pairs : list
+            A list of 2-tuple of (var, strength) which should be added
+            as temporary edit variables to the solver.
+
+        """
+        self._push_edit_vars(pairs)
+        yield
+        self._pop_edit_vars()
+
     def _setup_solver(self):
         """ Setup the layout solver.
 
@@ -515,8 +574,9 @@ class QtContainer(QtFrame, ProxyContainer):
 
         # Add the edit variables which are used during resizes.
         d = self.declaration
-        solver.addEditVariable(d.width, kiwi.strength.medium)
-        solver.addEditVariable(d.height, kiwi.strength.medium)
+        s = kiwi.strength.medium
+        pairs = ((d.width, s), (d.height, s))
+        self._push_edit_vars(pairs)
 
     def _update_geometries(self):
         """ Update the geometries of the layout children.
@@ -570,31 +630,16 @@ class QtContainer(QtFrame, ProxyContainer):
         solver = self._solver
         if solver is None:
             return QSize()
-
         d = self.declaration
         w = d.width
         h = d.height
-
-        # XXX this could be prettier by maintaining an edit context.
-
-        if solver.hasEditVariable(w):
-            solver.removeEditVariable(w)
-        solver.addEditVariable(w, 0.1 * kiwi.strength.weak)
-
-        if solver.hasEditVariable(h):
-            solver.removeEditVariable(h)
-        solver.addEditVariable(h, 0.1 * kiwi.strength.weak)
-
-        solver.suggestValue(w, 0.0)
-        solver.suggestValue(h, 0.0)
-        solver.updateVariables()
-        result = QSize(w.value(), h.value())
-
-        solver.removeEditVariable(w)
-        solver.removeEditVariable(h)
-        solver.addEditVariable(w, kiwi.strength.medium)
-        solver.addEditVariable(h, kiwi.strength.medium)
-
+        s = 0.1 * kiwi.strength.weak
+        pairs = ((w, s), (h, s))
+        with self._edit_context(pairs):
+            solver.suggestValue(w, 0.0)
+            solver.suggestValue(h, 0.0)
+            solver.updateVariables()
+            result = QSize(w.value(), h.value())
         return result
 
     def _compute_min_size(self):
