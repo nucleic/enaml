@@ -7,8 +7,10 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from atom.api import Atom, Callable, List, Typed
+from atom.api import Callable, ForwardTyped, Typed
 
+from enaml.layout.layout_helpers import expand_constraints
+from enaml.layout.layout_manager import LayoutItem
 from enaml.widgets.constraints_widget import ProxyConstraintsWidget
 
 from .QtCore import QRect
@@ -21,14 +23,93 @@ def size_hint_guard(obj):
     return obj.size_hint_guard()
 
 
-class ConstraintCache(Atom):
-    """ A class which holds cached constraint lists.
-
-    The cached is manipulated directly by the layout container.
+class QtLayoutItem(LayoutItem):
+    """ A concrete LayoutItem implementation for a constraints widget.
 
     """
-    #: The list of cached size hint constraints.
-    size_hint = List()
+    #: The constraints widget owner of the layout item. This will be
+    #: assigned by the container when it creates the layout item.
+    owner = ForwardTyped(lambda: QtConstraintsWidget)
+
+    def constrainable(self):
+        """ Get a reference to the underlying constrainable object.
+
+        Returns
+        -------
+        result : Contrainable
+            An object which implements the Constrainable interface.
+
+        """
+        return self.owner.declaration
+
+    def margins(self):
+        """ Get the margins for the underlying widget.
+
+        Returns
+        -------
+        result : tuple
+            An empty tuple as constraints widgets do not have margins.
+
+        """
+        return ()
+
+    def size_hint(self):
+        """ Get the size hint for the underlying widget.
+
+        Returns
+        -------
+        result : tuple
+            A 2-tuple of numbers representing the (width, height)
+            size hint of the widget.
+
+        """
+        hint = self.owner.widget_item.sizeHint()
+        return (hint.width(), hint.height())
+
+    def strength_object(self):
+        """ Get a reference to an object which holds strength strings.
+
+        Returns
+        -------
+        result : object
+            An appropriate strength object.
+
+        """
+        return self.owner.declaration
+
+    def layout_constraints(self):
+        """ Get the user-defined layout constraints for the item.
+
+        Returns
+        -------
+        result : list
+            The list of user-defined layout constraints.
+
+        """
+        d = self.owner.declaration
+        return expand_constraints(d, d.layout_constraint())
+
+    def set_geometry(self, x, y, width, height):
+        """ Set the geometry of the underlying widget.
+
+        This abstract method must be implemented by subclasses.
+
+        Parameters
+        ----------
+        x : float
+            The new value for the x-origin of the widget.
+
+        y : float
+            The new value for the y-origin of the widget.
+
+        width : float
+            The new value for the width of the widget.
+
+        height : float
+            The new value for the height of the widget.
+
+        """
+        self.owner.widget_item.setGeometry(QRect(x, y, width, height))
 
 
 class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
@@ -43,10 +124,21 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     #: by an ancestor container during the layout building pass.
     size_hint_handler = Callable()
 
-    #: The constraint cache for this constraint widget. This cache is
-    #: used by an ancestor container to store the constraints which are
-    #: frequently added and removed from the solver.
-    constraint_cache = Typed(ConstraintCache, ())
+    #: The layout item for the constraint widget. This will be
+    #: created and assigned during a layout pass.
+    layout_item = Typed(QtLayoutItem)
+
+    def destroy(self):
+        """ A reimplemented destructor.
+
+        This destructor breaks the reference cycle with the layout item.
+
+        """
+        super(QtConstraintsWidget, self).destroy()
+        item = self.layout_item
+        if item is not None:
+            item.owner = None
+            del self.layout_item
 
     #--------------------------------------------------------------------------
     # ProxyConstraintsWidget API
@@ -96,31 +188,3 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
         new_hint = self.widget.sizeHint()
         if old_hint != new_hint:
             self.size_hint_updated()
-
-    def update_geometry(self, dx, dy):
-        """ Update the geometry of the underlying widget.
-
-        This method is invoked by the layout engine when new values
-        for the position and/or size of the widget are available.
-
-        Parameters
-        ----------
-        dx : float
-            The x origin offset to subtract from the left value.
-
-        dy : float
-            The y origin offset to subtract from the top value.
-
-        Returns
-        -------
-        result : tuple
-            A 2-tuple of floats representing the x, y widget origin.
-
-        """
-        d = self.declaration
-        x = d.left.value()
-        y = d.top.value()
-        w = d.width.value()
-        h = d.height.value()
-        self.widget_item.setGeometry(QRect(x - dx, y - dy, w, h))
-        return x, y

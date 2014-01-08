@@ -8,7 +8,7 @@
 from collections import deque
 from contextlib import contextmanager
 
-from atom.api import Atom, Callable, Float, ForwardTyped, List, Tuple, Typed
+from atom.api import Atom, Callable, ForwardTyped, List, Tuple, Typed
 
 import kiwisolver as kiwi
 
@@ -18,101 +18,8 @@ from enaml.widgets.container import ProxyContainer
 from .QtCore import QSize, QTimer, Signal
 from .QtGui import QFrame
 
-from .qt_constraints_widget import QtConstraintsWidget, ConstraintCache
+from .qt_constraints_widget import QtConstraintsWidget
 from .qt_frame import QtFrame
-
-
-def hard_constraints(d):
-    """ Generate hard constraints for a constraints object.
-
-    The hard constraints restrict the object so that its origin
-    and size are both greater than or equal to zero.
-
-    Parameters
-    ----------
-    d : Constrainable
-        The constrainable declaration object which owns the
-        constraint variables.
-
-    Returns
-    -------
-    result : list
-        A list of Constraint objects.
-
-    """
-    return [d.left >= 0, d.top >= 0, d.width >= 0, d.height >= 0]
-
-
-def size_hint_constraints(d, hint):
-    """ Generate the size hint constraints for a constraints object.
-
-    The size hint constraints are generated based on the values of the
-    component's resist_*, hug_*, and limit_* attributes. If the value
-    of the hint is less than zero in a dimension, that dimension is
-    ignored.
-
-    Parameters
-    ----------
-    d : Constrainable
-        The constrainable declaration object which owns the
-        constraint variables.
-
-    hint : tuple
-        A 2-tuple of ints representing the width and height hint.
-
-    Returns
-    -------
-    result : list
-        A list of Constraint objects.
-
-    """
-    cns = []
-    w, h = hint
-    if w >= 0:
-        if d.hug_width != 'ignore':
-            cns.append((d.width == w) | d.hug_width)
-        if d.resist_width != 'ignore':
-            cns.append((d.width >= w) | d.resist_width)
-        if d.limit_width != 'ignore':
-            cns.append((d.width <= w) | d.limit_width)
-    if h >= 0:
-        if d.hug_height != 'ignore':
-            cns.append((d.height == h) | d.hug_height)
-        if d.resist_height != 'ignore':
-            cns.append((d.height >= h) | d.resist_height)
-        if d.limit_height != 'ignore':
-            cns.append((d.height <= h) | d.limit_height)
-    return cns
-
-
-def margins_constraints(d, margins):
-    """ Generate the margin constraints for a container object.
-
-    The margin constraints establish the relationships between the
-    boundary box of a container and its contents box.
-
-    Parameters
-    ----------
-    d : Container
-        The container declaration object which owns the constraint
-        variables.
-
-    margins : tuple
-        A 4-tuple of ints representing the top, right, bottom, and
-        left contents margins of the widget.
-
-    Returns
-    -------
-    result : list
-        A list of Constraint objects.
-
-    """
-    top, right, bottom, left = map(sum, zip(d.padding, margins))
-    cns = [d.contents_top == (d.top + top),
-           d.contents_left == (d.left + left),
-           d.contents_right == (d.right - right),
-           d.contents_bottom == (d.bottom - bottom)]
-    return cns
 
 
 def can_shrink_in_width(d):
@@ -145,54 +52,6 @@ def can_expand_in_height(d):
     """
     expand = ('ignore', 'weak')
     return d.hug_height in expand and d.limit_height in expand
-
-
-class ContainerConstraintCache(ConstraintCache):
-    """ A constraint cached extended for use by containers.
-
-    """
-    #: The list of cached margins constraints.
-    margins = List()
-
-
-class LayoutPoint(Atom):
-    """ A class which represents a point in the layout space.
-
-    """
-    #: The x-coordinate of the point.
-    x = Float(0.0)
-
-    #: The y-coordinate of the point.
-    y = Float(0.0)
-
-
-class LayoutItem(Atom):
-    """ An item used to assemble the layout table for the container.
-
-    """
-    #: The constraint widget which will be updated by this item.
-    #: The instance will be assigned by the container when it
-    #: builds the layout table.
-    item = Typed(QtConstraintsWidget)
-
-    #: The offset to apply to the widget when updating. This point
-    #: may be shared among multiple layout items. The instance will
-    #: be assigned by the container when it builds the layout table.
-    offset = Typed(LayoutPoint)
-
-    #: The origin point to update with the origin data. This point
-    #: may be used as the offset point for other layout items. The
-    #: instance will be assigned by the container when it builds the
-    #: layout table.
-    origin = Typed(LayoutPoint)
-
-    def update_geometry(self):
-        """ Update the underlying constraint widget geometry.
-
-        """
-        offset = self.offset
-        origin = self.origin
-        origin.x, origin.y = self.item.update_geometry(offset.x, offset.y)
 
 
 class BaseHandler(Atom):
@@ -316,9 +175,6 @@ class QtContainer(QtFrame, ProxyContainer):
     #: The margins updated handler for the widget. This is assigned
     #: by an ancestor container during the layout building pass.
     margins_handler = Callable()
-
-    #: The constraint cache for this container.
-    constraint_cache = Typed(ContainerConstraintCache, ())
 
     #: A timer used to collapse relayout requests. The timer is created
     #: on an as needed basis and destroyed when it is no longer needed.
@@ -484,61 +340,6 @@ class QtContainer(QtFrame, ProxyContainer):
             self._update_sizes()
             self._update_geometries()
         self.widget.setUpdatesEnabled(True)
-
-    def _push_edit_vars(self, pairs):
-        """ Push edit variables into the solver.
-
-        The current edit variables will be removed and the new edit
-        variables will be added.
-
-        Parameters
-        ----------
-        pairs : sequence
-            A sequence of 2-tuples of (var, strength) which should be
-            added as edit variables to the solver.
-
-        """
-        solver = self._solver
-        stack = self._edit_stack
-        if len(stack) > 0:
-            for v, strength in stack[-1]:
-                solver.removeEditVariable(v)
-        stack.append(pairs)
-        for v, strength in pairs:
-            solver.addEditVariable(v, strength)
-
-    def _pop_edit_vars(self):
-        """ Restore the previous edit variables in the solver.
-
-        The current edit variables will be removed and the previous
-        edit variables will be re-added.
-
-        """
-        solver = self._solver
-        stack = self._edit_stack
-        for v, strength in stack.pop():
-            solver.removeEditVariable(v)
-        if len(stack) > 0:
-            for v, strength in stack[-1]:
-                solver.addEditVariable(v, strength)
-
-    @contextmanager
-    def _edit_context(self, pairs):
-        """ A context manager for temporary solver edits.
-
-        This manager will push the edit vars into the solver and pop
-        them when the context exits.
-
-        Parameters
-        ----------
-        pairs : list
-            A list of 2-tuple of (var, strength) which should be added
-            as temporary edit variables to the solver.
-
-        """
-        self._push_edit_vars(pairs)
-        yield
-        self._pop_edit_vars()
 
     def _setup_solver(self):
         """ Setup the layout solver.
