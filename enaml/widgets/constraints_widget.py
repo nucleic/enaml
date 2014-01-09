@@ -5,17 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Enum, Typed, List, ForwardTyped, observe
+from atom.api import List, ForwardTyped, Typed, observe
 
 from enaml.core.declarative import d_
-from enaml.layout.constrainable import ConstrainableMixin
+from enaml.layout.constrainable import ConstrainableMixin, PolicyEnum
 
 from .widget import Widget, ProxyWidget
-
-
-#: An atom enum which defines the allowable constraints strengths.
-#: Clones will be made by selecting a new default via 'select'.
-PolicyEnum = Enum('ignore', 'weak', 'medium', 'strong', 'required')
 
 
 class ProxyConstraintsWidget(ProxyWidget):
@@ -44,62 +39,16 @@ class ConstraintsWidget(Widget, ConstrainableMixin):
     objects on request.
 
     """
-    #: The list of user-specified constraints or constraint-generating
-    #: objects for this component.
+    #: The list of user-specified constraints or ConstraintHelpers.
     constraints = d_(List())
 
-    #: How strongly a component hugs it's width hint. Valid strengths
-    #: are 'weak', 'medium', 'strong', 'required' and 'ignore'. The
-    #: default is 'strong'. This can be overridden on a per-control
-    #: basis to specify a logical default for the given control. This
-    #: is equivalent to the following constraint:
-    #:
-    #:     (width == hint) | hug_width
+    # Redefine the policy enums as declarative members. The docs on
+    # the ConstrainableMixin class provide their full explanation.
     hug_width = d_(PolicyEnum('strong'))
-
-    #: How strongly a component hugs it's height hint. Valid strengths
-    #: are 'weak', 'medium', 'strong', 'required' and 'ignore'. The
-    #: default is 'strong'. This can be overridden on a per-control
-    #: basis to specify a logical default for the given control. This
-    #: is equivalent to the following constraint:
-    #:
-    #:     (height == hint) | hug_height
     hug_height = d_(PolicyEnum('strong'))
-
-    #: How strongly a component resists clipping its width hint. Valid
-    #: strengths are 'weak', 'medium', 'strong', 'required' and 'ignore'.
-    #: The default is 'strong'. This can be overridden on a per-control
-    #: basis to specify a logical default for the given control. This
-    #: is equivalent to the following constraint:
-    #:
-    #:     (width >= hint) | resist_width
     resist_width = d_(PolicyEnum('strong'))
-
-    #: How strongly a component resists clipping its height hint. Valid
-    #: strengths are 'weak', 'medium', 'strong', 'required' and 'ignore'.
-    #: The default is 'strong'. This can be overridden on a per-control
-    #: basis to specify a logical default for the given control. This
-    #: is equivalent to the following constraint:
-    #:
-    #:     (height >= hint) | resist_height
     resist_height = d_(PolicyEnum('strong'))
-
-    #: How strongly a component resists expanding its width hint. Valid
-    #: strengths are 'weak', 'medium', 'strong', 'required' and 'ignore'.
-    #: The default is 'ignore'. This can be overridden on a per-control
-    #: basis to specify a logical default for the given control. This
-    #: is equivalent to the following constraint:
-    #:
-    #:     (width <= hint) | limit_width
     limit_width = d_(PolicyEnum('ignore'))
-
-    #: How strongly a component resists expanding its height hint. Valid
-    #: strengths are 'weak', 'medium', 'strong', 'required' and 'ignore'.
-    #: The default is 'strong'. This can be overridden on a per-control
-    #: basis to specify a logical default for the given control. This
-    #: is equivalent to the following constraint:
-    #:
-    #:     (height <= hint) | limit_height
     limit_height = d_(PolicyEnum('ignore'))
 
     #: A reference to the ProxyConstraintsWidget object.
