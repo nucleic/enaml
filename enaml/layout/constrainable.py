@@ -19,6 +19,10 @@ class Constrainable(object):
     `width`, `height`, `v_center` and `h_center` attributes which
     are instances of 'LinearSymbolic'.
 
+    It must also provide 'hug_width', 'hug_height', 'resist_width',
+    'resist_height', 'limit_width', and 'limit_height' attributes
+    which are valid PolicyEnum values.
+
     """
     __metaclass__ = ABCMeta
 
