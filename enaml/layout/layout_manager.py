@@ -15,25 +15,24 @@ from .layout_helpers import expand_constraints
 
 
 class LayoutItem(Atom):
-    """ A base class used for generating layout items.
+    """ A base class used for creating layout items.
 
     This class is intended to be subclassed by a toolkit backend to
-    implement the necessary toolkit-specific widget functionality.
+    implement the necessary toolkit specific layout functionality.
 
     """
-    #: The list of cached size hint constraints. This is a framework
-    #: value used for storage by the layout manager.
+    #: The list of cached size hint constraints. This is used for
+    #: storage by the layout manager.
     _size_hint_cache = List()
 
-    #: The list of cached margin constraints. This is a framework
-    #: value used for storage by the layout manager.
+    #: The list of cached margin constraints. This is used for storage
+    #: by the layout manager.
     _margin_cache = List()
 
     def __call__(self):
         """ Update the geometry of the underlying toolkit widget.
 
-        This is a framework method and should not be called directly
-        by user code.
+        This should not be called directly by user code.
 
         """
         d = self.constrainable()
@@ -154,9 +153,7 @@ class LayoutItem(Atom):
         result : tuple
             A 4-tuple of numbers representing the margins of the widget
             in the order (top, right, bottom, left). If the widget does
-            not support margins, an empty tuple should be returned. If
-            valid margins are returned, the 'contents_constrainable'
-            method must be implemented.
+            not support margins, an empty tuple should be returned.
 
         """
         raise NotImplementedError
@@ -214,8 +211,8 @@ class LayoutManager(Atom):
     #: The stack of edit variables added to the solver.
     _edit_stack = List()
 
-    #: The list of layout items forming the layout table.
-    _layout_table = List()
+    #: The list of layout items handled by the manager.
+    _layout_items = List()
 
     def __init__(self, item):
         """ Initialize a LayoutManager.
@@ -225,40 +222,30 @@ class LayoutManager(Atom):
         item : LayoutItem
             The layout item which contains the widget which is the
             root of the layout system. This item is the conceptual
-            owner of the system.
+            owner of the system. It is not resized by the manager,
+            rather the size of this item is used as input to the
+            manager via the 'resize' method.
 
         """
         self._root_item = item
-        self.set_table([])
+        self.set_items([])
 
-    def get_table(self):
-        """ Get a reference to the current layout table.
-
-        The table should be treated as read-only.
-
-        Returns
-        -------
-        result : list
-            The list of LayoutItems representing the table.
-
-        """
-        return self._layout_table
-
-    def set_table(self, table):
-        """ Set the layout table for this layout manager.
+    def set_items(self, items):
+        """ Set the layout items for this layout manager.
 
         This method will reset the internal solver state and build a
-        new system of constraints using the items in the new table.
+        new system of constraints using the new list of items.
 
         Parameters
         ----------
-        table : list
-            A list of LayoutItem instances comprising the layout table.
+        items : list
+            A list of LayoutItem instances for the system. The root
+            item should *not* be included in this list.
 
         """
         # Reset the state of the solver.
         del self._edit_stack
-        del self._layout_table
+        del self._layout_items
         solver = self._solver
         solver.reset()
 
@@ -269,15 +256,14 @@ class LayoutManager(Atom):
         pairs = ((d.width, strength), (d.height, strength))
         self._push_edit_vars(pairs)
 
-        # If there are not items in the table, bail early.
-        if not table:
+        # If there are no layout items, bail early.
+        if not items:
             return
 
-        # Generate the constraints for the layout system.
+        # Generate the constraints for the layout system. The size hint
+        # of the root item is ignored since the input to the solver is
+        # the suggested size of the root.
         cns = []
-
-        # Start with the root item. The size hint is irrelevant since
-        # the input to the solver is the suggested size of the root.
         hc = root.hard_constraints()
         mc = root.margin_constraints()
         lc = root.layout_constraints()
@@ -285,11 +271,7 @@ class LayoutManager(Atom):
         cns.extend(hc)
         cns.extend(mc)
         cns.extend(lc)
-
-        # Continue with each child item in the layout table. The size
-        # hint of these items is taken into account. If the hint of an
-        # item should be ignored, the item can return an empty list.
-        for child in table:
+        for child in items:
             hc = child.hard_constraints()
             sc = child.size_hint_constraints()
             mc = child.margin_constraints()
@@ -305,8 +287,8 @@ class LayoutManager(Atom):
         for cn in cns:
             solver.addConstraint(cn)
 
-        # Store the layout table for resize updates.
-        self._layout_table = table
+        # Store the layout items for resize updates.
+        self._layout_items = items
 
     def resize(self, width, height):
         """ Update the size of target size of the layout.
@@ -328,7 +310,7 @@ class LayoutManager(Atom):
         solver.suggestValue(d.width, width)
         solver.suggestValue(d.height, height)
         solver.updateVariables()
-        for item in self._layout_table:
+        for item in self._layout_items:
             item()
 
     def best_size(self):
@@ -414,35 +396,40 @@ class LayoutManager(Atom):
         solver.updateVariables()
         return (width.value(), height.value())
 
-    def update_size_hint(self, item):
-        """ Update the size hint for the given item.
+    def update_size_hint(self, index):
+        """ Update the size hint for the given layout item.
 
         The solver will be updated to reflect the item's new size hint.
         This may change the computed min/max/best size of the system.
 
         Parameters
         ----------
-        item : LayoutItem
-            The layout item with the updated size hint.
+        index : int
+            The index of the item in the list of layout items which
+            was provided in the call to 'set_items'.
 
         """
+        item = self._layout_items[index]
         old = item._size_hint_cache
         new = item.size_hint_constraints()
         item._size_hint_cache = new
         self._replace(old, new)
 
-    def update_margins(self, item):
-        """ Update the margins for the given item.
+    def update_margins(self, index):
+        """ Update the margins for the given layout item.
 
         The solver will be updated to reflect the item's new margins.
         This may change the computed min/max/best size of the system.
 
         Parameters
         ----------
-        item : LayoutItem
-            The layout item with the updated marings.
+        index : int
+            The index of the item in the list of layout items which
+            was provided in the call to 'set_items'. A value of -1
+            can be given to indicate the root item.
 
         """
+        item = self._root_item if index < 0 else self._layout_items[index]
         old = item._margin_cache
         new = item.margin_constraints()
         item._margin_cache = new
@@ -463,7 +450,6 @@ class LayoutManager(Atom):
             The list of constraints to add to the solver.
 
         """
-        import pdb; pdb.set_trace()
         solver = self._solver
         for cn in old:
             solver.removeConstraint(cn)
