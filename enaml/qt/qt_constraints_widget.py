@@ -82,7 +82,7 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
 
     @contextmanager
     def size_hint_guard(self):
-        """ A contenxt manager for guarding the size hint of the widget.
+        """ A context manager for guarding the size hint of the widget.
 
         This manager will call 'size_hint_updated' if the size hint of
         the widget changes during context execution.
