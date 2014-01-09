@@ -7,12 +7,9 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from atom.api import Atom, Callable, Float, ForwardTyped, Typed
+from atom.api import Int, ForwardTyped
 
-from enaml.layout.layout_manager import LayoutItem
 from enaml.widgets.constraints_widget import ProxyConstraintsWidget
-
-from .QtCore import QRect
 
 from .qt_widget import QtWidget
 
@@ -22,136 +19,31 @@ def size_hint_guard(obj):
     return obj.size_hint_guard()
 
 
-class Point(Atom):
-    """ A class which represents a point in the layout space.
-
-    """
-    #: The x-coordinate of the point.
-    x = Float(0.0)
-
-    #: The y-coordinate of the point.
-    y = Float(0.0)
-
-
-class QtLayoutItem(LayoutItem):
-    """ A concrete LayoutItem implementation for a constraints widget.
-
-    """
-    #: The constraints widget owner of the layout item. This will be
-    #: assigned by the container when it creates the layout item.
-    owner = ForwardTyped(lambda: QtConstraintsWidget)
-
-    #: The layout point which represents the offset of the parent item
-    #: from the origin of the root item. This will be assigned by the
-    #: container when it creates the layout item.
-    offset = Typed(Point)
-
-    #: The layout point which represents the offset of this item from
-    #: the offset of the root item. This will be assigned by the
-    #: container when it creates the layout item.
-    origin = Typed(Point)
-
-    def constrainable(self):
-        """ Get a reference to the underlying constrainable object.
-
-        Returns
-        -------
-        result : Contrainable
-            An object which implements the Constrainable interface.
-
-        """
-        return self.owner.declaration
-
-    def margins(self):
-        """ Get the margins for the underlying widget.
-
-        Returns
-        -------
-        result : tuple
-            An empty tuple as constraints widgets do not have margins.
-
-        """
-        return ()
-
-    def size_hint(self):
-        """ Get the size hint for the underlying widget.
-
-        Returns
-        -------
-        result : tuple
-            A 2-tuple of numbers representing the (width, height)
-            size hint of the widget.
-
-        """
-        hint = self.owner.widget_item.sizeHint()
-        return (hint.width(), hint.height())
-
-    def constraints(self):
-        """ Get the user-defined constraints for the item.
-
-        Returns
-        -------
-        result : list
-            The list of user-defined constraints.
-
-        """
-        return self.owner.declaration.layout_constraints()
-
-    def set_geometry(self, x, y, width, height):
-        """ Set the geometry of the underlying widget.
-
-        Parameters
-        ----------
-        x : float
-            The new value for the x-origin of the widget.
-
-        y : float
-            The new value for the y-origin of the widget.
-
-        width : float
-            The new value for the width of the widget.
-
-        height : float
-            The new value for the height of the widget.
-
-        """
-        origin = self.origin
-        origin.x = x
-        origin.y = y
-        offset = self.offset
-        x -= offset.x
-        y -= offset.y
-        self.owner.widget_item.setGeometry(QRect(x, y, width, height))
+def QtContainer():
+    from .qt_container import QtContainer
+    return QtContainer
 
 
 class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     """ A Qt implementation of an Enaml ProxyConstraintsWidget.
 
     """
-    #: The relayout request handler for the widget. This is assigned
-    #: by an ancestor container during the layout building pass.
-    relayout_handler = Callable()
+    #: The container which manages the layout for this widget. This
+    #: is assigned during the layout building pass.
+    layout_container = ForwardTyped(QtContainer)
 
-    #: The size hint update handler for the widget. This is assigned
-    #: by an ancestor container during the layout building pass. The
-    #: layout item will be passed as an argument.
-    size_hint_handler = Callable()
-
-    #: The layout item for the constraint widget. This will be assigned
+    #: The layout index for this widget's layout item. This is assigned
     #: during the layout building pass.
-    layout_item = Typed(QtLayoutItem)
+    layout_index = Int()
 
     def destroy(self):
         """ A reimplemented destructor.
 
-        This destructor breaks the reference cycle with the layout item.
+        This destructor drops the reference to the layout container.
 
         """
+        del self.layout_container
         super(QtConstraintsWidget, self).destroy()
-        item = self.layout_item
-        if item is not None:
-            item.owner = None
-            del self.layout_item
 
     #--------------------------------------------------------------------------
     # ProxyConstraintsWidget API
@@ -159,12 +51,12 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     def request_relayout(self):
         """ Request a relayout of the proxy widget.
 
-        This method forwards the request to the layout handler.
+        This method forwards the request to the layout container.
 
         """
-        handler = self.relayout_handler
-        if handler is not None:
-            handler()
+        container = self.layout_container
+        if container is not None:
+            container.request_relayout()
 
     def restyle(self):
         """ Restyle the widget with the current style data.
@@ -181,14 +73,12 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     def size_hint_updated(self):
         """ Notify the layout system that the size hint has changed.
 
-        This method forwards the update to the layout handler.
+        This method forwards the update to the layout container.
 
         """
-        handler = self.size_hint_handler
-        if handler is not None:
-            item = self.layout_item
-            if item is not None:
-                handler(item)
+        container = self.layout_container
+        if container is not None:
+            container.size_hint_updated(self)
 
     @contextmanager
     def size_hint_guard(self):

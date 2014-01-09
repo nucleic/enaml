@@ -7,90 +7,128 @@
 #------------------------------------------------------------------------------
 from collections import deque
 
-from atom.api import Atom, Callable, ForwardTyped, Tuple, Typed
+from atom.api import Atom, Callable, Float, Typed
 
-from enaml.layout.layout_manager import LayoutManager
+from enaml.layout.layout_manager import LayoutItem, LayoutManager
+from enaml.widgets.constraints_widget import ConstraintsWidget
 from enaml.widgets.container import ProxyContainer
 
-from .QtCore import QSize, QTimer, Signal
-from .QtGui import QFrame
+from .QtCore import QRect, QSize, QTimer, Signal
+from .QtGui import QFrame, QWidgetItem
 
-from .qt_constraints_widget import QtConstraintsWidget, QtLayoutItem, Point
+from .qt_constraints_widget import QtConstraintsWidget
 from .qt_frame import QtFrame
 
 
-class BaseLayoutHandler(Atom):
-    """ A base class for creating container layout handlers.
+class LayoutPoint(Atom):
+    """ A class which represents a point in layout space.
 
     """
-    #: The container which owns the layout for the handler.
-    container = ForwardTyped(lambda: QtContainer)
+    #: The x-coordinate of the point.
+    x = Float(0.0)
 
-    def __init__(self, container):
-        """ Initialize a BaseLayoutHandler.
+    #: The y-coordinate of the point.
+    y = Float(0.0)
+
+
+class QtLayoutItem(LayoutItem):
+    """ A concrete LayoutItem implementation for a QtConstraintsWidget.
+
+    """
+    #: The constraints widget declaration object for the layout item.
+    declaration = Typed(ConstraintsWidget)
+
+    #: The widget item used for laying out the underlying widget.
+    widget_item = Typed(QWidgetItem)
+
+    #: The layout point which represents the offset of the parent item
+    #: from the origin of the root item.
+    offset = Typed(LayoutPoint)
+
+    #: The layout point which represents the offset of this item from
+    #: the offset of the root item.
+    origin = Typed(LayoutPoint)
+
+    def constrainable(self):
+        """ Get a reference to the underlying constrainable object.
+
+        Returns
+        -------
+        result : Contrainable
+            An object which implements the Constrainable interface.
+
+        """
+        return self.declaration
+
+    def margins(self):
+        """ Get the margins for the underlying widget.
+
+        Returns
+        -------
+        result : tuple
+            An empty tuple as constraints widgets do not have margins.
+
+        """
+        return ()
+
+    def size_hint(self):
+        """ Get the size hint for the underlying widget.
+
+        Returns
+        -------
+        result : tuple
+            A 2-tuple of numbers representing the (width, height)
+            size hint of the widget.
+
+        """
+        hint = self.widget_item.sizeHint()
+        return (hint.width(), hint.height())
+
+    def constraints(self):
+        """ Get the user-defined constraints for the item.
+
+        Returns
+        -------
+        result : list
+            The list of user-defined constraints.
+
+        """
+        return self.declaration.layout_constraints()
+
+    def set_geometry(self, x, y, width, height):
+        """ Set the geometry of the underlying widget.
 
         Parameters
         ----------
-        container : QtContainer
-            The container which owns the layout for the handler.
+        x : float
+            The new value for the x-origin of the widget.
+
+        y : float
+            The new value for the y-origin of the widget.
+
+        width : float
+            The new value for the width of the widget.
+
+        height : float
+            The new value for the height of the widget.
 
         """
-        self.container = container
-
-
-class SizeHintHandler(BaseLayoutHandler):
-    """ A layout handler which handles size hint updates.
-
-    """
-    def __call__(self, item):
-        """ Notify the container of a size hint change.
-
-        Parameters
-        ----------
-        item : QtLayoutItem
-            The layout item of interest.
-
-        """
-        container = self.container
-        if container is not None:
-            container._on_size_hint_updated(item)
-
-
-class MarginsHandler(BaseLayoutHandler):
-    """ A layout handler which handles contents margins updates.
-
-    """
-    def __call__(self, item):
-        """ Notify the container of a margin change.
-
-        Parameters
-        ----------
-        item : QtLayoutItem
-            The layout item of interest.
-
-        """
-        container = self.container
-        if container is not None:
-            container._on_margins_updated(item)
-
-
-class RelayoutHandler(BaseLayoutHandler):
-    """ A layout handler which handles relayout requests.
-
-    """
-    def __call__(self):
-        """ Request a relayout of the container.
-
-        """
-        container = self.container
-        if container is not None:
-            container._on_request_relayout()
+        origin = self.origin
+        origin.x = x
+        origin.y = y
+        offset = self.offset
+        x -= offset.x
+        y -= offset.y
+        self.widget_item.setGeometry(QRect(x, y, width, height))
 
 
 class QtContainerItem(QtLayoutItem):
     """ A QtLayoutItem subclass which handles container margins.
 
     """
+    #: A callable used to get the container widget margins.
+    margins_func = Callable()
+
     def margins(self):
         """ Get the margins for the underlying widget.
 
@@ -100,8 +138,8 @@ class QtContainerItem(QtLayoutItem):
             A 4-tuple of ints representing the container margins.
 
         """
-        a, b, c, d = self.owner.declaration.padding
-        e, f, g, h = self.owner.contents_margins()
+        a, b, c, d = self.declaration.padding
+        e, f, g, h = self.margins_func(self.widget_item)
         return (a + e, b + f, c + g, d + h)
 
 
@@ -125,7 +163,7 @@ class QtChildContainerItem(QtLayoutItem):
     def constraints(self):
         """ Get the user constraints for the item.
 
-        A child container does not expose its user constraints.
+        A child container does not expose its user layout constraints.
 
         """
         return []
@@ -181,10 +219,6 @@ class QtContainer(QtFrame, ProxyContainer):
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QContainer)
 
-    #: The margins updated handler for the widget. This is assigned
-    #: by an ancestor container during the layout building pass.
-    margins_handler = Callable()
-
     #: A timer used to collapse relayout requests. The timer is created
     #: on an as needed basis and destroyed when it is no longer needed.
     _layout_timer = Typed(QTimer)
@@ -192,19 +226,15 @@ class QtContainer(QtFrame, ProxyContainer):
     #: The layout manager which handles the system of constraints.
     _layout_manager = Typed(LayoutManager)
 
-    #: The tuple of layout_handlers installed on decendant widgets.
-    _layout_handlers = Tuple()
-
     def destroy(self):
         """ A reimplemented destructor.
 
-        This destructor clears the layout timer, manager and handlers
+        This destructor clears the layout timer and layout manager
         so that any potential reference cycles are broken.
 
         """
         del self._layout_timer
         del self._layout_manager
-        self._clear_layout_handlers()
         super(QtContainer, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -223,6 +253,7 @@ class QtContainer(QtFrame, ProxyContainer):
         super(QtContainer, self).init_layout()
         self._setup_manager()
         self._update_sizes()
+        self._update_geometries()
         self.widget.resized.connect(self._update_geometries)
 
     #--------------------------------------------------------------------------
@@ -242,97 +273,125 @@ class QtContainer(QtFrame, ProxyContainer):
     #--------------------------------------------------------------------------
     # Layout API
     #--------------------------------------------------------------------------
-    def contents_margins(self):
-        """ Get the contents margins for the container.
+    def request_relayout(self):
+        """ Request a relayout of the container.
 
-        The contents margins are added to the user provided padding
+        """
+        # If this container owns the layout, (re)start the timer. The
+        # list of layout items is reset to prevent an edge case where
+        # a parent container layout occurs before the child container,
+        # causing the child to resize potentially deleted widgets which
+        # still have strong refs in the layout items list.
+        manager = self._layout_manager
+        if manager is not None:
+            if self._layout_timer is None:
+                manager.set_items([])
+                self.widget.setUpdatesEnabled(False)
+                timer = self._layout_timer = QTimer()
+                timer.setSingleShot(True)
+                timer.timeout.connect(self._on_relayout_timer)
+            self._layout_timer.start()
+            return
+
+        # If an ancestor container owns the layout, proxy the call.
+        container = self.layout_container
+        if container is not None:
+            container.request_relayout()
+
+    def size_hint_updated(self, item=None):
+        """ Notify the layout system that the size hint has changed.
+
+        Parameters
+        ----------
+        item : QtConstraintsWidget, optional
+            The constraints widget with the updated size hint. If this
+            is None, it indicates that this container's size hint is
+            the one which has changed.
+
+        """
+        # If this container's size hint has changed and it has an
+        # ancestor layout container, notify that container since it
+        # cares about this container's size hint. If the layout for
+        # this container is shared, the layout item will take care
+        # of supplying the empty list size hint constraints.
+        container = self.layout_container
+        if item is None:
+            if container is not None:
+                container.size_hint_updated(self)
+            return
+
+        # If this container owns its layout, update the manager unless
+        # a relayout is pending. A pending relayout means the manager
+        # has already been reset and the layout indices are invalid.
+        manager = self._layout_manager
+        if manager is not None:
+            if self._layout_timer is None:
+                with self.size_hint_guard():
+                    manager.update_size_hint(item.layout_index)
+                    self._update_sizes()
+                    self._update_geometries()
+            return
+
+        # If an ancestor container owns the layout, proxy the call.
+        if container is not None:
+            container.size_hint_updated(item)
+
+    @staticmethod
+    def margins_func(widget_item):
+        """ Get the margins for the given widget item.
+
+        The container margins are added to the user provided padding
         to determine the final offset from a layout box boundary to
-        the corresponding content line. The default content margins
+        the corresponding content line. The default container margins
         are zero. This method can be reimplemented by subclasses to
         supply different margins.
 
         Returns
         -------
         result : tuple
-            A tuple of 'top', 'right', 'bottom', 'left' contents
-            margins to use for computing the contents constraints.
+            A 4-tuple of margins (top, right, bottom, left).
 
         """
         return (0, 0, 0, 0)
 
-    def contents_margins_updated(self):
+    def margins_updated(self, item=None):
         """ Notify the layout system that the margins have changed.
 
-        This method forwards the update to the layout handler.
-
-        """
-        handler = self.margins_handler
-        if handler is not None:
-            item = self.layout_item
-            if item is not None:
-                handler(item)
-
-    #--------------------------------------------------------------------------
-    # Private Layout Handling
-    #--------------------------------------------------------------------------
-    def _on_size_hint_updated(self, item):
-        """ Handle a size hint change on a child widget.
-
         Parameters
         ----------
-        item : QtLayoutItem
-            The layout item with the updated size hint.
+        item : QtContainer, optional
+            The container widget with the updated margins. If this is
+            None, it indicates that this container's margins are the
+            ones which have changed.
+
 
         """
-        print 'size hint', self, item.owner
+        # If this container owns its layout, update the manager unless
+        # a relayout is pending. A pending relayout means the manager
+        # has already been reset and the layout indices are invalid.
         manager = self._layout_manager
         if manager is not None:
-            with self.size_hint_guard():
-                manager.update_size_hint(item)
-                self._update_sizes()
-                self._update_geometries()
+            if self._layout_timer is None:
+                index = item.layout_index if item else -1
+                with self.size_hint_guard():
+                    manager.update_margins(index)
+                    self._update_sizes()
+                    self._update_geometries()
+            return
 
-    def _on_margins_updated(self, item):
-        """ Handle a contents margins change on a child widget.
+        # If an ancestor container owns the layout, forward the call.
+        container = self.layout_container
+        if container is not None:
+            container.margins_updated(item or self)
 
-        Parameters
-        ----------
-        item : QtLayoutItem
-            The layout item with the updated margins.
-
-        """
-        manager = self._layout_manager
-        if manager is not None:
-            with self.size_hint_guard():
-                manager.update_margins(item)
-                self._update_sizes()
-                self._update_geometries()
-
-    def _on_request_relayout(self):
-        """ Handle a relayout request.
-
-        """
-        if self._layout_timer is None:
-            # Drop the reference to the layout table. This prevents an
-            # edge case scenario where a parent container layout occurs
-            # before the child container, causing the child to resize
-            # potentially deleted widgets which still have strong refs
-            # in the table.
-            del self._layout_table
-            manager = self._layout_manager
-            if manager is not None:
-                manager.set_table([])
-            self.widget.setUpdatesEnabled(False)
-            timer = self._layout_timer = QTimer()
-            timer.setSingleShot(True)
-            timer.timeout.connect(self._on_relayout_timer)
-        self._layout_timer.start()
-
+    #--------------------------------------------------------------------------
+    # Private Signal Handlers
+    #--------------------------------------------------------------------------
     def _on_relayout_timer(self):
         """ Rebuild the layout for the container.
 
         This method is invoked when the relayout timer is triggered. It
-        will reset the solver and update the geometries of the children.
+        will reset the manager and update the geometries of the children.
 
         """
         del self._layout_timer
@@ -342,6 +401,9 @@ class QtContainer(QtFrame, ProxyContainer):
             self._update_geometries()
         self.widget.setUpdatesEnabled(True)
 
+    #--------------------------------------------------------------------------
+    # Private Layout Handling
+    #--------------------------------------------------------------------------
     def _setup_manager(self):
         """ Setup the layout manager.
 
@@ -352,26 +414,22 @@ class QtContainer(QtFrame, ProxyContainer):
         # Layout ownership can only be transferred *after* the init
         # layout method is called, as layout occurs bottom up. The
         # manager is only created if ownership is unlikely to change.
-        #
-        # XXX should an old manager be deleted here? This only
-        # matters when share_layout is changed dynamically.
         share_layout = self.declaration.share_layout
         if share_layout and isinstance(self.parent(), QtContainer):
+            del self._layout_timer
+            del self._layout_manager
             return
-
-        this_item = QtContainerItem()
-        this_item.owner = self
-        this_item.origin = Point()
-        this_item.offset = Point()
-        self.layout_item = this_item
-
-        table = self._create_layout_table()
-        self._setup_layout_handlers(table)
 
         manager = self._layout_manager
         if manager is None:
-            manager = self._layout_manager = LayoutManager(this_item)
-        manager.set_table(table)
+            item = QtContainerItem()
+            item.declaration = self.declaration
+            item.widget_item = QWidgetItem(self.widget)
+            item.origin = LayoutPoint()
+            item.offset = LayoutPoint()
+            item.margins_func = self.margins_func
+            manager = self._layout_manager = LayoutManager(item)
+        manager.set_items(self._create_layout_items())
 
     def _update_geometries(self):
         """ Update the geometries of the layout children.
@@ -399,6 +457,7 @@ class QtContainer(QtFrame, ProxyContainer):
             widget.setMinimumSize(QSize(0, 0))
             widget.setMaximumSize(QSize(16777215, 16777215))
             return
+
         widget.setSizeHint(QSize(*manager.best_size()))
         if not isinstance(widget.parent(), QContainer):
             # Only set min and max size if the parent is not a container.
@@ -408,10 +467,10 @@ class QtContainer(QtFrame, ProxyContainer):
             widget.setMinimumSize(QSize(*manager.min_size()))
             widget.setMaximumSize(QSize(*manager.max_size()))
 
-    def _create_layout_table(self):
-        """ Create a layout table for container decendants.
+    def _create_layout_items(self):
+        """ Create a layout items for the container decendants.
 
-        The layout table is created by traversing the decendants in
+        The layout items are created by traversing the decendants in
         breadth-first order and setting up a LayoutItem object for
         each decendant. The layout item is populated with an offset
         point which represents the offset of the widgets parent to
@@ -425,83 +484,28 @@ class QtContainer(QtFrame, ProxyContainer):
             layout traversal.
 
         """
-        table = []
-        offset = Point()
+        layout_items = []
+        offset = LayoutPoint()
         queue = deque((offset, child) for child in self.children())
         while queue:
             offset, child = queue.popleft()
             if isinstance(child, QtConstraintsWidget):
-                origin = Point()
+                child.layout_container = self
+                origin = LayoutPoint()
                 if isinstance(child, QtContainer):
                     if child.declaration.share_layout:
                         item = QtSharedContainerItem()
-                        for s_child in child.children():
-                            queue.append((origin, s_child))
+                        item.margins_func = child.margins_func
+                        for subchild in child.children():
+                            queue.append((origin, subchild))
                     else:
                         item = QtChildContainerItem()
                 else:
                     item = QtLayoutItem()
-                item.owner = child
+                item.declaration = child.declaration
+                item.widget_item = QWidgetItem(child.widget)
                 item.offset = offset
                 item.origin = origin
-                table.append(item)
-        return table
-
-    def _clear_layout_handlers(self):
-        """ Clear the layout handlers for this container.
-
-        This will reset all layout handlers which have this container
-        as its owner object, thus preventing any further notifications
-        from those handlers, as well as breaking the reference cycle.
-
-        """
-        handler = self.relayout_handler
-        if handler is not None and handler.container is self:
-            handler.container = None
-            self.relayout_handler = None
-        handler = self.size_hint_handler
-        if handler is not None and handler.container is self:
-            handler.container = None
-            self.size_hint_handler = None
-        handler = self.margins_handler
-        if handler is not None and handler.container is self:
-            handler.container = None
-            self.margins_handler = None
-        for handler in self._layout_handlers:
-            handler.container = None
-        del self._layout_handlers
-
-    def _setup_layout_handlers(self, table):
-        """ Setup the layout handlers for the current layout table.
-
-        This method will first clear the old handlers and then make a
-        pass over the current layout table, installing the new handlers
-        as needed.
-
-        """
-        self._clear_layout_handlers()
-        rl_handler = RelayoutHandler(self)
-        sh_handler = SizeHintHandler(self)
-        mg_handler = MarginsHandler(self)
-        self._layout_handlers = (rl_handler, sh_handler, mg_handler)
-
-        # A container which owns its layout handles its own
-        # relayout requests and contents margin changes.
-        self.relayout_handler = rl_handler
-        self.margins_handler = mg_handler
-
-        # Assign the handlers to the child constraint widgets. If a
-        # container can share its layout, its size hint is ignored.
-        # If a container does not share its layout, this container
-        # only cares about its size hint.
-        for layout_item in table:
-            child = layout_item.owner
-            if isinstance(child, QtContainer):
-                if child.declaration.share_layout:
-                    child.relayout_handler = rl_handler
-                    child.margins_handler = mg_handler
-                else:
-                    child.size_hint_handler = sh_handler
-            else:
-                child.relayout_handler = rl_handler
-                child.size_hint_handler = sh_handler
+                child.layout_index = len(layout_items)
+                layout_items.append(item)
+        return layout_items
