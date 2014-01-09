@@ -11,7 +11,6 @@ from atom.api import Typed
 
 from enaml.widgets.label import ProxyLabel
 
-from .wx_constraints_widget import size_hint_guard
 from .wx_control import WxControl
 
 
@@ -60,7 +59,7 @@ class WxLabel(WxControl, ProxyLabel):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.SetLabel(text)
         else:
             self.widget.SetLabel(text)

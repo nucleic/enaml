@@ -12,7 +12,7 @@ from atom.api import Typed
 
 from enaml.widgets.splitter import ProxySplitter
 
-from .wx_constraints_widget import WxConstraintsWidget, size_hint_guard
+from .wx_constraints_widget import WxConstraintsWidget
 from .wx_split_item import WxSplitItem
 
 
@@ -257,7 +257,7 @@ class WxSplitter(WxConstraintsWidget, ProxySplitter):
         wx_orientation = _ORIENTATION_MAP[orientation]
         widget = self.widget
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 widget.SetOrientation(wx_orientation)
                 widget.SizeWindows()
         else:
