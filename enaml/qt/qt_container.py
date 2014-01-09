@@ -364,7 +364,6 @@ class QtContainer(QtFrame, ProxyContainer):
             None, it indicates that this container's margins are the
             ones which have changed.
 
-
         """
         # If this container owns its layout, update the manager unless
         # a relayout is pending. A pending relayout means the manager
