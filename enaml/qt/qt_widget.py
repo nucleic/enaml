@@ -13,7 +13,7 @@ from enaml.styling import StyleCache
 from enaml.widgets.widget import ProxyWidget
 
 from .QtCore import Qt, QSize
-from .QtGui import QFont, QWidget, QWidgetItem, QApplication
+from .QtGui import QFont, QWidget, QApplication
 
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
@@ -26,13 +26,6 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     """
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QWidget)
-
-    #: A QWidgetItem created on-demand for the widget. This is used by
-    #: the layout engine to compute correct size hints for the widget.
-    widget_item = Typed(QWidgetItem)
-
-    def _default_widget_item(self):
-        return QWidgetItem(self.widget)
 
     #--------------------------------------------------------------------------
     # Initialization API

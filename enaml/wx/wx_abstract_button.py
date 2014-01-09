@@ -9,7 +9,6 @@ from atom.api import Int
 
 from enaml.widgets.abstract_button import ProxyAbstractButton
 
-from .wx_constraints_widget import size_hint_guard
 from .wx_control import WxControl
 
 
@@ -87,7 +86,7 @@ class WxAbstractButton(WxControl, ProxyAbstractButton):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.SetLabel(text)
         else:
             self.widget.SetLabel(text)

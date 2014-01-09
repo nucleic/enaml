@@ -7,15 +7,16 @@
 #------------------------------------------------------------------------------
 from abc import ABCMeta
 
+import kiwisolver as kiwi
 
-class ABConstrainable(object):
-    """ An abstract base class for objects that can be laid out using
-    layout helpers.
 
-    Minimally, instances need to have `top`, `bottom`, `left`, `right`,
-    `width`, `height`, `v_center` and `h_center` attributes which are
-    `LinearSymbolic` instances.
+class LinearSymbolic(object):
+    """ An abstract base class for testing linear symbolic interfaces.
 
     """
     __metaclass__ = ABCMeta
 
+
+LinearSymbolic.register(kiwi.Variable)
+LinearSymbolic.register(kiwi.Term)
+LinearSymbolic.register(kiwi.Expression)

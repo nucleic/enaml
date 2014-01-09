@@ -13,7 +13,6 @@ from .QtCore import QSize
 from .QtGui import QAbstractButton, QIcon
 
 from .q_resource_helpers import get_cached_qicon
-from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
@@ -92,7 +91,7 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setText(text)
         else:
             self.widget.setText(text)
@@ -106,7 +105,7 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
         else:
             qicon = QIcon()
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setIcon(qicon)
         else:
             self.widget.setIcon(qicon)
@@ -116,7 +115,7 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
 
         """
         if sh_guard:
-            with size_hint_guard(self):
+            with self.size_hint_guard():
                 self.widget.setIconSize(QSize(*size))
         else:
             self.widget.setIconSize(QSize(*size))

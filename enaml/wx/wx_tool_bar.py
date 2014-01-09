@@ -341,7 +341,7 @@ class WxToolBar(WxConstraintsWidget, ProxyToolBar):
             if isinstance(child, WxAction):
                 widget.AddAction(child.widget, False)
             elif isinstance(child, WxActionGroup):
-                widget.AddActions(child.actions, False)
+                widget.AddActions(child.actions(), False)
         widget.Realize()
 
     #--------------------------------------------------------------------------
