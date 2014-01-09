@@ -7,9 +7,8 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from atom.api import Callable, ForwardTyped, Typed
+from atom.api import Atom, Callable, Float, ForwardTyped, Typed
 
-from enaml.layout.layout_helpers import expand_constraints
 from enaml.layout.layout_manager import LayoutItem
 from enaml.widgets.constraints_widget import ProxyConstraintsWidget
 
@@ -23,6 +22,17 @@ def size_hint_guard(obj):
     return obj.size_hint_guard()
 
 
+class Point(Atom):
+    """ A class which represents a point in the layout space.
+
+    """
+    #: The x-coordinate of the point.
+    x = Float(0.0)
+
+    #: The y-coordinate of the point.
+    y = Float(0.0)
+
+
 class QtLayoutItem(LayoutItem):
     """ A concrete LayoutItem implementation for a constraints widget.
 
@@ -30,6 +40,16 @@ class QtLayoutItem(LayoutItem):
     #: The constraints widget owner of the layout item. This will be
     #: assigned by the container when it creates the layout item.
     owner = ForwardTyped(lambda: QtConstraintsWidget)
+
+    #: The layout point which represents the offset of the parent item
+    #: from the origin of the root item. This will be assigned by the
+    #: container when it creates the layout item.
+    offset = Typed(Point)
+
+    #: The layout point which represents the offset of this item from
+    #: the offset of the root item. This will be assigned by the
+    #: container when it creates the layout item.
+    origin = Typed(Point)
 
     def constrainable(self):
         """ Get a reference to the underlying constrainable object.
@@ -66,33 +86,19 @@ class QtLayoutItem(LayoutItem):
         hint = self.owner.widget_item.sizeHint()
         return (hint.width(), hint.height())
 
-    def strength_object(self):
-        """ Get a reference to an object which holds strength strings.
-
-        Returns
-        -------
-        result : object
-            An appropriate strength object.
-
-        """
-        return self.owner.declaration
-
-    def layout_constraints(self):
-        """ Get the user-defined layout constraints for the item.
+    def constraints(self):
+        """ Get the user-defined constraints for the item.
 
         Returns
         -------
         result : list
-            The list of user-defined layout constraints.
+            The list of user-defined constraints.
 
         """
-        d = self.owner.declaration
-        return expand_constraints(d, d.layout_constraint())
+        return self.owner.declaration.layout_constraints()
 
     def set_geometry(self, x, y, width, height):
         """ Set the geometry of the underlying widget.
-
-        This abstract method must be implemented by subclasses.
 
         Parameters
         ----------
@@ -109,6 +115,12 @@ class QtLayoutItem(LayoutItem):
             The new value for the height of the widget.
 
         """
+        origin = self.origin
+        origin.x = x
+        origin.y = y
+        offset = self.offset
+        x -= offset.x
+        y -= offset.y
         self.owner.widget_item.setGeometry(QRect(x, y, width, height))
 
 
@@ -121,11 +133,12 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     relayout_handler = Callable()
 
     #: The size hint update handler for the widget. This is assigned
-    #: by an ancestor container during the layout building pass.
+    #: by an ancestor container during the layout building pass. The
+    #: layout item will be passed as an argument.
     size_hint_handler = Callable()
 
-    #: The layout item for the constraint widget. This will be
-    #: created and assigned during a layout pass.
+    #: The layout item for the constraint widget. This will be assigned
+    #: during the layout building pass.
     layout_item = Typed(QtLayoutItem)
 
     def destroy(self):
@@ -168,12 +181,14 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
     def size_hint_updated(self):
         """ Notify the layout system that the size hint has changed.
 
-        This method forwards the update to the layout notifier.
+        This method forwards the update to the layout handler.
 
         """
         handler = self.size_hint_handler
         if handler is not None:
-            handler(self)
+            item = self.layout_item
+            if item is not None:
+                handler(item)
 
     @contextmanager
     def size_hint_guard(self):

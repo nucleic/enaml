@@ -7,20 +7,11 @@
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
 
-from atom.api import Atom, Float, List, Typed
+from atom.api import Atom, List, Typed
 
 import kiwisolver as kiwi
 
-
-class LayoutPoint(Atom):
-    """ A class which represents a point in the layout space.
-
-    """
-    #: The x-coordinate of the point.
-    x = Float(0.0)
-
-    #: The y-coordinate of the point.
-    y = Float(0.0)
+from .layout_helpers import expand_constraints
 
 
 class LayoutItem(Atom):
@@ -30,14 +21,6 @@ class LayoutItem(Atom):
     implement the necessary toolkit-specific widget functionality.
 
     """
-    #: The layout point which represents the offset of the parent item
-    #: from the origin of the root item.
-    offset = Typed(LayoutPoint)
-
-    #: The layout point which represents the offset of this item from
-    #: the offset of the root item.
-    origin = Typed(LayoutPoint)
-
     #: The list of cached size hint constraints. This is a framework
     #: value used for storage by the layout manager.
     _size_hint_cache = List()
@@ -53,14 +36,12 @@ class LayoutItem(Atom):
         by user code.
 
         """
-        origin = self.origin
         d = self.constrainable()
-        x = origin.x = d.left.value()
-        y = origin.y = d.top.value()
+        x = d.left.value()
+        y = d.top.value()
         w = d.width.value()
         h = d.height.value()
-        offset = self.offset
-        self.set_geometry(x - offset.x, y - offset.y, w, h)
+        self.set_geometry(x, y, w, h)
 
     def hard_constraints(self):
         """ Generate a list of hard constraints for the item.
@@ -85,10 +66,10 @@ class LayoutItem(Atom):
 
         """
         margins = self.margins()
-        if len(margins) == 0:
+        if not margins:
             return []
         top, right, bottom, left = margins
-        d = self.contents_constrainable()
+        d = self.constrainable()
         c_t = d.contents_top == (d.top + top)
         c_r = d.contents_right == (d.right - right)
         c_b = d.contents_bottom == (d.bottom - bottom)
@@ -106,23 +87,33 @@ class LayoutItem(Atom):
         """
         cns = []
         d = self.constrainable()
-        s = self.strength_object()
         width, height = self.size_hint()
         if width >= 0:
-            if s.hug_width != 'ignore':
-                cns.append((d.width == width) | s.hug_width)
-            if s.resist_width != 'ignore':
-                cns.append((d.width >= width) | s.resist_width)
-            if s.limit_width != 'ignore':
-                cns.append((d.width <= width) | s.limit_width)
+            if d.hug_width != 'ignore':
+                cns.append((d.width == width) | d.hug_width)
+            if d.resist_width != 'ignore':
+                cns.append((d.width >= width) | d.resist_width)
+            if d.limit_width != 'ignore':
+                cns.append((d.width <= width) | d.limit_width)
         if height >= 0:
-            if s.hug_height != 'ignore':
-                cns.append((d.height == height) | s.hug_height)
-            if s.resist_height != 'ignore':
-                cns.append((d.height >= height) | s.resist_height)
-            if s.limit_height != 'ignore':
-                cns.append((d.height <= height) | s.limit_height)
+            if d.hug_height != 'ignore':
+                cns.append((d.height == height) | d.hug_height)
+            if d.resist_height != 'ignore':
+                cns.append((d.height >= height) | d.resist_height)
+            if d.limit_height != 'ignore':
+                cns.append((d.height <= height) | d.limit_height)
         return cns
+
+    def layout_constraints(self):
+        """ Get the list of layout constraints for the item.
+
+        Returns
+        -------
+        result : list
+            The list of layout constraints for the item.
+
+        """
+        return expand_constraints(self.constrainable(), self.constraints())
 
     def constrainable(self):
         """ Get a reference to the underlying constrainable object.
@@ -131,8 +122,24 @@ class LayoutItem(Atom):
 
         Returns
         -------
-        result : Contrainable
+        result : Contrainable or ContentsContrainable
             An object which implements the Constrainable interface.
+            If the 'margins' method returns a non-empty tuple, then
+            the object must also implement the ContentsContrainable
+            interface.
+
+        """
+        raise NotImplementedError
+
+    def constraints(self):
+        """ Get the user-defined constraints for the item.
+
+        This abstract method must be implemented by subclasses.
+
+        Returns
+        -------
+        result : list
+            The list of user-defined constraints and constraint helpers.
 
         """
         raise NotImplementedError
@@ -148,23 +155,8 @@ class LayoutItem(Atom):
             A 4-tuple of numbers representing the margins of the widget
             in the order (top, right, bottom, left). If the widget does
             not support margins, an empty tuple should be returned. If
-            valid margins are given, the 'contents_constrainable'
+            valid margins are returned, the 'contents_constrainable'
             method must be implemented.
-
-        """
-        raise NotImplementedError
-
-    def contents_constrainable(self):
-        """ Get a reference to the contents constrainable object.
-
-        This abstract method must be implemented by subclasses if the
-        'margins' method returns a non-empty tuple.
-
-        Returns
-        -------
-        result : ContentsContrainable
-            An object which implements the ContentsConstrainable
-            interface.
 
         """
         raise NotImplementedError
@@ -179,40 +171,6 @@ class LayoutItem(Atom):
         result : tuple
             A 2-tuple of numbers representing the (width, height)
             size hint of the widget.
-
-        """
-        raise NotImplementedError
-
-    def strength_object(self):
-        """ Get a reference to an object which holds strength strings.
-
-        This abstract method must be implemented by subclasses.
-
-        Returns
-        -------
-        result : object
-            An object with attributes which hold the strength strings
-            for the widget size hint. It must have the attributes:
-
-                resist_width
-                resist_height
-                hug_width
-                hug_height
-                limit_width
-                limit_height
-
-        """
-        raise NotImplementedError
-
-    def layout_constraints(self):
-        """ Get the user-defined layout constraints for the item.
-
-        This abstract method must be implemented by subclasses.
-
-        Returns
-        -------
-        result : list
-            The list of user-defined layout constraints.
 
         """
         raise NotImplementedError
@@ -273,6 +231,19 @@ class LayoutManager(Atom):
         self._root_item = item
         self.set_table([])
 
+    def get_table(self):
+        """ Get a reference to the current layout table.
+
+        The table should be treated as read-only.
+
+        Returns
+        -------
+        result : list
+            The list of LayoutItems representing the table.
+
+        """
+        return self._layout_table
+
     def set_table(self, table):
         """ Set the layout table for this layout manager.
 
@@ -299,7 +270,7 @@ class LayoutManager(Atom):
         self._push_edit_vars(pairs)
 
         # If there are not items in the table, bail early.
-        if len(table) == 0:
+        if not table:
             return
 
         # Generate the constraints for the layout system.
@@ -400,6 +371,12 @@ class LayoutManager(Atom):
 
         """
         d = self._root_item.constrainable()
+        shrink = ('ignore', 'weak')
+        if (d.resist_width in shrink and
+            d.resist_height in shrink and
+            d.hug_width in shrink and
+            d.hug_height in shrink):
+            return (0.0, 0.0)
         width = d.width
         height = d.height
         solver = self._solver
@@ -421,8 +398,14 @@ class LayoutManager(Atom):
             The 2-tuple of (width, height) max size values.
 
         """
-        max_v = 16777215  # max allowed by Qt
+        max_v = 16777215.0  # max allowed by Qt
         d = self._root_item.constrainable()
+        expand = ('ignore', 'weak')
+        if (d.hug_width in expand and
+            d.hug_height in expand and
+            d.limit_width in expand and
+            d.limit_height in expand):
+            return (max_v, max_v)
         width = d.width
         height = d.height
         solver = self._solver
@@ -431,8 +414,8 @@ class LayoutManager(Atom):
         solver.updateVariables()
         return (width.value(), height.value())
 
-    def size_hint_changed(self, item):
-        """ Notify the layout that an item's size hint has changed.
+    def update_size_hint(self, item):
+        """ Update the size hint for the given item.
 
         The solver will be updated to reflect the item's new size hint.
         This may change the computed min/max/best size of the system.
@@ -448,8 +431,8 @@ class LayoutManager(Atom):
         item._size_hint_cache = new
         self._replace(old, new)
 
-    def margins_changed(self, item):
-        """ Notify the layout that an item's margins have changed.
+    def update_margins(self, item):
+        """ Update the margins for the given item.
 
         The solver will be updated to reflect the item's new margins.
         This may change the computed min/max/best size of the system.
@@ -480,11 +463,12 @@ class LayoutManager(Atom):
             The list of constraints to add to the solver.
 
         """
+        import pdb; pdb.set_trace()
         solver = self._solver
         for cn in old:
-            solver.removeConstraint(old)
+            solver.removeConstraint(cn)
         for cn in new:
-            solver.addConstraint(new)
+            solver.addConstraint(cn)
 
     def _push_edit_vars(self, pairs):
         """ Push edit variables into the solver.
@@ -501,7 +485,7 @@ class LayoutManager(Atom):
         """
         solver = self._solver
         stack = self._edit_stack
-        if len(stack) > 0:
+        if stack:
             for v, strength in stack[-1]:
                 solver.removeEditVariable(v)
         stack.append(pairs)
@@ -519,7 +503,7 @@ class LayoutManager(Atom):
         stack = self._edit_stack
         for v, strength in stack.pop():
             solver.removeEditVariable(v)
-        if len(stack) > 0:
+        if stack:
             for v, strength in stack[-1]:
                 solver.addEditVariable(v, strength)
 
