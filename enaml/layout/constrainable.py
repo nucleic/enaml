@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from abc import ABCMeta
 
-from atom.api import Atom, Constant, DefaultValue
+from atom.api import Atom, Constant, DefaultValue, Enum
 
 import kiwisolver as kiwi
 
@@ -49,6 +49,11 @@ class ConstraintMember(Constant):
         return kiwi.Variable(self.name)
 
 
+#: An atom enum which defines the allowable constraints strengths.
+#: Clones will be made by selecting a new default via 'select'.
+PolicyEnum = Enum('ignore', 'weak', 'medium', 'strong', 'required')
+
+
 class ConstrainableMixin(Atom):
     """ An atom mixin class which defines constraint members.
 
@@ -78,6 +83,36 @@ class ConstrainableMixin(Atom):
 
     #: A symbolic expression representing the vertical center.
     v_center = Constant()
+
+    #: How strongly a widget hugs it's width hint. This is equivalent
+    #: to the constraint:
+    #:      (width == hint) | hug_width
+    hug_width = PolicyEnum('strong')
+
+    #: How strongly a widget hugs it's height hint. This is equivalent
+    #: to the constraint:
+    #:      (height == hint) | hug_height
+    hug_height = PolicyEnum('strong')
+
+    #: How strongly a widget resists clipping its width hint. This is
+    #: equivalent to the constraint:
+    #:      (width >= hint) | resist_width
+    resist_width = PolicyEnum('strong')
+
+    #: How strongly a widget resists clipping its height hint. This is
+    #: iequivalent to the constraint:
+    #:      (height >= hint) | resist_height
+    resist_height = PolicyEnum('strong')
+
+    #: How strongly a widget resists expanding its width hint. This is
+    #: equivalent to the constraint:
+    #:      (width <= hint) | limit_width
+    limit_width = PolicyEnum('ignore')
+
+    #: How strongly a widget resists expanding its height hint. This is
+    #: equivalent to the constraint:
+    #:      (height <= hint) | limit_height
+    limit_height = PolicyEnum('ignore')
 
     def _default_right(self):
         return self.left + self.width
