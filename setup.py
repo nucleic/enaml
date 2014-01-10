@@ -73,7 +73,7 @@ setup(
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.rst').read(),
     requires=['atom', 'PyQt', 'ply', 'kiwisolver'],
-    install_requires=['distribute', 'atom >= 0.3.5', 'kiwisolver >= 0.1', 'ply >= 3.4'],
+    install_requires=['distribute', 'atom >= 0.3.5', 'kiwisolver >= 0.1.0', 'ply >= 3.4'],
     packages=find_packages(),
     package_data={
         'enaml.applib': ['*.enaml'],
