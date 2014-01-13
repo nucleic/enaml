@@ -66,14 +66,14 @@ if sys.platform == 'win32':
 
 setup(
     name='enaml',
-    version='0.8.9',
+    version='0.9.0',
     author='The Nucleic Development Team',
     author_email='sccolbert@gmail.com',
     url='https://github.com/nucleic/enaml',
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.rst').read(),
     requires=['atom', 'PyQt', 'ply', 'kiwisolver'],
-    install_requires=['distribute', 'atom >= 0.3.5', 'kiwisolver >= 0.1.0', 'ply >= 3.4'],
+    install_requires=['distribute', 'atom >= 0.3.6', 'kiwisolver >= 0.1.1', 'ply >= 3.4'],
     packages=find_packages(),
     package_data={
         'enaml.applib': ['*.enaml'],

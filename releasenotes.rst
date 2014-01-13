@@ -1,6 +1,14 @@
 Enaml Release Notes
 ===================
 
+0.9.0 - 01/13/2014
+------------------
+- Fix issue #78. f0d1fc7da0d7_
+- Update the layout engine to use the Kiwi solver. d41729049f63_
+
+.. _f0d1fc7da0d7: https://github.com/nucleic/enaml/commit/f0d1fc7da0d7bc9c184119e983da266422635a0b
+.. _d41729049f63: https://github.com/nucleic/enaml/commit/d41729049f637def16f7bc9685dc685a8c780032
+
 0.8.9 - 11/25/2013
 ------------------
 - Add ability to query window minimized/maximized state. 713feb85952a_

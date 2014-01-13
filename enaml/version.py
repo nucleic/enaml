@@ -18,11 +18,11 @@ MAJOR = 0
 # possibly small differences in the API, but these changes will come
 # backwards compatibility support when possible. Minor releases are
 # typically used for large feature additions.
-MINOR = 8
+MINOR = 9
 
 # The micro release number. The micro release number is incremented
 # for bug fix releases and small feature additions.
-MICRO = 9
+MICRO = 0
 
 #: A namedtuple of the version info for the current release.
 version_info = namedtuple('version_info', 'major minor micro')
