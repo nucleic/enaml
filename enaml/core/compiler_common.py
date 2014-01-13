@@ -534,7 +534,7 @@ def gen_operator_binding(cg, node, index, name):
     cg : CodeGenerator
         The code generator with which to write the code.
 
-    node : TemplateInstBinding
+    node : OperatorExpr
         The enaml ast node of interest.
 
     index : int
