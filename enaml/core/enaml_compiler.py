@@ -119,7 +119,11 @@ from .template_compiler import TemplateCompiler
 # 19 : Fix a bug in variadic template args - 20 September 2013
 #     The code generated for variadic template functions did not set
 #     the varargs flag on the code object. This is now fixed.
-COMPILER_VERSION = 19
+# 20 : Fix a bug in template instantiation scoping - 13 January 2014
+#     The generated code did not properly handle the scope key for
+#     binding expressions on template instantiations.
+#     https://github.com/nucleic/enaml/issues/78
+COMPILER_VERSION = 20
 
 
 # Code that will be executed at the top of every enaml module

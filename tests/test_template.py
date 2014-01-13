@@ -745,6 +745,25 @@ def test_instantiation_17():
     assert Main() is Main()
 
 
+# regression: https://github.com/nucleic/enaml/issues/78
+def test_instantiation_18():
+    source = dedent("""\
+    from enaml.widgets.api import *
+
+    template Foo():
+        Field:
+            placeholder = 'foo'
+
+    enamldef Main(Window):
+        Container:
+            Foo(): f:
+                f.text = f.placeholder
+    """)
+    main = compile_source(source, 'Main')()
+    field = main.children[0].children[0]
+    assert field.text == u'foo'
+
+
 #------------------------------------------------------------------------------
 # Bad Template Instantiation
 #------------------------------------------------------------------------------

@@ -262,12 +262,12 @@ def template_node(scope_key):
     return node
 
 
-def template_inst_node(template_inst, names, starname, scope_key):
+def template_inst_node(templ, names, starname, scope_key, copy):
     """ Create and return a new template inst node.
 
     Parameters
     ----------
-    template_inst : TemplateInst
+    templ : TemplateInst
         The template instantiation object.
 
     names : tuple
@@ -281,6 +281,11 @@ def template_inst_node(template_inst, names, starname, scope_key):
     scope_key : object
         The key for the local scope in the local storage maps.
 
+    copy : bool
+        Whether a copy of the underlying template node is required. A
+        copy will be required when the template instance has bindings
+        so that the closure keys remain isolated to this instance.
+
     Returns
     -------
     result : TemplateInstNode
@@ -288,7 +293,7 @@ def template_inst_node(template_inst, names, starname, scope_key):
 
     """
     node = TemplateInstanceNode()
-    node.template = template_inst.node
+    node.template = templ.node.copy() if copy else templ.node
     node.names = names
     node.starname = starname
     node.scope_key = scope_key
@@ -435,7 +440,7 @@ def bind_aliased_member_impl(name, node, member, pair, scope_key):
     node.closure_keys.add(scope_key)
 
 
-def bind_aliased_member(node, name, alias, pair):
+def bind_aliased_member(node, name, alias, pair, scope_key):
     """ Bind a handler pair to an aliased member.
 
     Parameters
@@ -452,15 +457,18 @@ def bind_aliased_member(node, name, alias, pair):
     pair : HandlerPair
         The handler pair to add to the expression engine.
 
+    scope_key : object
+        The closure scope key for adding to the node's closure keys.
+
     """
     target_node, member = resolve_alias(node, alias)
     if target_node is None or member is None:
         msg = "alias '%s' does not resolve to a declarative member"
         raise TypeError(msg % name)
-    bind_aliased_member_impl(name, target_node, member, pair, node.scope_key)
+    bind_aliased_member_impl(name, target_node, member, pair, scope_key)
 
 
-def bind_extended_member(node, chain, pair):
+def bind_extended_member(node, chain, pair, scope_key):
     """ Bind a handler pair to an extended member.
 
     Parameters
@@ -474,6 +482,9 @@ def bind_extended_member(node, chain, pair):
     pair : HandlerPair
         The handler pair to add to the expression engine.
 
+    scope_key : object
+        The closure scope key for adding to the node's closure keys.
+
     """
     # Resolve everything but the last item in the chain. Everything
     # up to that point must be aliases which resolve to an object.
@@ -485,7 +496,7 @@ def bind_extended_member(node, chain, pair):
         if not isinstance(alias, Alias):
             raise TypeError("'%s' is not an alias" % '.'.join(seen))
         target_node, member = resolve_alias(target_node, alias)
-        if node is None or member is not None:
+        if target_node is None or member is not None:
             msg = "'%s' does not alias an object"
             raise TypeError(msg % '.'.join(seen))
 
@@ -503,7 +514,7 @@ def bind_extended_member(node, chain, pair):
         raise TypeError(msg % '.'.join(chain))
 
     # Bind the final aliased member.
-    bind_aliased_member_impl(name, target_node, member, pair, node.scope_key)
+    bind_aliased_member_impl(name, target_node, member, pair, scope_key)
 
 
 def bind_member(node, name, pair):
@@ -535,16 +546,20 @@ def bind_member(node, name, pair):
     node.engine.add_pair(name, pair)
 
 
-def run_operator(node, name, op, code, f_globals):
+def run_operator(scope_node, node, name, op, code, f_globals):
     """ Run the operator for a given node.
 
     Parameters
     ----------
-    node : DeclarativeNode
-        The compiler node holding the declarative class.
+    scope_node : DeclarativeNode
+        The node which holds the scope key for the scope in which the
+        code will execute.
 
-    name : str
-        The name being bound for the class.
+    node : DeclarativeNode
+        The compiler node holding the declarative class being bound.
+
+    name : str or tuple
+        The name or names being bound for the class.
 
     op : str
         The operator string which should be run to create the handlers.
@@ -559,14 +574,19 @@ def run_operator(node, name, op, code, f_globals):
     operators = __get_operators()
     if op not in operators:
         raise TypeError("failed to load operator '%s'" % op)
-    pair = operators[op](code, node.scope_key, f_globals)
+    scope_key = scope_node.scope_key
+    pair = operators[op](code, scope_key, f_globals)
     if isinstance(name, tuple):
-        bind_extended_member(node, name, pair)
+        # The template inst binding with a single name will take this
+        # path by using a length-1 name tuple. See bug #78.
+        bind_extended_member(node, name, pair, scope_key)
     else:
         item = getattr(node.klass, name, None)
         if isinstance(item, Alias):
-            bind_aliased_member(node, name, item, pair)
+            bind_aliased_member(node, name, item, pair, scope_key)
         else:
+            # This is the path for a standard binding on a child def.
+            # It does not need the closure scope key. See bug #78.
             bind_member(node, name, pair)
 
 

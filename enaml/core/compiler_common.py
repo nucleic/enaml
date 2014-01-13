@@ -488,10 +488,11 @@ def gen_template_inst_node(cg, node, local_names):
     cg.load_const(names)
     cg.load_const(starname)
     cg.load_fast(SCOPE_KEY)
-    cg.call_function(4)
+    cg.load_const(bool(node.body))
+    cg.call_function(5)
 
 
-def gen_template_inst_binding(cg, node):
+def gen_template_inst_binding(cg, node, index):
     """ Generate the code for a template inst binding.
 
     The caller should ensure that UNPACK_MAP and F_GLOBALS are present
@@ -505,6 +506,9 @@ def gen_template_inst_binding(cg, node):
     node : TemplateInstBinding
         The enaml ast node of interest.
 
+    index : int
+        The index of the template inst node in the node list.
+
     """
     op_node = node.expr
     mode = COMPILE_MODE[type(op_node.value)]
@@ -512,6 +516,7 @@ def gen_template_inst_binding(cg, node):
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
         load_helper(cg, 'run_operator')
+        load_node(cg, index)
         cg.load_fast(UNPACK_MAP)
         cg.load_const(node.name)
         cg.binary_subscr()
@@ -519,7 +524,7 @@ def gen_template_inst_binding(cg, node):
         cg.load_const(op_node.operator)
         cg.load_const(code)
         cg.load_fast(F_GLOBALS)
-        cg.call_function(5)
+        cg.call_function(6)
         cg.pop_top()
 
 
@@ -550,11 +555,12 @@ def gen_operator_binding(cg, node, index, name):
         cg.set_lineno(node.lineno)
         load_helper(cg, 'run_operator')
         load_node(cg, index)
+        cg.dup_top()
         cg.load_const(name)
         cg.load_const(node.operator)
         cg.load_const(code)
         cg.load_fast(F_GLOBALS)
-        cg.call_function(5)
+        cg.call_function(6)
         cg.pop_top()
 
 

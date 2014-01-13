@@ -140,7 +140,8 @@ class SecondPassBlockCompiler(BaseBlockCompiler):
     def visit_TemplateInstBinding(self, node):
         # Generate the code for the template inst binding.
         cg = self.code_generator
-        cmn.gen_template_inst_binding(cg, node)
+        index = self.parent_index()
+        cmn.gen_template_inst_binding(cg, node, index)
 
     def visit_Binding(self, node):
         # Generate the code for the operator binding.
