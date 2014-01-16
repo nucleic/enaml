@@ -7,27 +7,9 @@
 #------------------------------------------------------------------------------
 import bisect
 
-from atom.api import Atom, List, Typed, Unicode
+from atom.api import Atom, List, Typed
 
-from .extensionpoint import ExtensionPoint
-
-
-class ExtensionPointEvent(Atom):
-    """ An object which holds the state of an extension point event.
-
-    Instances of this event are created by the registry and passed to
-    the extension point listeners when extensions are added or removed
-    from an extension point.
-
-    """
-    #: The globally unique identifier of the extension point.
-    extension_point_id = Unicode()
-
-    #: The list of extensions removed from the extension point.
-    removed = List()
-
-    #: The list of extensions added to the extension point.
-    added = List()
+from .extensionpoint import ExtensionPoint, ExtensionPointEvent
 
 
 class ExtensionRecord(Atom):

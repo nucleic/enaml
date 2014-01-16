@@ -5,7 +5,21 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import GetAttr, Member, SetAttr
+from atom.api import Atom, GetAttr, List, Member, SetAttr, Unicode
+
+
+class ExtensionPointEvent(Atom):
+    """ An object which holds the state of an extension point event.
+
+    """
+    #: The globally unique identifier of the extension point.
+    extension_point_id = Unicode()
+
+    #: The list of extensions removed from the extension point.
+    removed = List()
+
+    #: The list of extensions added to the extension point.
+    added = List()
 
 
 class ExtensionPoint(Member):
