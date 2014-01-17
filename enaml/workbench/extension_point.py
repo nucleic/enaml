@@ -7,8 +7,6 @@
 #------------------------------------------------------------------------------
 from atom.api import GetAttr, Member, SetAttr
 
-from .extension import Extension
-
 
 class ExtensionPoint(Member):
     """ A custom member class for defining plugin extension points.
@@ -23,14 +21,14 @@ class ExtensionPoint(Member):
     """
     __slots__ = ('kind', 'identifier', 'description')
 
-    def __init__(self, kind=Extension, identifier=u'', description=u''):
+    def __init__(self, kind=object, identifier=u'', description=u''):
         """ Initialize an ExtensionPoint.
 
         Parameters
         ----------
-        kind : Extension subclass, optional
-            The allow type for contributed extensions. The default
-            is Extension and will allow any type of extension object.
+        kind : type, or tuple of types, optional
+            The allow type(s) for contributed extensions. The default
+            is `object` and will allow any type of extension object.
 
         identifier : unicode, required
             A globally unique identifier for the extension point. This
@@ -41,8 +39,6 @@ class ExtensionPoint(Member):
             A long-form description of the extension point.
 
         """
-        if not issubclass(kind, Extension):
-            raise TypeError('kind must be a subclass of Extension')
         if not identifier:
             raise TypeError('an identifier must be provided')
         self.kind = kind

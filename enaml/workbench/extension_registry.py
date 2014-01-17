@@ -7,13 +7,13 @@
 #------------------------------------------------------------------------------
 import bisect
 
-from atom.api import Atom, List, Typed
+from atom.api import Atom, Dict, List, Typed
 
 from .extension_point import ExtensionPoint
 from .extension_point_event import ExtensionPointEvent
 
 
-class Record(Atom):
+class ExtensionPointRecord(Atom):
     """ A data record for an extension point in an extension registry.
 
     Instances of this class are created by an ExtensionRegistry. It
@@ -117,7 +117,7 @@ class ExtensionRegistry(Atom):
             The globally unique identifier of the extension point.
 
         extensions : iterable
-            An iterable of Extension objects. These objects will be
+            An iterable of extension objects. These objects will be
             validated against the allowed type(s) specified by the
             extension point.
 
@@ -147,7 +147,7 @@ class ExtensionRegistry(Atom):
             The globally unique identifier of the extension point.
 
         extensions : iterable
-            An iterable of the Extension objects to remove.
+            An iterable of the extension objects to remove.
 
         """
         record = self._get_record(identifier)
@@ -208,7 +208,7 @@ class ExtensionRegistry(Atom):
     # Private API
     #--------------------------------------------------------------------------
     #: The registry dict which maps identifier to record
-    _registry = Typed(dict, ())
+    _registry = Dict()
 
     def _get_record(self, identifier):
         """ Get the record for the given extension point id.
@@ -225,7 +225,7 @@ class ExtensionRegistry(Atom):
         """
         record = self._registry.get(identifier)
         if record is None:
-            record = self._registry[identifier] = Record()
+            record = self._registry[identifier] = ExtensionPointRecord()
         return record
 
     def _invoke_listeners(self, record, removed, added):
@@ -233,7 +233,7 @@ class ExtensionRegistry(Atom):
 
         Parameters
         ----------
-        record : Record
+        record : ExtensionPointRecord
             The registry record of interest.
 
         removed : list
