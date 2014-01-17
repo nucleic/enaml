@@ -5,21 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, GetAttr, List, Member, SetAttr, Unicode
+from atom.api import GetAttr, Member, SetAttr
 
-
-class ExtensionPointEvent(Atom):
-    """ An object which holds the state of an extension point event.
-
-    """
-    #: The globally unique identifier of the extension point.
-    extension_point_id = Unicode()
-
-    #: The list of extensions removed from the extension point.
-    removed = List()
-
-    #: The list of extensions added to the extension point.
-    added = List()
+from .extension import Extension
 
 
 class ExtensionPoint(Member):
@@ -27,30 +15,36 @@ class ExtensionPoint(Member):
 
     An ExtensionPoint provides a well-defined interface on a plugin
     which allows other plugins to contribute additional functionality
-    through extensions. It is a programming error to define an instance
-    of ExtensionPoint on a class which does not inherit from 'Plugin'.
+    through extensions.
+
+    It is a programming error to define an instance of ExtensionPoint
+    on a class which does not inherit from 'Plugin'.
 
     """
     __slots__ = ('kind', 'identifier', 'description')
 
-    def __init__(self, kind=object, identifier=u'', description=u''):
-        """ Initialize an ExtensionPoint
+    def __init__(self, kind=Extension, identifier=u'', description=u''):
+        """ Initialize an ExtensionPoint.
 
         Parameters
         ----------
-        kind : type or tuple of types, optional
-            The allow type(s) for contributed extensions. The default
-            is object and will allow any type of extension object.
+        kind : Extension subclass, optional
+            The allow type for contributed extensions. The default
+            is Extension and will allow any type of extension object.
 
         identifier : unicode, required
-            A globally unique identifier for the extension point.
+            A globally unique identifier for the extension point. This
+            can be any string, but is typically dot separated such as:
+            'myproject.mymodule.myextensionpoint'
 
         description : unicode, optional
             A long-form description of the extension point.
 
         """
+        if not issubclass(kind, Extension):
+            raise TypeError('kind must be a subclass of Extension')
         if not identifier:
-            raise TypeError('an extension point id must be provided')
+            raise TypeError('an identifier must be provided')
         self.kind = kind
         self.identifier = unicode(identifier)
         self.description = unicode(description)
@@ -64,6 +58,8 @@ class ExtensionPoint(Member):
         -------
         result : list
             The list of extensions contributed to the extension point.
+            The returned list will be an independent copy. In-place
+            changes to the list will not affect the framework.
 
         """
         workbench = plugin.workbench
@@ -77,4 +73,4 @@ class ExtensionPoint(Member):
         It is an error to directly assign extension point contributors.
 
         """
-        raise TypeError('cannot directly assign extension point contributors')
+        raise TypeError('cannot directly assign extension point extensions')

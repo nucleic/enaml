@@ -9,14 +9,15 @@ import bisect
 
 from atom.api import Atom, List, Typed
 
-from .extensionpoint import ExtensionPoint, ExtensionPointEvent
+from .extension_point import ExtensionPoint
+from .extension_point_event import ExtensionPointEvent
 
 
-class ExtensionRecord(Atom):
+class Record(Atom):
     """ A data record for an extension point in an extension registry.
 
-    Instances of this class are created by an ExtensionRegistry.
-    It should not normally be used directly by user code.
+    Instances of this class are created by an ExtensionRegistry. It
+    should not be used directly by user code.
 
     """
     #: The extension point associated with the record.
@@ -49,7 +50,7 @@ class ExtensionRegistry(Atom):
 
         If the extension point has already been added to the registry,
         an exception will be raised. This ensures that extension point
-        identifiers are unique for each instance of a registry.
+        identifiers are unique for each instance of a workbench.
 
         Parameters
         ----------
@@ -68,7 +69,7 @@ class ExtensionRegistry(Atom):
             record.extensions = []
             self.add_extensions(extension_point.identifier, extensions)
 
-    def remove_extension_point(self, extension_point_id):
+    def remove_extension_point(self, identifier):
         """ Remove an extension point from the registry.
 
         If the specified extension point has not been added to the
@@ -76,21 +77,21 @@ class ExtensionRegistry(Atom):
 
         Parameters
         ----------
-        extension_point_id : unicode
+        identifier : unicode
             The globally unique identifier of the extension point.
 
         """
-        record = self._get_record(extension_point_id)
+        record = self._get_record(identifier)
         if record.extension_point is not None:
             self._invoke_listeners(record, record.extensions, [])
             record.extension_point = None
 
-    def get_extensions(self, extension_point_id):
+    def get_extensions(self, identifier):
         """ Get the extensions contributed to an extension point.
 
         Parameters
         ----------
-        extension_point_id : unicode
+        identifier : unicode
             The globally unique identifier of the extension point.
 
         Returns
@@ -100,57 +101,56 @@ class ExtensionRegistry(Atom):
             extension point.
 
         """
-        record = self._get_record(extension_point_id)
+        record = self._get_record(identifier)
         return record.extensions[:]
 
-    def add_extensions(self, extension_point_id, extensions):
+    def add_extensions(self, identifier, extensions):
         """ Add extensions to an extension point.
 
         If the specified extension point has not yet been registered,
         the extensions will be added as soon as it becomes available.
+        Extensions are maintained in sorted order.
 
         Parameters
         ----------
-        extension_point_id : unicode
+        identifier : unicode
             The globally unique identifier of the extension point.
 
         extensions : iterable
-            An iterable of the extension objects. These objects will
-            be validated against the allowed type(s) specified by the
-            extension point. The extensions are maintained in sorted
-            order.
+            An iterable of Extension objects. These objects will be
+            validated against the allowed type(s) specified by the
+            extension point.
 
         """
         # If the extension point is not yet registered, store away
-        # the extensions and bail. This method will be invoked again
-        # when the extension point is finally registered.
-        record = self._get_record(extension_point_id)
+        # the extensions. This method will be invoked again when the
+        # extension point is finally registered.
+        record = self._get_record(identifier)
         if record.extension_point is None:
-            record.extensions = list(extensions)
+            record.extensions.extend(extensions)
             return
-        kind = record.extension_point.kind
         extensions = list(extensions)
+        kind = record.extension_point.kind
         for ext in extensions:
             if not isinstance(ext, kind):
                 msg = "invalid extension type for '%s': '%s'"
-                args = (extension_point_id, type(ext).__name__)
-                raise TypeError(msg % args)
+                raise TypeError(msg % (identifier, type(ext).__name__))
             bisect.insort(record.extensions, ext)
         self._invoke_listeners(record, [], extensions)
 
-    def remove_extensions(self, extension_point_id, extensions):
+    def remove_extensions(self, identifier, extensions):
         """ Remove extensions from an extension point.
 
         Parameters
         ----------
-        extension_point_id : unicode
+        identifier : unicode
             The globally unique identifier of the extension point.
 
         extensions : iterable
-            An iterable of the extension objects to remove.
+            An iterable of the Extension objects to remove.
 
         """
-        record = self._get_record(extension_point_id)
+        record = self._get_record(identifier)
         if not record.extensions:
             return
         removed = []
@@ -161,7 +161,7 @@ class ExtensionRegistry(Atom):
                 removed.append(ext)
         self._invoke_listeners(record, removed, [])
 
-    def add_extension_point_listener(self, extension_point_id, listener):
+    def add_extension_point_listener(self, identifier, listener):
         """ Add a listener to the specified extension point.
 
         The listener will be invoked when extensions are added or
@@ -172,7 +172,7 @@ class ExtensionRegistry(Atom):
 
         Parameters
         ----------
-        extension_point_id : unicode
+        identifier : unicode
             The globally unique identifier of the extension point.
 
         listener : callable
@@ -183,22 +183,22 @@ class ExtensionRegistry(Atom):
             the list of listeners.
 
         """
-        record = self._get_record(extension_point_id)
+        record = self._get_record(identifier)
         bisect.insort(record.listeners, listener)
 
-    def remove_extension_point_listener(self, extension_point_id, listener):
+    def remove_extension_point_listener(self, identifier, listener):
         """ Remove a listener from the specified extension point.
 
         Parameters
         ----------
-        extension_point_id : unicode
+        identifier : unicode
             The globally unique identifier of the extension point.
 
         listener : callable
             The listener to remove from the extension point.
 
         """
-        record = self._get_record(extension_point_id)
+        record = self._get_record(identifier)
         if record.listeners:
             idx = bisect.bisect_left(record.listeners, listener)
             if record.listeners[idx] == listener:
@@ -210,12 +210,12 @@ class ExtensionRegistry(Atom):
     #: The registry dict which maps identifier to record
     _registry = Typed(dict, ())
 
-    def _get_record(self, extension_point_id):
+    def _get_record(self, identifier):
         """ Get the record for the given extension point id.
 
         Parameters
         ----------
-        extension_point_id : unicode
+        identifier : unicode
             The globally unique identifier for the extension point.
 
         force : bool, optional
@@ -223,9 +223,9 @@ class ExtensionRegistry(Atom):
             one does not already exist.
 
         """
-        record = self._registry.get(extension_point_id)
+        record = self._registry.get(identifier)
         if record is None:
-            record = self._registry[extension_point_id] = ExtensionRecord()
+            record = self._registry[identifier] = Record()
         return record
 
     def _invoke_listeners(self, record, removed, added):
@@ -233,8 +233,8 @@ class ExtensionRegistry(Atom):
 
         Parameters
         ----------
-        record : ExtensionRecord
-            The extension record of interest.
+        record : Record
+            The registry record of interest.
 
         removed : list
             The list of extensions removed from the extension point.
@@ -251,17 +251,17 @@ class ExtensionRegistry(Atom):
             return
 
         event = ExtensionPointEvent()
-        event.extension_point_id = record.extension_point.identifier
+        event.identifier = record.extension_point.identifier
         event.removed = removed
         event.added = added
 
         # iterate a copy to protect against mutations during dispatch
-        dead_listeners = False
+        has_dead_listeners = False
         for listener in record.listeners[:]:
             if listener:
                 listener(event)
             else:
-                dead_listeners = True
+                has_dead_listeners = True
 
-        if dead_listeners:
+        if has_dead_listeners:
             record.listeners = filter(None, record.listeners)
