@@ -73,12 +73,12 @@ class Plugin(Atom):
         return {}
 
     def initialize(self):
-        """ Invoked after the plugin is added to the workbench.
+        """ Invoked when the plugin is added to the workbench.
 
         This method is called when the plugin is added to a workbench,
-        but only after its extensions have been processed. A plugin may
-        reimplement this method if, for example, it needs to import and
-        add additional plugins to the workbench.
+        before the workbench queries the plugin for its extensions. A
+        plugin may reimplement this method if, for example, it wishes
+        to lazily import its extensions, or install other plugins.
 
         The default implementation of this method does nothing, and
         can be safetly ignored by subclasses which do not need it.
@@ -125,9 +125,8 @@ class Plugin(Atom):
         acquired during its lifetime. After this method returns the
         plugin should be considered invalid and no longer used.
 
-        Before this method is called, the plugin's extensions will be
-        unloaded. After this method returns, the plugin's extension
-        points will be removed.
+        Before this method is called, the plugin's extensions and
+        extension points will be unloaded and removed.
 
         The default implementation of this method does nothing, and
         can be safetly ignored by subclasses which do not need it.
