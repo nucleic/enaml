@@ -40,7 +40,7 @@ class ExtensionPoint(Member):
 
         """
         if not identifier:
-            raise TypeError('an identifier must be provided')
+            raise ValueError('an identifier must be provided')
         self.kind = kind
         self.identifier = unicode(identifier)
         self.description = unicode(description)
@@ -69,4 +69,5 @@ class ExtensionPoint(Member):
         It is an error to directly assign extension point contributors.
 
         """
-        raise TypeError('cannot directly assign extension point extensions')
+        msg = "cannot directly assign extensions to an extension point"
+        raise TypeError(msg)
