@@ -61,7 +61,7 @@ class ExtensionRegistry(Atom):
         record = self._get_record(extension_point.identifier)
         if record.extension_point is not None:
             msg = "extension point '%s' is already registered"
-            raise TypeError(msg % extension_point.identifier)
+            raise ValueError(msg % extension_point.identifier)
         record.extension_point = extension_point
         # formally add extensions contributed before registration
         if record.extensions:
