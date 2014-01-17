@@ -153,8 +153,12 @@
       // ignore references
       if (!$(e).parent().hasClass("reference")) {
         $(e).replaceWith(function () {
-          return $("<code />").text($(this).text());
+          return $("<code />").html($(this).html());
         });
       }});
+
+    // Update sourcelink to remove outerdiv (fixes appearance in navbar).
+    var $srcLink = $(".nav #sourcelink");
+    $srcLink.parent().html($srcLink.html());
   });
 }($jqTheme || window.jQuery));

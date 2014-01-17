@@ -1,12 +1,4 @@
 
-
-  
-  
- 
-  
- 
-
-
 <!DOCTYPE html>
 
 
@@ -14,17 +6,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.container &mdash; Enaml 0.8.9 documentation</title>
+    <title>enaml.widgets.container &mdash; Enaml 0.9.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.8.9',
+        VERSION:     '0.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +29,7 @@
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.9 documentation" href="../../../index.html" />
+    <link rel="top" title="Enaml 0.9.0 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" />
   
 <meta charset='utf-8'>
@@ -63,8 +55,9 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="../../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+        <a class="navbar-brand" href="../../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.0</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -99,7 +92,7 @@
     <li><a href="../../../genindex.html", title="Index">Index</a></li>
 
             
-              <li></li>
+              <li class="hidden-sm"></li>
             
           </ul>
 
@@ -143,15 +136,14 @@
 <span class="c">#</span>
 <span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
 <span class="c">#------------------------------------------------------------------------------</span>
-<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Bool</span><span class="p">,</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">Coerced</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span> <span class="n">set_default</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Coerced</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span> <span class="n">set_default</span>
 
 <span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.constrainable</span> <span class="kn">import</span> <span class="n">ContentsConstrainableMixin</span>
 <span class="kn">from</span> <span class="nn">enaml.layout.geometry</span> <span class="kn">import</span> <span class="n">Box</span>
 <span class="kn">from</span> <span class="nn">enaml.layout.layout_helpers</span> <span class="kn">import</span> <span class="n">vbox</span>
 
-<span class="kn">from</span> <span class="nn">.constraints_widget</span> <span class="kn">import</span> <span class="n">ConstraintsWidget</span><span class="p">,</span> <span class="n">ConstraintMember</span>
+<span class="kn">from</span> <span class="nn">.constraints_widget</span> <span class="kn">import</span> <span class="n">ConstraintsWidget</span>
 <span class="kn">from</span> <span class="nn">.frame</span> <span class="kn">import</span> <span class="n">Frame</span><span class="p">,</span> <span class="n">ProxyFrame</span>
 
 
@@ -163,7 +155,7 @@
     <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Container</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../../api_ref/widgets/container.html#enaml.widgets.container.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">(</span><span class="n">Frame</span><span class="p">):</span>
+<div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../../api_ref/widgets/container.html#enaml.widgets.container.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">(</span><span class="n">Frame</span><span class="p">,</span> <span class="n">ContentsConstrainableMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A Frame subclass which provides child layout functionality.</span>
 
 <span class="sd">    The Container is the canonical component used to arrange child</span>
@@ -187,59 +179,15 @@
     <span class="c">#: marked as True to enable sharing.</span>
     <span class="n">share_layout</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
 
-    <span class="c">#: A constant symbolic object that represents the internal left</span>
-    <span class="c">#: boundary of the content area of the container.</span>
-    <span class="n">contents_left</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
-
-    <span class="c">#: A constant symbolic object that represents the internal right</span>
-    <span class="c">#: boundary of the content area of the container.</span>
-    <span class="n">contents_right</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
-
-    <span class="c">#: A constant symbolic object that represents the internal top</span>
-    <span class="c">#: boundary of the content area of the container.</span>
-    <span class="n">contents_top</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
-
-    <span class="c">#: A constant symbolic object that represents the internal bottom</span>
-    <span class="c">#: boundary of the content area of the container.</span>
-    <span class="n">contents_bottom</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
-
-    <span class="c">#: A constant symbolic object that represents the internal width of</span>
-    <span class="c">#: the content area of the container.</span>
-    <span class="n">contents_width</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_default_contents_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_right</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_left</span>
-
-    <span class="c">#: A constant symbolic object that represents the internal height of</span>
-    <span class="c">#: the content area of the container.</span>
-    <span class="n">contents_height</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_default_contents_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_bottom</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_top</span>
-
-    <span class="c">#: A constant symbolic object that represents the internal center</span>
-    <span class="c">#: along the vertical direction the content area of the container.</span>
-    <span class="n">contents_v_center</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_default_contents_v_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_top</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_height</span> <span class="o">/</span> <span class="mf">2.0</span>
-
-    <span class="c">#: A constant symbolic object that represents the internal center</span>
-    <span class="c">#: along the horizontal direction of the content area of the container.</span>
-    <span class="n">contents_h_center</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_default_contents_h_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_left</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">contents_width</span> <span class="o">/</span> <span class="mf">2.0</span>
-
     <span class="c">#: A box object which holds the padding for this component. The</span>
     <span class="c">#: padding is the amount of space between the outer boundary box</span>
-    <span class="c">#: and the content box. The default padding is (10, 10, 10, 10).</span>
+    <span class="c">#: and the content box. The default padding is 10 pixels a side.</span>
     <span class="c">#: Certain subclasses, such as GroupBox, may provide additional</span>
     <span class="c">#: margin than what is specified by the padding.</span>
     <span class="n">padding</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">Box</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)))</span>
 
-    <span class="c">#: Containers freely exapnd in width and height. The size hint</span>
-    <span class="c">#: constraints for a Container are used when the container is</span>
+    <span class="c">#: A Container expands freely exapnd in width and height. The size</span>
+    <span class="c">#: hint constraints for a Container are used when the container is</span>
     <span class="c">#: not sharing its layout. In these cases, expansion of the</span>
     <span class="c">#: container is typically desired.</span>
     <span class="n">hug_width</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
@@ -307,10 +255,9 @@
 <span class="sd">        the container unless the user has given explicit &#39;constraints&#39;.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[:]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">cns</span><span class="p">:</span>
-            <span class="n">cns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vbox</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">widgets</span><span class="p">()))</span>
-        <span class="k">return</span> <span class="n">cns</span></div></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">vbox</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">widgets</span><span class="p">())]</span></div></div>
 </pre></div>
 
     </div>
@@ -325,7 +272,7 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Dec 01, 2013.<br/>
+      Last updated on Jan 16, 2014.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
