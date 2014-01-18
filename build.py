@@ -51,7 +51,7 @@ def gh_pages():
     shutil.mv(temp_dir + '/html', temp_dir + '/docs')
     os.system('git checkout gh-pages')
     shutil.rmtree('./docs')
-    shutil.copytree(temp_dir + '/docs', '.')
+    shutil.copytree(temp_dir + '/docs', './docs')
     os.system('git add ./docs')
     os.system('git commit -m "rebuild docs"')
     os.system('git push origin gh-pages')
