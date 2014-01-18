@@ -45,7 +45,7 @@ def gh_pages():
     os.system('git pull origin master')
     shutil.rmtree('./docs/build', ignore_errors=True)
     os.chdir('./docs')
-    os.sytem('make docs html')
+    os.system('make docs html')
     os.chdir('..')
     shutil.copytree('./docs/build/html', temp_dir)
     shutil.mv(temp_dir + '/html', temp_dir + '/docs')
