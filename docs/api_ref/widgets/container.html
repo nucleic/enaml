@@ -1,12 +1,4 @@
 
-
-  
-  
- 
-  
- 
-
-
 <!DOCTYPE html>
 
 
@@ -14,17 +6,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.container &mdash; Enaml 0.8.9 documentation</title>
+    <title>enaml.widgets.container &mdash; Enaml 0.9.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.8.9',
+        VERSION:     '0.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +29,7 @@
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.9 documentation" href="../../index.html" />
+    <link rel="top" title="Enaml 0.9.0 documentation" href="../../index.html" />
     <link rel="up" title="enaml.widgets" href="index.html" />
     <link rel="next" title="enaml.widgets.control" href="control.html" />
     <link rel="prev" title="enaml.widgets.constraints_widget" href="constraints_widget.html" />
@@ -66,7 +58,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.0</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -241,7 +233,7 @@
 <dl class="class">
 <dt id="enaml.widgets.container.Container">
 <em class="property">class </em><tt class="descclassname">enaml.widgets.container.</tt><tt class="descname">Container</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/widgets/container.html#Container"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.widgets.container.Container" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="frame.html#enaml.widgets.frame.Frame" title="enaml.widgets.frame.Frame"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.frame.Frame</span></tt></a></p>
+<dd><p>Bases: <a class="reference internal" href="frame.html#enaml.widgets.frame.Frame" title="enaml.widgets.frame.Frame"><tt class="xref py py-class docutils literal"><span class="pre">enaml.widgets.frame.Frame</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.constrainable.ContentsConstrainableMixin</span></tt></p>
 <p>A Frame subclass which provides child layout functionality.</p>
 <p>The Container is the canonical component used to arrange child
 widgets using constraints-based layout. The developer can supply
@@ -265,67 +257,11 @@ marked as True to enable sharing.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="enaml.widgets.container.Container.contents_left">
-<tt class="descname">contents_left</tt><a class="headerlink" href="#enaml.widgets.container.Container.contents_left" title="Permalink to this definition">¶</a></dt>
-<dd><p>A constant symbolic object that represents the internal left
-boundary of the content area of the container.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="enaml.widgets.container.Container.contents_right">
-<tt class="descname">contents_right</tt><a class="headerlink" href="#enaml.widgets.container.Container.contents_right" title="Permalink to this definition">¶</a></dt>
-<dd><p>A constant symbolic object that represents the internal right
-boundary of the content area of the container.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="enaml.widgets.container.Container.contents_top">
-<tt class="descname">contents_top</tt><a class="headerlink" href="#enaml.widgets.container.Container.contents_top" title="Permalink to this definition">¶</a></dt>
-<dd><p>A constant symbolic object that represents the internal top
-boundary of the content area of the container.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="enaml.widgets.container.Container.contents_bottom">
-<tt class="descname">contents_bottom</tt><a class="headerlink" href="#enaml.widgets.container.Container.contents_bottom" title="Permalink to this definition">¶</a></dt>
-<dd><p>A constant symbolic object that represents the internal bottom
-boundary of the content area of the container.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="enaml.widgets.container.Container.contents_width">
-<tt class="descname">contents_width</tt><a class="headerlink" href="#enaml.widgets.container.Container.contents_width" title="Permalink to this definition">¶</a></dt>
-<dd><p>A constant symbolic object that represents the internal width of
-the content area of the container.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="enaml.widgets.container.Container.contents_height">
-<tt class="descname">contents_height</tt><a class="headerlink" href="#enaml.widgets.container.Container.contents_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>A constant symbolic object that represents the internal height of
-the content area of the container.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="enaml.widgets.container.Container.contents_v_center">
-<tt class="descname">contents_v_center</tt><a class="headerlink" href="#enaml.widgets.container.Container.contents_v_center" title="Permalink to this definition">¶</a></dt>
-<dd><p>A constant symbolic object that represents the internal center
-along the vertical direction the content area of the container.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="enaml.widgets.container.Container.contents_h_center">
-<tt class="descname">contents_h_center</tt><a class="headerlink" href="#enaml.widgets.container.Container.contents_h_center" title="Permalink to this definition">¶</a></dt>
-<dd><p>A constant symbolic object that represents the internal center
-along the horizontal direction of the content area of the container.</p>
-</dd></dl>
-
-<dl class="attribute">
 <dt id="enaml.widgets.container.Container.padding">
 <tt class="descname">padding</tt><a class="headerlink" href="#enaml.widgets.container.Container.padding" title="Permalink to this definition">¶</a></dt>
 <dd><p>A box object which holds the padding for this component. The
 padding is the amount of space between the outer boundary box
-and the content box. The default padding is (10, 10, 10, 10).
+and the content box. The default padding is 10 pixels a side.
 Certain subclasses, such as GroupBox, may provide additional
 margin than what is specified by the padding.</p>
 </dd></dl>
@@ -333,8 +269,8 @@ margin than what is specified by the padding.</p>
 <dl class="attribute">
 <dt id="enaml.widgets.container.Container.hug_width">
 <tt class="descname">hug_width</tt><a class="headerlink" href="#enaml.widgets.container.Container.hug_width" title="Permalink to this definition">¶</a></dt>
-<dd><p>Containers freely exapnd in width and height. The size hint
-constraints for a Container are used when the container is
+<dd><p>A Container expands freely exapnd in width and height. The size
+hint constraints for a Container are used when the container is
 not sharing its layout. In these cases, expansion of the
 container is typically desired.</p>
 </dd></dl>
@@ -392,7 +328,7 @@ the container unless the user has given explicit &#8216;constraints&#8217;.</p>
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Dec 01, 2013.<br/>
+      Last updated on Jan 17, 2014.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>

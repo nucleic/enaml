@@ -1,12 +1,4 @@
 
-
-  
-  
- 
-  
- 
-
-
 <!DOCTYPE html>
 
 
@@ -14,17 +6,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>enaml.widgets.constraints_widget &mdash; Enaml 0.8.9 documentation</title>
+    <title>enaml.widgets.constraints_widget &mdash; Enaml 0.9.0 documentation</title>
     
     <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.8.9',
+        VERSION:     '0.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -37,7 +29,7 @@
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="Enaml 0.8.9 documentation" href="../../../index.html" />
+    <link rel="top" title="Enaml 0.9.0 documentation" href="../../../index.html" />
     <link rel="up" title="Module code" href="../../index.html" />
   
 <meta charset='utf-8'>
@@ -64,7 +56,7 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="../../../index.html">Enaml</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.8.9</b></span>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.0</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -143,39 +135,12 @@
 <span class="c">#</span>
 <span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
 <span class="c">#------------------------------------------------------------------------------</span>
-<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">DefaultValue</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span>
-<span class="p">)</span>
-
-<span class="kn">from</span> <span class="nn">casuarius</span> <span class="kn">import</span> <span class="n">ConstraintVariable</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">observe</span>
 
 <span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
-<span class="kn">from</span> <span class="nn">enaml.layout.ab_constrainable</span> <span class="kn">import</span> <span class="n">ABConstrainable</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.constrainable</span> <span class="kn">import</span> <span class="n">ConstrainableMixin</span><span class="p">,</span> <span class="n">PolicyEnum</span>
 
 <span class="kn">from</span> <span class="nn">.widget</span> <span class="kn">import</span> <span class="n">Widget</span><span class="p">,</span> <span class="n">ProxyWidget</span>
-
-
-<span class="c">#: An atom enum which defines the allowable constraints strengths.</span>
-<span class="c">#: Clones will be made by selecting a new default via &#39;select&#39;.</span>
-<span class="n">PolicyEnum</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">,</span> <span class="s">&#39;weak&#39;</span><span class="p">,</span> <span class="s">&#39;medium&#39;</span><span class="p">,</span> <span class="s">&#39;strong&#39;</span><span class="p">,</span> <span class="s">&#39;required&#39;</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">ConstraintMember</span><span class="p">(</span><span class="n">Constant</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A custom Member class that generates a ConstraintVariable.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ConstraintMember</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="n">mode</span> <span class="o">=</span> <span class="n">DefaultValue</span><span class="o">.</span><span class="n">MemberMethod_Object</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_default_value_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="s">&quot;default&quot;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Create the constraint variable for the member.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ConstraintVariable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">ProxyConstraintsWidget</span><span class="p">(</span><span class="n">ProxyWidget</span><span class="p">):</span>
@@ -189,7 +154,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 
-<div class="viewcode-block" id="ConstraintsWidget"><a class="viewcode-back" href="../../../api_ref/widgets/constraints_widget.html#enaml.widgets.constraints_widget.ConstraintsWidget">[docs]</a><span class="k">class</span> <span class="nc">ConstraintsWidget</span><span class="p">(</span><span class="n">Widget</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstraintsWidget"><a class="viewcode-back" href="../../../api_ref/widgets/constraints_widget.html#enaml.widgets.constraints_widget.ConstraintsWidget">[docs]</a><span class="k">class</span> <span class="nc">ConstraintsWidget</span><span class="p">(</span><span class="n">Widget</span><span class="p">,</span> <span class="n">ConstrainableMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A Widget subclass which adds constraint information.</span>
 
 <span class="sd">    A ConstraintsWidget is augmented with symbolic constraint variables</span>
@@ -198,112 +163,22 @@
 <span class="sd">    participate in constraints-based layout.</span>
 
 <span class="sd">    Constraints are added to a widget by assigning a list to the</span>
-<span class="sd">    &#39;constraints&#39; attribute. This list may contain raw LinearConstraint</span>
-<span class="sd">    objects (which are created by manipulating the symbolic constraint</span>
-<span class="sd">    variables) or DeferredConstraints objects which generated these</span>
-<span class="sd">    LinearConstraint objects on-the-fly.</span>
+<span class="sd">    &#39;constraints&#39; attribute. This list may contain raw Constraint</span>
+<span class="sd">    objects, which are created by manipulating the symbolic constraint</span>
+<span class="sd">    variables, or ConstraintHelper objects which generate Constraint</span>
+<span class="sd">    objects on request.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c">#: The list of user-specified constraints or constraint-generating</span>
-    <span class="c">#: objects for this component.</span>
+    <span class="c">#: The list of user-specified constraints or ConstraintHelpers.</span>
     <span class="n">constraints</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">List</span><span class="p">())</span>
 
-    <span class="c">#: A constant symbolic object that represents the left boundary of</span>
-    <span class="c">#: the widget.</span>
-    <span class="n">left</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
-
-    <span class="c">#: A constant symbolic object that represents the top boundary of</span>
-    <span class="c">#: the widget.</span>
-    <span class="n">top</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
-
-    <span class="c">#: A constant symbolic object that represents the width of the</span>
-    <span class="c">#: widget.</span>
-    <span class="n">width</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
-
-    <span class="c">#: A constant symbolic object that represents the height of the</span>
-    <span class="c">#: widget.</span>
-    <span class="n">height</span> <span class="o">=</span> <span class="n">ConstraintMember</span><span class="p">()</span>
-
-    <span class="c">#: A constant symbolic object that represents the right boundary</span>
-    <span class="c">#: of the component. This is computed as left + width.</span>
-    <span class="n">right</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_default_right</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span>
-
-    <span class="c">#: A constant symbolic object that represents the bottom boundary</span>
-    <span class="c">#: of the component. This is computed as top + height.</span>
-    <span class="n">bottom</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_default_bottom</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span>
-
-    <span class="c">#: A constant symbolic object that represents the vertical center</span>
-    <span class="c">#: of the width. This is computed as top + 0.5 * height.</span>
-    <span class="n">v_center</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_default_v_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mf">2.0</span>
-
-    <span class="c">#: A constant symbolic object that represents the horizontal center</span>
-    <span class="c">#: of the widget. This is computed as left + 0.5 * width.</span>
-    <span class="n">h_center</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_default_h_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mf">2.0</span>
-
-    <span class="c">#: How strongly a component hugs it&#39;s width hint. Valid strengths</span>
-    <span class="c">#: are &#39;weak&#39;, &#39;medium&#39;, &#39;strong&#39;, &#39;required&#39; and &#39;ignore&#39;. The</span>
-    <span class="c">#: default is &#39;strong&#39;. This can be overridden on a per-control</span>
-    <span class="c">#: basis to specify a logical default for the given control. This</span>
-    <span class="c">#: is equivalent to the following constraint:</span>
-    <span class="c">#:</span>
-    <span class="c">#:     (width == hint) | hug_width</span>
+    <span class="c"># Redefine the policy enums as declarative members. The docs on</span>
+    <span class="c"># the ConstrainableMixin class provide their full explanation.</span>
     <span class="n">hug_width</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">PolicyEnum</span><span class="p">(</span><span class="s">&#39;strong&#39;</span><span class="p">))</span>
-
-    <span class="c">#: How strongly a component hugs it&#39;s height hint. Valid strengths</span>
-    <span class="c">#: are &#39;weak&#39;, &#39;medium&#39;, &#39;strong&#39;, &#39;required&#39; and &#39;ignore&#39;. The</span>
-    <span class="c">#: default is &#39;strong&#39;. This can be overridden on a per-control</span>
-    <span class="c">#: basis to specify a logical default for the given control. This</span>
-    <span class="c">#: is equivalent to the following constraint:</span>
-    <span class="c">#:</span>
-    <span class="c">#:     (height == hint) | hug_height</span>
     <span class="n">hug_height</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">PolicyEnum</span><span class="p">(</span><span class="s">&#39;strong&#39;</span><span class="p">))</span>
-
-    <span class="c">#: How strongly a component resists clipping its width hint. Valid</span>
-    <span class="c">#: strengths are &#39;weak&#39;, &#39;medium&#39;, &#39;strong&#39;, &#39;required&#39; and &#39;ignore&#39;.</span>
-    <span class="c">#: The default is &#39;strong&#39;. This can be overridden on a per-control</span>
-    <span class="c">#: basis to specify a logical default for the given control. This</span>
-    <span class="c">#: is equivalent to the following constraint:</span>
-    <span class="c">#:</span>
-    <span class="c">#:     (width &gt;= hint) | resist_width</span>
     <span class="n">resist_width</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">PolicyEnum</span><span class="p">(</span><span class="s">&#39;strong&#39;</span><span class="p">))</span>
-
-    <span class="c">#: How strongly a component resists clipping its height hint. Valid</span>
-    <span class="c">#: strengths are &#39;weak&#39;, &#39;medium&#39;, &#39;strong&#39;, &#39;required&#39; and &#39;ignore&#39;.</span>
-    <span class="c">#: The default is &#39;strong&#39;. This can be overridden on a per-control</span>
-    <span class="c">#: basis to specify a logical default for the given control. This</span>
-    <span class="c">#: is equivalent to the following constraint:</span>
-    <span class="c">#:</span>
-    <span class="c">#:     (height &gt;= hint) | resist_height</span>
     <span class="n">resist_height</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">PolicyEnum</span><span class="p">(</span><span class="s">&#39;strong&#39;</span><span class="p">))</span>
-
-    <span class="c">#: How strongly a component resists expanding its width hint. Valid</span>
-    <span class="c">#: strengths are &#39;weak&#39;, &#39;medium&#39;, &#39;strong&#39;, &#39;required&#39; and &#39;ignore&#39;.</span>
-    <span class="c">#: The default is &#39;ignore&#39;. This can be overridden on a per-control</span>
-    <span class="c">#: basis to specify a logical default for the given control. This</span>
-    <span class="c">#: is equivalent to the following constraint:</span>
-    <span class="c">#:</span>
-    <span class="c">#:     (width &lt;= hint) | limit_width</span>
     <span class="n">limit_width</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">PolicyEnum</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">))</span>
-
-    <span class="c">#: How strongly a component resists expanding its height hint. Valid</span>
-    <span class="c">#: strengths are &#39;weak&#39;, &#39;medium&#39;, &#39;strong&#39;, &#39;required&#39; and &#39;ignore&#39;.</span>
-    <span class="c">#: The default is &#39;strong&#39;. This can be overridden on a per-control</span>
-    <span class="c">#: basis to specify a logical default for the given control. This</span>
-    <span class="c">#: is equivalent to the following constraint:</span>
-    <span class="c">#:</span>
-    <span class="c">#:     (height &lt;= hint) | limit_height</span>
     <span class="n">limit_height</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">PolicyEnum</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">))</span>
 
     <span class="c">#: A reference to the ProxyConstraintsWidget object.</span>
@@ -312,8 +187,9 @@
     <span class="c">#--------------------------------------------------------------------------</span>
     <span class="c"># Observers</span>
     <span class="c">#--------------------------------------------------------------------------</span>
-    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;constraints&#39;</span><span class="p">,</span> <span class="s">&#39;hug_width&#39;</span><span class="p">,</span> <span class="s">&#39;hug_height&#39;</span><span class="p">,</span> <span class="s">&#39;resist_width&#39;</span><span class="p">,</span>
-        <span class="s">&#39;resist_height&#39;</span><span class="p">)</span>
+    <span class="nd">@observe</span><span class="p">(</span>
+        <span class="s">&#39;constraints&#39;</span><span class="p">,</span> <span class="s">&#39;hug_width&#39;</span><span class="p">,</span> <span class="s">&#39;hug_height&#39;</span><span class="p">,</span> <span class="s">&#39;resist_width&#39;</span><span class="p">,</span>
+        <span class="s">&#39;resist_height&#39;</span><span class="p">,</span> <span class="s">&#39;limit_width&#39;</span><span class="p">,</span> <span class="s">&#39;limit_height&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_layout_invalidated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; An observer which will relayout the proxy widget.</span>
 
@@ -366,10 +242,7 @@
 <span class="sd">        will return the list of &#39;constraints&#39; defined by the user.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span>
-
-</div></div>
-<span class="n">ABConstrainable</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ConstraintsWidget</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span></div></div>
 </pre></div>
 
     </div>
@@ -384,7 +257,7 @@
     </p>
     <p>
         &copy; Copyright 2013, Nucleic Development Team.<br/>
-      Last updated on Dec 01, 2013.<br/>
+      Last updated on Jan 17, 2014.<br/>
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
     </p>
   </div>
