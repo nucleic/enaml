@@ -5,9 +5,15 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Event, ForwardTyped, Unicode
+from atom.api import Atom, ForwardTyped
 
-from .extension_point import ExtensionPointEvent
+
+def PluginManifest():
+    """ A lazy forward import function for the PluginManifest type.
+
+    """
+    from .plugin_manifest import PluginManifest
+    return PluginManifest
 
 
 def Workbench():
@@ -21,82 +27,75 @@ def Workbench():
 class Plugin(Atom):
     """ A base class for defining workbench plugins.
 
-    This class provides the base life-cycle api required of workbench
-    plugins. User code should subclass this class and implement the
-    various life-cycle methods as needed.
-
-    Subclasses may declare ExtensionPoint instances in their body to
-    define the points to which other plugins may contribute extensions.
-    A plugin can `observe` the extension points in order to be notified
-    when the contributed extensions change. An observer will be passed
-    a change dict with type 'extension-point' and 'value' which is an
-    ExtensionPointEvent instance.
-
     """
     #: A reference to the workbench instance which manages the plugin.
-    #: This is assigned when the plugin is added to the workbench. It
+    #: This is assigned when the plugin created by the workbench. It
     #: should not be manipulated by user code.
     workbench = ForwardTyped(Workbench)
 
-    #: A globally unique identifier for the plugin. This is typically
-    #: provided in the form: 'mypackage.mymodule.myplugin'.
-    identifier = Unicode()
+    #: A reference to the manifest instance which declared the plugin.
+    #: This is assigned when the plugin created by the workbench. It
+    #: should not be manipulated by user code.
+    manifest = ForwardTyped(PluginManifest)
 
-    #: A human-readable name for the plugin. This need not be unique.
-    name = Unicode()
+    def get_extension(self, extension_point_id, extension_id):
+        """ Get a specific extension contributed to an extension point.
 
-    #: An event which should be fired by user code when the extensions
-    #: contributed by this plugin to extensions points change. Firing
-    #: this event will only have an effect after the plugin is added
-    #: to the workbench and 'get_extensions' is called.
-    extensions_changed = Event(ExtensionPointEvent)
+        This is a convenience method which proxies the call to the
+        underlying workbench.
 
-    def get_extensions(self):
-        """ Get the extensions contributed by this plugin.
+        Parameters
+        ----------
+        extension_point_id : unicode
+            The globally unique identifier for the extension point
+            of interest.
 
-        This method is called when the plugin is added to a workbench.
-
-        The default implementation of this method returns an empty dict
-        and can be safetly ignored by subclasses which do not contribute
-        any extensions to other plugins.
-
-        This method should never be called by user code.
+        extension_id : unicode
+            The globally unique identifier for the extension of
+            interest.
 
         Returns
         -------
-        result : dict
-            A dict which maps extension point id to list of extension
-            objects. The extensions can be of any type allowed by the
-            specified extension point.
+        result : Extension or None
+            The requested extension object, or None if it does not
+            exist.
 
         """
-        return {}
+        workbench = self.workbench
+        if workbench is not None:
+            return workbench.get_extension(extension_point_id, extension_id)
+        return None
 
-    def initialize(self):
-        """ Invoked when the plugin is added to the workbench.
+    def get_extensions(self, extension_point_id):
+        """ Get the extensions contributed to an extension point.
 
-        This method is called when the plugin is added to a workbench,
-        before the workbench queries the plugin for its extensions. A
-        plugin may reimplement this method if, for example, it wishes
-        to lazily import its extensions, or install other plugins.
+        This is a convenience method which proxies the call to the
+        underlying workbench.
 
-        The default implementation of this method does nothing, and
-        can be safetly ignored by subclasses which do not need it.
+        Parameters
+        ----------
+        extension_point_id : unicode
+            The globally unique identifier for the extension point
+            of interest.
 
-        This method should never be called by user code.
+        Returns
+        -------
+        result : list
+            The list of Extension objects contributed to the specified
+            extension point.
 
         """
-        pass
+        workbench = self.workbench
+        if workbench is not None:
+            return workbench.get_extensions(extension_point_id)
+        return []
 
     def start(self):
         """ Start the life-cycle of the plugin.
 
-        This method will be called once by the workbench during the
-        lifetime of the plugin. It is guaranteed to be called after
-        the 'initialize' method has been invoked.
-
-        The default implementation of this method does nothing, and
-        can be safetly ignored by subclasses which do not need it.
+        This method will be called by the workbench after it creates
+        the plugin. The default implementation does nothing and can be
+        safetly ignored by subclasses which do not need it.
 
         This method should never be called by user code.
 
@@ -106,30 +105,9 @@ class Plugin(Atom):
     def stop(self):
         """ Stop the life-cycle of the plugin.
 
-        This method will be called once by the workbench at the end of
-        the plugin's lifetime.
-
-        The default implementation of this method does nothing, and
-        can be safetly ignored by subclasses which do not need it.
-
-        This method should never be called by user code.
-
-        """
-        pass
-
-    def destroy(self):
-        """ Invoked when a plugin is removed from the workbench.
-
-        This method will be called when the plugin is removed from
-        the workbench. The plugin should release any resources it
-        acquired during its lifetime. After this method returns the
-        plugin should be considered invalid and no longer used.
-
-        Before this method is called, the plugin's extensions and
-        extension points will be unloaded and removed.
-
-        The default implementation of this method does nothing, and
-        can be safetly ignored by subclasses which do not need it.
+        This method will be called by the workbench before it removes
+        the plugin. The default implementation does nothing and can be
+        safetly ignored by subclasses which do not need it.
 
         This method should never be called by user code.
 

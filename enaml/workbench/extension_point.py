@@ -5,69 +5,28 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import GetAttr, Member, SetAttr
+from atom.api import Atom, Subclass, Unicode
+
+from .extension import Extension
 
 
-class ExtensionPoint(Member):
-    """ A custom member class for defining plugin extension points.
+class ExtensionPoint(Atom):
+    """ A class used to describe an extension point of a plugin.
 
-    An ExtensionPoint provides a well-defined interface on a plugin
-    which allows other plugins to contribute additional functionality
-    through extensions.
-
-    It is a programming error to define an instance of ExtensionPoint
-    on a class which does not inherit from 'Plugin'.
+    An extension point is used to declare how plugins can contribute
+    functionality to another plugin. It contains metadata and an
+    optional extension validator.
 
     """
-    __slots__ = ('kind', 'identifier', 'description')
+    #: The globally unique identifier of the plugin. This can be any
+    #: string, but it will typically be in dot-separated form.
+    id = Unicode()
 
-    def __init__(self, kind=object, identifier=u'', description=u''):
-        """ Initialize an ExtensionPoint.
+    #: An optional human readable name of the extension point.
+    name = Unicode()
 
-        Parameters
-        ----------
-        kind : type, or tuple of types, optional
-            The allow type(s) for contributed extensions. The default
-            is `object` and will allow any type of extension object.
+    #: An optional human readable description of the extension point.
+    description = Unicode()
 
-        identifier : unicode, required
-            A globally unique identifier for the extension point. This
-            can be any string, but is typically dot separated such as:
-            'myproject.mymodule.myextensionpoint'
-
-        description : unicode, optional
-            A long-form description of the extension point.
-
-        """
-        if not identifier:
-            raise ValueError('an identifier must be provided')
-        self.kind = kind
-        self.identifier = unicode(identifier)
-        self.description = unicode(description)
-        self.set_getattr_mode(GetAttr.MemberMethod_Object, 'get')
-        self.set_setattr_mode(SetAttr.MemberMethod_ObjectValue, 'set')
-
-    def get(self, plugin):
-        """ Get the extensions contributed to the extension point.
-
-        Returns
-        -------
-        result : list
-            The list of extensions contributed to the extension point.
-            The returned list will be an independent copy. In-place
-            changes to the list will not affect the framework.
-
-        """
-        workbench = plugin.workbench
-        if workbench is not None:
-            return workbench.get_extensions(self.identifier)
-        return []
-
-    def set(self, plugin, value):
-        """ The setter for the extension point.
-
-        It is an error to directly assign extension point contributors.
-
-        """
-        msg = "cannot directly assign extensions to an extension point"
-        raise TypeError(msg)
+    #: The allowed type (and subtypes) of contributed extensions.
+    extension_type = Subclass(Extension)
