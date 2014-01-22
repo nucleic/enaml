@@ -16,9 +16,9 @@ class Extension(Atom):
     allowed extension types to a particular subclass of Extension.
 
     """
-    #: An optional globally unique identifier for the extension. This
-    #: can be provided to enable querying the registry for a specific
-    #: extension.
+    #: An optional identifier for the extension. This can be provided
+    #: to enable querying the registry for a specific extension. It
+    #: should be a unique value, but this is not strictly enforced.
     id = Unicode()
 
     #: An optional human readable name of the extension.
