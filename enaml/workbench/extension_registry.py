@@ -12,7 +12,7 @@ from itertools import groupby
 from atom.api import Atom, Typed
 
 
-class ExtensionRegistryListener(Atom):
+class RegistryEventListener(Atom):
     """ A base class for defining extension registry listeners.
 
     A registry listener is used to listen for changes to an extension
@@ -208,7 +208,7 @@ class ExtensionRegistry(Atom):
             The globally unique identifier of the extension point, or
             None to install the listener for all extension points.
 
-        listener : ExtensionRegistryListener
+        listener : RegistryEventListener
             The registry listener to add to the registry.
 
         """
