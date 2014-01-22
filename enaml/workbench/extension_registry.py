@@ -122,6 +122,17 @@ class ExtensionRegistry(Atom):
         """
         return self._extension_points.get(extension_point_id)
 
+    def get_extension_points(self):
+        """ Get all of the extension points in the registry.
+
+        Returns
+        -------
+        result : list
+            A list of all of the extension points in the registry.
+
+        """
+        return self._extension_points.values()
+
     def add_extensions(self, extensions):
         """ Add extensions to the registry.
 
