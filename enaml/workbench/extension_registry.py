@@ -5,19 +5,21 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import bisect
+from bisect import insort
+from collections import defaultdict
+from itertools import groupby
 
-from atom.api import Atom, Dict
+from atom.api import Atom, Typed
 
 
-class RegistryListener(Atom):
+class ExtensionRegistryListener(Atom):
     """ A base class for defining extension registry listeners.
 
     A registry listener is used to listen for changes to an extension
-    point in the extension registry. It will be notified when the point
+    point in the extension registry. It will be notified when a point
     is added or removed, or when extensions are added or removed from
-    the point. Subclasses should reimplement the listener methods as
-    needed to react to changes for an extension point.
+    a point. Subclasses should reimplement the needed listener methods
+    to react to changes to an extension point.
 
     """
     def extension_point_added(self, extension_point):
@@ -31,7 +33,7 @@ class RegistryListener(Atom):
         """
         pass
 
-    def extension_point_removed(self, plugin_id, extension_point):
+    def extension_point_removed(self, extension_point):
         """ Called when an extension point is removed from the registry.
 
         Parameters
@@ -73,7 +75,7 @@ class ExtensionRegistry(Atom):
         """ Add an extension point to the registry.
 
         If an extension point with the same id has already been added
-        to the registry, an exception will be raised.
+        to the registry, a ValueError will be raised.
 
         Parameters
         ----------
@@ -81,7 +83,11 @@ class ExtensionRegistry(Atom):
             The extension point to add to the registry.
 
         """
-        pass
+        if point.id in self._extension_points:
+            msg = "extension point '%s' already registered"
+            raise ValueError(msg % point.id)
+        self._extension_points[point.id] = point
+        self._invoke_listeners(point.id, 'extension_point_added', point)
 
     def remove_extension_point(self, extension_point_id):
         """ Remove an extension point from the registry.
@@ -95,7 +101,26 @@ class ExtensionRegistry(Atom):
             The identifier of the extension point to remove.
 
         """
-        pass
+        point = self._extension_points.pop(extension_point_id, None)
+        if point is None:
+            return
+        self._invoke_listeners(point.id, 'extension_point_removed', point)
+
+    def get_extension_point(self, extension_point_id):
+        """ Get the extension point associated with an id.
+
+        Parameters
+        ----------
+        extension_point_id : unicode
+            The unique identifier for the extension point of interest.
+
+        Returns
+        -------
+        result : ExtensionPoint or None
+            The desired ExtensionPoint or None if it does not exist.
+
+        """
+        return self._extension_points.get(extension_point_id)
 
     def add_extensions(self, extensions):
         """ Add extensions to the registry.
@@ -106,21 +131,33 @@ class ExtensionRegistry(Atom):
             The list of Extensions to add to the registry.
 
         """
-        pass
+        key = lambda ext: ext.point
+        for point, extensioniter in groupby(extensions, key):
+            added = list(extensioniter)
+            self._extensions[point].extend(added)
+            self._invoke_listeners(point, 'extensions_added', added)
 
     def remove_extensions(self, extensions):
         """ Remove extensions from the registry.
 
         Parameters
         ----------
-        identifier : unicode
-            The globally unique identifier of the extension point.
-
         extensions : list
-            An list of the Extensions to remove from the registry.
+            The list of the Extensions to remove from the registry.
 
         """
-        pass
+        key = lambda ext: ext.point
+        for point, extensioniter in groupby(extensions, key):
+            current = self._extensions.get(point, [])
+            removed = []
+            for extension in extensioniter:
+                try:
+                    current.remove(extension)
+                except ValueError:
+                    continue
+                else:
+                    removed.append(extension)
+            self._invoke_listeners(point, 'extensions_removed', removed)
 
     def get_extension(self, extension_point_id, extension_id):
         """ Get a specific extension contributed to an extension point.
@@ -139,7 +176,9 @@ class ExtensionRegistry(Atom):
             The requested Extension, or None if it does not exist.
 
         """
-        pass
+        for extension in self._extensions.get(extension_point_id, ()):
+            if extension.id == extension_id:
+                return extension
 
     def get_extensions(self, extension_point_id):
         """ Get the extensions contributed to an extension point.
@@ -155,7 +194,8 @@ class ExtensionRegistry(Atom):
             A list of Extensions contributed to the extension point.
 
         """
-        pass
+        extensions = self._extensions.get(extension_point_id)
+        return extensions[:] if extensions else []
 
     def add_listener(self, extension_point_id, listener):
         """ Add a listener to the specified extension point.
@@ -164,75 +204,65 @@ class ExtensionRegistry(Atom):
 
         Parameters
         ----------
-        extension_point_id : unicode
-            The globally unique identifier of the extension point.
+        extension_point_id : unicode or None
+            The globally unique identifier of the extension point, or
+            None to install the listener for all extension points.
 
-        listener : RegistryListener
+        listener : ExtensionRegistryListener
             The registry listener to add to the registry.
 
         """
-        pass
+        insort(self._listeners[extension_point_id], listener)
 
-    def remove_listener(self, identifier, listener):
+    def remove_listener(self, extension_point_id, listener):
         """ Remove a listener from the specified extension point.
 
         Parameters
         ----------
-        identifier : unicode
-            The globally unique identifier of the extension point.
+        extension_point_id : unicode or None
+            The same identifier used when the listener was added.
 
         listener : callable
-            The listener to remove from the extension point.
+            The listener to remove from the registry.
 
         """
-        pass
+        listeners = self._listeners.get(extension_point_id, [])
+        try:
+            listeners.remove(listener)
+        except ValueError:
+            pass
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
     #: A mapping of extension point id to extension point.
-    _extension_points = Dict()
+    _extension_points = Typed(dict, ())
 
     #: A mapping of extension point id to list of extensions.
-    _extensions = Dict()
+    _extensions = Typed(defaultdict, (list,))
 
     #: A mapping of extension point id to list of registry listeners.
-    _listeners = Dict()
+    _listeners = Typed(defaultdict, (list,))
 
-    def _invoke_listeners(self, record, removed, added):
-        """ Invoke the extension point listeners for a given record.
+    def _invoke_listeners(self, extension_point_id, method_name, arg):
+        """ Invoke the listeners for a given extension point.
+
+        This method automatically invokes the registry-wide listeners
+        before invoking the extension point specific listeners.
 
         Parameters
         ----------
-        record : ExtensionPointRecord
-            The registry record of interest.
+        extension_point_id : unicode
+            The identifier of the extension point of interest.
 
-        removed : list
-            The list of extensions removed from the extension point.
+        method_name : str
+            The name of the listener method to invoke on the listeners.
 
-        added : list
-            The list of extensions added to the extension point.
+        arg : object
+            The argument to pass to the listener method.
 
         """
-        # if not record.extension_point:
-        #     return
-        # if not record.listeners:
-        #     return
-        # if not removed and not added:
-        #     return
-
-        # event = ExtensionPointEvent()
-        # event.identifier = record.extension_point.identifier
-        # event.removed = removed
-        # event.added = added
-
-        # # iterate a copy to protect against mutations during dispatch
-        # has_dead_listeners = False
-        # for listener in record.listeners[:]:
-        #     if listener:
-        #         listener(event)
-        #     else:
-        #         has_dead_listeners = True
-
-        # if has_dead_listeners:
-        #     record.listeners = filter(None, record.listeners)
+        rg_lsnrs = self._listeners.get(None, [])
+        pt_lsnrs = self._listeners.get(extension_point_id, [])
+        for listener in rg_lsnrs + pt_lsnrs:
+            getattr(listener, method_name)(arg)
