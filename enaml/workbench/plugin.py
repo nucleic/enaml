@@ -29,8 +29,8 @@ class Plugin(Atom):
 
     """
     #: A reference to the workbench instance which manages the plugin.
-    #: This is assigned when the plugin created by the workbench. It
-    #: should not be manipulated by user code.
+    #: This is assigned when the plugin is created by the workbench.
+    #: It should not be manipulated by user code.
     workbench = ForwardTyped(Workbench)
 
     #: A reference to the manifest instance which declared the plugin.

@@ -5,33 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Bool, Dict, List, Typed
+from atom.api import Atom, Typed
 
-from .extension_point_listener import ExtensionPointListener
-from .plugin import Plugin
-
-
-class PluginRecord(Atom):
-    """
-
-    """
-    plugin = Typed(Plugin)
-
-    started = Bool(False)
-
-    stopped = Bool(False)
-
-    extension_points = List()
-
-    extensions = Dict()
-
-    listeners = List()
-
-
-def _get_extension_points(plugin):
-    """
-
-    """
+from .extension_registry import ExtensionRegistry
 
 
 class Workbench(Atom):
@@ -42,166 +18,159 @@ class Workbench(Atom):
     by a subclass, such as the enaml.studio.Studio class.
 
     """
-    #: A private dict mapping plugin id to plugin record.
-    _plugins = Dict()
+    #: The registry of extension points and extensions.
+    _registry = Typed(ExtensionRegistry, ())
 
-    #: A private list storing the plugin records in the order in which
-    #: they were added to the workbench.
-    _ordered_plugins = List()
+    #: A mapping of plugin id to tuple of (manifest, plugin).
+    _plugins = Typed(dict, ())
 
-    def add_plugin(self, plugin):
-        """ Add a plugin to the workbench.
+    def add_plugin(self, manifest):
+        """ Add a plugin with the workbench.
 
-        If a plugin with the same identifier has already been added to
-        the workbench, an exception will be raised. The plugin will be
-        initialized and its extension points and extensions registered
-        with the workbench.
-
-        If a plugin is added dynamically after the workbench has been
-        started. The callee is responsible for starting the plugin at
-        the appropriate time, by calling the 'start_plugin' method.
+        If a plugin with the same plugin identifier has already been
+        added to the workbench, a ValueError will be raised.
 
         Parameters
         ----------
-        plugin : Plugin
-            The plugin object to add to the workbench.
+        manifest : PluginManifest
+            The manifest for the plugin to add to the workbench.
 
         """
-        if plugin.identifier in self._plugins:
-            msg = "plugin '%s' has already been added to the workbench"
-            raise ValueError(msg % plugin.identifier)
-        record = PluginRecord(plugin=plugin)
-        self._plugins[plugin.identifier] = record
-        self._ordered_plugins.append(record)
+        if manifest.id in self._plugins:
+            msg = "plugin '%s' already registered"
+            raise ValueError(msg % manifest.id)
+        self._plugins[manifest.id] = (manifest, None)
 
-        # initialize the plugin
-        plugin.workbench = self
-        plugin.initialize()
-
-        # add the extension points
-        registry = self._extension_registry
-        record.extension_points = _get_extension_points(plugin)
-        for point in record.extension_points:
-            registry.add_extension_point(point)
-
-        # add the plugin extensions
-        record.extensions = plugin.get_extensions()
-        for identifier, extensions in record.extensions.iteritems():
-            registry.add_extensions(identifier, extensions)
-
-        # add the extension point listeners
-        for point in record.extension_points:
-            listener = ExtensionPointListener()
-            listener.extension_point = point
-            listener.plugin = plugin
-            record.listeners.append(listener)
-            registry.add_extension_point_listener(point.identifier, listener)
-
-    def remove_plugin(self, identifier):
+    def remove_plugin(self, plugin_id):
         """ Remove a plugin from the workbench.
 
-        If a plugin with the specified identifier has not been added to
-        the workbench, an exception will be raised. The plugin will be
-        stopped if needed, and then destroyed.
+        This will stop the plugin and remove its extension points and
+        extensions. If the plugin was not previously added to the
+        workbench, this method is a no-op.
 
         Parameters
         ----------
-        identifier : unicode
-            The globally unique identifier for the plugin.
+        plugin_id : unicode
+            The identifier of the plugin.
 
         """
-        if identifier not in self._plugins:
-            msg = "plugin '%s' has not been added to the workbench"
-            raise ValueError(msg % identifier)
-        record = self._plugins.pop(identifier)
-        self._ordered_plugins.remove(record)
+        item = self._plugins.pop(plugin_id, None)
+        if item is None:
+            return
+        manifest, plugin = item
+        # XXX
 
-        # stop the plugin if needed
-        if record.started and not record.stopped:
-            record.stopped = True
-            record.plugin.stop()
-
-        # XXX not sure about the order here
-
-        # remove the plugin's extension point listeners
-        registry = self._extension_registry
-        for listener in record.listeners:
-            listener.plugin = None
-            identifier = listener.extension_point.identifier
-            registry.remove_extension_point_listener(identifier, listener)
-
-        # remove the plugin's extensions
-        for identifier, extensions in record.extensions.iteritems():
-            registry.remove_extensions(identifier, extensions)
-
-        # remove the plugin's extension points
-        for point in record.extension_points:
-            registry.remove_extension_point(point.identifier)
-
-        # destroy the plugin
-        record.plugin.destroy()
-
-    def get_plugin(self, identifier):
-        """ Get the plugin with the given identifier.
+    def get_plugin(self, plugin_id, force=True):
+        """ Get the plugin object for a given plugin id.
 
         Parameters
         ----------
-        identifier : unicode
-            The globally unique identifier for the plugin.
+        plugin_id : unicode
+            The identifier of the plugin of interest.
+
+        force : bool, optional
+            Whether to force create the plugin object from the factory
+            provided by the manifest. The default is True and will cause
+            the plugin to be created and started the first time it is
+            requested.
 
         Returns
         -------
-        result : Plugin or None
-            The plugin with the specified identifier, or None if there
-            is no plugin with the given identifier.
+        result : Plugin None
+            The plugin of interest, or None if it does not exist and
+            could not be created.
 
         """
-        record = self._plugins.get(identifier)
-        if record is not None:
-            return record.plugin
 
-    def get_extensions(self, identifier):
-        """ Get the extensions for the specified extension point.
+    def get_extension_point(self, extension_point_id):
+        """ Get the extension point associated with an id.
 
         Parameters
         ----------
-        identifier : unicode
-            The globally unique identifier of the extension point.
+        extension_point_id : unicode
+            The unique identifier for the extension point of interest.
+
+        Returns
+        -------
+        result : ExtensionPoint or None
+            The desired ExtensionPoint or None if it does not exist.
+
+        """
+        return self._registry.get_extension_point(extension_point_id)
+
+    def get_extension_points(self):
+        """ Get all of the extension points in the registry.
 
         Returns
         -------
         result : list
-            The list of Extension objects contributed to the specified
-            extension point. The returned list will be an independent
-            copy. In-place changes to the list will have no effect on
-            the framework.
+            A list of all of the extension points in the registry.
 
         """
-        return self._extension_registry.get_extensions(identifier)
+        return self._registry.get_extension_points()
 
-    def start(self):
-        """ Initialize the workbench.
+    def get_extension(self, extension_point_id, extension_id):
+        """ Get a specific extension contributed to an extension point.
 
-        This method should be called by user code after all initial
-        plugins have been added to the workbench. It will initialize
-        all of the current plugins in the order in which they were
-        added.
+        Parameters
+        ----------
+        extension_point_id : unicode
+            The identifier of the extension point to of interest.
+
+        extension_id : unicode
+            The identifier of the extension of interest.
+
+        Returns
+        -------
+        result : Extension or None
+            The requested Extension, or None if it does not exist.
 
         """
-        if not self._initialized:
-            # Flip the initialized flag so that plugins added during
-            # initialization are automatically initialized, and to
-            # protect against intialization recursion.
-            self._initialized = True
-            self.initializing()
-            # Iterate over a copy of the plugins to protect against
-            # modifications to the list during initialization.
-            for plugin in self._ordered_plugins[:]:
-                plugin.initialize()
-            self.initialized()
+        return self._registry.get_extension(extension_point_id, extension_id)
 
+    def get_extensions(self, extension_point_id):
+        """ Get the extensions contributed to an extension point.
 
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
+        Parameters
+        ----------
+        extension_point_id : unicode
+            The identifier of the extension point to of interest.
 
+        Returns
+        -------
+        result : list
+            A list of Extensions contributed to the extension point.
+
+        """
+        return self._registry.get_extensions(extension_point_id)
+
+    def add_listener(self, extension_point_id, listener):
+        """ Add a listener to the specified extension point.
+
+        Listeners are maintained and invoked in sorted order.
+
+        Parameters
+        ----------
+        extension_point_id : unicode or None
+            The globally unique identifier of the extension point, or
+            None to install the listener for all extension points.
+
+        listener : RegistryEventListener
+            The registry listener to add to the registry.
+
+        """
+        self._registry.add_listener(extension_point_id, listener)
+
+    def remove_listener(self, extension_point_id, listener):
+        """ Remove a listener from the specified extension point.
+
+        Parameters
+        ----------
+        extension_point_id : unicode or None
+            The same identifier used when the listener was added.
+
+        listener : callable
+            The listener to remove from the registry.
+
+        """
+        self._registry.remove_listener(extension_point_id, listener)
