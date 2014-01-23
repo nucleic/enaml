@@ -6,7 +6,8 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 try:
-    import simplejson as json  # stdlib json is slow in py2.6
+    # stdlib json is slow in py2.6
+    import simplejson as json
 except ImportError:
     import json
 
@@ -14,8 +15,11 @@ import warnings
 
 from atom.api import Atom, Typed
 
+from .extension import Extension
+from .extension_point import ExtensionPoint
 from .extension_registry import ExtensionRegistry
 from .plugin import Plugin
+from .plugin_manifest import PluginManifest
 
 
 class Workbench(Atom):
@@ -31,12 +35,24 @@ class Workbench(Atom):
 
         Parameters
         ----------
-        data : str or unicode
-            The string of json data for the plugin manifest. If this
-            is not a unicode string, it must be encoded in UTF-8.
+        data : dict
+            The dictionary specification of the plugin.
 
         """
-        pass
+        data = json.loads(data)
+        manifest = self._create_manifest(data)
+        if manifest is None:  # XXX need better schema validation
+            msg = "The plugin manifest format is invalid. "
+            msg += "The plugin will ignored."
+            warnings.warn(msg)
+            return
+        plugin_id = manifest.id
+        if plugin_id in self._manifests:
+            msg = "The plugin '%s' is already registered. "
+            msg += "The duplicate plugin will be ignored."
+            warnings.warn(msg % plugin_id)
+        else:
+            self._manifests[plugin_id] = manifest
 
     def unregister(self, plugin_id):
         """ Remove a plugin from the workbench.
@@ -50,7 +66,20 @@ class Workbench(Atom):
             The identifier of the plugin of interest.
 
         """
-        pass
+        manifest = self._manifests.pop(plugin_id, None)
+        if manifest is None:
+            msg = "plugin '%s' is not registered"
+            warnings.warn(msg % plugin_id)
+            return
+        plugin = self._plugins.pop(plugin_id, None)
+        if plugin is not None:
+            plugin.stop()
+            plugin.manifest = None
+            plugin.workbench = None
+        registry = self._registry
+        registry.remove_extensions(manifest.extensions)
+        for point in manifest.extension_point:
+            registry.remove_extension_point(point)
 
     def get_manifest(self, plugin_id):
         """ Get the plugin manifest for a given plugin id.
@@ -99,6 +128,9 @@ class Workbench(Atom):
             return None
         plugin = self._create_plugin(manifest)
         self._plugins[plugin_id] = plugin
+        plugin.manifest = manifest
+        plugin.workbench = self
+        plugin.start()
         return plugin
 
     def import_object(self, path):
@@ -260,6 +292,33 @@ class Workbench(Atom):
 
     #: A mapping of plugin id to Plugin instance.
     _plugins = Typed(dict, ())
+
+    def _create_manifest(self, data):
+        """ Create a manifest from a data dictionary.
+
+        Parameters
+        ----------
+        data : dict
+            The dictionary representation of the manifest that was
+            loaded from the json file.
+
+        Returns
+        -------
+        result : PluginManifest or None
+            The plugin manifest for the data, or None if one could not
+            be created.
+
+        """
+        # XXX need better schema validation
+        try:
+            manifest = PluginManifest(data=data)
+            for ext_pt in data.get('extension_points', ()):
+                manifest.extension_points.append(ExtensionPoint(data=ext_pt))
+            for ext in data.get('extensions', ()):
+                manifest.extensions.append(Extension(data=ext))
+        except TypeError:
+            manifest = None
+        return manifest
 
     def _create_plugin(self, manifest):
         """ Create a plugin instance for the given manifest.
