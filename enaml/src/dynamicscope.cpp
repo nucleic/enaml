@@ -617,6 +617,10 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
         return newref( self->f_nonlocals );
     }
 
+    // __scope__ magic
+    if( strcmp( PyString_AS_STRING( key ), "__scope__" ) == 0 )
+        return newref( pyobject_cast( self ) );
+
     // value from the local scope
     res = PyObject_GetItem( self->f_locals, key );
     if( res )
@@ -697,6 +701,10 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
 
     // 'nonlocals' magic
     if( strcmp( PyString_AS_STRING( key ), "nonlocals" ) == 0 )
+        return 1;
+
+    // __scope__ magic
+    if( strcmp( PyString_AS_STRING( key ), "__scope__" ) == 0 )
         return 1;
 
     // value from the local scope
