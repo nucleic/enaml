@@ -107,14 +107,14 @@ point
 	The fully qualified identifier of the extension point to which the
 	extension contributes.
 
-class
-	An optional path to the class which implements the extension. An instance
-	of this class will be instantiated by the writer of the extension point
-	as required. If this is provided, it must be a string of the form
-	"pkg.module.Class" which points to a class implementing the interface
-	required by the extension point.
+object
+	An optional path to the object which implements the extension. This
+	object will be loaded by the writer of the extension point as required.
+	If this is provided, it must be a string of the form "pkg.module.obj"
+	which points to an object implementing the interface required by the
+	extension point.
 
-config
+configuration
 	An optional object which provides configuration data for the extension.
 	The can be used by e.g. a menu action extension to provide icon and
 	action title data without requiring the action handler to be instantiated.
