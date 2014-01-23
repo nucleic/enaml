@@ -5,9 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+try:
+    import simplejson as json  # stdlib json is slow in py2.6
+except ImportError:
+    import json
+
+import warnings
+
 from atom.api import Atom, Typed
 
 from .extension_registry import ExtensionRegistry
+from .plugin import Plugin
 
 
 class Workbench(Atom):
@@ -18,49 +26,50 @@ class Workbench(Atom):
     by a subclass, such as the enaml.studio.Studio class.
 
     """
-    #: The registry of extension points and extensions.
-    _registry = Typed(ExtensionRegistry, ())
-
-    #: A mapping of plugin id to tuple of (manifest, plugin).
-    _plugins = Typed(dict, ())
-
-    def add_plugin(self, manifest):
-        """ Add a plugin with the workbench.
-
-        If a plugin with the same plugin identifier has already been
-        added to the workbench, a ValueError will be raised.
+    def register(self, data):
+        """ Register a plugin with the workbench.
 
         Parameters
         ----------
-        manifest : PluginManifest
-            The manifest for the plugin to add to the workbench.
+        data : str or unicode
+            The string of json data for the plugin manifest. If this
+            is not a unicode string, it must be encoded in UTF-8.
 
         """
-        if manifest.id in self._plugins:
-            msg = "plugin '%s' already registered"
-            raise ValueError(msg % manifest.id)
-        self._plugins[manifest.id] = (manifest, None)
+        pass
 
-    def remove_plugin(self, plugin_id):
+    def unregister(self, plugin_id):
         """ Remove a plugin from the workbench.
 
-        This will stop the plugin and remove its extension points and
-        extensions. If the plugin was not previously added to the
-        workbench, this method is a no-op.
+        This will remove the extension points and extensions from the
+        workbench, and stop the plugin if it was activated.
 
         Parameters
         ----------
         plugin_id : unicode
-            The identifier of the plugin.
+            The identifier of the plugin of interest.
 
         """
-        item = self._plugins.pop(plugin_id, None)
-        if item is None:
-            return
-        manifest, plugin = item
-        # XXX
+        pass
 
-    def get_plugin(self, plugin_id, force=True):
+    def get_manifest(self, plugin_id):
+        """ Get the plugin manifest for a given plugin id.
+
+        Parameters
+        ----------
+        plugin_id : unicode
+            The identifier of the plugin of interest.
+
+        Returns
+        -------
+        result : PluginManifest or None
+            The manifest for the plugin of interest, or None if it does
+            not exist.
+
+        """
+        return self._manifests.get(plugin_id)
+
+    def get_plugin(self, plugin_id, force_create=True):
         """ Get the plugin object for a given plugin id.
 
         Parameters
@@ -68,19 +77,84 @@ class Workbench(Atom):
         plugin_id : unicode
             The identifier of the plugin of interest.
 
-        force : bool, optional
-            Whether to force create the plugin object from the factory
-            provided by the manifest. The default is True and will cause
-            the plugin to be created and started the first time it is
-            requested.
+        force_create : bool, optional
+            Whether to automatically import and start the plugin object
+            if it is not already active. The default is True.
 
         Returns
         -------
-        result : Plugin None
-            The plugin of interest, or None if it does not exist and
+        result : Plugin or None
+            The plugin of interest, or None if it does not exist and/or
             could not be created.
 
         """
+        if plugin_id in self._plugins:
+            return self._plugins[plugin_id]
+        manifest = self._manifests.get(plugin_id)
+        if manifest is None:
+            msg = "manifest for plugin '%s' is not registered"
+            warnings.warn(msg % plugin_id)
+            return None
+        if not force_create:
+            return None
+        plugin = self._create_plugin(manifest)
+        self._plugins[plugin_id] = plugin
+        return plugin
+
+    def import_object(self, path):
+        """ Import an object from a dot separated path.
+
+        Parameters
+        ----------
+        path : unicode
+            A dot separated path of the form 'pkg.module.item' which
+            represents the import path to the object.
+
+        Returns
+        -------
+        result : object
+            The item pointed to by the path. An import error will be
+            raised if the item cannot be imported.
+
+        """
+        if u'.' not in path:
+            return __import__(path)
+        path, item = path.rsplit(u'.', 1)
+        mod = __import__(path, globals(), {}, [item])
+        try:
+            result = getattr(mod, item)
+        except AttributeError:
+            raise ImportError(u'cannot import name %s' % item)
+        return result
+
+    def load_extension_object(self, extension):
+        """ Load the implementation object for a given extension.
+
+        This will cause the extension's plugin class to be imported
+        and activated unless the plugin is already active.
+
+        Parameters
+        ----------
+        extension : Extension
+            The extension which contains the path to the implementation
+            object to load.
+
+        Returns
+        -------
+        result : object or None
+            The implementation object defined by the extension, or
+            None if it could not be loaded.
+
+        """
+        # ensure the extension's plugin is activated
+        self.get_plugin(extension.plugin_id)
+        try:
+            result = self.import_object(extension.object)
+        except ImportError:
+            msg = "failed to load extension object '%s'"
+            warnings.warn(msg % extension.object)
+            result = None
+        return result
 
     def get_extension_point(self, extension_point_id):
         """ Get the extension point associated with an id.
@@ -88,7 +162,7 @@ class Workbench(Atom):
         Parameters
         ----------
         extension_point_id : unicode
-            The unique identifier for the extension point of interest.
+            The fully qualified id of the extension point of interest.
 
         Returns
         -------
@@ -115,10 +189,10 @@ class Workbench(Atom):
         Parameters
         ----------
         extension_point_id : unicode
-            The identifier of the extension point to of interest.
+            The fully qualified id of the extension point of interest.
 
         extension_id : unicode
-            The identifier of the extension of interest.
+            The fully qualified id of the extension.
 
         Returns
         -------
@@ -134,7 +208,7 @@ class Workbench(Atom):
         Parameters
         ----------
         extension_point_id : unicode
-            The identifier of the extension point to of interest.
+            The fully qualified id of the extension point of interest.
 
         Returns
         -------
@@ -152,8 +226,8 @@ class Workbench(Atom):
         Parameters
         ----------
         extension_point_id : unicode or None
-            The globally unique identifier of the extension point, or
-            None to install the listener for all extension points.
+            The fully qualified id of the extension point of interest,
+            or None to install the listener for all extension points.
 
         listener : RegistryEventListener
             The registry listener to add to the registry.
@@ -169,8 +243,50 @@ class Workbench(Atom):
         extension_point_id : unicode or None
             The same identifier used when the listener was added.
 
-        listener : callable
+        listener : RegistryEventListener
             The listener to remove from the registry.
 
         """
         self._registry.remove_listener(extension_point_id, listener)
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    #: The registry of extension points and extensions.
+    _registry = Typed(ExtensionRegistry, ())
+
+    #: A mapping of plugin id to PluginManifest.
+    _manifests = Typed(dict, ())
+
+    #: A mapping of plugin id to Plugin instance.
+    _plugins = Typed(dict, ())
+
+    def _create_plugin(self, manifest):
+        """ Create a plugin instance for the given manifest.
+
+        Parameters
+        ----------
+        manifest : PluginManifest
+            The manifest which describes the plugin to create.
+
+        Returns
+        -------
+        result : Plugin or None
+            A new Plugin instance or None if one could not be created.
+
+        """
+        class_path = manifest.cls
+        if not class_path:
+            return Plugin()
+        try:
+            plugin_cls = self.import_object(class_path)
+        except ImportError:
+            msg = "failed to import plugin class '%s'"
+            warnings.warn(msg % class_path)
+            return None
+        plugin = plugin_cls()
+        if not isinstance(plugin, Plugin):
+            msg = "plugin class '%s' created non-Plugin type '%s'"
+            warnings.warn(msg % (class_path, type(plugin).__name__))
+            return None
+        return plugin
