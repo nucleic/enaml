@@ -5,39 +5,51 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Callable, List, Unicode
+from atom.api import Atom, List, Typed
 
 from .extension import Extension
 from .extension_point import ExtensionPoint
 
 
 class PluginManifest(Atom):
-    """ A class used to describe a plugin.
+    """ A class which represents a plugin manifest.
 
-    A plugin manifest is used to declare the metadata, extension points,
-    and extensions of a plugin, as well as a factory to use for creating
-    instances of the plugin.
+    A PluginManifest and its data should be treated as read-only.
 
     """
-    #: The globally unique identifier of the plugin. This can be any
-    #: string, but it will typically be in dot-separated form.
-    id = Unicode()
-
-    #: An optional human readable name of the plugin.
-    name = Unicode()
-
-    #: An optional human readable description of the plugin.
-    description = Unicode()
-
-    #: An optional callable object which takes no arguments and returns
-    #: a Plugin instance. The factory will be invoked the first time the
-    #: plugin instance is requested and should lazily import its runtime
-    #: dependencies to keep application startup time low. If a factory
-    #: is not provided, a default plugin will be created.
-    factory = Callable()
+    #: The dict of data loaded from the json declaration.
+    data = Typed(dict)
 
     #: The list of extension points exposed by the plugin.
     extension_points = List(ExtensionPoint)
 
     #: The list of extensions contributed by the plugin.
     extensions = List(Extension)
+
+    @property
+    def id(self):
+        """ Get the plugin identifer.
+
+        """
+        return self.data[u'id']
+
+    @property
+    def cls(self):
+        """ Get the path of the class which implements the plugin.
+
+        """
+        return self.data.get(u'class', u'')
+
+    @property
+    def name(self):
+        """ Get the human readable name of the plugin.
+
+        """
+        return self.data.get(u'name', u'')
+
+    @property
+    def description(self):
+        """ Get the human readable description of the plugin.
+
+        """
+        return self.data.get(u'description', u'')

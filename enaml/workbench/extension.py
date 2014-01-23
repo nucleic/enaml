@@ -5,28 +5,71 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Unicode
+from atom.api import Atom, Typed, Unicode
 
 
 class Extension(Atom):
-    """ A base class for defining an extensions to an extension point.
+    """ A class which represents an extension point declaration.
 
-    An extension is used to declare a contribution from one plugin to
-    an extension point of another. An extension point may restrict the
-    allowed extension types to a particular subclass of Extension.
+    An Extension and its data should be treated as read-only.
 
     """
-    #: An optional identifier for the extension. This can be provided
-    #: to enable querying the registry for a specific extension. It
-    #: should be a unique value, but this is not strictly enforced.
-    id = Unicode()
+    #: The identifier of the plugin which declared the extension point.
+    plugin_id = Unicode()
 
-    #: An optional human readable name of the extension.
-    name = Unicode()
+    #: The dict of data loaded from the json declaration.
+    data = Typed(dict)
 
-    #: An optional human readable description of the extension.
-    description = Unicode()
+    @property
+    def point(self):
+        """ Get the identifier of the contribution extension point.
 
-    #: The unique identifier of the extension point to which this
-    #: extension contributes.
-    point = Unicode()
+        """
+        return self.data[u'point']
+
+    @property
+    def cls(self):
+        """ Get the path of the class which implements the extension.
+
+        """
+        return self.data.get(u'class', u'')
+
+    @property
+    def config(self):
+        """ Get the configuration data for the extension.
+
+        """
+        return self.data.get(u'config', {})
+
+    @property
+    def id(self):
+        """ Get the extension identifer.
+
+        """
+        return self.data.get(u'id', u'')
+
+    @property
+    def qualified_id(self):
+        """ Get the fully qualified extension identifer.
+
+        """
+        this_id = self.data.get(u'id', u'')
+        if not this_id:
+            return u''
+        if u'.' in this_id:
+            return this_id
+        return u'%s.%s' % (self.plugin_id, this_id)
+
+    @property
+    def name(self):
+        """ Get the human readable name of the extension.
+
+        """
+        return self.data.get(u'name', u'')
+
+    @property
+    def description(self):
+        """ Get the human readable description of the extension.
+
+        """
+        return self.data.get(u'description', u'')
