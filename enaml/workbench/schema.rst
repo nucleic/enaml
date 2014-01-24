@@ -56,7 +56,7 @@ class
 	which points to a subclass of `enaml.workbench.plugin.Plugin`. If this
 	is not provided, a generic Plugin instance will be created.
 
-extension_points
+extensionPoints
 	An optional array of extension points definitions for this plugin. See
 	the section on `Extension Points`_ for more information.
 
