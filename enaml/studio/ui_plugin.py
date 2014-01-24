@@ -5,13 +5,23 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Typed, Value
+from atom.api import ForwardTyped, Typed
 
+import enaml
 from enaml.application import Application
-from enaml.widgets.main_window import MainWindow
 from enaml.workbench.api import Plugin
 
 from .utils import highest_ranked
+from .window_model import WindowModel
+
+
+def StudioWindow():
+    """ A lazy importer for the enaml StudioWindow.
+
+    """
+    with enaml.imports():
+        from enaml.studio.studio_window import StudioWindow
+    return StudioWindow
 
 
 class UIPlugin(Plugin):
@@ -29,7 +39,9 @@ class UIPlugin(Plugin):
     #: A reference to the main window which is managed by this plugin.
     #: The main window class can be provided via the extension point
     #: 'enaml.studio.ui.window'
-    main_window = Typed(MainWindow)
+    main_window = ForwardTyped(StudioWindow)
+
+    #: A reference to the window model which drives the main window.
 
     #--------------------------------------------------------------------------
     # Plugin API
@@ -93,10 +105,13 @@ class UIPlugin(Plugin):
         extensions = bench.get_extensions('enaml.studio.ui.window')
         ext = highest_ranked(extensions)
         win_class = bench.load_extension_class(ext)
-        self.main_window = win_class()
-        self._refresh_title()
-        self._refresh_icon()
+        self.main_window = win_class(window_model=WindowModel())
+        self._initialize_branding()
 
+    def _initialize_branding(self):
+        """ Initialize the branding of the main window.
+
+        """
     def _destroy_window(self):
         """ Destroy the main window instance.
 
@@ -112,16 +127,4 @@ class UIPlugin(Plugin):
         self.application.stop()
         self.application = None
 
-    def _refresh_title(self):
-        """ Refresh the title of the main window instance.
 
-        """
-        bench = self.workbench
-        extensions = bench.get_extensions('enaml.studio.ui.title')
-        if extensions:
-            ext
-
-    def _refresh_icon(self):
-        """ Refresh the icon of the main window.
-
-        """
