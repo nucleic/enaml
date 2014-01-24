@@ -9,6 +9,7 @@ import warnings
 
 from atom.api import Atom, Typed
 
+from .extension_class import ExtensionClass
 from .extension_registry import ExtensionRegistry
 from .plugin import Plugin
 from .plugin_manifest import create_manifest
@@ -153,7 +154,7 @@ class Workbench(Atom):
             raise ImportError(u'cannot import name %s' % item)
         return result
 
-    def load_extension_class(self, extension):
+    def create_extension_class(self, extension):
         """ Load the implementation class for a given extension.
 
         This will cause the extension's plugin class to be imported
@@ -173,13 +174,20 @@ class Workbench(Atom):
         """
         # ensure the extension's plugin is activated
         self.get_plugin(extension.plugin_id)
+        class_path = extension.cls
         try:
-            result = self.import_object(extension.cls)
+            extension_class = self.import_object(class_path)
         except ImportError:
             msg = "failed to load extension class '%s'"
-            warnings.warn(msg % extension.cls)
-            result = None
-        return result
+            warnings.warn(msg % class_path)
+            return None
+        ext = extension_class()
+        if not isinstance(ext, ExtensionClass):
+            msg = "extension class '%s' created non-ExtensionClass type '%s'"
+            warnings.warn(msg % (class_path, type(ext).__name__))
+            return None
+        ext.initialize(self, extension)
+        return ext
 
     def get_extension_point(self, extension_point_id):
         """ Get the extension point associated with an id.
