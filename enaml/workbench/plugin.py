@@ -79,6 +79,33 @@ class Plugin(Atom):
             return workbench.get_extensions(extension_point_id)
         return []
 
+    def get_plugin(self, plugin_id):
+        """ Get the plugin object for a given plugin id.
+
+        This is a convenience method which proxies the call to the
+        underlying workbench.
+
+        Parameters
+        ----------
+        plugin_id : unicode
+            The identifier of the plugin of interest.
+
+        force_create : bool, optional
+            Whether to automatically import and start the plugin object
+            if it is not already active. The default is True.
+
+        Returns
+        -------
+        result : Plugin or None
+            The plugin of interest, or None if it does not exist and/or
+            could not be created.
+
+        """
+        workbench = self.workbench
+        if workbench is not None:
+            return workbench.get_plugin(plugin_id)
+        return None
+
     def start(self):
         """ Start the life-cycle of the plugin.
 
