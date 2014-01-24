@@ -1,0 +1,13 @@
+{
+	"id": "enaml.studio.core",
+	"name": "Enaml Studio Core",
+	"description": "The core Enaml Studio plugin.",
+	"class": "enaml.studio.core_plugin.CorePlugin",
+	"extensionPoints": [
+		{
+			"id": "loaders",
+			"name": "Studio URI Resource Loaders",
+			"description": "The extension point for URI resource loaders."
+		}
+	]
+}

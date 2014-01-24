@@ -1,0 +1,58 @@
+{
+	"id": "enaml.studio.ui",
+	"name": "Enaml Studio UI",
+	"description": "The main Enaml Studio UI plugin.",
+	"class": "enaml.studio.ui_plugin.UIPlugin",
+	"extensionPoints": [
+		{
+			"id": "application",
+			"name": "Studio UI Application Class",
+			"description": "The extension point for the studio Application class."
+		},
+		{
+			"id": "window",
+			"name": "Studio UI Window Class",
+			"description": "The extension point for the studio Window class."
+		},
+		{
+			"id": "icon",
+			"name": "Studio UI Window Icon",
+			"description": "The extension point for the studio Window icon."
+		},
+		{
+			"id": "title",
+			"name": "Studio UI Window Title",
+			"description": "The extension point for the studio window title."
+		},
+		{
+			"id": "menubar",
+			"name": "Studio UI Menu Bar",
+			"description": "The extension point for the studio menu bar."
+		},
+		{
+			"id": "content",
+			"name": "Studio UI Central Content",
+			"description": "The extension point for the studio central content."
+		}
+	],
+	"extensions": [
+		{
+			"point": "enaml.studio.ui.application",
+			"name": "Default Studio Application Class",
+			"description": "The extension which provides the default studio application class.",
+			"class": "enaml.qt.qt_application.QtApplication",
+			"configuration": {
+				"rank": -1000
+			}
+		},
+		{
+			"point": "enaml.studio.ui.window",
+			"name": "Default Studio Window Class",
+			"description": "The extension which provides the default studio window class",
+			"class": "enaml.widgets.main_window.MainWindow",
+			"configuration": {
+				"rank": -1000
+			}
+		}
+	]
+}
