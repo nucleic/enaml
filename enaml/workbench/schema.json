@@ -1,0 +1,77 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Plugin Schema",
+	"description": "The JSON Schema for an Enaml plugin manifest.",
+	"type": "object",
+	"required": ["id"],
+	"additionalProperties": false,
+	"properties": {
+		"id": {
+			"type": "string"
+		},
+		"name": {
+			"type": "string"
+		},
+		"description": {
+			"type": "string"
+		},
+		"class": {
+			"type": "string"
+		},
+		"extension_points": {
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/extensionPoint"
+			}
+		},
+		"extensions": {
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/extension"
+			}
+		}
+	},
+	"definitions": {
+		"extensionPoint": {
+			"type": "object",
+			"required": ["id"],
+			"additionalProperties": false,
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				}
+			}
+		},
+		"extension": {
+			"type": "object",
+			"required": ["point"],
+			"additionalProperties": false,
+			"properties": {
+				"point": {
+					"type": "string"
+				},
+				"id": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"object": {
+					"type": "string"
+				},
+				"configuration": {
+					"type": "object"
+				}
+			}
+		}
+	}
+}

@@ -5,21 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-try:
-    # stdlib json is slow in py2.6
-    import simplejson as json
-except ImportError:
-    import json
-
 import warnings
 
 from atom.api import Atom, Typed
 
-from .extension import Extension
-from .extension_point import ExtensionPoint
 from .extension_registry import ExtensionRegistry
 from .plugin import Plugin
-from .plugin_manifest import PluginManifest
+from .plugin_manifest import create_manifest
 
 
 class Workbench(Atom):
@@ -30,22 +22,22 @@ class Workbench(Atom):
     by a subclass, such as the enaml.studio.Studio class.
 
     """
-    def register(self, data):
+    def register(self, data, validate=True):
         """ Register a plugin with the workbench.
 
         Parameters
         ----------
-        data : dict
-            The dictionary specification of the plugin.
+        data : str or unicode
+            The JSON plugin manifest data. If this is a str, it must be
+            encoded in UTF-8 or plain ASCII.
+
+        validate : bool, optional
+            Whether to validate the JSON against the manifest schema.
+            This requires the 'jsonschema' package to be installed. The
+            default is True.
 
         """
-        data = json.loads(data)
-        manifest = self._create_manifest(data)
-        if manifest is None:  # XXX need better schema validation
-            msg = "The plugin manifest format is invalid. "
-            msg += "The plugin will ignored."
-            warnings.warn(msg)
-            return
+        manifest = create_manifest(data, validate)
         plugin_id = manifest.id
         if plugin_id in self._manifests:
             msg = "The plugin '%s' is already registered. "
@@ -53,6 +45,8 @@ class Workbench(Atom):
             warnings.warn(msg % plugin_id)
         else:
             self._manifests[plugin_id] = manifest
+        self._registry.add_extension_points(manifest.extension_points)
+        self._registry.add_extensions(manifest.extensions)
 
     def unregister(self, plugin_id):
         """ Remove a plugin from the workbench.
@@ -74,12 +68,10 @@ class Workbench(Atom):
         plugin = self._plugins.pop(plugin_id, None)
         if plugin is not None:
             plugin.stop()
-            plugin.manifest = None
             plugin.workbench = None
-        registry = self._registry
-        registry.remove_extensions(manifest.extensions)
-        for point in manifest.extension_point:
-            registry.remove_extension_point(point)
+            plugin.manifest = None
+        self._registry.remove_extensions(manifest.extensions)
+        self._registry.remove_extension_points(manifest.extension_points)
 
     def get_manifest(self, plugin_id):
         """ Get the plugin manifest for a given plugin id.
@@ -121,13 +113,15 @@ class Workbench(Atom):
             return self._plugins[plugin_id]
         manifest = self._manifests.get(plugin_id)
         if manifest is None:
-            msg = "manifest for plugin '%s' is not registered"
+            msg = "plugin manifest for plugin '%s' is not registered"
             warnings.warn(msg % plugin_id)
             return None
         if not force_create:
             return None
         plugin = self._create_plugin(manifest)
         self._plugins[plugin_id] = plugin
+        if plugin is None:
+            return None
         plugin.manifest = manifest
         plugin.workbench = self
         plugin.start()
@@ -168,14 +162,13 @@ class Workbench(Atom):
         Parameters
         ----------
         extension : Extension
-            The extension which contains the path to the implementation
-            object to load.
+            The extension which contains the path to the object.
 
         Returns
         -------
         result : object or None
-            The implementation object defined by the extension, or
-            None if it could not be loaded.
+            The object reference by the path in the extension, or None
+            if it could not be loaded.
 
         """
         # ensure the extension's plugin is activated
@@ -292,33 +285,6 @@ class Workbench(Atom):
 
     #: A mapping of plugin id to Plugin instance.
     _plugins = Typed(dict, ())
-
-    def _create_manifest(self, data):
-        """ Create a manifest from a data dictionary.
-
-        Parameters
-        ----------
-        data : dict
-            The dictionary representation of the manifest that was
-            loaded from the json file.
-
-        Returns
-        -------
-        result : PluginManifest or None
-            The plugin manifest for the data, or None if one could not
-            be created.
-
-        """
-        # XXX need better schema validation
-        try:
-            manifest = PluginManifest(data=data)
-            for ext_pt in data.get('extension_points', ()):
-                manifest.extension_points.append(ExtensionPoint(data=ext_pt))
-            for ext in data.get('extensions', ()):
-                manifest.extensions.append(Extension(data=ext))
-        except TypeError:
-            manifest = None
-        return manifest
 
     def _create_plugin(self, manifest):
         """ Create a plugin instance for the given manifest.

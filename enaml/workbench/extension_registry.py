@@ -72,40 +72,44 @@ class ExtensionRegistry(Atom):
     """ A registry class which manages extensions points and extensions.
 
     """
-    def add_extension_point(self, point):
-        """ Add an extension point to the registry.
+    def add_extension_points(self, extension_points):
+        """ Add an extension points to the registry.
 
         Parameters
         ----------
-        point : ExtensionPoint
-            The extension point to add to the registry.
+        extension_points : list
+            The list of ExtensionPoints to add to the registry.
 
         """
-        point_id = point.qualified_id
-        if point_id in self._extension_points:
-            msg = "The extension point '%s' is already registered. "
-            msg += "The duplicate extension point will be ignored."
-            warnings.warn(msg % point_id)
-            return
-        self._extension_points[point_id] = point
-        self._invoke_listeners(point_id, 'extension_point_added', point)
+        for point in extension_points:
+            point_id = point.qualified_id
+            if point_id in self._extension_points:
+                msg = "The extension point '%s' is already registered. "
+                msg += "The duplicate extension point will be ignored."
+                warnings.warn(msg % point_id)
+            else:
+                self._extension_points[point_id] = point
+                method_name = 'extension_point_added'
+                self._invoke_listeners(point_id, method_name, point)
 
-    def remove_extension_point(self, extension_point_id):
+    def remove_extension_points(self, extension_points):
         """ Remove an extension point from the registry.
 
         Parameters
         ----------
-        extension_point_id : unicode
-            The fully qualified id of the extension point to remove.
+        extension_points : list
+            The list of ExtensionPoints to remove from the registry.
 
         """
-        point_id = extension_point_id
-        point = self._extension_points.pop(point_id, None)
-        if point is None:
-            msg = "The extension point '%s' does not exist in the registry."
-            warnings.warn(msg % point_id)
-            return
-        self._invoke_listeners(point_id, 'extension_point_removed', point)
+        for point in extension_points:
+            point_id = point.qualified_id
+            point = self._extension_points.pop(point_id, None)
+            if point is None:
+                msg = "The extension point '%s' is not registered."
+                warnings.warn(msg % point_id)
+            else:
+                method_name = 'extension_point_removed'
+                self._invoke_listeners(point_id, method_name, point)
 
     def get_extension_point(self, extension_point_id):
         """ Get the extension point associated with an id.
@@ -157,7 +161,8 @@ class ExtensionRegistry(Atom):
                     added.append(extension)
             if added:
                 self._contributions[point_id].extend(added)
-                self._invoke_listeners(point_id, 'extensions_added', added)
+                method_name = 'extensions_added'
+                self._invoke_listeners(point_id, method_name, added)
 
     def remove_extensions(self, extensions):
         """ Remove extensions from the registry.
@@ -177,13 +182,14 @@ class ExtensionRegistry(Atom):
                 try:
                     current.remove(extension)
                 except ValueError:
-                    msg = "The extension '%s' does not exist in the registry."
+                    msg = "The extension '%s' is not registered."
                     warnings.warn(msg % ext_id)
                 else:
                     self._extensions.pop(ext_id, None)
                     removed.append(extension)
             if removed:
-                self._invoke_listeners(point_id, 'extensions_removed', removed)
+                method_name = 'extensions_removed'
+                self._invoke_listeners(point_id, method_name, removed)
 
     def get_extension(self, extension_point_id, extension_id):
         """ Get a specific extension contributed to an extension point.
