@@ -1,8 +1,10 @@
 
-Plugin Specification
-====================
+Plugin Schema
+=============
 A workbench plugin is specified in the form of a json manifest. The manifest
-contains information about the plugin, its extension points, extensions.
+contains information about the plugin, its extension points, extensions. This
+document describes in more detail the JSON plugin schema. The schema itself
+is provided in the 'schema.json' file in the same directory as this document.
 
 The following terminology is used in this document.
 
@@ -27,14 +29,13 @@ Plugin Manifest
 ---------------
 The plugin manifest declares various metadata for the plugin as well as
 its extension points and extensions. The manifest is a json document with
-a single root object. The required properties of that object are defined
-below.
+a single root object. The properties of that object are defined below.
 
 id
 	The globally unique identifier of the plugin. This identifier is used
 	as the root namespace for all extension points defined by the plugin
 	which do not provide a fully-qualified id. This value must be a string
-	and should be in dot-separated form. e.g. "company.module.plugin"
+	and should be in dot-separated form. e.g. "company.module.plugin".
 
 name
 	An optional human readable name for the plugin. This value is not used
@@ -105,14 +106,15 @@ manifest. It is an object which container the properties defined below.
 
 point
 	The fully qualified identifier of the extension point to which the
-	extension contributes.
+	extension contributes. This value must be a string.
 
-object
-	An optional path to the object which implements the extension. This
-	object will be loaded by the writer of the extension point as required.
-	If this is provided, it must be a string of the form "pkg.module.obj"
-	which points to an object implementing the interface required by the
-	extension point.
+class
+	An optional path to the class which implements the extension. The
+	class will be loaded by the writer of the extension point as required.
+	If this is provided, it must be a string of the form "pkg.module.Class"
+	which points to a class implementing the interface required by the
+	extension point. Note: The 'class' here can actually be any Python
+	object, but typical extensions will provide class objects.
 
 configuration
 	An optional object which provides configuration data for the extension.

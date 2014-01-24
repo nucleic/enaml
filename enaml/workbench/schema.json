@@ -65,7 +65,7 @@
 				"description": {
 					"type": "string"
 				},
-				"object": {
+				"class": {
 					"type": "string"
 				},
 				"configuration": {

@@ -28,11 +28,11 @@ class Extension(Atom):
         return self.data[u'point']
 
     @property
-    def object(self):
-        """ Get the path of the object which implements the extension.
+    def cls(self):
+        """ Get the path of the class which implements the extension.
 
         """
-        return self.data.get(u'object', u'')
+        return self.data.get(u'class', u'')
 
     @property
     def configuration(self):

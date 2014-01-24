@@ -153,8 +153,8 @@ class Workbench(Atom):
             raise ImportError(u'cannot import name %s' % item)
         return result
 
-    def load_extension_object(self, extension):
-        """ Load the implementation object for a given extension.
+    def load_extension_class(self, extension):
+        """ Load the implementation class for a given extension.
 
         This will cause the extension's plugin class to be imported
         and activated unless the plugin is already active.
@@ -162,22 +162,22 @@ class Workbench(Atom):
         Parameters
         ----------
         extension : Extension
-            The extension which contains the path to the object.
+            The extension which contains the path to the class.
 
         Returns
         -------
         result : object or None
-            The object reference by the path in the extension, or None
+            The class referenced by the path in the extension, or None
             if it could not be loaded.
 
         """
         # ensure the extension's plugin is activated
         self.get_plugin(extension.plugin_id)
         try:
-            result = self.import_object(extension.object)
+            result = self.import_object(extension.cls)
         except ImportError:
-            msg = "failed to load extension object '%s'"
-            warnings.warn(msg % extension.object)
+            msg = "failed to load extension class '%s'"
+            warnings.warn(msg % extension.cls)
             result = None
         return result
 
