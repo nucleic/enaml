@@ -167,4 +167,12 @@ def create_manifest(data, validate):
     root = json.loads(data)
     if validate:
         ManifestValidator.instance()(root)
-    return PluginManifest(data=root)
+    manifest = PluginManifest(data=root)
+    plugin_id = manifest.id
+    for pt in root.get(u'extension_points', ()):
+        item = ExtensionPoint(plugin_id=plugin_id, data=pt)
+        manifest.extension_points.append(item)
+    for ext in root.get(u'extensions', ()):
+        item = Extension(plugin_id=plugin_id, data=ext)
+        manifest.extensions.append(item)
+    return manifest

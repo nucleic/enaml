@@ -152,12 +152,13 @@ class ExtensionRegistry(Atom):
             added = []
             for extension in extensioniter:
                 ext_id = extension.qualified_id
-                if ext_id and ext_id in self._extensions:
+                if ext_id and ext_id in self._extension_ids:
                     msg = "The extension '%s' is already registered. "
                     msg += "The duplicate extension will be ignored."
                     warnings.warn(msg % ext_id)
                 else:
-                    self._extensions[ext_id] = extension
+                    if ext_id:
+                        self._extension_ids.add(ext_id)
                     added.append(extension)
             if added:
                 self._contributions[point_id].extend(added)
@@ -185,7 +186,7 @@ class ExtensionRegistry(Atom):
                     msg = "The extension '%s' is not registered."
                     warnings.warn(msg % ext_id)
                 else:
-                    self._extensions.pop(ext_id, None)
+                    self._extension_ids.discard(ext_id)
                     removed.append(extension)
             if removed:
                 method_name = 'extensions_removed'
@@ -270,8 +271,8 @@ class ExtensionRegistry(Atom):
     #: A mapping of extension point id to extension point.
     _extension_points = Typed(dict, ())
 
-    #: A mapping of extension id to extension.
-    _extensions = Typed(dict, ())
+    #: A set of registered extension ids.
+    _extension_ids = Typed(set, ())
 
     #: A mapping of extension point id to list of extensions.
     _contributions = Typed(defaultdict, (list,))
