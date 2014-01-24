@@ -3,7 +3,7 @@
 	"name": "Studio Core UI",
 	"description": "The core Enaml Studio UI plugin.",
 	"class": "enaml.studio.core_ui_plugin.CoreUIPlugin",
-	"extension_points": [
+	"extensionPoints": [
 		{
 			"id": "title",
 			"name": "Studio UI Title",
