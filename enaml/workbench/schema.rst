@@ -113,8 +113,7 @@ class
 	class will be loaded by the writer of the extension point as required.
 	If this is provided, it must be a string of the form "pkg.module.Class"
 	which points to a class implementing the interface required by the
-	extension point. Note: The 'class' here can actually be any Python
-	object, but typical extensions will provide class objects.
+	extension point.
 
 configuration
 	An optional object which provides configuration data for the extension.
