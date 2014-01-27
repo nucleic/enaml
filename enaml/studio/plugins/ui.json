@@ -38,21 +38,24 @@
 	"extensions": [
 		{
 			"point": "enaml.studio.ui.application",
-			"name": "Default Studio Application Class",
-			"description": "The extension which provides the default studio application class.",
-			"class": "enaml.qt.qt_application.QtApplication",
-			"configuration": {
-				"rank": -1000
-			}
+			"name": "Default Studio Application Factory",
+			"description": "The extension which provides the default studio application.",
+			"class": "enaml.studio.application_factory.ApplicationFactory",
+			"rank": -1000
 		},
 		{
 			"point": "enaml.studio.ui.window",
-			"name": "Default Studio Window Class",
-			"description": "The extension which provides the default studio window class",
-			"class": "enaml.studio.factories.StudioWindow",
-			"configuration": {
-				"rank": -1000
-			}
+			"name": "Default Studio Window Factory",
+			"description": "The extension which provides the default studio window.",
+			"class": "enaml.studio.window_factory.WindowFactory",
+			"rank": -1000
+		},
+		{
+			"point": "enaml.studio.ui.title",
+			"name": "Default Studio Window Title",
+			"description": "The extension which provides the default window title.",
+			"title": "Enaml Studio",
+			"rank": -1000
 		}
 	]
 }
