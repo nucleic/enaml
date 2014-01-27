@@ -30,6 +30,7 @@ Plugin Manifest
 The plugin manifest declares various metadata for the plugin as well as
 its extension points and extensions. The manifest is a json document with
 a single root object. The properties of that object are defined below.
+Additional properties are not allowed.
 
 id
 	The globally unique identifier of the plugin. This identifier is used
@@ -69,7 +70,7 @@ Extension Points
 ----------------
 An extension point is declared as an element in the 'extension_points' array
 of the plugin manifest. It is an object which contains the properties defined
-below.
+below. Additional properties are not allowed.
 
 id
 	The globally unique identifier of the plugin. This value must be a string
@@ -102,7 +103,9 @@ description
 Extensions
 ----------
 An extension is declared as an element in the 'extensions' array of the plugin
-manifest. It is an object which container the properties defined below.
+manifest. It is an object which contains the properties defined below.
+Additional properties may be provided as required by an extension point or to
+provide metadata to other parts of the application.
 
 point
 	The fully qualified identifier of the extension point to which the
@@ -114,13 +117,6 @@ class
 	If this is provided, it must be a string of the form "pkg.module.Class"
 	which points to a class implementing the interface required by the
 	extension point.
-
-configuration
-	An optional object which provides configuration data for the extension.
-	The can be used by e.g. a menu action extension to provide icon and
-	action title data without requiring the action handler to be instantiated.
-	The configuration specification for an extension will be defined by the
-	extension point to which the extension contributes.
 
 id
 	An optional identifier for the extension. If this is provided, it must be
