@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import sys
+
 from atom.api import Typed
 
 from enaml.layout.geometry import Pos, Rect, Size
@@ -77,11 +79,21 @@ class QtWindow(QtWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
+    def creation_flags(self):
+        """ A convenience function for getting the creation flags.
+
+        """
+        flags = Qt.Widget
+        if self.declaration.always_on_top:
+            flags |= Qt.WindowStaysOnTopHint
+        return flags
+
     def create_widget(self):
         """ Create the QWindow widget.
 
         """
-        self.widget = QWindow(self.parent_widget())
+        flags = self.creation_flags()
+        self.widget = QWindow(self.parent_widget(), flags)
 
     def init_widget(self):
         """ Initialize the widget.
@@ -125,7 +137,7 @@ class QtWindow(QtWidget, ProxyWindow):
         d = self.declaration.central_widget()
         if d is not None:
             return d.proxy.widget
-            
+
     def on_closing(self):
         """The signal handler for the 'closing' signal.
 
@@ -246,11 +258,23 @@ class QtWindow(QtWidget, ProxyWindow):
         """
         self.widget.showMaximized()
 
+    def is_maximized(self):
+        """ Get whether the window is maximized.
+
+        """
+        return bool(self.widget.windowState() & Qt.WindowMaximized)
+
     def minimize(self):
         """ Minimize the window.
 
         """
         self.widget.showMinimized()
+
+    def is_minimized(self):
+        """ Get whether the window is minimized.
+
+        """
+        return bool(self.widget.windowState() & Qt.WindowMinimized)
 
     def restore(self):
         """ Restore the window after a minimize or maximize.
@@ -269,6 +293,16 @@ class QtWindow(QtWidget, ProxyWindow):
 
         """
         self.widget.lower()
+
+    def activate_window(self):
+        """ Activate the underlying window widget.
+
+        """
+        self.widget.activateWindow()
+        if sys.platform == 'win32':
+            # For some reason, this needs to be called twice on Windows
+            # in order to get the taskbar entry to flash.
+            self.widget.activateWindow()
 
     def center_on_screen(self):
         """ Center the window on the screen.

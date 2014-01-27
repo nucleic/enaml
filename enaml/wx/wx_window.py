@@ -128,11 +128,21 @@ class WxWindow(WxWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
+    def creation_style(self):
+        """ A convenience function for getting the creation style.
+
+        """
+        style = wx.DEFAULT_FRAME_STYLE
+        if self.declaration.always_on_top:
+            style |= wx.STAY_ON_TOP
+        return style
+
     def create_widget(self):
         """ Create the underlying wxCustomWindow widget.
 
         """
-        self.widget = wxCustomWindow(self.parent_widget())
+        style = self.creation_style()
+        self.widget = wxCustomWindow(self.parent_widget(), style=style)
 
     def init_widget(self):
         """ Initialize the window control.
@@ -299,17 +309,29 @@ class WxWindow(WxWidget, ProxyWindow):
         """
         self.widget.Maximize(True)
 
+    def is_maximized(self):
+        """ Get whether the window is maximized.
+
+        """
+        return self.widget.IsMaximized()
+
     def minimize(self):
         """ Minimize the window.
 
         """
         self.widget.Iconize(True)
 
+    def is_minimized(self):
+        """ Get whether the window is minimized.
+
+        """
+        return self.widget.IsIconized()
+
     def restore(self):
         """ Restore the window after a minimize or maximize.
 
         """
-        self.widget.maximize(False)
+        self.widget.Maximize(False)
 
     def send_to_front(self):
         """ Move the window to the top of the Z order.
@@ -322,6 +344,13 @@ class WxWindow(WxWidget, ProxyWindow):
 
         """
         self.widget.Lower()
+
+    def activate_window(self):
+        """ Activate the underlying window widget.
+
+        """
+        # wx makes no distinction between raise and activate
+        self.widget.Raise()
 
     def center_on_screen(self):
         """ Center the window on the screen.
