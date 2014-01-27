@@ -18,26 +18,17 @@ def Workbench():
     return Workbench
 
 
-class ExtensionClass(Atom):
+class ExtensionObject(Atom):
     """ A base class for defining extension implementation classes.
 
     This class is used by an extension point to define the interface
-    which must be implemented by extension classes.
+    which must be implemented by extension implementation classes.
 
     """
-    #: A reference to the workbench which created the extension.
+    #: A reference to the workbench which created the extension. This
+    #: is assigned by the workbench when it creates the object.
     workbench = ForwardTyped(Workbench)
 
     #: A reference to the Extension which declared this implementation.
+    #: This is assigned by the workbench when it creates the object.
     extension = Typed(Extension)
-
-    def initialize(self, workbench, extension):
-        """ Initialize the extension implementation.
-
-        This method is called by the workbench after it instantiates
-        the instance of this class. Subclasses may reimplement this
-        method as needed to perform additional initialization.
-
-        """
-        self.workbench = workbench
-        self.extension = extension
