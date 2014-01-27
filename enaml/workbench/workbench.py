@@ -9,7 +9,7 @@ import warnings
 
 from atom.api import Atom, Typed
 
-from .extension_class import ExtensionClass
+from .extension_object import ExtensionObject
 from .extension_registry import ExtensionRegistry
 from .plugin import Plugin
 from .plugin_manifest import create_manifest
@@ -23,7 +23,7 @@ class Workbench(Atom):
     by a subclass, such as the enaml.studio.Studio class.
 
     """
-    def register(self, data, validate=True):
+    def register(self, data):
         """ Register a plugin with the workbench.
 
         Parameters
@@ -32,13 +32,8 @@ class Workbench(Atom):
             The JSON plugin manifest data. If this is a str, it must be
             encoded in UTF-8 or plain ASCII.
 
-        validate : bool, optional
-            Whether to validate the JSON against the manifest schema.
-            This requires the 'jsonschema' package to be installed. The
-            default is True.
-
         """
-        manifest = create_manifest(data, validate)
+        manifest = create_manifest(data)
         plugin_id = manifest.id
         if plugin_id in self._manifests:
             msg = "The plugin '%s' is already registered. "
@@ -128,34 +123,8 @@ class Workbench(Atom):
         plugin.start()
         return plugin
 
-    def import_object(self, path):
-        """ Import an object from a dot separated path.
-
-        Parameters
-        ----------
-        path : unicode
-            A dot separated path of the form 'pkg.module.item' which
-            represents the import path to the object.
-
-        Returns
-        -------
-        result : object
-            The item pointed to by the path. An import error will be
-            raised if the item cannot be imported.
-
-        """
-        if u'.' not in path:
-            return __import__(path)
-        path, item = path.rsplit(u'.', 1)
-        mod = __import__(path, globals(), {}, [item])
-        try:
-            result = getattr(mod, item)
-        except AttributeError:
-            raise ImportError(u'cannot import name %s' % item)
-        return result
-
-    def create_extension_class(self, extension):
-        """ Load the implementation class for a given extension.
+    def create_extension_object(self, extension):
+        """ Create the implementation object for a given extension.
 
         This will cause the extension's plugin class to be imported
         and activated unless the plugin is already active.
@@ -163,30 +132,21 @@ class Workbench(Atom):
         Parameters
         ----------
         extension : Extension
-            The extension which contains the path to the class.
+            The extension which contains the path to the object class.
 
         Returns
         -------
-        result : object or None
-            The class referenced by the path in the extension, or None
-            if it could not be loaded.
+        result : ExtensionObject or None
+            The newly created extension object, or None if one could
+            not be created.
 
         """
-        # ensure the extension's plugin is activated
-        self.get_plugin(extension.plugin_id)
-        class_path = extension.cls
-        try:
-            extension_class = self.import_object(class_path)
-        except ImportError:
-            msg = "failed to load extension class '%s'"
-            warnings.warn(msg % class_path)
+        self.get_plugin(extension.plugin_id)  # ensure plugin is activated
+        ext = self._create_extension_object(extension)
+        if ext is None:
             return None
-        ext = extension_class()
-        if not isinstance(ext, ExtensionClass):
-            msg = "extension class '%s' created non-ExtensionClass type '%s'"
-            warnings.warn(msg % (class_path, type(ext).__name__))
-            return None
-        ext.initialize(self, extension)
+        ext.workbench = self
+        ext.extension = extension
         return ext
 
     def get_extension_point(self, extension_point_id):
@@ -294,6 +254,33 @@ class Workbench(Atom):
     #: A mapping of plugin id to Plugin instance.
     _plugins = Typed(dict, ())
 
+    @staticmethod
+    def _import_object(path):
+        """ Import an object from a dot separated path.
+
+        Parameters
+        ----------
+        path : unicode
+            A dot separated path of the form 'pkg.module.item' which
+            represents the import path to the object.
+
+        Returns
+        -------
+        result : object
+            The item pointed to by the path. An import error will be
+            raised if the item cannot be imported.
+
+        """
+        if u'.' not in path:
+            return __import__(path)
+        path, item = path.rsplit(u'.', 1)
+        mod = __import__(path, {}, {}, [item])
+        try:
+            result = getattr(mod, item)
+        except AttributeError:
+            raise ImportError(u'cannot import name %s' % item)
+        return result
+
     def _create_plugin(self, manifest):
         """ Create a plugin instance for the given manifest.
 
@@ -308,18 +295,47 @@ class Workbench(Atom):
             A new Plugin instance or None if one could not be created.
 
         """
-        class_path = manifest.cls
-        if not class_path:
+        path = manifest.cls
+        if not path:
             return Plugin()
         try:
-            plugin_cls = self.import_object(class_path)
+            plugin_cls = self._import_object(path)
         except ImportError:
             msg = "failed to import plugin class '%s'"
-            warnings.warn(msg % class_path)
+            warnings.warn(msg % path)
             return None
         plugin = plugin_cls()
         if not isinstance(plugin, Plugin):
             msg = "plugin class '%s' created non-Plugin type '%s'"
-            warnings.warn(msg % (class_path, type(plugin).__name__))
+            warnings.warn(msg % (path, type(plugin).__name__))
             return None
         return plugin
+
+    def _create_extension_object(self, extension):
+        """ Create the implementation object for a given extension.
+
+        Parameters
+        ----------
+        extension : Extension
+            The extension which contains the path to the object class.
+
+        Returns
+        -------
+        result : ExtensionObject or None
+            The newly created extension object, or None if one could
+            not be created.
+
+        """
+        path = extension.cls
+        try:
+            extension_class = self._import_object(path)
+        except ImportError:
+            msg = "failed to load extension class '%s'"
+            warnings.warn(msg % path)
+            return None
+        ext = extension_class()
+        if not isinstance(ext, ExtensionObject):
+            msg = "extension class '%s' created non-ExtensionObject type '%s'"
+            warnings.warn(msg % (path, type(ext).__name__))
+            return None
+        return ext
