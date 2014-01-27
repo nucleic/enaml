@@ -35,13 +35,6 @@ class Extension(Atom):
         return self.data.get(u'class', u'')
 
     @property
-    def configuration(self):
-        """ Get the configuration data for the extension.
-
-        """
-        return self.data.get(u'configuration', {})
-
-    @property
     def id(self):
         """ Get the extension identifer.
 
@@ -73,3 +66,40 @@ class Extension(Atom):
 
         """
         return self.data.get(u'description', u'')
+
+    def has_property(self, name):
+        """ Get whether the extension has a property.
+
+        Parameters
+        ----------
+        name : unicode
+            The name of the property of interest.
+
+        Returns
+        -------
+        result : bool
+            True if the extension has the named property. False
+            otherwise.
+
+        """
+        return name in self.data
+
+    def get_property(self, name, default=None):
+        """ Get the named property from the extension.
+
+        Parameters
+        ----------
+        name : unicode
+            The name of the property of interest.
+
+        default : object, optional
+            The value to return if the property does not exist in
+            the extension.
+
+        Returns
+        -------
+        result : object
+            The value for the named property.
+
+        """
+        return self.data.get(name, default)
