@@ -349,12 +349,12 @@ class Window(Widget):
     # Private API
     #--------------------------------------------------------------------------
     def _handle_closing(self):
-        """
+        """Handle the closing event from the proxy widget
         """
         return self.validate_close(self)
     
     def _handle_close(self):
-        """ Handle the close event from the proxy widget.
+        """ Handle the closed event from the proxy widget.
 
         """
         self.visible = False
