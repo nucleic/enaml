@@ -41,6 +41,7 @@ class wxCustomWindow(wx.Frame):
         self.SetSizer(wxSingleWidgetSizer())
         self.Bind(wx.EVT_MENU, self.OnMenu)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.closing_requested = False
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -65,7 +66,10 @@ class wxCustomWindow(wx.Frame):
         close. Instead it just sets the visibility to False.
 
         """
-        self.Hide()
+        if not self.closing_requested:
+            self.closing_requested
+        else:
+            self.Hide()
 
     #--------------------------------------------------------------------------
     # Public API
@@ -124,21 +128,11 @@ class WxWindow(WxWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
-    def creation_style(self):
-        """ A convenience function for getting the creation style.
-
-        """
-        style = wx.DEFAULT_FRAME_STYLE
-        if self.declaration.always_on_top:
-            style |= wx.STAY_ON_TOP
-        return style
-
     def create_widget(self):
         """ Create the underlying wxCustomWindow widget.
 
         """
-        style = self.creation_style()
-        self.widget = wxCustomWindow(self.parent_widget(), style=style)
+        self.widget = wxCustomWindow(self.parent_widget())
 
     def init_widget(self):
         """ Initialize the window control.
@@ -207,10 +201,13 @@ class WxWindow(WxWidget, ProxyWindow):
 
         """
         event.Skip()
-        # Make sure the frame is not modal when closing, or no other
-        # windows will be unblocked.
-        self.widget.MakeModal(False)
-        self.declaration._handle_close()
+        if self.declaration._handle_closing:
+            # Make sure the frame is not modal when closing, or no other
+            # windows will be unblocked.
+            self.widget.MakeModal(False)
+            self.declaration._handle_close()
+        else:
+            self.widget.closing_requested = False
 
     def on_layout_requested(self, event):
         """ Handle the layout request event from the central widget.
@@ -302,29 +299,17 @@ class WxWindow(WxWidget, ProxyWindow):
         """
         self.widget.Maximize(True)
 
-    def is_maximized(self):
-        """ Get whether the window is maximized.
-
-        """
-        return self.widget.IsMaximized()
-
     def minimize(self):
         """ Minimize the window.
 
         """
         self.widget.Iconize(True)
 
-    def is_minimized(self):
-        """ Get whether the window is minimized.
-
-        """
-        return self.widget.IsIconized()
-
     def restore(self):
         """ Restore the window after a minimize or maximize.
 
         """
-        self.widget.Maximize(False)
+        self.widget.maximize(False)
 
     def send_to_front(self):
         """ Move the window to the top of the Z order.
@@ -337,13 +322,6 @@ class WxWindow(WxWidget, ProxyWindow):
 
         """
         self.widget.Lower()
-
-    def activate_window(self):
-        """ Activate the underlying window widget.
-
-        """
-        # wx makes no distinction between raise and activate
-        self.widget.Raise()
 
     def center_on_screen(self):
         """ Center the window on the screen.

@@ -5,14 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import sys
-
 from atom.api import Typed
 
 from enaml.layout.geometry import Pos, Rect, Size
 from enaml.widgets.window import ProxyWindow
 
-from .QtCore import Qt, QPoint, QRect, QSize
+from .QtCore import Qt, QPoint, QRect, QSize, Signal
 from .QtGui import QApplication, QIcon
 
 from .q_resource_helpers import get_cached_qicon
@@ -35,7 +33,12 @@ class QWindow(QWindowBase):
     on its central widget, unless the user explicitly changes them.
 
     """
-    def __init__(self, parent=None, flags=Qt.Widget):
+
+    #: A signal which is emitted when the user ask to close the window.
+    #: It is then up to the declaration to validate or not this request.
+    closing = Signal()    
+    
+    def __init__(self, parent=None):
         """ Initialize a QWindow.
 
         Parameters
@@ -44,17 +47,24 @@ class QWindow(QWindowBase):
             The parent of the window.
 
         """
-        super(QWindow, self).__init__(parent, Qt.Window | flags)
+        super(QWindow, self).__init__(parent, Qt.Window)
+        self.closing_requested = False
 
     def closeEvent(self, event):
         """ Handle the QCloseEvent from the window system.
 
-        By default, this handler calls the superclass' method to close
-        the window and then emits the 'closed' signal.
+        If no previous QCloseEvent is registered emit the closing signal.
+        Otherwise calls the superclass' method to close the window and then
+        emits the 'closed' signal.
 
         """
-        super(QWindow, self).closeEvent(event)
-        self.closed.emit()
+        if not self.closing_requested:
+            self.closing_requested = True
+            event.ignore()
+            self.closing.emit()
+        else:
+            super(QWindow, self).closeEvent(event)
+            self.closed.emit()
 
 
 class QtWindow(QtWidget, ProxyWindow):
@@ -67,21 +77,11 @@ class QtWindow(QtWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
-    def creation_flags(self):
-        """ A convenience function for getting the creation flags.
-
-        """
-        flags = Qt.Widget
-        if self.declaration.always_on_top:
-            flags |= Qt.WindowStaysOnTopHint
-        return flags
-
     def create_widget(self):
         """ Create the QWindow widget.
 
         """
-        flags = self.creation_flags()
-        self.widget = QWindow(self.parent_widget(), flags)
+        self.widget = QWindow(self.parent_widget())
 
     def init_widget(self):
         """ Initialize the widget.
@@ -100,6 +100,7 @@ class QtWindow(QtWidget, ProxyWindow):
         if d.icon:
             self.set_icon(d.icon)
         self.widget.closed.connect(self.on_closed)
+        self.widget.closing.connect(self.on_closing)
 
     def init_layout(self):
         """ Initialize the widget layout.
@@ -124,6 +125,18 @@ class QtWindow(QtWidget, ProxyWindow):
         d = self.declaration.central_widget()
         if d is not None:
             return d.proxy.widget
+            
+    def on_closing(self):
+        """The signal handler for the 'closing' signal.
+
+        This method will call the validate_close function on the 
+        declaration.
+        
+        """ 
+        if self.declaration._handle_closing():
+            self.widget.close()
+        else:
+            self.widget.closing_requested = False
 
     def on_closed(self):
         """ The signal handler for the 'closed' signal.
@@ -233,23 +246,11 @@ class QtWindow(QtWidget, ProxyWindow):
         """
         self.widget.showMaximized()
 
-    def is_maximized(self):
-        """ Get whether the window is maximized.
-
-        """
-        return bool(self.widget.windowState() & Qt.WindowMaximized)
-
     def minimize(self):
         """ Minimize the window.
 
         """
         self.widget.showMinimized()
-
-    def is_minimized(self):
-        """ Get whether the window is minimized.
-
-        """
-        return bool(self.widget.windowState() & Qt.WindowMinimized)
 
     def restore(self):
         """ Restore the window after a minimize or maximize.
@@ -268,16 +269,6 @@ class QtWindow(QtWidget, ProxyWindow):
 
         """
         self.widget.lower()
-
-    def activate_window(self):
-        """ Activate the underlying window widget.
-
-        """
-        self.widget.activateWindow()
-        if sys.platform == 'win32':
-            # For some reason, this needs to be called twice on Windows
-            # in order to get the taskbar entry to flash.
-            self.widget.activateWindow()
 
     def center_on_screen(self):
         """ Center the window on the screen.
