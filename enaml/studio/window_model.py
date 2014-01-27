@@ -5,31 +5,25 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, List, Typed, Unicode
+from atom.api import Atom, List, Typed
 
-from enaml.icon import Icon
-
-
-class TitleProvider(Atom):
-    """ A base class for defining studio title providers.
-
-    """
-    title = Unicode()
-
-
-class IconProvider(Atom):
-    """ A base class for defining icon providers.
-
-    """
-    icon = Typed(Icon)
+from .content_provider import ContentProvider
+from .icon_provider import IconProvider
+from .title_provider import TitleProvider
 
 
 class WindowModel(Atom):
     """ A model which is used to build the studio window.
 
     """
-    #: The list of providers which contribute title information.
-    title_providers = List(TitleProvider)
+    #: The providers which contributes the window title.
+    title_provider = Typed(TitleProvider, ())
 
     #: The provider which contributes the window icon.
     icon_provider = Typed(IconProvider, ())
+
+    #: The menu objects to include in the menu bar.
+    menus = List()
+
+    #: The primary content widget for the window.
+    content_provider = Typed(ContentProvider, ())

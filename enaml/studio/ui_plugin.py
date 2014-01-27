@@ -11,8 +11,26 @@ import enaml
 from enaml.application import Application
 from enaml.workbench.api import Plugin
 
+from .application_factory import ApplicationFactory
+from .content_provider import ContentProvider
+from .icon_provider import IconProvider
+from .title_provider import TitleProvider
 from .utils import highest_ranked
+from .window_factory import WindowFactory
 from .window_model import WindowModel
+
+
+APPLICATION_POINT = u'enaml.studio.ui.application'
+
+CONTENT_POINT = u'enaml.studio.ui.content'
+
+ICON_POINT = u'enaml.studio.ui.icon'
+
+MENUS_POINT = u'enaml.studio.ui.menus'
+
+TITLE_POINT = u'enaml.studio.ui.title'
+
+WINDOW_POINT = u'enaml.studio.ui.window'
 
 
 def StudioWindow():
@@ -31,17 +49,16 @@ class UIPlugin(Plugin):
     code can contribute menus to the menu bar and central widgets.
 
     """
-    #: A reference to the Enaml application used by the ui. The
-    #: application class can be provided via the extension point
-    #: 'enaml.studio.ui.application'
-    application = Typed(Application)
+    #: A reference to the Enaml application used by the ui. It can be
+    #: provided via the 'enaml.studio.ui.application' extension point.
+    _application = Typed(Application)
 
-    #: A reference to the main window which is managed by this plugin.
-    #: The main window class can be provided via the extension point
-    #: 'enaml.studio.ui.window'
-    main_window = ForwardTyped(StudioWindow)
+    #: A reference to the main window for the ui. It can be provided
+    #: via the 'enaml.studio.ui.window' extension point.
+    _window = ForwardTyped(StudioWindow)
 
-    #: A reference to the window model which drives the main window.
+    #: The view model object used to drive the window.
+    _model = Typed(WindowModel, ())
 
     #--------------------------------------------------------------------------
     # Plugin API
@@ -55,6 +72,7 @@ class UIPlugin(Plugin):
 
         """
         self._initialize_application()
+        self._initialize_model()
         self._initialize_window()
 
     def stop(self):
@@ -64,67 +82,115 @@ class UIPlugin(Plugin):
 
         """
         self._destroy_window()
+        self._destroy_model()
         self._destroy_application()
 
     #--------------------------------------------------------------------------
-    # Studio API
+    # Framework API
     #--------------------------------------------------------------------------
-    def show_main_window(self):
+    def show_window(self):
         """
 
         """
-        self.main_window.show()
+        self._window.show()
 
-    def start_event_loop(self):
+    def start_application(self):
         """
 
         """
-        self.application.start()
+        self._application.start()
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
     def _initialize_application(self):
-        """
+        workbench = self.workbench
+        extensions = workbench.get_extensions(APPLICATION_POINT)
+        if not extensions:
+            msg = "Cannot create an Application instance. No plugin "\
+                  "contributed a factory to the '%s' extension point."
+            raise RuntimeError(msg % APPLICATION_POINT)
+        extension = highest_ranked(extensions)
+        factory = workbench.create_extension_object(extension)
+        if not isinstance(factory, ApplicationFactory):
+            msg = "extension '%s' created non-ApplicationFactory type '%s'"
+            raise TypeError(msg % (extension.cls, type(factory).__name__))
+        self._application = factory()
 
-        """
-        bench = self.workbench
-        extensions = bench.get_extensions('enaml.studio.ui.application')
-        ext = highest_ranked(extensions)
-        app_class = bench.load_extension_class(ext)
-        app = app_class.instance()
-        if app is None:
-            app = app_class()
-        self.application = app
+    def _initialize_model(self):
+        self._initialize_title()
+        self._initialize_icon()
+        #self._initialize_menus()
+        self._initialize_content()
+
+    def _initialize_title(self):
+        workbench = self.workbench
+        extensions = workbench.get_extensions(TITLE_POINT)
+        if not extensions:
+            return
+        extension = highest_ranked(extensions)
+        if extension.cls:
+            provider = workbench.create_extension_object(extension)
+        else:
+            title = extension.get_property(u'title', u'')
+            provider = TitleProvider(title=title)
+        self._model.title_provider = provider
+
+    def _initialize_icon(self):
+        workbench = self.workbench
+        extensions = workbench.get_extensions(ICON_POINT)
+        if not extensions:
+            return
+        extension = highest_ranked(extensions)
+        if extension.cls:
+            provider = workbench.create_extension_object(extension)
+        else:
+            provider = IconProvider()  # XXX use a loader
+        self._model.icon_provider = provider
+
+    # def _initialize_menus(self):
+    #     workbench = self.workbench
+    #     extensions = workbench.get_extensions(MENUS_POINT)
+    #     if not extensions:
+    #         return
+    #     action_exts = []
+    #     for ext in extensions:
+    #         if ext.get_property(u'type') == u'action':
+    #             action_exts.append(ext)
+    #     self._model.menus = create_menus(action_exts)
+
+    def _initialize_content(self):
+        workbench = self.workbench
+        extensions = workbench.get_extensions(CONTENT_POINT)
+        if not extensions:
+            provider = ContentProvider()
+        else:
+            extension = highest_ranked(extensions)
+            provider = workbench.create_extension_object(extension)
+        self._model.content_provider = provider
 
     def _initialize_window(self):
-        """ Initialize the main window instance.
+        workbench = self.workbench
+        extensions = workbench.get_extensions(WINDOW_POINT)
+        if not extensions:
+            msg = "Cannot create a StudioWindow instance. No plugin "\
+                  "contributed a factory to the '%s' extension point."
+            raise RuntimeError(msg % WINDOW_POINT)
+        extension = highest_ranked(extensions)
+        factory = workbench.create_extension_object(extension)
+        if not isinstance(factory, WindowFactory):
+            msg = "extension '%s' created non-WindowFactory type '%s'"
+            raise TypeError(msg % (extension.cls, type(factory).__name__))
+        self._window = factory(window_model=self._model)
 
-        """
-        bench = self.workbench
-        extensions = bench.get_extensions('enaml.studio.ui.window')
-        ext = highest_ranked(extensions)
-        win_class = bench.load_extension_class(ext)
-        self.main_window = win_class(window_model=WindowModel())
-        self._initialize_branding()
-
-    def _initialize_branding(self):
-        """ Initialize the branding of the main window.
-
-        """
     def _destroy_window(self):
-        """ Destroy the main window instance.
+        self._window.hide()
+        self._window.destroy()
+        self._window = None
 
-        """
-        self.main_window.hide()
-        self.main_window.destroy()
-        self.main_window = None
+    def _destroy_model(self):
+        self._model = None
 
     def _destroy_application(self):
-        """
-
-        """
-        self.application.stop()
-        self.application = None
-
-
+        self._application.stop()
+        self._application = None

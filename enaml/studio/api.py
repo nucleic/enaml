@@ -5,4 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from .application_factory import ApplicationFactory
+from .content_provider import ContentProvider
+from .icon_provider import IconProvider
 from .studio import Studio
+from .title_provider import TitleProvider
+from .window_factory import WindowFactory

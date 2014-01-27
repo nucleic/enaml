@@ -6,12 +6,13 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 def rank_sort(extensions):
-    """ Sort a list of extensions according to their configuration rank.
+    """ Sort a list of extensions according to their rank.
 
     Parameters
     ----------
     extensions : list
-        The list of Extension objects of interest.
+        The list of Extension objects of interest. They should have
+        an integer 'rank' property in order to be usefully sorted.
 
     Returns
     -------
@@ -19,7 +20,7 @@ def rank_sort(extensions):
         The extensions sorted from highest to lowest rank.
 
     """
-    key = lambda ext: ext.configuration.get(u'rank', 0)
+    key = lambda ext: ext.get_property(u'rank', 0)
     return sorted(extensions, key=key, reverse=True)
 
 
@@ -29,7 +30,8 @@ def highest_ranked(extensions):
     Parameters
     ----------
     extensions : list
-        The list of Extension objects of interest.
+        The list of Extension objects of interest. They should have
+        an integer 'rank' property in order to be usefully compared.
 
     Returns
     -------
@@ -37,5 +39,5 @@ def highest_ranked(extensions):
         The extensions with the highest rank.
 
     """
-    key = lambda ext: ext.configuration.get(u'rank', 0)
+    key = lambda ext: ext.get_property(u'rank', 0)
     return max(extensions, key=key)

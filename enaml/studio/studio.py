@@ -19,12 +19,16 @@ class Studio(Workbench):
     The studio framework includes additional optional plugins which
     implement useful behaviors such as a pluggable central dock area.
 
+    The studio will automatically load the 'core' and 'ui' builtin
+    plugins when it is started. User code is responsible for loading
+    any other desired plugins.
+
     """
     def load_builtin_plugin(self, name):
         """ Load one of the builtin Enaml studio plugins.
 
-        This method cannot be used to load arbitrary user plugins.
-        Use the 'register' method on the base class for that purpose.
+        This method cannot be used to load arbitrary user plugins. Use
+        the 'register' method on the base class for that purpose.
 
         Parameters
         ----------
@@ -39,7 +43,7 @@ class Studio(Workbench):
         path = os.path.join(dirname, 'plugins', name + '.json')
         with open(path) as f:
             data = f.read()
-        self.register(data, validate=True)
+        self.register(data)
 
     def run(self):
         """ Run the studio.
@@ -53,8 +57,8 @@ class Studio(Workbench):
         self.load_builtin_plugin('ui')
 
         ui = self.get_plugin(u'enaml.studio.ui')
-        ui.show_main_window()
-        ui.start_event_loop()
+        ui.show_window()
+        ui.start_application()
 
         self.unregister(u'enaml.studio.ui')
         self.unregister(u'enaml.studio.core')
