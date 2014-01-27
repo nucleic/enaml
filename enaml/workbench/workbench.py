@@ -142,12 +142,13 @@ class Workbench(Atom):
 
         """
         self.get_plugin(extension.plugin_id)  # ensure plugin is activated
-        ext = self._create_extension_object(extension)
-        if ext is None:
+        obj = self._create_extension_object(extension)
+        if obj is None:
             return None
-        ext.workbench = self
-        ext.extension = extension
-        return ext
+        obj.workbench = self
+        obj.extension = extension
+        obj.initialize()
+        return obj
 
     def get_extension_point(self, extension_point_id):
         """ Get the extension point associated with an id.
@@ -333,9 +334,9 @@ class Workbench(Atom):
             msg = "failed to load extension class '%s'"
             warnings.warn(msg % path)
             return None
-        ext = extension_class()
-        if not isinstance(ext, ExtensionObject):
+        obj = extension_class()
+        if not isinstance(obj, ExtensionObject):
             msg = "extension class '%s' created non-ExtensionObject type '%s'"
-            warnings.warn(msg % (path, type(ext).__name__))
+            warnings.warn(msg % (path, type(obj).__name__))
             return None
-        return ext
+        return obj

@@ -32,3 +32,17 @@ class ExtensionObject(Atom):
     #: A reference to the Extension which declared this implementation.
     #: This is assigned by the workbench when it creates the object.
     extension = Typed(Extension)
+
+    def initialize(self):
+        """ An initialization point for subclasses.
+
+        This method will be called after the object is instantiated
+        and populated with the Workbench and Extension objects. It
+        can be used by subclasses to initialize additional state
+        before the object is handed off to the consuming plugin.
+
+        The default implementation of this method is a no-op and can
+        be ignored by subclasses which do not need the feature.
+
+        """
+        pass
