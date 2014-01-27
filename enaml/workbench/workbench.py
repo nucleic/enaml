@@ -302,8 +302,9 @@ class Workbench(Atom):
         try:
             plugin_cls = self._import_object(path)
         except ImportError:
-            msg = "failed to import plugin class '%s'"
-            warnings.warn(msg % path)
+            import traceback
+            msg = "failed to import plugin class '%s':\n%s"
+            warnings.warn(msg % (path, traceback.format_exc()))
             return None
         plugin = plugin_cls()
         if not isinstance(plugin, Plugin):
@@ -331,8 +332,9 @@ class Workbench(Atom):
         try:
             extension_class = self._import_object(path)
         except ImportError:
-            msg = "failed to load extension class '%s'"
-            warnings.warn(msg % path)
+            import traceback
+            msg = "failed to load extension class '%s':\n%s"
+            warnings.warn(msg % (path, traceback.format_exc()))
             return None
         obj = extension_class()
         if not isinstance(obj, ExtensionObject):
