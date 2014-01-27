@@ -308,7 +308,7 @@ class Workbench(Atom):
             return None
         plugin = plugin_cls()
         if not isinstance(plugin, Plugin):
-            msg = "plugin class '%s' created non-Plugin type '%s'"
+            msg = "plugin '%s' created non-Plugin type '%s'"
             warnings.warn(msg % (path, type(plugin).__name__))
             return None
         return plugin
@@ -338,7 +338,7 @@ class Workbench(Atom):
             return None
         obj = extension_class()
         if not isinstance(obj, ExtensionObject):
-            msg = "extension class '%s' created non-ExtensionObject type '%s'"
+            msg = "extension '%s' created non-ExtensionObject type '%s'"
             warnings.warn(msg % (path, type(obj).__name__))
             return None
         return obj
