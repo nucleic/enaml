@@ -7,11 +7,11 @@
 #------------------------------------------------------------------------------
 import warnings
 
-from atom.api import ForwardTyped, List, Typed
+from atom.api import ForwardTyped, List, Str, Typed, atomref
 
 import enaml
 from enaml.application import Application
-from enaml.workbench.api import Plugin, Extension
+from enaml.workbench.api import Plugin, Extension, RegistryEventListener
 
 from .application_factory import ApplicationFactory
 from .content_provider import ContentProvider
@@ -45,6 +45,45 @@ def StudioWindow():
     return StudioWindow
 
 
+class UIPluginListener(RegistryEventListener):
+    """ A registry event listener for the UIPlugin.
+
+    This listener will trigger a refresh on the plugin when extensions
+    are added or removed from the relevant extension point.
+
+    This class is not intended for use by external code.
+
+    """
+    #: An atomref to the owner plugin.
+    plugin_ref = Typed(atomref)
+
+    #: The name of the refresh method to invoke on the owner.
+    method_name = Str()
+
+    def extensions_added(self, extensions):
+        """ Handle the extensions added registry notification.
+
+        This will refresh the owner ui plugin.
+
+        """
+        self._refresh()
+
+    def extensions_removed(self, extensions):
+        """ Handle the extensions removed registry notification.
+
+        This will refresh the owner ui plugin.
+
+        """
+        self._refresh()
+
+    def _refresh(self):
+        """ Trigger a refresh of the owner ui plugin.
+
+        """
+        if self.plugin_ref:
+            getattr(self.plugin_ref(), self.method_name)()
+
+
 class UIPlugin(Plugin):
     """ The main UI plugin class for the Enaml studio.
 
@@ -52,6 +91,63 @@ class UIPlugin(Plugin):
     code can contribute menus to the menu bar and central widgets.
 
     """
+    def start(self):
+        """ Start the plugin life-cycle.
+
+        This method will initialize the main window, but not show it.
+        The Studio instance is responsible for showing the window after
+        this plugin is started.
+
+        This method is called by the framework at the appropriate time.
+        It should never be called by user code.
+
+        """
+        self._create_application()
+        self._create_model()
+        self._create_window()
+        self._install_listeners()
+
+    def stop(self):
+        """ Stop the plugin life-cycle.
+
+        This method will hide and destroy the main window.
+
+        This method is called by the framework at the appropriate time.
+        It should never be called by user code.
+
+        """
+        self._remove_listeners()
+        self._destroy_window()
+        self._release_model()
+        self._release_application()
+
+    def show_window(self):
+        """ Ensure the underlying window object is shown.
+
+        """
+        self._window.show()
+
+    def hide_window(self):
+        """ Ensure the underlying window object is hidden.
+
+        """
+        self._window.hide()
+
+    def start_application(self):
+        """ Start the event loop of the underlying application.
+
+        """
+        self._application.start()
+
+    def stop_application(self):
+        """ Stop the event loop of the underlying application.
+
+        """
+        self._application.stop()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
     #: The application provided by an ApplicationFactory extension.
     _application = Typed(Application)
 
@@ -59,7 +155,7 @@ class UIPlugin(Plugin):
     _window = ForwardTyped(StudioWindow)
 
     #: The view model object used to drive the window.
-    _model = Typed(WindowModel, ())
+    _model = Typed(WindowModel)
 
     #: The currently active title extension.
     _title_extension = Typed(Extension)
@@ -73,45 +169,11 @@ class UIPlugin(Plugin):
     #: A currently active content extension.
     _content_extension = Typed(Extension)
 
-    #--------------------------------------------------------------------------
-    # Plugin API
-    #--------------------------------------------------------------------------
-    def start(self):
-        """ Start the plugin life-cycle.
+    #: The registry listeners installed for the for plugin.
+    _registry_listeners = List()
 
-        This method will initialize the main window, but not show it.
-        The Studio instance is responsible for showing the window after
-        this plugin is started.
-
-        """
-        self._initialize_application()
-        self._initialize_model()
-        self._initialize_window()
-
-    def stop(self):
-        """ Stop the plugin life-cycle.
-
-        This will hide and destroy the main window.
-
-        """
-        self._destroy_window()
-        self._destroy_model()
-        self._destroy_application()
-
-    #--------------------------------------------------------------------------
-    # Framework API
-    #--------------------------------------------------------------------------
-    def show_window(self):
-        self._window.show()
-
-    def start_application(self):
-        self._application.start()
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _initialize_application(self):
-        """ Initialize the Application object for the studio.
+    def _create_application(self):
+        """ Create the Application object for the studio.
 
         This will load the ApplicationFactory for the highest ranking
         extension to the application extension point, and use that
@@ -141,30 +203,22 @@ class UIPlugin(Plugin):
 
         self._application = factory()
 
-    def _initialize_model(self):
-        """ Initialize the model which drives the main window.
-
-        This method will initialize all providers contributed to the ui
-        extension points.
-
-        This method is intended to be called only once during the plugin
-        life-cycle.
+    def _create_model(self):
+        """ Create and initialize the model which drives the window.
 
         """
+        self._model = WindowModel()
         self._refresh_title()
         self._refresh_icon()
         self._refresh_menus()
         self._refresh_content()
 
-    def _initialize_window(self):
-        """ Initialize the Window object for the studio.
+    def _create_window(self):
+        """ Create the Window object for the studio.
 
         This method will load the WindowFactory for the highest ranking
         extension to the window extension point, and use that factory
         to create the StudioWindow instance for the ui.
-
-        This method is intended to be called only once during the plugin
-        life-cycle.
 
         """
         workbench = self.workbench
@@ -182,15 +236,51 @@ class UIPlugin(Plugin):
 
         self._window = factory(window_model=self._model)
 
+    def _install_listeners(self):
+        """ Install the registry event listeners for the plugin.
+
+        """
+        listeners = []
+        ref = atomref(self)
+        workbench = self.workbench
+        pairs = ((CONTENT_POINT, '_refresh_content'),
+                 (ICON_POINT, '_refresh_icon'),
+                 (MENUS_POINT, '_refresh_menus'),
+                 (TITLE_POINT, '_refresh_title'))
+
+        for point, name in pairs:
+            listener = UIPluginListener(plugin_ref=ref, method_name=name)
+            workbench.add_listener(point, listener)
+            listeners.append((point, listener))
+
+        self._registry_listeners = listeners
+
+    def _remove_listeners(self):
+        """ Remove the registry event listeners installed by the plugin.
+
+        """
+        workbench = self.workbench
+        for point, listener in self._registry_listeners:
+            workbench.remove_listener(point, listener)
+
     def _destroy_window(self):
+        """ Destroy and release the underlying window object.
+
+        """
         self._window.hide()
         self._window.destroy()
         self._window = None
 
-    def _destroy_model(self):
+    def _release_model(self):
+        """ Release the underlying window model object.
+
+        """
         self._model = None
 
-    def _destroy_application(self):
+    def _release_application(self):
+        """ Stop and release the underlyling application object.
+
+        """
         self._application.stop()
         self._application = None
 
