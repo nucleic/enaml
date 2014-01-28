@@ -7,16 +7,17 @@
 #------------------------------------------------------------------------------
 import warnings
 
-from atom.api import ForwardTyped, List, Str, Typed, atomref
+from atom.api import ForwardTyped, List, Typed, atomref
 
 import enaml
 from enaml.application import Application
-from enaml.workbench.api import Plugin, Extension, RegistryEventListener
+from enaml.workbench.api import Plugin, Extension
 
 from .application_factory import ApplicationFactory
 from .content_provider import ContentProvider
 from .icon_provider import IconProvider
 from .menu_provider import MenuProvider
+from .refresh_listener import RefreshListener
 from .title_provider import TitleProvider
 from .utils import highest_ranked, rank_sort
 from .window_factory import WindowFactory
@@ -43,45 +44,6 @@ def StudioWindow():
     with enaml.imports():
         from enaml.studio.studio_window import StudioWindow
     return StudioWindow
-
-
-class UIPluginListener(RegistryEventListener):
-    """ A registry event listener for the UIPlugin.
-
-    This listener will trigger a refresh on the plugin when extensions
-    are added or removed from the relevant extension point.
-
-    This class is not intended for use by external code.
-
-    """
-    #: An atomref to the owner plugin.
-    plugin_ref = Typed(atomref)
-
-    #: The name of the refresh method to invoke on the owner.
-    method_name = Str()
-
-    def extensions_added(self, extensions):
-        """ Handle the extensions added registry notification.
-
-        This will refresh the owner ui plugin.
-
-        """
-        self._refresh()
-
-    def extensions_removed(self, extensions):
-        """ Handle the extensions removed registry notification.
-
-        This will refresh the owner ui plugin.
-
-        """
-        self._refresh()
-
-    def _refresh(self):
-        """ Trigger a refresh of the owner ui plugin.
-
-        """
-        if self.plugin_ref:
-            getattr(self.plugin_ref(), self.method_name)()
 
 
 class UIPlugin(Plugin):
@@ -249,7 +211,7 @@ class UIPlugin(Plugin):
                  (TITLE_POINT, '_refresh_title'))
 
         for point, name in pairs:
-            listener = UIPluginListener(plugin_ref=ref, method_name=name)
+            listener = RefreshListener(plugin_ref=ref, method_name=name)
             workbench.add_listener(point, listener)
             listeners.append((point, listener))
 
@@ -262,6 +224,7 @@ class UIPlugin(Plugin):
         workbench = self.workbench
         for point, listener in self._registry_listeners:
             workbench.remove_listener(point, listener)
+        self._registry_listeners = []
 
     def _destroy_window(self):
         """ Destroy and release the underlying window object.
@@ -361,7 +324,7 @@ class UIPlugin(Plugin):
             self._model.menu_providers = []
             return
 
-        extensions = rank_sort(extensions)
+        extensions = rank_sort(extensions, reverse=True)
         if extensions == self._menu_extensions:
             return
 
