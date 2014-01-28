@@ -85,7 +85,7 @@ def create_manifest(data):
     validate(root, SCHEMA_PATH)
     manifest = PluginManifest(data=root)
     plugin_id = manifest.id
-    for pt in root.get(u'extension_points', ()):
+    for pt in root.get(u'extensionPoints', ()):
         item = ExtensionPoint(plugin_id=plugin_id, data=pt)
         manifest.extension_points.append(item)
     for ext in root.get(u'extensions', ()):
