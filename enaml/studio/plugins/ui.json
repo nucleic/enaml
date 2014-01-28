@@ -12,12 +12,12 @@
 		{
 			"id": "window",
 			"name": "Studio UI Window Class",
-			"description": "The extension point for the studio Window class."
+			"description": "The extension point for the StudioWindow class."
 		},
 		{
 			"id": "icon",
 			"name": "Studio UI Window Icon",
-			"description": "The extension point for the studio Window icon."
+			"description": "The extension point for the studio window icon."
 		},
 		{
 			"id": "title",
@@ -25,9 +25,9 @@
 			"description": "The extension point for the studio window title."
 		},
 		{
-			"id": "menubar",
-			"name": "Studio UI Menu Bar",
-			"description": "The extension point for the studio menu bar."
+			"id": "menus",
+			"name": "Studio UI Menus",
+			"description": "The extension point for the studio menu bar menus."
 		},
 		{
 			"id": "content",
