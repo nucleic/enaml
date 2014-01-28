@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import traceback
 import warnings
 
 from atom.api import Atom, Typed
@@ -302,7 +303,6 @@ class Workbench(Atom):
         try:
             plugin_cls = self._import_object(path)
         except ImportError:
-            import traceback
             msg = "failed to import plugin class '%s':\n%s"
             warnings.warn(msg % (path, traceback.format_exc()))
             return None
@@ -332,7 +332,6 @@ class Workbench(Atom):
         try:
             extension_class = self._import_object(path)
         except ImportError:
-            import traceback
             msg = "failed to load extension class '%s':\n%s"
             warnings.warn(msg % (path, traceback.format_exc()))
             return None
