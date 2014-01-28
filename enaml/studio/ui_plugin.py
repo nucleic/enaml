@@ -379,8 +379,8 @@ class UIPlugin(Plugin):
             new_pairs.append((extension, provider))
 
         exts, providers = zip(*new_pairs)
-        self._menu_extensions = exts
-        self._model.menu_providers = providers
+        self._menu_extensions = list(exts)
+        self._model.menu_providers = list(providers)
 
     def _refresh_content(self):
         """ Refresh the content provider for the window model.
