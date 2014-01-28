@@ -12,12 +12,12 @@ from enaml.widgets.menu_bar import MenuBar
 from .window_model import WindowModel
 
 
-enamldef StudioWindow(MainWindow):
-	""" A MainWindow class used by the Enaml studio.
+def _filter(items):
+	return filter(None, items)
 
-	The 'window_model' attribute is used to drive the visible behavior
-	of the window and is assigned by the ui plugin when the window is
-	instantiated. It should not be manipulated by user code.
+
+enamldef StudioWindow(MainWindow):
+	""" The custom MainWindow enamldef used by the Enaml studio.
 
 	"""
 	attr window_model: WindowModel
@@ -25,6 +25,6 @@ enamldef StudioWindow(MainWindow):
 	icon << window_model.icon_provider.icon
 	MenuBar:
 		Include:
-			objects << window_model.menus
+			objects << _filter([p.menu for p in window_model.menu_providers])
 	Include:
-		objects << filter(None, [window_model.content_provider.content])
+		objects << _filter([window_model.content_provider.content])
