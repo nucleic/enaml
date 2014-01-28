@@ -9,6 +9,7 @@ from atom.api import Atom, List, Typed
 
 from .content_provider import ContentProvider
 from .icon_provider import IconProvider
+from .menu_provider import MenuProvider
 from .title_provider import TitleProvider
 
 
@@ -22,8 +23,8 @@ class WindowModel(Atom):
     #: The provider which contributes the window icon.
     icon_provider = Typed(IconProvider, ())
 
-    #: The menu objects to include in the menu bar.
-    menus = List()
+    #: The providers which contribute menus to the menu bar.
+    menu_providers = List(MenuProvider)
 
     #: The primary content widget for the window.
     content_provider = Typed(ContentProvider, ())

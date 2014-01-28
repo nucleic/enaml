@@ -5,17 +5,20 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import ForwardTyped, Typed
+import warnings
+
+from atom.api import ForwardTyped, List, Typed
 
 import enaml
 from enaml.application import Application
-from enaml.workbench.api import Plugin
+from enaml.workbench.api import Plugin, Extension
 
 from .application_factory import ApplicationFactory
 from .content_provider import ContentProvider
 from .icon_provider import IconProvider
+from .menu_provider import MenuProvider
 from .title_provider import TitleProvider
-from .utils import highest_ranked
+from .utils import highest_ranked, rank_sort
 from .window_factory import WindowFactory
 from .window_model import WindowModel
 
@@ -49,16 +52,26 @@ class UIPlugin(Plugin):
     code can contribute menus to the menu bar and central widgets.
 
     """
-    #: A reference to the Enaml application used by the ui. It can be
-    #: provided via the 'enaml.studio.ui.application' extension point.
+    #: The application provided by an ApplicationFactory extension.
     _application = Typed(Application)
 
-    #: A reference to the main window for the ui. It can be provided
-    #: via the 'enaml.studio.ui.window' extension point.
+    #: The window object provided by a WindowFactory extension.
     _window = ForwardTyped(StudioWindow)
 
     #: The view model object used to drive the window.
     _model = Typed(WindowModel, ())
+
+    #: The currently active title extension.
+    _title_extension = Typed(Extension)
+
+    #: The currently active icon extension.
+    _icon_extension = Typed(Extension)
+
+    #: The currently active menu extensions.
+    _menu_extensions = List(Extension)
+
+    #: A currently active content extension.
+    _content_extension = Typed(Extension)
 
     #--------------------------------------------------------------------------
     # Plugin API
@@ -89,98 +102,84 @@ class UIPlugin(Plugin):
     # Framework API
     #--------------------------------------------------------------------------
     def show_window(self):
-        """
-
-        """
         self._window.show()
 
     def start_application(self):
-        """
-
-        """
         self._application.start()
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
     def _initialize_application(self):
+        """ Initialize the Application object for the studio.
+
+        This will load the ApplicationFactory for the highest ranking
+        extension to the application extension point, and use that
+        factory to create the Application instance for the ui.
+
+        If an application object already exists, that application will
+        be used instead of any defined by a factory, since there can be
+        only one application per-process.
+
+        """
+        if Application.instance() is not None:
+            self._application = Application.instance()
+            return
+
         workbench = self.workbench
         extensions = workbench.get_extensions(APPLICATION_POINT)
         if not extensions:
             msg = "Cannot create an Application instance. No plugin "\
                   "contributed a factory to the '%s' extension point."
             raise RuntimeError(msg % APPLICATION_POINT)
+
         extension = highest_ranked(extensions)
         factory = workbench.create_extension_object(extension)
         if not isinstance(factory, ApplicationFactory):
             msg = "extension '%s' created non-ApplicationFactory type '%s'"
             raise TypeError(msg % (extension.cls, type(factory).__name__))
+
         self._application = factory()
 
     def _initialize_model(self):
-        self._initialize_title()
-        self._initialize_icon()
-        #self._initialize_menus()
-        self._initialize_content()
+        """ Initialize the model which drives the main window.
 
-    def _initialize_title(self):
-        workbench = self.workbench
-        extensions = workbench.get_extensions(TITLE_POINT)
-        if not extensions:
-            return
-        extension = highest_ranked(extensions)
-        if extension.cls:
-            provider = workbench.create_extension_object(extension)
-        else:
-            title = extension.get_property(u'title', u'')
-            provider = TitleProvider(title=title)
-        self._model.title_provider = provider
+        This method will initialize all providers contributed to the ui
+        extension points.
 
-    def _initialize_icon(self):
-        workbench = self.workbench
-        extensions = workbench.get_extensions(ICON_POINT)
-        if not extensions:
-            return
-        extension = highest_ranked(extensions)
-        if extension.cls:
-            provider = workbench.create_extension_object(extension)
-        else:
-            provider = IconProvider()  # XXX use a loader
-        self._model.icon_provider = provider
+        This method is intended to be called only once during the plugin
+        life-cycle.
 
-    # def _initialize_menus(self):
-    #     workbench = self.workbench
-    #     extensions = workbench.get_extensions(MENUS_POINT)
-    #     if not extensions:
-    #         return
-    #     action_exts = []
-    #     for ext in extensions:
-    #         if ext.get_property(u'type') == u'action':
-    #             action_exts.append(ext)
-    #     self._model.menus = create_menus(action_exts)
-
-    def _initialize_content(self):
-        workbench = self.workbench
-        extensions = workbench.get_extensions(CONTENT_POINT)
-        if not extensions:
-            provider = ContentProvider()
-        else:
-            extension = highest_ranked(extensions)
-            provider = workbench.create_extension_object(extension)
-        self._model.content_provider = provider
+        """
+        self._refresh_title()
+        self._refresh_icon()
+        self._refresh_menus()
+        self._refresh_content()
 
     def _initialize_window(self):
+        """ Initialize the Window object for the studio.
+
+        This method will load the WindowFactory for the highest ranking
+        extension to the window extension point, and use that factory
+        to create the StudioWindow instance for the ui.
+
+        This method is intended to be called only once during the plugin
+        life-cycle.
+
+        """
         workbench = self.workbench
         extensions = workbench.get_extensions(WINDOW_POINT)
         if not extensions:
             msg = "Cannot create a StudioWindow instance. No plugin "\
                   "contributed a factory to the '%s' extension point."
             raise RuntimeError(msg % WINDOW_POINT)
+
         extension = highest_ranked(extensions)
         factory = workbench.create_extension_object(extension)
         if not isinstance(factory, WindowFactory):
             msg = "extension '%s' created non-WindowFactory type '%s'"
             raise TypeError(msg % (extension.cls, type(factory).__name__))
+
         self._window = factory(window_model=self._model)
 
     def _destroy_window(self):
@@ -194,3 +193,132 @@ class UIPlugin(Plugin):
     def _destroy_application(self):
         self._application.stop()
         self._application = None
+
+    def _refresh_title(self):
+        """ Refresh the title provider for the window model.
+
+        This method can be called to update the window model's title
+        provider to the current highest ranking extension. If the
+        effective provider has not changed, this method is a no-op.
+
+        """
+        extensions = self.workbench.get_extensions(TITLE_POINT)
+        if not extensions:
+            self._title_extension = None
+            self._model.title_provider = TitleProvider()
+            return
+
+        extension = highest_ranked(extensions)
+        if extension is self._title_extension:
+            return
+
+        if extension.cls:
+            provider = self.workbench.create_extension_object(extension)
+            if not isinstance(provider, TitleProvider):
+                msg = "extension '%s' created non-TitleProvider type '%s'"
+                warnings.warn(msg % (extension.cls, type(provider).__name__))
+                provider = TitleProvider()
+        else:
+            title = extension.get_property(u'title', u'')
+            provider = TitleProvider(title=title)
+
+        self._title_extension = extension
+        self._model.title_provider = provider
+
+    def _refresh_icon(self):
+        """ Refresh the icon provider for the window model.
+
+        This method can be called to update the window model's icon
+        provider to the current highest ranking extension. If the
+        effective provider has not changed, this method is a no-op.
+
+        """
+        extensions = self.workbench.get_extensions(ICON_POINT)
+        if not extensions:
+            self._icon_extension = None
+            self._model.icon_provider = IconProvider()
+            return
+
+        extension = highest_ranked(extensions)
+        if extension is self._icon_extension:
+            return
+
+        if extension.cls:
+            provider = self.workbench.create_extension_object(extension)
+            if not isinstance(provider, IconProvider):
+                msg = "extension '%s' created non-IconProvider type '%s'"
+                warnings.warn(msg % (extension.cls, type(provider).__name__))
+                provider = IconProvider()
+        else:
+            provider = IconProvider()  # XXX use a loader
+
+        self._icon_extension = extension
+        self._model.icon_provider = provider
+
+    def _refresh_menus(self):
+        """ Refresh the menu providers for the window model.
+
+        This method can be called to update the window model's menu
+        providers to the current rank sorted extensions. This method
+        will only create the extension objects for the providers which
+        have changed.
+
+        """
+        workbench = self.workbench
+        extensions = workbench.get_extensions(MENUS_POINT)
+        if not extensions:
+            self._menu_extensions = []
+            self._model.menu_providers = []
+            return
+
+        extensions = rank_sort(extensions)
+        if extensions == self._menu_extensions:
+            return
+
+        current = dict(zip(self._menu_extensions, self._model.menu_providers))
+        new_pairs = []
+        for extension in extensions:
+            if extension in current:
+                new_pairs.append((extension, current[extension]))
+                continue
+            provider = workbench.create_extension_object(extension)
+            if not isinstance(provider, MenuProvider):
+                msg = "extension '%s' created non-MenuProvider type '%s'"
+                warnings.warn(msg % (extension.cls, type(provider).__name__))
+                provider = MenuProvider()
+            new_pairs.append((extension, provider))
+
+        exts, providers = zip(*new_pairs)
+        self._menu_extensions = exts
+        self._model.menu_providers = providers
+
+    def _refresh_content(self):
+        """ Refresh the content provider for the window model.
+
+        This method can be called to update the window model's content
+        provider to the current highest ranking extension. If the
+        effective provider has not changed, this method is a no-op.
+
+        """
+        workbench = self.workbench
+        extensions = workbench.get_extensions(CONTENT_POINT)
+        if not extensions:
+            self._content_extension = None
+            self._model.content_provider = ContentProvider()
+            return
+
+        extension = highest_ranked(extensions)
+        if extension is self._content_extension:
+            return
+
+        if extension.cls:
+            provider = self.workbench.create_extension_object(extension)
+            if not isinstance(provider, ContentProvider):
+                msg = "extension '%s' created non-ContentProvider type '%s'"
+                warnings.warn(msg % (extension.cls, type(provider).__name__))
+                provider = ContentProvider()
+        else:
+            provider = ContentProvider()
+
+        self._content_extension = extension
+        self._model.content_provider = provider
