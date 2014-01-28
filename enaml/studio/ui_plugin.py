@@ -302,8 +302,13 @@ class UIPlugin(Plugin):
                 msg = "extension '%s' created non-IconProvider type '%s'"
                 warnings.warn(msg % (extension.cls, type(provider).__name__))
                 provider = IconProvider()
+        elif extension.has_property(u'icon'):
+            uri = extension.get_property(u'icon')
+            core = self.workbench.get_plugin(u'enaml.studio.core')
+            icon = core.load_resource(u'icon', uri)
+            provider = IconProvider(icon=icon)
         else:
-            provider = IconProvider()  # XXX use a loader
+            provider = IconProvider()
 
         self._icon_extension = extension
         self._model.icon_provider = provider
