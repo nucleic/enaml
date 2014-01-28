@@ -150,6 +150,7 @@ class UIPlugin(Plugin):
             self._application = Application.instance()
             return
 
+        # TODO validate the extensions against a schema
         workbench = self.workbench
         extensions = workbench.get_extensions(APPLICATION_POINT)
         if not extensions:
@@ -183,6 +184,7 @@ class UIPlugin(Plugin):
         to create the StudioWindow instance for the ui.
 
         """
+        # TODO validate the extensions against a schema
         workbench = self.workbench
         extensions = workbench.get_extensions(WINDOW_POINT)
         if not extensions:
@@ -255,6 +257,7 @@ class UIPlugin(Plugin):
         effective provider has not changed, this method is a no-op.
 
         """
+        # TODO validate the extensions against a schema
         extensions = self.workbench.get_extensions(TITLE_POINT)
         if not extensions:
             self._title_extension = None
@@ -286,6 +289,7 @@ class UIPlugin(Plugin):
         effective provider has not changed, this method is a no-op.
 
         """
+        # TODO validate the extensions against a schema
         extensions = self.workbench.get_extensions(ICON_POINT)
         if not extensions:
             self._icon_extension = None
@@ -322,6 +326,7 @@ class UIPlugin(Plugin):
         have changed.
 
         """
+        # TODO validate the extensions against a schema
         workbench = self.workbench
         extensions = workbench.get_extensions(MENUS_POINT)
         if not extensions:
@@ -358,6 +363,7 @@ class UIPlugin(Plugin):
         effective provider has not changed, this method is a no-op.
 
         """
+        # TODO validate the extensions against a schema
         workbench = self.workbench
         extensions = workbench.get_extensions(CONTENT_POINT)
         if not extensions:
