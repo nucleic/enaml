@@ -9,5 +9,16 @@
 			"name": "Studio URI Resource Loaders",
 			"description": "The extension point for URI resource loaders."
 		}
+	],
+	"extensions": [
+		{
+			"point": "enaml.studio.core.loaders",
+			"name": "Default Studio File Loader",
+			"description": "The default file loader which handles 'raw', 'text', 'image', and 'icon' types.",
+			"class": "enaml.studio.file_loader.FileLoader",
+			"scheme": "file",
+			"types": ["raw", "text", "image", "icon"],
+			"rank": -1000
+		}
 	]
 }
