@@ -139,6 +139,7 @@ class CorePlugin(Plugin):
         specific loader is requested.
 
         """
+        # TODO validate the extensions against a schema
         extensions = self.workbench.get_extensions(LOADERS_POINT)
         if not extensions:
             del self._loaders
@@ -147,7 +148,6 @@ class CorePlugin(Plugin):
         old = self._loaders
         new = {}
 
-        # TODO validate the extensions against a schema
         extensions = rank_sort(extensions)
         for ext in extensions:
             scheme = ext.get_property(u'scheme')
