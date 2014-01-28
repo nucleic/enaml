@@ -12,10 +12,10 @@ from enaml.workbench.api import ExtensionObject
 
 
 class IconProvider(ExtensionObject):
-    """ An ExtensionObject for contributing a studio window title.
+    """ An ExtensionObject for contributing a studio window icon.
 
-    Plugins which contribute to the 'enaml.studio.ui.title' extension
-    point should subclass this to provide a window title.
+    Plugins which contribute to the 'enaml.studio.ui.icon' extension
+    point should subclass this to provide a window icon.
 
     """
     #: The icon to use as the window icon. The window icon will

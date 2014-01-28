@@ -19,5 +19,7 @@ class ContentProvider(ExtensionObject):
 
     """
     #: The Container to use as the window content. The window content
-    #: will automatically update if this value changes at runtime.
+    #: will automatically update if this value changes at runtime. The
+    #: studio takes ownership of the Container and will destroy it at
+    #: the appropriate time.
     content = Typed(Container)

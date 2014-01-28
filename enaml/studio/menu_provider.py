@@ -18,6 +18,8 @@ class MenuProvider(ExtensionObject):
     point should subclass this to provide a menu for the menu bar.
 
     """
-    #: The menu to add to the menu bar. The menu bar will automatically
-    #: update if this value changes at runtime.
+    #: The menu to add to the menu bar. The window's menu bar will
+    #: automatically update if this value changes at runtime. The
+    #: studio takes ownership of the menus and will destroy them at
+    #: the appropriate time.
     menu = Typed(Menu)
