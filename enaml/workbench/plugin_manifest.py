@@ -28,10 +28,10 @@ class PluginManifest(Atom):
     _data = Typed(dict)
 
     #: The list of extension points exposed by the plugin.
-    _extension_points = List(ExtensionPoint)
+    _extension_points = List()
 
     #: The list of extensions contributed by the plugin.
-    _extensions = List(Extension)
+    _extensions = List()
 
     def __init__(self, data):
         """ Initialize a PluginManifest.
@@ -48,11 +48,11 @@ class PluginManifest(Atom):
         self._data = root
         this_id = self.id
         for data in root.get(u'extensionPoints', ()):
-            item = ExtensionPoint(_plugin_id=this_id, _data=data)
-            self._extension_points.append(item)
+            point = ExtensionPoint(this_id, data)
+            self._extension_points.append(point)
         for data in root.get(u'extensions', ()):
-            item = Extension(_plugin_id=this_id, _data=data)
-            self._extensions.append(item)
+            ext = Extension(this_id, data)
+            self._extensions.append(ext)
 
     @property
     def id(self):

@@ -11,16 +11,29 @@ from atom.api import Atom, Typed, Unicode
 class Extension(Atom):
     """ A class which represents an extension point declaration.
 
-    An Extension and its data should be treated as read-only.
-
     """
-    #: The identifier of the plugin which declared the extension. This
-    #: is assigned by the framework when it creates the extension.
+    #: The identifier of the plugin which declared the extension.
     _plugin_id = Unicode()
 
-    #: The dict of data loaded from the json declaration. This is
-    #: assigned by the framework when it creates the extension.
+    #: The dict of data loaded from the json declaration.
     _data = Typed(dict)
+
+    def __init__(self, plugin_id, data):
+        """ Initialize an Extension.
+
+        Parameters
+        ----------
+        plugin_id : unicode
+            The identifer of the plugin to which this extension
+            belongs.
+
+        data : dict
+            The dict loaded from the JSON file which describes
+            the extension.
+
+        """
+        self._plugin_id = plugin_id
+        self._data = data
 
     @property
     def plugin_id(self):

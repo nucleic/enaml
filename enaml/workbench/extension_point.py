@@ -23,22 +23,37 @@ class ExtensionPoint(Atom):
     """ A class which represents an extension point declaration.
 
     """
-    #: An event emitted by the framework when extensions contributed to
-    #: the extension point have been added or removed.
+    #: An event emitted by the framework when extensions contributed
+    #: to the extension point have been added or removed.
     updated = Event(ExtensionPointEvent)
 
     #: The identifier of the plugin which declared the extension point.
-    #: This is assigned by the framework when it creates the point.
     _plugin_id = Unicode()
 
-    #: The dict of data loaded from the json declaration. This is
-    #: assigned by the framework when it creates the point.
+    #: The dict of data loaded from the json declaration.
     _data = Typed(dict)
 
     #: The list of extensions contributed to this extension point.
     #: This is updated by the framework as plugins are registered
     #: an maintained in sorted order according to extension rank.
     _extensions = List()
+
+    def __init__(self, plugin_id, data):
+        """ Initialize an ExtensionPoint.
+
+        Parameters
+        ----------
+        plugin_id : unicode
+            The identifer of the plugin to which this extension
+            point belongs.
+
+        data : dict
+            The dict loaded from the JSON file which describes
+            the extension point.
+
+        """
+        self._plugin_id = plugin_id
+        self._data = data
 
     @property
     def plugin_id(self):
