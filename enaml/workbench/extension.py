@@ -50,34 +50,18 @@ class Extension(Atom):
         return self._data[u'point']
 
     @property
-    def cls(self):
-        """ Get the path of the class which implements the extension.
-
-        """
-        return self._data.get(u'class', u'')
-
-    @property
-    def rank(self):
-        """ Get the numeric rank of the extension.
-
-        """
-        return self._data.get(u'rank', 0)
-
-    @property
     def id(self):
         """ Get the extension identifer.
 
         """
-        return self._data.get(u'id', u'')
+        return self._data[u'id']
 
     @property
     def qualified_id(self):
         """ Get the fully qualified extension identifer.
 
         """
-        this_id = self._data.get(u'id', u'')
-        if not this_id:
-            return u''
+        this_id = self._data[u'id']
         if u'.' in this_id:
             return this_id
         return u'%s.%s' % (self._plugin_id, this_id)
@@ -95,6 +79,20 @@ class Extension(Atom):
 
         """
         return self._data.get(u'description', u'')
+
+    @property
+    def cls(self):
+        """ Get the path of the class which implements the extension.
+
+        """
+        return self._data.get(u'class', u'')
+
+    @property
+    def rank(self):
+        """ Get the numeric rank of the extension.
+
+        """
+        return self._data.get(u'rank', 0)
 
     def has_property(self, name):
         """ Get whether the extension has a property.
