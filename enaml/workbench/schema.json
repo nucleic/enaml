@@ -66,6 +66,9 @@
 				},
 				"class": {
 					"type": "string"
+				},
+				"rank": {
+					"type": "number"
 				}
 			}
 		}

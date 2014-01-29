@@ -14,58 +14,74 @@ class Extension(Atom):
     An Extension and its data should be treated as read-only.
 
     """
-    #: The identifier of the plugin which declared the extension point.
-    plugin_id = Unicode()
+    #: The identifier of the plugin which declared the extension. This
+    #: is assigned by the framework when it creates the extension.
+    _plugin_id = Unicode()
 
-    #: The dict of data loaded from the json declaration.
-    data = Typed(dict)
+    #: The dict of data loaded from the json declaration. This is
+    #: assigned by the framework when it creates the extension.
+    _data = Typed(dict)
+
+    @property
+    def plugin_id(self):
+        """ Get the identifer of the extension's plugin.
+
+        """
+        return self._plugin_id
 
     @property
     def point(self):
         """ Get the identifier of the contribution extension point.
 
         """
-        return self.data[u'point']
+        return self._data[u'point']
 
     @property
     def cls(self):
         """ Get the path of the class which implements the extension.
 
         """
-        return self.data.get(u'class', u'')
+        return self._data.get(u'class', u'')
+
+    @property
+    def rank(self):
+        """ Get the numeric rank of the extension.
+
+        """
+        return self._data.get(u'rank', 0)
 
     @property
     def id(self):
         """ Get the extension identifer.
 
         """
-        return self.data.get(u'id', u'')
+        return self._data.get(u'id', u'')
 
     @property
     def qualified_id(self):
         """ Get the fully qualified extension identifer.
 
         """
-        this_id = self.data.get(u'id', u'')
+        this_id = self._data.get(u'id', u'')
         if not this_id:
             return u''
         if u'.' in this_id:
             return this_id
-        return u'%s.%s' % (self.plugin_id, this_id)
+        return u'%s.%s' % (self._plugin_id, this_id)
 
     @property
     def name(self):
         """ Get the human readable name of the extension.
 
         """
-        return self.data.get(u'name', u'')
+        return self._data.get(u'name', u'')
 
     @property
     def description(self):
         """ Get the human readable description of the extension.
 
         """
-        return self.data.get(u'description', u'')
+        return self._data.get(u'description', u'')
 
     def has_property(self, name):
         """ Get whether the extension has a property.
@@ -82,7 +98,7 @@ class Extension(Atom):
             otherwise.
 
         """
-        return name in self.data
+        return name in self._data
 
     def get_property(self, name, default=None):
         """ Get the named property from the extension.
@@ -102,4 +118,4 @@ class Extension(Atom):
             The value for the named property.
 
         """
-        return self.data.get(name, default)
+        return self._data.get(name, default)

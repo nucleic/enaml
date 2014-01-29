@@ -118,6 +118,10 @@ class
 	which points to a class implementing the interface required by the
 	extension point.
 
+rank
+	An optional number used to rank this extension among other extensions
+	contributed to the same extension point. The default is 0.
+
 id
 	An optional identifier for the extension. If this is provided, it must be
 	a string in one of two forms:
