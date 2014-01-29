@@ -21,74 +21,80 @@ SCHEMA_PATH = os.path.join(SCHEMA_PATH, 'schema.json')
 
 
 class PluginManifest(Atom):
-    """ A class which represents a plugin manifest.
-
-    A PluginManifest and its data should be treated as read-only.
+    """ A class which represents a JSON plugin manifest.
 
     """
-    #: The dict of data loaded from the json declaration.
-    data = Typed(dict)
+    #: The dict of data loaded from the json declaration. This is
+    #: assigned by the framework when it creates the manifest.
+    _data = Typed(dict)
 
-    #: The list of extension points exposed by the plugin.
-    extension_points = List(ExtensionPoint)
+    #: The list of extension points exposed by the plugin. This is
+    #: assigned by the framework when it creates the manifest.
+    _extension_points = List(ExtensionPoint)
 
-    #: The list of extensions contributed by the plugin.
-    extensions = List(Extension)
+    #: The list of extensions contributed by the plugin. This is
+    #: assigned by the framework when it creates the manifest.
+    _extensions = List(Extension)
+
+    def __init__(self, data):
+        """ Initialize a PluginManifest.
+
+        Parameters
+        ----------
+        data : str or unicode
+            The json manifest data. If this is a str, it must be
+            encoded in UTF-8 or plain ASCII.
+
+        """
+        root = json.loads(data)
+        validate(root, SCHEMA_PATH)
+        self._data = root
+        this_id = self.id
+        for data in root.get(u'extensionPoints', ()):
+            item = ExtensionPoint(_plugin_id=this_id, _data=data)
+            self._extension_points.append(item)
+        for data in root.get(u'extensions', ()):
+            item = Extension(_plugin_id=this_id, _data=data)
+            self._extensions.append(item)
 
     @property
     def id(self):
         """ Get the plugin identifer.
 
         """
-        return self.data[u'id']
+        return self._data[u'id']
 
     @property
     def cls(self):
         """ Get the path of the class which implements the plugin.
 
         """
-        return self.data.get(u'class', u'')
+        return self._data.get(u'class', u'')
 
     @property
     def name(self):
         """ Get the human readable name of the plugin.
 
         """
-        return self.data.get(u'name', u'')
+        return self._data.get(u'name', u'')
 
     @property
     def description(self):
         """ Get the human readable description of the plugin.
 
         """
-        return self.data.get(u'description', u'')
+        return self._data.get(u'description', u'')
 
+    @property
+    def extension_points(self):
+        """ Get the list of extensions points defined by the plugin.
 
-def create_manifest(data):
-    """ Create a plugin manifest from JSON data.
+        """
+        return self._extension_points[:]
 
-    This function should not be used directly by user code.
+    @property
+    def extensions(self):
+        """ Get the list of extensions defined by the plugin.
 
-    Parameters
-    ----------
-    data : str or unicode
-        The json manifest data. If this is a str, it must be encoded
-        in UTF-8 or plain ASCII.
-
-    Returns
-    -------
-    result : PluginManifest
-        The manifest object for the given JSON data.
-
-    """
-    root = json.loads(data)
-    validate(root, SCHEMA_PATH)
-    manifest = PluginManifest(data=root)
-    plugin_id = manifest.id
-    for pt in root.get(u'extensionPoints', ()):
-        item = ExtensionPoint(plugin_id=plugin_id, data=pt)
-        manifest.extension_points.append(item)
-    for ext in root.get(u'extensions', ()):
-        item = Extension(plugin_id=plugin_id, data=ext)
-        manifest.extensions.append(item)
-    return manifest
+        """
+        return self._extensions[:]
