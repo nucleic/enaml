@@ -87,11 +87,50 @@ def _create_plugin(manifest):
     return plugin
 
 
-def _create_extension_object(extension):
+def _load_interface(point):
+    """ Load the interface declared by an extension point.
+
+    If the extension point does not declare an interface, the base
+    ExtensionObject class will be returned.
+
+    Parameters
+    ----------
+    point : ExtensionPoint
+        The extension point of interest.
+
+    Returns
+    -------
+    result : ExtensionObject subclass
+        The interface declared by the extension point.
+
+    """
+    path = point.interface
+    if not path:
+        return ExtensionObject
+
+    try:
+        iface = _import_object(path)
+    except ImportError:
+        msg = "failed to load interface class '%s':\n%s"
+        warnings.warn(msg % (path, traceback.format_exc()))
+        return ExtensionObject
+
+    if not isinstance(iface, type) or not issubclass(iface, ExtensionObject):
+        msg = "interface class '%s' does not subclass ExtensionObject"
+        warnings.warn(msg % path)
+        return ExtensionObject
+
+    return iface
+
+
+def _create_extension_object(point, extension):
     """ Create the implementation object for a given extension.
 
     Parameters
     ----------
+    point : ExtensionPoint
+        The extension point to which the extension contributes.
+
     extension : Extension
         The extension which contains the path to the object class.
 
@@ -104,16 +143,17 @@ def _create_extension_object(extension):
     """
     path = extension.cls
     try:
-        extension_class = _import_object(path)
+        object_class = _import_object(path)
     except ImportError:
         msg = "failed to load extension class '%s':\n%s"
         warnings.warn(msg % (path, traceback.format_exc()))
         return None
 
-    obj = extension_class()
-    if not isinstance(obj, ExtensionObject):
-        msg = "extension class '%s' created non-ExtensionObject type '%s'"
-        warnings.warn(msg % (path, type(obj).__name__))
+    obj = object_class()
+    iface = _load_interface(point)
+    if not isinstance(obj, iface):
+        msg = "extension class '%s' created non-%s type '%s'"
+        warnings.warn(msg % (path, iface.__name__, type(obj).__name__))
         return None
 
     return obj
@@ -271,8 +311,13 @@ class Workbench(Atom):
     def create_extension_object(self, extension):
         """ Create the implementation object for a given extension.
 
-        This will cause the extension's plugin class to be imported
-        and activated unless the plugin is already active.
+        The relevant ExtensionObject class will be imported using the
+        'class' property of the extension, so this must exist. It will
+        then be instatiated using the default constructor and validated
+        against the interface defined by the relevant extension point.
+
+        This will cause the extension's plugin class to be imported and
+        activated unless the plugin is already active.
 
         Parameters
         ----------
@@ -286,8 +331,23 @@ class Workbench(Atom):
             not be created.
 
         """
+        ext_id = extension.qualified_id
+        if ext_id not in self._extensions:
+            msg = "Cannot create extension object. "\
+                  "Extension '%s' is not registered."
+            warnings.warn(msg % ext_id)
+            return None
+
+        point_id = extension.point
+        point = self._extension_points.get(point_id)
+        if point is None:
+            msg = "Cannot create extension object. "\
+                  "Extension point '%s' is not registered."
+            warnings.warn(msg % point_id)
+            return None
+
         self.get_plugin(extension.plugin_id)  # ensure plugin is activated
-        obj = _create_extension_object(extension)
+        obj = _create_extension_object(point, extension)
         if obj is None:
             return None
 
@@ -483,7 +543,6 @@ class Workbench(Atom):
         point = self._extension_points.get(point_id)
         if point is None:
             return
-
         extensions = set(point._extensions)
 
         removed = []
