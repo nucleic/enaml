@@ -48,6 +48,9 @@
 				},
 				"schema": {
 					"type": "string"
+				},
+				"interface": {
+					"type": "string"
 				}
 			}
 		},

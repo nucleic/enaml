@@ -106,6 +106,14 @@ schema
 	by the `Extensions`_ section below. If this is provided, it must be
 	a string.
 
+interface
+	An optional path to the class which defines the interface required for
+	an extension object. If this is provided, it will be used to validate
+	the type of object creating by an Extension 'class'. It must be a string
+	of the form "pkg.module.Class" which points to a subclass of
+	`enaml.workbench.extension_object.ExtensionObject`. If this is not
+	provided, the base `ExtensionObject` class will be used.
+
 Extensions
 ----------
 An extension is declared as an element in the 'extensions' array of the plugin
