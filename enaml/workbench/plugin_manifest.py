@@ -5,19 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import json
-import os
-
 from atom.api import Atom, List, Typed
-
-from .extension import Extension
-from .extension_point import ExtensionPoint
-from .validation import validate
-
-
-SCHEMA_PATH = os.path.abspath(__file__)
-SCHEMA_PATH = os.path.dirname(SCHEMA_PATH)
-SCHEMA_PATH = os.path.join(SCHEMA_PATH, 'schema.json')
 
 
 class PluginManifest(Atom):
@@ -33,26 +21,25 @@ class PluginManifest(Atom):
     #: The list of extensions contributed by the plugin.
     _extensions = List()
 
-    def __init__(self, data):
+    def __init__(self, data, points, extensions):
         """ Initialize a PluginManifest.
 
         Parameters
         ----------
-        data : str or unicode
-            The json manifest data. If this is a str, it must be
-            encoded in UTF-8 or plain ASCII.
+        data : dict
+            The dict loaded from the JSON file which describes
+            the plugin.
+
+        points : list
+            The list of ExtensionPoints declared for the plugin.
+
+        extensions : list
+            The list of Extensions declared for the plugin.
 
         """
-        root = json.loads(data)
-        validate(root, SCHEMA_PATH)
-        self._data = root
-        this_id = self.id
-        for data in root.get(u'extensionPoints', ()):
-            point = ExtensionPoint(this_id, data)
-            self._extension_points.append(point)
-        for data in root.get(u'extensions', ()):
-            ext = Extension(this_id, data)
-            self._extensions.append(ext)
+        self._data = data
+        self._extension_points = points
+        self._extensions = extensions
 
     @property
     def id(self):
