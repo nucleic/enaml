@@ -94,6 +94,20 @@ class ExtensionPoint(Atom):
         return self._data.get(u'description', u'')
 
     @property
+    def schema(self):
+        """ Get the uri pointing to the extension schema.
+
+        """
+        return self._data.get(u'schema', u'')
+
+    @property
+    def interface(self):
+        """ Get the path to the interface for extension objects.
+
+        """
+        return self._data.get(u'interface', u'')
+
+    @property
     def extensions(self):
         """ Get the list of extensions contributed to the point.
 
