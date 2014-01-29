@@ -5,6 +5,5 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .core_plugin import CorePlugin
 from .file_reader import FileReader
 from .uri_reader import URIReader
