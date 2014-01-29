@@ -12,11 +12,11 @@ class ExtensionPointEvent(Atom):
     """ The payload class for an ExtensionPoint updated event.
 
     """
-    #: The list of extensions added to the extension point.
-    added = List()
-
     #: The list of extensions removed from the extension point.
     removed = List()
+
+    #: The list of extensions added to the extension point.
+    added = List()
 
 
 class ExtensionPoint(Atom):
@@ -33,9 +33,9 @@ class ExtensionPoint(Atom):
     #: The dict of data loaded from the json declaration.
     _data = Typed(dict)
 
-    #: The list of extensions contributed to this extension point.
-    #: This is updated by the framework as plugins are registered
-    #: an maintained in sorted order according to extension rank.
+    #: The list of extensions contributed to this extension point. The
+    #: list is updated by the framework as needed. It is kept in sorted
+    #: order from lowest to highest extension rank.
     _extensions = List()
 
     def __init__(self, plugin_id, data):
@@ -97,7 +97,7 @@ class ExtensionPoint(Atom):
     def extensions(self):
         """ Get the list of extensions contributed to the point.
 
-        The extensions will be ordered from least to highest rank.
+        The extensions will be ordered from lowest to highest rank.
 
         """
         return self._extensions[:]
