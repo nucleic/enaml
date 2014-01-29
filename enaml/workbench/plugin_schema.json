@@ -45,12 +45,15 @@
 				},
 				"description": {
 					"type": "string"
+				},
+				"schema": {
+					"type": "string"
 				}
 			}
 		},
 		"extension": {
 			"type": "object",
-			"required": ["point"],
+			"required": ["point", "id"],
 			"properties": {
 				"point": {
 					"type": "string"

@@ -68,13 +68,13 @@ extensions
 
 Extension Points
 ----------------
-An extension point is declared as an element in the 'extension_points' array
+An extension point is declared as an element in the 'extensionPoints' array
 of the plugin manifest. It is an object which contains the properties defined
 below. Additional properties are not allowed.
 
 id
-	The globally unique identifier of the plugin. This value must be a string
-	and can be provided in one of two forms:
+	The globally unique identifier of the extension point. This value must be
+	a string and can be provided in one of two forms:
 
 	 	- A simple string with no dots. With this form, the extension point is
 		  assumed to belong to the namespace defined by the plugin id.
@@ -83,9 +83,9 @@ id
 		  assumed to be fully qualified and may belong to a namespace other
 		  than that defined by the plugin id.
 
-	In both cases, the plugin id must be unique in the namespace to which it
-	belongs. For all but the most advanced use-cases, the first form of id
-	specification is recommended.
+	In both cases, the extension point id must be unique in the namespace to
+	which it belongs. For all but the most advanced use-cases, the first form
+	of id specification is recommended.
 
 name
 	An optional human readable name for the extension point. This value is not
@@ -99,6 +99,12 @@ description
 	browser) may find it useful for presenting information to the user. If
 	this is provided, it must be a string.
 
+schema
+	An optional uri pointing to the schema to use for validating a JSON
+	extension object. Since the schema will be applied to the entire
+	Extension object, it should take into account the properties defined
+	by the `Extensions`_ section below. If this is provided, it must be
+	a string.
 
 Extensions
 ----------
@@ -111,20 +117,9 @@ point
 	The fully qualified identifier of the extension point to which the
 	extension contributes. This value must be a string.
 
-class
-	An optional path to the class which implements the extension. The
-	class will be loaded by the writer of the extension point as required.
-	If this is provided, it must be a string of the form "pkg.module.Class"
-	which points to a class implementing the interface required by the
-	extension point.
-
-rank
-	An optional number used to rank this extension among other extensions
-	contributed to the same extension point. The default is 0.
-
 id
-	An optional identifier for the extension. If this is provided, it must be
-	a string in one of two forms:
+	The globally unique identifier for the extension. This value must be a
+	string and can be provided in one of two forms:
 
 		- A simple string with no dots. With this form, the extension is
 		  assumed to belong to the namespace defined by the plugin id.
@@ -148,3 +143,14 @@ description
 	used directly by the framework, but external tools (e.g. a plugin browser)
 	may find it useful for presenting information to the user. If this is
 	provided, it must be a string.
+
+class
+	An optional path to the class which implements the extension. The
+	class will be loaded by the writer of the extension point as required.
+	If this is provided, it must be a string of the form "pkg.module.Class"
+	which points to a class implementing the interface required by the
+	extension point.
+
+rank
+	An optional number used to rank this extension among other extensions
+	contributed to the same extension point. The default is 0.
