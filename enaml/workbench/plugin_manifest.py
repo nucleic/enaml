@@ -24,16 +24,13 @@ class PluginManifest(Atom):
     """ A class which represents a JSON plugin manifest.
 
     """
-    #: The dict of data loaded from the json declaration. This is
-    #: assigned by the framework when it creates the manifest.
+    #: The dict of data loaded from the json declaration.
     _data = Typed(dict)
 
-    #: The list of extension points exposed by the plugin. This is
-    #: assigned by the framework when it creates the manifest.
+    #: The list of extension points exposed by the plugin.
     _extension_points = List(ExtensionPoint)
 
-    #: The list of extensions contributed by the plugin. This is
-    #: assigned by the framework when it creates the manifest.
+    #: The list of extensions contributed by the plugin.
     _extensions = List(Extension)
 
     def __init__(self, data):
