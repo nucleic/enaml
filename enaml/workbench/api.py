@@ -10,5 +10,4 @@ from .extension_object import ExtensionObject
 from .extension_point import ExtensionPoint
 from .plugin import Plugin
 from .plugin_manifest import PluginManifest
-from .validation import validate
 from .workbench import Workbench
