@@ -1,23 +1,24 @@
 {
 	"id": "enaml.studio.core",
 	"name": "Enaml Studio Core",
-	"description": "The core Enaml Studio plugin.",
-	"class": "enaml.studio.core_plugin.CorePlugin",
+	"description": "The Enaml studio core plugin.",
+	"class": "enaml.studio.core.core_plugin.CorePlugin",
 	"extensionPoints": [
 		{
-			"id": "loaders",
-			"name": "Studio URI Resource Loaders",
-			"description": "The extension point for URI resource loaders."
+			"id": "uriReaders",
+			"name": "URI Readers",
+			"description": "URI readers are used to load data from a uri.",
+			"interface": "enaml.studio.core.uri_reader.URIReader"
 		}
 	],
 	"extensions": [
 		{
-			"point": "enaml.studio.core.loaders",
-			"name": "Default Studio File Loader",
-			"description": "The default file loader which handles 'raw', 'text', 'image', and 'icon' types.",
-			"class": "enaml.studio.file_loader.FileLoader",
+			"id": "defaultFileReader",
+			"point": "enaml.studio.core.uriReaders",
+			"name": "Default File Reader",
+			"description": "The default uri reader for the local filesystem.",
+			"class": "enaml.studio.core.file_reader.FileReader",
 			"scheme": "file",
-			"types": ["raw", "text", "image", "icon"],
 			"rank": -1000
 		}
 	]
