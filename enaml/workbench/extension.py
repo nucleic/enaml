@@ -43,13 +43,6 @@ class Extension(Atom):
         return self._plugin_id
 
     @property
-    def point(self):
-        """ Get the identifier of the contribution extension point.
-
-        """
-        return self._data[u'point']
-
-    @property
     def id(self):
         """ Get the extension identifer.
 
@@ -65,6 +58,13 @@ class Extension(Atom):
         if u'.' in this_id:
             return this_id
         return u'%s.%s' % (self._plugin_id, this_id)
+
+    @property
+    def point(self):
+        """ Get the identifier of the contribution extension point.
+
+        """
+        return self._data[u'point']
 
     @property
     def name(self):

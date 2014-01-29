@@ -56,12 +56,12 @@
 		},
 		"extension": {
 			"type": "object",
-			"required": ["point", "id"],
+			"required": ["id", "point"],
 			"properties": {
-				"point": {
+				"id": {
 					"type": "string"
 				},
-				"id": {
+				"point": {
 					"type": "string"
 				},
 				"name": {

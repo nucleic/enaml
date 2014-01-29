@@ -121,10 +121,6 @@ manifest. It is an object which contains the properties defined below.
 Additional properties may be provided as required by an extension point or to
 provide metadata to other parts of the application.
 
-point
-	The fully qualified identifier of the extension point to which the
-	extension contributes. This value must be a string.
-
 id
 	The globally unique identifier for the extension. This value must be a
 	string and can be provided in one of two forms:
@@ -139,6 +135,10 @@ id
 	In both cases, the extension id must be unique in the namespace to which
 	it belongs. For all but the most advanced use-cases, the first form of id
 	specification is recommended.
+
+point
+	The fully qualified identifier of the extension point to which the
+	extension contributes. This value must be a string.
 
 name
 	An optional human readable name for the extension. This value is not used
