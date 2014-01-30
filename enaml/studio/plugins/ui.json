@@ -1,59 +1,68 @@
 {
 	"id": "enaml.studio.ui",
 	"name": "Enaml Studio UI",
-	"description": "The main Enaml Studio UI plugin.",
-	"class": "enaml.studio.ui_plugin.UIPlugin",
+	"description": "The Enaml Studio ui plugin.",
+	"class": "enaml.studio.ui.ui_plugin.UIPlugin",
 	"extensionPoints": [
 		{
 			"id": "application",
-			"name": "Studio UI Application Class",
-			"description": "The extension point for the studio Application class."
+			"name": "Studio Application",
+			"description": "The Enaml Application factory.",
+			"interface": "enaml.studio.ui.application_factory.ApplicationFactory"
 		},
 		{
 			"id": "window",
-			"name": "Studio UI Window Class",
-			"description": "The extension point for the StudioWindow class."
+			"name": "Studio Window",
+			"description": "The primary StudioWindow factory.",
+			"interface": "enaml.studio.ui.window_factory.WindowFactory"
 		},
 		{
 			"id": "icon",
-			"name": "Studio UI Window Icon",
-			"description": "The extension point for the studio window icon."
+			"name": "Window Icon",
+			"description": "The icon to use for the window and task bar.",
+			"interface": "enaml.studio.ui.icon_provider.IconProvider"
 		},
 		{
 			"id": "title",
-			"name": "Studio UI Window Title",
-			"description": "The extension point for the studio window title."
+			"name": "Window Title",
+			"description": "The string to use for the window title bar.",
+			"interface": "enaml.studio.ui.title_provider.TitleProvider"
 		},
 		{
 			"id": "menus",
-			"name": "Studio UI Menus",
-			"description": "The extension point for the studio menu bar menus."
+			"name": "Window Menus",
+			"description": "The menus to use in the window menu bar.",
+			"interface": "enaml.studio.ui.menu_provider.MenuProvider"
 		},
 		{
 			"id": "content",
-			"name": "Studio UI Central Content",
-			"description": "The extension point for the studio central content."
+			"name": "Window Content",
+			"description": "The primary content for the studio window.",
+			"interface": "enaml.studio.ui.content_provider.ContentProvider"
 		}
 	],
 	"extensions": [
 		{
+			"id": "defaultApplication",
 			"point": "enaml.studio.ui.application",
-			"name": "Default Studio Application Factory",
-			"description": "The extension which provides the default studio application.",
-			"class": "enaml.studio.application_factory.ApplicationFactory",
+			"name": "Default Application Factory",
+			"description": "The default application factory which creates a QtApplication.",
+			"class": "enaml.studio.ui.qt_application_factory.QtApplicationFactory",
 			"rank": -1000
 		},
 		{
+			"id": "defaultWindow",
 			"point": "enaml.studio.ui.window",
-			"name": "Default Studio Window Factory",
-			"description": "The extension which provides the default studio window.",
-			"class": "enaml.studio.window_factory.WindowFactory",
+			"name": "Default Window Factory",
+			"description": "The default window factory which creates a base StudioWindow.",
+			"class": "enaml.studio.ui.studio_window_factory.StudioWindowFactory",
 			"rank": -1000
 		},
 		{
+			"id": "defaultTitle",
 			"point": "enaml.studio.ui.title",
-			"name": "Default Studio Window Title",
-			"description": "The extension which provides the default window title.",
+			"name": "Default Window Title",
+			"description": "The default studio window title.",
 			"title": "Enaml Studio",
 			"rank": -1000
 		}

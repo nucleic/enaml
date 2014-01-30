@@ -5,22 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import warnings
+from atom.api import ForwardTyped, List, Typed
 
-from atom.api import ForwardTyped, List, Typed, atomref
-
-import enaml
 from enaml.application import Application
-from enaml.workbench.api import Plugin, Extension
+from enaml.workbench.extension import Extension
+from enaml.workbench.plugin import Plugin
 
-from .application_factory import ApplicationFactory
 from .content_provider import ContentProvider
 from .icon_provider import IconProvider
 from .menu_provider import MenuProvider
-from .refresh_listener import RefreshListener
 from .title_provider import TitleProvider
-from .utils import highest_ranked, rank_sort
-from .window_factory import WindowFactory
 from .window_model import WindowModel
 
 
@@ -41,16 +35,17 @@ def StudioWindow():
     """ A lazy importer for the enaml StudioWindow.
 
     """
+    import enaml
     with enaml.imports():
-        from enaml.studio.studio_window import StudioWindow
+        from enaml.studio.ui.studio_window import StudioWindow
     return StudioWindow
 
 
 class UIPlugin(Plugin):
     """ The main UI plugin class for the Enaml studio.
 
-    The ui plugin manages the extension points for the main window. User
-    code can contribute menus to the menu bar and central widgets.
+    The ui plugin manages the extension points for user contributions
+    to the main window.
 
     """
     def start(self):
@@ -67,7 +62,7 @@ class UIPlugin(Plugin):
         self._create_application()
         self._create_model()
         self._create_window()
-        self._install_listeners()
+        self._bind_observers()
 
     def stop(self):
         """ Stop the plugin life-cycle.
@@ -78,7 +73,7 @@ class UIPlugin(Plugin):
         It should never be called by user code.
 
         """
-        self._remove_listeners()
+        self._unbind_observers()
         self._destroy_window()
         self._release_model()
         self._release_application()
@@ -131,9 +126,6 @@ class UIPlugin(Plugin):
     #: A currently active content extension.
     _content_extension = Typed(Extension)
 
-    #: The registry listeners installed for the for plugin.
-    _registry_listeners = List()
-
     def _create_application(self):
         """ Create the Application object for the studio.
 
@@ -150,19 +142,18 @@ class UIPlugin(Plugin):
             self._application = Application.instance()
             return
 
-        # TODO validate the extensions against a schema
         workbench = self.workbench
-        extensions = workbench.get_extensions(APPLICATION_POINT)
+        point = workbench.get_extension_point(APPLICATION_POINT)
+        extensions = point.extensions
         if not extensions:
             msg = "Cannot create an Application instance. No plugin "\
                   "contributed a factory to the '%s' extension point."
             raise RuntimeError(msg % APPLICATION_POINT)
 
-        extension = highest_ranked(extensions)
+        extension = extensions[-1]
         factory = workbench.create_extension_object(extension)
-        if not isinstance(factory, ApplicationFactory):
-            msg = "extension '%s' created non-ApplicationFactory type '%s'"
-            raise TypeError(msg % (extension.cls, type(factory).__name__))
+        if factory is None:
+            raise RuntimeError('failed to load application factory')
 
         self._application = factory()
 
@@ -184,49 +175,20 @@ class UIPlugin(Plugin):
         to create the StudioWindow instance for the ui.
 
         """
-        # TODO validate the extensions against a schema
         workbench = self.workbench
-        extensions = workbench.get_extensions(WINDOW_POINT)
+        point = workbench.get_extension_point(WINDOW_POINT)
+        extensions = point.extensions
         if not extensions:
             msg = "Cannot create a StudioWindow instance. No plugin "\
                   "contributed a factory to the '%s' extension point."
             raise RuntimeError(msg % WINDOW_POINT)
 
-        extension = highest_ranked(extensions)
+        extension = extensions[-1]
         factory = workbench.create_extension_object(extension)
-        if not isinstance(factory, WindowFactory):
-            msg = "extension '%s' created non-WindowFactory type '%s'"
-            raise TypeError(msg % (extension.cls, type(factory).__name__))
+        if factory is None:
+            raise RuntimeError('failed to load window factory')
 
         self._window = factory(window_model=self._model)
-
-    def _install_listeners(self):
-        """ Install the registry event listeners for the plugin.
-
-        """
-        listeners = []
-        ref = atomref(self)
-        workbench = self.workbench
-        pairs = ((CONTENT_POINT, '_refresh_content'),
-                 (ICON_POINT, '_refresh_icon'),
-                 (MENUS_POINT, '_refresh_menus'),
-                 (TITLE_POINT, '_refresh_title'))
-
-        for point, name in pairs:
-            listener = RefreshListener(plugin_ref=ref, method_name=name)
-            workbench.add_listener(point, listener)
-            listeners.append((point, listener))
-
-        self._registry_listeners = listeners
-
-    def _remove_listeners(self):
-        """ Remove the registry event listeners installed by the plugin.
-
-        """
-        workbench = self.workbench
-        for point, listener in self._registry_listeners:
-            workbench.remove_listener(point, listener)
-        self._registry_listeners = []
 
     def _destroy_window(self):
         """ Destroy and release the underlying window object.
@@ -257,22 +219,21 @@ class UIPlugin(Plugin):
         effective provider has not changed, this method is a no-op.
 
         """
-        # TODO validate the extensions against a schema
-        extensions = self.workbench.get_extensions(TITLE_POINT)
+        workbench = self.workbench
+        point = workbench.get_extension_point(TITLE_POINT)
+        extensions = point.extensions
         if not extensions:
             self._title_extension = None
             self._model.title_provider = TitleProvider()
             return
 
-        extension = highest_ranked(extensions)
+        extension = extensions[-1]
         if extension is self._title_extension:
             return
 
         if extension.cls:
-            provider = self.workbench.create_extension_object(extension)
-            if not isinstance(provider, TitleProvider):
-                msg = "extension '%s' created non-TitleProvider type '%s'"
-                warnings.warn(msg % (extension.cls, type(provider).__name__))
+            provider = workbench.create_extension_object(extension)
+            if provider is None:
                 provider = TitleProvider()
         else:
             title = extension.get_property(u'title', u'')
@@ -289,28 +250,27 @@ class UIPlugin(Plugin):
         effective provider has not changed, this method is a no-op.
 
         """
-        # TODO validate the extensions against a schema
-        extensions = self.workbench.get_extensions(ICON_POINT)
+        workbench = self.workbench
+        point = workbench.get_extension_point(ICON_POINT)
+        extensions = point.extensions
         if not extensions:
             self._icon_extension = None
             self._model.icon_provider = IconProvider()
             return
 
-        extension = highest_ranked(extensions)
+        extension = extensions[-1]
         if extension is self._icon_extension:
             return
 
         if extension.cls:
-            provider = self.workbench.create_extension_object(extension)
-            if not isinstance(provider, IconProvider):
-                msg = "extension '%s' created non-IconProvider type '%s'"
-                warnings.warn(msg % (extension.cls, type(provider).__name__))
+            provider = workbench.create_extension_object(extension)
+            if provider is None:
                 provider = IconProvider()
-        elif extension.has_property(u'icon'):
-            uri = extension.get_property(u'icon')
-            core = self.workbench.get_plugin(u'enaml.studio.core')
-            icon = core.load_resource(u'icon', uri)
-            provider = IconProvider(icon=icon)
+        #elif extension.has_property(u'icon'):
+        #    uri = extension.get_property(u'icon')
+        #    core = self.workbench.get_plugin(u'enaml.studio.core')
+        #    icon = core.load_resource(u'icon', uri)
+        #    provider = IconProvider(icon=icon)
         else:
             provider = IconProvider()
 
@@ -326,28 +286,26 @@ class UIPlugin(Plugin):
         have changed.
 
         """
-        # TODO validate the extensions against a schema
         workbench = self.workbench
-        extensions = workbench.get_extensions(MENUS_POINT)
+        point = workbench.get_extension_point(MENUS_POINT)
+        extensions = point.extensions
         if not extensions:
             self._menu_extensions = []
             self._model.menu_providers = []
             return
 
-        extensions = rank_sort(extensions, reverse=True)
+        extensions = reversed(extensions)
         if extensions == self._menu_extensions:
             return
 
-        current = dict(zip(self._menu_extensions, self._model.menu_providers))
         new_pairs = []
+        current = dict(zip(self._menu_extensions, self._model.menu_providers))
         for extension in extensions:
             if extension in current:
                 new_pairs.append((extension, current[extension]))
                 continue
             provider = workbench.create_extension_object(extension)
-            if not isinstance(provider, MenuProvider):
-                msg = "extension '%s' created non-MenuProvider type '%s'"
-                warnings.warn(msg % (extension.cls, type(provider).__name__))
+            if provider is None:
                 provider = MenuProvider()
             new_pairs.append((extension, provider))
 
@@ -363,26 +321,84 @@ class UIPlugin(Plugin):
         effective provider has not changed, this method is a no-op.
 
         """
-        # TODO validate the extensions against a schema
         workbench = self.workbench
-        extensions = workbench.get_extensions(CONTENT_POINT)
+        point = workbench.get_extension_point(CONTENT_POINT)
+        extensions = point.extensions
         if not extensions:
             self._content_extension = None
             self._model.content_provider = ContentProvider()
             return
 
-        extension = highest_ranked(extensions)
+        extension = extensions[-1]
         if extension is self._content_extension:
             return
 
         if extension.cls:
             provider = self.workbench.create_extension_object(extension)
-            if not isinstance(provider, ContentProvider):
-                msg = "extension '%s' created non-ContentProvider type '%s'"
-                warnings.warn(msg % (extension.cls, type(provider).__name__))
+            if provider is None:
                 provider = ContentProvider()
         else:
             provider = ContentProvider()
 
         self._content_extension = extension
         self._model.content_provider = provider
+
+    def _on_icon_updated(self, change):
+        """ The observer for the icon extension point.
+
+        """
+        self._refresh_icon()
+
+    def _on_title_updated(self, change):
+        """ The observer for the title extension point.
+
+        """
+        self._refresh_title()
+
+    def _on_menus_updated(self, change):
+        """ The observer for the menus extension point.
+
+        """
+        self._refresh_menus()
+
+    def _on_content_updated(self, change):
+        """ The observer for the content extension point.
+
+        """
+        self._refresh_content()
+
+    def _bind_observers(self):
+        """ Install the registry event listeners for the plugin.
+
+        """
+        workbench = self.workbench
+
+        point = workbench.get_extension_point(ICON_POINT)
+        point.updated.bind(self._on_icon_updated)
+
+        point = workbench.get_extension_point(TITLE_POINT)
+        point.updated.bind(self._on_title_updated)
+
+        point = workbench.get_extension_point(MENUS_POINT)
+        point.updated.bind(self._on_menus_updated)
+
+        point = workbench.get_extension_point(CONTENT_POINT)
+        point.updated.bind(self._on_content_updated)
+
+    def _unbind_observers(self):
+        """ Remove the registry event listeners installed by the plugin.
+
+        """
+        workbench = self.workbench
+
+        point = workbench.get_extension_point(ICON_POINT)
+        point.updated.unbind(self._on_icon_updated)
+
+        point = workbench.get_extension_point(TITLE_POINT)
+        point.updated.unbind(self._on_title_updated)
+
+        point = workbench.get_extension_point(MENUS_POINT)
+        point.updated.unbind(self._on_menus_updated)
+
+        point = workbench.get_extension_point(CONTENT_POINT)
+        point.updated.unbind(self._on_content_updated)
