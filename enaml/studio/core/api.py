@@ -5,5 +5,5 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .file_reader import FileReader
-from .uri_reader import URIReader
+from .file_loader import FileLoader
+from .url_loader import URLLoader

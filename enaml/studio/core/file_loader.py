@@ -9,29 +9,29 @@ import os
 import traceback
 import warnings
 
-from .uri_reader import URIReader
+from .url_loader import URLLoader
 
 
-class FileLoader(URIReader):
-    """ A uri reader which loads data from the local filesystem.
+class FileLoader(URLLoader):
+    """ A url loader which loads data from the local filesystem.
 
     """
-    def __call__(self, uri):
-        """ Load the data specified by the uri.
+    def __call__(self, url):
+        """ Load the data specified by the url.
 
         Parameters
         ----------
-        uri : urlparse.ParseResult
-            The parsed uri pointing to the data which should be loaded.
+        url : urlparse.ParseResult
+            The parsed url pointing to the data which should be loaded.
             This should represent the absolute path to the local file.
 
         Returns
         -------
         result : str
-            The file data loaded from the given uri.
+            The file data loaded from the given url.
 
         """
-        path = os.path.join(uri.netloc, uri.path)
+        path = os.path.join(url.netloc, url.path)
         try:
             with open(path, 'rb') as f:
                 data = f.read()

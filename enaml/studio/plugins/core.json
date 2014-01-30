@@ -5,19 +5,19 @@
 	"class": "enaml.studio.core.core_plugin.CorePlugin",
 	"extensionPoints": [
 		{
-			"id": "uriReaders",
-			"name": "URI Readers",
-			"description": "URI readers are used to load data from a uri.",
-			"interface": "enaml.studio.core.uri_reader.URIReader"
+			"id": "loaders",
+			"name": "URL Loaders",
+			"description": "URL loaders are used to load data from a url.",
+			"interface": "enaml.studio.core.url_loader.URLLoader"
 		}
 	],
 	"extensions": [
 		{
-			"id": "defaultFileReader",
-			"point": "enaml.studio.core.uriReaders",
-			"name": "Default File Reader",
-			"description": "The default uri reader for the local filesystem.",
-			"class": "enaml.studio.core.file_reader.FileReader",
+			"id": "defaultFileLoader",
+			"point": "enaml.studio.core.loaders",
+			"name": "Default File Loader",
+			"description": "The default url loader for the local filesystem.",
+			"class": "enaml.studio.core.file_loader.FileLoader",
 			"scheme": "file",
 			"rank": -1000
 		}
