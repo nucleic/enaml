@@ -100,11 +100,8 @@ description
 	this is provided, it must be a string.
 
 schema
-	An optional uri pointing to the schema to use for validating a JSON
-	extension object. Since the schema will be applied to the entire
-	Extension object, it should take into account the properties defined
-	by the `Extensions`_ section below. If this is provided, it must be
-	a string.
+	An optional url pointing to the schema to use for validating a JSON
+	extension object. If this is provided, it must be a string.
 
 interface
 	An optional path to the class which defines the interface required for

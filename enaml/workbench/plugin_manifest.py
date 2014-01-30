@@ -5,13 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, List, Typed
+from atom.api import Atom, List, Typed, Unicode
 
 
 class PluginManifest(Atom):
     """ A class which represents a JSON plugin manifest.
 
     """
+    #: The url that was used to load this manifest.
+    _url = Unicode()
+
     #: The dict of data loaded from the json declaration.
     _data = Typed(dict)
 
@@ -21,11 +24,14 @@ class PluginManifest(Atom):
     #: The list of extensions contributed by the plugin.
     _extensions = List()
 
-    def __init__(self, data, points, extensions):
+    def __init__(self, url, data, points, extensions):
         """ Initialize a PluginManifest.
 
         Parameters
         ----------
+        url : unicode
+            The url that was used to load the manifest data.
+
         data : dict
             The dict loaded from the JSON file which describes
             the plugin.
@@ -37,9 +43,17 @@ class PluginManifest(Atom):
             The list of Extensions declared for the plugin.
 
         """
+        self._url = url
         self._data = data
         self._extension_points = points
         self._extensions = extensions
+
+    @property
+    def url(self):
+        """ Get the url used to load the manifest.
+
+        """
+        return self._url
 
     @property
     def id(self):

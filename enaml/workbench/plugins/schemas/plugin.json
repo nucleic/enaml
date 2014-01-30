@@ -1,7 +1,7 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
-	"title": "Enaml Workbench Plugin Schema",
-	"description": "The JSON schema for an Enaml workbench plugin manifest.",
+	"title": "Plugin Schema",
+	"description": "The schema for an Enaml workbench plugin.",
 	"type": "object",
 	"required": [ "id" ],
 	"additionalProperties": false,

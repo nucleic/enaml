@@ -1,0 +1,15 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "URL Loader Schema",
+	"description": "The schema for an Enaml workbench url loader.",
+	"type": "object",
+	"required": [ "class", "schemeName" ],
+	"properties": {
+		"class": {
+			"type": "string"
+		},
+		"schemeName": {
+			"type": "string"
+		}
+	}
+}
