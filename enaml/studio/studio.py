@@ -10,6 +10,11 @@ import os
 from enaml.workbench.api import Workbench
 
 
+PLUGIN_DIR = os.path.abspath(__file__)
+PLUGIN_DIR = os.path.dirname(PLUGIN_DIR)
+PLUGIN_DIR = os.path.join(PLUGIN_DIR, 'plugins')
+
+
 class Studio(Workbench):
     """ A class for creating studio-style UI applications.
 
@@ -24,7 +29,7 @@ class Studio(Workbench):
     any other desired plugins.
 
     """
-    def load_builtin_plugin(self, name):
+    def load_studio_plugin(self, name):
         """ Load one of the builtin Enaml studio plugins.
 
         This method cannot be used to load arbitrary user plugins. Use
@@ -38,9 +43,7 @@ class Studio(Workbench):
             'plugins' directory alongside this file.
 
         """
-        abspath = os.path.abspath(__file__)
-        dirname = os.path.dirname(abspath)
-        path = os.path.join(dirname, 'plugins', name + '.json')
+        path = os.path.join(PLUGIN_DIR, name + '.json')
         with open(path) as f:
             data = f.read()
         self.register(data)
@@ -53,12 +56,14 @@ class Studio(Workbench):
         will return when the application event loop exits.
 
         """
-        self.load_builtin_plugin('core')
-        self.load_builtin_plugin('ui')
+        self.load_studio_plugin('core')
+        self.load_studio_plugin('ui')
 
         ui = self.get_plugin(u'enaml.studio.ui')
         ui.show_window()
         ui.start_application()
+
+        # TODO probably want to stop all plugins on app exit
 
         self.unregister(u'enaml.studio.ui')
         self.unregister(u'enaml.studio.core')
