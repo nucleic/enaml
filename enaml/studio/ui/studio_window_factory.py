@@ -5,15 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.workbench.extension_object import ExtensionObject
+from .window_factory import WindowFactory
 
 
-class WindowFactory(ExtensionObject):
-    """ An interface for creating studio window factories.
-
-    Plugins which contribute to the 'enaml.studio.ui.window' extension
-    point should subclass this factory to create custom StudioWindow
-    objects.
+class StudioWindowFactory(WindowFactory):
+    """ A WindowFactory for creating default StudioWindow instances.
 
     """
     def __call__(self, parent=None, **kwargs):
@@ -33,4 +29,7 @@ class WindowFactory(ExtensionObject):
             The window instance to use for the studio application.
 
         """
-        raise NotImplementedError
+        import enaml
+        with enaml.imports():
+            from enaml.studio.ui.studio_window import StudioWindow
+        return StudioWindow(parent, **kwargs)

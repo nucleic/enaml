@@ -8,11 +8,11 @@
 from atom.api import Typed
 
 from enaml.widgets.container import Container
-from enaml.workbench.api import ExtensionObject
+from enaml.workbench.extension_object import ExtensionObject
 
 
 class ContentProvider(ExtensionObject):
-    """ An ExtensionObject for contributing content to the studio window.
+    """ An interface for creating window content providers.
 
     Plugins which contribute to the 'enaml.studio.ui.content' extension
     point should subclass this to provide window content.

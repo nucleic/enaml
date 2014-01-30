@@ -7,11 +7,11 @@
 #------------------------------------------------------------------------------
 from atom.api import Unicode
 
-from enaml.workbench.api import ExtensionObject
+from enaml.workbench.extension_object import ExtensionObject
 
 
 class TitleProvider(ExtensionObject):
-    """ An ExtensionObject for contributing a studio window title.
+    """ An interface for creating window title providers.
 
     Plugins which contribute to the 'enaml.studio.ui.title' extension
     point should subclass this to provide a window title.

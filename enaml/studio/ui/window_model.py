@@ -14,10 +14,10 @@ from .title_provider import TitleProvider
 
 
 class WindowModel(Atom):
-    """ A model which is used to build the studio window.
+    """ A model which is used to drive the StudioWindow instance.
 
     """
-    #: The providers which contributes the window title.
+    #: The provider which contributes the window title.
     title_provider = Typed(TitleProvider, ())
 
     #: The provider which contributes the window icon.
@@ -26,5 +26,5 @@ class WindowModel(Atom):
     #: The providers which contribute menus to the menu bar.
     menu_providers = List(MenuProvider)
 
-    #: The primary content widget for the window.
+    #: The provider which contributes the window content.
     content_provider = Typed(ContentProvider, ())

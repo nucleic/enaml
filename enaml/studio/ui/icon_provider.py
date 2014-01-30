@@ -8,16 +8,16 @@
 from atom.api import Typed
 
 from enaml.icon import Icon
-from enaml.workbench.api import ExtensionObject
+from enaml.workbench.extension_object import ExtensionObject
 
 
 class IconProvider(ExtensionObject):
-    """ An ExtensionObject for contributing a studio window icon.
+    """ An interface for creating icon providers.
 
     Plugins which contribute to the 'enaml.studio.ui.icon' extension
-    point should subclass this to provide a window icon.
+    point should subclass this to provide a studio icon.
 
     """
-    #: The icon to use as the window icon. The window icon will
+    #: The icon to use as the studio icon. The studio icon will
     #: automatically update if this value changes at runtime.
     icon = Typed(Icon)
