@@ -31,7 +31,6 @@ class CorePlugin(Plugin):
         It should never be called by user code.
 
         """
-        self._refresh_loaders()
         self._bind_observers()
 
     def stop(self):
@@ -42,7 +41,7 @@ class CorePlugin(Plugin):
 
         """
         self._unbind_observers()
-        self._clear_loaders()
+        self._loaders.clear()
 
     def load_url(self, url):
         """ Load the data from the given url.
@@ -74,7 +73,6 @@ class CorePlugin(Plugin):
         loader = self._get_loader(parsed.scheme)
         if loader is None:
             return None
-
         return loader(parsed)
 
     #--------------------------------------------------------------------------
@@ -83,14 +81,11 @@ class CorePlugin(Plugin):
     #: A mapping of url scheme to url loader instance.
     _loaders = Typed(dict, ())
 
-    #: A mapping of url scheme to ranking extension.
-    _loader_extensions = Typed(dict, ())
-
     def _get_loader(self, scheme):
         """ Get the loader object for the given scheme.
 
-        If an extension is registered for the scheme, the loader
-        will only be created once, the first time it is requested.
+        If an extension is registered for the scheme, the loader will
+        only be created once, the first time it is requested.
 
         Parameters
         ----------
@@ -107,62 +102,58 @@ class CorePlugin(Plugin):
         if scheme in self._loaders:
             return self._loaders[scheme]
 
-        if scheme not in self._loader_extensions:
-            msg = "no url loader is registered for '%s' url scheme"
+        extension = self._get_loader_extension(scheme)
+        if extension is None:
+            msg = "no url loader is registered for the '%s' url scheme"
             warnings.warn(msg % scheme)
             return None
 
-        extension = self._loader_extensions[scheme]
         loader = self.workbench.create_extension_object(extension)
         self._loaders[scheme] = loader
-
         return loader
 
-    def _refresh_loaders(self):
-        """ Refresh the url loaders for the plugin.
+    def _get_loader_extension(self, scheme):
+        """ Get the ranking loader extension for the given url scheme.
 
-        This method will classify the loader extensions according to
-        rank. Instantiating a loader instance is deferred until that
-        specific loader is requested.
+        Parameters
+        ----------
+        scheme : unicode
+            The scheme of the url of interest.
+
+        Returns
+        -------
+        result : Extension or None
+            The highest ranked loader Extension for the given scheme,
+            or None if there is no such registered Extension.
 
         """
         point = self.workbench.get_extension_point(LOADERS_POINT)
-        extensions = point.extensions
-        if not extensions:
-            self._clear_loaders()
-            return
-
-        new = {}
-        for extension in extensions:
-            scheme = extension.get_property(u'scheme')
-            new[scheme] = extension
-
-        self._loaders = {}
-        self._loader_extensions = new
-
-    def _clear_loaders(self):
-        """ Clear the underlying loaders and classified extensions.
-
-        """
-        del self._loaders
-        del self._loader_extensions
+        for extension in reversed(point.extensions):
+            if extension.get_property(u'scheme') == scheme:
+                return extension
+        return None
 
     def _bind_observers(self):
         """ Bind the observers to the plugin extension points.
 
         """
         point = self.workbench.get_extension_point(LOADERS_POINT)
-        point.updated.bind(self._on_loaders_updated)
+        point.updated.bind(self._on_loaders_point_updated)
 
     def _unbind_observers(self):
         """ Unbind the observers to the plugin extension points.
 
         """
         point = self.workbench.get_extension_point(LOADERS_POINT)
-        point.updated.unbind(self._on_loaders_updated)
+        point.updated.unbind(self._on_loaders_point_updated)
 
-    def _on_loaders_updated(self, change):
+    def _on_loaders_point_updated(self, change):
         """ An observer callback for the url loaders extension point.
 
+        This observer clears the loaders map of any stale scheme.
+
         """
-        self._refresh_loaders()
+        event = change['value']
+        for extension in event.removed + event.added:
+            scheme = extension.get_property(u'scheme')
+            self._loaders.pop(scheme, None)
