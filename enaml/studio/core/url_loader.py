@@ -9,11 +9,11 @@ from enaml.workbench.extension_object import ExtensionObject
 
 
 class URLLoader(ExtensionObject):
-    """ An ExtensionObject for creating url loaders.
+    """ An interface for creating url loaders.
 
     Plugins which contribute to the 'enaml.studio.core.loaders'
-    extension point should subclass this class to create custom
-    url loader objects.
+    extension point should subclass this class to create custom url
+    loader objects.
 
     A loader instance should be able to handle multiple load requests
     during its lifetime. That is, the core plugin will optimize loads
@@ -37,4 +37,4 @@ class URLLoader(ExtensionObject):
             specify a location which contains data in a different form.
 
         """
-        return None
+        raise NotImplementedError
