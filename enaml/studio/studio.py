@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import os
 
-from enaml.workbench.api import Workbench
+from enaml.workbench.workbench import Workbench
 
 
 PLUGIN_DIR = os.path.abspath(__file__)
