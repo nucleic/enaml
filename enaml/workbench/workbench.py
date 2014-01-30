@@ -506,7 +506,7 @@ class Workbench(Atom):
         grouped = defaultdict(list)
         for extension in extensions:
             ext_id = extension.qualified_id
-            if ext_id not in self._extension:
+            if ext_id not in self._extensions:
                 msg = "The extension '%s' is not registered."
                 warnings.warn(msg % ext_id)
                 continue
