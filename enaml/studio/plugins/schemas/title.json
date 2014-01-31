@@ -1,0 +1,11 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Title Schema",
+	"description": "The schema for the studio window title.",
+	"type": "object",
+	"properties": {
+		"title": {
+			"type": "string"
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Icon Schema",
+	"description": "The schema for the studio window icon.",
+	"type": "object",
+	"properties": {
+		"icon": {
+			"type": "string"
+		}
+	}
+}

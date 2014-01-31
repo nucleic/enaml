@@ -19,25 +19,27 @@
 		{
 			"id": "icon",
 			"name": "Window Icon",
-			"description": "The icon to use for the window and task bar.",
-			"interface": "enaml.studio.ui.icon_provider.IconProvider"
+			"description": "The primary application window icon.",
+			"interface": "enaml.studio.ui.icon_provider.IconProvider",
+			"schema": "file://schemas/icon.json"
 		},
 		{
 			"id": "title",
 			"name": "Window Title",
-			"description": "The string to use for the window title bar.",
-			"interface": "enaml.studio.ui.title_provider.TitleProvider"
+			"description": "The primary application window title.",
+			"interface": "enaml.studio.ui.title_provider.TitleProvider",
+			"schema": "file://schemas/title.json"
 		},
 		{
 			"id": "menus",
 			"name": "Window Menus",
-			"description": "The menus to use in the window menu bar.",
+			"description": "The primary application window menus.",
 			"interface": "enaml.studio.ui.menu_provider.MenuProvider"
 		},
 		{
 			"id": "content",
 			"name": "Window Content",
-			"description": "The primary content for the studio window.",
+			"description": "The primary application window content.",
 			"interface": "enaml.studio.ui.content_provider.ContentProvider"
 		}
 	],
@@ -46,16 +48,16 @@
 			"id": "defaultApplication",
 			"point": "enaml.studio.ui.application",
 			"name": "Default Application Factory",
-			"description": "The default application factory which creates a QtApplication.",
-			"class": "enaml.studio.ui.qt_application_factory.QtApplicationFactory",
+			"description": "The default studio application factory.",
+			"class": "enaml.studio.ui.application_factory.ApplicationFactory",
 			"rank": -1000
 		},
 		{
 			"id": "defaultWindow",
 			"point": "enaml.studio.ui.window",
 			"name": "Default Window Factory",
-			"description": "The default window factory which creates a base StudioWindow.",
-			"class": "enaml.studio.ui.studio_window_factory.StudioWindowFactory",
+			"description": "The default studio window factory.",
+			"class": "enaml.studio.ui.window_factory.WindowFactory",
 			"rank": -1000
 		},
 		{
@@ -63,8 +65,10 @@
 			"point": "enaml.studio.ui.title",
 			"name": "Default Window Title",
 			"description": "The default studio window title.",
-			"title": "Enaml Studio",
-			"rank": -1000
+			"rank": -1000,
+			"config": {
+				"title": "Enaml Studio"
+			}
 		}
 	]
 }
