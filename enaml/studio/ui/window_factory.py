@@ -19,6 +19,9 @@ class WindowFactory(ExtensionObject):
     def __call__(self, parent=None, **kwargs):
         """ Create the StudioWindow instance for the application.
 
+        The default implementation of this method returns a plain
+        instance of StudioWindow.
+
         Parameters
         ----------
         parent : Widget, optional
@@ -33,4 +36,7 @@ class WindowFactory(ExtensionObject):
             The window instance to use for the studio application.
 
         """
-        raise NotImplementedError
+        import enaml
+        with enaml.imports():
+            from enaml.studio.ui.studio_window import StudioWindow
+        return StudioWindow(parent, **kwargs)

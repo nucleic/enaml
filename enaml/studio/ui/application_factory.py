@@ -19,10 +19,14 @@ class ApplicationFactory(ExtensionObject):
     def __call__(self):
         """ Create the Application instance for the application.
 
+        The default implementation of this method returns an instance
+        of QtApplication.
+
         Returns
         -------
         result : Application
             The Application instance to use for the studio application.
 
         """
-        raise NotImplementedError
+        from enaml.qt.qt_application import QtApplication
+        return QtApplication()
