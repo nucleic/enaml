@@ -210,6 +210,12 @@ class Workbench(Atom):
             warnings.warn(msg % point_id)
             return None
 
+        if not extension.cls:
+            msg = "Cannot create extension object. "\
+                  "Extension '%s' does not declare a class path."
+            warnings.warn(msg % ext_id)
+            return None
+
         self.get_plugin(extension.plugin_id)  # ensure plugin is activated
         ext_obj = wbu.create_extension_object(point, extension)
         if ext_obj is None:
