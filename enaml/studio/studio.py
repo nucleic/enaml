@@ -43,27 +43,23 @@ class Studio(Workbench):
             'plugins' directory alongside this file.
 
         """
-        path = os.path.join(PLUGIN_DIR, name + '.json')
-        with open(path) as f:
-            data = f.read()
-        self.register(data)
+        url = "file://%s/%s.json" % (PLUGIN_DIR, name)
+        self.register(url)
 
     def run(self):
         """ Run the studio.
 
-        This method will load the core studio plugin and start the
+        This method will load the studio ui plugin and start the
         main application event loop. This is a blocking call which
         will return when the application event loop exits.
 
         """
-        self.load_studio_plugin('core')
         self.load_studio_plugin('ui')
 
         ui = self.get_plugin(u'enaml.studio.ui')
         ui.show_window()
         ui.start_application()
 
-        # TODO probably want to stop all plugins on app exit
+        # TODO stop all plugins on app exit?
 
         self.unregister(u'enaml.studio.ui')
-        self.unregister(u'enaml.studio.core')
