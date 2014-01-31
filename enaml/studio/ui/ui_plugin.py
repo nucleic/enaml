@@ -236,7 +236,7 @@ class UIPlugin(Plugin):
             if provider is None:
                 provider = TitleProvider()
         else:
-            title = extension.get_property(u'title', u'')
+            title = extension.config.get(u'title', u'')
             provider = TitleProvider(title=title)
 
         self._title_extension = extension
