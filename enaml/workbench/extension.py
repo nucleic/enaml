@@ -94,39 +94,9 @@ class Extension(Atom):
         """
         return self._data.get(u'rank', 0)
 
-    def has_property(self, name):
-        """ Get whether the extension has a property.
-
-        Parameters
-        ----------
-        name : unicode
-            The name of the property of interest.
-
-        Returns
-        -------
-        result : bool
-            True if the extension has the named property. False
-            otherwise.
+    @property
+    def config(self):
+        """ Get the configuration data for the extension.
 
         """
-        return name in self._data
-
-    def get_property(self, name, default=None):
-        """ Get the named property from the extension.
-
-        Parameters
-        ----------
-        name : unicode
-            The name of the property of interest.
-
-        default : object, optional
-            The value to return if the property does not exist in
-            the extension.
-
-        Returns
-        -------
-        result : object
-            The value for the named property.
-
-        """
-        return self._data.get(name, default)
+        return self._data.get(u'config', {})

@@ -153,7 +153,7 @@ class CorePlugin(Plugin):
         """
         point = self.workbench.get_extension_point(LOADERS_POINT)
         for extension in reversed(point.extensions):
-            ext_scheme = extension.get_property(u'schemeName')
+            ext_scheme = extension.config[u'scheme']
             if ext_scheme.lower() == scheme:
                 return extension
         return None
@@ -180,5 +180,5 @@ class CorePlugin(Plugin):
         """
         event = change['value']
         for extension in event.removed + event.added:
-            scheme = extension.get_property(u'schemeName')
+            scheme = extension.config[u'scheme']
             self._loaders.pop(scheme.lower(), None)

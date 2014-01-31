@@ -3,12 +3,9 @@
 	"title": "URL Loader Schema",
 	"description": "The schema for an Enaml workbench url loader.",
 	"type": "object",
-	"required": [ "class", "schemeName" ],
+	"required": [ "scheme" ],
 	"properties": {
-		"class": {
-			"type": "string"
-		},
-		"schemeName": {
+		"scheme": {
 			"type": "string"
 		}
 	}

@@ -19,8 +19,10 @@
 			"name": "Default File Loader",
 			"description": "The default url loader for the local filesystem.",
 			"class": "enaml.workbench.core.file_loader.FileLoader",
-			"schemeName": "file",
-			"rank": -1000
+			"rank": -1000,
+			"config": {
+				"scheme": "file"
+			}
 		}
 	]
 }

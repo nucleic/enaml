@@ -46,10 +46,10 @@
 				"description": {
 					"type": "string"
 				},
-				"schema": {
+				"interface": {
 					"type": "string"
 				},
-				"interface": {
+				"schema": {
 					"type": "string"
 				}
 			}
@@ -57,6 +57,7 @@
 		"extension": {
 			"type": "object",
 			"required": [ "id", "point" ],
+			"additionalProperties": false,
 			"properties": {
 				"id": {
 					"type": "string"
@@ -75,6 +76,9 @@
 				},
 				"rank": {
 					"type": "number"
+				},
+				"config": {
+					"type": "object"
 				}
 			}
 		}
