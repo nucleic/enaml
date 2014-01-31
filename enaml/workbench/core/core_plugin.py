@@ -5,12 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import json
 import os
 import traceback
 import urlparse
 import warnings
 
-from atom.api import Typed
+from atom.api import Callable, Typed
 
 from enaml.workbench.plugin import Plugin
 
@@ -84,7 +85,7 @@ class CorePlugin(Plugin):
             url = loader.absurl(url, parent)
         return loader(url)
 
-    def validate(self, item, schema, parent=u''):
+    def validate(self, item, url, parent=u''):
         """ Validate the given item against a JSON schema.
 
         Parameters
@@ -92,20 +93,38 @@ class CorePlugin(Plugin):
         item : object
             The Python object loaded from a JSON file.
 
-        schema : unicode
+        url : unicode
             A url pointing to the schema to use for validating the
             json object. A scheme handler for the url should already
             be registered before calling this method.
 
+        parent : unicode, optional
+            A parent url to use when resolving a relative url.
+
         """
         if not VALIDATE_ENABLED:
             return
+
+        key = (url, parent)
+        if key not in self._schemas:
+            schema = self._load_schema(url, parent)
+            self._schemas[key] = schema
+
+        schema = self._schemas[key]
+        if schema is not None:
+            self._get_validator()(item, schema)
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
     #: A mapping of url scheme to url loader instance.
     _loaders = Typed(dict, ())
+
+    #: A mapping of url to loaded schema object.
+    _schemas = Typed(dict, ())
+
+    #: The callable which implements schema validation.
+    _validator = Callable()
 
     def _get_loader(self, scheme):
         """ Get the loader object for the given scheme.
@@ -160,6 +179,57 @@ class CorePlugin(Plugin):
             if ext_scheme.lower() == scheme:
                 return extension
         return None
+
+    def _get_validator(self):
+        """ Get the callable for validating json schema.
+
+        Returns
+        -------
+        result : callable
+            A callable which takes the item and a schema and validates
+            that the item adheres to the schema. It returns None on
+            success and raises on failure.
+
+        """
+        validator = self._validator
+        if validator is not None:
+            return validator
+
+        try:
+            import jsonschema
+        except ImportError:
+            msg = "The 'jsonschema' package is not installed. "
+            msg += "Schema validation will be skipped."
+            warnings.warn(msg)
+            validator = lambda item, scheme: None
+        else:
+            validator = jsonschema.validate
+
+        self._validator = validator
+        return validator
+
+    def _load_schema(self, url, parent):
+        """ Load the JSON schema object from the given url.
+
+        url : unicode
+            A url pointing to the JSON schema.
+
+        parent : unicode
+            A parent url to use when resolving a relative url.
+
+        """
+        data = self.load_url(url, parent)
+        if data is None:
+            return None
+
+        try:
+            schema = json.loads(data)
+        except ValueError:
+            msg = "failed to load json schema '%s':\n%s"
+            warnings.warn(msg % (url, traceback.format_exc()))
+            schema = None
+
+        return schema
 
     def _bind_observers(self):
         """ Bind the observers to the plugin extension points.
