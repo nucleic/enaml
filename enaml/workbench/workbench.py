@@ -318,7 +318,7 @@ class Workbench(Atom):
         self._extension_points[point_id] = point
         if point_id in self._contributions:
             to_add = list(self._contributions[point_id])
-            wbu.update_extension_point(point, [], to_add)
+            wbu.update_extension_point(self, point, [], to_add)
 
         self.extension_point_added(point_id)
 
@@ -352,7 +352,7 @@ class Workbench(Atom):
         del self._extension_points[point_id]
         if point_id in self._contributions:
             to_remove = list(self._contributions.pop(point_id))
-            wbu.update_extension_point(point, to_remove, [])
+            wbu.update_extension_point(self, point, to_remove, [])
 
         self.extension_point_removed(point_id)
 
@@ -380,7 +380,7 @@ class Workbench(Atom):
             self._contributions[point_id].update(exts)
             if point_id in self._extension_points:
                 point = self._extension_points[point_id]
-                wbu.update_extension_point(point, [], exts)
+                wbu.update_extension_point(self, point, [], exts)
 
     def _remove_extensions(self, extensions):
         """ Remove extensions from a workbench.
@@ -405,4 +405,4 @@ class Workbench(Atom):
             self._contributions[point_id].difference_update(exts)
             if point_id in self._extension_points:
                 point = self._extension_points[point_id]
-                wbu.update_extension_point(point, exts, [])
+                wbu.update_extension_point(self, point, exts, [])

@@ -190,7 +190,49 @@ def create_extension_object(point, extension):
     return obj
 
 
-def update_extension_point(point, to_remove, to_add):
+def filter_extensions(workbench, point, extensions):
+    """ Filter a list of extensions for valid configs.
+
+    A warning will be emitted for extensions with invalid configs.
+
+    Parameters
+    ----------
+    workbench : Workbench
+        The workbench for which the extensions are being validated.
+
+    point : ExtensionPoint
+        The extension point to which the extensions are contributing.
+
+    extensions : list
+        The list of Extension objects with configs to validate.
+
+    Returns
+    -------
+    result : list
+        The list of valid extension objects.
+
+    """
+    schema_url = point.schema
+    if not schema_url:
+        return extensions
+
+    plugin_url = workbench.get_manifest(point.plugin_id).url
+    core = workbench.get_plugin('enaml.workbench.core')
+
+    def check_config(extension):
+        try:
+            core.validate(extension.config, schema_url, plugin_url)
+        except Exception:
+            ext_id = extension.qualified_id
+            msg = "config for extension '%s' is invalid:\n%s"
+            warnings.warn(msg % (ext_id, traceback.format_exc()))
+            return False
+        return True
+
+    return filter(check_config, extensions)
+
+
+def update_extension_point(workbench, point, to_remove, to_add):
     """ Update an extension point with delta extension objects.
 
     This will update the extension point's extensions according to
@@ -200,6 +242,11 @@ def update_extension_point(point, to_remove, to_add):
 
     Parameters
     ----------
+    workbench : Workbench
+        The workbench which is updating the extension point. This is
+        necessary to validate the newly added extensions to the
+        extension point.
+
     point : ExtensionPoint
         The extension point of interest.
 
@@ -213,17 +260,17 @@ def update_extension_point(point, to_remove, to_add):
     extensions = set(point._extensions)
 
     removed = []
-    for ext in to_remove:
-        if ext in extensions:
-            extensions.remove(ext)
-            removed.append(ext)
+    if to_remove:
+        to_remove = [ext for ext in to_remove if ext in extensions]
+        extensions.difference_update(to_remove)
+        removed.extend(to_remove)
 
     added = []
-    for ext in to_add:
-        if ext not in extensions:
-            # TODO validate the against the extension point schema
-            extensions.add(ext)
-            added.append(ext)
+    if to_add:
+        to_add = [ext for ext in to_add if ext not in extensions]
+        filtered = filter_extensions(workbench, point, to_add)
+        extensions.update(filtered)
+        added.extend(filtered)
 
     if removed or added:
         key = lambda ext: ext.rank
