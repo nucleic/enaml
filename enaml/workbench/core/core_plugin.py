@@ -46,7 +46,7 @@ class CorePlugin(Plugin):
         self._unbind_observers()
         self._loaders.clear()
 
-    def load_url(self, url, root=u''):
+    def load_url(self, url, parent=u''):
         """ Load the data from the given url.
 
         Parameters
@@ -54,8 +54,8 @@ class CorePlugin(Plugin):
         url : unicode
             The url which points to the data which should be loaded.
 
-        root : unicode, optional
-            The root path to use when resolving relative urls.
+        parent : unicode, optional
+            A parent url to use when resolving a relative url.
 
         Returns
         -------
@@ -79,9 +79,12 @@ class CorePlugin(Plugin):
         loader = self._get_loader(parsed.scheme)
         if loader is None:
             return None
-        return loader(parsed, root)
 
-    def validate(self, item, schema):
+        if not loader.isabs(url):
+            url = loader.absurl(url, parent)
+        return loader(url)
+
+    def validate(self, item, schema, parent=u''):
         """ Validate the given item against a JSON schema.
 
         Parameters

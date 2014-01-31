@@ -21,16 +21,49 @@ class URLLoader(ExtensionObject):
     reusing it for future requests.
 
     """
-    def __call__(self, url, root):
+    def isabs(self, url):
+        """ Get whether the given url represents an absolute path.
+
+        Parameters
+        ----------
+        url : unicode
+            A url with a scheme which matches the loader.
+
+        Returns
+        -------
+        result : bool
+            True if the url is an absolute path, False otherwise.
+
+        """
+        raise NotImplementedError
+
+    def absurl(self, url, parent=u''):
+        """ Get the absolute path of a relative url.
+
+        Parameters
+        ----------
+        url : unicode
+            A url for which 'isabs' returned False.
+
+        parent : unicode, optional
+            The parent url of the relative url.
+
+        Returns
+        -------
+        result : unicode
+            The absolute url for the given relative url.
+
+        """
+        raise NotImplementedError
+
+    def __call__(self, url):
         """ Load the data specified by the url.
 
         Parameters
         ----------
-        url : urlparse.ParseResult
-            The parsed url pointing to the data which should be loaded.
-
-        root : unicode
-            The root path to use when resolving a relative url.
+        url : unicode
+            The url pointing to the data which should be loaded. The
+            url is guaranteed to be absolute.
 
         Returns
         -------
