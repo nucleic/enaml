@@ -8,6 +8,8 @@
 from atom.api import ForwardTyped, List, Typed
 
 from enaml.application import Application
+from enaml.icon import Icon, IconImage
+from enaml.image import Image
 from enaml.workbench.extension import Extension
 from enaml.workbench.plugin import Plugin
 
@@ -39,6 +41,38 @@ def StudioWindow():
     with enaml.imports():
         from enaml.studio.ui.studio_window import StudioWindow
     return StudioWindow
+
+
+def load_icon(workbench, extension):
+    """ Load an icon from an extension object.
+
+    Parameters
+    ----------
+    workbench : Workbench
+        The workbench for which the icon is being loaded.
+
+    extension : Extension
+        The extension which declares the icon in its config.
+
+    Returns
+    -------
+    result : Icon or None
+        The loaded Icon, or None if it could not be loaded.
+
+    """
+    url = extension.config.get(u'icon')
+    if not url:
+        return None
+
+    manifest = workbench.get_manifest(extension.plugin_id)
+    core = workbench.get_plugin(u'enaml.workbench.core')
+    data = core.load_url(url, manifest.url)
+    if data is None:
+        return None
+
+    image = Image(data=data)
+    icon_image = IconImage(image=image)
+    return Icon(images=[icon_image])
 
 
 class UIPlugin(Plugin):
@@ -150,8 +184,7 @@ class UIPlugin(Plugin):
                   "contributed a factory to the '%s' extension point."
             raise RuntimeError(msg % APPLICATION_POINT)
 
-        extension = extensions[-1]
-        factory = workbench.create_extension_object(extension)
+        factory = workbench.create_extension_object(extensions[-1])
         if factory is None:
             raise RuntimeError('failed to load application factory')
 
@@ -183,8 +216,7 @@ class UIPlugin(Plugin):
                   "contributed a factory to the '%s' extension point."
             raise RuntimeError(msg % WINDOW_POINT)
 
-        extension = extensions[-1]
-        factory = workbench.create_extension_object(extension)
+        factory = workbench.create_extension_object(extensions[-1])
         if factory is None:
             raise RuntimeError('failed to load window factory')
 
@@ -266,13 +298,9 @@ class UIPlugin(Plugin):
             provider = workbench.create_extension_object(extension)
             if provider is None:
                 provider = IconProvider()
-        #elif extension.has_property(u'icon'):
-        #    uri = extension.get_property(u'icon')
-        #    core = self.workbench.get_plugin(u'enaml.studio.core')
-        #    icon = core.load_resource(u'icon', uri)
-        #    provider = IconProvider(icon=icon)
         else:
-            provider = IconProvider()
+            icon = load_icon(workbench, extension)
+            provider = IconProvider(icon=icon)
 
         self._icon_extension = extension
         self._model.icon_provider = provider
@@ -293,6 +321,8 @@ class UIPlugin(Plugin):
             self._menu_extensions = []
             self._model.menu_providers = []
             return
+
+        # TODO more flexible menu ordering
 
         extensions = reversed(extensions)
         if extensions == self._menu_extensions:
