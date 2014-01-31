@@ -1,0 +1,24 @@
+{
+	"id": "enaml.studio.workspace",
+	"name": "Enaml Studio Workspace",
+	"description": "The Enaml Studio workspace plugin.",
+	"class": "enaml.studio.workspace.workspace_plugin.WorkspacePlugin",
+	"extensionPoints": [
+		{
+			"id": "configurations",
+			"name": "Configurations",
+			"description": "The developer provided workspace configurations.",
+			"interface": "enaml.studio.workspace.configuration.Configuration",
+			"schema": "file://schemas/configuration.json"
+		}
+	],
+	"extensions": [
+		{
+			"id": "content",
+			"point": "enaml.studio.ui.content",
+			"name": "Workspace Window Content",
+			"description": "The dock area content for the studio window.",
+			"class": "enaml.studio.workspace.workspace_content.WorkspaceContent"
+		}
+	]
+}
