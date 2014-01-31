@@ -5,51 +5,29 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" A collection of workbench utility classes and functions.
+""" A module of utility functions for the Workbench.
 
-This module should not be used directly by user code. It exists solely
-to keep the primary Workbench namespace clean and easy to understand
-for the developer.
+This module exists solely to make the workbench module cleaner and easier
+to understand for the developer. This module should never be consumed by
+user code and is subject to change without notice. We mean it!
 
 """
-from collections import defaultdict
+import json
 import os
 import traceback
 import warnings
 
-from atom.api import Atom, Typed
-
 from .extension import Extension
 from .extension_object import ExtensionObject
-from .extension_point import ExtensionPoint
+from .extension_point import ExtensionPoint, ExtensionPointEvent
 from .plugin import Plugin
 from .plugin_manifest import PluginManifest
 
 
 SCHEMA_URL = os.path.abspath(__file__)
 SCHEMA_URL = os.path.dirname(SCHEMA_URL)
-SCHEMA_URL = os.path.join(SCHEMA_URL, 'plugins', 'schemas', 'plugin.json')
+SCHEMA_URL = os.path.join(SCHEMA_URL, 'plugins', 'schemas', 'manifest.json')
 SCHEMA_URL = 'file://%s' % SCHEMA_URL.replace('\\', '/')
-
-
-class WorkbenchContext(Atom):
-    """ A class which stores the workbench state.
-
-    """
-    #: A mapping of plugin id to PluginManifest.
-    manifests = Typed(dict, ())
-
-    #: A mapping of plugin id to Plugin instance.
-    plugins = Typed(dict, ())
-
-    #: A mapping of extension point id to ExtensionPoint.
-    extension_points = Typed(dict, ())
-
-    #: A mapping of extension id to Extension.
-    extensions = Typed(dict, ())
-
-    #: A mapping of extension point id to set of Extensions.
-    contributions = Typed(defaultdict, (set,))
 
 
 def import_object(path):
@@ -212,170 +190,83 @@ def create_extension_object(point, extension):
     return obj
 
 
-def add_extension_points(ctxt, extension_points):
-    """ Add extension points to the workbench context.
-
-    Parameters
-    ----------
-    ctxt : WorkbenchContext
-        The context to which to add the extension points.
-
-    extension_points : list
-        The list of ExtensionPoints to add to the context.
-
-    Returns
-    -------
-    result : list
-        The list of ExtensionPoints which were successfully added.
-
-    """
-    added = []
-    for point in extension_points:
-        if add_extension_point(ctxt, point):
-            added.append(point)
-    return added
-
-
-def add_extension_point(ctxt, point):
-    """ Add an extension point to the workbench.
-
-    Parameters
-    ----------
-    ctxt : WorkbenchContext
-        The context to which to add the extension point.
-
-    point : ExtensionPoint
-        The ExtensionPoint to add to the context.
-
-    Returns
-    -------
-    result : bool
-        True if the point was added successfully, False otherwise.
-
-    """
-    point_id = point.qualified_id
-    if point_id in ctxt.extension_points:
-        msg = "The extension point '%s' is already registered. "
-        msg += "The duplicate extension point will be ignored."
-        warnings.warn(msg % point_id)
-        return False
-
-    ctxt.extension_points[point_id] = point
-    if point_id in ctxt.contributions:
-        to_add = list(ctxt.contributions[point_id])
-        #update_extension_point(point, [], to_add)
-
-    return True
-
-
-def remove_extension_points(ctxt, extension_points):
-    """ Remove extension points from the workbench context.
-
-    Parameters
-    ----------
-    ctxt : WorkbenchContext
-        The context which holds the extension points.
-
-    extension_points : list
-        The list of ExtensionPoints to remove from the context.
-
-    Returns
-    -------
-    result : list
-        The list of ExtensionPoints which were successfully removed.
-
-    """
-    removed = []
-    for point in extension_points:
-        if remove_extension_point(ctxt, point):
-            removed.append(point)
-    return removed
-
-
-def remove_extension_point(ctxt, point):
-    """ Remove an extension point from the workbench.
-
-    Parameters
-    ----------
-    ctxt : WorkbenchContext
-        The context which holds the extension point.
-
-    point : ExtensionPoint
-        The ExtensionPoint to remove from the context.
-
-    Returns
-    -------
-    result : bool
-        True if the point was removed successfully, False otherwise.
-
-    """
-    point_id = point.qualified_id
-    if point_id not in ctxt.extension_points:
-        msg = "The extension point '%s' is not registered."
-        warnings.warn(msg % point_id)
-        return False
-
-    del ctxt.extension_points[point_id]
-    if point_id in ctxt.contributions:
-        to_remove = list(ctxt.contributions.pop(point_id))
-        #update_extension_point(point_id, to_remove, [])
-
-    return True
-
-
-def add_extensions(ctxt, extensions):
-    """ Add extensions to a workbench context.
-
-    Parameters
-    ----------
-    ctxt : WorkbenchContext
-        The context to which to add the extensions.
-
-    extensions : list
-        The list of Extensions to add to the workbench.
-
-    """
-    grouped = defaultdict(list)
-    for extension in extensions:
-        ext_id = extension.qualified_id
-        if ext_id in ctxt.extensions:
-            msg = "The extension '%s' is already registered. "
-            msg += "The duplicate extension will be ignored."
-            warnings.warn(msg % ext_id)
-            continue
-        ctxt.extensions[ext_id] = extension
-        grouped[extension.point].append(extension)
-
-    for point_id, exts in grouped.iteritems():
-        ctxt.contributions[point_id].update(exts)
-        #self._update_extension_point(point_id, [], exts)
-
-
-def remove_extensions(ctxt, extensions):
-    """ Remove extensions from a workbench context.
-
-    Parameters
-    ----------
-    ctxt : WorkbenchContext
-        The context to which to add the extensions.
-
-    extensions : list
-        The list of Extensions to remove from the context.
-
-    """
-    grouped = defaultdict(list)
-    for extension in extensions:
-        ext_id = extension.qualified_id
-        if ext_id not in ctxt.extensions:
-            msg = "The extension '%s' is not registered."
-            warnings.warn(msg % ext_id)
-            continue
-        del ctxt.extensions[ext_id]
-        grouped[extension.point].append(extension)
-
-    for point_id, exts in grouped.iteritems():
-        ctxt.contributions[point_id].difference_update(exts)
-        #self._update_extension_point(point_id, exts, [])
-
 def update_extension_point(point, to_remove, to_add):
-    pass
+    """ Update an extension point with delta extension objects.
+
+    This will update the extension point's extensions according to
+    the deltas and emit an update event on the point. Newly added
+    extensions will be validated against the extension point schema
+    if one is available.
+
+    Parameters
+    ----------
+    point : ExtensionPoint
+        The extension point of interest.
+
+    to_remove : list
+        The list of Extension objects to remove from the point.
+
+    to_add : list
+        The list of Extension objects to add to the point.
+
+    """
+    extensions = set(point._extensions)
+
+    removed = []
+    for ext in to_remove:
+        if ext in extensions:
+            extensions.remove(ext)
+            removed.append(ext)
+
+    added = []
+    for ext in to_add:
+        if ext not in extensions:
+            # TODO validate the against the extension point schema
+            extensions.add(ext)
+            added.append(ext)
+
+    if removed or added:
+        key = lambda ext: ext.rank
+        point._extensions = sorted(extensions, key=key)
+        event = ExtensionPointEvent(removed=removed, added=added)
+        point.updated(event)
+
+
+def load_core_manifest():
+    """ Load the manifest for the core plugin.
+
+    The extension points declared by the manifest will be automatically
+    populated with any relevant extensions declared by the core plugin
+    itself. No extension point events will be emitted.
+
+    Returns
+    -------
+    result : PluginManifest
+        The manifest for the core plugin.
+
+    """
+    path = os.path.abspath(__file__)
+    path = os.path.dirname(path)
+    path = os.path.join(path, 'plugins', 'core.json')
+    url = 'file://%s' % (path.replace('\\', '/'))
+
+    with open(path, 'rb') as f:
+        data = f.read()
+    item = json.loads(data)
+    manifest = create_manifest(url, item)
+
+    points = {}
+    for point in manifest.extension_points:
+        point_id = point.qualified_id
+        points[point_id] = (point, [])
+
+    for extension in manifest.extensions:
+        point_id = extension.point
+        if point_id in points:
+            points[point_id][1].append(extension)
+
+    key = lambda ext: ext.rank
+    for point, exts in points.itervalues():
+        point._extensions = sorted(exts, key=key)
+
+    return manifest

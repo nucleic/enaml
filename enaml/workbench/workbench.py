@@ -5,12 +5,16 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from collections import defaultdict
 import json
 import warnings
 
 from atom.api import Atom, Event, Typed
 
 from . import wbu
+
+
+CORE_PLUGIN = u'enaml.workbench.core'
 
 
 class Workbench(Atom):
@@ -39,9 +43,6 @@ class Workbench(Atom):
     #: extension point.
     extension_point_removed = Event(unicode)
 
-    #: The private workbench context.
-    _context = Typed(wbu.WorkbenchContext, ())
-
     def __init__(self, **kwargs):
         """ Initialize a Workbench.
 
@@ -49,7 +50,7 @@ class Workbench(Atom):
 
         """
         super(Workbench, self).__init__(**kwargs)
-        #self._impl.load_core_plugin()
+        self._init_core_plugin()
 
     def register(self, url):
         """ Register a plugin with the workbench.
@@ -59,10 +60,9 @@ class Workbench(Atom):
         url : unicode
             A url containing the absolute path to the JSON plugin data.
             The url scheme must be supported by a registered plugin.
-            The 'file' scheme is supported by default.
 
         """
-        core = self.get_plugin('enaml.workbench.core')
+        core = self.get_plugin(CORE_PLUGIN)
         data = core.load_url(url)
         if data is None:
             raise RuntimeError('failed to load plugin JSON data')
@@ -70,22 +70,17 @@ class Workbench(Atom):
         item = json.loads(data)
         core.validate(item, wbu.SCHEMA_URL)
 
-        ctxt = self._context
         plugin_id = item[u'id']
-        if plugin_id in ctxt.manifests:
+        if plugin_id in self._manifests:
             msg = "The plugin '%s' is already registered. "
             msg += "The duplicate plugin will be ignored."
             warnings.warn(msg % plugin_id)
             return
 
         manifest = wbu.create_manifest(url, item)
-        ctxt.manifests[plugin_id] = manifest
-
-        added = wbu.add_extension_points(manifest.extension_points)
-            self.extension_point_added(point)
-
-        self._add_extension_points(manifest.extension_points)
+        self._manifests[plugin_id] = manifest
         self._add_extensions(manifest.extensions)
+        self._add_extension_points(manifest.extension_points)
 
         self.plugin_added(plugin_id)
 
@@ -101,22 +96,21 @@ class Workbench(Atom):
             The identifier of the plugin of interest.
 
         """
-        ctxt = self._context
-        manifest = ctxt.manifests.get(plugin_id)
+        manifest = self._manifests.get(plugin_id)
         if manifest is None:
             msg = "plugin '%s' is not registered"
             warnings.warn(msg % plugin_id)
             return
 
-        plugin = ctxt.plugins.pop(plugin_id, None)
+        plugin = self._plugins.pop(plugin_id, None)
         if plugin is not None:
             plugin.stop()
             plugin.workbench = None
             plugin.manifest = None
 
-        removed = self._remove_extensions(manifest.extensions)
+        self._remove_extensions(manifest.extensions)
         self._remove_extension_points(manifest.extension_points)
-        del ctxt.manifests[plugin_id]
+        del self._manifests[plugin_id]
 
         self.plugin_removed(plugin_id)
 
@@ -135,7 +129,7 @@ class Workbench(Atom):
             does not exist.
 
         """
-        return self._context.manifests.get(plugin_id)
+        return self._manifests.get(plugin_id)
 
     def get_plugin(self, plugin_id, force_create=True):
         """ Get the plugin object for a given plugin id.
@@ -156,11 +150,10 @@ class Workbench(Atom):
             could not be created.
 
         """
-        ctxt = self._context
-        if plugin_id in ctxt.plugins:
-            return ctxt.plugins[plugin_id]
+        if plugin_id in self._plugins:
+            return self._plugins[plugin_id]
 
-        manifest = ctxt.manifests.get(plugin_id)
+        manifest = self._manifests.get(plugin_id)
         if manifest is None:
             msg = "plugin '%s' is not registered"
             warnings.warn(msg % plugin_id)
@@ -170,7 +163,7 @@ class Workbench(Atom):
             return None
 
         plugin = wbu.create_plugin(manifest)
-        ctxt.plugins[plugin_id] = plugin
+        self._plugins[plugin_id] = plugin
         if plugin is None:
             return None
 
@@ -202,16 +195,15 @@ class Workbench(Atom):
             not be created.
 
         """
-        ctxt = self._context
         ext_id = extension.qualified_id
-        if ext_id not in ctxt.extensions:
+        if ext_id not in self._extensions:
             msg = "Cannot create extension object. "\
                   "Extension '%s' is not registered."
             warnings.warn(msg % ext_id)
             return None
 
         point_id = extension.point
-        point = ctxt.extension_points.get(point_id)
+        point = self._extension_points.get(point_id)
         if point is None:
             msg = "Cannot create extension object. "\
                   "Extension point '%s' is not registered."
@@ -219,14 +211,14 @@ class Workbench(Atom):
             return None
 
         self.get_plugin(extension.plugin_id)  # ensure plugin is activated
-        obj = wbu.create_extension_object(point, extension)
-        if obj is None:
+        ext_obj = wbu.create_extension_object(point, extension)
+        if ext_obj is None:
             return None
 
-        obj.workbench = self
-        obj.extension = extension
-        obj.initialize()
-        return obj
+        ext_obj.workbench = self
+        ext_obj.extension = extension
+        ext_obj.initialize()
+        return ext_obj
 
     def get_extension_point(self, extension_point_id):
         """ Get the extension point associated with an id.
@@ -242,7 +234,7 @@ class Workbench(Atom):
             The desired ExtensionPoint or None if it does not exist.
 
         """
-        return self._context.extension_points.get(extension_point_id)
+        return self._extension_points.get(extension_point_id)
 
     def get_extension_points(self):
         """ Get all of the extension points in the workbench.
@@ -253,89 +245,158 @@ class Workbench(Atom):
             A list of all of the extension points in the workbench.
 
         """
-        return self._context.extension_points.values()
+        return self._extension_points.values()
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    #: A mapping of plugin id to PluginManifest.
+    _manifests = Typed(dict, ())
 
-    # def _load_core_plugin(self):
-    #     """ Bootstrap the plugin manifest for the core plugin.
+    #: A mapping of plugin id to Plugin instance.
+    _plugins = Typed(dict, ())
 
-    #     This bypasses the traditional registration, since that requires
-    #     the core plugin to exist. The Core plugin must be assumed to be
-    #     correct, since it is the plugin responsible for JSON validation.
+    #: A mapping of extension point id to ExtensionPoint.
+    _extension_points = Typed(dict, ())
 
-    #     """
-    #     path = os.path.abspath(__file__)
-    #     path = os.path.dirnam(path)
-    #     path = os.path.join(path, 'plugins', 'core.json')
-    #     url = 'file://%s' % (path.replace('\\', '/'))
+    #: A mapping of extension id to Extension.
+    _extensions = Typed(dict, ())
 
-    #     with open(path, 'rb') as f:
-    #         data = f.read()
-    #     item = json.loads(data)
+    #: A mapping of extension point id to set of Extensions.
+    _contributions = Typed(defaultdict, (set,))
 
-    #     manifest = wbimpl.create_manifest(url, item)
-    #     self._manifests[manifest.id] = manifest
+    def _init_core_plugin(self):
+        """ Initialize and register the core plugin manifest.
 
-    #     for point in manifest.extension_points:
-    #         point_id = point.qualified_id
-    #         self._extension_points[point_id] = point
+        This bypasses the traditional registration, since that requires
+        the core plugin to exist. The Core plugin must be assumed to be
+        correct, since that plugin is responsible for JSON validation.
 
-    #     for extension in manifest.extensions:
-    #         self._extensions[extension.qualified_id] = extension
-    #         self._contributions[extension.point].add(extension)
+        """
+        manifest = wbu.load_core_manifest()
+        self._manifests[manifest.id] = manifest
+        for point in manifest.extension_points:
+            self._extension_points[point.qualified_id] = point
+        for extension in manifest.extensions:
+            self._extensions[extension.qualified_id] = extension
+            self._contributions[extension.point].add(extension)
 
-    #     key = lambda ext: ext.rank
-    #     for point_id, extensions in self._contributions.iteritems():
-    #         point = self._extension_points.get(point_id)
-    #         if point is None:
-    #             point._extensions = sorted(extensions, key=key)
+    def _add_extension_points(self, extension_points):
+        """ Add extension points to the workbench.
 
-    # def _update_extension_point(self, point_id, to_remove, to_add):
-    #     """ Update an extension point will delta extension objects.
+        Parameters
+        ----------
+        extension_points : list
+            The list of ExtensionPoints to add to the workbench.
 
-    #     This will update the extension point's extensions according to
-    #     the deltas and emit an update event on the point. Newly added
-    #     extensions will be validated against the extension point schema
-    #     if one is available.
+        """
+        for point in extension_points:
+            self._add_extension_point(point)
 
-    #     If the given extension point has not yet been added to the
-    #     workbench, this method is a no-op.
+    def _add_extension_point(self, point):
+        """ Add an extension point to the workbench.
 
-    #     Parameters
-    #     ----------
-    #     point_id : unicode
-    #         The qualified id of the extension point of interest.
+        Parameters
+        ----------
+        point : ExtensionPoint
+            The ExtensionPoint to add to the workbench.
 
-    #     to_remove : list
-    #         The list of Extension objects to remove from the point.
+        """
+        point_id = point.qualified_id
+        if point_id in self._extension_points:
+            msg = "The extension point '%s' is already registered. "
+            msg += "The duplicate extension point will be ignored."
+            warnings.warn(msg % point_id)
+            return
 
-    #     to_add : list
-    #         The list of Extension objects to add to the point.
+        self._extension_points[point_id] = point
+        if point_id in self._contributions:
+            to_add = list(self._contributions[point_id])
+            wbu.update_extension_point(point, [], to_add)
 
-    #     """
-    #     point = self._extension_points.get(point_id)
-    #     if point is None:
-    #         return
-    #     extensions = set(point._extensions)
+        self.extension_point_added(point_id)
 
-    #     removed = []
-    #     for ext in to_remove:
-    #         if ext in extensions:
-    #             extensions.remove(ext)
-    #             removed.append(ext)
+    def _remove_extension_points(self, extension_points):
+        """ Remove extension points from the workbench.
 
-    #     added = []
-    #     for ext in to_add:
-    #         if ext not in extensions:
-    #             # TODO validate the against the extension point schema
-    #             extensions.add(ext)
-    #             added.append(ext)
+        Parameters
+        ----------
+        extension_points : list
+            The list of ExtensionPoints to remove from the workbench.
 
-    #     if removed or added:
-    #         key = lambda ext: ext.rank
-    #         point._extensions = sorted(extensions, key=key)
-    #         event = ExtensionPointEvent(removed=removed, added=added)
-    #         point.updated(event)
+        """
+        for point in extension_points:
+            self._remove_extension_point(point)
+
+    def _remove_extension_point(self, point):
+        """ Remove an extension point from the workbench.
+
+        Parameters
+        ----------
+        point : ExtensionPoint
+            The ExtensionPoint to remove from the workbench.
+
+        """
+        point_id = point.qualified_id
+        if point_id not in self._extension_points:
+            msg = "The extension point '%s' is not registered."
+            warnings.warn(msg % point_id)
+            return
+
+        del self._extension_points[point_id]
+        if point_id in self._contributions:
+            to_remove = list(self._contributions.pop(point_id))
+            wbu.update_extension_point(point, to_remove, [])
+
+        self.extension_point_removed(point_id)
+
+    def _add_extensions(self, extensions):
+        """ Add extensions to the workbench.
+
+        Parameters
+        ----------
+        extensions : list
+            The list of Extensions to add to the workbench.
+
+        """
+        grouped = defaultdict(list)
+        for extension in extensions:
+            ext_id = extension.qualified_id
+            if ext_id in self._extensions:
+                msg = "The extension '%s' is already registered. "
+                msg += "The duplicate extension will be ignored."
+                warnings.warn(msg % ext_id)
+                continue
+            self._extensions[ext_id] = extension
+            grouped[extension.point].append(extension)
+
+        for point_id, exts in grouped.iteritems():
+            self._contributions[point_id].update(exts)
+            if point_id in self._extension_points:
+                point = self._extension_points[point_id]
+                wbu.update_extension_point(point, [], exts)
+
+    def _remove_extensions(self, extensions):
+        """ Remove extensions from a workbench.
+
+        Parameters
+        ----------
+        extensions : list
+            The list of Extensions to remove from the workbench.
+
+        """
+        grouped = defaultdict(list)
+        for extension in extensions:
+            ext_id = extension.qualified_id
+            if ext_id not in self._extensions:
+                msg = "The extension '%s' is not registered."
+                warnings.warn(msg % ext_id)
+                continue
+            del self._extensions[ext_id]
+            grouped[extension.point].append(extension)
+
+        for point_id, exts in grouped.iteritems():
+            self._contributions[point_id].difference_update(exts)
+            if point_id in self._extension_points:
+                point = self._extension_points[point_id]
+                wbu.update_extension_point(point, exts, [])
