@@ -61,7 +61,7 @@ class FileLoader(URLLoader):
         path = file_rgx.sub(u'', parent)
         dirname = os.path.dirname(path)
         path = file_rgx.sub(u'', url)
-        path = os.path.join(dirname, url)
+        path = os.path.join(dirname, path)
         path = os.path.abspath(path)
         return u'file://'+ path.replace(u'\\', u'/')
 
