@@ -13,6 +13,7 @@ from enaml.workbench.workbench import Workbench
 PLUGIN_DIR = os.path.abspath(__file__)
 PLUGIN_DIR = os.path.dirname(PLUGIN_DIR)
 PLUGIN_DIR = os.path.join(PLUGIN_DIR, 'plugins')
+PLUGIN_DIR = PLUGIN_DIR.replace('\\', '/')
 
 
 class Studio(Workbench):
