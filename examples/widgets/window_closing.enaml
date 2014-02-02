@@ -1,0 +1,29 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" Controlling the closing of a window
+
+This example shows how to customize the closing of a window.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window
+from enaml.stdlib.message_box import question
+
+def ask_for_validation(window):
+    res = question(window, 
+                   'Confirm window closing',
+                   'Do tou really want to close the window ?')
+                   
+    if res and res.accept:
+        return True
+    else:
+        return False
+
+enamldef Main(Window):
+    title = 'Hello World!'
+    validate_close = ask_for_validation
