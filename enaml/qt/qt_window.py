@@ -13,7 +13,7 @@ from enaml.layout.geometry import Pos, Rect, Size
 from enaml.widgets.window import ProxyWindow
 
 from .QtCore import Qt, QPoint, QRect, QSize, Signal
-from .QtGui import QApplication, QIcon
+from .QtGui import QApplication, QIcon, QCloseEvent
 
 from .q_resource_helpers import get_cached_qicon
 from .q_window_base import QWindowBase
@@ -38,7 +38,7 @@ class QWindow(QWindowBase):
 
     #: A signal which is emitted when the user ask to close the window.
     #: It is then up to the declaration to validate or not this request.
-    closing = Signal()    
+    closing_request = Signal(QCloseEvent) 
     
     def __init__(self, parent=None):
         """ Initialize a QWindow.
@@ -55,15 +55,14 @@ class QWindow(QWindowBase):
     def closeEvent(self, event):
         """ Handle the QCloseEvent from the window system.
 
-        If no previous QCloseEvent is registered emit the closing signal.
-        Otherwise calls the superclass' method to close the window and then
-        emits the 'closed' signal.
+        If no previous QCloseEvent is registered emit the closing_request
+        signal. Otherwise calls the superclass' method to close the window 
+        and then emits the 'closed' signal.
 
         """
         if not self.closing_requested:
             self.closing_requested = True
-            event.ignore()
-            self.closing.emit()
+            self.closing_request.emit(event)
         else:
             super(QWindow, self).closeEvent(event)
             self.closed.emit()
@@ -138,17 +137,18 @@ class QtWindow(QtWidget, ProxyWindow):
         if d is not None:
             return d.proxy.widget
 
-    def on_closing(self):
-        """The signal handler for the 'closing' signal.
+    def on_closing_request(self, event):
+        """The signal handler for the 'closing_request' signal.
 
         This method will call the validate_close function on the 
         declaration.
         
         """ 
-        if self.declaration._handle_closing():
-            self.widget.close()
+        if self.declaration._handle_closing_request():
+            self.widget.closeEvent(event)
         else:
             self.widget.closing_requested = False
+            event.ignore()
 
     def on_closed(self):
         """ The signal handler for the 'closed' signal.
