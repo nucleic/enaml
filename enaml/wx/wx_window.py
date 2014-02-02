@@ -67,7 +67,7 @@ class wxCustomWindow(wx.Frame):
 
         """
         if not self.closing_requested:
-            self.closing_requested
+            self.closing_requested = True
         else:
             self.Hide()
 
