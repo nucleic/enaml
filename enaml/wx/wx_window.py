@@ -211,7 +211,7 @@ class WxWindow(WxWidget, ProxyWindow):
 
         """
         event.Skip()
-        if self.declaration._handle_closing:
+        if self.declaration._handle_closing_request():
             # Make sure the frame is not modal when closing, or no other
             # windows will be unblocked.
             self.widget.MakeModal(False)

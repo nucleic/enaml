@@ -394,7 +394,7 @@ class Window(Widget):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _handle_closing(self):
+    def _handle_closing_request(self):
         """
         """
         return self.validate_close(self)
