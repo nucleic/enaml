@@ -5,98 +5,83 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Typed, Unicode
+from atom.api import Callable, Int, Unicode
+
+from enaml.core.declarative import Declarative, d_
 
 
-class Extension(Atom):
-    """ A class which represents an extension point declaration.
+class Extension(Declarative):
+    """ A declarative class which represents a plugin extension.
+
+    An Extension must be declared as a child of a PluginManifest.
 
     """
-    #: The identifier of the plugin which declared the extension.
-    _plugin_id = Unicode()
+    #: The globally unique identifier for the extension.
+    id = d_(Unicode())
 
-    #: The dict of data loaded from the json declaration.
-    _data = Typed(dict)
+    #: The fully qualified id of the target extension point.
+    point = d_(Unicode())
 
-    def __init__(self, plugin_id, data):
-        """ Initialize an Extension.
+    #: An optional rank to use for order the extension among others.
+    rank = d_(Int())
 
-        Parameters
-        ----------
-        plugin_id : unicode
-            The identifer of the plugin to which this extension
-            belongs.
-
-        data : dict
-            The dict loaded from the JSON file which describes
-            the extension.
-
-        """
-        self._plugin_id = plugin_id
-        self._data = data
+    #: A callable which will create the implementation object for the
+    #: extension point. The call signature and return type are defined
+    #: by the extension point plugin which invokes the factory.
+    factory = d_(Callable())
 
     @property
     def plugin_id(self):
-        """ Get the identifer of the extension's plugin.
+        """ Get the plugin id from the parent plugin manifest.
 
         """
-        return self._plugin_id
-
-    @property
-    def id(self):
-        """ Get the extension identifer.
-
-        """
-        return self._data[u'id']
+        return self.parent.id
 
     @property
     def qualified_id(self):
         """ Get the fully qualified extension identifer.
 
         """
-        this_id = self._data[u'id']
+        this_id = self.id
         if u'.' in this_id:
             return this_id
-        return u'%s.%s' % (self._plugin_id, this_id)
+        return u'%s.%s' % (self.plugin_id, this_id)
 
-    @property
-    def point(self):
-        """ Get the identifier of the contribution extension point.
+    def get_child(self, kind, reverse=False):
+        """ Find a child by the given type.
 
-        """
-        return self._data[u'point']
+        Parameters
+        ----------
+        kind : type
+            The declartive type of the child of interest.
 
-    @property
-    def name(self):
-        """ Get the human readable name of the extension.
+        reverse : bool, optional
+            Whether to search in reversed order. The default is False.
 
-        """
-        return self._data.get(u'name', u'')
-
-    @property
-    def description(self):
-        """ Get the human readable description of the extension.
+        Returns
+        -------
+        result : child or None
+            The first child found of the requested type.
 
         """
-        return self._data.get(u'description', u'')
+        it = reversed if reverse else iter
+        for child in it(self.children):
+            if isinstance(child, kind):
+                return child
+        return None
 
-    @property
-    def cls(self):
-        """ Get the path of the class which implements the extension.
+    def get_children(self, kind):
+        """ Get all the children of the given type.
+
+        Parameters
+        ----------
+        kind : type
+            The declartive type of the children of interest.
+
+        Returns
+        -------
+        result : list
+            The list of children of the request type.
 
         """
-        return self._data.get(u'class', u'')
-
-    @property
-    def rank(self):
-        """ Get the numeric rank of the extension.
-
-        """
-        return self._data.get(u'rank', 0)
-
-    @property
-    def config(self):
-        """ Get the configuration data for the extension.
-
-        """
-        return self._data.get(u'config', {})
+        return [c for c in self.children if isinstance(c, kind)]

@@ -5,32 +5,26 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, ForwardTyped, Typed
+from atom.api import Atom, Typed
 
 from .plugin_manifest import PluginManifest
-
-
-def Workbench():
-    """ A lazy forward import function for the Workbench type.
-
-    """
-    from .workbench import Workbench
-    return Workbench
 
 
 class Plugin(Atom):
     """ A base class for defining workbench plugins.
 
     """
-    #: A reference to the workbench instance which manages the plugin.
-    #: This is assigned when the plugin is created by the workbench.
-    #: It should not be manipulated by user code.
-    workbench = ForwardTyped(Workbench)
-
-    #: A reference to the manifest instance which declared the plugin.
-    #: This is assigned when the plugin created by the workbench. It
-    #: should not be manipulated by user code.
+    #: A reference to the plugin manifest instance which declared the
+    #: plugin. This is assigned by the framework and should never be
+    #: manipulated by user code.
     manifest = Typed(PluginManifest)
+
+    @property
+    def workbench(self):
+        """ Get the workbench which is handling the plugin.
+
+        """
+        return self.manifest.workbench
 
     def start(self):
         """ Start the life-cycle of the plugin.

@@ -5,94 +5,59 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, List, Typed, Unicode
+from atom.api import Callable, ForwardTyped, Unicode
+
+from enaml.core.declarative import Declarative, d_
+
+from .extension import Extension
+from .extension_point import ExtensionPoint
 
 
-class PluginManifest(Atom):
-    """ A class which represents a JSON plugin manifest.
+def Workbench():
+    """ A lazy forward import function for the Workbench type.
 
     """
-    #: The url that was used to load this manifest.
-    _url = Unicode()
+    from .workbench import Workbench
+    return Workbench
 
-    #: The dict of data loaded from the json declaration.
-    _data = Typed(dict)
 
-    #: The list of extension points exposed by the plugin.
-    _extension_points = List()
+def plugin_factory():
+    """ A factory function which returns a plain Plugin instance.
 
-    #: The list of extensions contributed by the plugin.
-    _extensions = List()
+    """
+    from .plugin import Plugin
+    return Plugin()
 
-    def __init__(self, url, data, points, extensions):
-        """ Initialize a PluginManifest.
 
-        Parameters
-        ----------
-        url : unicode
-            The url that was used to load the manifest data.
+class PluginManifest(Declarative):
+    """ A declarative class which represents a plugin manifest.
 
-        data : dict
-            The dict loaded from the JSON file which describes
-            the plugin.
+    """
+    #: The globally unique identifier for the plugin. The suggested
+    #: format is dot-separated, e.g. 'foo.bar.baz'.
+    id = d_(Unicode())
 
-        points : list
-            The list of ExtensionPoints declared for the plugin.
+    #: The factory which will create the Plugin instance. It should
+    #: take no arguments and return an instance of Plugin. Well behaved
+    #: applications will make this a function which lazily imports the
+    #: plugin class so that startup times remain small.
+    factory = d_(Callable(plugin_factory))
 
-        extensions : list
-            The list of Extensions declared for the plugin.
-
-        """
-        self._url = url
-        self._data = data
-        self._extension_points = points
-        self._extensions = extensions
-
-    @property
-    def url(self):
-        """ Get the url used to load the manifest.
-
-        """
-        return self._url
-
-    @property
-    def id(self):
-        """ Get the plugin identifer.
-
-        """
-        return self._data[u'id']
-
-    @property
-    def cls(self):
-        """ Get the path of the class which implements the plugin.
-
-        """
-        return self._data.get(u'class', u'')
-
-    @property
-    def name(self):
-        """ Get the human readable name of the plugin.
-
-        """
-        return self._data.get(u'name', u'')
-
-    @property
-    def description(self):
-        """ Get the human readable description of the plugin.
-
-        """
-        return self._data.get(u'description', u'')
-
-    @property
-    def extension_points(self):
-        """ Get the list of extensions points defined by the plugin.
-
-        """
-        return self._extension_points[:]
+    #: The workbench instance with which this manifest is registered.
+    #: This is assigned by the framework and should not be manipulated
+    #: by user code.
+    workbench = ForwardTyped(Workbench)
 
     @property
     def extensions(self):
-        """ Get the list of extensions defined by the plugin.
+        """ Get the list of extensions defined by the manifest.
 
         """
-        return self._extensions[:]
+        return [c for c in self.children if isinstance(c, Extension)]
+
+    @property
+    def extension_points(self):
+        """ Get the list of extensions points defined by the manifest.
+
+        """
+        return [c for c in self.children if isinstance(c, ExtensionPoint)]
