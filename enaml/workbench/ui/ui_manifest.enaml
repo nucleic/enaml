@@ -1,0 +1,64 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.workbench.extension import Extension
+from enaml.workbench.extension_point import ExtensionPoint
+from enaml.workbench.plugin_manifest import PluginManifest
+
+
+def ui_plugin_factory():
+	""" A factory function which creates a UIPlugin instance.
+
+	"""
+	from .ui_plugin import UIPlugin
+	return UIPlugin()
+
+
+def application_factory():
+	""" A factory function which creates the default Application.
+
+	"""
+	from enaml.qt.qt_application import QtApplication
+	return QtApplication()
+
+
+def window_factory(workbench, **kwargs):
+	""" A factory function which creates the default WorkbenchWindow.
+
+	"""
+	import enaml
+	with enaml.imports():
+		from .workbench_window import WorkbenchWindow
+	return WorkbenchWindow(**kwargs)
+
+
+enamldef UIManifest(PluginManifest):
+	""" The manifest for the Enaml workbench UI plugin.
+
+	"""
+	id = 'enaml.workbench.ui'
+	factory = ui_plugin_factory
+
+	ExtensionPoint:
+		id = 'application_factory'
+	ExtensionPoint:
+		id = 'window_factory'
+	ExtensionPoint:
+		id = 'branding'
+	ExtensionPoint:
+		id = 'workspaces'
+	ExtensionPoint:
+		id = 'action_sets'
+
+	Extension:
+		id = 'default_application_factory'
+		point = 'enaml.workbench.ui.application_factory'
+		factory = application_factory
+	Extension:
+		id = 'default_window_factory'
+		point = 'enaml.workbench.ui.window_factory'
+		factory = window_factory
