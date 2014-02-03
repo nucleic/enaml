@@ -1,0 +1,11 @@
+from enaml.workbench.api import PluginManifest, Extension
+from enaml.workbench.ui.api import Branding
+
+
+enamldef FooManifest(PluginManifest):
+	id = 'foo'
+	Extension:
+		id = 'branding'
+		point = 'enaml.workbench.ui.branding'
+		Branding:
+			title = 'This one dawg'

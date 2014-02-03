@@ -58,7 +58,9 @@ enamldef UIManifest(PluginManifest):
 		id = 'default_application_factory'
 		point = 'enaml.workbench.ui.application_factory'
 		factory = application_factory
+		rank = -1000
 	Extension:
 		id = 'default_window_factory'
 		point = 'enaml.workbench.ui.window_factory'
 		factory = window_factory
+		rank = -1000
