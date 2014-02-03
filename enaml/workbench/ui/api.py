@@ -7,3 +7,4 @@
 #------------------------------------------------------------------------------
 from .branding import Branding
 from .ui_workbench import UIWorkbench
+from .workspace import Workspace
