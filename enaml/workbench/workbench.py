@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from collections import defaultdict
 import json
+import os
 import warnings
 
 from atom.api import Atom, Event, Typed
@@ -14,7 +15,14 @@ from atom.api import Atom, Event, Typed
 from . import wbu
 
 
+PLUGIN_DIR = os.path.abspath(__file__)
+PLUGIN_DIR = os.path.dirname(PLUGIN_DIR)
+PLUGIN_DIR = os.path.join(PLUGIN_DIR, 'plugins')
+PLUGIN_DIR = PLUGIN_DIR.replace('\\', '/')
+
 CORE_PLUGIN = u'enaml.workbench.core'
+
+UI_PLUGIN = u'enaml.workbench.ui'
 
 
 class Workbench(Atom):
@@ -113,6 +121,23 @@ class Workbench(Atom):
         del self._manifests[plugin_id]
 
         self.plugin_removed(plugin_id)
+
+    def load_builtin_plugin(self, name):
+        """ Load one of the builtin Enaml workbench plugins.
+
+        This method cannot be used to load arbitrary user plugins. Use
+        the 'register' method on the base class for that purpose.
+
+        Parameters
+        ----------
+        name : str
+            The name of the builtin workbench plugin to load. This will
+            correspond to one of the json files while live in the
+            'plugins' directory alongside this file.
+
+        """
+        url = "file://%s/%s.json" % (PLUGIN_DIR, name)
+        self.register(url)
 
     def get_manifest(self, plugin_id):
         """ Get the plugin manifest for a given plugin id.
