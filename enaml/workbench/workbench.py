@@ -22,8 +22,6 @@ PLUGIN_DIR = PLUGIN_DIR.replace('\\', '/')
 
 CORE_PLUGIN = u'enaml.workbench.core'
 
-UI_PLUGIN = u'enaml.workbench.ui'
-
 
 class Workbench(Atom):
     """ A base class for creating plugin-style applications.
