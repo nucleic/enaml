@@ -20,7 +20,7 @@ class PhoneNumberValidator(Validator):
 
     proper = re.compile(r'\(([0-9]{3})\)\ ([0-9]{3})\-([0-9]{4})$')
 
-    def validate(self, text, component):
+    def validate(self, text):
         match = self.proper.match(text) or self.dashes.match(text)
         if match:
             area = match.group(1)
