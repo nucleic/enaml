@@ -63,7 +63,7 @@ class FileLoader(URLLoader):
         path = file_rgx.sub(u'', url)
         path = os.path.join(dirname, path)
         path = os.path.abspath(path)
-        return u'file://'+ path.replace(u'\\', u'/')
+        return u'file://' + path.replace(u'\\', u'/')
 
     def __call__(self, url):
         """ Load the data specified by the url.
