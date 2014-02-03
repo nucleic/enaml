@@ -12,7 +12,7 @@ from atom.api import Typed
 from enaml.widgets.main_window import ProxyMainWindow
 
 from .QtCore import Qt, Signal
-from .QtGui import QMainWindow
+from .QtGui import QMainWindow, QCloseEvent
 
 from .q_deferred_caller import deferredCall
 from .qt_container import QtContainer
@@ -29,16 +29,31 @@ class QCustomMainWindow(QMainWindow):
     """
     #: A signal emitted when the window is closed by the user
     closed = Signal()
+    closing_request = Signal(QCloseEvent)
+
+    def __init__(self, parent=None, flags=Qt.Widget):
+        """
+        """
+        super(QMainWindow, self).__init__(parent, Qt.Window | flags)
+        self.closing_requested = False
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
     def closeEvent(self, event):
-        """ A close event handler which emits the 'closed' signal.
+        """ Handle the QCloseEvent from the window system.
+
+        If no previous QCloseEvent is registered emit the closing signal.
+        Otherwise calls the superclass' method to close the window and then
+        emits the 'closed' signal.
 
         """
-        super(QCustomMainWindow, self).closeEvent(event)
-        self.closed.emit()
+        if not self.closing_requested:
+            self.closing_requested = True
+            self.closing_request.emit(event)
+        else:
+            super(QCustomMainWindow, self).closeEvent(event)
+            self.closed.emit()
 
     #--------------------------------------------------------------------------
     # Public API
