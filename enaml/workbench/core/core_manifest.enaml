@@ -26,10 +26,10 @@ enamldef CoreManifest(PluginManifest):
 
 		Extensions to this point may contribute `Command` objects which
 		can be invoked via the `invoke_command` method of the CorePlugin
-		instance. Commands can be provided both by declaring then as
-		children of the Extension, and by providing a factory function
-		which accepts the workbench as an argument and returns a list of
-		Command instances.
+		instance. Commands can be provided both by declaring them as
+		children of the Extension, and by providing an extension factory
+		function which accepts the workbench as an argument and returns
+		a list of Command instances.
 
 	"""
 	id = 'enaml.workbench.core'
