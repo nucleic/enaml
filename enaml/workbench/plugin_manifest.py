@@ -48,6 +48,9 @@ class PluginManifest(Declarative):
     #: by user code.
     workbench = ForwardTyped(Workbench)
 
+    #: An optional description of the plugin.
+    description = d_(Unicode())
+
     @property
     def extensions(self):
         """ Get the list of extensions defined by the manifest.

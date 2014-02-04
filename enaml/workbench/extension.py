@@ -30,6 +30,9 @@ class Extension(Declarative):
     #: by the extension point plugin which invokes the factory.
     factory = d_(Callable())
 
+    #: An optional description of the extension.
+    description = d_(Unicode())
+
     @property
     def plugin_id(self):
         """ Get the plugin id from the parent plugin manifest.

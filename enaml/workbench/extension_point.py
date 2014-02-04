@@ -25,6 +25,9 @@ class ExtensionPoint(Declarative):
     #: modified directly by user code.
     extensions = Tuple()
 
+    #: An optional description of the extension point.
+    description = d_(Unicode())
+
     @property
     def plugin_id(self):
         """ Get the plugin id from the parent plugin manifest.
