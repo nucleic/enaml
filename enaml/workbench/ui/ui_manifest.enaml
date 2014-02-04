@@ -12,79 +12,79 @@ from enaml.workbench.plugin_manifest import PluginManifest
 
 
 def ui_plugin_factory():
-	""" A factory function which creates a UIPlugin instance.
+    """ A factory function which creates a UIPlugin instance.
 
-	"""
-	from .ui_plugin import UIPlugin
-	return UIPlugin()
+    """
+    from .ui_plugin import UIPlugin
+    return UIPlugin()
 
 
 def application_factory():
-	""" A factory function which creates the default Application.
+    """ A factory function which creates the default Application.
 
-	"""
-	from enaml.qt.qt_application import QtApplication
-	return QtApplication()
+    """
+    from enaml.qt.qt_application import QtApplication
+    return QtApplication()
 
 
 def window_factory(workbench):
-	""" A factory function which creates the default WorkbenchWindow.
+    """ A factory function which creates the default WorkbenchWindow.
 
-	"""
-	import enaml
-	with enaml.imports():
-		from .workbench_window import WorkbenchWindow
-	return WorkbenchWindow()
+    """
+    import enaml
+    with enaml.imports():
+        from .workbench_window import WorkbenchWindow
+    return WorkbenchWindow()
 
 
 def close_workspace(event):
-	""" The command handler for closing the workspace.
+    """ The command handler for closing the workspace.
 
-	"""
-	ui = event.workbench.get_plugin('enaml.workbench.ui')
-	ui.close_workspace()
+    """
+    ui = event.workbench.get_plugin('enaml.workbench.ui')
+    ui.close_workspace()
 
 
 def select_workspace(event):
-	""" The command handler for selecting a workspace.
+    """ The command handler for selecting a workspace.
 
-	"""
-	ui = event.workbench.get_plugin('enaml.workbench.ui')
-	ui.select_workspace(event.parameters['workspace'])
+    """
+    ui = event.workbench.get_plugin('enaml.workbench.ui')
+    ui.select_workspace(event.parameters['workspace'])
 
 
 enamldef UIManifest(PluginManifest):
-	""" The manifest for the Enaml workbench ui plugin.
+    """ The manifest for the Enaml workbench ui plugin.
 
-	"""
-	id = 'enaml.workbench.ui'
-	factory = ui_plugin_factory
-	ExtensionPoint:
-		id = 'application_factory'
-	ExtensionPoint:
-		id = 'window_factory'
-	ExtensionPoint:
-		id = 'branding'
-	ExtensionPoint:
-		id = 'actions'
-	ExtensionPoint:
-		id = 'workspaces'
-	Extension:
-		id = 'default_application_factory'
-		point = 'enaml.workbench.ui.application_factory'
-		factory = application_factory
-		rank = -1000
-	Extension:
-		id = 'default_window_factory'
-		point = 'enaml.workbench.ui.window_factory'
-		factory = window_factory
-		rank = -1000
-	Extension:
-		id = 'default_commands'
-		point = 'enaml.workbench.core.commands'
-		Command:
-			id = 'enaml.workbench.ui.close_workspace'
-			handler = close_workspace
-		Command:
-			id = 'enaml.workbench.ui.select_workspace'
-			handler = select_workspace
+    """
+    id = 'enaml.workbench.ui'
+    factory = ui_plugin_factory
+    ExtensionPoint:
+        id = 'application_factory'
+    ExtensionPoint:
+        id = 'window_factory'
+    ExtensionPoint:
+        id = 'branding'
+    ExtensionPoint:
+        id = 'actions'
+    ExtensionPoint:
+        id = 'workspaces'
+    Extension:
+        id = 'default_application_factory'
+        point = 'enaml.workbench.ui.application_factory'
+        factory = application_factory
+        rank = -1000
+    Extension:
+        id = 'default_window_factory'
+        point = 'enaml.workbench.ui.window_factory'
+        factory = window_factory
+        rank = -1000
+    Extension:
+        id = 'default_commands'
+        point = 'enaml.workbench.core.commands'
+        Command:
+            id = 'enaml.workbench.ui.close_workspace'
+            handler = close_workspace
+        Command:
+            id = 'enaml.workbench.ui.select_workspace'
+            handler = select_workspace
