@@ -276,11 +276,7 @@ class UIPlugin(Plugin):
         self._application = None
 
     def _refresh_branding(self):
-        """ Refresh the title provider for the window model.
-
-        This method can be called to update the window model's title
-        provider to the current highest ranking extension. If the
-        effective provider has not changed, this method is a no-op.
+        """ Refresh the branding object for the window model.
 
         """
         workbench = self.workbench
