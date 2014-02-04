@@ -6,7 +6,6 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from collections import defaultdict
-import warnings
 
 from atom.api import Atom, Event, Typed
 
@@ -50,10 +49,8 @@ class Workbench(Atom):
         """
         plugin_id = manifest.id
         if plugin_id in self._manifests:
-            msg = "The plugin '%s' is already registered. "
-            msg += "The duplicate plugin will be ignored."
-            warnings.warn(msg % plugin_id)
-            return
+            msg = "plugin '%s' is already registered"
+            raise ValueError(msg % plugin_id)
 
         self._manifests[plugin_id] = manifest
         manifest.workbench = self
@@ -78,8 +75,7 @@ class Workbench(Atom):
         manifest = self._manifests.get(plugin_id)
         if manifest is None:
             msg = "plugin '%s' is not registered"
-            warnings.warn(msg % plugin_id)
-            return
+            raise ValueError(msg % plugin_id)
 
         plugin = self._plugins.pop(plugin_id, None)
         if plugin is not None:
@@ -136,8 +132,7 @@ class Workbench(Atom):
         manifest = self._manifests.get(plugin_id)
         if manifest is None:
             msg = "plugin '%s' is not registered"
-            warnings.warn(msg % plugin_id)
-            return None
+            raise ValueError(msg % plugin_id)
 
         if not force_create:
             return None
@@ -145,8 +140,7 @@ class Workbench(Atom):
         plugin = manifest.factory()
         if not isinstance(plugin, Plugin):
             msg = "plugin '%s' factory created non-Plugin type '%s'"
-            warnings.warn(msg % (plugin_id, type(plugin).__name__))
-            return None
+            raise TypeError(msg % (plugin_id, type(plugin).__name__))
 
         self._plugins[plugin_id] = plugin
         plugin.manifest = manifest
@@ -221,10 +215,8 @@ class Workbench(Atom):
         """
         point_id = point.qualified_id
         if point_id in self._extension_points:
-            msg = "The extension point '%s' is already registered. "
-            msg += "The duplicate extension point will be ignored."
-            warnings.warn(msg % point_id)
-            return
+            msg = "extension point '%s' is already registered"
+            raise ValueError(msg % point_id)
 
         self._extension_points[point_id] = point
         if point_id in self._contributions:
@@ -256,9 +248,8 @@ class Workbench(Atom):
         """
         point_id = point.qualified_id
         if point_id not in self._extension_points:
-            msg = "The extension point '%s' is not registered."
-            warnings.warn(msg % point_id)
-            return
+            msg = "extension point '%s' is not registered"
+            raise ValueError(msg % point_id)
 
         del self._extension_points[point_id]
         if point_id in self._contributions:
@@ -280,10 +271,8 @@ class Workbench(Atom):
         for extension in extensions:
             ext_id = extension.qualified_id
             if ext_id in self._extensions:
-                msg = "The extension '%s' is already registered. "
-                msg += "The duplicate extension will be ignored."
-                warnings.warn(msg % ext_id)
-                continue
+                msg = "extension '%s' is already registered"
+                raise ValueError(msg % ext_id)
             self._extensions[ext_id] = extension
             grouped[extension.point].add(extension)
 
@@ -306,9 +295,8 @@ class Workbench(Atom):
         for extension in extensions:
             ext_id = extension.qualified_id
             if ext_id not in self._extensions:
-                msg = "The extension '%s' is not registered."
-                warnings.warn(msg % ext_id)
-                continue
+                msg = "extension '%s' is not registered"
+                raise ValueError(msg % ext_id)
             del self._extensions[ext_id]
             grouped[extension.point].add(extension)
 
