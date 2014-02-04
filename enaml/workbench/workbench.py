@@ -17,8 +17,8 @@ class Workbench(Atom):
     """ A base class for creating plugin-style applications.
 
     This class is used for managing the lifecycle of plugins. It does
-    not provide any UI functionality. Such behavior must be supplied
-    by a subclass.
+    not provide any plugins of its own. The UIWorkbench subclass adds
+    the 'core' and 'ui' workbench plugins by default.
 
     """
     #: An event fired when a plugin is added to the workbench. The
