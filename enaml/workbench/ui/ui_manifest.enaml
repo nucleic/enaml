@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.workbench.core.command import Command
 from enaml.workbench.extension import Extension
 from enaml.workbench.extension_point import ExtensionPoint
 from enaml.workbench.plugin_manifest import PluginManifest
@@ -26,23 +27,52 @@ def application_factory():
 	return QtApplication()
 
 
-def window_factory(workbench, **kwargs):
+def window_factory(workbench):
 	""" A factory function which creates the default WorkbenchWindow.
 
 	"""
 	import enaml
 	with enaml.imports():
 		from .workbench_window import WorkbenchWindow
-	return WorkbenchWindow(**kwargs)
+	return WorkbenchWindow()
+
+
+def close_workspace(workbench):
+	""" The command handler for workspace closing.
+
+	Parameters
+	----------
+	workbench : Workbench
+		The workbench context for the command.
+
+	"""
+	ui = workbench.get_plugin('enaml.workbench.ui')
+	ui.close_workspace()
+
+
+def select_workspace(workbench, extension_id):
+	""" The command handler for workspace selection.
+
+	Parameters
+	----------
+	workbench : Workbench
+		The workbench context for the command.
+
+	extension_id : unicode
+		The globally unique identifier of the extension which provides
+		the workspace which should be selected.
+
+	"""
+	ui = workbench.get_plugin('enaml.workbench.ui')
+	ui.select_workspace(extension_id)
 
 
 enamldef UIManifest(PluginManifest):
-	""" The manifest for the Enaml workbench UI plugin.
+	""" The manifest for the Enaml workbench ui plugin.
 
 	"""
 	id = 'enaml.workbench.ui'
 	factory = ui_plugin_factory
-
 	ExtensionPoint:
 		id = 'application_factory'
 	ExtensionPoint:
@@ -53,7 +83,6 @@ enamldef UIManifest(PluginManifest):
 		id = 'workspaces'
 	ExtensionPoint:
 		id = 'action_sets'
-
 	Extension:
 		id = 'default_application_factory'
 		point = 'enaml.workbench.ui.application_factory'
@@ -64,3 +93,12 @@ enamldef UIManifest(PluginManifest):
 		point = 'enaml.workbench.ui.window_factory'
 		factory = window_factory
 		rank = -1000
+	Extension:
+		id = 'ui_commands'
+		point = 'enaml.workbench.core.commands'
+		Command:
+			id = 'enaml.workbench.ui.close_workspace'
+			handler = close_workspace
+		Command:
+			id = 'enaml.workbench.ui.select_workspace'
+			handler = select_workspace
