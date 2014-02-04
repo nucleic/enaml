@@ -37,34 +37,20 @@ def window_factory(workbench):
 	return WorkbenchWindow()
 
 
-def close_workspace(workbench):
-	""" The command handler for workspace closing.
-
-	Parameters
-	----------
-	workbench : Workbench
-		The workbench context for the command.
+def close_workspace(event):
+	""" The command handler for closing the workspace.
 
 	"""
-	ui = workbench.get_plugin('enaml.workbench.ui')
+	ui = event.workbench.get_plugin('enaml.workbench.ui')
 	ui.close_workspace()
 
 
-def select_workspace(workbench, extension_id):
-	""" The command handler for workspace selection.
-
-	Parameters
-	----------
-	workbench : Workbench
-		The workbench context for the command.
-
-	extension_id : unicode
-		The globally unique identifier of the extension which provides
-		the workspace which should be selected.
+def select_workspace(event):
+	""" The command handler for selecting a workspace.
 
 	"""
-	ui = workbench.get_plugin('enaml.workbench.ui')
-	ui.select_workspace(extension_id)
+	ui = event.workbench.get_plugin('enaml.workbench.ui')
+	ui.select_workspace(event.parameters['workspace'])
 
 
 enamldef UIManifest(PluginManifest):
@@ -80,7 +66,7 @@ enamldef UIManifest(PluginManifest):
 	ExtensionPoint:
 		id = 'branding'
 	ExtensionPoint:
-		id = 'menus'
+		id = 'actions'
 	ExtensionPoint:
 		id = 'workspaces'
 	Extension:
@@ -94,7 +80,7 @@ enamldef UIManifest(PluginManifest):
 		factory = window_factory
 		rank = -1000
 	Extension:
-		id = 'ui_commands'
+		id = 'default_commands'
 		point = 'enaml.workbench.core.commands'
 		Command:
 			id = 'enaml.workbench.ui.close_workspace'
