@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import warnings
-
 from atom.api import ForwardTyped, Typed
 
 from enaml.application import Application
@@ -17,6 +15,8 @@ from .branding import Branding
 from .window_model import WindowModel
 from .workspace import Workspace
 
+
+ACTIONS_POINT = u'enaml.workbench.ui.actions'
 
 APPLICATION_FACTORY_POINT = u'enaml.workbench.ui.application_factory'
 
@@ -47,10 +47,6 @@ class UIPlugin(Plugin):
     def start(self):
         """ Start the plugin life-cycle.
 
-        This method will initialize the main window, but not show it.
-        The Studio instance is responsible for showing the window after
-        this plugin is started.
-
         This method is called by the framework at the appropriate time.
         It should never be called by user code.
 
@@ -62,8 +58,6 @@ class UIPlugin(Plugin):
 
     def stop(self):
         """ Stop the plugin life-cycle.
-
-        This method will hide and destroy the main window.
 
         This method is called by the framework at the appropriate time.
         It should never be called by user code.
@@ -87,13 +81,13 @@ class UIPlugin(Plugin):
         self._window.hide()
 
     def start_application(self):
-        """ Start the event loop of the underlying application.
+        """ Start the application event loop.
 
         """
         self._application.start()
 
     def stop_application(self):
-        """ Stop the event loop of the underlying application.
+        """ Stop the application event loop.
 
         """
         self._application.stop()
@@ -103,11 +97,13 @@ class UIPlugin(Plugin):
 
         """
         self._workspace_extension = None
-        self._model.workspace.dispose()
+        self._model.workspace.stop()
         self._model.workspace = Workspace()
 
     def select_workspace(self, extension_id):
-        """ Select the workspace for the given extension id.
+        """ Select and start the workspace for the given extension id.
+
+        The current workspace will be stopped and released.
 
         """
         target = None
@@ -117,19 +113,21 @@ class UIPlugin(Plugin):
                 target = extension
                 break
 
+        if target is None:
+            msg = "'%s' is not a registered workspace extension"
+            raise ValueError(msg % extension_id)
+
         if target is self._workspace_extension:
             return
+
+        old_workspace = self._model.workspace
+        old_workspace.stop()
+
         self._workspace_extension = target
+        new_workspace = self._create_workspace(target)
 
-        if target is None:
-            msg = "extension '%s' is not a valid workspace extension"
-            warnings.warn(msg % extension_id)
-            workspace = Workspace()
-        else:
-            workspace = self._create_workspace(extension)
-
-        self._model.workspace.dispose()
-        self._model.workspace = workspace
+        new_workspace.start()
+        self._model.workspace = new_workspace
 
     #--------------------------------------------------------------------------
     # Private API
@@ -168,15 +166,13 @@ class UIPlugin(Plugin):
         point = workbench.get_extension_point(APPLICATION_FACTORY_POINT)
         extensions = point.extensions
         if not extensions:
-            msg = "Cannot create an Application instance. No plugin "\
-                  "contributed an extension to the '%s' extension point."
+            msg = "no contributions to the '%s' extension point"
             raise RuntimeError(msg % APPLICATION_FACTORY_POINT)
 
         extension = extensions[-1]
         if extension.factory is None:
-            msg = "Cannot create an Application instance. Extension "\
-                  "'%s' does not declare an application factory."
-            raise RuntimeError(msg % extension.qualified_id)
+            msg = "extension '%s' does not declare an application factory"
+            raise ValueError(msg % extension.qualified_id)
 
         application = extension.factory()
         if not isinstance(application, Application):
@@ -194,7 +190,7 @@ class UIPlugin(Plugin):
         self._refresh_branding()
 
     def _create_window(self):
-        """ Create the Window object for the studio.
+        """ Create the WorkbenchWindow object for the workbench.
 
         This will load the highest ranking extension to the window
         factory extension point, and use it to create the instance.
@@ -204,15 +200,13 @@ class UIPlugin(Plugin):
         point = workbench.get_extension_point(WINDOW_FACTORY_POINT)
         extensions = point.extensions
         if not extensions:
-            msg = "Cannot create a StudioWindow instance. No plugin "\
-                  "contributed an extension to the '%s' extension point."
+            msg = "no contributions to the '%s' extension point"
             raise RuntimeError(msg % WINDOW_FACTORY_POINT)
 
         extension = extensions[-1]
         if extension.factory is None:
-            msg = "Cannot create a WorkbenchWindow instance. Extension "\
-                  "'%s' does not declare a window factory."
-            raise RuntimeError(msg % extension.qualified_id)
+            msg = "extension '%s' does not declare a window factory"
+            raise ValueError(msg % extension.qualified_id)
 
         window = extension.factory(workbench)
         if not isinstance(window, WorkbenchWindow()):
@@ -239,17 +233,14 @@ class UIPlugin(Plugin):
 
         """
         if extension.factory is None:
-            msg = "Cannot create the specified Workspace. Extension "\
-                  "'%s' does not declare a workspace factory."
-            warnings.warn(msg % extension.qualified_id)
-            return Workspace()
+            msg = "extension '%s' does not declare a workspace factory"
+            raise ValueError(msg % extension.qualified_id)
 
         workspace = extension.factory(self.workbench)
         if not isinstance(workspace, Workspace):
             msg = "extension '%s' created non-Workspace type '%s'"
             args = (extension.qualified_id, type(workspace).__name__)
-            warnings.warn(msg % args)
-            return Workspace()
+            raise TypeError(msg % args)
 
         return workspace
 
@@ -265,7 +256,7 @@ class UIPlugin(Plugin):
         """ Release the underlying window model object.
 
         """
-        self._model.workspace.dispose()
+        self._model.workspace.stop()
         self._model = None
 
     def _release_application(self):
@@ -296,13 +287,13 @@ class UIPlugin(Plugin):
             if not isinstance(branding, Branding):
                 msg = "extension '%s' created non-Branding type '%s'"
                 args = (extension.qualified_id, type(branding).__name__)
-                warnings.warn(msg % args)
-                branding = None
+                raise TypeError(msg % args)
         else:
             branding = extension.get_child(Branding, reverse=True)
+            branding = branding or Branding()
 
         self._branding_extension = extension
-        self._model.branding = branding or Branding()
+        self._model.branding = branding
 
     def _on_branding_updated(self, change):
         """ The observer for the branding extension point.
@@ -315,7 +306,6 @@ class UIPlugin(Plugin):
 
         """
         workbench = self.workbench
-
         point = workbench.get_extension_point(BRANDING_POINT)
         point.observe('extensions', self._on_branding_updated)
 
@@ -324,6 +314,5 @@ class UIPlugin(Plugin):
 
         """
         workbench = self.workbench
-
         point = workbench.get_extension_point(BRANDING_POINT)
         point.unobserve('extensions', self._on_branding_updated)
