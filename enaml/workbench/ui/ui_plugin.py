@@ -15,6 +15,7 @@ from enaml.workbench.plugin import Plugin
 
 from .branding import Branding
 from .window_model import WindowModel
+from .workspace import Workspace
 
 
 APPLICATION_FACTORY_POINT = u'enaml.workbench.ui.application_factory'
@@ -22,6 +23,8 @@ APPLICATION_FACTORY_POINT = u'enaml.workbench.ui.application_factory'
 BRANDING_POINT = u'enaml.workbench.ui.branding'
 
 WINDOW_FACTORY_POINT = u'enaml.workbench.ui.window_factory'
+
+WORKSPACES_POINT = u'enaml.workbench.ui.workspaces'
 
 
 def WorkbenchWindow():
@@ -95,6 +98,39 @@ class UIPlugin(Plugin):
         """
         self._application.stop()
 
+    def close_workspace(self):
+        """ Close and dispose of the currently active workspace.
+
+        """
+        self._workspace_extension = None
+        self._model.workspace.dispose()
+        self._model.workspace = Workspace()
+
+    def select_workspace(self, extension_id):
+        """ Select the workspace for the given extension id.
+
+        """
+        target = None
+        point = self.workbench.get_extension_point(WORKSPACES_POINT)
+        for extension in point.extensions:
+            if extension.qualified_id == extension_id:
+                target = extension
+                break
+
+        if target is self._workspace_extension:
+            return
+        self._workspace_extension = target
+
+        if target is None:
+            msg = "extension '%s' is not a valid workspace extension"
+            warnings.warn(msg % extension_id)
+            workspace = Workspace()
+        else:
+            workspace = self._create_workspace(extension)
+
+        self._model.workspace.dispose()
+        self._model.workspace = workspace
+
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
@@ -109,6 +145,9 @@ class UIPlugin(Plugin):
 
     #: The currently activate branding extension object.
     _branding_extension = Typed(Extension)
+
+    #: The currently activate workspace extension object.
+    _workspace_extension = Typed(Extension)
 
     def _create_application(self):
         """ Create the Application object for the ui.
@@ -175,13 +214,44 @@ class UIPlugin(Plugin):
                   "'%s' does not declare a window factory."
             raise RuntimeError(msg % extension.qualified_id)
 
-        window = extension.factory(workbench, window_model=self._model)
+        window = extension.factory(workbench)
         if not isinstance(window, WorkbenchWindow()):
             msg = "extension '%s' created non-WorkbenchWindow type '%s'"
             args = (extension.qualified_id, type(window).__name__)
             raise TypeError(msg % args)
 
+        window.workbench = workbench
+        window.window_model = self._model
         self._window = window
+
+    def _create_workspace(self, extension):
+        """ Create the Workspace object for the given extension.
+
+        Parameters
+        ----------
+        extension : Extension
+            The extension object of interest.
+
+        Returns
+        -------
+        result : Workspace
+            The workspace object for the given extension.
+
+        """
+        if extension.factory is None:
+            msg = "Cannot create the specified Workspace. Extension "\
+                  "'%s' does not declare a workspace factory."
+            warnings.warn(msg % extension.qualified_id)
+            return Workspace()
+
+        workspace = extension.factory(self.workbench)
+        if not isinstance(workspace, Workspace):
+            msg = "extension '%s' created non-Workspace type '%s'"
+            args = (extension.qualified_id, type(workspace).__name__)
+            warnings.warn(msg % args)
+            return Workspace()
+
+        return workspace
 
     def _destroy_window(self):
         """ Destroy and release the underlying window object.
@@ -195,6 +265,7 @@ class UIPlugin(Plugin):
         """ Release the underlying window model object.
 
         """
+        self._model.workspace.dispose()
         self._model = None
 
     def _release_application(self):
@@ -238,13 +309,13 @@ class UIPlugin(Plugin):
         self._model.branding = branding or Branding()
 
     def _on_branding_updated(self, change):
-        """ The observer for the title extension point.
+        """ The observer for the branding extension point.
 
         """
         self._refresh_branding()
 
     def _bind_observers(self):
-        """ Install the registry event listeners for the plugin.
+        """ Setup the observers for the plugin.
 
         """
         workbench = self.workbench
@@ -253,7 +324,7 @@ class UIPlugin(Plugin):
         point.observe('extensions', self._on_branding_updated)
 
     def _unbind_observers(self):
-        """ Remove the registry event listeners installed by the plugin.
+        """ Remove the observers for the plugin.
 
         """
         workbench = self.workbench
