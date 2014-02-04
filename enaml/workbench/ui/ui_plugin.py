@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import ForwardTyped, Typed
+from atom.api import Typed
 
 from enaml.application import Application
 from enaml.workbench.extension import Extension
@@ -14,6 +14,10 @@ from enaml.workbench.plugin import Plugin
 from .branding import Branding
 from .window_model import WindowModel
 from .workspace import Workspace
+
+import enaml
+with enaml.imports():
+    from .workbench_window import WorkbenchWindow
 
 
 ACTIONS_POINT = u'enaml.workbench.ui.actions'
@@ -25,16 +29,6 @@ BRANDING_POINT = u'enaml.workbench.ui.branding'
 WINDOW_FACTORY_POINT = u'enaml.workbench.ui.window_factory'
 
 WORKSPACES_POINT = u'enaml.workbench.ui.workspaces'
-
-
-def WorkbenchWindow():
-    """ A lazy importer for the enaml WorkbenchWindow.
-
-    """
-    import enaml
-    with enaml.imports():
-        from enaml.workbench.ui.workbench_window import WorkbenchWindow
-    return WorkbenchWindow
 
 
 class UIPlugin(Plugin):
@@ -136,7 +130,7 @@ class UIPlugin(Plugin):
     _application = Typed(Application)
 
     #: The window object provided by a WindowFactory extension.
-    _window = ForwardTyped(WorkbenchWindow)
+    _window = Typed(WorkbenchWindow)
 
     #: The view model object used to drive the window.
     _model = Typed(WindowModel)
@@ -209,7 +203,7 @@ class UIPlugin(Plugin):
             raise ValueError(msg % extension.qualified_id)
 
         window = extension.factory(workbench)
-        if not isinstance(window, WorkbenchWindow()):
+        if not isinstance(window, WorkbenchWindow):
             msg = "extension '%s' created non-WorkbenchWindow type '%s'"
             args = (extension.qualified_id, type(window).__name__)
             raise TypeError(msg % args)
