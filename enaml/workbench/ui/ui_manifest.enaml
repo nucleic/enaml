@@ -80,9 +80,9 @@ enamldef UIManifest(PluginManifest):
 	ExtensionPoint:
 		id = 'branding'
 	ExtensionPoint:
-		id = 'workspaces'
+		id = 'menus'
 	ExtensionPoint:
-		id = 'action_sets'
+		id = 'workspaces'
 	Extension:
 		id = 'default_application_factory'
 		point = 'enaml.workbench.ui.application_factory'
