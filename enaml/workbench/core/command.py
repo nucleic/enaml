@@ -11,16 +11,15 @@ from enaml.core.declarative import Declarative, d_
 
 
 class Command(Declarative):
-    """ A declarative class for defining a plugin command.
+    """ A declarative class for defining a workbench command.
 
     """
-    #: The identifier for the command. This should typically be globally
-    #: unique, but is not enforced so that handlers can be overridden.
+    #: The globally unique identifier for the command.
     id = d_(Unicode())
 
-    #: The handler for the command. The first argument will always be
-    #: the workbench instance. Additional arguments and keywords may be
-    #: passed by the code which invokes the command. Well behaved apps
-    #: will make this a function which lazily imports its dependencies
-    #: in order to keep startup times short.
+    #: An optional description of the command.
+    description = d_(Unicode())
+
+    #: A required callable which handles the command. It must accept a
+    #: single argument, which is an instance of ExecutionEvent.
     handler = d_(Callable())
