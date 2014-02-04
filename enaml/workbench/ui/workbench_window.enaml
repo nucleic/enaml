@@ -14,19 +14,22 @@ from .window_model import WindowModel
 
 
 def make_title(primary, workspace):
-	return u' - '.join(filter(None, (primary, workspace)))
+    return u' - '.join(filter(None, (primary, workspace)))
 
 
 enamldef WorkbenchWindow(MainWindow):
-	""" The custom MainWindow enamldef used by the Enaml studio.
+    """ The custom MainWindow enamldef used by the Enaml studio.
 
-	"""
-	attr workbench: Workbench
-	attr window_model: WindowModel
-	title << make_title(
-		window_model.branding.title,
-		window_model.workspace.window_title,
-	)
-	icon << window_model.branding.icon
-	Include:
-		objects << filter(None, [window_model.workspace.content])
+    """
+    attr workbench: Workbench
+    attr window_model: WindowModel
+    title << make_title(
+        window_model.branding.title,
+        window_model.workspace.window_title,
+    )
+    icon << window_model.branding.icon
+    MenuBar:
+        Include:
+            objects << window_model.menus
+    Include:
+        objects << filter(None, [window_model.workspace.content])
