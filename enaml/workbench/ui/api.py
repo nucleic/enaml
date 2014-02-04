@@ -5,6 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from .action_item import ActionItem
 from .branding import Branding
+from .group import Group
+from .menu_item import MenuItem
 from .ui_workbench import UIWorkbench
 from .workspace import Workspace
