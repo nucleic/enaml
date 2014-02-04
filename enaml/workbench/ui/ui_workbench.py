@@ -29,8 +29,10 @@ class UIWorkbench(Workbench):
         """
         import enaml
         with enaml.imports():
-            from .ui_manifest import UIManifest
+            from enaml.workbench.core.core_manifest import CoreManifest
+            from enaml.workbench.ui.ui_manifest import UIManifest
 
+        self.register(CoreManifest())
         self.register(UIManifest())
 
         ui = self.get_plugin(UI_PLUGIN)
