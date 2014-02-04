@@ -8,6 +8,7 @@
 from atom.api import Atom, Typed
 
 from .branding import Branding
+from .workspace import Workspace
 
 
 class WindowModel(Atom):
@@ -16,3 +17,6 @@ class WindowModel(Atom):
     """
     #: The branding object which contributes the window title and icon.
     branding = Typed(Branding, ())
+
+    #: The currently activate workspace for the window.
+    workspace = Typed(Workspace, ())
