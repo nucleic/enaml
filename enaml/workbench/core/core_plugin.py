@@ -6,13 +6,13 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from collections import defaultdict
-import warnings
 
 from atom.api import Typed
 
 from enaml.workbench.plugin import Plugin
 
 from .command import Command
+from .execution_event import ExecutionEvent
 
 
 COMMANDS_POINT = u'enaml.workbench.core.commands'
@@ -40,38 +40,42 @@ class CorePlugin(Plugin):
 
         """
         self._unbind_observers()
+        self._commands.clear()
+        self._command_extensions.clear()
 
-    def invoke_command(self, command_id, *args, **kwargs):
-        """ Invoke the command object for the given command id.
+    def invoke_command(self, command_id, parameters={}, trigger=None):
+        """ Invoke the command handler for the given command id.
 
         Parameters
         ----------
         command_id : unicode
             The unique identifier of the command to invoke.
 
-        *args
-            Additional positional arguments to pass to the handler.
+        parameters : dict, optional
+            The parameters to pass to the command handler.
 
-        **kwargs
-            Additional keyword arguments to pass to the handler.
+        trigger : object, optional
+            The object which triggered the command.
 
         """
         if command_id not in self._commands:
             msg = "'%s' is not a registered command id"
-            warnings.warn(msg % command_id)
-            return
+            raise ValueError(msg % command_id)
 
         command = self._commands[command_id]
-        if command.handler is None:
-            msg = "command '%s' does not declare and handler"
-            warnings.warn(msg % command_id)
 
-        command.handler(self.workbench, *args, **kwargs)
+        event = ExecutionEvent()
+        event.command = command
+        event.workbench = self.workbench
+        event.parameters = parameters
+        event.trigger = trigger
+
+        command.handler(event)
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    #: The mapping of command id to ranking Command object.
+    #: The mapping of command id to Command object.
     _commands = Typed(dict, ())
 
     #: The mapping of extension object to list of Command objects.
@@ -89,9 +93,6 @@ class CorePlugin(Plugin):
             self._command_extensions.clear()
             return
 
-        # Extensions are already ordered by rank, so command overrides
-        # will naturally follow the ranking order of the extensions.
-
         new_extensions = defaultdict(list)
         old_extensions = self._command_extensions
         for extension in extensions:
@@ -104,6 +105,12 @@ class CorePlugin(Plugin):
         commands = {}
         for extension in extensions:
             for command in new_extensions[extension]:
+                if command.id in commands:
+                    msg = "command '%s' is already registered"
+                    raise ValueError(msg % command.id)
+                if command.handler is None:
+                    msg = "command '%s' does not declare a handler"
+                    raise ValueError(msg % command.id)
                 commands[command.id] = command
 
         self._commands = commands
@@ -130,8 +137,7 @@ class CorePlugin(Plugin):
                 if not isinstance(item, Command):
                     msg = "extension '%s' created non-Command of type '%s'"
                     args = (extension.qualified_id, type(item).__name__)
-                    warnings.warn(msg % args)
-                    continue
+                    raise TypeError(msg % args)
                 commands.append(item)
         return commands
 
