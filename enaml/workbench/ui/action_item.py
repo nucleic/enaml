@@ -21,7 +21,7 @@ class ActionItem(Declarative):
     #: The identifier of the parent menu in which the action resides. A
     #: group can be specified by appending a colon followed by the name
     #: of the desired group. e.g. file:close_group
-    location = d_(Unicode())
+    menu_location = d_(Unicode())
 
     #: The item id before which this action will appear.
     before = d_(Unicode())
