@@ -11,7 +11,10 @@ from enaml.application import Application
 from enaml.workbench.extension import Extension
 from enaml.workbench.plugin import Plugin
 
+from .action_item import ActionItem
 from .branding import Branding
+from .menu_helper import create_menus
+from .menu_item import MenuItem
 from .window_model import WindowModel
 from .workspace import Workspace
 
@@ -92,6 +95,7 @@ class UIPlugin(Plugin):
         """
         self._workspace_extension = None
         self._model.workspace.stop()
+        self._model.workspace.workbench = None
         self._model.workspace = Workspace()
 
     def select_workspace(self, extension_id):
@@ -101,7 +105,8 @@ class UIPlugin(Plugin):
 
         """
         target = None
-        point = self.workbench.get_extension_point(WORKSPACES_POINT)
+        workbench = self.workbench
+        point = workbench.get_extension_point(WORKSPACES_POINT)
         for extension in point.extensions:
             if extension.qualified_id == extension_id:
                 target = extension
@@ -116,10 +121,12 @@ class UIPlugin(Plugin):
 
         old_workspace = self._model.workspace
         old_workspace.stop()
+        old_workspace.workbench = None
 
         self._workspace_extension = target
         new_workspace = self._create_workspace(target)
 
+        new_workspace.workbench = workbench
         new_workspace.start()
         self._model.workspace = new_workspace
 
@@ -140,6 +147,9 @@ class UIPlugin(Plugin):
 
     #: The currently activate workspace extension object.
     _workspace_extension = Typed(Extension)
+
+    #: The currently active action extension objects.
+    _action_extensions = Typed(dict, ())
 
     def _create_application(self):
         """ Create the Application object for the ui.
@@ -182,6 +192,7 @@ class UIPlugin(Plugin):
         """
         self._model = WindowModel()
         self._refresh_branding()
+        self._refresh_actions()
 
     def _create_window(self):
         """ Create the WorkbenchWindow object for the workbench.
@@ -238,6 +249,24 @@ class UIPlugin(Plugin):
 
         return workspace
 
+    def _create_action_items(self, extension):
+        """ Create the action items for the extension.
+
+        """
+        workbench = self.workbench
+        menu_items = extension.get_children(MenuItem)
+        action_items = extension.get_children(ActionItem)
+        if extension.factory:
+            for item in extension.factory(workbench):
+                if isinstance(item, MenuItem):
+                    menu_items.append(item)
+                elif isinstance(item, ActionItem):
+                    action_items.append(item)
+                else:
+                    msg = "action extension created invalid action type '%s'"
+                    raise TypeError(msg % type(item).__name__)
+        return menu_items, action_items
+
     def _destroy_window(self):
         """ Destroy and release the underlying window object.
 
@@ -289,24 +318,67 @@ class UIPlugin(Plugin):
         self._branding_extension = extension
         self._model.branding = branding
 
+    def _refresh_actions(self):
+        """ Refresh the actions for the workbench window.
+
+        """
+        workbench = self.workbench
+        point = workbench.get_extension_point(ACTIONS_POINT)
+        extensions = point.extensions
+        if not extensions:
+            self._action_extensions.clear()
+            self._model.menus = []
+            return
+
+        menu_items = []
+        action_items = []
+        new_extensions = {}
+        old_extensions = self._action_extensions
+        for extension in extensions:
+            if extension in old_extensions:
+                m_items, a_items = old_extensions[extension]
+            else:
+                m_items, a_items = self._create_action_items(extension)
+            new_extensions[extension] = (m_items, a_items)
+            menu_items.extend(m_items)
+            action_items.extend(a_items)
+
+        menus = create_menus(workbench, menu_items, action_items)
+        self._action_extensions = new_extensions
+        self._model.menus = menus
+
     def _on_branding_updated(self, change):
         """ The observer for the branding extension point.
 
         """
         self._refresh_branding()
 
+    def _on_actions_updated(self, change):
+        """ The observer for the actions extension point.
+
+        """
+        self._refresh_actions()
+
     def _bind_observers(self):
         """ Setup the observers for the plugin.
 
         """
         workbench = self.workbench
+
         point = workbench.get_extension_point(BRANDING_POINT)
         point.observe('extensions', self._on_branding_updated)
+
+        point = workbench.get_extension_point(ACTIONS_POINT)
+        point.observe('extensions', self._on_actions_updated)
 
     def _unbind_observers(self):
         """ Remove the observers for the plugin.
 
         """
         workbench = self.workbench
+
         point = workbench.get_extension_point(BRANDING_POINT)
         point.unobserve('extensions', self._on_branding_updated)
+
+        point = workbench.get_extension_point(ACTIONS_POINT)
+        point.unobserve('extensions', self._on_actions_updated)
