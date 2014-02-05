@@ -48,8 +48,8 @@ enamldef WorkbenchAction(Action):
     triggered :: deferred_call(invoke_action, workbench, item)
 
 
-enamldef WorkbenchGroup(ActionGroup):
-    """ A custom group def for use in the Enaml workbench.
+enamldef WorkbenchActionGroup(ActionGroup):
+    """ A custom action group def for use in the Enaml workbench.
 
     """
     attr group: Group
@@ -65,5 +65,5 @@ enamldef WorkbenchMenu(Menu):
     attr group: Group
     attr item: MenuItem
     title << item.label
-    visible << item.visible# and group.visible
-    enabled << item.enabled# and group.enabled
+    visible << item.visible and group.visible
+    enabled << item.enabled and group.enabled
