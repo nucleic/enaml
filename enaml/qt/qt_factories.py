@@ -125,6 +125,11 @@ def image_view_factory():
     return QtImageView
 
 
+def ipython_prompt_factory():
+    from. qt_ipython_prompt import QtIPythonPrompt
+    return QtIPythonPrompt
+
+
 def label_factory():
     from .qt_label import QtLabel
     return QtLabel
@@ -309,6 +314,7 @@ QT_FACTORIES = {
     'Html': html_factory,
     'Image': image_factory,
     'ImageView': image_view_factory,
+    'IPythonPrompt': ipython_prompt_factory,
     'Label': label_factory,
     'MainWindow': main_window_factory,
     'MdiArea': mdi_area_factory,

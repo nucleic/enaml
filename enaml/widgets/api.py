@@ -28,6 +28,7 @@ from .frame import Border
 from .group_box import GroupBox
 from .html import Html
 from .image_view import ImageView
+from .ipython_prompt import IPythonPrompt
 from .label import Label
 from .main_window import MainWindow
 from .mdi_area import MdiArea
