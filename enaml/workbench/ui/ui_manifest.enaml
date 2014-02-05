@@ -53,6 +53,49 @@ def select_workspace(event):
     ui.select_workspace(event.parameters['workspace'])
 
 
+APPLICATION_FACTORY_DESCRIPTION = \
+""" An Extension to this point can be used to provide a custom
+application object for the workbench. The extension factory should
+accept no arguments and return an Application instance. """
+
+
+WINDOW_FACTORY_DESCRIPTION = \
+""" An Extension to this point can be used to provide a custom main
+window for the workbench. The extension factory should accept the
+workbench as an argument and return a WorkbenchWindow instance. """
+
+
+BRANDING_DESCRIPTION = \
+""" An Extension to this point can be used to provide a custom window
+title and icon to the primary workbench window. A Branding object can
+be declared as the child of the extension, or created by the extension
+factory function which accepts the workbench as an argument. """
+
+
+ACTIONS_DESCRIPTION = \
+""" Extensions to this point can be used to provide menu items and
+action items to be added to the primary workbench window menu bar. The
+extension can declare child MenuItem and ActionItem instances as well
+as provide a factory function which returns a list of the same. """
+
+
+WORKSPACES_DESCRIPTION = \
+""" Extensions to this point can be used to provide workspaces which
+can be readily swapped to provide the main content for the workbench
+window. The extension factory function should accep the workbench as
+an argument and return an instance of Workspace. """
+
+
+CLOSE_WORKSPACE_DESCRIPTION = \
+""" Close the currently active workspace. """
+
+
+SELECT_WORKSPACE_DESCRIPTION = \
+""" Select and activate a new workspace. The parameters dict must
+contain a 'workspace' key which is the fully qualified identifier
+of the extension which will create the workspace object. """
+
+
 enamldef UIManifest(PluginManifest):
     """ The manifest for the Enaml workbench ui plugin.
 
@@ -61,14 +104,19 @@ enamldef UIManifest(PluginManifest):
     factory = ui_plugin_factory
     ExtensionPoint:
         id = 'application_factory'
+        description = APPLICATION_FACTORY_DESCRIPTION
     ExtensionPoint:
         id = 'window_factory'
+        description = WINDOW_FACTORY_DESCRIPTION
     ExtensionPoint:
         id = 'branding'
+        description = BRANDING_DESCRIPTION
     ExtensionPoint:
         id = 'actions'
+        description = ACTIONS_DESCRIPTION
     ExtensionPoint:
         id = 'workspaces'
+        description = WORKSPACES_DESCRIPTION
     Extension:
         id = 'default_application_factory'
         point = 'enaml.workbench.ui.application_factory'
@@ -84,7 +132,9 @@ enamldef UIManifest(PluginManifest):
         point = 'enaml.workbench.core.commands'
         Command:
             id = 'enaml.workbench.ui.close_workspace'
+            description = CLOSE_WORKSPACE_DESCRIPTION
             handler = close_workspace
         Command:
             id = 'enaml.workbench.ui.select_workspace'
+            description = SELECT_WORKSPACE_DESCRIPTION
             handler = select_workspace

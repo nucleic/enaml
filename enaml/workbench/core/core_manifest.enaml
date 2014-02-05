@@ -17,22 +17,20 @@ def core_plugin_factory():
     return CorePlugin()
 
 
+COMMANDS_DESCRIPTION = \
+""" Extensions to this point may contribute `Command` objects which can
+be invoked via the `invoke_command` method of the CorePlugin instance.
+Commands can be provided by declaring them as children of the Extension
+and/or by declaring a factory function which takes the workbench as an
+argument and returns a list of Command instances. """
+
+
 enamldef CoreManifest(PluginManifest):
     """ The manifest for the Enaml workbench core plugin.
-
-    The core plugin provides the following extension points:
-
-    'enaml.workbench.core.commands'
-
-        Extensions to this point may contribute `Command` objects which
-        can be invoked via the `invoke_command` method of the CorePlugin
-        instance. Commands can be provided both by declaring them as
-        children of the Extension, and by providing an extension factory
-        function which accepts the workbench as an argument and returns
-        a list of Command instances.
 
     """
     id = 'enaml.workbench.core'
     factory = core_plugin_factory
     ExtensionPoint:
         id = 'commands'
+        description = COMMANDS_DESCRIPTION
