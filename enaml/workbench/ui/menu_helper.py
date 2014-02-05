@@ -20,7 +20,9 @@ from .menu_item import MenuItem
 
 import enaml
 with enaml.imports():
-    from .workbench_menus import WorkbenchAction, WorkbenchMenu
+    from .workbench_menus import (
+        WorkbenchAction, WorkbenchActionGroup, WorkbenchMenu
+    )
 
 
 def solve_ordering(nodes):
@@ -56,15 +58,15 @@ def solve_ordering(nodes):
         before = node.item.before
         if before:
             if before not in variables:
-                msg = "item '%s' has invalid 'before' reference '%s'"
-                raise ValueError(msg, (node.path, before))
+                msg = "item '%s' has invalid `before` reference '%s'"
+                raise ValueError(msg % (node.path, before))
             target_var = variables[before]
             constraints.append((this_var + 0.1 <= target_var) | 'strong')
         after = node.item.after
         if after:
             if after not in variables:
-                msg = "item '%s' has invalid 'after' reference '%s'"
-                raise ValueError(msg, (node.path, after))
+                msg = "item '%s' has invalid `after` reference '%s'"
+                raise ValueError(msg % (node.path, after))
             target_var = variables[after]
             constraints.append((target_var + 0.1 <= this_var) | 'strong')
         prev_var = this_var
@@ -166,20 +168,25 @@ class MenuNode(PathNode):
         """
         group_map = {}
         item_groups = self.item.groups
+
         for group in item_groups:
             if group.id in group_map:
                 msg = "menu item '%s' has duplicate group '%s'"
                 raise ValueError(msg % (self.path, group.id))
             group_map[group.id] = group
+
+        if u'' not in group_map:
+            group = Group()
+            group_map[u''] = group
+            item_groups.append(group)
+
         return group_map, item_groups
 
     def collect_child_groups(self):
-        """ Yield the lists of ordered grouped children.
+        """ Yield the ordered and grouped children.
 
         """
         group_map, item_groups = self.group_data()
-        if u'' not in group_map:
-            group_map[u''] = Group()
 
         grouped = defaultdict(list)
         for child in self.children:
@@ -192,20 +199,44 @@ class MenuNode(PathNode):
         for group in item_groups:
             if group.id in grouped:
                 nodes = grouped.pop(group.id)
-                yield solve_ordering(nodes)
+                yield group, solve_ordering(nodes)
 
-        if u'' in grouped:
-            nodes = grouped[u'']
-            yield solve_ordering(nodes)
+    def create_children(self, group, nodes):
+        """ Create the child widgets for the given group of nodes.
+
+        This will assemble the nodes and setup the action groups.
+
+        """
+        result = []
+        actions = []
+        children = [node.assemble() for node in nodes]
+
+        def process_actions():
+            if actions:
+                wag = WorkbenchActionGroup(group=group)
+                wag.insert_children(None, actions)
+                result.append(wag)
+                del actions[:]
+
+        for child in children:
+            if isinstance(child, WorkbenchAction):
+                actions.append(child)
+            else:
+                process_actions()
+                child.group = group
+                result.append(child)
+
+        process_actions()
+
+        return result
 
     def assemble_children(self):
         """ Assemble the list of child objects for the menu.
 
         """
         children = []
-        for group in self.collect_child_groups():
-            # TODO parent with a WorkbenchGroup if needed.
-            children.extend(node.assemble() for node in group)
+        for group, nodes in self.collect_child_groups():
+            children.extend(self.create_children(group, nodes))
             children.append(Action(separator=True))
         if children:
             children.pop()
@@ -228,10 +259,11 @@ class RootMenuNode(MenuNode):
 
     """
     def group_data(self):
-        """ A root menu node does not have group data.
+        """ Get the group data for the root menu node.
 
         """
-        return {}, []
+        group = Group()
+        return {u'': group}, [group]
 
     def assemble(self):
         """ Assemble and return the list of root menu bar menus.
