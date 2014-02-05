@@ -12,8 +12,8 @@ from atom.api import Typed
 from enaml.layout.geometry import Pos, Rect, Size
 from enaml.widgets.window import ProxyWindow
 
-from .QtCore import Qt, QPoint, QRect, QSize
-from .QtGui import QApplication, QIcon
+from .QtCore import Qt, QPoint, QRect, QSize, Signal
+from .QtGui import QApplication, QIcon, QCloseEvent
 
 from .q_resource_helpers import get_cached_qicon
 from .q_window_base import QWindowBase
@@ -35,7 +35,12 @@ class QWindow(QWindowBase):
     on its central widget, unless the user explicitly changes them.
 
     """
-    def __init__(self, parent=None, flags=Qt.Widget):
+
+    #: A signal which is emitted when the user ask to close the window.
+    #: It is then up to the declaration to validate or not this request.
+    closing_request = Signal(QCloseEvent) 
+    
+    def __init__(self, parent=None):
         """ Initialize a QWindow.
 
         Parameters
@@ -44,17 +49,23 @@ class QWindow(QWindowBase):
             The parent of the window.
 
         """
-        super(QWindow, self).__init__(parent, Qt.Window | flags)
+        super(QWindow, self).__init__(parent, Qt.Window)
+        self.closing_requested = False
 
     def closeEvent(self, event):
         """ Handle the QCloseEvent from the window system.
 
-        By default, this handler calls the superclass' method to close
-        the window and then emits the 'closed' signal.
+        If no previous QCloseEvent is registered emit the closing_request
+        signal. Otherwise calls the superclass' method to close the window 
+        and then emits the 'closed' signal.
 
         """
-        super(QWindow, self).closeEvent(event)
-        self.closed.emit()
+        if not self.closing_requested:
+            self.closing_requested = True
+            self.closing_request.emit(event)
+        else:
+            super(QWindow, self).closeEvent(event)
+            self.closed.emit()
 
 
 class QtWindow(QtWidget, ProxyWindow):
@@ -100,6 +111,7 @@ class QtWindow(QtWidget, ProxyWindow):
         if d.icon:
             self.set_icon(d.icon)
         self.widget.closed.connect(self.on_closed)
+        self.widget.closing.connect(self.on_closing)
 
     def init_layout(self):
         """ Initialize the widget layout.
@@ -124,6 +136,19 @@ class QtWindow(QtWidget, ProxyWindow):
         d = self.declaration.central_widget()
         if d is not None:
             return d.proxy.widget
+
+    def on_closing_request(self, event):
+        """The signal handler for the 'closing_request' signal.
+
+        This method will call the validate_close function on the 
+        declaration.
+        
+        """ 
+        if self.declaration._handle_closing_request():
+            self.widget.closeEvent(event)
+        else:
+            self.widget.closing_requested = False
+            event.ignore()
 
     def on_closed(self):
         """ The signal handler for the 'closed' signal.

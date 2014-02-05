@@ -10,7 +10,7 @@ from atom.api import Typed
 from enaml.widgets.dialog import ProxyDialog
 
 from .QtCore import Qt, Signal
-from .QtGui import QDialog
+from .QtGui import QDialog, QCloseEvent
 
 from .q_window_base import QWindowBase
 from .qt_window import QtWindow
@@ -25,6 +25,11 @@ class QWindowDialog(QDialog, QWindowBase):
     # inheritance with PyQt. Note that this signal is never emitted
     # it is here only for API compatibility with the base class.
     closed = Signal()
+    
+    # This signal must be redefined, or the QtWindow base class will
+    # not be able to connect to it. This is a quirk of using multiple
+    # inheritance with PyQt.
+    closing_request = Signal(QCloseEvent)
 
     def __init__(self, parent=None, flags=Qt.Widget):
         """ Initialize a QWindowDialog.

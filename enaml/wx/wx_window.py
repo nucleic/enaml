@@ -41,6 +41,7 @@ class wxCustomWindow(wx.Frame):
         self.SetSizer(wxSingleWidgetSizer())
         self.Bind(wx.EVT_MENU, self.OnMenu)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.closing_requested = False
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -65,7 +66,10 @@ class wxCustomWindow(wx.Frame):
         close. Instead it just sets the visibility to False.
 
         """
-        self.Hide()
+        if not self.closing_requested:
+            self.closing_requested = True
+        else:
+            self.Hide()
 
     #--------------------------------------------------------------------------
     # Public API
@@ -207,10 +211,13 @@ class WxWindow(WxWidget, ProxyWindow):
 
         """
         event.Skip()
-        # Make sure the frame is not modal when closing, or no other
-        # windows will be unblocked.
-        self.widget.MakeModal(False)
-        self.declaration._handle_close()
+        if self.declaration._handle_closing_request():
+            # Make sure the frame is not modal when closing, or no other
+            # windows will be unblocked.
+            self.widget.MakeModal(False)
+            self.declaration._handle_close()
+        else:
+            self.widget.closing_requested = False
 
     def on_layout_requested(self, event):
         """ Handle the layout request event from the central widget.

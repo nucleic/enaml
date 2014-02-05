@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import (
     Unicode, Enum, Bool, Event, Coerced, Typed, ForwardTyped, observe,
-    set_default
+    set_default, Callable
 )
 
 from enaml.application import deferred_call
@@ -126,6 +126,9 @@ class Window(Widget):
     #: If this value is set to True, the window will be destroyed on
     #: the completion of the `closed` event.
     destroy_on_close = d_(Bool(True))
+
+    #: Callable
+    validate_close = d_(Callable(lambda x: True))
 
     #: The title bar icon.
     icon = d_(Typed(Icon))
@@ -391,6 +394,11 @@ class Window(Widget):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    def _handle_closing_request(self):
+        """
+        """
+        return self.validate_close(self)
+    
     def _handle_close(self):
         """ Handle the close event from the proxy widget.
 
