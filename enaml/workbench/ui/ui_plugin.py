@@ -65,6 +65,20 @@ class UIPlugin(Plugin):
         self._release_model()
         self._release_application()
 
+    @property
+    def window(self):
+        """ Get a reference to the primary window.
+
+        """
+        return self._window
+
+    @property
+    def workspace(self):
+        """ Get a reference to the currently active workspace.
+
+        """
+        return self._model.workspace
+
     def show_window(self):
         """ Ensure the underlying window object is shown.
 
@@ -88,6 +102,12 @@ class UIPlugin(Plugin):
 
         """
         self._application.stop()
+
+    def close_window(self):
+        """ Close the underlying workbench window.
+
+        """
+        self._window.close()
 
     def close_workspace(self):
         """ Close and dispose of the currently active workspace.

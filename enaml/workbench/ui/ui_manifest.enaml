@@ -37,6 +37,14 @@ def window_factory(workbench):
     return WorkbenchWindow()
 
 
+def close_window(event):
+    """ The command handler for closing the workbench window.
+
+    """
+    ui = event.workbench.get_plugin('enaml.workbench.ui')
+    ui.close_window()
+
+
 def close_workspace(event):
     """ The command handler for closing the workspace.
 
@@ -86,6 +94,10 @@ window. The extension factory function should accep the workbench as
 an argument and return an instance of Workspace. """
 
 
+CLOSE_WINDOW_DESCRIPTION = \
+""" Close the primary workbench window. """
+
+
 CLOSE_WORKSPACE_DESCRIPTION = \
 """ Close the currently active workspace. """
 
@@ -130,6 +142,10 @@ enamldef UIManifest(PluginManifest):
     Extension:
         id = 'default_commands'
         point = 'enaml.workbench.core.commands'
+        Command:
+            id = 'enaml.workbench.ui.close_window'
+            description = CLOSE_WINDOW_DESCRIPTION
+            handler = close_window
         Command:
             id = 'enaml.workbench.ui.close_workspace'
             description = CLOSE_WORKSPACE_DESCRIPTION
