@@ -1,0 +1,216 @@
+from atom.api import *
+from enaml.layout.api import *
+from enaml.widgets.api import *
+from enaml.workbench.api import Extension, PluginManifest
+from enaml.workbench.ui.api import (
+	ActionItem, Branding, MenuItem, Group, Workspace
+)
+
+
+enamldef FirstManifest(PluginManifest):
+	id = 'scc.first'
+	Extension:
+		id = 'actions'
+		point = 'enaml.workbench.ui.actions'
+		MenuItem:
+			path = '/edit'
+			label = 'Edit'
+			after = 'file'
+			before = 'workspace'
+			Group:
+				id = 'beggining'
+		ActionItem:
+			path = '/edit/undo'
+			label = 'Undo'
+			group = 'beggining'
+		ActionItem:
+			path = '/edit/cut'
+			label = 'Cut'
+			shortcut = 'Ctrl+X'
+		ActionItem:
+			path = '/edit/copy'
+			label = 'Copy'
+			shortcut = 'Ctrl+C'
+		ActionItem:
+			path = '/edit/paste'
+			label = 'Paste'
+			shortcut = 'Ctrl+V'
+
+
+enamldef SecondManifest(PluginManifest):
+	id = 'scc.second'
+	Extension:
+		id = 'actions'
+		point = 'enaml.workbench.ui.actions'
+		MenuItem:
+			path = '/preferences'
+			label = 'Preferences'
+			after = 'file'
+			before = 'workspace'
+		MenuItem:
+			path = '/window'
+			label = 'Window'
+			before = 'workspace'
+		MenuItem:
+			path = '/help'
+			label = 'Help'
+			after = 'workspace'
+
+
+enamldef ThirdManifest(PluginManifest):
+	id = 'scc.third'
+	Extension:
+		id = 'actions'
+		point = 'enaml.workbench.ui.actions'
+		MenuItem:
+			path = '/debug'
+			label = 'Debug'
+			after = 'file'
+		MenuItem:
+			path = '/options'
+			label = 'Options'
+		MenuItem:
+			path = '/tools'
+			label = 'Tools'
+			before = 'workspace'
+
+
+enamldef FirstView(Container):
+	Html:
+		source = 'This is some simple content'
+
+
+enamldef SecondView(Container):
+	padding = 0
+	Form:
+		Label:
+			text = 'First Name'
+		Field:
+			pass
+		Label:
+			text = 'Last Name'
+		Field:
+			pass
+		Label:
+			text = 'Address'
+		Field:
+			pass
+
+
+enamldef ThirdView(Container):
+	padding = 0
+	DockArea:
+		layout = HSplitLayout('first', 'second')
+		DockItem:
+			name = 'first'
+			FirstView:
+				pass
+		DockItem:
+			name = 'second'
+			SecondView:
+				pass
+
+
+class MyWorkspace(Workspace):
+
+	content_def = Subclass(Container)
+
+	plugin_def = Subclass(PluginManifest)
+
+	plugin_id = Unicode()
+
+	def start(self):
+		self.content = self.content_def()
+		plugin = self.plugin_def()
+		self.plugin_id = plugin.id
+		self.workbench.register(plugin)
+
+	def stop(self):
+		self.workbench.unregister(self.plugin_id)
+
+
+def first_view_factory(workbench):
+	space = MyWorkspace()
+	space.window_title = 'First View'
+	space.content_def = FirstView
+	space.plugin_def = FirstManifest
+	return space
+
+
+def second_view_factory(workbench):
+	space = MyWorkspace()
+	space.window_title = 'Second View'
+	space.content_def = SecondView
+	space.plugin_def = SecondManifest
+	return space
+
+
+def third_view_factory(workbench):
+	space = MyWorkspace()
+	space.window_title = 'Third View'
+	space.content_def = ThirdView
+	space.plugin_def = ThirdManifest
+	return space
+
+
+enamldef SampleManifest(PluginManifest):
+	id = 'scc.sample'
+	Extension:
+		id = 'branding'
+		point = 'enaml.workbench.ui.branding'
+		Branding:
+			title = 'Sample Plugin App'
+	Extension:
+		id = 'actions'
+		point = 'enaml.workbench.ui.actions'
+		MenuItem:
+			path = '/file'
+			label = 'File'
+			Group:
+				id = 'user'
+			Group:
+				id = 'reserved'
+		MenuItem:
+			path = '/workspace'
+			label = 'Workspace'
+			Group:
+				id = 'primary'
+		ActionItem:
+			path = '/file/close'
+			label = 'Close'
+			group = 'reserved'
+			command = 'enaml.workbench.ui.close_window'
+		ActionItem:
+			path = '/workspace/first'
+			label = 'First'
+			group = 'primary'
+			command = 'enaml.workbench.ui.select_workspace'
+			parameters = {'workspace': 'scc.sample.first_view'}
+		ActionItem:
+			path = '/workspace/second'
+			label = 'Second'
+			group = 'primary'
+			command = 'enaml.workbench.ui.select_workspace'
+			parameters = {'workspace': 'scc.sample.second_view'}
+		ActionItem:
+			path = '/workspace/third'
+			label = 'Third'
+			group = 'primary'
+			command = 'enaml.workbench.ui.select_workspace'
+			parameters = {'workspace': 'scc.sample.third_view'}
+		ActionItem:
+			path = '/workspace/close'
+			label = 'Close'
+			command = 'enaml.workbench.ui.close_workspace'
+	Extension:
+		id = 'first_view'
+		point = 'enaml.workbench.ui.workspaces'
+		factory = first_view_factory
+	Extension:
+		id = 'second_view'
+		point = 'enaml.workbench.ui.workspaces'
+		factory = second_view_factory
+	Extension:
+		id = 'third_view'
+		point = 'enaml.workbench.ui.workspaces'
+		factory = third_view_factory
