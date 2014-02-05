@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.application import deferred_call
 from enaml.widgets.action import Action
 from enaml.widgets.action_group import ActionGroup
 from enaml.widgets.menu import Menu
@@ -15,14 +16,19 @@ from .group import Group
 from .menu_item import MenuItem
 
 
-def invoke_action(workbench, action_item):
+def invoke_action(workbench, item):
     """ Invoke the command indicated by the given action item.
 
     """
     core = workbench.get_plugin('enaml.workbench.core')
-    command = action_item.command_id
-    parameters = action_item.parameters
-    core.invoke_command(command, parameters, action_item)
+    core.invoke_command(item.command, item.parameters, item)
+
+
+def action_text(text, shortcut):
+    """ Concatenate action text and a keyboard shortcut.
+
+    """
+    return u'\t'.join(filter(None, (text, shortcut)))
 
 
 enamldef WorkbenchAction(Action):
@@ -30,16 +36,16 @@ enamldef WorkbenchAction(Action):
 
     """
     attr workbench: Workbench
-    attr action_item: ActionItem
-    text << action_item.label
-    visible << action_item.visible
-    enabled << action_item.enabled
-    checkable << action_item.checkable
-    checked := action_item.checked
-    icon << action_item.icon
-    tool_tip << action_item.tool_tip
-    status_tip << action_item.status_tip
-    triggered :: invoke_action(workbench, action_item)
+    attr item: ActionItem
+    text << action_text(item.label, item.shortcut)
+    visible << item.visible
+    enabled << item.enabled
+    checkable << item.checkable
+    checked := item.checked
+    icon << item.icon
+    tool_tip << item.tool_tip
+    status_tip << item.status_tip
+    triggered :: deferred_call(invoke_action, workbench, item)
 
 
 enamldef WorkbenchGroup(ActionGroup):
@@ -57,7 +63,7 @@ enamldef WorkbenchMenu(Menu):
 
     """
     attr group: Group
-    attr menu_item: MenuItem
-    title << menu_item.label
-    visible << menu_item.visible and group.visible
-    enabled << menu_item.enabled and group.enabled
+    attr item: MenuItem
+    title << item.label
+    visible << item.visible# and group.visible
+    enabled << item.enabled# and group.enabled
