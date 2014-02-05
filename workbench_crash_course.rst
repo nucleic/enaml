@@ -1,5 +1,5 @@
-Enaml Workbench Develop Crash Course
-====================================
+Enaml Workbench Developer Crash Course
+======================================
 This document is a short introduction to the Enaml Workbench plugin framework.
 It is intended for developers of plugin applications that need to get up and
 running with the framework in a short amount of time. The Workbench framework
