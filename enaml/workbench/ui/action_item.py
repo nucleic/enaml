@@ -15,28 +15,29 @@ class ActionItem(Declarative):
     """ A declarative class for defining a workbench action item.
 
     """
-    #: The globally unique identifier for the action item.
-    id = d_(Unicode())
+    #: The "/" separated path to this item in the menu bar.
+    path = d_(Unicode())
 
-    #: The identifier of the parent menu in which the action resides. A
-    #: group can be specified by appending a colon followed by the name
-    #: of the desired group. e.g. file:close_group
-    menu_location = d_(Unicode())
+    #: The parent menu group to which this action item belongs.
+    group = d_(Unicode())
 
-    #: The item id before which this action will appear.
+    #: The action item will appear before this item in its group.
     before = d_(Unicode())
 
-    #: The item id after which this action will appear.
+    #: The action item will appear after this item in its group.
     after = d_(Unicode())
 
     #: The id of the Command invoked by the action.
-    command_id = d_(Unicode())
+    command = d_(Unicode())
 
     #: The user parameters to pass to the command handler.
     parameters = d_(Dict())
 
     #: The display label for the action.
     label = d_(Unicode())
+
+    #: The shortcut keybinding for the action. e.g. Ctrl+C
+    shortcut = d_(Unicode())
 
     #: Whether or not the action is visible.
     visible = d_(Bool(True))

@@ -16,18 +16,16 @@ class MenuItem(Declarative):
     """ A declarative class for defining a menu in the workbench.
 
     """
-    #: The globally unique identifier for the menu.
-    id = d_(Unicode())
+    #: The "/" separated path to this item in the menu bar.
+    path = d_(Unicode())
 
-    #: The identifier of the parent menu in which the menu resides. A
-    #: group can be specified by appending a colon followed by the name
-    #: of the desired group. e.g. file:close_group
-    menu_location = d_(Unicode())
+    #: The parent menu group to which this menu item belongs.
+    group = d_(Unicode())
 
-    #: The item id before which this item will appear.
+    #: The menu item will appear before this item in its group.
     before = d_(Unicode())
 
-    #: The item id after which this item will appear.
+    #: The menu item will appear after this item in its group.
     after = d_(Unicode())
 
     #: The display label for the menu.
