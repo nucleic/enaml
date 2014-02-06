@@ -17,7 +17,7 @@ from enaml.stdlib.message_box import question
 
 def confirm_close(window, event):
     button = question(
-        window, 'Example Application', 'Do you really want to quit?'
+        window, 'Example Application', 'Are you sure you want to quit?'
     )
     if button and button.action == 'accept':
         event.accept()
