@@ -10,8 +10,8 @@ from atom.api import Bool, Unicode
 from enaml.core.declarative import Declarative, d_
 
 
-class Group(Declarative):
-    """ A declarative class for defining a group in a menu.
+class ItemGroup(Declarative):
+    """ A declarative class for defining an item group in a menu.
 
     """
     #: The identifier of group within the menu.

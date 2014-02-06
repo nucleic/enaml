@@ -15,7 +15,7 @@ from enaml.widgets.action import Action
 from enaml.workbench.workbench import Workbench
 
 from .action_item import ActionItem
-from .group import Group
+from .item_group import ItemGroup
 from .menu_item import MenuItem
 
 import enaml
@@ -163,11 +163,11 @@ class MenuNode(PathNode):
         -------
         result : tuple
             A tuple of (dict, list) which holds the mapping of group
-            id to Group object, and the flat list of ordered groups.
+            id to ItemGroup object, and the flat list of ordered groups.
 
         """
         group_map = {}
-        item_groups = self.item.groups
+        item_groups = self.item.item_groups
 
         for group in item_groups:
             if group.id in group_map:
@@ -176,7 +176,7 @@ class MenuNode(PathNode):
             group_map[group.id] = group
 
         if u'' not in group_map:
-            group = Group()
+            group = ItemGroup()
             group_map[u''] = group
             item_groups.append(group)
 
@@ -262,7 +262,7 @@ class RootMenuNode(MenuNode):
         """ Get the group data for the root menu node.
 
         """
-        group = Group()
+        group = ItemGroup()
         return {u'': group}, [group]
 
     def assemble(self):

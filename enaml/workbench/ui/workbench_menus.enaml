@@ -12,7 +12,7 @@ from enaml.widgets.menu import Menu
 from enaml.workbench.workbench import Workbench
 
 from .action_item import ActionItem
-from .group import Group
+from .item_group import ItemGroup
 from .menu_item import MenuItem
 
 
@@ -52,7 +52,7 @@ enamldef WorkbenchActionGroup(ActionGroup):
     """ A custom action group def for use in the Enaml workbench.
 
     """
-    attr group: Group
+    attr group: ItemGroup
     visible << group.visible
     enabled << group.enabled
     exclusive << group.exclusive
@@ -62,7 +62,7 @@ enamldef WorkbenchMenu(Menu):
     """ A custom menu def for use in the Enaml workbench.
 
     """
-    attr group: Group
+    attr group: ItemGroup
     attr item: MenuItem
     title << item.label
     visible << item.visible and group.visible

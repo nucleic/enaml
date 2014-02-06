@@ -9,7 +9,7 @@ from atom.api import Bool, Unicode
 
 from enaml.core.declarative import Declarative, d_
 
-from .group import Group
+from .item_group import ItemGroup
 
 
 class MenuItem(Declarative):
@@ -38,8 +38,8 @@ class MenuItem(Declarative):
     enabled = d_(Bool(True))
 
     @property
-    def groups(self):
-        """ Get the groups defined on this menu item.
+    def item_groups(self):
+        """ Get the item groups defined on this menu item.
 
         """
-        return [c for c in self.children if isinstance(c, Group)]
+        return [c for c in self.children if isinstance(c, ItemGroup)]
