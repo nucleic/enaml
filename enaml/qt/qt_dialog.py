@@ -5,37 +5,57 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed
+from atom.api import Typed, atomref
 
 from enaml.widgets.dialog import ProxyDialog
+from enaml.widgets.window import CloseEvent
 
-from .QtCore import Qt, Signal
+from .QtCore import Qt
 from .QtGui import QDialog
 
+from .q_deferred_caller import deferredCall
 from .q_window_base import QWindowBase
-from .qt_window import QtWindow
+from .qt_window import QtWindow, finalize_close
 
 
 class QWindowDialog(QDialog, QWindowBase):
     """ A window base subclass which implements dialog behavior.
 
     """
-    # This signal must be redefined, or the QtWindow base class will
-    # not be able to connect to it. This is a quirk of using multiple
-    # inheritance with PyQt. Note that this signal is never emitted
-    # it is here only for API compatibility with the base class.
-    closed = Signal()
-
-    def __init__(self, parent=None, flags=Qt.Widget):
+    def __init__(self, proxy, parent=None, flags=Qt.Widget):
         """ Initialize a QWindowDialog.
 
         Parameters
         ----------
+        proxy : QtDialog
+            The proxy object which owns this dialog. Only an atomref
+            will be maintained to this object.
+
         parent : QWidget, optional
             The parent of the dialog.
 
+        flags : Qt.WindowFlags, optional
+            The window flags to pass to the parent constructor.
+
         """
         super(QWindowDialog, self).__init__(parent, flags)
+        self._proxy_ref = atomref(proxy)
+
+    def closeEvent(self, event):
+        """ Handle the close event for the dialog.
+
+        """
+        event.accept()
+        if not self._proxy_ref:
+            return
+        proxy = self._proxy_ref()
+        d = proxy.declaration
+        d_event = CloseEvent()
+        d.closing(d_event)
+        if d_event.is_accepted():
+            super(QWindowDialog, self).closeEvent(event)
+        else:
+            event.ignore()
 
 
 class QtDialog(QtWindow, ProxyDialog):
@@ -49,7 +69,7 @@ class QtDialog(QtWindow, ProxyDialog):
 
         """
         flags = self.creation_flags()
-        self.widget = QWindowDialog(self.parent_widget(), flags)
+        self.widget = QWindowDialog(self, self.parent_widget(), flags)
 
     def init_widget(self):
         """ Initialize the underlying widget.
@@ -73,7 +93,7 @@ class QtDialog(QtWindow, ProxyDialog):
             d.accepted()
         else:
             d.rejected()
-        d._handle_close()
+        deferredCall(finalize_close, d)
 
     #--------------------------------------------------------------------------
     # ProxyDialog API

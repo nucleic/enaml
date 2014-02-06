@@ -6,11 +6,10 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Unicode, Enum, Bool, Event, Coerced, Typed, ForwardTyped, observe,
+    Atom, Unicode, Enum, Bool, Event, Coerced, Typed, ForwardTyped, observe,
     set_default
 )
 
-from enaml.application import deferred_call
 from enaml.core.declarative import d_
 from enaml.icon import Icon
 from enaml.layout.geometry import Pos, Rect, Size
@@ -90,6 +89,40 @@ class ProxyWindow(ProxyWidget):
         raise NotImplementedError
 
 
+class CloseEvent(Atom):
+    """ An payload object carried by a window 'closing' event.
+
+    User code can manipulate this object to veto a close event.
+
+    """
+    #: The internal accepted state.
+    _accepted = Bool(True)
+
+    def is_accepted(self):
+        """ Get whether or not the event is accepted.
+
+        Returns
+        -------
+        result : bool
+            True if the event is accepted, False otherwise. The
+            default is True.
+
+        """
+        return self._accepted
+
+    def accept(self):
+        """ Accept the close event and allow the window to be closed.
+
+        """
+        self._accepted = True
+
+    def ignore(self):
+        """ Reject the close event and prevent the window from closing.
+
+        """
+        self._accepted = False
+
+
 class Window(Widget):
     """ A top-level Window component.
 
@@ -134,8 +167,14 @@ class Window(Widget):
     #: Changes to this value after the window is shown will be ignored.
     always_on_top = d_(Bool(False))
 
-    #: An event fired when the window is closed. This event is triggered
-    #: by the proxy object when the window is closed.
+    #: An event fired when the user request the window to be closed.
+    #: This will happen when the user clicks on the "X" button in the
+    #: title bar button, or when the 'close' method is called. The
+    #: payload will be a CloseEvent object which will allow code to
+    #: veto the close event and prevent the window from closing.
+    closing = d_(Event(CloseEvent), writable=False)
+
+    #: An event fired when the window is closed.
     closed = d_(Event(), writable=False)
 
     #: Windows are invisible by default.
@@ -387,15 +426,3 @@ class Window(Widget):
         """
         # The superclass handler implementation is sufficient.
         super(Window, self)._update_proxy(change)
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _handle_close(self):
-        """ Handle the close event from the proxy widget.
-
-        """
-        self.visible = False
-        self.closed()
-        if self.destroy_on_close:
-            deferred_call(self.destroy)

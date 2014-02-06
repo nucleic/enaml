@@ -7,14 +7,15 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Typed
+from atom.api import Typed, atomref
 
 from enaml.layout.geometry import Pos, Rect, Size
-from enaml.widgets.window import ProxyWindow
+from enaml.widgets.window import ProxyWindow, CloseEvent
 
 from .QtCore import Qt, QPoint, QRect, QSize
 from .QtGui import QApplication, QIcon
 
+from .q_deferred_caller import deferredCall
 from .q_resource_helpers import get_cached_qicon
 from .q_window_base import QWindowBase
 from .qt_container import QtContainer
@@ -28,6 +29,19 @@ MODALITY = {
 }
 
 
+def finalize_close(d):
+    """ Finalize the closing of the declaration object.
+
+    This is performed as a deferred call so that the window may fully
+    close before the declaration is potentially destroyed.
+
+    """
+    d.visible = False
+    d.closed()
+    if d.destroy_on_close:
+        d.destroy()
+
+
 class QWindow(QWindowBase):
     """ A window base subclass which handles the close event.
 
@@ -35,26 +49,40 @@ class QWindow(QWindowBase):
     on its central widget, unless the user explicitly changes them.
 
     """
-    def __init__(self, parent=None, flags=Qt.Widget):
+    def __init__(self, proxy, parent=None, flags=Qt.Widget):
         """ Initialize a QWindow.
 
         Parameters
         ----------
+        proxy : QtWindow
+            The proxy object which owns this window. Only an atomref
+            will be maintained to this object.
+
         parent : QWidget, optional
             The parent of the window.
 
+        flags : Qt.WindowFlags, optional
+            The window flags to pass to the parent constructor.
+
         """
         super(QWindow, self).__init__(parent, Qt.Window | flags)
+        self._proxy_ref = atomref(proxy)
 
     def closeEvent(self, event):
-        """ Handle the QCloseEvent from the window system.
-
-        By default, this handler calls the superclass' method to close
-        the window and then emits the 'closed' signal.
+        """ Handle the close event for the window.
 
         """
-        super(QWindow, self).closeEvent(event)
-        self.closed.emit()
+        event.accept()
+        if not self._proxy_ref:
+            return
+        proxy = self._proxy_ref()
+        d = proxy.declaration
+        d_event = CloseEvent()
+        d.closing(d_event)
+        if d_event.is_accepted():
+            deferredCall(finalize_close, d)
+        else:
+            event.ignore()
 
 
 class QtWindow(QtWidget, ProxyWindow):
@@ -81,7 +109,7 @@ class QtWindow(QtWidget, ProxyWindow):
 
         """
         flags = self.creation_flags()
-        self.widget = QWindow(self.parent_widget(), flags)
+        self.widget = QWindow(self, self.parent_widget(), flags)
 
     def init_widget(self):
         """ Initialize the widget.
@@ -99,7 +127,6 @@ class QtWindow(QtWidget, ProxyWindow):
             self.set_modality(d.modality)
         if d.icon:
             self.set_icon(d.icon)
-        self.widget.closed.connect(self.on_closed)
 
     def init_layout(self):
         """ Initialize the widget layout.
@@ -124,14 +151,6 @@ class QtWindow(QtWidget, ProxyWindow):
         d = self.declaration.central_widget()
         if d is not None:
             return d.proxy.widget
-
-    def on_closed(self):
-        """ The signal handler for the 'closed' signal.
-
-        This method will fire the 'closed' event on the declaration.
-
-        """
-        self.declaration._handle_close()
 
     #--------------------------------------------------------------------------
     # Child Events

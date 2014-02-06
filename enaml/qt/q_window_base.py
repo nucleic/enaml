@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .QtCore import Qt, QSize, Signal
+from .QtCore import Qt, QSize
 from .QtGui import QWidget, QLayout
 
 from .q_single_widget_layout import QSingleWidgetLayout
@@ -55,11 +55,6 @@ class QWindowBase(QWidget):
     normally be computed by the layout.
 
     """
-    #: A signal which can be emitted when the window is closed. The
-    #: decision as to when and if to emit this signal is left up to
-    #: the derived classes.
-    closed = Signal()
-
     def __init__(self, parent=None, flags=Qt.WindowFlags(0)):
         """ Initialize a QWindowBase.
 
@@ -67,6 +62,9 @@ class QWindowBase(QWidget):
         ----------
         parent : QWidget, optional
             The parent of the window.
+
+        flags : Qt.WindowFlags, optional
+            The window flags to pass to the parent constructor.
 
         """
         super(QWindowBase, self).__init__(parent, flags)

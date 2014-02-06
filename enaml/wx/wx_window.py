@@ -10,13 +10,26 @@ import wx
 from atom.api import Typed
 
 from enaml.layout.geometry import Pos, Rect, Size
-from enaml.widgets.window import ProxyWindow
+from enaml.widgets.window import ProxyWindow, CloseEvent
 
 from .wx_action import wxAction
 from .wx_container import WxContainer
 from .wx_layout_request import EVT_COMMAND_LAYOUT_REQUESTED
 from .wx_single_widget_sizer import wxSingleWidgetSizer
 from .wx_widget import WxWidget
+
+
+def finalize_close(d):
+    """ Finalize the closing of the declaration object.
+
+    This is performed as a deferred call so that the window may fully
+    close before the declaration is potentially destroyed.
+
+    """
+    d.visible = False
+    d.closed()
+    if d.destroy_on_close:
+        d.destroy()
 
 
 class wxCustomWindow(wx.Frame):
@@ -206,11 +219,17 @@ class WxWindow(WxWidget, ProxyWindow):
         """ The event handler for the EVT_CLOSE event.
 
         """
-        event.Skip()
-        # Make sure the frame is not modal when closing, or no other
-        # windows will be unblocked.
-        self.widget.MakeModal(False)
-        self.declaration._handle_close()
+        d = self.declaration
+        d_event = CloseEvent()
+        d.closing(d_event)
+        if d_event.is_accepted():
+            event.Skip()
+            # Make sure the frame is not modal when closing, or no other
+            # windows will be unblocked.
+            self.widget.MakeModal(False)
+            wx.CallAfter(finalize_close, d)
+        else:
+            event.Veto()
 
     def on_layout_requested(self, event):
         """ Handle the layout request event from the central widget.
