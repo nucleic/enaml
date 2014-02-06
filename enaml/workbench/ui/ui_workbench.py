@@ -22,7 +22,7 @@ class UIWorkbench(Workbench):
     def run(self):
         """ Run the UI workbench application.
 
-        This method will load the workbench ui plugin and start the
+        This method will load the core and ui plugins and start the
         main application event loop. This is a blocking call which
         will return when the application event loop exits.
 

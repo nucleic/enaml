@@ -64,20 +64,23 @@ def select_workspace(event):
 APPLICATION_FACTORY_DESCRIPTION = \
 """ An Extension to this point can be used to provide a custom
 application object for the workbench. The extension factory should
-accept no arguments and return an Application instance. """
+accept no arguments and return an Application instance. The highest
+ranking extension will be chosen to create the application."""
 
 
 WINDOW_FACTORY_DESCRIPTION = \
 """ An Extension to this point can be used to provide a custom main
 window for the workbench. The extension factory should accept the
-workbench as an argument and return a WorkbenchWindow instance. """
+workbench as an argument and return a WorkbenchWindow instance. The
+highest ranking extension will be chosen to create the window."""
 
 
 BRANDING_DESCRIPTION = \
 """ An Extension to this point can be used to provide a custom window
 title and icon to the primary workbench window. A Branding object can
 be declared as the child of the extension, or created by the extension
-factory function which accepts the workbench as an argument. """
+factory function which accepts the workbench as an argument. The highest
+ranking extension will be chosen to provide the branding."""
 
 
 ACTIONS_DESCRIPTION = \

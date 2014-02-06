@@ -33,7 +33,7 @@ class Workspace(Declarative):
 
         This method is called when the UI plugin starts the workspace.
         This can be used to load content or any other resource which
-        should exisit for the life of the workspace.
+        should exist for the life of the workspace.
 
         """
         pass
