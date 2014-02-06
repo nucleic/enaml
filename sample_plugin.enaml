@@ -3,7 +3,7 @@ from enaml.layout.api import *
 from enaml.widgets.api import *
 from enaml.workbench.api import Extension, PluginManifest
 from enaml.workbench.ui.api import (
-    ActionItem, Branding, MenuItem, Group, Workspace
+    ActionItem, Branding, MenuItem, ItemGroup, Workspace
 )
 
 
@@ -17,7 +17,7 @@ enamldef FirstManifest(PluginManifest):
             label = 'Edit'
             after = 'file'
             before = 'workspace'
-            Group:
+            ItemGroup:
                 id = 'beggining'
         ActionItem:
             path = '/edit/undo'
@@ -166,14 +166,14 @@ enamldef SampleManifest(PluginManifest):
         MenuItem:
             path = '/file'
             label = 'File'
-            Group:
+            ItemGroup:
                 id = 'user'
-            Group:
+            ItemGroup:
                 id = 'reserved'
         MenuItem:
             path = '/workspace'
             label = 'Workspace'
-            Group:
+            ItemGroup:
                 id = 'primary'
         ActionItem:
             path = '/file/close'
