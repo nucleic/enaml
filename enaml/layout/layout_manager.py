@@ -256,10 +256,6 @@ class LayoutManager(Atom):
         pairs = ((d.width, strength), (d.height, strength))
         self._push_edit_vars(pairs)
 
-        # If there are no layout items, bail early.
-        if not items:
-            return
-
         # Generate the constraints for the layout system. The size hint
         # of the root item is ignored since the input to the solver is
         # the suggested size of the root.
@@ -353,12 +349,6 @@ class LayoutManager(Atom):
 
         """
         d = self._root_item.constrainable()
-        shrink = ('ignore', 'weak')
-        if (d.resist_width in shrink and
-            d.resist_height in shrink and
-            d.hug_width in shrink and
-            d.hug_height in shrink):
-            return (0.0, 0.0)
         width = d.width
         height = d.height
         solver = self._solver
@@ -380,19 +370,12 @@ class LayoutManager(Atom):
             The 2-tuple of (width, height) max size values.
 
         """
-        max_v = 16777215.0  # max allowed by Qt
         d = self._root_item.constrainable()
-        expand = ('ignore', 'weak')
-        if (d.hug_width in expand and
-            d.hug_height in expand and
-            d.limit_width in expand and
-            d.limit_height in expand):
-            return (max_v, max_v)
         width = d.width
         height = d.height
         solver = self._solver
-        solver.suggestValue(width, max_v)
-        solver.suggestValue(height, max_v)
+        solver.suggestValue(width, 16777215.0)  # max allowed by Qt
+        solver.suggestValue(height, 16777215.0)
         solver.updateVariables()
         return (width.value(), height.value())
 
