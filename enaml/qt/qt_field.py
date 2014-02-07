@@ -86,11 +86,17 @@ class QtField(QtControl, ProxyField):
 
         """
         d = self.declaration
+        v = d.validator
+
         text = self.widget.text()
-        if d.validator and not d.validator.validate(text):
-            text = d.validator.fixup(text)
-            if not d.validator.validate(text):
+        if v and not v.validate(text):
+            text = v.fixup(text)
+            if not v.validate(text):
                 return
+
+        if text != self.widget.text():
+            self.widget.setText(text)
+
         self._clear_error_state()
         d.text = text
 
@@ -101,8 +107,10 @@ class QtField(QtControl, ProxyField):
         # A temporary hack until styles are implemented
         if not self._guard & ERROR_FLAG:
             self._guard |= ERROR_FLAG
-            s = 'QLineEdit { border: 2px solid red; background: rgb(255, 220, 220); }'
+            s = u'QLineEdit { border: 2px solid red; background: rgb(255, 220, 220); }'
             self.widget.setStyleSheet(s)
+            v = self.declaration.validator
+            self.widget.setToolTip(v and v.message or u'')
 
     def _clear_error_state(self):
         """ Clear the error state of the widget.
@@ -111,7 +119,21 @@ class QtField(QtControl, ProxyField):
         # A temporary hack until styles are implemented
         if self._guard & ERROR_FLAG:
             self._guard &= ~ERROR_FLAG
-            self.widget.setStyleSheet('')
+            self.widget.setStyleSheet(u'')
+            self.widget.setToolTip(u'')
+
+    def _maybe_valid(self, text):
+        """ Get whether the text is valid or can be valid.
+
+        Returns
+        -------
+        result : bool
+            True if the text is valid, or can be made to be valid,
+            False otherwise.
+
+        """
+        v = self.declaration.validator
+        return v is None or v.validate(text) or v.validate(v.fixup(text))
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -130,14 +152,11 @@ class QtField(QtControl, ProxyField):
         """ The signal handler for the 'textEdited' signal.
 
         """
-        # Temporary kludge until error style is fully implemented
-        d = self.declaration
-        if d.validator and not d.validator.validate(self.widget.text()):
+        if not self._maybe_valid(self.widget.text()):
             self._set_error_state()
-            self.widget.setToolTip(d.validator.message)
         else:
             self._clear_error_state()
-            self.widget.setToolTip(u'')
+
         if self._text_timer is not None:
             self._text_timer.start()
 
