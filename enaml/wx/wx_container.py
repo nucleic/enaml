@@ -9,6 +9,8 @@ from collections import deque
 
 import wx
 
+import kiwisolver as kiwi
+
 from atom.api import Atom, Bool, Callable, Float, Typed
 
 from enaml.layout.layout_manager import LayoutItem, LayoutManager
@@ -162,10 +164,23 @@ class WxChildContainerItem(WxLayoutItem):
     def constraints(self):
         """ Get the user constraints for the item.
 
-        A child container does not expose its user layout constraints.
+        A child container does not expose its user defined constraints
+        to the parent container. It instead generates constraints for
+        its minimum and maximum size.
 
         """
-        return []
+        widget = self.widget
+        min_size = widget.GetMinSize()
+        max_size = widget.GetMaxSize()
+        d = self.declaration
+        strength = 10 * kiwi.strength.medium
+        cns = [
+            (d.width >= min_size.width) | strength,
+            (d.width <= max_size.width) | strength,
+            (d.height >= min_size.height) | strength,
+            (d.height <= max_size.height) | strength,
+        ]
+        return cns
 
 
 class wxContainer(wx.PyPanel):
@@ -480,13 +495,8 @@ class WxContainer(WxFrame, ProxyContainer):
             return
 
         widget.SetBestSize(wx.Size(*manager.best_size()))
-        if not isinstance(widget.GetParent(), wxContainer):
-            # Only set min and max size if the parent is not a container.
-            # The manager needs to be the ultimate authority when dealing
-            # with nested containers, since QWidgetItem respects min and
-            # max size when calling setGeometry().
-            widget.SetMinSize(wx.Size(*manager.min_size()))
-            widget.SetMaxSize(wx.Size(*manager.max_size()))
+        widget.SetMinSize(wx.Size(*manager.min_size()))
+        widget.SetMaxSize(wx.Size(*manager.max_size()))
 
     def _create_layout_items(self):
         """ Create a layout items for the container decendants.

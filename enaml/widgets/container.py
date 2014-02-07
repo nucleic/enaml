@@ -59,8 +59,12 @@ class Container(Frame, ContentsConstrainableMixin):
     #: hint constraints for a Container are used when the container is
     #: not sharing its layout. In these cases, expansion of the
     #: container is typically desired.
+    resist_width = set_default('ignore')
+    resist_height = set_default('ignore')
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
+    limit_width = set_default('ignore')
+    limit_height = set_default('ignore')
 
     #: A reference to the ProxyContainer object.
     proxy = Typed(ProxyContainer)

@@ -7,6 +7,8 @@
 #------------------------------------------------------------------------------
 from collections import deque
 
+import kiwisolver as kiwi
+
 from atom.api import Atom, Callable, Float, Typed
 
 from enaml.layout.layout_manager import LayoutItem, LayoutManager
@@ -163,10 +165,23 @@ class QtChildContainerItem(QtLayoutItem):
     def constraints(self):
         """ Get the user constraints for the item.
 
-        A child container does not expose its user layout constraints.
+        A child container does not expose its user defined constraints
+        to the parent container. It instead generates constraints for
+        its minimum and maximum size.
 
         """
-        return []
+        widget = self.widget_item.widget()
+        min_size = widget.minimumSize()
+        max_size = widget.maximumSize()
+        d = self.declaration
+        strength = 10 * kiwi.strength.medium
+        cns = [
+            (d.width >= min_size.width()) | strength,
+            (d.width <= max_size.width()) | strength,
+            (d.height >= min_size.height()) | strength,
+            (d.height <= max_size.height()) | strength,
+        ]
+        return cns
 
 
 class QContainer(QFrame):
@@ -458,13 +473,8 @@ class QtContainer(QtFrame, ProxyContainer):
             return
 
         widget.setSizeHint(QSize(*manager.best_size()))
-        if not isinstance(widget.parent(), QContainer):
-            # Only set min and max size if the parent is not a container.
-            # The manager needs to be the ultimate authority when dealing
-            # with nested containers, since QWidgetItem respects min and
-            # max size when calling setGeometry().
-            widget.setMinimumSize(QSize(*manager.min_size()))
-            widget.setMaximumSize(QSize(*manager.max_size()))
+        widget.setMinimumSize(QSize(*manager.min_size()))
+        widget.setMaximumSize(QSize(*manager.max_size()))
 
     def _create_layout_items(self):
         """ Create a layout items for the container decendants.
