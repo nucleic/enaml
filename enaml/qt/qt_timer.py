@@ -40,6 +40,15 @@ class QtTimer(QtToolkitObject, ProxyTimer):
         self.set_single_shot(d.single_shot)
         self.widget.timeout.connect(self.on_timeout)
 
+    def destroy(self):
+        """ A reimplemented destructor.
+
+        This stops the timer before invoking the superclass destructor.
+
+        """
+        self.widget.stop()
+        super(QtTimer, self).destroy()
+
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
