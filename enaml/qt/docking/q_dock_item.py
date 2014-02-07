@@ -195,7 +195,8 @@ class QDockItemLayout(QLayout):
         ms = self._max_size
         if not ms.isValid():
             widget = self._dock_widget
-            if widget is not None:
+            parent = self.parentWidget()
+            if widget is not None and parent.isFloating():
                 ms = widget.maximumSize()
                 title = self._title_bar
                 if title is not None and not title.isHidden():
@@ -517,6 +518,15 @@ class QDockItem(QFrame):
 
         """
         self.titleBarWidget().setPinned(pinned, quiet)
+
+    def isFloating(self):
+        """ Get whether the dock item is free floating.
+
+        """
+        container = self.parent()
+        if container is not None:
+            return container.isWindow()
+        return self.isWindow()
 
     def titleEditable(self):
         """ Get whether the title is user editable.
