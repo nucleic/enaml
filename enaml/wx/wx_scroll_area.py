@@ -63,6 +63,18 @@ class wxScrollAreaSizer(wxSingleWidgetSizer):
             res.height -= 2
         return res
 
+    def RecalcSizes(self):
+        """ Resizes the child to fit the available space of the window.
+
+        This takes into account the maximum allowed size of the widget.
+
+        """
+        widget = self.GetWidget()
+        if widget:
+            size = self.GetSize()
+            size.DecTo(self.CalcMax())
+            widget.SetSize(size)
+
 
 class wxScrollArea(wx.ScrolledWindow):
     """ A custom wx.ScrolledWindow which is suits Enaml's use case.
