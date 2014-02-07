@@ -47,10 +47,8 @@ enamldef Main(Window):
         ]
         LabeledField: top_left_cntr:
             label_text = "Left:"
-            hug_height = 'strong'
         LabeledField: top_right_cntr:
             label_text = "Right:"
-            hug_height = 'strong'
         Container: bottom_cntr:
             constraints = [
                 vbox(
@@ -63,10 +61,6 @@ enamldef Main(Window):
                 align('h_center', html_frame, change_mode_button) | 'weak',
                 html_frame.height >= 150,
             ]
-            # XXX ideally, this would not be required, but we're getting
-            # some competition between best size and min size under the
-            # covers.
-            share_layout = True
             Html: html_frame:
                 source = '<center><h1>Hello Enaml!</h1></center>'
             PushButton: add_button:
@@ -77,4 +71,3 @@ enamldef Main(Window):
                 text = 'Change Mode'
             PushButton: share_button:
                 text = 'Share...'
-
