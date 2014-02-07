@@ -257,7 +257,7 @@ def _tab_bar_tab(name, pc):
         root = u'QDockTabBar[alert="%s"]::tab' % alert
     else:
         root = u'QDockTabBar::tab'
-    return _basic_pc(root, pc)
+    return _basic_pc(root, u':'.join(rest))
 
 
 def _tab_bar_close_button(name, pc):
