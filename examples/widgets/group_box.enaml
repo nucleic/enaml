@@ -33,7 +33,6 @@ enamldef Main(Window):
         GroupBox: grp_box:
             title << "Personal Details" if title_check.checked else ""
             title_align << combo_box.items[combo_box.index]
-            hug_height = 'strong'
             Form:
                 Label:
                     text = "First name:"
@@ -63,4 +62,3 @@ enamldef Main(Window):
             items = ['left', 'center', 'right']
         MultilineField: multiline:
             pass
-
