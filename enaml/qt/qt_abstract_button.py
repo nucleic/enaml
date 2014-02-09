@@ -50,11 +50,11 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
         super(QtAbstractButton, self).init_widget()
         d = self.declaration
         if d.text:
-            self.set_text(d.text, sh_guard=False)
+            self.set_text(d.text, guard=False)
         if d.icon:
-            self.set_icon(d.icon, sh_guard=False)
+            self.set_icon(d.icon, guard=False)
         if -1 not in d.icon_size:
-            self.set_icon_size(d.icon_size, sh_guard=False)
+            self.set_icon_size(d.icon_size, guard=False)
         self.set_checkable(d.checkable)
         self.set_checked(d.checked)
         widget = self.widget
@@ -86,17 +86,17 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
     #--------------------------------------------------------------------------
     # ProxyAbstractButton API
     #--------------------------------------------------------------------------
-    def set_text(self, text, sh_guard=True):
+    def set_text(self, text, guard=True):
         """ Sets the widget's text with the provided value.
 
         """
-        if sh_guard:
-            with self.size_hint_guard():
+        if guard:
+            with self.geometry_guard():
                 self.widget.setText(text)
         else:
             self.widget.setText(text)
 
-    def set_icon(self, icon, sh_guard=True):
+    def set_icon(self, icon, guard=True):
         """ Set the icon on the widget.
 
         """
@@ -104,18 +104,18 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
             qicon = get_cached_qicon(icon)
         else:
             qicon = QIcon()
-        if sh_guard:
-            with self.size_hint_guard():
+        if guard:
+            with self.geometry_guard():
                 self.widget.setIcon(qicon)
         else:
             self.widget.setIcon(qicon)
 
-    def set_icon_size(self, size, sh_guard=True):
+    def set_icon_size(self, size, guard=True):
         """ Sets the widget's icon size.
 
         """
-        if sh_guard:
-            with self.size_hint_guard():
+        if guard:
+            with self.geometry_guard():
                 self.widget.setIconSize(QSize(*size))
         else:
             self.widget.setIconSize(QSize(*size))

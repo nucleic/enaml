@@ -377,7 +377,7 @@ class QtStack(QtConstraintsWidget, ProxyStack):
         """ Handle the `layoutRequested` signal from the QStack.
 
         """
-        self.size_hint_updated()
+        self.geometry_updated()
 
     def on_current_changed(self):
         """ Handle the `currentChanged` signal from the QStack.
@@ -419,4 +419,4 @@ class QtStack(QtConstraintsWidget, ProxyStack):
         """
         self.widget.setSizeHintMode(SIZE_HINT_MODE[mode])
         if update:
-            self.size_hint_updated()
+            self.geometry_updated()
