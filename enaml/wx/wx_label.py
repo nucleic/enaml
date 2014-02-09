@@ -18,7 +18,7 @@ ALIGN_MAP = {
     'left': wx.ALIGN_LEFT,
     'right': wx.ALIGN_RIGHT,
     'center': wx.ALIGN_CENTER,
-    'justify': wx.ALIGN_LEFT, # wx doesn't support justification
+    'justify': wx.ALIGN_LEFT,  # wx doesn't support justification
 }
 
 
@@ -47,19 +47,19 @@ class WxLabel(WxControl, ProxyLabel):
         """
         super(WxLabel, self).init_widget()
         d = self.declaration
-        self.set_text(d.text, sh_guard=False)
+        self.set_text(d.text, guard=False)
         self.set_align(d.align)
         self.set_vertical_align(d.vertical_align)
 
     #--------------------------------------------------------------------------
     # ProxyLabel API
     #--------------------------------------------------------------------------
-    def set_text(self, text, sh_guard=True):
+    def set_text(self, text, guard=True):
         """ Set the text in the underlying widget.
 
         """
-        if sh_guard:
-            with self.size_hint_guard():
+        if guard:
+            with self.geometry_guard():
                 self.widget.SetLabel(text)
         else:
             self.widget.SetLabel(text)

@@ -200,7 +200,7 @@ class WxSplitter(WxConstraintsWidget, ProxySplitter):
         """
         super(WxSplitter, self).init_widget()
         d = self.declaration
-        self.set_orientation(d.orientation, sh_guard=False)
+        self.set_orientation(d.orientation, guard=False)
         self.set_live_drag(d.live_drag)
 
     def init_layout(self):
@@ -224,7 +224,7 @@ class WxSplitter(WxConstraintsWidget, ProxySplitter):
             for index, dchild in enumerate(self.children()):
                 if child is dchild:
                     self.widget.InsertWindow(index, child.widget)
-                    self.size_hint_updated()
+                    self.geometry_updated()
 
     def child_removed(self, child):
         """ Handle the child removed event for a WxSplitter.
@@ -235,7 +235,7 @@ class WxSplitter(WxConstraintsWidget, ProxySplitter):
             widget = child.widget
             self.widget.DetachWindow(widget)
             widget.Hide()
-            self.size_hint_updated()
+            self.geometry_updated()
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -250,14 +250,14 @@ class WxSplitter(WxConstraintsWidget, ProxySplitter):
     #--------------------------------------------------------------------------
     # ProxySplitter API
     #--------------------------------------------------------------------------
-    def set_orientation(self, orientation, sh_guard=True):
+    def set_orientation(self, orientation, guard=True):
         """ Update the orientation of the splitter.
 
         """
         wx_orientation = _ORIENTATION_MAP[orientation]
         widget = self.widget
-        if sh_guard:
-            with self.size_hint_guard():
+        if guard:
+            with self.geometry_guard():
                 widget.SetOrientation(wx_orientation)
                 widget.SizeWindows()
         else:
