@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import set_default
-from enaml.layout.layout_helpers import align, vertical
+from enaml.layout.layout_helpers import align, spacer, vbox, vertical
 from enaml.styling import StyleSheet, Style, Setter
 from enaml.widgets.container import Container
 from enaml.widgets.separator import Separator
@@ -21,6 +21,25 @@ class TaskDialogIconArea(Container):
     """
     #: The default padding is set appropriate for common use cases.
     padding = set_default((10, 0, 15, 10))
+
+    #: The icon area resists clipping by default, since it is typically
+    #: taller than the instruction and could otherwise lead to a system
+    #: where the the instruction and icon compete to set the min height.
+    resist_height = set_default('strong')
+
+    def layout_constraints(self):
+        """ Generate the layout constraints for the icon area.
+
+        The icon area gets a spacer by default so that it can expand
+        to accomodate large content areas.
+
+        """
+        cns = self.constraints
+        if not cns:
+            items = self.widgets()
+            items.append(spacer(0))
+            cns = [vbox(*items)]
+        return cns
 
 
 class TaskDialogInstructionArea(Container):
