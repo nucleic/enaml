@@ -21,9 +21,9 @@ class LayoutItem(Atom):
     implement the necessary toolkit specific layout functionality.
 
     """
-    #: The list of cached size hint constraints. This is used for
-    #: storage by the layout manager.
-    _size_hint_cache = List()
+    #: The list of cached geometry constraints. This is used for storage
+    #: by the layout manager.
+    _geometry_cache = List()
 
     #: The list of cached margin constraints. This is used for storage
     #: by the layout manager.
@@ -75,32 +75,48 @@ class LayoutItem(Atom):
         c_l = d.contents_left == (d.left + left)
         return [c_t, c_r, c_b, c_l]
 
-    def size_hint_constraints(self):
-        """ Generate a list of size hint constraints for the item.
+    def geometry_constraints(self):
+        """ Generate a list of geometry constraints for the item.
 
         Returns
         -------
         result : list
-            A list of size hint constraints for the item.
+            A list of geometry constraints for the item.
 
         """
         cns = []
         d = self.constrainable()
-        width, height = self.size_hint()
-        if width >= 0:
+
+        width_hint, height_hint = self.size_hint()
+        if width_hint >= 0:
             if d.hug_width != 'ignore':
-                cns.append((d.width == width) | d.hug_width)
+                cns.append((d.width == width_hint) | d.hug_width)
             if d.resist_width != 'ignore':
-                cns.append((d.width >= width) | d.resist_width)
+                cns.append((d.width >= width_hint) | d.resist_width)
             if d.limit_width != 'ignore':
-                cns.append((d.width <= width) | d.limit_width)
-        if height >= 0:
+                cns.append((d.width <= width_hint) | d.limit_width)
+        if height_hint >= 0:
             if d.hug_height != 'ignore':
-                cns.append((d.height == height) | d.hug_height)
+                cns.append((d.height == height_hint) | d.hug_height)
             if d.resist_height != 'ignore':
-                cns.append((d.height >= height) | d.resist_height)
+                cns.append((d.height >= height_hint) | d.resist_height)
             if d.limit_height != 'ignore':
-                cns.append((d.height <= height) | d.limit_height)
+                cns.append((d.height <= height_hint) | d.limit_height)
+
+        strength = 10 * kiwi.strength.medium
+
+        min_width, min_height = self.min_size()
+        if min_width >= 0:
+            cns.append((d.width >= min_width) | strength)
+        if min_height >= 0:
+            cns.append((d.height >= min_height) | strength)
+
+        max_width, max_height = self.max_size()
+        if max_width >= 0:
+            cns.append((d.width <= max_width) | strength)
+        if max_height >= 0:
+            cns.append((d.height <= max_height) | strength)
+
         return cns
 
     def layout_constraints(self):
@@ -168,6 +184,36 @@ class LayoutItem(Atom):
         result : tuple
             A 2-tuple of numbers representing the (width, height)
             size hint of the widget.
+
+        """
+        raise NotImplementedError
+
+    def min_size(self):
+        """ Get the minimum size for the underlying widget.
+
+        This abstract method must be implemented by subclasses.
+
+        Returns
+        -------
+        result : tuple
+            A 2-tuple of numbers representing the (width, height)
+            min size of the widget. If any value is less than zero,
+            constraints will not be generated for that dimension.
+
+        """
+        raise NotImplementedError
+
+    def max_size(self):
+        """ Get the maximum size for the underlying widget.
+
+        This abstract method must be implemented by subclasses.
+
+        Returns
+        -------
+        result : tuple
+            A 2-tuple of numbers representing the (width, height)
+            max size of the widget. If any value is less than zero,
+            constraints will not be generated for that dimension.
 
         """
         raise NotImplementedError
@@ -257,8 +303,9 @@ class LayoutManager(Atom):
         self._push_edit_vars(pairs)
 
         # Generate the constraints for the layout system. The size hint
-        # of the root item is ignored since the input to the solver is
-        # the suggested size of the root.
+        # and bounds of the root item are ignored since the input to the
+        # solver is the suggested size of the root item and the output
+        # of the solver is used to compute the bounds of the item.
         cns = []
         hc = root.hard_constraints()
         mc = root.margin_constraints()
@@ -269,13 +316,13 @@ class LayoutManager(Atom):
         cns.extend(lc)
         for child in items:
             hc = child.hard_constraints()
-            sc = child.size_hint_constraints()
+            gc = child.geometry_constraints()
             mc = child.margin_constraints()
             lc = child.layout_constraints()
-            child._size_hint_cache = sc
+            child._geometry_cache = gc
             child._margin_cache = mc
             cns.extend(hc)
-            cns.extend(sc)
+            cns.extend(gc)
             cns.extend(mc)
             cns.extend(lc)
 
@@ -379,10 +426,10 @@ class LayoutManager(Atom):
         solver.updateVariables()
         return (width.value(), height.value())
 
-    def update_size_hint(self, index):
-        """ Update the size hint for the given layout item.
+    def update_geometry(self, index):
+        """ Update the geometry for the given layout item.
 
-        The solver will be updated to reflect the item's new size hint.
+        The solver will be updated to reflect the item's new geometry.
         This may change the computed min/max/best size of the system.
 
         Parameters
@@ -393,9 +440,9 @@ class LayoutManager(Atom):
 
         """
         item = self._layout_items[index]
-        old = item._size_hint_cache
-        new = item.size_hint_constraints()
-        item._size_hint_cache = new
+        old = item._geometry_cache
+        new = item.geometry_constraints()
+        item._geometry_cache = new
         self._replace(old, new)
 
     def update_margins(self, index):
