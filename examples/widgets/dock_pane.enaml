@@ -44,4 +44,3 @@ enamldef Main(MainWindow):
     Container:
         Html:
             source = '<h1><center>Hello World!</center></h1>'
-

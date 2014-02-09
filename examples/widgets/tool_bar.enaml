@@ -72,4 +72,3 @@ enamldef Main(MainWindow):
             source = '<h1><center>Hello World!</center></h1>'
         MyToolBar: tbar:
             pass
-

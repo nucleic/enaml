@@ -17,4 +17,3 @@ from enaml.widgets.api import Window
 
 enamldef Main(Window):
     title = 'Hello World!'
-
