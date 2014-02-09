@@ -37,4 +37,3 @@ enamldef Main(Window):
             SampleMenu:
                 title = 'baz'
                 context_menu = True
-
