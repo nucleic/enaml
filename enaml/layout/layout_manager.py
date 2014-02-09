@@ -103,7 +103,7 @@ class LayoutItem(Atom):
             if d.limit_height != 'ignore':
                 cns.append((d.height <= height_hint) | d.limit_height)
 
-        strength = 10 * kiwi.strength.medium
+        strength = 0.1 * kiwi.strength.strong
 
         min_width, min_height = self.min_size()
         if min_width >= 0:
