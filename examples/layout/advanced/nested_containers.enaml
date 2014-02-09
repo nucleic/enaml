@@ -61,6 +61,7 @@ enamldef Main(Window):
                 align('h_center', html_frame, change_mode_button) | 'weak',
                 html_frame.height >= 150,
             ]
+            resist_width = 'weak'
             Html: html_frame:
                 source = '<center><h1>Hello Enaml!</h1></center>'
             PushButton: add_button:
