@@ -46,7 +46,6 @@ class Bar(Base):
 
 enamldef BaseView(Form):
     attr model: Base
-    hug_height = 'strong'
     Label:
         text = 'Name'
     Label:
@@ -101,7 +100,6 @@ enamldef Main(Window):
         Base(name='Base'), Foo(name='Foo'), Bar(name='Bar')
     ])
     Container:
-        hug_height = 'strong'
         ObjectCombo: combo:
             items << main_model.objects
             to_string = lambda obj: obj.name

@@ -102,8 +102,6 @@ enamldef MyTaskDialog(Dialog):
 enamldef Main(Window):
     title = 'Task Dialog Example'
     Container:
-        hug_height = 'strong'
-        hug_width = 'strong'
         PushButton:
             text = 'Launch Dialog'
             clicked :: MyTaskDialog(self).exec_()
