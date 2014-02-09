@@ -31,7 +31,7 @@ enamldef LabeledField(Container):
     Label: label:
         text = label_text
     Field: field:
-        resist_width = 'ignore'
+        resist_width = 'weak'
 
 
 enamldef Main(Window):
