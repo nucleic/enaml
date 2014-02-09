@@ -19,7 +19,6 @@ from enaml.widgets.api import Window, Container, Label, PushButton
 
 enamldef Main(Window):
     Container:
-        hug_height = 'strong'
         constraints = [
             vbox(
                 lbl_a,

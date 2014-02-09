@@ -25,7 +25,6 @@ from enaml.widgets.api import Window, Container, PushButton, Field
 enamldef Main(Window):
     title = "Find & Replace"
     Container:
-        hug_height = 'strong'
         constraints = [
             vbox(
                 hbox(find, find_next, find_field),
