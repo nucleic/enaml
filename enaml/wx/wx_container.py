@@ -21,6 +21,12 @@ from .wx_constraints_widget import WxConstraintsWidget
 from .wx_frame import WxFrame
 
 
+# Commonly used default sizes
+DEFAULT_BEST_SIZE = wx.Size(-1, -1)
+DEFAULT_MIN_SIZE = wx.Size(0, 0)
+DEFAULT_MAX_SIZE = wx.Size(16777215, 16777215)
+
+
 class LayoutPoint(Atom):
     """ A class which represents a point in layout space.
 
@@ -169,10 +175,9 @@ class WxChildContainerItem(WxLayoutItem):
         its minimum and maximum size.
 
         """
-        widget = self.widget
-        min_size = widget.GetMinSize()
-        max_size = widget.GetMaxSize()
         d = self.declaration
+        min_size = d.proxy.min_size
+        max_size = d.proxy.max_size
         strength = 10 * kiwi.strength.medium
         cns = [
             (d.width >= min_size.width) | strength,
@@ -232,6 +237,16 @@ class WxContainer(WxFrame, ProxyContainer):
     """
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(wxContainer)
+
+    #: The minimum size of the container as computed by the layout
+    #: manager. This will be updated on every relayout pass and is
+    #: used by the WxChildContainerItem to generate size constraints.
+    min_size = Typed(wx.Size)
+
+    #: The maximum size of the container as computed by the layout
+    #: manager. This will be updated on every relayout pass and is
+    #: used by the WxChildContainerItem to generate size constraints.
+    max_size = Typed(wx.Size)
 
     #: A timer used to collapse relayout requests. The timer is created
     #: on an as needed basis and destroyed when it is no longer needed.
@@ -489,14 +504,29 @@ class WxContainer(WxFrame, ProxyContainer):
         widget = self.widget
         manager = self._layout_manager
         if manager is None:
-            widget.SetBestSize(wx.Size(-1, -1))
-            widget.SetMinSize(wx.Size(0, 0))
-            widget.SetMaxSize(wx.Size(16777215, 16777215))
-            return
+            best_size = DEFAULT_BEST_SIZE
+            min_size = DEFAULT_MIN_SIZE
+            max_size = DEFAULT_MAX_SIZE
+        else:
+            best_size = wx.Size(*manager.best_size())
+            min_size = wx.Size(*manager.min_size())
+            max_size = wx.Size(*manager.max_size())
 
-        widget.SetBestSize(wx.Size(*manager.best_size()))
-        widget.SetMinSize(wx.Size(*manager.min_size()))
-        widget.SetMaxSize(wx.Size(*manager.max_size()))
+        # Store the computed min and max size, which is used by the
+        # WxChildContainerItem to provide min and max size constraints.
+        self.min_size = min_size
+        self.max_size = max_size
+
+        # If this is a child container, min and max size are not applied
+        # to the widget since the ancestor manager must be the ultimate
+        # authority on layout size.
+        widget.SetBestSize(best_size)
+        if isinstance(self.parent(), WxContainer):
+            widget.SetMinSize(DEFAULT_MIN_SIZE)
+            widget.SetMaxSize(DEFAULT_MAX_SIZE)
+        else:
+            widget.SetMinSize(min_size)
+            widget.SetMaxSize(max_size)
 
     def _create_layout_items(self):
         """ Create a layout items for the container decendants.

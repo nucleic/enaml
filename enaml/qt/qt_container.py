@@ -22,6 +22,12 @@ from .qt_constraints_widget import QtConstraintsWidget
 from .qt_frame import QtFrame
 
 
+# Commonly used default sizes
+DEFAULT_BEST_SIZE = QSize(-1, -1)
+DEFAULT_MIN_SIZE = QSize(0, 0)
+DEFAULT_MAX_SIZE = QSize(16777215, 16777215)
+
+
 class LayoutPoint(Atom):
     """ A class which represents a point in layout space.
 
@@ -170,10 +176,9 @@ class QtChildContainerItem(QtLayoutItem):
         its minimum and maximum size.
 
         """
-        widget = self.widget_item.widget()
-        min_size = widget.minimumSize()
-        max_size = widget.maximumSize()
         d = self.declaration
+        min_size = d.proxy.min_size
+        max_size = d.proxy.max_size
         strength = 10 * kiwi.strength.medium
         cns = [
             (d.width >= min_size.width()) | strength,
@@ -233,6 +238,16 @@ class QtContainer(QtFrame, ProxyContainer):
     """
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QContainer)
+
+    #: The minimum size of the container as computed by the layout
+    #: manager. This will be updated on every relayout pass and is
+    #: used by the QtChildContainerItem to generate size constraints.
+    min_size = Typed(QSize)
+
+    #: The maximum size of the container as computed by the layout
+    #: manager. This will be updated on every relayout pass and is
+    #: used by the QtChildContainerItem to generate size constraints.
+    max_size = Typed(QSize)
 
     #: A timer used to collapse relayout requests. The timer is created
     #: on an as needed basis and destroyed when it is no longer needed.
@@ -467,14 +482,29 @@ class QtContainer(QtFrame, ProxyContainer):
         widget = self.widget
         manager = self._layout_manager
         if manager is None:
-            widget.setSizeHint(QSize(-1, -1))
-            widget.setMinimumSize(QSize(0, 0))
-            widget.setMaximumSize(QSize(16777215, 16777215))
-            return
+            best_size = DEFAULT_BEST_SIZE
+            min_size = DEFAULT_MIN_SIZE
+            max_size = DEFAULT_MAX_SIZE
+        else:
+            best_size = QSize(*manager.best_size())
+            min_size = QSize(*manager.min_size())
+            max_size = QSize(*manager.max_size())
 
-        widget.setSizeHint(QSize(*manager.best_size()))
-        widget.setMinimumSize(QSize(*manager.min_size()))
-        widget.setMaximumSize(QSize(*manager.max_size()))
+        # Store the computed min and max size, which is used by the
+        # QtChildContainerItem to provide min and max size constraints.
+        self.min_size = min_size
+        self.max_size = max_size
+
+        # If this is a child container, min and max size are not applied
+        # to the widget since the ancestor manager must be the ultimate
+        # authority on layout size, not QWidgetItem.
+        widget.setSizeHint(best_size)
+        if isinstance(self.parent(), QtContainer):
+            widget.setMinimumSize(DEFAULT_MIN_SIZE)
+            widget.setMaximumSize(DEFAULT_MAX_SIZE)
+        else:
+            widget.setMinimumSize(min_size)
+            widget.setMaximumSize(max_size)
 
     def _create_layout_items(self):
         """ Create a layout items for the container decendants.
