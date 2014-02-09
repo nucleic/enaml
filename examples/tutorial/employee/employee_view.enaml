@@ -80,20 +80,21 @@ enamldef EmployerForm(Form):
         checked = True
 
 
+def gen_constraints(top_box, btm_box, btm_vis):
+    if not btm_vis:
+        return [vbox(top_box)]
+    top_form = top_box.form
+    btm_form = btm_box.form
+    return [vbox(top_box, btm_box), align('midline', top_form, btm_form)]
+
+
 enamldef EmployeeView(Window): main:
     attr employee
-    title << "Employee Record for: %s, %s" % (employee.last_name,
-                                              employee.first_name)
+    title << "Employee: %s, %s" % (employee.last_name, employee.first_name)
     Container:
-        constraints << [
-            vertical(
-                top, top_box, btm_box.when(btm_box.visible), spacer, bottom
-            ),
-            horizontal(left, spacer.flex(), top_box, spacer.flex(), right),
-            horizontal(left, spacer.flex(), btm_box, spacer.flex(), right),
-            align('midline', top_form, btm_form),
-        ]
+        constraints << gen_constraints(top_box, btm_box, btm_box.visible)
         GroupBox: top_box:
+            alias form: top_form
             share_layout = True
             title = "Personal Details"
             EmployeeForm: top_form:
@@ -104,10 +105,10 @@ enamldef EmployeeView(Window): main:
                 # found first.
                 employee = main.employee
         GroupBox: btm_box:
+            alias form: btm_form
             share_layout = True
             title = "Employer Details"
             visible << top_form.show_employer
             EmployerForm: btm_form:
                 share_layout = True
                 employer << employee.boss
-
