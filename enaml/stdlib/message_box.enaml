@@ -228,7 +228,6 @@ template _BodyDetails(HasDetails: False): pass
 template _BodyDetails(HasDetails: True):
     TaskDialogDetailsArea:
         visible << show_details
-        hug_height = 'ignore'
         Html:
             source = details
 
