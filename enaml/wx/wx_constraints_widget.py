@@ -16,7 +16,7 @@ from .wx_widget import WxWidget
 
 # keep around for backwards compatibility
 def size_hint_guard(obj):
-    return obj.size_hint_guard()
+    return obj.geometry_guard()
 
 
 def WxContainer():
@@ -61,27 +61,31 @@ class WxConstraintsWidget(WxWidget, ProxyConstraintsWidget):
     #--------------------------------------------------------------------------
     # Layout API
     #--------------------------------------------------------------------------
-    def size_hint_updated(self):
-        """ Notify the layout system that the size hint has changed.
+    def geometry_updated(self):
+        """ Notify the layout system that the geometry has changed.
 
         This method forwards the update to the layout container.
 
         """
         container = self.layout_container
         if container is not None:
-            container.size_hint_updated(self)
-        self.update_geometry()
+            container.geometry_updated(self)
+        self.post_wx_layout_request()
 
     @contextmanager
-    def size_hint_guard(self):
-        """ A context manager for guarding the size hint of the widget.
+    def geometry_guard(self):
+        """ A context manager for guarding the geometry of the widget.
 
-        This manager will call 'size_hint_updated' if the size hint of
-        the widget changes during context execution.
+        This manager will call 'geometry_updated' if the size hint,
+        minimum, or maximum size of the widget has changed.
 
         """
-        old_hint = self.widget.GetBestSize()
+        widget = self.widget
+        old_hint = widget.GetBestSize()
+        old_min = widget.GetMinSize()
+        old_max = widget.GetMaxSize()
         yield
-        new_hint = self.widget.GetBestSize()
-        if old_hint != new_hint:
-            self.size_hint_updated()
+        if (old_hint != widget.GetBestSize() or
+            old_min != widget.GetMinSize() or
+            old_max != widget.GetMaxSize()):
+            self.geometry_updated()
