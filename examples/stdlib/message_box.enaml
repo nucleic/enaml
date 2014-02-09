@@ -34,8 +34,6 @@ def h_result(button):
 enamldef Main(Window):
     title = 'Message Box Example'
     Container:
-        hug_height = 'strong'
-        hug_width = 'strong'
         PushButton:
             text = 'About'
             clicked :: about(self, 'About Dialog', 'This is about text.')

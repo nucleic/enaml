@@ -55,10 +55,12 @@ class Container(Frame, ContentsConstrainableMixin):
     #: margin than what is specified by the padding.
     padding = d_(Coerced(Box, (10, 10, 10, 10)))
 
-    #: A Container expands freely exapnd in width and height. The size
-    #: hint constraints for a Container are used when the container is
-    #: not sharing its layout. In these cases, expansion of the
-    #: container is typically desired.
+    #: A Container does not generate contraints for its size hint by
+    #: default. The minimum and maximum size constraints are sufficient
+    #: to supply size limits and make for the most natural interaction
+    #: between nested containers.
+    resist_width = set_default('ignore')
+    resist_height = set_default('ignore')
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 

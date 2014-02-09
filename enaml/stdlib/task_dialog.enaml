@@ -6,85 +6,81 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import set_default
-from enaml.layout.layout_helpers import align, vertical
+from enaml.layout.layout_helpers import align, spacer, vbox, vertical
 from enaml.styling import StyleSheet, Style, Setter
 from enaml.widgets.container import Container
 from enaml.widgets.separator import Separator
 
 
-class _RigidContainer(Container):
-    """ A container which can never be size smaller than its size hint.
-
-    This is used as a base class for the task dialog areas.
-
-    """
-    resist_width = set_default('required')
-    resist_height = set_default('required')
-
-
-class TaskDialogIconArea(_RigidContainer):
+class TaskDialogIconArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
     TaskDialogBody in order to provide icon area content.
 
     """
-    #: The icon area hugs its width hint strongly by default.
-    hug_width = set_default('strong')
-
     #: The default padding is set appropriate for common use cases.
     padding = set_default((10, 0, 15, 10))
 
+    #: The icon area resists clipping by default, since it is typically
+    #: taller than the instruction and could otherwise lead to a system
+    #: where the the instruction and icon compete to set the min height.
+    resist_height = set_default('strong')
 
-class TaskDialogInstructionArea(_RigidContainer):
+    def layout_constraints(self):
+        """ Generate the layout constraints for the icon area.
+
+        The icon area gets a spacer by default so that it can expand
+        to accomodate large content areas.
+
+        """
+        cns = self.constraints
+        if not cns:
+            items = self.widgets()
+            items.append(spacer(0))
+            cns = [vbox(*items)]
+        return cns
+
+
+class TaskDialogInstructionArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
     TaskDialogBody in order to provide instruction area content.
 
     """
-    #: The instruction area hugs its height hint strongly by default.
-    hug_height = set_default('strong')
-
     #: The default padding is set appropriate for common use cases.
     padding = set_default((10, 10, 15, 10))
 
 
-class TaskDialogContentArea(_RigidContainer):
+class TaskDialogContentArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
     TaskDialogBody in order to provide content area content.
 
     """
-    #: The content area hugs its height hint strongly by default.
-    hug_height = set_default('strong')
-
     #: The default padding is set appropriate for common use cases.
     padding = set_default((0, 10, 15, 10))
 
 
-class TaskDialogCommandArea(_RigidContainer):
+class TaskDialogCommandArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
     TaskDialogBody in order to provide command area content.
 
     """
-    #: The command area hugs its height hint strongly by default.
-    hug_height = set_default('strong')
+    pass
 
 
-class TaskDialogDetailsArea(_RigidContainer):
+class TaskDialogDetailsArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
     TaskDialogBody in order to provide details area content.
 
     """
-    #: The details area hugs its height hint strongly by default.
-    hug_height = set_default('strong')
-
     #: The default padding is set appropriate for common use cases.
     padding = set_default((0, 10, 15, 10))
 
@@ -93,15 +89,14 @@ class TaskDialogDetailsArea(_RigidContainer):
             self.parent.request_relayout()
 
 
-class TaskDialogFootnoteArea(_RigidContainer):
+class TaskDialogFootnoteArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
     TaskDialogBody in order to provide footnote area content.
 
     """
-    #: The footnote area hugs its height hint strongly by default.
-    hug_height = set_default('strong')
+    pass
 
 
 class TaskDialogBody(Container):
@@ -127,9 +122,6 @@ class TaskDialogBody(Container):
     """
     #: The dialog body has no padding by default.
     padding = set_default(0)
-
-    #: The dialog body hugs its height hint strongly by default.
-    hug_height = set_default('strong')
 
     def initialize(self):
         """ A reimplemented initialization method.

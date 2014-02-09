@@ -489,7 +489,7 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         """ Handle the `layoutRequested` signal from the QNotebook.
 
         """
-        self.size_hint_updated()
+        self.geometry_updated()
 
     def on_current_changed(self):
         """ Handle the 'currentChanged' signal from the QNotebook.
@@ -554,4 +554,4 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         """
         self.widget.setSizeHintMode(SIZE_HINT_MODE[mode])
         if update:
-            self.size_hint_updated()
+            self.geometry_updated()

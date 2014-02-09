@@ -431,7 +431,7 @@ class WxNotebook(WxConstraintsWidget, ProxyNotebook):
         """
         super(WxNotebook, self).child_added(child)
         if isinstance(child, WxPage):
-             for index, dchild in enumerate(self.children()):
+            for index, dchild in enumerate(self.children()):
                 if child is dchild:
                     self.widget.InsertWxPage(index, child.widget)
 
@@ -442,7 +442,7 @@ class WxNotebook(WxConstraintsWidget, ProxyNotebook):
         super(WxNotebook, self).child_removed(child)
         if isinstance(child, WxPage):
             self.widget.RemoveWxPage(child.widget)
-            self.size_hint_updated()
+            self.geometry_updated()
 
     #--------------------------------------------------------------------------
     # Event Handlers
@@ -451,7 +451,7 @@ class WxNotebook(WxConstraintsWidget, ProxyNotebook):
         """ Handle the layout request event from a child page.
 
         """
-        self.size_hint_updated()
+        self.geometry_updated()
 
     #--------------------------------------------------------------------------
     # ProxyNotebook API
@@ -474,7 +474,7 @@ class WxNotebook(WxConstraintsWidget, ProxyNotebook):
             flags &= ~_TAB_POSITION_MASK
             flags |= _TAB_POSITION_MAP[position]
             widget.SetAGWWindowStyleFlag(flags)
-            widget.Refresh() # Avoids rendering artifacts
+            widget.Refresh()  # Avoids rendering artifacts
 
     def set_tabs_closable(self, closable):
         """ Set whether or not the tabs are closable.
@@ -499,9 +499,9 @@ class WxNotebook(WxConstraintsWidget, ProxyNotebook):
         if isinstance(widget, wxDocumentNotebook):
             flags = widget.GetAGWWindowStyleFlag()
             if movable:
-               flags |= aui.AUI_NB_TAB_MOVE
+                flags |= aui.AUI_NB_TAB_MOVE
             else:
-               flags &= ~aui.AUI_NB_TAB_MOVE
+                flags &= ~aui.AUI_NB_TAB_MOVE
             widget.SetAGWWindowStyleFlag(flags)
 
     def set_size_hint_mode(self, mode):

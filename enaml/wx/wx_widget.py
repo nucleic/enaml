@@ -58,8 +58,8 @@ class WxWidget(WxToolkitObject, ProxyWidget):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def update_geometry(self):
-        """ Notify the layout system that this widget has changed.
+    def post_wx_layout_request(self):
+        """ Post a wx layout request event to this widget's parent.
 
         This method should be called when the geometry of the widget has
         changed and the layout system should update the layout. This will

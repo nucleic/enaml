@@ -45,7 +45,7 @@ class WxMPLCanvas(WxControl, ProxyMPLCanvas):
         """ Set the MPL figure for the widget.
 
         """
-        with self.size_hint_guard():
+        with self.geometry_guard():
             self._refresh_mpl_widget()
 
     def set_toolbar_visible(self, visible):
@@ -56,7 +56,7 @@ class WxMPLCanvas(WxControl, ProxyMPLCanvas):
         sizer = widget.GetSizer()
         children = sizer.GetChildren()
         if len(children) == 2:
-            with self.size_hint_guard():
+            with self.geometry_guard():
                 widget.Freeze()
                 toolbar = children[0]
                 toolbar.Show(visible)

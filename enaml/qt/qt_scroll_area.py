@@ -185,7 +185,7 @@ class QtScrollArea(QtFrame, ProxyScrollArea):
         new_hint = self.widget.sizeHint()
         if new_hint != self._old_hint:
             self._old_hint = new_hint
-            self.size_hint_updated()
+            self.geometry_updated()
 
     #--------------------------------------------------------------------------
     # Overrides

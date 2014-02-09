@@ -51,7 +51,7 @@ class DockLayoutFilter(QObject):
     """ An event filter used by the QtDockArea.
 
     This event filter listens for LayoutRequest events on the dock
-    area widget, and will send a size_hint_updated notification to
+    area widget, and will send a geometry_updated notification to
     the constraints system when the dock area size hint changes. The
     notifications are collapsed on a single shot timer so that the
     dock area geometry can fully settle before being snapped by the
@@ -68,7 +68,7 @@ class DockLayoutFilter(QObject):
         timer.timeout.connect(self.onNotify)
 
     def onNotify(self):
-        self._owner.size_hint_updated()
+        self._owner.geometry_updated()
         self._pending = False
 
     def eventFilter(self, obj, event):

@@ -6,6 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from collections import deque
+from contextlib import contextmanager
 
 import wx
 
@@ -17,6 +18,12 @@ from enaml.widgets.container import ProxyContainer
 
 from .wx_constraints_widget import WxConstraintsWidget
 from .wx_frame import WxFrame
+
+
+# Commonly used default sizes
+DEFAULT_BEST_SIZE = wx.Size(-1, -1)
+DEFAULT_MIN_SIZE = wx.Size(0, 0)
+DEFAULT_MAX_SIZE = wx.Size(16777215, 16777215)
 
 
 class LayoutPoint(Atom):
@@ -82,6 +89,38 @@ class WxLayoutItem(LayoutItem):
         """
         hint = self.widget.GetBestSize()
         return (hint.width, hint.height)
+
+    def min_size(self):
+        """ Get the minimum size for the underlying widget.
+
+        Returns
+        -------
+        result : tuple
+            A 2-tuple of numbers representing the (width, height)
+            min size of the widget. If any value is less than zero,
+            constraints will not be generated for that dimension.
+
+        """
+        min_size = self.widget.GetMinSize()
+        if min_size != DEFAULT_MIN_SIZE:
+            return (min_size.width, min_size.height)
+        return (-1, -1)
+
+    def max_size(self):
+        """ Get the maximum size for the underlying widget.
+
+        Returns
+        -------
+        result : tuple
+            A 2-tuple of numbers representing the (width, height)
+            max size of the widget. If any value is less than zero,
+            constraints will not be generated for that dimension.
+
+        """
+        max_size = self.widget.GetMaxSize()
+        if max_size != DEFAULT_MAX_SIZE:
+            return (max_size.width, max_size.height)
+        return (-1, -1)
 
     def constraints(self):
         """ Get the user-defined constraints for the item.
@@ -162,10 +201,35 @@ class WxChildContainerItem(WxLayoutItem):
     def constraints(self):
         """ Get the user constraints for the item.
 
-        A child container does not expose its user layout constraints.
+        A child container does not expose its user defined constraints
+        to the parent container.
 
         """
         return []
+
+    def min_size(self):
+        """ Get the minimum size for the underlying widget.
+
+        The min size for a child container lives on the proxy object.
+        The widget limits must be bypassed for child container.
+
+        """
+        min_size = self.declaration.proxy.min_size
+        if min_size != DEFAULT_MIN_SIZE:
+            return (min_size.width, min_size.height)
+        return (-1, -1)
+
+    def max_size(self):
+        """ Get the maximum size for the underlying widget.
+
+        The max size for a child container lives on the proxy object.
+        The widget limits must be bypassed for child container.
+
+        """
+        max_size = self.declaration.proxy.max_size
+        if max_size != DEFAULT_MAX_SIZE:
+            return (max_size.width, max_size.height)
+        return (-1, -1)
 
 
 class wxContainer(wx.PyPanel):
@@ -218,6 +282,16 @@ class WxContainer(WxFrame, ProxyContainer):
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(wxContainer)
 
+    #: The minimum size of the container as computed by the layout
+    #: manager. This will be updated on every relayout pass and is
+    #: used by the WxChildContainerItem to generate size constraints.
+    min_size = Typed(wx.Size)
+
+    #: The maximum size of the container as computed by the layout
+    #: manager. This will be updated on every relayout pass and is
+    #: used by the WxChildContainerItem to generate size constraints.
+    max_size = Typed(wx.Size)
+
     #: A timer used to collapse relayout requests. The timer is created
     #: on an as needed basis and destroyed when it is no longer needed.
     _layout_timer = Typed(wxLayoutTimer)
@@ -258,7 +332,7 @@ class WxContainer(WxFrame, ProxyContainer):
         """
         super(WxContainer, self).init_layout()
         self._setup_manager()
-        self._update_sizes()
+        self._update_size_bounds()
         self._update_geometries()
         widget = self.widget
         widget.Bind(wx.EVT_SIZE, self._on_resized)
@@ -290,27 +364,27 @@ class WxContainer(WxFrame, ProxyContainer):
         if container is not None:
             container.request_relayout()
 
-    def size_hint_updated(self, item=None):
-        """ Notify the layout system that the size hint has changed.
+    def geometry_updated(self, item=None):
+        """ Notify the layout system that the geometry has changed.
 
         Parameters
         ----------
         item : WxConstraintsWidget, optional
-            The constraints widget with the updated size hint. If this
-            is None, it indicates that this container's size hint is
+            The constraints widget with the updated geometry. If this
+            is None, it indicates that this container's geometry is
             the one which has changed.
 
         """
-        # If this container's size hint has changed and it has an
-        # ancestor layout container, notify that container since it
-        # cares about this container's size hint. If the layout for
-        # this container is shared, the layout item will take care
-        # of supplying the empty list size hint constraints.
+        # If this container's geometry has changed and it has an ancestor
+        # layout container, notify that container since it cares about
+        # this container's geometry. If the layout for this container is
+        # shared, the layout item will take care of supplying the proper
+        # list geometry constraints.
         container = self.layout_container
         if item is None:
             if container is not None:
-                container.size_hint_updated(self)
-            self.update_geometry()
+                container.geometry_updated(self)
+            self.post_wx_layout_request()
             return
 
         # If this container owns its layout, update the manager unless
@@ -319,15 +393,32 @@ class WxContainer(WxFrame, ProxyContainer):
         manager = self._layout_manager
         if manager is not None:
             if self._layout_timer is None:
-                with self.size_hint_guard():
-                    manager.update_size_hint(item.layout_index)
-                    self._update_sizes()
+                with self.geometry_guard():
+                    manager.update_geometry(item.layout_index)
+                    self._update_size_bounds()
                     self._update_geometries()
             return
 
         # If an ancestor container owns the layout, proxy the call.
         if container is not None:
-            container.size_hint_updated(item)
+            container.geometry_updated(item)
+
+    @contextmanager
+    def geometry_guard(self):
+        """ A context manager for guarding the geometry of the widget.
+
+        This is a reimplementation of the superclass method which uses
+        the internally computed min and max size of the container.
+
+        """
+        old_hint = self.widget.GetBestSize()
+        old_min = self.min_size
+        old_max = self.max_size
+        yield
+        if (old_hint != self.widget.GetBestSize() or
+            old_min != self.min_size or
+            old_max != self.max_size):
+            self.geometry_updated()
 
     @staticmethod
     def margins_func(widget_item):
@@ -365,9 +456,9 @@ class WxContainer(WxFrame, ProxyContainer):
         if manager is not None:
             if self._layout_timer is None:
                 index = item.layout_index if item else -1
-                with self.size_hint_guard():
+                with self.geometry_guard():
                     manager.update_margins(index)
-                    self._update_sizes()
+                    self._update_size_bounds()
                     self._update_geometries()
             return
 
@@ -412,10 +503,11 @@ class WxContainer(WxFrame, ProxyContainer):
         will reset the manager and update the geometries of the children.
 
         """
+        self._layout_timer.Stop()
         del self._layout_timer
-        with self.size_hint_guard():
+        with self.geometry_guard():
             self._setup_manager()
-            self._update_sizes()
+            self._update_size_bounds()
             self._update_geometries()
         self.widget.Thaw()
 
@@ -463,30 +555,40 @@ class WxContainer(WxFrame, ProxyContainer):
             width, height = self.widget.GetSizeTuple()
             manager.resize(width, height)
 
-    def _update_sizes(self):
-        """ Update the sizes of the underlying container.
+    def _update_size_bounds(self):
+        """ Update the size bounds of the underlying container.
 
         This method will update the min, max, and best size of the
-        container. It will not automatically trigger a size hint
+        container. It will not automatically trigger a geometry
         notification.
 
         """
         widget = self.widget
         manager = self._layout_manager
         if manager is None:
-            widget.SetBestSize(wx.Size(-1, -1))
-            widget.SetMinSize(wx.Size(0, 0))
-            widget.SetMaxSize(wx.Size(16777215, 16777215))
-            return
+            best_size = DEFAULT_BEST_SIZE
+            min_size = DEFAULT_MIN_SIZE
+            max_size = DEFAULT_MAX_SIZE
+        else:
+            best_size = wx.Size(*manager.best_size())
+            min_size = wx.Size(*manager.min_size())
+            max_size = wx.Size(*manager.max_size())
 
-        widget.SetBestSize(wx.Size(*manager.best_size()))
-        if not isinstance(widget.GetParent(), wxContainer):
-            # Only set min and max size if the parent is not a container.
-            # The manager needs to be the ultimate authority when dealing
-            # with nested containers, since QWidgetItem respects min and
-            # max size when calling setGeometry().
-            widget.SetMinSize(wx.Size(*manager.min_size()))
-            widget.SetMaxSize(wx.Size(*manager.max_size()))
+        # Store the computed min and max size, which is used by the
+        # WxChildContainerItem to provide min and max size constraints.
+        self.min_size = min_size
+        self.max_size = max_size
+
+        # If this is a child container, min and max size are not applied
+        # to the widget since the ancestor manager must be the ultimate
+        # authority on layout size.
+        widget.SetBestSize(best_size)
+        if isinstance(self.parent(), WxContainer):
+            widget.SetMinSize(DEFAULT_MIN_SIZE)
+            widget.SetMaxSize(DEFAULT_MAX_SIZE)
+        else:
+            widget.SetMinSize(min_size)
+            widget.SetMaxSize(max_size)
 
     def _create_layout_items(self):
         """ Create a layout items for the container decendants.

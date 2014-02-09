@@ -82,9 +82,7 @@ enamldef MyHtmlWidgets(Container):
 enamldef Main(Window):
     Container:
         padding = 0
-        hug_height = 'strong'
         Splitter:
-            hug_height = 'strong'
             SplitItem:
                 stretch = 0
                 collapsible = False
@@ -100,4 +98,3 @@ enamldef Main(Window):
             SplitItem:
                 MyForm:
                     pass
-

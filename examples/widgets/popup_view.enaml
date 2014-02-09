@@ -102,7 +102,6 @@ enamldef NotificationPopup(PopupView):
     fade_in_duration = 500
     fade_out_duration = 500
     Container:
-        hug_height = 'strong'
         Label:
             foreground = 'white'
             text = 'Hello Enaml Notifications'

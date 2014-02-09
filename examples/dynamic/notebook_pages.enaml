@@ -12,11 +12,12 @@ insert and remove pages from a notebook.
 
 << autodoc-me >>
 """
+from enaml.core.api import Include
 from enaml.layout.api import vbox, hbox, align, spacer
 from enaml.widgets.api import (
     Window, Notebook, Page, Container, PushButton, Field, Html, CheckBox
 )
-from enaml.core.api import Include
+
 
 enamldef ContentPage(Page):
     attr n: int
@@ -86,4 +87,3 @@ enamldef Main(Window): main:
                         source = '<h1><center>Static Page 2</center></h1>'
             Include: dyn_pages:
                 pass
-
