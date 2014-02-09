@@ -21,5 +21,6 @@ def main():
     # Start the application event loop
     app.start()
 
+
 if __name__ == "__main__":
     main()

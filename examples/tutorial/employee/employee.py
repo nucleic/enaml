@@ -70,7 +70,7 @@ if __name__ == '__main__':
     )
     employee_mary = Employee(
         first_name='Mary', last_name='Sue', boss=boss_john,
-        phone = (555, 555, 5555),
+        phone=(555, 555, 5555),
     )
 
     # Import our Enaml EmployeeView
