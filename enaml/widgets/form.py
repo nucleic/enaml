@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import set_default
-
 from enaml.layout.constrainable import ConstraintMember
 from enaml.layout.layout_helpers import align, vertical, horizontal, spacer
 
@@ -28,12 +26,6 @@ class Form(Container):
     #: The ConstraintVariable giving the midline along which the labels
     #: and widgets are aligned.
     midline = ConstraintMember()
-
-    #: A form hugs its height strongly by default. Forms are typcially
-    #: used to display vertical arrangements of widgets, with forms
-    #: often being stacked on top of each other. For this case, hugging
-    #: the height is desired.
-    hug_height = set_default('strong')
 
     def layout_constraints(self):
         """ Get the layout constraints for a Form.
