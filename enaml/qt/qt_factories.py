@@ -275,6 +275,11 @@ def tool_bar_factory():
     return QtToolBar
 
 
+def vtk_canvas_factory():
+    from .qt_vtk_canvas import QtVTKCanvas
+    return QtVTKCanvas
+
+
 def web_view_factory():
     from .qt_web_view import QtWebView
     return QtWebView
@@ -339,6 +344,7 @@ QT_FACTORIES = {
     'TimeSelector': time_selector_factory,
     'Timer': timer_factory,
     'ToolBar': tool_bar_factory,
+    'VTKCanvas': vtk_canvas_factory,
     'WebView': web_view_factory,
     'Window': window_factory,
 }
