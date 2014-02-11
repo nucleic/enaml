@@ -1,0 +1,171 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.workbench.core.command import Command
+from enaml.workbench.extension import Extension
+from enaml.workbench.extension_point import ExtensionPoint
+from enaml.workbench.plugin_manifest import PluginManifest
+
+
+def ui_plugin_factory():
+    """ A factory function which creates a UIPlugin instance.
+
+    """
+    from .ui_plugin import UIPlugin
+    return UIPlugin()
+
+
+def application_factory():
+    """ A factory function which creates the default Application.
+
+    """
+    from enaml.qt.qt_application import QtApplication
+    return QtApplication()
+
+
+def window_factory(workbench):
+    """ A factory function which creates the default WorkbenchWindow.
+
+    """
+    import enaml
+    with enaml.imports():
+        from .workbench_window import WorkbenchWindow
+    return WorkbenchWindow()
+
+
+def close_window(event):
+    """ The command handler for closing the workbench window.
+
+    """
+    ui = event.workbench.get_plugin('enaml.workbench.ui')
+    ui.close_window()
+
+
+def close_workspace(event):
+    """ The command handler for closing the workspace.
+
+    """
+    ui = event.workbench.get_plugin('enaml.workbench.ui')
+    ui.close_workspace()
+
+
+def select_workspace(event):
+    """ The command handler for selecting a workspace.
+
+    """
+    ui = event.workbench.get_plugin('enaml.workbench.ui')
+    ui.select_workspace(event.parameters['workspace'])
+
+
+APPLICATION_FACTORY_DESCRIPTION = \
+""" An Extension to this point can be used to provide a custom
+application object for the workbench. The extension factory should
+accept no arguments and return an Application instance. The highest
+ranking extension will be chosen to create the application."""
+
+
+WINDOW_FACTORY_DESCRIPTION = \
+""" An Extension to this point can be used to provide a custom main
+window for the workbench. The extension factory should accept the
+workbench as an argument and return a WorkbenchWindow instance. The
+highest ranking extension will be chosen to create the window."""
+
+
+BRANDING_DESCRIPTION = \
+""" An Extension to this point can be used to provide a custom window
+title and icon to the primary workbench window. A Branding object can
+be declared as the child of the extension, or created by the extension
+factory function which accepts the workbench as an argument. The highest
+ranking extension will be chosen to provide the branding."""
+
+
+ACTIONS_DESCRIPTION = \
+""" Extensions to this point can be used to provide menu items and
+action items to be added to the primary workbench window menu bar. The
+extension can declare child MenuItem and ActionItem instances as well
+as provide a factory function which returns a list of the same. """
+
+
+WORKSPACES_DESCRIPTION = \
+""" Extensions to this point can be used to provide workspaces which
+can be readily swapped to provide the main content for the workbench
+window. The extension factory function should accept the workbench as
+an argument and return an instance of Workspace. """
+
+
+AUTOSTART_DESCRIPTION = \
+""" Extensions to this point can be used to provide the id of a plugin
+which should be started preemptively on application startup. The extension
+should declare children of type Autostart. The plugins will be started in
+order of extension rank. Warning - abusing this facility can cause drastic
+slowdowns in application startup time. Only use it if you are *absolutely*
+sure your plugin must be loaded on startup. """
+
+
+CLOSE_WINDOW_DESCRIPTION = \
+""" Close the primary workbench window. """
+
+
+CLOSE_WORKSPACE_DESCRIPTION = \
+""" Close the currently active workspace. """
+
+
+SELECT_WORKSPACE_DESCRIPTION = \
+""" Select and activate a new workspace. The parameters dict must
+contain a 'workspace' key which is the fully qualified identifier
+of the extension which will create the workspace object. """
+
+
+enamldef UIManifest(PluginManifest):
+    """ The manifest for the Enaml workbench ui plugin.
+
+    """
+    id = 'enaml.workbench.ui'
+    factory = ui_plugin_factory
+    ExtensionPoint:
+        id = 'application_factory'
+        description = APPLICATION_FACTORY_DESCRIPTION
+    ExtensionPoint:
+        id = 'window_factory'
+        description = WINDOW_FACTORY_DESCRIPTION
+    ExtensionPoint:
+        id = 'branding'
+        description = BRANDING_DESCRIPTION
+    ExtensionPoint:
+        id = 'actions'
+        description = ACTIONS_DESCRIPTION
+    ExtensionPoint:
+        id = 'workspaces'
+        description = WORKSPACES_DESCRIPTION
+    ExtensionPoint:
+        id = 'autostart'
+        description = AUTOSTART_DESCRIPTION
+    Extension:
+        id = 'default_application_factory'
+        point = 'enaml.workbench.ui.application_factory'
+        factory = application_factory
+        rank = -1000
+    Extension:
+        id = 'default_window_factory'
+        point = 'enaml.workbench.ui.window_factory'
+        factory = window_factory
+        rank = -1000
+    Extension:
+        id = 'default_commands'
+        point = 'enaml.workbench.core.commands'
+        Command:
+            id = 'enaml.workbench.ui.close_window'
+            description = CLOSE_WINDOW_DESCRIPTION
+            handler = close_window
+        Command:
+            id = 'enaml.workbench.ui.close_workspace'
+            description = CLOSE_WORKSPACE_DESCRIPTION
+            handler = close_workspace
+        Command:
+            id = 'enaml.workbench.ui.select_workspace'
+            description = SELECT_WORKSPACE_DESCRIPTION
+            handler = select_workspace

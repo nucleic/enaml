@@ -1,0 +1,64 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.widgets.api import Container, Form, Label, Field
+from enaml.workbench.api import Extension, PluginManifest
+from enaml.workbench.ui.api import ActionItem, MenuItem
+
+
+print 'Imported Second View!'
+
+
+enamldef SecondView(Container):
+    padding = 0
+    Form:
+        Label:
+            text = 'First Name'
+        Field:
+            pass
+        Label:
+            text = 'Last Name'
+        Field:
+            pass
+        Label:
+            text = 'Address'
+        Field:
+            pass
+
+
+enamldef SecondManifest(PluginManifest):
+    """ The manifest which is registered when the view is loaded.
+
+    This manifest contributes extra menu items to the menu bar.
+
+    """
+    id = 'sample.second'
+    Extension:
+        id = 'actions'
+        point = 'enaml.workbench.ui.actions'
+        MenuItem:
+            path = '/preferences'
+            label = 'Preferences'
+            after = 'file'
+            before = 'workspace'
+        MenuItem:
+            path = '/window'
+            label = 'Window'
+            before = 'workspace'
+        MenuItem:
+            path = '/help'
+            label = 'Help'
+            after = 'workspace'
+        ActionItem:
+            path = '/preferences/save'
+            label = 'Save'
+        ActionItem:
+            path = '/preferences/restore'
+            label = 'Restore'
+        ActionItem:
+            path = '/help/about'
+            label = 'About'

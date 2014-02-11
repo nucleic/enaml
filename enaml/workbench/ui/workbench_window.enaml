@@ -1,0 +1,35 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.core.include import Include
+from enaml.widgets.main_window import MainWindow
+from enaml.widgets.menu_bar import MenuBar
+from enaml.workbench.workbench import Workbench
+
+from .window_model import WindowModel
+
+
+def make_title(primary, workspace):
+    return u' - '.join(filter(None, (primary, workspace)))
+
+
+enamldef WorkbenchWindow(MainWindow):
+    """ The custom MainWindow enamldef used by the Enaml studio.
+
+    """
+    attr workbench: Workbench
+    attr window_model: WindowModel
+    title << make_title(
+        window_model.branding.title,
+        window_model.workspace.window_title,
+    )
+    icon << window_model.branding.icon
+    MenuBar:
+        Include:
+            objects << window_model.menus
+    Include:
+        objects << filter(None, [window_model.workspace.content])
