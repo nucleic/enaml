@@ -389,6 +389,14 @@ extension points:
 	window. The extension factory function should accep the workbench as
 	an argument and return an instance of Workspace.
 
+'autostart'
+	Extensions to this point can be used to provide the id of a plugin
+	which should be started preemptively on application startup. The
+	extension should declare children of type Autostart. The plugins will
+	be started in order of extension rank. Warning - abusing this facility
+	can cause drastic slowdowns in application startup time. Only use it
+	if you are *absolutely* sure your plugin must be loaded on startup.
+
 The plugin declares the following extensions:
 
 'default_application_factory'
@@ -631,6 +639,21 @@ stop
     should be used to release any resources acquired during the lifetime
     of the workspace. The content Container will be destroyed automatically
     after this method returns.
+
+Autostart
+~~~~~~~~~
+The Autostart class is a declarative class which is used to supply the
+plugin id for a plugin which should be automatically started on application
+startup.
+
+The Autostart class can be imported from `enaml.workbench.ui.api`.
+
+It has the following attributes of interest.
+
+plugin_id
+	This is the id of the plugin to start on application startup. The
+	manifest for the plugin must be registered before the ui plugin is
+	started.
 
 UI Workbench
 ------------
