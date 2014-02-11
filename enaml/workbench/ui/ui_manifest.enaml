@@ -93,8 +93,17 @@ as provide a factory function which returns a list of the same. """
 WORKSPACES_DESCRIPTION = \
 """ Extensions to this point can be used to provide workspaces which
 can be readily swapped to provide the main content for the workbench
-window. The extension factory function should accep the workbench as
+window. The extension factory function should accept the workbench as
 an argument and return an instance of Workspace. """
+
+
+AUTOSTART_DESCRIPTION = \
+""" Extensions to this point can be used to provide the id of a plugin
+which should be started preemptively on application startup. The extension
+should declare children of type Autostart. The plugins will be started in
+order of extension rank. Warning - abusing this facility can cause drastic
+slowdowns in application startup time. Only use it if you are *absolutely*
+sure your plugin must be loaded on startup. """
 
 
 CLOSE_WINDOW_DESCRIPTION = \
@@ -132,6 +141,9 @@ enamldef UIManifest(PluginManifest):
     ExtensionPoint:
         id = 'workspaces'
         description = WORKSPACES_DESCRIPTION
+    ExtensionPoint:
+        id = 'autostart'
+        description = AUTOSTART_DESCRIPTION
     Extension:
         id = 'default_application_factory'
         point = 'enaml.workbench.ui.application_factory'

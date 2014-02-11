@@ -12,6 +12,7 @@ from enaml.workbench.extension import Extension
 from enaml.workbench.plugin import Plugin
 
 from .action_item import ActionItem
+from .autostart import Autostart
 from .branding import Branding
 from .menu_helper import create_menus
 from .menu_item import MenuItem
@@ -33,6 +34,8 @@ WINDOW_FACTORY_POINT = u'enaml.workbench.ui.window_factory'
 
 WORKSPACES_POINT = u'enaml.workbench.ui.workspaces'
 
+AUTOSTART_POINT = u'enaml.workbench.ui.autostart'
+
 
 class UIPlugin(Plugin):
     """ The main UI plugin class for the Enaml studio.
@@ -52,6 +55,7 @@ class UIPlugin(Plugin):
         self._create_model()
         self._create_window()
         self._bind_observers()
+        self._start_autostarts()
 
     def stop(self):
         """ Stop the plugin life-cycle.
@@ -60,6 +64,7 @@ class UIPlugin(Plugin):
         It should never be called by user code.
 
         """
+        self._stop_autostarts()
         self._unbind_observers()
         self._destroy_window()
         self._release_model()
@@ -366,6 +371,37 @@ class UIPlugin(Plugin):
         menus = create_menus(workbench, menu_items, action_items)
         self._action_extensions = new_extensions
         self._model.menus = menus
+
+    def _get_autostarts(self):
+        """ Get the autostart extension objects.
+
+        """
+        workbench = self.workbench
+        point = workbench.get_extension_point(AUTOSTART_POINT)
+        extensions = sorted(point.extensions, key=lambda ext: ext.rank)
+
+        autostarts = []
+        for extension in extensions:
+            autostarts.extend(extension.get_children(Autostart))
+
+        return autostarts
+
+    def _start_autostarts(self):
+        """ Start the plugins for the autostart extension point.
+
+        """
+        workbench = self.workbench
+        for autostart in self._get_autostarts():
+            workbench.get_plugin(autostart.plugin_id)
+
+    def _stop_autostarts(self):
+        """ Stop the plugins for the autostart extension point.
+
+        """
+        workbench = self.workbench
+        for autostart in reversed(self._get_autostarts()):
+            plugin = workbench.get_plugin(autostart.plugin_id)
+            plugin.stop()
 
     def _on_branding_updated(self, change):
         """ The observer for the branding extension point.

@@ -5,10 +5,14 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .action_item import ActionItem
-from .autostart import Autostart
-from .branding import Branding
-from .item_group import ItemGroup
-from .menu_item import MenuItem
-from .ui_workbench import UIWorkbench
-from .workspace import Workspace
+from atom.api import Unicode
+
+from enaml.core.declarative import Declarative, d_
+
+
+class Autostart(Declarative):
+    """ A declarative object for use with auto start extensions.
+
+    """
+    #: The id of the plugin which should be preemptively started.
+    plugin_id = d_(Unicode())
