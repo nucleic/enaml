@@ -1,6 +1,19 @@
 Enaml Release Notes
 ===================
 
+0.9.1 - 02/11/2014
+------------------
+- Add the workbench plugin framework. 2ab09c6782b4_
+- Fix idiosyncrasies in layout. 5a9f529671dd_
+- Add a VTKCanvas control. b04262195c27_
+- Add ability to veto a window close. bbd9aa1be9f2_
+- Fix issues #64 #119 #120 #128 #129
+
+.. _2ab09c6782b4: https://github.com/nucleic/enaml/commit/2ab09c6782b4d4d5002bb4cfee7f4dbeb6102187
+.. _5a9f529671dd: https://github.com/nucleic/enaml/commit/5a9f529671dd1af8ed81e202b70738d0aee10a0d
+.. _b04262195c27: https://github.com/nucleic/enaml/commit/b04262195c27cb43e7e2836b576ce8ba01a9a356
+.. _bbd9aa1be9f2: https://github.com/nucleic/enaml/commit/bbd9aa1be9f2f02315b651cc18cb2222d7ff67d1
+
 0.9.0 - 01/13/2014
 ------------------
 - Fix issue #78. f0d1fc7da0d7_
