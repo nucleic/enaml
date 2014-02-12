@@ -78,6 +78,8 @@ setup(
     package_data={
         'enaml.applib': ['*.enaml'],
         'enaml.stdlib': ['*.enaml'],
+        'enaml.workbench.core': ['*.enaml'],
+        'enaml.workbench.ui': ['*.enaml'],
         'enaml.qt.docking': [
             'dock_images/*.png',
             'dock_images/*.py',
