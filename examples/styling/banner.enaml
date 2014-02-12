@@ -54,6 +54,7 @@ enamldef Main(Window):
         Form: form:
             padding = 0
             hug_width = 'strong'
+            hug_height = 'required'
             Label:
                 text = 'First'
             Field:
