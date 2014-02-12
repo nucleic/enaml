@@ -102,7 +102,7 @@ class QtLayoutItem(LayoutItem):
             constraints will not be generated for that dimension.
 
         """
-        min_size = self.widget_item.minimumSize()
+        min_size = self.widget_item.widget().minimumSize()
         if min_size != DEFAULT_MIN_SIZE:
             return (min_size.width(), min_size.height())
         return (-1, -1)
@@ -118,7 +118,7 @@ class QtLayoutItem(LayoutItem):
             constraints will not be generated for that dimension.
 
         """
-        max_size = self.widget_item.maximumSize()
+        max_size = self.widget_item.widget().maximumSize()
         if max_size != DEFAULT_MAX_SIZE:
             return (max_size.width(), max_size.height())
         return (-1, -1)
