@@ -1,0 +1,107 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using the Enaml stdlib task dialog components.
+
+The `task_dialog` stdlib module provides a set of components which can be
+easily assembled for a dialog which follows the style of the Windows 7/8
+task dialogs.
+
+A task dialog is assembled by declaring a `TaskDialogBody` element as the
+child of a `Dialog`. Within the body, the various special dialog area
+containers can be declared to add content to the dialog. The dialog body
+takes care of automatically laying the various areas.
+
+This example creates a Dialog which uses all of the task dialog areas,
+which is not a requirement for user code. In fact, all of the areas are
+optional, and the developer is free to choose the bits needed for the
+task at hand.
+
+Creating a task dialog from scratch using the area elements is flexible,
+but can be a bit tedious. For the more common use cases, Enaml provides
+some predefined task dialogs. See `message_box.enaml` for an example.
+
+<< autodoc-me >>
+"""
+import sys
+if sys.platform == 'win32':
+    from enaml import winutil
+
+from enaml.image import Image
+from enaml.layout.api import align, hbox, spacer
+from enaml.stdlib.dialog_buttons import DialogButtonBox, DialogButton
+from enaml.stdlib.task_dialog import (TaskDialogBody, TaskDialogCommandArea,
+    TaskDialogContentArea, TaskDialogDetailsArea, TaskDialogFootnoteArea,
+    TaskDialogIconArea, TaskDialogInstructionArea, TaskDialogStyleSheet)
+from enaml.widgets.api import (CheckBox, Container, Dialog, Field, Label,
+    ImageView, PushButton, RadioButton, Window)
+
+
+template IconContent(Platform):
+    Label:
+        text = 'Icon Area'
+
+
+template IconContent(Platform: 'win32'):
+    const ico = winutil.load_icon(winutil.OIC_INFORMATION)
+    const img = Image(data=ico[0], raw_size=ico[1], format='argb32')
+    ImageView:
+        image = img
+        hug_height = 'strong'
+        hug_width = 'strong'
+
+
+enamldef MyTaskDialog(Dialog):
+    title = 'A Task Dialog'
+    TaskDialogStyleSheet:
+            pass
+    TaskDialogBody:
+        TaskDialogIconArea:
+            IconContent(sys.platform):
+                pass
+        TaskDialogInstructionArea:
+            Label:
+                style_class = 'task-dialog-instructions'
+                text = 'The dialog instruction'
+        TaskDialogContentArea:
+            Label:
+                style_class = 'task-dialog-content'
+                text = 'This is some additional dialog content.'
+        TaskDialogDetailsArea: details:
+            visible = False
+            RadioButton:
+                text = 'these'
+            RadioButton:
+                text = 'are'
+            RadioButton:
+                text = 'more'
+            RadioButton:
+                text = 'options'
+        TaskDialogCommandArea:
+            constraints = [
+                hbox(cbox, spacer, bbox),
+                align('v_center', cbox, bbox),
+            ]
+            CheckBox: cbox:
+                text = 'More options'
+                checked := details.visible
+            DialogButtonBox: bbox:
+                buttons = [
+                    DialogButton('OK', 'accept'),
+                    DialogButton('Cancel', 'reject'),
+                ]
+        TaskDialogFootnoteArea:
+            Label:
+                text = 'This is a footnote. It could be any widget.'
+
+
+enamldef Main(Window):
+    title = 'Task Dialog Example'
+    Container:
+        PushButton:
+            text = 'Launch Dialog'
+            clicked :: MyTaskDialog(self).exec_()

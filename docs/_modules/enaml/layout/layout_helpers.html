@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.layout.layout_helpers &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <h1>Source code for enaml.layout.layout_helpers</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">.constraint_helper</span> <span class="kn">import</span> <span class="n">ConstraintHelper</span>
+<span class="kn">from</span> <span class="nn">.grid_helper</span> <span class="kn">import</span> <span class="n">GridHelper</span>
+<span class="kn">from</span> <span class="nn">.linear_box_helper</span> <span class="kn">import</span> <span class="n">LinearBoxHelper</span>
+<span class="kn">from</span> <span class="nn">.sequence_helper</span> <span class="kn">import</span> <span class="n">SequenceHelper</span>
+<span class="kn">from</span> <span class="nn">.spacers</span> <span class="kn">import</span> <span class="n">LayoutSpacer</span>
+
+
+<span class="n">spacer</span> <span class="o">=</span> <span class="n">LayoutSpacer</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="horizontal"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.horizontal">[docs]</a><span class="k">def</span> <span class="nf">horizontal</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a left-to-right SequenceHelper object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *items</span>
+<span class="sd">        The constraint items to pass to the helper.</span>
+
+<span class="sd">    **config</span>
+<span class="sd">        Additional keyword arguments to pass to the helper.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SequenceHelper</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="vertical"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.vertical">[docs]</a><span class="k">def</span> <span class="nf">vertical</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a top-to-bottom SequenceHelper object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *items</span>
+<span class="sd">        The constraint items to pass to the helper.</span>
+
+<span class="sd">    **config</span>
+<span class="sd">        Additional keyword arguments to pass to the helper.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SequenceHelper</span><span class="p">(</span><span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="hbox"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.hbox">[docs]</a><span class="k">def</span> <span class="nf">hbox</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a horizontal LinearBoxHelper object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *items</span>
+<span class="sd">        The constraint items to pass to the helper.</span>
+
+<span class="sd">    **config</span>
+<span class="sd">        Additional keyword arguments to pass to the helper.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">LinearBoxHelper</span><span class="p">(</span><span class="s">&#39;horizontal&#39;</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="vbox"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.vbox">[docs]</a><span class="k">def</span> <span class="nf">vbox</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a vertical LinearBoxHelper object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *items</span>
+<span class="sd">        The constraint items to pass to the helper.</span>
+
+<span class="sd">    **config</span>
+<span class="sd">        Additional keyword arguments to pass to the helper.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">LinearBoxHelper</span><span class="p">(</span><span class="s">&#39;vertical&#39;</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="align"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.align">[docs]</a><span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a SequenceHelper with the given anchor object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    anchor : str</span>
+<span class="sd">        The name of the target anchor on the constrainable object.</span>
+
+<span class="sd">    *items</span>
+<span class="sd">        The constraint items to pass to the helper.</span>
+
+<span class="sd">    **config</span>
+<span class="sd">        Additional keyword arguments to pass to the helper.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;spacing&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">SequenceHelper</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="grid"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.grid">[docs]</a><span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="o">*</span><span class="n">rows</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a GridHelper object with the given rows.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *rows</span>
+
+
+<span class="sd">    **config</span>
+<span class="sd">        Additional keyword arguments to pass to the helper.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">GridHelper</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="expand_constraints"><a class="viewcode-back" href="../../../api_ref/layout/layout_helpers.html#enaml.layout.layout_helpers.expand_constraints">[docs]</a><span class="k">def</span> <span class="nf">expand_constraints</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A function which expands any ConstraintHelper in the list.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    component : Constrainable</span>
+<span class="sd">        The constrainable component with which the constraints are</span>
+<span class="sd">        associated. This will be passed to the .create_constraints()</span>
+<span class="sd">        method of any ConstraintHelper instance.</span>
+
+<span class="sd">    constraints : list</span>
+<span class="sd">        The list of constraints to expand.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : list</span>
+<span class="sd">        The list of expanded constraints.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cn</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cn</span><span class="p">,</span> <span class="n">ConstraintHelper</span><span class="p">):</span>
+            <span class="n">cns</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">cn</span><span class="o">.</span><span class="n">create_constraints</span><span class="p">(</span><span class="n">component</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">cn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">cns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cn</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cns</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

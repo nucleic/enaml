@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dock Item Alerts Example &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Gradient Push Button Example" href="ex_gradient_push_button.html" />
+    <link rel="prev" title="Banner Example" href="ex_banner.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Dock Item Alerts Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ex_banner.html">Banner Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Dock Item Alerts Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_gradient_push_button.html">Gradient Push Button Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="dock-item-alerts-example">
+<h1>Dock Item Alerts Example<a class="headerlink" href="#dock-item-alerts-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/dock_item_alerts.enaml"><tt class="xref download docutils literal"><span class="pre">dock_item_alerts</span></tt></a></p>
+<div class="highlight-python"><pre>This example demonstrates the use of alerts on the DockItem widget.
+
+The DockItem widget and related bits in the DockArea support a style
+sheet pseudo-class named 'alert'. This pseudo-class is very powerful in
+that it allows the developer to provide their own arbitrary token to the
+pseudo-class as an argument, and then apply that token to a dock item at
+runtime. This gives the developer complete freed over the how they style
+their alerts, and does not force them in to a pre-defined hierarchy of
+alert levels.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run dock_item_alerts</pre>
+</div>
+<img alt="../_images/ex_dock_item_alerts.png" src="../_images/ex_dock_item_alerts.png" />
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" This example demonstrates the use of alerts on the DockItem widget.
+
+The DockItem widget and related bits in the DockArea support a style
+sheet pseudo-class named 'alert'. This pseudo-class is very powerful in
+that it allows the developer to provide their own arbitrary token to the
+pseudo-class as an argument, and then apply that token to a dock item at
+runtime. This gives the developer complete freed over the how they style
+their alerts, and does not force them in to a pre-defined hierarchy of
+alert levels.
+
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from enaml.layout.api import (
+    HSplitLayout, VSplitLayout, TabLayout, hbox, vbox, spacer
+)
+from enaml.styling import StyleSheet
+from enaml.stdlib.dock_area_styles import (
+    VS2010Style, TitleBarStyle, DockBarButtonStyle, ContainerStyle,
+    ItemStyle, TabBarTabStyle, TitleBarLabelStyle
+)
+from enaml.widgets.api import (
+    Window, Container, DockArea, DockItem, Html, Field, PushButton
+)
+
+
+HTML = """
+&lt;h3&gt;&lt;center&gt;
+Drag the dock items to different locations to and then trigger an alert.
+&lt;/center&gt;&lt;/h3&gt;
+"""
+
+MELTDOWN_HTML = """
+&lt;h1&gt;&lt;center&gt;Everything is NOT okay!&lt;/center&gt;&lt;/h1&gt;
+"""
+
+enamldef MyAlertStyleSheet(StyleSheet):
+
+    # Include the base VS 2010 styling rules
+    VS2010Style():
+        pass
+
+    # Add alert styles for an "important" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
+
+    TitleBarLabelStyle:
+        pseudo_class = 'alert(important)'
+        color = 'black'
+
+    DockBarButtonStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
+
+    TabBarTabStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
+
+
+    # Add alert styles for an "information" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
+
+    DockBarButtonStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
+
+    TabBarTabStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
+
+
+    # Add alert styles for a "meltdown" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    DockBarButtonStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    TabBarTabStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    ContainerStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'yellow'
+
+    ItemStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+
+enamldef DummyItem(DockItem):
+    title = ' '.join(s.capitalize() for s in name.split('_'))
+    Container:
+        Field: pass
+        Field: pass
+        Field: pass
+        Field: pass
+
+
+enamldef Main(Window):
+    title = 'Dock Item Alerts'
+    MyAlertStyleSheet:
+        pass
+    Container:
+        padding = 0
+        DockArea:
+            # A custom style sheet is being used, so the default style
+            # sheet must be disabled - IMPORTANT!
+            style = ''
+            layout = HSplitLayout(
+                VSplitLayout('controls', 'information'),
+                VSplitLayout('important', 'meltdown'),
+                TabLayout('dummy_1', 'dummy_2', 'dummy_3', 'dummy_4'),
+            )
+            DockItem:
+                title = 'Controls'
+                name = 'controls'
+                stretch = 0
+                Container:
+                    PushButton:
+                        text = 'Information'
+                        clicked ::
+                            info_item.alert('information')
+                    PushButton:
+                        text = 'Important'
+                        clicked ::
+                            important_item.alert('important', persist=True)
+                    PushButton:
+                        text = 'Meltdown'
+                        clicked ::
+                            meltdown_item.alert(
+                                'meltdown', on=60, off=60, repeat=100
+                            )
+            DockItem: info_item:
+                title = 'Information'
+                name = 'information'
+                stretch = 0
+                Container:
+                    Field:
+                        placeholder = 'just'
+                    Field:
+                        placeholder = 'some'
+                    Field:
+                        placeholder = 'information'
+            DockItem: important_item:
+                title = 'Important Data'
+                name = 'important'
+                Container:
+                    Html:
+                        source = HTML
+            DockItem: meltdown_item:
+                title = 'Meltdown'
+                name = 'meltdown'
+                Container:
+                    Html:
+                        source = MELTDOWN_HTML
+            DummyItem:
+                name = 'dummy_1'
+            DummyItem:
+                name = 'dummy_2'
+            DummyItem:
+                name = 'dummy_3'
+            DummyItem:
+                name = 'dummy_4'
+</pre>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

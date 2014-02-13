@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.image &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <h1>Source code for enaml.image</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Coerced</span>
+
+<span class="kn">from</span> <span class="nn">enaml.layout.geometry</span> <span class="kn">import</span> <span class="n">Size</span>
+
+
+<div class="viewcode-block" id="Image"><a class="viewcode-back" href="../../api_ref/image.html#enaml.image.Image">[docs]</a><span class="k">class</span> <span class="nc">Image</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An object representing an image.</span>
+
+<span class="sd">    Once an image is created it should be treated as read only. User</span>
+<span class="sd">    code should create a new image object if the parameters need to</span>
+<span class="sd">    be changed.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The format of the image. By default, the consumer of the image</span>
+    <span class="c">#: will probe the header to automatically infer a type.</span>
+    <span class="n">format</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span>
+        <span class="s">&#39;auto&#39;</span><span class="p">,</span>     <span class="c"># Automatically determine the image format</span>
+        <span class="s">&#39;png&#39;</span><span class="p">,</span>      <span class="c"># Portable Network Graphics</span>
+        <span class="s">&#39;jpg&#39;</span><span class="p">,</span>      <span class="c"># Joint Photographic Experts Group</span>
+        <span class="s">&#39;gif&#39;</span><span class="p">,</span>      <span class="c"># Graphics Interchange Format</span>
+        <span class="s">&#39;bmp&#39;</span><span class="p">,</span>      <span class="c"># Windows Bitmap</span>
+        <span class="s">&#39;xpm&#39;</span><span class="p">,</span>      <span class="c"># X11 Pixmap</span>
+        <span class="s">&#39;xbm&#39;</span><span class="p">,</span>      <span class="c"># X11 Bitmap</span>
+        <span class="s">&#39;pbm&#39;</span><span class="p">,</span>      <span class="c"># Portable Bitmap</span>
+        <span class="s">&#39;pgm&#39;</span><span class="p">,</span>      <span class="c"># Portable Graymap</span>
+        <span class="s">&#39;ppm&#39;</span><span class="p">,</span>      <span class="c"># Portable Pixmap</span>
+        <span class="s">&#39;tiff&#39;</span><span class="p">,</span>     <span class="c"># Tagged Image File Format</span>
+        <span class="s">&#39;argb32&#39;</span><span class="p">,</span>   <span class="c"># Raw data in the 0xAARRGGBB format.</span>
+                    <span class="c"># The `raw_size` of the image must be provided.</span>
+    <span class="p">)</span>
+
+    <span class="c">#: The (width, height) raw size of the image. This must be provided</span>
+    <span class="c">#: for images where the size is not encoded in the data stream.</span>
+    <span class="n">raw_size</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">Size</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="c">#: The (width, height) size of the image. An invalid size indicates</span>
+    <span class="c">#: that the size of the image should be automatically inferred. A</span>
+    <span class="c">#: valid size indicates that the toolkit image should be scaled to</span>
+    <span class="c">#: the specified size.</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">Size</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c">#: The aspect ratio mode to use when the toolkit scales the image.</span>
+    <span class="n">aspect_ratio_mode</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">,</span> <span class="s">&#39;keep&#39;</span><span class="p">,</span> <span class="s">&#39;keep_by_expanding&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The transform mode to use when the toolkit scales the image.</span>
+    <span class="n">transform_mode</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;smooth&#39;</span><span class="p">,</span> <span class="s">&#39;fast&#39;</span><span class="p">)</span>
+
+    <span class="c"># XXX this needs to be augmented to support arrays.</span>
+    <span class="c">#: The bytestring holding the data for the image.</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Str</span><span class="p">()</span>
+
+    <span class="c">#: Storage space for use by a toolkit backend to use as needed.</span>
+    <span class="c">#: This should not typically be manipulated by user code.</span>
+    <span class="n">_tkdata</span> <span class="o">=</span> <span class="n">Value</span><span class="p">()</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

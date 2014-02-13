@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Mapped View Example &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Message Box Example" href="ex_message_box.html" />
+    <link rel="prev" title="Nested Containers Example" href="ex_nested_containers.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Mapped View Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">Mapped View Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_message_box.html">Message Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_task_dialog.html">Task Dialog Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="mapped-view-example">
+<h1>Mapped View Example<a class="headerlink" href="#mapped-view-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/mapped_view.enaml"><tt class="xref download docutils literal"><span class="pre">mapped_view</span></tt></a></p>
+<div class="highlight-python"><pre>An example of using the Enaml stdlib `MappedView` component.
+
+The `MappedView` is an enamldef subtype of the `Include` type which will
+automatically create a view for an object based on it's type and a given
+typemap. See the documentation for `MappedView` for a full description.
+
+In this example, a simple class hierarchy is created. For each type in
+the hierararchy, a custom view is created. These views are provided as
+a typemap to a `MappedView` so that when a given object is selected, the
+proper view is displayed.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run mapped_view</pre>
+</div>
+<img alt="../_images/ex_mapped_view.png" src="../_images/ex_mapped_view.png" />
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using the Enaml stdlib `MappedView` component.
+
+The `MappedView` is an enamldef subtype of the `Include` type which will
+automatically create a view for an object based on it's type and a given
+typemap. See the documentation for `MappedView` for a full description.
+
+In this example, a simple class hierarchy is created. For each type in
+the hierararchy, a custom view is created. These views are provided as
+a typemap to a `MappedView` so that when a given object is selected, the
+proper view is displayed.
+
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from atom.api import Atom, Unicode, Int, List, Range, Value, observe
+
+from enaml.layout.api import vbox
+from enaml.stdlib.mapped_view import MappedView
+from enaml.widgets.api import (
+    Window, Form, Field, SpinBox, Label, ObjectCombo, Container
+)
+
+
+class Base(Atom):
+    name = Unicode()
+
+
+class Foo(Base):
+    a = Int()
+    b = Int()
+    c = Int()
+
+
+class Bar(Base):
+    d = Unicode()
+    e = Unicode()
+    f = Unicode()
+    g = Unicode()
+
+
+enamldef BaseView(Form):
+    attr model: Base
+    Label:
+        text = 'Name'
+    Label:
+        hug_width = 'ignore'
+        align = 'center'
+        text &lt;&lt; model.name
+
+
+enamldef FooView(BaseView):
+    attr model: Foo
+    Label:
+        text = 'a'
+    SpinBox:
+        value := model.a
+    Label:
+        text = 'b'
+    SpinBox:
+        value := model.b
+    Label:
+        text = 'c'
+    SpinBox:
+        value := model.c
+
+
+enamldef BarView(BaseView):
+    attr model: Bar
+    Label:
+        text = 'd'
+    Field:
+        text := model.d
+    Label:
+        text = 'e'
+    Field:
+        text := model.e
+    Label:
+        text = 'f'
+    Field:
+        text := model.f
+    Label:
+        text = 'g'
+    Field:
+        text := model.g
+
+
+class Model(Atom):
+
+    objects = List(Base)
+
+
+enamldef Main(Window):
+    attr main_model = Model(objects=[
+        Base(name='Base'), Foo(name='Foo'), Bar(name='Bar')
+    ])
+    Container:
+        ObjectCombo: combo:
+            items &lt;&lt; main_model.objects
+            to_string = lambda obj: obj.name
+        MappedView:
+            model &lt;&lt; combo.selected
+            typemap = {Base: BaseView, Foo: FooView, Bar: BarView}
+</pre>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,458 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Advanced Example &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Basic Example" href="ex_basic.html" />
+    <link rel="prev" title="Gradient Push Button Example" href="ex_gradient_push_button.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Advanced Example</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#tutorial-examples">Tutorial Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#widgets-examples">Widgets Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#layout-examples">Layout Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stdlib-examples">Stdlib Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#dynamic-examples">Dynamic Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#aliases-examples">Aliases Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#styling-examples">Styling Examples</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#templates-examples">Templates Examples</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">Advanced Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_basic.html">Basic Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#applib-examples">Applib Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="advanced-example">
+<h1>Advanced Example<a class="headerlink" href="#advanced-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/advanced.enaml"><tt class="xref download docutils literal"><span class="pre">advanced</span></tt></a></p>
+<div class="highlight-python"><pre>An advanced example of Enaml templates.
+
+This example shows how Enaml templates can be used to automatically
+generate the body of a form. Template specialization is used to select
+the proper control for a model attribute at runtime. Template recursion
+is then used to unroll a list of these controls into the body of a form.</pre>
+</div>
+<div class="highlight-python"><pre>$ enaml-run advanced</pre>
+</div>
+<img alt="../_images/ex_advanced.png" src="../_images/ex_advanced.png" />
+<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An advanced example of Enaml templates.
+
+This example shows how Enaml templates can be used to automatically
+generate the body of a form. Template specialization is used to select
+the proper control for a model attribute at runtime. Template recursion
+is then used to unroll a list of these controls into the body of a form.
+
+&lt;&lt; autodoc-me &gt;&gt;
+"""
+from atom.api import Atom, Bool, Enum, Event, Float, Int, Str, Unicode
+
+from enaml.core.api import DynamicTemplate
+from enaml.stdlib.fields import FloatField
+from enaml.widgets.api import (
+    CheckBox, Container, Field, Form, GroupBox, Label, ObjectCombo, PushButton,
+    SpinBox, Window,
+)
+
+
+#------------------------------------------------------------------------------
+# "Libaray" Definitions
+#------------------------------------------------------------------------------
+# The templates and enamldefs defined in this section are ones which can
+# be written once and then used as a library. They are more-or-less fully
+# generic and will work for a large swath of models.
+
+template FormControl(Attr, MemberType):
+    """ A template which generates a control for an AutoForm.
+
+    This default specialization displays read-only text for the value.
+
+    Parameters
+    ----------
+    Attr : str
+        The name of the attribute on 'model' being accessed.
+
+    MemberType : type
+        The type of the member being accessed.
+
+    """
+    Field:
+        read_only = True
+        text &lt;&lt; unicode(getattr(model, Attr))
+
+
+template FormControl(Attr, MemberType: Int):
+    """ A form control template specialization for Int members.
+
+    This control uses a spin box to represent the value.
+
+    """
+    SpinBox:
+        value := getattr(model, Attr)
+
+
+template FormControl(Attr, MemberType: Str):
+    """ A form control template specialization for Str members.
+
+    This control uses a Field to represent the value.
+
+    """
+    Field:
+        text &lt;&lt; getattr(model, Attr)
+        text :: setattr(model, Attr, str(text))
+
+
+template FormControl(Attr, MemberType: Unicode):
+    """ A form control template specialization for Unicode members.
+
+    This control uses a Field to represent the value.
+
+    """
+    Field:
+        text := getattr(model, Attr)
+
+
+template FormControl(Attr, MemberType: Float):
+    """ A form control template specialization for Float members.
+
+    This control uses a FloatField to represent the value.
+
+    """
+    FloatField:
+        value := getattr(model, Attr)
+
+
+template FormControl(Attr, MemberType: Bool):
+    """ A form control template specialization for Bool members.
+
+    This control uses a CheckBox to represent the value.
+
+    """
+    CheckBox:
+        checked := getattr(model, Attr)
+
+
+template FormControl(Attr, MemberType: Event):
+    """ A form control template specialization for Event members.
+
+    This control uses a PushButton to represent the value.
+
+    """
+    const ButtonText = Attr[0].upper() + Attr[1:].lower()
+    PushButton:
+        text = ButtonText
+        clicked :: getattr(model, Attr)()
+
+
+def enum_labels(model, attr):
+    """ Return the list of enum labels for the given model and attr.
+
+    """
+    items = getattr(type(model), attr).items
+    return sorted(items)
+
+
+template FormControl(Attr, MemberType: Enum):
+    """ A form control template specialization for Enum members.
+
+    This control uses an ObjectCombo to represent the value.
+
+    """
+    ObjectCombo:
+        items = enum_labels(model, Attr)
+        selected := getattr(model, Attr)
+
+
+template FormItem(Attr, MemberType):
+    """ A template which generates a pair of items for an AutoForm.
+
+    Parameters
+    ----------
+    Attr : str
+        The name of the attribute on 'model' being accessed.
+
+    MemberType : type
+        The type of the member being accessed.
+
+    """
+    const LabelText = Attr[0].upper() + Attr[1:].lower()
+    Label:
+        text = LabelText
+    FormControl(Attr, MemberType):
+        pass
+
+
+def form_spec(obtype):
+    """ Generate a form specification for an atom type.
+
+    Parameters
+    ----------
+    obtype : type
+        The Atom subclass of interest.
+
+    Returns
+    -------
+    result : tuple
+        A tuple of 2-tuples of (attr, member_type) for all non-private
+        members of the class.
+
+    """
+    items = []
+    for name, member in obtype.members().iteritems():
+        if not name.startswith('_'):
+            items.append((name, type(member)))
+    items.sort()
+    return tuple(items)
+
+
+template ForEach(Spec, Item):
+    """ A templated loop which maps a template over a sequence.
+
+    Parameters
+    ----------
+    Spec : tuple
+        A tuple of tuples which are the values to map over the item.
+
+    Item : template
+        A template which accepts *values from inner tuples of the spec.
+
+    """
+    ForEach(Spec[:-1], Item):
+        pass
+    Item(*Spec[-1]):
+        pass
+
+
+template ForEach(Spec: (), Item):
+    """ The terminating condition for the templated loop.
+
+    """
+    pass
+
+
+template AutoFormBody(ModelType):
+    """ A template which builds the body for an AutoForm.
+
+    Parameters
+    ----------
+    ModelType : type
+        The type of the model. This should be an Atom subclass.
+
+    """
+    const Spec = form_spec(ModelType)
+    ForEach(Spec, FormItem):
+        pass
+
+
+template AutoFormBody(ModelType: type(None)):
+    """ A template specialization for null models.
+
+    """
+    pass
+
+
+enamldef AutoForm(Form):
+    """ A Form which automatically generates its body from a model.
+
+    """
+    attr model: Atom
+    DynamicTemplate:
+        base = AutoFormBody
+        args = (type(model),)
+
+
+#------------------------------------------------------------------------------
+# Main Models and Views
+#------------------------------------------------------------------------------
+class FooModel(Atom):
+    spam = Int(34)
+    ham = Int(42)
+    first = Str('first')
+    last = Str('last')
+    owner = Unicode('owner')
+    time = Float(42.56)
+    click = Bool()
+    clack = Bool()
+
+
+class BarModel(Atom):
+    name = Unicode('name')
+    trigger = Event()
+    choices = Enum('first', 'second', 'third')
+    def _observe_trigger(self, change):
+        print 'I was triggered'
+
+
+enamldef Main(Window):
+    title = 'Advanced Templates'
+    attr foo_model = FooModel()
+    attr bar_model = BarModel()
+    Container:
+        GroupBox:
+            title = 'Foo Model'
+            flat = True
+            AutoForm:
+                padding = 0
+                model = foo_model
+        GroupBox:
+            title = 'Bar Model'
+            flat = True
+            AutoForm:
+                padding = 0
+                model = bar_model
+</pre>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

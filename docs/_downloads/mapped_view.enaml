@@ -1,0 +1,108 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using the Enaml stdlib `MappedView` component.
+
+The `MappedView` is an enamldef subtype of the `Include` type which will
+automatically create a view for an object based on it's type and a given
+typemap. See the documentation for `MappedView` for a full description.
+
+In this example, a simple class hierarchy is created. For each type in
+the hierararchy, a custom view is created. These views are provided as
+a typemap to a `MappedView` so that when a given object is selected, the
+proper view is displayed.
+
+<< autodoc-me >>
+"""
+from atom.api import Atom, Unicode, Int, List, Range, Value, observe
+
+from enaml.layout.api import vbox
+from enaml.stdlib.mapped_view import MappedView
+from enaml.widgets.api import (
+    Window, Form, Field, SpinBox, Label, ObjectCombo, Container
+)
+
+
+class Base(Atom):
+    name = Unicode()
+
+
+class Foo(Base):
+    a = Int()
+    b = Int()
+    c = Int()
+
+
+class Bar(Base):
+    d = Unicode()
+    e = Unicode()
+    f = Unicode()
+    g = Unicode()
+
+
+enamldef BaseView(Form):
+    attr model: Base
+    Label:
+        text = 'Name'
+    Label:
+        hug_width = 'ignore'
+        align = 'center'
+        text << model.name
+
+
+enamldef FooView(BaseView):
+    attr model: Foo
+    Label:
+        text = 'a'
+    SpinBox:
+        value := model.a
+    Label:
+        text = 'b'
+    SpinBox:
+        value := model.b
+    Label:
+        text = 'c'
+    SpinBox:
+        value := model.c
+
+
+enamldef BarView(BaseView):
+    attr model: Bar
+    Label:
+        text = 'd'
+    Field:
+        text := model.d
+    Label:
+        text = 'e'
+    Field:
+        text := model.e
+    Label:
+        text = 'f'
+    Field:
+        text := model.f
+    Label:
+        text = 'g'
+    Field:
+        text := model.g
+
+
+class Model(Atom):
+
+    objects = List(Base)
+
+
+enamldef Main(Window):
+    attr main_model = Model(objects=[
+        Base(name='Base'), Foo(name='Foo'), Bar(name='Bar')
+    ])
+    Container:
+        ObjectCombo: combo:
+            items << main_model.objects
+            to_string = lambda obj: obj.name
+        MappedView:
+            model << combo.selected
+            typemap = {Base: BaseView, Foo: FooView, Bar: BarView}

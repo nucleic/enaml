@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../index.html" />
+    <link rel="up" title="Getting Started" href="index.html" />
+    <link rel="next" title="Anatomy of Enaml" href="anatomy.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#python">Python</a></li>
+<li><a class="reference internal" href="#setuptools">Setuptools</a></li>
+<li><a class="reference internal" href="#ply">Ply</a></li>
+<li><a class="reference internal" href="#pyqt4">PyQt4</a></li>
+<li><a class="reference internal" href="#casuarius">Casuarius</a></li>
+<li><a class="reference internal" href="#atom">Atom</a></li>
+<li><a class="reference internal" href="#enaml">Enaml</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#python">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setuptools">Setuptools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ply">Ply</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyqt4">PyQt4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#casuarius">Casuarius</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#atom">Atom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enaml">Enaml</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="anatomy.html">Anatomy of Enaml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Data Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="layout.html">Constraints Layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>Installing Enaml is a straight forward process. It requires few external
+dependencies, and those which are required are easily installed, with most
+projects providing binaries or a simple Python setup script. The sections
+below describe how to install Enaml and all of its dependencies from scratch,
+starting with the installation of a Python runtime. The instructions assume
+that the user&#8217;s system has a C++ compiler and the <a class="reference external" href="http://git-scm.com">Git</a> command line tools
+installed and available on the system path.</p>
+<div class="topic">
+<p class="topic-title first">The Easy Way</p>
+<p>If installing and building Enaml and its dependencies from scratch is not
+appealing, the free (and unaffiliated) <a class="reference external" href="https://store.continuum.io/cshop/anaconda">Anaconda</a> Python distribution
+provides a complete Python environment which comes with a reasonably
+recent version of Enaml and a host of other useful packages.</p>
+<p>If you have a working C++ compiler, you can install using pip:</p>
+<div class="highlight-python"><pre>$ pip install enaml</pre>
+</div>
+</div>
+<div class="topic">
+<p class="topic-title first">Supported Platforms</p>
+<p>Enaml is known to run on Windows, OSX, and Linux; and compiles cleanly
+with MSVC, Clang, GCC, and MinGW. However, primary development of the
+framework occurs on Windows (7 and 8), so some quirks and bugs may be
+present on the other platforms. If you encounter a bug, please report
+it on the <a class="reference external" href="http://github.com/nucleic/enaml/issues">Issue Tracker</a>.</p>
+</div>
+<div class="section" id="python">
+<h2><a class="reference external" href="http://python.org">Python</a><a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h2>
+<p>Enaml is a Python framework and requires a supported Python runtime. Enaml
+currently supports <strong>Python 2.6</strong> and <strong>Python 2.7</strong>. Python 3.x support may
+be added in the future, but is not currently a high priority item.</p>
+<p>The most recent Python 2.x series releases are available on the
+<a class="reference external" href="http://python.org/download">Python Downloads</a> pages. Installers are available for Windows and OSX.
+Linux users should install Python using their OS package manager.</p>
+</div>
+<div class="section" id="setuptools">
+<h2><a class="reference external" href="http://pythonhosted.org/setuptools">Setuptools</a><a class="headerlink" href="#setuptools" title="Permalink to this headline">¶</a></h2>
+<p>Setuptools is a Python package which makes installing other Python packages a
+breeze. Some of the installation instructions below assume that Setuptools has
+been installed in the target Python environment. Follow the relevant
+<a class="reference external" href="https://pypi.python.org/pypi/setuptools/1.1.6">Setuptools Install</a> instructions for adding the package to your system.</p>
+</div>
+<div class="section" id="ply">
+<h2><a class="reference external" href="http://www.dabeaz.com/ply">Ply</a><a class="headerlink" href="#ply" title="Permalink to this headline">¶</a></h2>
+<p>The Enaml framework extends the grammar Python language with new declarative
+syntax constructs. To accomplish this, Enaml has a fully compliant Python 2.7
+lexer and parser with added support for the new syntax. These components are
+built using the PLY parsing tools, which contain Python implementations of lex
+and yacc.</p>
+<p>Ply can be installed with the <tt class="docutils literal"><span class="pre">easy_install</span></tt> command of <a class="reference external" href="http://pythonhosted.org/setuptools">Setuptools</a>:</p>
+<div class="highlight-python"><pre>C:\&gt; easy_install ply</pre>
+</div>
+</div>
+<div class="section" id="pyqt4">
+<h2><a class="reference external" href="http://www.riverbankcomputing.com/software/pyqt/intro">PyQt4</a><a class="headerlink" href="#pyqt4" title="Permalink to this headline">¶</a></h2>
+<p>Enaml&#8217;s declarative widgets provide a layer of abstraction on top of the
+widgets of a toolkit rendering library. While Enaml is architected to be
+toolkit agnostic, the recommended toolkit library is <a class="reference external" href="http://qt-project.org">Qt</a>.</p>
+<p>PyQt4 is a robust set of Python bindings to the Qt toolkit.
+The <a class="reference external" href="http://www.riverbankcomputing.com/software/pyqt/download">PyQt Downloads</a> page contains Windows installers which include the Qt
+binaries. OSX users can install PyQt4 via <a class="reference external" href="http://brew.sh">Homebrew</a>. Linux users should
+install via the system package manager.</p>
+<div class="topic">
+<p class="topic-title first">Note for PySide Users</p>
+<p>Enaml has unofficial support for using the <a class="reference external" href="http://qt-project.org/wiki/PySide">PySide</a> bindings to Qt. To
+activate PySide support, set the environment variable <tt class="docutils literal"><span class="pre">QT_API=pyside</span></tt>
+before starting the Enaml application. Note that the PySide bindings are
+not nearly as stable as PyQt4 and contain several bugs which can and will
+cause applications to crash. There are also some API differences between
+the two libraries. So while some effort is made to support the use of
+PySide in Enaml, it is &#8220;use at your own risk&#8221;.</p>
+</div>
+</div>
+<div class="section" id="casuarius">
+<h2><a class="reference external" href="https://github.com/enthought/casuarius">Casuarius</a><a class="headerlink" href="#casuarius" title="Permalink to this headline">¶</a></h2>
+<p>Enaml&#8217;s layout engine is built on top of the <a class="reference external" href="http://www.cs.washington.edu/research/constraints/cassowary">Cassowary</a> linear constraint
+optimizer. This is the same algorithm used by the Cocoa Autolayout engine in
+OSX. Casuarius provides Python bindings to a C++ implementation of the
+Cassowary algorithm.</p>
+<p>The simplest way to install Casuarius is with <tt class="docutils literal"><span class="pre">easy_install</span></tt>:</p>
+<div class="highlight-python"><pre>C:\&gt; easy_install casuarius</pre>
+</div>
+</div>
+<div class="section" id="atom">
+<h2><a class="reference external" href="https://github.com/nucleic/atom">Atom</a><a class="headerlink" href="#atom" title="Permalink to this headline">¶</a></h2>
+<p>Atom is the Python framework which provides the foundational object model for
+Enaml. Atom objects are extremely lightweight, fast, and support a robust
+implementation of the <a class="reference external" href="http://en.wikipedia.org/wiki/Observer_pattern">Observer Pattern</a>. If these traits seem all too ideal
+for a project like Enaml, it&#8217;s because Enaml was the primary motivation behind
+the development of Atom.</p>
+<p>Cloning and building Atom from source is simple:</p>
+<div class="highlight-python"><pre>C:\&gt; git clone https://github.com/nucleic/atom.git
+C:\&gt; cd atom
+C:\&gt; python setup.py install</pre>
+</div>
+</div>
+<div class="section" id="enaml">
+<h2><a class="reference external" href="https://github.com/nucleic/enaml">Enaml</a><a class="headerlink" href="#enaml" title="Permalink to this headline">¶</a></h2>
+<p>The last item on the list is Enaml itself, and it can be installed with just
+a few commands:</p>
+<div class="highlight-python"><pre>C:\&gt; git clone https://github.com/nucleic/enaml.git
+C:\&gt; cd enaml
+C:\&gt; python setup.py install</pre>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

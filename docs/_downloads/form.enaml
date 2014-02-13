@@ -1,0 +1,47 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `Form` widget.
+
+A `Form` is a simple subclass of `Container` which automatically lays
+out it children in two columns, neatly aligning the widget edges. If
+a `Form` has an odd number of children, the last child will span both
+columns. The typical use case of a `Form` alternates `Label` and `Field`
+instances, but there is not restriction on the types of children used
+with a form, except that they be constrainable.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import hbox
+from enaml.widgets.api import Window, Form, Container, Label, Slider, Field
+
+
+enamldef Main(Window):
+    Form:
+        Label:
+            text = 'First Name'
+        Field:
+            pass
+        Label:
+            text = 'Last Name'
+        Field:
+            pass
+        Label:
+            text = 'Age'
+        Container:
+            padding = 0
+            constraints = [
+                hbox(lbl, sldr),
+                lbl.v_center == sldr.v_center,
+            ]
+            Label: lbl:
+                text << '%d' % sldr.value
+                constraints = [width == 25]
+            Slider: sldr:
+                pass
+        Field:
+            placeholder = 'Odd Number Child'

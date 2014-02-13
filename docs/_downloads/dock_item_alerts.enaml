@@ -1,0 +1,176 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" This example demonstrates the use of alerts on the DockItem widget.
+
+The DockItem widget and related bits in the DockArea support a style
+sheet pseudo-class named 'alert'. This pseudo-class is very powerful in
+that it allows the developer to provide their own arbitrary token to the
+pseudo-class as an argument, and then apply that token to a dock item at
+runtime. This gives the developer complete freed over the how they style
+their alerts, and does not force them in to a pre-defined hierarchy of
+alert levels.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import (
+    HSplitLayout, VSplitLayout, TabLayout, hbox, vbox, spacer
+)
+from enaml.styling import StyleSheet
+from enaml.stdlib.dock_area_styles import (
+    VS2010Style, TitleBarStyle, DockBarButtonStyle, ContainerStyle,
+    ItemStyle, TabBarTabStyle, TitleBarLabelStyle
+)
+from enaml.widgets.api import (
+    Window, Container, DockArea, DockItem, Html, Field, PushButton
+)
+
+
+HTML = """
+<h3><center>
+Drag the dock items to different locations to and then trigger an alert.
+</center></h3>
+"""
+
+MELTDOWN_HTML = """
+<h1><center>Everything is NOT okay!</center></h1>
+"""
+
+enamldef MyAlertStyleSheet(StyleSheet):
+
+    # Include the base VS 2010 styling rules
+    VS2010Style():
+        pass
+
+    # Add alert styles for an "important" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
+
+    TitleBarLabelStyle:
+        pseudo_class = 'alert(important)'
+        color = 'black'
+
+    DockBarButtonStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
+
+    TabBarTabStyle:
+        pseudo_class = 'alert(important)'
+        background = 'orange'
+
+
+    # Add alert styles for an "information" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
+
+    DockBarButtonStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
+
+    TabBarTabStyle:
+        pseudo_class = 'alert(information)'
+        background = 'olivedrab'
+
+
+    # Add alert styles for a "meltdown" alert.
+    TitleBarStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    DockBarButtonStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    TabBarTabStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+    ContainerStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'yellow'
+
+    ItemStyle:
+        pseudo_class = 'alert(meltdown)'
+        background = 'red'
+
+
+enamldef DummyItem(DockItem):
+    title = ' '.join(s.capitalize() for s in name.split('_'))
+    Container:
+        Field: pass
+        Field: pass
+        Field: pass
+        Field: pass
+
+
+enamldef Main(Window):
+    title = 'Dock Item Alerts'
+    MyAlertStyleSheet:
+        pass
+    Container:
+        padding = 0
+        DockArea:
+            # A custom style sheet is being used, so the default style
+            # sheet must be disabled - IMPORTANT!
+            style = ''
+            layout = HSplitLayout(
+                VSplitLayout('controls', 'information'),
+                VSplitLayout('important', 'meltdown'),
+                TabLayout('dummy_1', 'dummy_2', 'dummy_3', 'dummy_4'),
+            )
+            DockItem:
+                title = 'Controls'
+                name = 'controls'
+                stretch = 0
+                Container:
+                    PushButton:
+                        text = 'Information'
+                        clicked ::
+                            info_item.alert('information')
+                    PushButton:
+                        text = 'Important'
+                        clicked ::
+                            important_item.alert('important', persist=True)
+                    PushButton:
+                        text = 'Meltdown'
+                        clicked ::
+                            meltdown_item.alert(
+                                'meltdown', on=60, off=60, repeat=100
+                            )
+            DockItem: info_item:
+                title = 'Information'
+                name = 'information'
+                stretch = 0
+                Container:
+                    Field:
+                        placeholder = 'just'
+                    Field:
+                        placeholder = 'some'
+                    Field:
+                        placeholder = 'information'
+            DockItem: important_item:
+                title = 'Important Data'
+                name = 'important'
+                Container:
+                    Html:
+                        source = HTML
+            DockItem: meltdown_item:
+                title = 'Meltdown'
+                name = 'meltdown'
+                Container:
+                    Html:
+                        source = MELTDOWN_HTML
+            DummyItem:
+                name = 'dummy_1'
+            DummyItem:
+                name = 'dummy_2'
+            DummyItem:
+                name = 'dummy_3'
+            DummyItem:
+                name = 'dummy_4'

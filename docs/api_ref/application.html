@@ -1,0 +1,711 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.application &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="enaml.colors" href="colors.html" />
+    <link rel="prev" title="enaml.applib.live_editor_view" href="applib/live_editor_view.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">enaml.application</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="applib/index.html">applib</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colors.html">colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core/index.html">core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fonts.html">fonts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="icon.html">icon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="image.html">image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="layout/index.html">layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nodevisitor.html">nodevisitor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scintilla/index.html">scintilla</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="styling.html">styling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="validator.html">validator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="version.html">version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets/index.html">widgets</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <span class="target" id="module-enaml.application"></span><div class="section" id="enaml-application">
+<h1>enaml.application<a class="headerlink" href="#enaml-application" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.application.deferred_call" title="enaml.application.deferred_call"><tt class="xref py py-obj docutils literal"><span class="pre">deferred_call</span></tt></a></td>
+<td>Invoke a callable on the next cycle of the main event loop thread.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.application.is_main_thread" title="enaml.application.is_main_thread"><tt class="xref py py-obj docutils literal"><span class="pre">is_main_thread</span></tt></a></td>
+<td>Indicates whether the caller is on the main gui thread.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.application.schedule" title="enaml.application.schedule"><tt class="xref py py-obj docutils literal"><span class="pre">schedule</span></tt></a></td>
+<td>Schedule a callable to be executed on the event loop thread.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.application.timed_call" title="enaml.application.timed_call"><tt class="xref py py-obj docutils literal"><span class="pre">timed_call</span></tt></a></td>
+<td>Invoke a callable on the main event loop thread at a specified time in the future.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.application.Application" title="enaml.application.Application"><tt class="xref py py-obj docutils literal"><span class="pre">Application</span></tt></a></td>
+<td>The application object which manages the top-level communication</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.application.ProxyResolver" title="enaml.application.ProxyResolver"><tt class="xref py py-obj docutils literal"><span class="pre">ProxyResolver</span></tt></a></td>
+<td>An object which resolves requests for proxy objects.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.application.ScheduledTask" title="enaml.application.ScheduledTask"><tt class="xref py py-obj docutils literal"><span class="pre">ScheduledTask</span></tt></a></td>
+<td>An object representing a task in the scheduler.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="enaml.application.deferred_call">
+<tt class="descclassname">enaml.application.</tt><tt class="descname">deferred_call</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#deferred_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.deferred_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke a callable on the next cycle of the main event loop
+thread.</p>
+<p>This is a convenience function for invoking the same method on the
+current application instance. If an application instance does not
+exist, a RuntimeError will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to execute at some point in the future.</p>
+</div></blockquote>
+<p><strong>*args, **kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Any additional positional and keyword arguments to pass to
+the callback.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.application.is_main_thread">
+<tt class="descclassname">enaml.application.</tt><tt class="descname">is_main_thread</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#is_main_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.is_main_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates whether the caller is on the main gui thread.</p>
+<p>This is a convenience function for invoking the same method on the
+current application instance. If an application instance does not
+exist, a RuntimeError will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : bool</p>
+<blockquote class="last">
+<div><p>True if called from the main gui thread. False otherwise.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.application.schedule">
+<tt class="descclassname">enaml.application.</tt><tt class="descname">schedule</tt><big>(</big><em>callback</em>, <em>args=None</em>, <em>kwargs=None</em>, <em>priority=0</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedule a callable to be executed on the event loop thread.</p>
+<p>This call is thread-safe.</p>
+<p>This is a convenience function for invoking the same method on the
+current application instance. If an application instance does not
+exist, a RuntimeError will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to be executed.</p>
+</div></blockquote>
+<p><strong>args</strong> : tuple, optional</p>
+<blockquote>
+<div><p>The positional arguments to pass to the callable.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict, optional</p>
+<blockquote>
+<div><p>The keyword arguments to pass to the callable.</p>
+</div></blockquote>
+<p><strong>priority</strong> : int, optional</p>
+<blockquote>
+<div><p>The queue priority for the callable. Smaller values indicate
+lower priority, larger values indicate higher priority. The
+default priority is zero.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : ScheduledTask</p>
+<blockquote class="last">
+<div><p>A task object which can be used to unschedule the task or
+retrieve the results of the callback after the task has
+been executed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="enaml.application.timed_call">
+<tt class="descclassname">enaml.application.</tt><tt class="descname">timed_call</tt><big>(</big><em>ms</em>, <em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#timed_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.timed_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke a callable on the main event loop thread at a specified
+time in the future.</p>
+<p>This is a convenience function for invoking the same method on the
+current application instance. If an application instance does not
+exist, a RuntimeError will be raised.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>ms</strong> : int</p>
+<blockquote>
+<div><p>The time to delay, in milliseconds, before executing the
+callable.</p>
+</div></blockquote>
+<p><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to execute at some point in the future.</p>
+</div></blockquote>
+<p><strong>*args, **kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Any additional positional and keyword arguments to pass to
+the callback.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.application.Application">
+<em class="property">class </em><tt class="descclassname">enaml.application.</tt><tt class="descname">Application</tt><a class="reference internal" href="../_modules/enaml/application.html#Application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>The application object which manages the top-level communication
+protocol for serving Enaml views.</p>
+<dl class="attribute">
+<dt id="enaml.application.Application.resolver">
+<tt class="descname">resolver</tt><a class="headerlink" href="#enaml.application.Application.resolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>The proxy resolver to use for the application. This will normally
+be supplied by application subclasses, but can also be supplied
+by the developer to supply custom proxy resolution behavior.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.application.Application.style_sheet">
+<tt class="descname">style_sheet</tt><a class="headerlink" href="#enaml.application.Application.style_sheet" title="Permalink to this definition">¶</a></dt>
+<dd><p>The style sheet to apply to the entire application.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="enaml.application.Application.instance">
+<em class="property">static </em><tt class="descname">instance</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the global Application instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : Application or None</p>
+<blockquote class="last">
+<div><p>The global application instance, or None if one has not yet
+been created.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="enaml.application.Application.__new__">
+<em class="property">static </em><tt class="descname">__new__</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.__new__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.__new__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new Enaml Application.</p>
+<p>There may be only one application instance in existence at any
+point in time. Attempting to create a new Application when one
+exists will raise an exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the application&#8217;s main event loop.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the application&#8217;s main event loop.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.deferred_call">
+<tt class="descname">deferred_call</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.deferred_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.deferred_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke a callable on the next cycle of the main event loop
+thread.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to execute at some point in the future.</p>
+</div></blockquote>
+<p><strong>*args, **kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Any additional positional and keyword arguments to pass to
+the callback.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.timed_call">
+<tt class="descname">timed_call</tt><big>(</big><em>ms</em>, <em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.timed_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.timed_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke a callable on the main event loop thread at a
+specified time in the future.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>ms</strong> : int</p>
+<blockquote>
+<div><p>The time to delay, in milliseconds, before executing the
+callable.</p>
+</div></blockquote>
+<p><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to execute at some point in the future.</p>
+</div></blockquote>
+<p><strong>*args, **kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Any additional positional and keyword arguments to pass to
+the callback.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.is_main_thread">
+<tt class="descname">is_main_thread</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.is_main_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.is_main_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates whether the caller is on the main gui thread.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : bool</p>
+<blockquote class="last">
+<div><p>True if called from the main gui thread. False otherwise.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.resolve_proxy_class">
+<tt class="descname">resolve_proxy_class</tt><big>(</big><em>declaration_class</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.resolve_proxy_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.resolve_proxy_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve the proxy implementation class for a declaration.</p>
+<p>This can be reimplemented by Application subclasses if more
+control is needed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>declaration_class</strong> : type</p>
+<blockquote>
+<div><p>A ToolkitObject subclass for which the proxy implementation
+class should be resolved.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : type</p>
+<blockquote class="last">
+<div><p>A ProxyToolkitObject subclass for the given class, or None
+if one could not be resolved.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.create_proxy">
+<tt class="descname">create_proxy</tt><big>(</big><em>declaration</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.create_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.create_proxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the proxy object for the given declaration.</p>
+<p>This can be reimplemented by Application subclasses if more
+control is needed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>declaration</strong> : ToolkitObject</p>
+<blockquote>
+<div><p>The object for which a toolkit proxy should be created.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : ProxyToolkitObject or None</p>
+<blockquote class="last">
+<div><p>An appropriate toolkit proxy object, or None if one cannot
+be create for the given declaration object.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.schedule">
+<tt class="descname">schedule</tt><big>(</big><em>callback</em>, <em>args=None</em>, <em>kwargs=None</em>, <em>priority=0</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedule a callable to be executed on the event loop thread.</p>
+<p>This call is thread-safe.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable object to be executed.</p>
+</div></blockquote>
+<p><strong>args</strong> : tuple, optional</p>
+<blockquote>
+<div><p>The positional arguments to pass to the callable.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict, optional</p>
+<blockquote>
+<div><p>The keyword arguments to pass to the callable.</p>
+</div></blockquote>
+<p><strong>priority</strong> : int, optional</p>
+<blockquote>
+<div><p>The queue priority for the callable. Smaller values indicate
+lower priority, larger values indicate higher priority. The
+default priority is zero.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : ScheduledTask</p>
+<blockquote class="last">
+<div><p>A task object which can be used to unschedule the task or
+retrieve the results of the callback after the task has
+been executed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.has_pending_tasks">
+<tt class="descname">has_pending_tasks</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.has_pending_tasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.has_pending_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get whether or not the application has pending tasks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : bool</p>
+<blockquote class="last">
+<div><p>True if there are pending tasks. False otherwise.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.Application.destroy">
+<tt class="descname">destroy</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#Application.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.Application.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destroy this application instance.</p>
+<p>Once an application is created, it must be destroyed before a
+new application can be instantiated.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.application.ProxyResolver">
+<em class="property">class </em><tt class="descclassname">enaml.application.</tt><tt class="descname">ProxyResolver</tt><a class="reference internal" href="../_modules/enaml/application.html#ProxyResolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ProxyResolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object which resolves requests for proxy objects.</p>
+<dl class="attribute">
+<dt id="enaml.application.ProxyResolver.factories">
+<tt class="descname">factories</tt><a class="headerlink" href="#enaml.application.ProxyResolver.factories" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of factories functions to use when resolving the
+proxy. The function should take no arguments, and return the
+proxy class when called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ProxyResolver.resolve">
+<tt class="descname">resolve</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ProxyResolver.resolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ProxyResolver.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve the given name to a proxy calls.</p>
+<p>For example, &#8216;Field&#8217; should resolve to a class which implements
+the ProxyField interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote>
+<div><p>The name of the proxy object to resolve.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : type or None</p>
+<blockquote class="last">
+<div><p>A class which implements the proxy interface, or None if
+no class can be found for the given name.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.application.ScheduledTask">
+<em class="property">class </em><tt class="descclassname">enaml.application.</tt><tt class="descname">ScheduledTask</tt><big>(</big><em>callback</em>, <em>args</em>, <em>kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object representing a task in the scheduler.</p>
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>callback</em>, <em>args</em>, <em>kwargs</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a ScheduledTask.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<div><p>The callable to run when the task is executed.</p>
+</div></blockquote>
+<p><strong>args</strong> : tuple</p>
+<blockquote>
+<div><p>The tuple of positional arguments to pass to the callback.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict</p>
+<blockquote class="last">
+<div><p>The dict of keyword arguments to pass to the callback.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.notify">
+<tt class="descname">notify</tt><big>(</big><em>callback</em><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.notify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.notify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a callback to be run when the task is executed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote class="last">
+<div><p>A callable which accepts a single argument which is the
+results of the task. It will be invoked immediate after
+the task is executed, on the main event loop thread.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.pending">
+<tt class="descname">pending</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.pending"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.pending" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this task is pending execution, False
+otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.unschedule">
+<tt class="descname">unschedule</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.unschedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.unschedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unschedule the task so that it will not be executed. If
+the task has already been executed, this call has no effect.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.application.ScheduledTask.result">
+<tt class="descname">result</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/enaml/application.html#ScheduledTask.result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.application.ScheduledTask.result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the result of the task, or ScheduledTask.undefined
+if the task has not yet been executed, was unscheduled before
+execution, or raised an exception on execution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

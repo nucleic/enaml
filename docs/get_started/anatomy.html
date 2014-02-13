@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Anatomy of Enaml &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../index.html" />
+    <link rel="up" title="Getting Started" href="index.html" />
+    <link rel="next" title="Data Models" href="models.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">Anatomy of Enaml</a><ul>
+<li><a class="reference internal" href="#enaml-syntax">Enaml Syntax</a><ul>
+<li><a class="reference internal" href="#enamldef">enamldef</a></li>
+<li><a class="reference internal" href="#tree-structure">Tree Structure</a></li>
+<li><a class="reference internal" href="#element-state">Element State</a></li>
+<li><a class="reference internal" href="#inheritance">Inheritance</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#application-structure">Application Structure</a><ul>
+<li><a class="reference internal" href="#view-files">View Files</a></li>
+<li><a class="reference internal" href="#model-files">Model Files</a></li>
+<li><a class="reference internal" href="#startup-file">Startup File</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Anatomy of Enaml</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#enaml-syntax">Enaml Syntax</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#enamldef">enamldef</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tree-structure">Tree Structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#element-state">Element State</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#inheritance">Inheritance</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#application-structure">Application Structure</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#view-files">View Files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model-files">Model Files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#startup-file">Startup File</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Data Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="layout.html">Constraints Layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <div class="section" id="anatomy-of-enaml">
+<span id="anatomy"></span><h1>Anatomy of Enaml<a class="headerlink" href="#anatomy-of-enaml" title="Permalink to this headline">¶</a></h1>
+<p>This article describes the core fundamentals for building an Enaml application.
+It proceeds by creating a simple runnable example which shows how the various
+syntactic constructs and frameworking components combine to create a UI
+application.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li>For the motivations and background on Enaml, see the <a class="reference internal" href="introduction.html"><em>Introduction</em></a>.</li>
+<li>For connecting data models to the UI, see <a class="reference internal" href="models.html"><em>Data Models</em></a>.</li>
+<li>For advanced articles on the Enaml language and framework,
+see the <a class="reference internal" href="../dev_guides/index.html"><em>Developer Guides</em></a>.</li>
+</ul>
+</div>
+<div class="section" id="enaml-syntax">
+<h2>Enaml Syntax<a class="headerlink" href="#enaml-syntax" title="Permalink to this headline">¶</a></h2>
+<p>The Enaml syntax has been designed expressly for the easy of reading, writing,
+and visualizing user interfaces. The simplest way to become familiar with the
+syntax is to look at a code sample and break it down piece by piece. The
+snippet below is the code that will be used for the example in this article.</p>
+<div class="highlight-enaml"><pre>enamldef PersonView(Window):
+    attr person
+    title = 'Person View'
+    Form:
+        Label:
+            text = 'First Name'
+        Field:
+            text := person.first_name
+        Label:
+            text = 'Last Name'
+        Field:
+            text = person.last_name
+</pre>
+</div>
+<p>Before going any further, take a glance over the code and see if you can
+visualize how the UI will look and behave, despite the fact that you have no
+other knowledge of Enaml.</p>
+<div class="section" id="enamldef">
+<h3>enamldef<a class="headerlink" href="#enamldef" title="Permalink to this headline">¶</a></h3>
+<p>The very first thing you&#8217;ll notice is a new keyword <tt class="docutils literal"><span class="pre">enamldef</span></tt>. Recall that
+Enaml is a <em>superset</em> of the Python language and this keyword is one of Enaml&#8217;s
+extensions to Python. The keyword is used to declare that the block of code
+which follows is the definition of an Enaml view.</p>
+</div>
+<div class="section" id="tree-structure">
+<h3>Tree Structure<a class="headerlink" href="#tree-structure" title="Permalink to this headline">¶</a></h3>
+<p>Enaml describes a UI as a tree of elements. Like Python, the Enaml syntax is
+sensitive to indentation, but where indentation in Python defines scope and
+control flow, in Enaml it defines tree structure. Each successive level of
+indentation in Enaml defines a parent-child relationship. In the example then,
+the <tt class="docutils literal"><span class="pre">Label</span></tt> and <tt class="docutils literal"><span class="pre">Field</span></tt> elements are children of the <tt class="docutils literal"><span class="pre">Form</span></tt>, and the
+<tt class="docutils literal"><span class="pre">Form</span></tt> is a child the <tt class="docutils literal"><span class="pre">PersonView</span></tt>.</p>
+</div>
+<div class="section" id="element-state">
+<h3>Element State<a class="headerlink" href="#element-state" title="Permalink to this headline">¶</a></h3>
+<p>Elements are customized by binding data to their attributes. In the example,
+the <tt class="docutils literal"><span class="pre">text</span></tt> attributes of the <tt class="docutils literal"><span class="pre">Label</span></tt> elements and the <tt class="docutils literal"><span class="pre">title</span></tt> attribute
+of the <tt class="docutils literal"><span class="pre">PersonView</span></tt> element are assigned static string values, and the
+<tt class="docutils literal"><span class="pre">text</span></tt> attributes of the <tt class="docutils literal"><span class="pre">Field</span></tt> elements are bound to data in a data
+model. The specifics of data model binding are covered in <a class="reference internal" href="models.html"><em>Data Models</em></a>.</p>
+<p>Changing the value of an element&#8217;s attributes will change the visual appearance
+of the widget in the view. The Enaml compiler ensures that a developer does not
+bind data to invalid attributes or to attributes which do not exist.</p>
+</div>
+<div class="section" id="inheritance">
+<h3>Inheritance<a class="headerlink" href="#inheritance" title="Permalink to this headline">¶</a></h3>
+<p>Enaml views can be extended through inheritance. In the example, <tt class="docutils literal"><span class="pre">PersonView</span></tt>
+inherits from the builtin <tt class="docutils literal"><span class="pre">Window</span></tt> element, which reprents a top-level window
+frame widget. It then defines a <tt class="docutils literal"><span class="pre">Form</span></tt> as the child of the window and which
+will be automatically used as the main content of the window.</p>
+<p>Inheritance in Enaml is not limited to the builtin elements. Any element which
+is created with the <tt class="docutils literal"><span class="pre">enamldef</span></tt> keyword can be used as the base element for
+another <tt class="docutils literal"><span class="pre">enamldef</span></tt> and therefore further customized. In fact, the language
+requires a single base element in order to create a new <tt class="docutils literal"><span class="pre">enamldef</span></tt>.
+<strong>Multiple inheritance is not supported.</strong></p>
+</div>
+</div>
+<div class="section" id="application-structure">
+<h2>Application Structure<a class="headerlink" href="#application-structure" title="Permalink to this headline">¶</a></h2>
+<p>An Enaml application consists of a collection of <tt class="docutils literal"><span class="pre">.enaml</span></tt> and <tt class="docutils literal"><span class="pre">.py</span></tt> files.
+Canonically, the user interface definitions for the application live in the
+<tt class="docutils literal"><span class="pre">.enaml</span></tt> files, and the application data models and business logic live in
+the <tt class="docutils literal"><span class="pre">.py</span></tt> files. There is typically an application entry point defined in a
+<tt class="docutils literal"><span class="pre">.py</span></tt> file which imports the various user interface definitions and data
+models, creates an instance of an Enaml application object, shows a window on
+the screen, and then starts the application event loop. For anyone having
+developed a user interface application before, this will all sound familiar.</p>
+<div class="section" id="view-files">
+<h3>View Files<a class="headerlink" href="#view-files" title="Permalink to this headline">¶</a></h3>
+<p>The user interface definitions for an Enaml application live inside <tt class="docutils literal"><span class="pre">.enaml</span></tt>
+files. Inside these files, the developer uses the language features provided
+by the Enaml framework, along with regular Python code, to define the views
+for the application. Since Enaml is a <em>superset</em> of the Python language, these
+files can contain arbitrary Python code alongside the <tt class="docutils literal"><span class="pre">enamldef</span></tt> elements.
+However, it is recommended that the contents of <tt class="docutils literal"><span class="pre">.enaml</span></tt> files be limited to
+views and supporting code, and business logic and models be kept in separate
+<tt class="docutils literal"><span class="pre">.py</span></tt> files.</p>
+<p>The definition of the view for this example was provided above. The only thing
+it needs to become a fully functional <tt class="docutils literal"><span class="pre">.enaml</span></tt> file is the addition of the
+imports for the builtin elements:</p>
+<div class="highlight-enaml"><pre># person_view.enaml
+from enaml.widgets.api import Window, Form, Label, Field
+
+enamldef PersonView(Window):
+    attr person
+    title = 'Person View'
+    Form:
+        Label:
+            text = 'First Name'
+        Field:
+            text := person.first_name
+        Label:
+            text = 'Last Name'
+        Field:
+            text = person.last_name
+</pre>
+</div>
+</div>
+<div class="section" id="model-files">
+<h3>Model Files<a class="headerlink" href="#model-files" title="Permalink to this headline">¶</a></h3>
+<p>The application data models, business logic, and other support code live in
+<tt class="docutils literal"><span class="pre">.py</span></tt> files. While Enaml has the capability to interface with nearly any
+data model framework, it supports the <a class="reference external" href="https://github.com/nucleic/atom">Atom</a> model framework out of the box.
+The full discussion of working with data models is given in the <a class="reference internal" href="models.html"><em>Data Models</em></a>
+article. For now, the simple model given below is sufficient for the current
+example, and should be fairly self-explanatory.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># person_model.py</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Unicode</span>
+
+<span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="startup-file">
+<h3>Startup File<a class="headerlink" href="#startup-file" title="Permalink to this headline">¶</a></h3>
+<p>An Enaml application is launched with an entry point <tt class="docutils literal"><span class="pre">.py</span></tt> file. How this
+file is implemented is left entirely up to the developer. At a minimum, it
+must do three things:</p>
+<ol class="arabic simple">
+<li>Create an Enaml application instance.</li>
+<li>Create an instance of an Enaml view and call <tt class="docutils literal"><span class="pre">.show()</span></tt> on the view.</li>
+<li>Call <tt class="docutils literal"><span class="pre">.start()</span></tt> on the application instance.</li>
+</ol>
+<p>For the current example, the following startup file is used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># main.py</span>
+<span class="kn">import</span> <span class="nn">enaml</span>
+<span class="kn">from</span> <span class="nn">enaml.qt.qt_application</span> <span class="kn">import</span> <span class="n">QtApplication</span>
+
+<span class="kn">from</span> <span class="nn">person_model</span> <span class="kn">import</span> <span class="n">Person</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">enaml</span><span class="o">.</span><span class="n">imports</span><span class="p">():</span>
+        <span class="kn">from</span> <span class="nn">person_view</span> <span class="kn">import</span> <span class="n">PersonView</span>
+
+    <span class="n">john</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s">&#39;John&#39;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s">&#39;Doe&#39;</span><span class="p">)</span>
+
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QtApplication</span><span class="p">()</span>
+
+    <span class="n">view</span> <span class="o">=</span> <span class="n">PersonView</span><span class="p">(</span><span class="n">person</span><span class="o">=</span><span class="n">john</span><span class="p">)</span>
+    <span class="n">view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the startup file, there are a couple of things to note:</p>
+<ul class="simple">
+<li>the import of the <tt class="docutils literal"><span class="pre">.enaml</span></tt> file into the Python namespace</li>
+<li>the creation of a toolkit specific application object.</li>
+</ul>
+<p>Since the Enaml language is not valid Python (remember, Enaml is a <em>superset</em>
+of Python), it must be transformed before it can be used from Python. The
+<tt class="docutils literal"><span class="pre">enaml.imports()</span></tt> context manager is the gateway which makes this
+transformation possible. From within that context, Python&#8217;s import statement
+can be used to import <tt class="docutils literal"><span class="pre">.enaml</span></tt> files into a module&#8217;s namespace.</p>
+<p>The second, less magical part of the startup file is the creation of the
+toolkit-specific application object. With rare exception, this is the only time
+when writing an Enaml application where the developer must code anything which
+relates to a specific toolkit backend. The application object which is created
+dictates which toolkit backend will be used to render the user interface. In
+this example, the Qt toolkit is used. If, for example, the developer wished to
+use another backend, an application object for that backend would be created
+instead.</p>
+<p>Pulling it all together and launching the application results in the following
+view:</p>
+<div class="highlight-python"><pre>C:&gt; python main.py</pre>
+</div>
+<div class="padded-img container">
+<img alt="../_images/person_view.png" class="align-center" src="../_images/person_view.png" />
+</div>
+<p>The structure of the window should come as no surprise, as it is directly
+reflected in the Enaml code from which it was created!</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example showing the unified layout across nested Containers.
+
+There are three Containers under the window, two sharing space on top and
+one taking up the entire horizontal space on the bottom. The two on top
+simply consist of a Label and a Field. The Container on the left is
+constrained to be slightly larger than the other by a constant multiplier.
+
+The Container on the bottom contains the more complicated example from
+`fluid.enaml` to demonstrate that a complicated layout works inside
+a nested Container, too.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import hbox, vbox, spacer, align
+from enaml.widgets.api import Window, Html, Container, PushButton, Label, Field
+
+
+enamldef LabeledField(Container):
+    attr label_text: str = 'Label'
+    constraints = [
+        hbox(label, field),
+        align('v_center', label, field)
+    ]
+    Label: label:
+        text = label_text
+    Field: field:
+        resist_width = 'weak'
+
+
+enamldef Main(Window):
+    title = "Nested Containers"
+    Container:
+        padding = 5
+        constraints = [
+            vbox(
+                hbox(top_left_cntr, top_right_cntr), 0,
+                bottom_cntr,
+            ),
+            top_left_cntr.width == 1.4 * top_right_cntr.width,
+        ]
+        LabeledField: top_left_cntr:
+            label_text = "Left:"
+        LabeledField: top_right_cntr:
+            label_text = "Right:"
+        Container: bottom_cntr:
+            constraints = [
+                vbox(
+                    html_frame,
+                    hbox(
+                        add_button, remove_button, spacer,
+                        change_mode_button, spacer, share_button,
+                    ),
+                ),
+                align('h_center', html_frame, change_mode_button) | 'weak',
+                html_frame.height >= 150,
+            ]
+            resist_width = 'weak'
+            Html: html_frame:
+                source = '<center><h1>Hello Enaml!</h1></center>'
+            PushButton: add_button:
+                text = 'Add'
+            PushButton: remove_button:
+                text = 'Remove'
+            PushButton: change_mode_button:
+                text = 'Change Mode'
+            PushButton: share_button:
+                text = 'Share...'

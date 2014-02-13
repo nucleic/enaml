@@ -1,0 +1,51 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of how the `hbox` and `vbox` layout helpers can be nested.
+
+The layout in this example is not necessarily one that would be used
+in a production application. However, it serves to demonstrate the idea
+that the `hbox` and `vbox` layout helpers can be arbitrarily nested.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import vbox, hbox, align, spacer
+from enaml.widgets.api import Window, Container, Label, PushButton
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            vbox(
+                lbl_a,
+                lbl_b,
+                hbox(lbl_c, spacer, lbl_d, spacer, lbl_e),
+                hbox(spacer, lbl_f, lbl_g),
+                hbox(btn_1, spacer, btn_2, spacer, btn_3)),
+            align('h_center', self, lbl_d, btn_2),
+        ]
+        Label: lbl_a:
+            text = "Label A"
+        Label: lbl_b:
+            text = "Label B"
+        Label: lbl_c:
+            text = "Label C"
+        Label: lbl_d:
+            text = "Label D"
+        Label: lbl_e:
+            text = "Label E"
+        Label: lbl_f:
+            text = "Label F"
+        Label: lbl_g:
+            text = "Label G"
+        PushButton: btn_1:
+            text = "Button 1"
+        PushButton: btn_2:
+            text = "Button 2"
+        PushButton: btn_3:
+            text = "Button 3"
+

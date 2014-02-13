@@ -1,0 +1,356 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.scintilla.scintilla &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <h1>Source code for enaml.scintilla.scintilla</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Atom</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span> <span class="n">set_default</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.control</span> <span class="kn">import</span> <span class="n">Control</span><span class="p">,</span> <span class="n">ProxyControl</span>
+
+
+<span class="c">#: The available syntaxes for the Scintilla widget.</span>
+<span class="n">SYNTAXES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="s">&#39;bash&#39;</span><span class="p">,</span>
+    <span class="s">&#39;batch&#39;</span><span class="p">,</span>
+    <span class="s">&#39;cmake&#39;</span><span class="p">,</span>
+    <span class="s">&#39;cpp&#39;</span><span class="p">,</span>
+    <span class="s">&#39;csharp&#39;</span><span class="p">,</span>
+    <span class="s">&#39;css&#39;</span><span class="p">,</span>
+    <span class="s">&#39;d&#39;</span><span class="p">,</span>
+    <span class="s">&#39;diff&#39;</span><span class="p">,</span>
+    <span class="s">&#39;enaml&#39;</span><span class="p">,</span>
+    <span class="s">&#39;fortran&#39;</span><span class="p">,</span>
+    <span class="s">&#39;fortran77&#39;</span><span class="p">,</span>
+    <span class="s">&#39;html&#39;</span><span class="p">,</span>
+    <span class="s">&#39;idl&#39;</span><span class="p">,</span>
+    <span class="s">&#39;java&#39;</span><span class="p">,</span>
+    <span class="s">&#39;javascript&#39;</span><span class="p">,</span>
+    <span class="s">&#39;lua&#39;</span><span class="p">,</span>
+    <span class="s">&#39;makefile&#39;</span><span class="p">,</span>
+    <span class="s">&#39;matlab&#39;</span><span class="p">,</span>
+    <span class="s">&#39;octave&#39;</span><span class="p">,</span>
+    <span class="s">&#39;pascal&#39;</span><span class="p">,</span>
+    <span class="s">&#39;perl&#39;</span><span class="p">,</span>
+    <span class="s">&#39;postscript&#39;</span><span class="p">,</span>
+    <span class="s">&#39;pov&#39;</span><span class="p">,</span>
+    <span class="s">&#39;python&#39;</span><span class="p">,</span>
+    <span class="s">&#39;ruby&#39;</span><span class="p">,</span>
+    <span class="s">&#39;spice&#39;</span><span class="p">,</span>
+    <span class="s">&#39;sql&#39;</span><span class="p">,</span>
+    <span class="s">&#39;tcl&#39;</span><span class="p">,</span>
+    <span class="s">&#39;tex&#39;</span><span class="p">,</span>
+    <span class="s">&#39;verilog&#39;</span><span class="p">,</span>
+    <span class="s">&#39;vhdl&#39;</span><span class="p">,</span>
+    <span class="s">&#39;xml&#39;</span><span class="p">,</span>
+    <span class="s">&#39;yaml&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="ScintillaDocument"><a class="viewcode-back" href="../../../api_ref/scintilla/scintilla.html#enaml.scintilla.scintilla.ScintillaDocument">[docs]</a><span class="k">class</span> <span class="nc">ScintillaDocument</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An opaque class which represents a Scintilla text document.</span>
+
+<span class="sd">    An instance of this class can be shared with multiple Scintilla</span>
+<span class="sd">    widgets to enable multiple editor views on the same buffer, or</span>
+<span class="sd">    to use multiple buffers with the same view.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A uuid which can be used as a handle by the toolkit backend.</span>
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">(</span><span class="n">factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">)</span>
+
+</div>
+<span class="k">class</span> <span class="nc">ProxyScintilla</span><span class="p">(</span><span class="n">ProxyControl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy Scintilla object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the Scintilla declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Scintilla</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_syntax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_theme</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theme</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_zoom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zoom</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">get_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="Scintilla"><a class="viewcode-back" href="../../../api_ref/scintilla/scintilla.html#enaml.scintilla.scintilla.Scintilla">[docs]</a><span class="k">class</span> <span class="nc">Scintilla</span><span class="p">(</span><span class="n">Control</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A Scintilla text editing control.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The &#39;background&#39;, &#39;foreground&#39;, and &#39;font&#39; attributes have no effect</span>
+<span class="sd">    on this widget. All styling is supplied via the &#39;theme&#39; attribute.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The scintilla document buffer to use in the editor. A default</span>
+    <span class="c">#: document will be created automatically for each editor. This</span>
+    <span class="c">#: value only needs to be supplied when swapping buffers or when</span>
+    <span class="c">#: using a single buffer in multiple editors.</span>
+    <span class="n">document</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">ScintillaDocument</span><span class="p">,</span> <span class="p">()))</span>
+
+    <span class="c">#: The language syntax to apply to the document.</span>
+    <span class="n">syntax</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Enum</span><span class="p">(</span><span class="o">*</span><span class="n">SYNTAXES</span><span class="p">))</span>
+
+    <span class="c">#: The theme to apply to the widget. See the &#39;./THEMES&#39; document</span>
+    <span class="c">#: for how to create a theme dict for the widget.</span>
+    <span class="n">theme</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="p">()))</span>
+
+    <span class="c">#: The settings to apply to the widget. See the &#39;./SETTINGS&#39;</span>
+    <span class="c">#: document for how to create a settings dict for the widget.</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="p">()))</span>
+
+    <span class="c">#: The zoom factor for the editor. The value is internally clamped</span>
+    <span class="c">#: to the range -10 to 20, inclusive.</span>
+    <span class="n">zoom</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">())</span>
+
+    <span class="c">#: An event emitted when the text is changed.</span>
+    <span class="n">text_changed</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Event</span><span class="p">(),</span> <span class="n">writable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: Text Editors expand freely in height and width by default.</span>
+    <span class="n">hug_width</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
+    <span class="n">hug_height</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
+
+    <span class="c">#: A reference to the ProxyScintilla object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyScintilla</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Post Validators</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_post_validate_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Post validate the text document.</span>
+
+<span class="sd">        A new document is created when the existing document is set to</span>
+<span class="sd">        None. This ensures that the proxy object never receives a null</span>
+<span class="sd">        document and helps keep the state synchronized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">new</span> <span class="ow">or</span> <span class="n">ScintillaDocument</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_post_validate_theme</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot; Post validate the theme.</span>
+
+<span class="sd">        The theme is reset to an empty dictionary if set to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">new</span> <span class="ow">or</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_post_validate_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot; Post validate the settings.</span>
+
+<span class="sd">        The settings are reset to an empty dictionary if set to None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">new</span> <span class="ow">or</span> <span class="p">{}</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;document&#39;</span><span class="p">,</span> <span class="s">&#39;syntax&#39;</span><span class="p">,</span> <span class="s">&#39;theme&#39;</span><span class="p">,</span> <span class="s">&#39;settings&#39;</span><span class="p">,</span> <span class="s">&#39;zoom&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which sends the document change to the proxy.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Scintilla</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Scintilla.get_text"><a class="viewcode-back" href="../../../api_ref/scintilla/scintilla.html#enaml.scintilla.scintilla.Scintilla.get_text">[docs]</a>    <span class="k">def</span> <span class="nf">get_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the text in the current document.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : unicode</span>
+<span class="sd">            The text in the current document.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s">u&#39;&#39;</span>
+</div>
+<div class="viewcode-block" id="Scintilla.set_text"><a class="viewcode-back" href="../../../api_ref/scintilla/scintilla.html#enaml.scintilla.scintilla.Scintilla.set_text">[docs]</a>    <span class="k">def</span> <span class="nf">set_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the text in the current document.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : unicode</span>
+<span class="sd">            The text to apply to the current document.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.bounded_date &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <h1>Source code for enaml.widgets.bounded_date</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span> <span class="k">as</span> <span class="n">pydate</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+
+<span class="kn">from</span> <span class="nn">.control</span> <span class="kn">import</span> <span class="n">Control</span><span class="p">,</span> <span class="n">ProxyControl</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyBoundedDate</span><span class="p">(</span><span class="n">ProxyControl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract defintion of a proxy BoundedDate object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the BoundedDate declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">BoundedDate</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_maximum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maximum</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="BoundedDate"><a class="viewcode-back" href="../../../api_ref/widgets/bounded_date.html#enaml.widgets.bounded_date.BoundedDate">[docs]</a><span class="k">class</span> <span class="nc">BoundedDate</span><span class="p">(</span><span class="n">Control</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A base class for components which edit a Python datetime.date</span>
+<span class="sd">    object bounded between minimum and maximum values.</span>
+
+<span class="sd">    This class is not meant to be used directly.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The minimum date available in the date edit. If the minimum value</span>
+    <span class="c">#: is changed such that it becomes greater than the current value or</span>
+    <span class="c">#: the maximum value, then those values will be adjusted. The default</span>
+    <span class="c">#: value is September 14, 1752.</span>
+    <span class="n">minimum</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">pydate</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1752</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">14</span><span class="p">)))</span>
+
+    <span class="c">#: The maximum date available in the date edit. If the maximum value</span>
+    <span class="c">#: is changed such that it becomes smaller than the current value or</span>
+    <span class="c">#: the minimum value, then those values will be adjusted. The default</span>
+    <span class="c">#: value is December 31, 7999.</span>
+    <span class="n">maximum</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">pydate</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">7999</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">31</span><span class="p">)))</span>
+
+    <span class="c">#: The date in the control. This will be clipped to the supplied</span>
+    <span class="c">#: maximum and minimum values. The default is date.today().</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">pydate</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="n">pydate</span><span class="o">.</span><span class="n">today</span><span class="p">))</span>
+
+    <span class="c">#: A reference to the ProxyBoundedDate object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyBoundedDate</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;minimum&#39;</span><span class="p">,</span> <span class="s">&#39;maximum&#39;</span><span class="p">,</span> <span class="s">&#39;date&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which updates the proxy when the data changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BoundedDate</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Post Setattr Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_post_setattr_minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Post setattr the minimum date.</span>
+
+<span class="sd">        If the new minimum is greater than the current value or the</span>
+<span class="sd">        maximum, those values are adjusted up.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maximum</span> <span class="o">=</span> <span class="n">new</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">new</span>
+
+    <span class="k">def</span> <span class="nf">_post_setattr_maximum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Post setattr the maximum date.</span>
+
+<span class="sd">        If the new maximum is less than the current value or the</span>
+<span class="sd">        minimum, those values are adjusted down.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minimum</span> <span class="o">=</span> <span class="n">new</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">new</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Post Validate Handlers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_post_validate_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Post validate the date for the control.</span>
+
+<span class="sd">        If it lies outside of minimum and maximum bounds, it will be</span>
+<span class="sd">        clipped to the bounds.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum</span><span class="p">))</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

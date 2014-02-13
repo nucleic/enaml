@@ -1,0 +1,543 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.core.object &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../index.html" />
+    <link rel="up" title="enaml.core" href="index.html" />
+    <link rel="next" title="enaml.core.pattern" href="pattern.html" />
+    <link rel="prev" title="enaml.core.looper" href="looper.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">enaml.core.object</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../applib/index.html">applib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../application.html">application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../colors.html">colors</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">core</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="conditional.html">conditional</a></li>
+<li class="toctree-l3"><a class="reference internal" href="declarative.html">declarative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="include.html">include</a></li>
+<li class="toctree-l3"><a class="reference internal" href="looper.html">looper</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pattern.html">pattern</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../fonts.html">fonts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../icon.html">icon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../image.html">image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../layout/index.html">layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nodevisitor.html">nodevisitor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scintilla/index.html">scintilla</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../styling.html">styling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../validator.html">validator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../version.html">version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../widgets/index.html">widgets</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <span class="target" id="module-enaml.core.object"></span><div class="section" id="enaml-core-object">
+<h1>enaml.core.object<a class="headerlink" href="#enaml-core-object" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.core.object.flag_property" title="enaml.core.object.flag_property"><tt class="xref py py-obj docutils literal"><span class="pre">flag_property</span></tt></a></td>
+<td>A factory function which creates a flag accessor property.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.core.object.Object" title="enaml.core.object.Object"><tt class="xref py py-obj docutils literal"><span class="pre">Object</span></tt></a></td>
+<td>The most base class of the Enaml object hierarchy.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="enaml.core.object.flag_property">
+<tt class="descclassname">enaml.core.object.</tt><tt class="descname">flag_property</tt><big>(</big><em>flag</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#flag_property"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.flag_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>A factory function which creates a flag accessor property.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.core.object.Object">
+<em class="property">class </em><tt class="descclassname">enaml.core.object.</tt><tt class="descname">Object</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>The most base class of the Enaml object hierarchy.</p>
+<p>An Enaml Object provides supports parent-children relationships and
+provides methods for navigating, searching, and destroying the tree.</p>
+<dl class="attribute">
+<dt id="enaml.core.object.Object.name">
+<tt class="descname">name</tt><a class="headerlink" href="#enaml.core.object.Object.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>An optional name to give to this object to assist in finding it
+in the tree (see . the &#8216;find&#8217; method). There is no guarantee of
+uniqueness for an object <cite>name</cite>. It is left to the developer to
+choose an appropriate name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.core.object.Object.parent">
+<tt class="descname">parent</tt><a class="headerlink" href="#enaml.core.object.Object.parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>The read-only property which returns the object parent. This will
+be an Object or None. Use &#8216;set_parent()&#8217; or pass the parent to
+the constructor to set the parent of an object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.core.object.Object.children">
+<tt class="descname">children</tt><a class="headerlink" href="#enaml.core.object.Object.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>A read-only property which returns the object children. This is
+a list of Object instances. User code should not modify the list
+directly. Instead, use &#8216;set_parent()&#8217; or &#8216;insert_children()&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.core.object.Object.is_destroyed">
+<tt class="descname">is_destroyed</tt><a class="headerlink" href="#enaml.core.object.Object.is_destroyed" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property which gets and sets the destroyed flag. This should
+not be manipulated directly by user code.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.core.object.Object.destroyed">
+<tt class="descname">destroyed</tt><a class="headerlink" href="#enaml.core.object.Object.destroyed" title="Permalink to this definition">¶</a></dt>
+<dd><p>An event fired when an object has been destroyed. It is triggered
+once during the object lifetime, just before the object is
+removed from the tree structure.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an Object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>parent</strong> : Object or None, optional</p>
+<blockquote>
+<div><p>The Object instance which is the parent of this object, or
+None if the object has no parent. Defaults to None.</p>
+</div></blockquote>
+<p><strong>**kwargs</strong> :</p>
+<blockquote class="last">
+<div><p>Additional keyword arguments to apply as attributes to the
+object.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.destroy">
+<tt class="descname">destroy</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destroy this object and all of its children recursively.</p>
+<p>This will emit the <cite>destroyed</cite> event before any change to the
+object tree is made. After this returns, the object should be
+considered invalid and should no longer be used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.set_parent">
+<tt class="descname">set_parent</tt><big>(</big><em>parent</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.set_parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.set_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parent for this object.</p>
+<p>If the parent is not None, the child will be appended to the end
+of the parent&#8217;s children. If the parent is already the parent of
+this object, then this method is a no-op. If this object already
+has a parent, then it will be properly reparented.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>parent</strong> : Object or None</p>
+<blockquote class="last">
+<div><p>The Object instance to use for the parent, or None if this
+object should be unparented.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>It is the responsibility of the caller to initialize and activate
+the object as needed, if it is reparented dynamically at runtime.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.insert_children">
+<tt class="descname">insert_children</tt><big>(</big><em>before</em>, <em>insert</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.insert_children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.insert_children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert children into this object at the given location.</p>
+<p>The children will be automatically parented and inserted into
+the object&#8217;s children. If any children are already children of
+this object, then they will be moved appropriately.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>before</strong> : Object, int or None</p>
+<blockquote>
+<div><p>A child object or int to use as the marker for inserting
+the new children. The new children will be inserted before
+this marker. If the Object is None or not a child, or if
+the int is not a valid index, then the new children will be
+added to the end of the children.</p>
+</div></blockquote>
+<p><strong>insert</strong> : iterable</p>
+<blockquote class="last">
+<div><p>An iterable of Object children to insert into this object.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>It is the responsibility of the caller to initialize and activate
+the object as needed, if it is reparented dynamically at runtime.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.parent_changed">
+<tt class="descname">parent_changed</tt><big>(</big><em>old</em>, <em>new</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.parent_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.parent_changed" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method invoked when the parent of the object changes.</p>
+<p>This method is called when the parent on the object has changed,
+but before the children of the new parent have been updated.
+Sublasses may reimplement this method as required.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>old</strong> : Object or None</p>
+<blockquote>
+<div><p>The old parent of the object.</p>
+</div></blockquote>
+<p><strong>new</strong> : Object or None</p>
+<blockquote class="last">
+<div><p>the new parent of the object.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.child_added">
+<tt class="descname">child_added</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.child_added"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.child_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method invoked when a child is added to the object.</p>
+<p>Sublasses may reimplement this method as required.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>child</strong> : Object</p>
+<blockquote class="last">
+<div><p>The child added to this object.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.child_removed">
+<tt class="descname">child_removed</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.child_removed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.child_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method invoked when a child is removed from the object.</p>
+<p>Sublasses may reimplement this method as required.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>child</strong> : Object</p>
+<blockquote class="last">
+<div><p>The child removed from the object.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.root_object">
+<tt class="descname">root_object</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.root_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.root_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the root object for this hierarchy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : Object</p>
+<blockquote class="last">
+<div><p>The top-most object in the hierarchy to which this object
+belongs.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.traverse">
+<tt class="descname">traverse</tt><big>(</big><em>depth_first=False</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.traverse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.traverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield all of the objects in the tree, from this object down.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>depth_first</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>If True, yield the nodes in depth first order. If False,
+yield the nodes in breadth first order. Defaults to False.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.traverse_ancestors">
+<tt class="descname">traverse_ancestors</tt><big>(</big><em>root=None</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.traverse_ancestors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.traverse_ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield all of the objects in the tree, from this object up.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>root</strong> : Object, optional</p>
+<blockquote class="last">
+<div><p>The object at which to stop traversal. Defaults to None.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.find">
+<tt class="descname">find</tt><big>(</big><em>name</em>, <em>regex=False</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the first object in the subtree with the given name.</p>
+<p>This method will traverse the tree of objects, breadth first,
+from this object downward, looking for an object with the given
+name. The first object with the given name is returned, or None
+if no object is found with the given name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote>
+<div><p>The name of the object for which to search.</p>
+</div></blockquote>
+<p><strong>regex</strong> : bool, optional</p>
+<blockquote>
+<div><p>Whether the given name is a regex string which should be
+matched against the names of children instead of tested
+for equality. Defaults to False.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : Object or None</p>
+<blockquote class="last">
+<div><p>The first object found with the given name, or None if no
+object is found with the given name.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.core.object.Object.find_all">
+<tt class="descname">find_all</tt><big>(</big><em>name</em>, <em>regex=False</em><big>)</big><a class="reference internal" href="../../_modules/enaml/core/object.html#Object.find_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.core.object.Object.find_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all objects in the subtree with the given name.</p>
+<p>This method will traverse the tree of objects, breadth first,
+from this object downward, looking for a objects with the given
+name. All of the objects with the given name are returned as a
+list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote>
+<div><p>The name of the objects for which to search.</p>
+</div></blockquote>
+<p><strong>regex</strong> : bool, optional</p>
+<blockquote>
+<div><p>Whether the given name is a regex string which should be
+matched against the names of objects instead of testing
+for equality. Defaults to False.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : list of Object</p>
+<blockquote class="last">
+<div><p>The list of objects found with the given name, or an empty
+list if no objects are found with the given name.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

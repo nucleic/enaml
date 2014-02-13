@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.icon &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="enaml.image" href="image.html" />
+    <link rel="prev" title="enaml.fonts" href="fonts.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">enaml.icon</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="applib/index.html">applib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="application.html">application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="colors.html">colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core/index.html">core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fonts.html">fonts</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">icon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="image.html">image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="layout/index.html">layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nodevisitor.html">nodevisitor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scintilla/index.html">scintilla</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="styling.html">styling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="validator.html">validator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="version.html">version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets/index.html">widgets</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <span class="target" id="module-enaml.icon"></span><div class="section" id="enaml-icon">
+<h1>enaml.icon<a class="headerlink" href="#enaml-icon" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.icon.Icon" title="enaml.icon.Icon"><tt class="xref py py-obj docutils literal"><span class="pre">Icon</span></tt></a></td>
+<td>An object object representing an icon.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.icon.IconImage" title="enaml.icon.IconImage"><tt class="xref py py-obj docutils literal"><span class="pre">IconImage</span></tt></a></td>
+<td>An object representing an image in an icon.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="enaml.icon.Icon">
+<em class="property">class </em><tt class="descclassname">enaml.icon.</tt><tt class="descname">Icon</tt><a class="reference internal" href="../_modules/enaml/icon.html#Icon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.icon.Icon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object object representing an icon.</p>
+<p>Once an image is created it should be treated as read only. User
+code should create a new icon object if the parameters need to
+be changed.</p>
+<dl class="attribute">
+<dt id="enaml.icon.Icon.images">
+<tt class="descname">images</tt><a class="headerlink" href="#enaml.icon.Icon.images" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of icon images which compose this icon.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.icon.IconImage">
+<em class="property">class </em><tt class="descclassname">enaml.icon.</tt><tt class="descname">IconImage</tt><a class="reference internal" href="../_modules/enaml/icon.html#IconImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.icon.IconImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>An object representing an image in an icon.</p>
+<p>Instances of this class are used to populate the &#8216;images&#8217; list of
+an &#8216;Icon&#8217; instance. Instances of this class should be treated as
+read only once they are created.</p>
+<dl class="attribute">
+<dt id="enaml.icon.IconImage.mode">
+<tt class="descname">mode</tt><a class="headerlink" href="#enaml.icon.IconImage.mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The widget mode for which this icon should apply.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.icon.IconImage.state">
+<tt class="descname">state</tt><a class="headerlink" href="#enaml.icon.IconImage.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>The widget state for which this icon should apply.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.icon.IconImage.image">
+<tt class="descname">image</tt><a class="headerlink" href="#enaml.icon.IconImage.image" title="Permalink to this definition">¶</a></dt>
+<dd><p>The image to use for this icon image.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

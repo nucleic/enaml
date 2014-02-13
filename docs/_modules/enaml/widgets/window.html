@@ -1,0 +1,580 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.window &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <h1>Source code for enaml.widgets.window</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Atom</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Coerced</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span>
+    <span class="n">set_default</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">enaml.icon</span> <span class="kn">import</span> <span class="n">Icon</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.geometry</span> <span class="kn">import</span> <span class="n">Pos</span><span class="p">,</span> <span class="n">Rect</span><span class="p">,</span> <span class="n">Size</span>
+
+<span class="kn">from</span> <span class="nn">.container</span> <span class="kn">import</span> <span class="n">Container</span>
+<span class="kn">from</span> <span class="nn">.widget</span> <span class="kn">import</span> <span class="n">Widget</span><span class="p">,</span> <span class="n">ProxyWidget</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyWindow</span><span class="p">(</span><span class="n">ProxyWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy Window object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the Window declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Window</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modality</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">icon</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rect</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">frame_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">minimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">is_minimized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">maximize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">is_maximized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">send_to_front</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">send_to_back</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">activate_window</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">center_on_screen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">center_on_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="k">class</span> <span class="nc">CloseEvent</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An payload object carried by a window &#39;closing&#39; event.</span>
+
+<span class="sd">    User code can manipulate this object to veto a close event.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The internal accepted state.</span>
+    <span class="n">_accepted</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">is_accepted</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether or not the event is accepted.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : bool</span>
+<span class="sd">            True if the event is accepted, False otherwise. The</span>
+<span class="sd">            default is True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accepted</span>
+
+    <span class="k">def</span> <span class="nf">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Accept the close event and allow the window to be closed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accepted</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Reject the close event and prevent the window from closing.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accepted</span> <span class="o">=</span> <span class="bp">False</span>
+
+
+<div class="viewcode-block" id="Window"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window">[docs]</a><span class="k">class</span> <span class="nc">Window</span><span class="p">(</span><span class="n">Widget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A top-level Window component.</span>
+
+<span class="sd">    A Window component is represents of a top-level visible component</span>
+<span class="sd">    with a frame decoration. It may have at most one child widget which</span>
+<span class="sd">    is dubbed the &#39;central widget&#39;. The central widget is an instance</span>
+<span class="sd">    of Container and is expanded to fit the size of the window.</span>
+
+<span class="sd">    A Window does not support features like MenuBars or DockPanes, for</span>
+<span class="sd">    such functionality, use a MainWindow widget.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A static set of windows being used by the application. A window</span>
+    <span class="c">#: adds itself to this list when it is initialized, and removes</span>
+    <span class="c">#: itself when it is destroyed. This allows toplevel windows with</span>
+    <span class="c">#: no parent to persist without any other strong references.</span>
+    <span class="n">windows</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="c">#: The titlebar text.</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: The initial position of the window frame. A value of (-1, -1)</span>
+    <span class="c">#: indicates that the toolkit should choose the initial position.</span>
+    <span class="n">initial_position</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">Pos</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c">#: The initial size of the window client area. A value of (-1, -1)</span>
+    <span class="c">#: indicates that the toolkit should choose the initial size.</span>
+    <span class="n">initial_size</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">Size</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c">#: An enum which indicates the modality of the window. The default</span>
+    <span class="c">#: value is &#39;non_modal&#39;.</span>
+    <span class="n">modality</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Enum</span><span class="p">(</span><span class="s">&#39;non_modal&#39;</span><span class="p">,</span> <span class="s">&#39;application_modal&#39;</span><span class="p">,</span> <span class="s">&#39;window_modal&#39;</span><span class="p">))</span>
+
+    <span class="c">#: If this value is set to True, the window will be destroyed on</span>
+    <span class="c">#: the completion of the `closed` event.</span>
+    <span class="n">destroy_on_close</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: The title bar icon.</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">Icon</span><span class="p">))</span>
+
+    <span class="c">#: Whether the window styas on top of other windows on the desktop.</span>
+    <span class="c">#: Changes to this value after the window is shown will be ignored.</span>
+    <span class="n">always_on_top</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: An event fired when the user request the window to be closed.</span>
+    <span class="c">#: This will happen when the user clicks on the &quot;X&quot; button in the</span>
+    <span class="c">#: title bar button, or when the &#39;close&#39; method is called. The</span>
+    <span class="c">#: payload will be a CloseEvent object which will allow code to</span>
+    <span class="c">#: veto the close event and prevent the window from closing.</span>
+    <span class="n">closing</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Event</span><span class="p">(</span><span class="n">CloseEvent</span><span class="p">),</span> <span class="n">writable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: An event fired when the window is closed.</span>
+    <span class="n">closed</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Event</span><span class="p">(),</span> <span class="n">writable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: Windows are invisible by default.</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: A reference to the ProxyWindow object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyWindow</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Window.initialize"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden initializer method.</span>
+
+<span class="sd">        This method adds the window to the static set of Windows.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Window</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="n">Window</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.destroy"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An overridden destructor method.</span>
+
+<span class="sd">        This method removes the window from the static set of Windows.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Window</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="n">Window</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+<div class="viewcode-block" id="Window.central_widget"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.central_widget">[docs]</a>    <span class="k">def</span> <span class="nf">central_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the central widget defined on the window.</span>
+
+<span class="sd">        The last `Container` child of the window is the central widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Container</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">child</span>
+</div>
+<div class="viewcode-block" id="Window.position"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.position">[docs]</a>    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the position of the window frame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : Pos</span>
+<span class="sd">            The current position of the window frame.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">position</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Pos</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.set_position"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.set_position">[docs]</a>    <span class="k">def</span> <span class="nf">set_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the position of the window frame.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : Pos</span>
+<span class="sd">            The desired position of the window the window frame.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.size"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.size">[docs]</a>    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the size of the window client area.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : Size</span>
+<span class="sd">            The current size of the window client area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.set_size"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.set_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the size of the window client area.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        size : Size</span>
+<span class="sd">            The desired size of the window client area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.geometry"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.geometry">[docs]</a>    <span class="k">def</span> <span class="nf">geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the geometry of the window client area.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : Rect</span>
+<span class="sd">            The current geometry of the window client area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">geometry</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Rect</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.set_geometry"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.set_geometry">[docs]</a>    <span class="k">def</span> <span class="nf">set_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rect</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set the geometry of the window client area.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rect : Rect</span>
+<span class="sd">            The desired geometry of the window client area.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.frame_geometry"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.frame_geometry">[docs]</a>    <span class="k">def</span> <span class="nf">frame_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the geometry of the window frame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : Rect</span>
+<span class="sd">            The current geometry of the window frame.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">frame_geometry</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Rect</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.maximize"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.maximize">[docs]</a>    <span class="k">def</span> <span class="nf">maximize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Maximize the window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">maximize</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.is_maximized"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.is_maximized">[docs]</a>    <span class="k">def</span> <span class="nf">is_maximized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether the window is maximized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">is_maximized</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="Window.minimize"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.minimize">[docs]</a>    <span class="k">def</span> <span class="nf">minimize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Minimize the window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">minimize</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.is_minimized"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.is_minimized">[docs]</a>    <span class="k">def</span> <span class="nf">is_minimized</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get whether the window is minimized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">is_minimized</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="Window.restore"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.restore">[docs]</a>    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Restore the window from a maximized or minimized state.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">restore</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.send_to_front"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.send_to_front">[docs]</a>    <span class="k">def</span> <span class="nf">send_to_front</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send the window to the top of the Z-order.</span>
+
+<span class="sd">        This will only affect the Z-order of the window relative to the</span>
+<span class="sd">        Z-order of other windows in the same application.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">send_to_front</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.send_to_back"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.send_to_back">[docs]</a>    <span class="k">def</span> <span class="nf">send_to_back</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Send the window to the bottom of the Z-order.</span>
+
+<span class="sd">        This will only affect the Z-order of the window relative to the</span>
+<span class="sd">        Z-order of other windows in the same application.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">send_to_back</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.activate_window"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.activate_window">[docs]</a>    <span class="k">def</span> <span class="nf">activate_window</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set this window to be the active application window.</span>
+
+<span class="sd">        This performs the same operation as clicking the mouse on the</span>
+<span class="sd">        title bar of the window, except that it will not effect the Z</span>
+<span class="sd">        order of the window.</span>
+
+<span class="sd">        On Windows, this will cause the taskbar icon to flash if the</span>
+<span class="sd">        window does not belong to the active application.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">activate_window</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.center_on_screen"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.center_on_screen">[docs]</a>    <span class="k">def</span> <span class="nf">center_on_screen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Center the window on the screen.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">center_on_screen</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.center_on_widget"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.center_on_widget">[docs]</a>    <span class="k">def</span> <span class="nf">center_on_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Center this window on another widget.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other : Widget</span>
+<span class="sd">            The widget onto which to center this window.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Widget</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">center_on_widget</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Window.close"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Close the window.</span>
+
+<span class="sd">        This will cause the window to be hidden, the &#39;closed&#39; event</span>
+<span class="sd">        to be fired, and the window subsequently destroyed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Window.show"><a class="viewcode-back" href="../../../api_ref/widgets/window.html#enaml.widgets.window.Window.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Show the window to the screen.</span>
+
+<span class="sd">        This is a reimplemented parent class method which will init</span>
+<span class="sd">        and build the window hierarchy if needed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activate_proxy</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Window</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;modality&#39;</span><span class="p">,</span> <span class="s">&#39;icon&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the ProxyWindow when the Window data changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass handler implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Window</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

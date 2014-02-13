@@ -1,0 +1,79 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using the Enaml stdlib MessageBox.
+
+The MessageBox element is built on top of the stdlib task dialog elements.
+See the `task_dialog` example for a demonstration of those elements.
+
+This example shows how to use the MessageBox directly along with various
+convenience functions which are available for 1-line notifications.
+
+<< autodoc-me >>
+"""
+import sys
+if sys.platform == 'win32':
+    from enaml import winutil
+
+from enaml.image import Image
+from enaml.stdlib.dialog_buttons import DialogButton
+from enaml.stdlib.message_box import (MessageBox, about, critical, information,
+    question, warning)
+from enaml.widgets.api import Container, PushButton, Window
+
+
+def h_result(button):
+    if button is not None:
+        print "Dialog button '%s' clicked." % button.text
+
+
+enamldef Main(Window):
+    title = 'Message Box Example'
+    Container:
+        PushButton:
+            text = 'About'
+            clicked :: about(self, 'About Dialog', 'This is about text.')
+        PushButton:
+            text = 'Critical'
+            clicked ::
+                btns = [DialogButton('Custom', 'accept'),
+                        DialogButton('Buttons', 'reject')]
+                h_result(critical(
+                    self, 'Critical Dialog', 'This is critical text.', btns))
+        PushButton:
+            text = 'Information'
+            clicked ::
+                h_result(information(
+                    self, 'Info Dialog', 'This is info text.'))
+        PushButton:
+            text = 'Question'
+            clicked ::
+                h_result(question(
+                    self, 'Question Dialog', 'This is question text.'))
+        PushButton:
+            text = 'Warning'
+            clicked ::
+                h_result(warning(
+                    self, 'Warning Dialog', 'This is warning text.'))
+        PushButton:
+            text = 'Custom'
+            clicked ::
+                box = MessageBox()
+                box.title = 'Custom Dialog'
+                box.text = 'This is custom text.'
+                box.content = 'This is some more content.'
+                box.details = '<h3>These are some details.</h3>'
+                box.buttons = [DialogButton('Accept', 'accept'),
+                               DialogButton('Reject', 'reject')]
+                if sys.platform == 'win32':
+                    data, size = winutil.load_icon(winutil.OIC_INFORMATION)
+                    box.image = Image(data=data, raw_size=size, format='argb32')
+                box.set_parent(self)
+                box.exec_()
+                for b in box.buttons:
+                    if b.was_clicked:
+                        h_result(b)

@@ -1,0 +1,869 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.layout.dock_layout &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <h1>Source code for enaml.layout.dock_layout</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Coerced</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Unicode</span>
+
+<span class="kn">from</span> <span class="nn">enaml.nodevisitor</span> <span class="kn">import</span> <span class="n">NodeVisitor</span>
+
+<span class="kn">from</span> <span class="nn">.geometry</span> <span class="kn">import</span> <span class="n">Rect</span>
+
+
+<span class="k">def</span> <span class="nf">_coerce_rect</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Coerce a value to a Rect object.</span>
+
+<span class="sd">    This function is a private implementation detail.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">Rect</span><span class="p">(</span><span class="o">*</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to a &#39;Rect&#39;&quot;</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="LayoutNode"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.LayoutNode">[docs]</a><span class="k">class</span> <span class="nc">LayoutNode</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A base class for defining layout nodes.</span>
+
+<span class="sd">    This class provides basic traversal functionality.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="LayoutNode.children"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.LayoutNode.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the children of the node.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : list</span>
+<span class="sd">            The list of LayoutNode children of the node. The default</span>
+<span class="sd">            implementation returns an empty list.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[]</span>
+</div>
+<div class="viewcode-block" id="LayoutNode.traverse"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.LayoutNode.traverse">[docs]</a>    <span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth_first</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Yield all of the nodes in the layout, from this node down.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        depth_first : bool, optional</span>
+<span class="sd">            If True, yield the nodes in depth first order. If False,</span>
+<span class="sd">            yield the nodes in breadth first order. Defaults to False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : generator</span>
+<span class="sd">            A generator which yields 2-tuples of (parent, node) for all</span>
+<span class="sd">            nodes in the layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">depth_first</span><span class="p">:</span>
+            <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="p">)]</span>
+            <span class="n">stack_pop</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span>
+            <span class="n">stack_extend</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">extend</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stack</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">self</span><span class="p">)])</span>
+            <span class="n">stack_pop</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">popleft</span>
+            <span class="n">stack_extend</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">extend</span>
+        <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="n">parent</span><span class="p">,</span> <span class="n">node</span> <span class="o">=</span> <span class="n">stack_pop</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">parent</span><span class="p">,</span> <span class="n">node</span>
+            <span class="n">stack_extend</span><span class="p">((</span><span class="n">node</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="LayoutNode.find"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.LayoutNode.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find the first layout node of the given kind.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kind : type or tuple of types</span>
+<span class="sd">            The type of the layout node to find.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : LayoutNode or None</span>
+<span class="sd">            The first layout node of the given type in the tree. The</span>
+<span class="sd">            search is performed breadth-first.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">parent</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">node</span>
+</div>
+<div class="viewcode-block" id="LayoutNode.find_all"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.LayoutNode.find_all">[docs]</a>    <span class="k">def</span> <span class="nf">find_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Find the layout nodes of the given kind.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kind : type or tuple of types</span>
+<span class="sd">            The type of the layout nodes to find.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : list</span>
+<span class="sd">            The list of the layout nodes in the tree which are of the</span>
+<span class="sd">            request type. They are ordered breadth-first.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">parent</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">traverse</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+</div></div>
+<div class="viewcode-block" id="ItemLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.ItemLayout">[docs]</a><span class="k">class</span> <span class="nc">ItemLayout</span><span class="p">(</span><span class="n">LayoutNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout object for defining an item layout.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the DockItem to which this layout item applies.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: Whether or not the item is floating. An ItemLayout defined as</span>
+    <span class="c">#: a toplevel item in a DockLayout should be marked as floating.</span>
+    <span class="n">floating</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: The geometry to apply to the item. This is expressed in desktop</span>
+    <span class="c">#: coordinates and only applies if the item is floating.</span>
+    <span class="n">geometry</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">Rect</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">coercer</span><span class="o">=</span><span class="n">_coerce_rect</span><span class="p">)</span>
+
+    <span class="c">#: Whether or not the item is linked with its floating neighbors.</span>
+    <span class="c">#: This value will only have an effect if the item is floating.</span>
+    <span class="n">linked</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: Whether or not the item is maximized. This value will only have</span>
+    <span class="c">#: effect if the item is floating or docked in a SplitLayout.</span>
+    <span class="n">maximized</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ItemLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="TabLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.TabLayout">[docs]</a><span class="k">class</span> <span class="nc">TabLayout</span><span class="p">(</span><span class="n">LayoutNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout object for defining tabbed dock layouts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The position of the tabs in the tab layout.</span>
+    <span class="n">tab_position</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The index of the currently selected tab.</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c">#: The list of item layouts to include in the tab layout.</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">ItemLayout</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TabLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TabLayout.children"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.TabLayout.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the list of children of the tab layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">[:]</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">_SplitLayoutItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A private class which performs type checking for split layouts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">class</span> <span class="nc">__metaclass__</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__instancecheck__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="p">(</span><span class="n">ItemLayout</span><span class="p">,</span> <span class="n">TabLayout</span><span class="p">,</span> <span class="n">SplitLayout</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">ItemLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to a &#39;SplitLayout&#39; item&quot;</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SplitLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.SplitLayout">[docs]</a><span class="k">class</span> <span class="nc">SplitLayout</span><span class="p">(</span><span class="n">LayoutNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout object for defining split dock layouts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The orientation of the split layout.</span>
+    <span class="n">orientation</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;horizontal&#39;</span><span class="p">,</span> <span class="s">&#39;vertical&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The default sizes to apply to the items in the splitter. If</span>
+    <span class="c">#: provided, the length must be equal to the number of items.</span>
+    <span class="n">sizes</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">Int</span><span class="p">())</span>
+
+    <span class="c">#: This list of split layout items to include in the split layout.</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">_SplitLayoutItem</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SplitLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SplitLayout.children"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.SplitLayout.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the list of children of the split layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">[:]</span>
+
+</div></div>
+<div class="viewcode-block" id="HSplitLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.HSplitLayout">[docs]</a><span class="k">class</span> <span class="nc">HSplitLayout</span><span class="p">(</span><span class="n">SplitLayout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A split layout which defaults to &#39;horizonal&#39; orientation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;orientation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;horizontal&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HSplitLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="VSplitLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.VSplitLayout">[docs]</a><span class="k">class</span> <span class="nc">VSplitLayout</span><span class="p">(</span><span class="n">SplitLayout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A split layout which defaults to &#39;vertical&#39; orientation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;orientation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;vertical&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VSplitLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="DockBarLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockBarLayout">[docs]</a><span class="k">class</span> <span class="nc">DockBarLayout</span><span class="p">(</span><span class="n">LayoutNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout object for defining a dock bar layout.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The position of the tool bar in its area. Only one tool bar may</span>
+    <span class="c">#: occupy a given position at any one time.</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The list of item layouts to include in the tab layout.</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">ItemLayout</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DockBarLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DockBarLayout.children"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockBarLayout.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the list of children of the dock bar layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">[:]</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">_AreaLayoutItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A private class which performs type checking for area layouts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">class</span> <span class="nc">__metaclass__</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__instancecheck__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+            <span class="n">allowed</span> <span class="o">=</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span> <span class="n">ItemLayout</span><span class="p">,</span> <span class="n">TabLayout</span><span class="p">,</span> <span class="n">SplitLayout</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">allowed</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">ItemLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to an &#39;AreaLayout&#39; item&quot;</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AreaLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.AreaLayout">[docs]</a><span class="k">class</span> <span class="nc">AreaLayout</span><span class="p">(</span><span class="n">LayoutNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout object for defining a dock area layout.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The main layout item to include in the area layout.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">_AreaLayoutItem</span><span class="p">)</span>
+
+    <span class="c">#: The dock bar layouts to include in the area layout.</span>
+    <span class="n">dock_bars</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">DockBarLayout</span><span class="p">)</span>
+
+    <span class="c">#: Whether or not the area is floating. A DockLayout should have</span>
+    <span class="c">#: at most one non-floating area layout.</span>
+    <span class="n">floating</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: The geometry to apply to the area. This is expressed in desktop</span>
+    <span class="c">#: coordinates and only applies if the area is floating.</span>
+    <span class="n">geometry</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">Rect</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">coercer</span><span class="o">=</span><span class="n">_coerce_rect</span><span class="p">)</span>
+
+    <span class="c">#: Whether or not the area is linked with its floating neighbors.</span>
+    <span class="c">#: This only has an effect if the area is a floating.</span>
+    <span class="n">linked</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: Whether or not the area is maximized. This only has an effect if</span>
+    <span class="c">#: the area is a floating.</span>
+    <span class="n">maximized</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AreaLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">item</span><span class="o">=</span><span class="n">item</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AreaLayout.children"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.AreaLayout.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the list of children of the area layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">base</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dock_bars</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">_DockLayoutItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A private class which performs type checking for dock layouts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">class</span> <span class="nc">__metaclass__</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__instancecheck__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="p">(</span><span class="n">ItemLayout</span><span class="p">,</span> <span class="n">AreaLayout</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">ItemLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="n">SplitLayout</span><span class="p">,</span> <span class="n">TabLayout</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="n">AreaLayout</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;cannot coerce &#39;</span><span class="si">%s</span><span class="s">&#39; to a &#39;DockLayout&#39; item&quot;</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DockLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayout">[docs]</a><span class="k">class</span> <span class="nc">DockLayout</span><span class="p">(</span><span class="n">LayoutNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The layout object for defining toplevel dock layouts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The layout items to include in the dock layout.</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">_DockLayoutItem</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DockLayout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DockLayout.children"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayout.children">[docs]</a>    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the list of children of the dock layout.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">[:]</span>
+
+</div></div>
+<div class="viewcode-block" id="DockLayoutWarning"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutWarning">[docs]</a><span class="k">class</span> <span class="nc">DockLayoutWarning</span><span class="p">(</span><span class="ne">UserWarning</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A custom user warning for use with dock layouts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="DockLayoutValidator"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator">[docs]</a><span class="k">class</span> <span class="nc">DockLayoutValidator</span><span class="p">(</span><span class="n">NodeVisitor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A node visitor which validates a layout.</span>
+
+<span class="sd">    If an irregularity or invalid condition is found in the layout, a</span>
+<span class="sd">    warning is emitted. Such conditions can result in undefined layout</span>
+<span class="sd">    behavior.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DockLayoutValidator.__init__"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">available</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initialize a DockLayoutValidator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        available : iterable</span>
+<span class="sd">            An iterable of strings which represent the available dock</span>
+<span class="sd">            item names onto which the layout will be applied. These are</span>
+<span class="sd">            used to validate the set of visited ItemLayout instances.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_available</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">available</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.warn"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.warn">[docs]</a>    <span class="k">def</span> <span class="nf">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Emit a dock layout warning with the given message.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">f_globals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller</span><span class="o">.</span><span class="n">f_globals</span>
+        <span class="n">f_lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller</span><span class="o">.</span><span class="n">f_lineno</span>
+        <span class="n">f_mod</span> <span class="o">=</span> <span class="n">f_globals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;__name__&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">)</span>
+        <span class="n">f_name</span> <span class="o">=</span> <span class="n">f_globals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;__file__&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">f_name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s">&quot;.pyc&quot;</span><span class="p">,</span> <span class="s">&quot;.pyo&quot;</span><span class="p">)):</span>
+                <span class="n">f_name</span> <span class="o">=</span> <span class="n">f_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f_mod</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+                <span class="n">f_name</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">f_name</span><span class="p">:</span>
+                <span class="n">f_name</span> <span class="o">=</span> <span class="n">f_mod</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn_explicit</span><span class="p">(</span>
+            <span class="n">message</span><span class="p">,</span> <span class="n">DockLayoutWarning</span><span class="p">,</span> <span class="n">f_name</span><span class="p">,</span> <span class="n">f_lineno</span><span class="p">,</span> <span class="n">f_mod</span><span class="p">,</span> <span class="n">f_globals</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.setup"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Setup the dock layout validator.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_caller</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_seen_items</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cant_maximize</span> <span class="o">=</span> <span class="p">{}</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.teardown"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.teardown">[docs]</a>    <span class="k">def</span> <span class="nf">teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Teardown the dock layout validator.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seen_items</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;item &#39;</span><span class="si">%s</span><span class="s">&#39; is not referenced by the layout&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seen_items</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;item &#39;</span><span class="si">%s</span><span class="s">&#39; is not an available layout item&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caller</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seen_items</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cant_maximize</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.visit_ItemLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.visit_ItemLayout">[docs]</a>    <span class="k">def</span> <span class="nf">visit_ItemLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The visitor method for an ItemLayout node.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seen_items</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;duplicate use of ItemLayout name &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_seen_items</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">floating</span><span class="p">:</span>
+            <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">geometry</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;non-floating ItemLayout with specific geometry&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">linked</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;non-floating ItemLayout marked as linked&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">maximized</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cant_maximize</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;ItemLayout contained in </span><span class="si">%s</span><span class="s"> marked as maximized&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cant_maximize</span><span class="p">[</span><span class="n">node</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.visit_TabLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.visit_TabLayout">[docs]</a>    <span class="k">def</span> <span class="nf">visit_TabLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The visitor method for a TabLayout node.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cant_maximize</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;TabLayout&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.visit_SplitLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.visit_SplitLayout">[docs]</a>    <span class="k">def</span> <span class="nf">visit_SplitLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The visitor method for a SplitLayout node.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">sizes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">sizes</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">items</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;SplitLayout sizes length != items length&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">SplitLayout</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">orientation</span> <span class="o">==</span> <span class="n">node</span><span class="o">.</span><span class="n">orientation</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;child SplitLayout has same orientation as parent&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.visit_DockBarLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.visit_DockBarLayout">[docs]</a>    <span class="k">def</span> <span class="nf">visit_DockBarLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The visitor method for a DockBarLayout node.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cant_maximize</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;DockBarLayout&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.visit_AreaLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.visit_AreaLayout">[docs]</a>    <span class="k">def</span> <span class="nf">visit_AreaLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The visitor method for an AreaLayout node.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">floating</span><span class="p">:</span>
+            <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">geometry</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;non-floating AreaLayout with specific geometry&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">linked</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;non-floating AreaLayout marked as linked&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">maximized</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;non-floating AreaLayout marked as maximized&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">seen_positions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">bar</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">dock_bars</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bar</span><span class="o">.</span><span class="n">position</span> <span class="ow">in</span> <span class="n">seen_positions</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;multiple DockBarLayout items in &#39;</span><span class="si">%s</span><span class="s">&#39; position&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="n">bar</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+            <span class="n">seen_positions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">bar</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DockLayoutValidator.visit_DockLayout"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutValidator.visit_DockLayout">[docs]</a>    <span class="k">def</span> <span class="nf">visit_DockLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The visitor method for a DockLayout node.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">has_non_floating_area</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">ItemLayout</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">floating</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;non-floating toplevel ItemLayout&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c"># must be an AreaLayout</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="o">.</span><span class="n">floating</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">has_non_floating_area</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;multiple non-floating AreaLayout items&quot;</span><span class="p">)</span>
+                    <span class="n">has_non_floating_area</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Dock Layout Operations</span>
+<span class="c">#------------------------------------------------------------------------------</span></div></div>
+<div class="viewcode-block" id="DockLayoutOp"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.DockLayoutOp">[docs]</a><span class="k">class</span> <span class="nc">DockLayoutOp</span><span class="p">(</span><span class="n">Atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A sentinel base class for defining dock layout operations.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="InsertItem"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.InsertItem">[docs]</a><span class="k">class</span> <span class="nc">InsertItem</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which inserts an item into a layout.</span>
+
+<span class="sd">    This operation will remove an item from the current layout and</span>
+<span class="sd">    insert it next to a target item. If the item does not exist, the</span>
+<span class="sd">    operation is a no-op.</span>
+
+<span class="sd">    If the target -</span>
+
+<span class="sd">    - is a normally docked item</span>
+<span class="sd">        The item will be inserted as a new split item.</span>
+
+<span class="sd">    - is docked in a tab group</span>
+<span class="sd">        The item will be inserted as a neighbor of the tab group.</span>
+
+<span class="sd">    - is docked in a dock bar</span>
+<span class="sd">        The item will be appended to the dock bar.</span>
+
+<span class="sd">    - is a floating dock item</span>
+<span class="sd">        A new dock area will be created and the item will be inserted</span>
+<span class="sd">        as a new split item.</span>
+
+<span class="sd">    - does not exist</span>
+<span class="sd">        The item is inserted into the border of the primary dock area.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the dock item to insert into the layout.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: The name of the dock item to use as the target location.</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: The position relative to the target at which to insert the item.</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="InsertBorderItem"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.InsertBorderItem">[docs]</a><span class="k">class</span> <span class="nc">InsertBorderItem</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which inserts an item into an area border.</span>
+
+<span class="sd">    This operation will remove an item from the current layout and</span>
+<span class="sd">    insert it into the border of a dock area. If the item does not</span>
+<span class="sd">    exist, the operation is a no-op.</span>
+
+<span class="sd">    If the target -</span>
+
+<span class="sd">    - is a normally docked item</span>
+<span class="sd">        The item is inserted into the border of the dock area containing</span>
+<span class="sd">        the target.</span>
+
+<span class="sd">    - is docked in a tab group</span>
+<span class="sd">        The item is inserted into the border of the dock area containing</span>
+<span class="sd">        the tab group.</span>
+
+<span class="sd">    - is docked in a dock bar</span>
+<span class="sd">        The item is inserted into the border of the dock area containing</span>
+<span class="sd">        the dock bar.</span>
+
+<span class="sd">    - is a floating dock item</span>
+<span class="sd">        A new dock area will be created and the item will be inserted</span>
+<span class="sd">        into the border of the new dock area.</span>
+
+<span class="sd">    - does not exist</span>
+<span class="sd">        The item is inserted into the border of the primary dock area.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the dock item to insert into the layout.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: The name of the dock item to use as the target location.</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: The border position at which to insert the item.</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="InsertDockBarItem"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.InsertDockBarItem">[docs]</a><span class="k">class</span> <span class="nc">InsertDockBarItem</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which inserts an item into a dock bar.</span>
+
+<span class="sd">    This operation will remove an item from the current layout and</span>
+<span class="sd">    insert it into a dock bar in a dock area. If the item does not</span>
+<span class="sd">    exist, the operation is a no-op.</span>
+
+<span class="sd">    If the target -</span>
+
+<span class="sd">    - is a normally docked item</span>
+<span class="sd">        The item is inserted into the dock bar of the dock area</span>
+<span class="sd">        containing the target.</span>
+
+<span class="sd">    - is docked in a tab group</span>
+<span class="sd">        The item is inserted into the dock bar of the dock area</span>
+<span class="sd">        containing the tab group.</span>
+
+<span class="sd">    - is docked in a dock bar</span>
+<span class="sd">        The item is inserted into the dock bar of the dock area</span>
+<span class="sd">        containing the dock bar.</span>
+
+<span class="sd">    - is a floating dock item</span>
+<span class="sd">        A new dock area will be created and the item will be inserted</span>
+<span class="sd">        into the dock bar of the new dock area.</span>
+
+<span class="sd">    - does not exist</span>
+<span class="sd">        The item is inserted into the dock bar of the primary dock</span>
+<span class="sd">        area.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the dock item to insert into the layout.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: The name of the dock item to use as the target location.</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: The dock bar position at which to insert the item.</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;top&#39;</span><span class="p">)</span>
+
+    <span class="c">#: The index at which to insert the dock bar item.</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="InsertTab"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.InsertTab">[docs]</a><span class="k">class</span> <span class="nc">InsertTab</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which inserts a tab into a tab group.</span>
+
+<span class="sd">    This operation will remove an item from the current layout and</span>
+<span class="sd">    insert it into a tab group in a dock area. If the item does not</span>
+<span class="sd">    exist, the operation is a no-op.</span>
+
+<span class="sd">    If the target -</span>
+
+<span class="sd">    - is a normally docked item</span>
+<span class="sd">        The target and item will be merged into a new tab group</span>
+<span class="sd">        using the default tab position.</span>
+
+<span class="sd">    - is docked in a tab group</span>
+<span class="sd">        The item will be inserted into the tab group.</span>
+
+<span class="sd">    - is docked in a dock bar</span>
+<span class="sd">        The item will be appended to the dock bar.</span>
+
+<span class="sd">    - is a floating dock item</span>
+<span class="sd">        A new dock area will be created and the target and item will</span>
+<span class="sd">        be merged into a new tab group.</span>
+
+<span class="sd">    - does not exist</span>
+<span class="sd">        The item is inserted into the left border of the primary dock</span>
+<span class="sd">        area.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the dock item to insert into the tab group.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: The name of an existing dock item in the tab group of interest.</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+    <span class="c">#: The index at which to insert the dock item.</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c">#: The position of the tabs for a newly created tab group.</span>
+    <span class="n">tab_position</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s">&#39;default&#39;</span><span class="p">,</span> <span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="FloatItem"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.FloatItem">[docs]</a><span class="k">class</span> <span class="nc">FloatItem</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which creates a floating dock item.</span>
+
+<span class="sd">    This operation will remove an item from the current layout and</span>
+<span class="sd">    insert convert it into a floating item. If the item does not</span>
+<span class="sd">    exist, the operation is a no-op.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The item layout to use when configuring the floating item.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">ItemLayout</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="FloatArea"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.FloatArea">[docs]</a><span class="k">class</span> <span class="nc">FloatArea</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which creates a new floating dock area.</span>
+
+<span class="sd">    This layout operation will create a new floating dock area using</span>
+<span class="sd">    the given area layout specification.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The area layout to use when building the new dock area.</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">Coerced</span><span class="p">(</span><span class="n">AreaLayout</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="RemoveItem"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.RemoveItem">[docs]</a><span class="k">class</span> <span class="nc">RemoveItem</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which will remove an item from the layout.</span>
+
+<span class="sd">    This layout operation will remove the dock item from the layout</span>
+<span class="sd">    and hide it. It can be added back to layout later with one of the</span>
+<span class="sd">    other layout operations.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the dock item to remove from the layout.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="ExtendItem"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.ExtendItem">[docs]</a><span class="k">class</span> <span class="nc">ExtendItem</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which extends an item in a dock bar.</span>
+
+<span class="sd">    This layout operation will cause the named item to be extended to</span>
+<span class="sd">    from its dock bar. If the item does not exist in a dock bar, this</span>
+<span class="sd">    operation is a no-op.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the dock item to extend from its dock bar.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="RetractItem"><a class="viewcode-back" href="../../../api_ref/layout/dock_layout.html#enaml.layout.dock_layout.RetractItem">[docs]</a><span class="k">class</span> <span class="nc">RetractItem</span><span class="p">(</span><span class="n">DockLayoutOp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A layout operation which retracts an item into a dock bar.</span>
+
+<span class="sd">    This layout operation will cause the named item to be retracted</span>
+<span class="sd">    into its dock bar. If the item does not exist in a dock bar, this</span>
+<span class="sd">    operation is a no-op.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The name of the dock item to retract into its dock bar.</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">Unicode</span><span class="p">()</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

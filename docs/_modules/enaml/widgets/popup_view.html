@@ -1,0 +1,406 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.popup_view &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <h1>Source code for enaml.widgets.popup_view</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Bool</span><span class="p">,</span> <span class="n">Coerced</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">observe</span><span class="p">,</span>
+    <span class="n">set_default</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">enaml.application</span> <span class="kn">import</span> <span class="n">deferred_call</span>
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">enaml.layout.geometry</span> <span class="kn">import</span> <span class="n">Pos</span><span class="p">,</span> <span class="n">PosF</span>
+
+<span class="kn">from</span> <span class="nn">.container</span> <span class="kn">import</span> <span class="n">Container</span>
+<span class="kn">from</span> <span class="nn">.widget</span> <span class="kn">import</span> <span class="n">Widget</span><span class="p">,</span> <span class="n">ProxyWidget</span>
+
+
+<span class="k">def</span> <span class="nf">coerce_pos</span><span class="p">(</span><span class="n">thing</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Coerce a thing to a Pos.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Pos</span><span class="p">(</span><span class="o">*</span><span class="n">thing</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">Pos</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="n">thing</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Cannot coerce object of type &#39;</span><span class="si">%s</span><span class="s">&#39; to a Pos&quot;</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">coerce_posf</span><span class="p">(</span><span class="n">thing</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Coerce a thing to a PosF.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">PosF</span><span class="p">(</span><span class="o">*</span><span class="n">thing</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">PosF</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="n">thing</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Cannot coerce object of type &#39;</span><span class="si">%s</span><span class="s">&#39; to a PosF&quot;</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">thing</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyPopupView</span><span class="p">(</span><span class="n">ProxyWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy PopupView object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the PopupView declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">PopupView</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_anchor_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_parent_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_arrow_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_arrow_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edget</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_fade_in_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_fade_out_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_close_on_click</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="PopupView"><a class="viewcode-back" href="../../../api_ref/widgets/popup_view.html#enaml.widgets.popup_view.PopupView">[docs]</a><span class="k">class</span> <span class="nc">PopupView</span><span class="p">(</span><span class="n">Widget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A widget which implements a nice popup view.</span>
+
+<span class="sd">    A PopupView is a single-use transient widget that is automatically</span>
+<span class="sd">    destroyed when it is closed. It is useful for showing contextual</span>
+<span class="sd">    popup dialogs or notification messages.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: Static class-level storage for the view instances. A view will</span>
+    <span class="c">#: automatically add and remove itself from this list as needed.</span>
+    <span class="c">#: This list prevents the need for the user to manage a strong</span>
+    <span class="c">#: reference to a transient popup.</span>
+    <span class="n">popup_views</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c">#: The type of the window to create. Each has different behavior. The</span>
+    <span class="c">#: window type cannot be changed after the widget is created.</span>
+    <span class="c">#:</span>
+    <span class="c">#: &#39;popup&#39;</span>
+    <span class="c">#:     This window will close when the user presses escape or clicks</span>
+    <span class="c">#:     outside of the window. It will block all external interactions</span>
+    <span class="c">#:     until it is closed.</span>
+    <span class="c">#:</span>
+    <span class="c">#: &#39;tool_tip&#39;</span>
+    <span class="c">#:     This window will close when the user clicks inside the window.</span>
+    <span class="c">#:     It stays on top of all the other windows on the desktop. It is</span>
+    <span class="c">#:     useful for showing mouse cursor or desktop notifications.</span>
+    <span class="c">#:</span>
+    <span class="c">#: &#39;window&#39;</span>
+    <span class="c">#:     This window will close when the user clicks inside the window.</span>
+    <span class="c">#:     It stays on top of its parent, but not the other windows on</span>
+    <span class="c">#:     the desktop. It is useful for notifications inside a window.</span>
+    <span class="n">window_type</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Enum</span><span class="p">(</span><span class="s">&#39;popup&#39;</span><span class="p">,</span> <span class="s">&#39;tool_tip&#39;</span><span class="p">,</span> <span class="s">&#39;window&#39;</span><span class="p">))</span>
+
+    <span class="c">#: The mode to use for anchoring. The &#39;parent&#39; mode uses a point</span>
+    <span class="c">#: on the parent or the desktop as the target anchor, the &#39;cursor&#39;</span>
+    <span class="c">#: mode uses the current cursor position as the target anchor.</span>
+    <span class="n">anchor_mode</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Enum</span><span class="p">(</span><span class="s">&#39;parent&#39;</span><span class="p">,</span> <span class="s">&#39;cursor&#39;</span><span class="p">))</span>
+
+    <span class="c">#: The relative position on the parent to use as the anchor. This</span>
+    <span class="c">#: anchor will be aligned with the view anchor to position the</span>
+    <span class="c">#: popup view. It is expressed as a percentage of the parent size.</span>
+    <span class="c">#: The default anchors will position the popup just below the</span>
+    <span class="c">#: center of the parent widget.</span>
+    <span class="n">parent_anchor</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">PosF</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">coercer</span><span class="o">=</span><span class="n">coerce_posf</span><span class="p">))</span>
+
+    <span class="c">#: The relative position on the view to use as the view anchor.</span>
+    <span class="c">#: This anchor will be aligned with the parent anchor to position</span>
+    <span class="c">#: the popup view. It is expressed as a percentage of the view</span>
+    <span class="c">#: size. The default anchors will position the popup just below</span>
+    <span class="c">#: the center of the parent widget.</span>
+    <span class="n">anchor</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">PosF</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">coercer</span><span class="o">=</span><span class="n">coerce_posf</span><span class="p">))</span>
+
+    <span class="c">#: The offset to apply between the two anchors, in pixels.</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Coerced</span><span class="p">(</span><span class="n">Pos</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">coercer</span><span class="o">=</span><span class="n">coerce_pos</span><span class="p">))</span>
+
+    <span class="c">#: The edge of the popup view to use for rendering the arrow.</span>
+    <span class="n">arrow_edge</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Enum</span><span class="p">(</span><span class="s">&#39;top&#39;</span><span class="p">,</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">))</span>
+
+    <span class="c">#: The size of the arrow in pixels. If this value is &gt; 0, the view</span>
+    <span class="c">#: anchor is taken to be the point of the arrow. If the arrow edge</span>
+    <span class="c">#: is &#39;left&#39; or &#39;right&#39;, the anchor&#39;s y-coordinate is used to set</span>
+    <span class="c">#: the arrow position, and the x-coordinate is ignored. If the</span>
+    <span class="c">#: arrow edge is &#39;top&#39; or &#39;bottom&#39;, the anchor&#39;s x-coordinate is</span>
+    <span class="c">#: used to set the arrow position, and the y-coordinate is ignored.</span>
+    <span class="n">arrow_size</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="c">#: The timeout, in seconds, before automatically closing the popup.</span>
+    <span class="c">#: A value less than or equal to zero means no timeout. This is</span>
+    <span class="c">#: typically useful when displaying non-interactive notifications.</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+
+    <span class="c">#: The duration of the fade-in, in milliseconds. A value less than</span>
+    <span class="c">#: or equal to zero means no fade.</span>
+    <span class="n">fade_in_duration</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+
+    <span class="c">#: The duration of the fade-out, in milliseconds. A value less than</span>
+    <span class="c">#: or equal to zero means no fade.</span>
+    <span class="n">fade_out_duration</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Int</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not close the popup view on a mouse click. For &#39;popup&#39;</span>
+    <span class="c">#: windows, this means clicking outside of the view. For &#39;tool_tip&#39;</span>
+    <span class="c">#: and &#39;window&#39; windows, this means clicking inside of the view.</span>
+    <span class="n">close_on_click</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the background of the popup view is translucent.</span>
+    <span class="c">#: This must be True in order to use background colors with alpha</span>
+    <span class="c">#: and for the fade in and out animation to have effect. This value</span>
+    <span class="c">#: must be set before the popup view is shown. Changes to this value</span>
+    <span class="c">#: after the popup is shown will have no effect.</span>
+    <span class="n">translucent_background</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: An event emitted when the view is closed. After this event is</span>
+    <span class="c">#: fired, the view will be destroyed and should not be used.</span>
+    <span class="n">closed</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Event</span><span class="p">(),</span> <span class="n">writable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: PopupViews are invisible by default.</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">set_default</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: A reference to the ProxyPopupView object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyPopupView</span><span class="p">)</span>
+
+    <span class="c">#: This attribute is deprecated and will be removed in Enaml 1.0</span>
+    <span class="n">arrow_position</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Float</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Public API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="PopupView.central_widget"><a class="viewcode-back" href="../../../api_ref/widgets/popup_view.html#enaml.widgets.popup_view.PopupView.central_widget">[docs]</a>    <span class="k">def</span> <span class="nf">central_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the central widget defined on the PopupView.</span>
+
+<span class="sd">        The last `Container` child of the window is the central widget.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Container</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">child</span>
+</div>
+<div class="viewcode-block" id="PopupView.show"><a class="viewcode-back" href="../../../api_ref/widgets/popup_view.html#enaml.widgets.popup_view.PopupView.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Show the PopupView.</span>
+
+<span class="sd">        This is a reimplemented method which will intitialize the proxy</span>
+<span class="sd">        tree before showing the view.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activate_proxy</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PopupView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">PopupView</span><span class="o">.</span><span class="n">popup_views</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="PopupView.close"><a class="viewcode-back" href="../../../api_ref/widgets/popup_view.html#enaml.widgets.popup_view.PopupView.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Close the PopupView.</span>
+
+<span class="sd">        Closing the view, as opposed to hiding it or setting it&#39;s</span>
+<span class="sd">        visibility to False, will cause the &#39;closed&#39; event to be</span>
+<span class="sd">        emitted and the view to be destroyed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span></div>
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;anchor&#39;</span><span class="p">,</span> <span class="s">&#39;anchor_mode&#39;</span><span class="p">,</span> <span class="s">&#39;parent_anchor&#39;</span><span class="p">,</span> <span class="s">&#39;arrow_size&#39;</span><span class="p">,</span> <span class="s">&#39;offset&#39;</span><span class="p">,</span>
+        <span class="s">&#39;arrow_edge&#39;</span><span class="p">,</span> <span class="s">&#39;timeout&#39;</span><span class="p">,</span> <span class="s">&#39;fade_in_duration&#39;</span><span class="p">,</span> <span class="s">&#39;fade_out_duration&#39;</span><span class="p">,</span>
+        <span class="s">&#39;close_on_click&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update the proxy when the PopupView data changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass handler implementation is sufficient.</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PopupView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Private API</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_popup_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handle the popup view being closed.</span>
+
+<span class="sd">        This method is called by the proxy object when the toolkit</span>
+<span class="sd">        popup view is closed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">()</span>
+        <span class="n">deferred_call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">)</span>
+        <span class="n">PopupView</span><span class="o">.</span><span class="n">popup_views</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

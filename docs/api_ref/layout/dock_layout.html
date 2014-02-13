@@ -1,0 +1,1023 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.layout.dock_layout &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../index.html" />
+    <link rel="up" title="enaml.layout" href="index.html" />
+    <link rel="next" title="enaml.layout.layout_helpers" href="layout_helpers.html" />
+    <link rel="prev" title="enaml.layout" href="index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">enaml.layout.dock_layout</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../applib/index.html">applib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../application.html">application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../colors.html">colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core/index.html">core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fonts.html">fonts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../icon.html">icon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../image.html">image</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">layout</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">dock_layout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="layout_helpers.html">layout_helpers</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../nodevisitor.html">nodevisitor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scintilla/index.html">scintilla</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stdlib/index.html">stdlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../styling.html">styling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../validator.html">validator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../version.html">version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../widgets/index.html">widgets</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <span class="target" id="module-enaml.layout.dock_layout"></span><div class="section" id="enaml-layout-dock-layout">
+<h1>enaml.layout.dock_layout<a class="headerlink" href="#enaml-layout-dock-layout" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.AreaLayout" title="enaml.layout.dock_layout.AreaLayout"><tt class="xref py py-obj docutils literal"><span class="pre">AreaLayout</span></tt></a></td>
+<td>A layout object for defining a dock area layout.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.DockBarLayout" title="enaml.layout.dock_layout.DockBarLayout"><tt class="xref py py-obj docutils literal"><span class="pre">DockBarLayout</span></tt></a></td>
+<td>A layout object for defining a dock bar layout.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.DockLayout" title="enaml.layout.dock_layout.DockLayout"><tt class="xref py py-obj docutils literal"><span class="pre">DockLayout</span></tt></a></td>
+<td>The layout object for defining toplevel dock layouts.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-obj docutils literal"><span class="pre">DockLayoutOp</span></tt></a></td>
+<td>A sentinel base class for defining dock layout operations.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutValidator" title="enaml.layout.dock_layout.DockLayoutValidator"><tt class="xref py py-obj docutils literal"><span class="pre">DockLayoutValidator</span></tt></a></td>
+<td>A node visitor which validates a layout.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutWarning" title="enaml.layout.dock_layout.DockLayoutWarning"><tt class="xref py py-obj docutils literal"><span class="pre">DockLayoutWarning</span></tt></a></td>
+<td>A custom user warning for use with dock layouts.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.ExtendItem" title="enaml.layout.dock_layout.ExtendItem"><tt class="xref py py-obj docutils literal"><span class="pre">ExtendItem</span></tt></a></td>
+<td>A layout operation which extends an item in a dock bar.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.FloatArea" title="enaml.layout.dock_layout.FloatArea"><tt class="xref py py-obj docutils literal"><span class="pre">FloatArea</span></tt></a></td>
+<td>A layout operation which creates a new floating dock area.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.FloatItem" title="enaml.layout.dock_layout.FloatItem"><tt class="xref py py-obj docutils literal"><span class="pre">FloatItem</span></tt></a></td>
+<td>A layout operation which creates a floating dock item.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.HSplitLayout" title="enaml.layout.dock_layout.HSplitLayout"><tt class="xref py py-obj docutils literal"><span class="pre">HSplitLayout</span></tt></a></td>
+<td>A split layout which defaults to &#8216;horizonal&#8217; orientation.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.InsertItem" title="enaml.layout.dock_layout.InsertItem"><tt class="xref py py-obj docutils literal"><span class="pre">InsertItem</span></tt></a></td>
+<td>A layout operation which inserts an item into a layout.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.InsertBorderItem" title="enaml.layout.dock_layout.InsertBorderItem"><tt class="xref py py-obj docutils literal"><span class="pre">InsertBorderItem</span></tt></a></td>
+<td>A layout operation which inserts an item into an area border.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.InsertDockBarItem" title="enaml.layout.dock_layout.InsertDockBarItem"><tt class="xref py py-obj docutils literal"><span class="pre">InsertDockBarItem</span></tt></a></td>
+<td>A layout operation which inserts an item into a dock bar.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.InsertTab" title="enaml.layout.dock_layout.InsertTab"><tt class="xref py py-obj docutils literal"><span class="pre">InsertTab</span></tt></a></td>
+<td>A layout operation which inserts a tab into a tab group.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.ItemLayout" title="enaml.layout.dock_layout.ItemLayout"><tt class="xref py py-obj docutils literal"><span class="pre">ItemLayout</span></tt></a></td>
+<td>A layout object for defining an item layout.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.LayoutNode" title="enaml.layout.dock_layout.LayoutNode"><tt class="xref py py-obj docutils literal"><span class="pre">LayoutNode</span></tt></a></td>
+<td>A base class for defining layout nodes.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.RemoveItem" title="enaml.layout.dock_layout.RemoveItem"><tt class="xref py py-obj docutils literal"><span class="pre">RemoveItem</span></tt></a></td>
+<td>A layout operation which will remove an item from the layout.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.RetractItem" title="enaml.layout.dock_layout.RetractItem"><tt class="xref py py-obj docutils literal"><span class="pre">RetractItem</span></tt></a></td>
+<td>A layout operation which retracts an item into a dock bar.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.SplitLayout" title="enaml.layout.dock_layout.SplitLayout"><tt class="xref py py-obj docutils literal"><span class="pre">SplitLayout</span></tt></a></td>
+<td>A layout object for defining split dock layouts.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#enaml.layout.dock_layout.TabLayout" title="enaml.layout.dock_layout.TabLayout"><tt class="xref py py-obj docutils literal"><span class="pre">TabLayout</span></tt></a></td>
+<td>A layout object for defining tabbed dock layouts.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.layout.dock_layout.VSplitLayout" title="enaml.layout.dock_layout.VSplitLayout"><tt class="xref py py-obj docutils literal"><span class="pre">VSplitLayout</span></tt></a></td>
+<td>A split layout which defaults to &#8216;vertical&#8217; orientation.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="enaml.layout.dock_layout.AreaLayout">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">AreaLayout</tt><big>(</big><em>item=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#AreaLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.AreaLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.LayoutNode" title="enaml.layout.dock_layout.LayoutNode"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.LayoutNode</span></tt></a></p>
+<p>A layout object for defining a dock area layout.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.AreaLayout.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.AreaLayout.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main layout item to include in the area layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.AreaLayout.dock_bars">
+<tt class="descname">dock_bars</tt><a class="headerlink" href="#enaml.layout.dock_layout.AreaLayout.dock_bars" title="Permalink to this definition">¶</a></dt>
+<dd><p>The dock bar layouts to include in the area layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.AreaLayout.floating">
+<tt class="descname">floating</tt><a class="headerlink" href="#enaml.layout.dock_layout.AreaLayout.floating" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the area is floating. A DockLayout should have
+at most one non-floating area layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.AreaLayout.geometry">
+<tt class="descname">geometry</tt><a class="headerlink" href="#enaml.layout.dock_layout.AreaLayout.geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>The geometry to apply to the area. This is expressed in desktop
+coordinates and only applies if the area is floating.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.AreaLayout.linked">
+<tt class="descname">linked</tt><a class="headerlink" href="#enaml.layout.dock_layout.AreaLayout.linked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the area is linked with its floating neighbors.
+This only has an effect if the area is a floating.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.AreaLayout.maximized">
+<tt class="descname">maximized</tt><a class="headerlink" href="#enaml.layout.dock_layout.AreaLayout.maximized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the area is maximized. This only has an effect if
+the area is a floating.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.AreaLayout.children">
+<tt class="descname">children</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#AreaLayout.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.AreaLayout.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of children of the area layout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.DockBarLayout">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">DockBarLayout</tt><big>(</big><em>*items</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockBarLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockBarLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.LayoutNode" title="enaml.layout.dock_layout.LayoutNode"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.LayoutNode</span></tt></a></p>
+<p>A layout object for defining a dock bar layout.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.DockBarLayout.position">
+<tt class="descname">position</tt><a class="headerlink" href="#enaml.layout.dock_layout.DockBarLayout.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The position of the tool bar in its area. Only one tool bar may
+occupy a given position at any one time.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.DockBarLayout.items">
+<tt class="descname">items</tt><a class="headerlink" href="#enaml.layout.dock_layout.DockBarLayout.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of item layouts to include in the tab layout.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockBarLayout.children">
+<tt class="descname">children</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockBarLayout.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockBarLayout.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of children of the dock bar layout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.DockLayout">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">DockLayout</tt><big>(</big><em>*items</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.LayoutNode" title="enaml.layout.dock_layout.LayoutNode"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.LayoutNode</span></tt></a></p>
+<p>The layout object for defining toplevel dock layouts.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.DockLayout.items">
+<tt class="descname">items</tt><a class="headerlink" href="#enaml.layout.dock_layout.DockLayout.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>The layout items to include in the dock layout.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayout.children">
+<tt class="descname">children</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayout.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayout.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of children of the dock layout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.DockLayoutOp">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">DockLayoutOp</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutOp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutOp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>A sentinel base class for defining dock layout operations.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">DockLayoutValidator</tt><big>(</big><em>available</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../nodevisitor.html#enaml.nodevisitor.NodeVisitor" title="enaml.nodevisitor.NodeVisitor"><tt class="xref py py-class docutils literal"><span class="pre">enaml.nodevisitor.NodeVisitor</span></tt></a></p>
+<p>A node visitor which validates a layout.</p>
+<p>If an irregularity or invalid condition is found in the layout, a
+warning is emitted. Such conditions can result in undefined layout
+behavior.</p>
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>available</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a DockLayoutValidator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>available</strong> : iterable</p>
+<blockquote class="last">
+<div><p>An iterable of strings which represent the available dock
+item names onto which the layout will be applied. These are
+used to validate the set of visited ItemLayout instances.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.warn">
+<tt class="descname">warn</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.warn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.warn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emit a dock layout warning with the given message.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.setup">
+<tt class="descname">setup</tt><big>(</big><em>node</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup the dock layout validator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.teardown">
+<tt class="descname">teardown</tt><big>(</big><em>node</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.teardown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.teardown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Teardown the dock layout validator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.visit_ItemLayout">
+<tt class="descname">visit_ItemLayout</tt><big>(</big><em>node</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.visit_ItemLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.visit_ItemLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>The visitor method for an ItemLayout node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.visit_TabLayout">
+<tt class="descname">visit_TabLayout</tt><big>(</big><em>node</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.visit_TabLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.visit_TabLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>The visitor method for a TabLayout node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.visit_SplitLayout">
+<tt class="descname">visit_SplitLayout</tt><big>(</big><em>node</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.visit_SplitLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.visit_SplitLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>The visitor method for a SplitLayout node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.visit_DockBarLayout">
+<tt class="descname">visit_DockBarLayout</tt><big>(</big><em>node</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.visit_DockBarLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.visit_DockBarLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>The visitor method for a DockBarLayout node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.visit_AreaLayout">
+<tt class="descname">visit_AreaLayout</tt><big>(</big><em>node</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.visit_AreaLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.visit_AreaLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>The visitor method for an AreaLayout node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.DockLayoutValidator.visit_DockLayout">
+<tt class="descname">visit_DockLayout</tt><big>(</big><em>node</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutValidator.visit_DockLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutValidator.visit_DockLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>The visitor method for a DockLayout node.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.DockLayoutWarning">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">DockLayoutWarning</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#DockLayoutWarning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutWarning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.UserWarning</span></tt></p>
+<p>A custom user warning for use with dock layouts.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.DockLayoutWarning.__weakref__">
+<tt class="descname">__weakref__</tt><a class="headerlink" href="#enaml.layout.dock_layout.DockLayoutWarning.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.ExtendItem">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">ExtendItem</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#ExtendItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.ExtendItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which extends an item in a dock bar.</p>
+<p>This layout operation will cause the named item to be extended to
+from its dock bar. If the item does not exist in a dock bar, this
+operation is a no-op.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.ExtendItem.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.ExtendItem.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to extend from its dock bar.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.FloatArea">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">FloatArea</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#FloatArea"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.FloatArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which creates a new floating dock area.</p>
+<p>This layout operation will create a new floating dock area using
+the given area layout specification.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.FloatArea.area">
+<tt class="descname">area</tt><a class="headerlink" href="#enaml.layout.dock_layout.FloatArea.area" title="Permalink to this definition">¶</a></dt>
+<dd><p>The area layout to use when building the new dock area.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.FloatItem">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">FloatItem</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#FloatItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.FloatItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which creates a floating dock item.</p>
+<p>This operation will remove an item from the current layout and
+insert convert it into a floating item. If the item does not
+exist, the operation is a no-op.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.FloatItem.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.FloatItem.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The item layout to use when configuring the floating item.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.HSplitLayout">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">HSplitLayout</tt><big>(</big><em>*items</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#HSplitLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.HSplitLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.SplitLayout" title="enaml.layout.dock_layout.SplitLayout"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.SplitLayout</span></tt></a></p>
+<p>A split layout which defaults to &#8216;horizonal&#8217; orientation.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.InsertItem">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">InsertItem</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#InsertItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.InsertItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which inserts an item into a layout.</p>
+<p>This operation will remove an item from the current layout and
+insert it next to a target item. If the item does not exist, the
+operation is a no-op.</p>
+<p>If the target -</p>
+<ul>
+<li><dl class="first docutils">
+<dt>is a normally docked item</dt>
+<dd><p class="first last">The item will be inserted as a new split item.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is docked in a tab group</dt>
+<dd><p class="first last">The item will be inserted as a neighbor of the tab group.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is docked in a dock bar</dt>
+<dd><p class="first last">The item will be appended to the dock bar.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is a floating dock item</dt>
+<dd><p class="first last">A new dock area will be created and the item will be inserted
+as a new split item.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>does not exist</dt>
+<dd><p class="first last">The item is inserted into the border of the primary dock area.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertItem.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertItem.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to insert into the layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertItem.target">
+<tt class="descname">target</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertItem.target" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to use as the target location.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertItem.position">
+<tt class="descname">position</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertItem.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The position relative to the target at which to insert the item.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.InsertBorderItem">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">InsertBorderItem</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#InsertBorderItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.InsertBorderItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which inserts an item into an area border.</p>
+<p>This operation will remove an item from the current layout and
+insert it into the border of a dock area. If the item does not
+exist, the operation is a no-op.</p>
+<p>If the target -</p>
+<ul>
+<li><dl class="first docutils">
+<dt>is a normally docked item</dt>
+<dd><p class="first last">The item is inserted into the border of the dock area containing
+the target.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is docked in a tab group</dt>
+<dd><p class="first last">The item is inserted into the border of the dock area containing
+the tab group.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is docked in a dock bar</dt>
+<dd><p class="first last">The item is inserted into the border of the dock area containing
+the dock bar.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is a floating dock item</dt>
+<dd><p class="first last">A new dock area will be created and the item will be inserted
+into the border of the new dock area.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>does not exist</dt>
+<dd><p class="first last">The item is inserted into the border of the primary dock area.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertBorderItem.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertBorderItem.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to insert into the layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertBorderItem.target">
+<tt class="descname">target</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertBorderItem.target" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to use as the target location.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertBorderItem.position">
+<tt class="descname">position</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertBorderItem.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The border position at which to insert the item.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.InsertDockBarItem">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">InsertDockBarItem</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#InsertDockBarItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.InsertDockBarItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which inserts an item into a dock bar.</p>
+<p>This operation will remove an item from the current layout and
+insert it into a dock bar in a dock area. If the item does not
+exist, the operation is a no-op.</p>
+<p>If the target -</p>
+<ul>
+<li><dl class="first docutils">
+<dt>is a normally docked item</dt>
+<dd><p class="first last">The item is inserted into the dock bar of the dock area
+containing the target.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is docked in a tab group</dt>
+<dd><p class="first last">The item is inserted into the dock bar of the dock area
+containing the tab group.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is docked in a dock bar</dt>
+<dd><p class="first last">The item is inserted into the dock bar of the dock area
+containing the dock bar.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is a floating dock item</dt>
+<dd><p class="first last">A new dock area will be created and the item will be inserted
+into the dock bar of the new dock area.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>does not exist</dt>
+<dd><p class="first last">The item is inserted into the dock bar of the primary dock
+area.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertDockBarItem.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertDockBarItem.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to insert into the layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertDockBarItem.target">
+<tt class="descname">target</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertDockBarItem.target" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to use as the target location.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertDockBarItem.position">
+<tt class="descname">position</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertDockBarItem.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The dock bar position at which to insert the item.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertDockBarItem.index">
+<tt class="descname">index</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertDockBarItem.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index at which to insert the dock bar item.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.InsertTab">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">InsertTab</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#InsertTab"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.InsertTab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which inserts a tab into a tab group.</p>
+<p>This operation will remove an item from the current layout and
+insert it into a tab group in a dock area. If the item does not
+exist, the operation is a no-op.</p>
+<p>If the target -</p>
+<ul>
+<li><dl class="first docutils">
+<dt>is a normally docked item</dt>
+<dd><p class="first last">The target and item will be merged into a new tab group
+using the default tab position.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is docked in a tab group</dt>
+<dd><p class="first last">The item will be inserted into the tab group.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is docked in a dock bar</dt>
+<dd><p class="first last">The item will be appended to the dock bar.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>is a floating dock item</dt>
+<dd><p class="first last">A new dock area will be created and the target and item will
+be merged into a new tab group.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>does not exist</dt>
+<dd><p class="first last">The item is inserted into the left border of the primary dock
+area.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertTab.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertTab.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to insert into the tab group.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertTab.target">
+<tt class="descname">target</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertTab.target" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of an existing dock item in the tab group of interest.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertTab.index">
+<tt class="descname">index</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertTab.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index at which to insert the dock item.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.InsertTab.tab_position">
+<tt class="descname">tab_position</tt><a class="headerlink" href="#enaml.layout.dock_layout.InsertTab.tab_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The position of the tabs for a newly created tab group.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.ItemLayout">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">ItemLayout</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#ItemLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.ItemLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.LayoutNode" title="enaml.layout.dock_layout.LayoutNode"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.LayoutNode</span></tt></a></p>
+<p>A layout object for defining an item layout.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.ItemLayout.name">
+<tt class="descname">name</tt><a class="headerlink" href="#enaml.layout.dock_layout.ItemLayout.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the DockItem to which this layout item applies.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.ItemLayout.floating">
+<tt class="descname">floating</tt><a class="headerlink" href="#enaml.layout.dock_layout.ItemLayout.floating" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the item is floating. An ItemLayout defined as
+a toplevel item in a DockLayout should be marked as floating.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.ItemLayout.geometry">
+<tt class="descname">geometry</tt><a class="headerlink" href="#enaml.layout.dock_layout.ItemLayout.geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>The geometry to apply to the item. This is expressed in desktop
+coordinates and only applies if the item is floating.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.ItemLayout.linked">
+<tt class="descname">linked</tt><a class="headerlink" href="#enaml.layout.dock_layout.ItemLayout.linked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the item is linked with its floating neighbors.
+This value will only have an effect if the item is floating.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.ItemLayout.maximized">
+<tt class="descname">maximized</tt><a class="headerlink" href="#enaml.layout.dock_layout.ItemLayout.maximized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the item is maximized. This value will only have
+effect if the item is floating or docked in a SplitLayout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.LayoutNode">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">LayoutNode</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#LayoutNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.LayoutNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">atom.atom.Atom</span></tt></p>
+<p>A base class for defining layout nodes.</p>
+<p>This class provides basic traversal functionality.</p>
+<dl class="method">
+<dt id="enaml.layout.dock_layout.LayoutNode.children">
+<tt class="descname">children</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#LayoutNode.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.LayoutNode.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the children of the node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : list</p>
+<blockquote class="last">
+<div><p>The list of LayoutNode children of the node. The default
+implementation returns an empty list.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.LayoutNode.traverse">
+<tt class="descname">traverse</tt><big>(</big><em>depth_first=False</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#LayoutNode.traverse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.LayoutNode.traverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield all of the nodes in the layout, from this node down.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>depth_first</strong> : bool, optional</p>
+<blockquote>
+<div><p>If True, yield the nodes in depth first order. If False,
+yield the nodes in breadth first order. Defaults to False.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : generator</p>
+<blockquote class="last">
+<div><p>A generator which yields 2-tuples of (parent, node) for all
+nodes in the layout.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.LayoutNode.find">
+<tt class="descname">find</tt><big>(</big><em>kind</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#LayoutNode.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.LayoutNode.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the first layout node of the given kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>kind</strong> : type or tuple of types</p>
+<blockquote>
+<div><p>The type of the layout node to find.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : LayoutNode or None</p>
+<blockquote class="last">
+<div><p>The first layout node of the given type in the tree. The
+search is performed breadth-first.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.LayoutNode.find_all">
+<tt class="descname">find_all</tt><big>(</big><em>kind</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#LayoutNode.find_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.LayoutNode.find_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the layout nodes of the given kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>kind</strong> : type or tuple of types</p>
+<blockquote>
+<div><p>The type of the layout nodes to find.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>result</strong> : list</p>
+<blockquote class="last">
+<div><p>The list of the layout nodes in the tree which are of the
+request type. They are ordered breadth-first.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.RemoveItem">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">RemoveItem</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#RemoveItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.RemoveItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which will remove an item from the layout.</p>
+<p>This layout operation will remove the dock item from the layout
+and hide it. It can be added back to layout later with one of the
+other layout operations.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.RemoveItem.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.RemoveItem.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to remove from the layout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.RetractItem">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">RetractItem</tt><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#RetractItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.RetractItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.DockLayoutOp" title="enaml.layout.dock_layout.DockLayoutOp"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.DockLayoutOp</span></tt></a></p>
+<p>A layout operation which retracts an item into a dock bar.</p>
+<p>This layout operation will cause the named item to be retracted
+into its dock bar. If the item does not exist in a dock bar, this
+operation is a no-op.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.RetractItem.item">
+<tt class="descname">item</tt><a class="headerlink" href="#enaml.layout.dock_layout.RetractItem.item" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dock item to retract into its dock bar.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.SplitLayout">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">SplitLayout</tt><big>(</big><em>*items</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#SplitLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.SplitLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.LayoutNode" title="enaml.layout.dock_layout.LayoutNode"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.LayoutNode</span></tt></a></p>
+<p>A layout object for defining split dock layouts.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.SplitLayout.orientation">
+<tt class="descname">orientation</tt><a class="headerlink" href="#enaml.layout.dock_layout.SplitLayout.orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>The orientation of the split layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.SplitLayout.sizes">
+<tt class="descname">sizes</tt><a class="headerlink" href="#enaml.layout.dock_layout.SplitLayout.sizes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default sizes to apply to the items in the splitter. If
+provided, the length must be equal to the number of items.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.SplitLayout.items">
+<tt class="descname">items</tt><a class="headerlink" href="#enaml.layout.dock_layout.SplitLayout.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>This list of split layout items to include in the split layout.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.SplitLayout.children">
+<tt class="descname">children</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#SplitLayout.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.SplitLayout.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of children of the split layout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.TabLayout">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">TabLayout</tt><big>(</big><em>*items</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#TabLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.TabLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.LayoutNode" title="enaml.layout.dock_layout.LayoutNode"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.LayoutNode</span></tt></a></p>
+<p>A layout object for defining tabbed dock layouts.</p>
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.TabLayout.tab_position">
+<tt class="descname">tab_position</tt><a class="headerlink" href="#enaml.layout.dock_layout.TabLayout.tab_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>The position of the tabs in the tab layout.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.TabLayout.index">
+<tt class="descname">index</tt><a class="headerlink" href="#enaml.layout.dock_layout.TabLayout.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The index of the currently selected tab.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="enaml.layout.dock_layout.TabLayout.items">
+<tt class="descname">items</tt><a class="headerlink" href="#enaml.layout.dock_layout.TabLayout.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of item layouts to include in the tab layout.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="enaml.layout.dock_layout.TabLayout.children">
+<tt class="descname">children</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#TabLayout.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.TabLayout.children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of children of the tab layout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="enaml.layout.dock_layout.VSplitLayout">
+<em class="property">class </em><tt class="descclassname">enaml.layout.dock_layout.</tt><tt class="descname">VSplitLayout</tt><big>(</big><em>*items</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/enaml/layout/dock_layout.html#VSplitLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#enaml.layout.dock_layout.VSplitLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#enaml.layout.dock_layout.SplitLayout" title="enaml.layout.dock_layout.SplitLayout"><tt class="xref py py-class docutils literal"><span class="pre">enaml.layout.dock_layout.SplitLayout</span></tt></a></p>
+<p>A split layout which defaults to &#8216;vertical&#8217; orientation.</p>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

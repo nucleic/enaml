@@ -1,0 +1,100 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `Splitter` widget.
+
+A `Splitter` is a widget which can hold an arbitrary number of children
+which must be instances of `Container`. The `Splitter` will separate
+each `Container` with a bar which can be dragged by the user to change
+the space allocated to the containers. This example shows how complex
+arrangements can be acheived by nesting `Splitter` widgets inside
+child `Container` widgets.
+
+Implementation notes:
+
+    The splitter support on Wx is poor. Certain behaviors, like initial
+    splitter sizing does not work well (if at all). If a production
+    application requires splitter support, prefer the Qt backend over
+    Wx (this is generally a good life-rule).
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import (
+    Splitter, SplitItem, Form, Container, Window, Label, Field, Html,
+)
+
+
+enamldef MyForm(Form):
+    Label:
+        text = "First name:"
+    Field:
+        pass
+    Label:
+        text = "Last name:"
+    Field:
+        pass
+    Label:
+        text = "Address:"
+    Field:
+        pass
+    Label:
+        text = ""
+    Field:
+        pass
+    Label:
+        text = "City:"
+    Field:
+        pass
+    Label:
+        text = "State:"
+    Field:
+        pass
+    Label:
+        text = "Postal Code:"
+    Field:
+        pass
+    Label:
+        text = "Country:"
+    Field:
+        pass
+
+
+enamldef MyHtmlWidgets(Container):
+    padding = 0
+    Splitter:
+        orientation = 'vertical'
+        SplitItem:
+            Container:
+                Html:
+                    resist_height = 'weak'
+                    source = '<center><h1>Hello World!</h1></center>'
+        SplitItem:
+            Container:
+                Html:
+                    resist_height = 'weak'
+                    source = '<center><h1>Hello Enaml!</h1></center>'
+
+
+enamldef Main(Window):
+    Container:
+        padding = 0
+        Splitter:
+            SplitItem:
+                stretch = 0
+                collapsible = False
+                MyForm:
+                    pass
+            SplitItem:
+                MyForm:
+                    pass
+            SplitItem:
+                stretch = 2
+                MyHtmlWidgets:
+                    pass
+            SplitItem:
+                MyForm:
+                    pass

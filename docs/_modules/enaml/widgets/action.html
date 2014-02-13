@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.widgets.action &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"></ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_ref/index.html">API Reference</a></li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <h1>Source code for enaml.widgets.action</h1><div class="highlight"><pre>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">atom.api</span> <span class="kn">import</span> <span class="n">Typed</span><span class="p">,</span> <span class="n">ForwardTyped</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">observe</span>
+
+<span class="kn">from</span> <span class="nn">enaml.core.declarative</span> <span class="kn">import</span> <span class="n">d_</span>
+<span class="kn">from</span> <span class="nn">enaml.icon</span> <span class="kn">import</span> <span class="n">Icon</span>
+
+<span class="kn">from</span> <span class="nn">.toolkit_object</span> <span class="kn">import</span> <span class="n">ToolkitObject</span><span class="p">,</span> <span class="n">ProxyToolkitObject</span>
+
+
+<span class="k">class</span> <span class="nc">ProxyAction</span><span class="p">(</span><span class="n">ProxyToolkitObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; The abstract definition of a proxy Action object.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: A reference to the Action declaration.</span>
+    <span class="n">declaration</span> <span class="o">=</span> <span class="n">ForwardTyped</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Action</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_tool_tip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_tip</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_status_tip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_tip</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_icon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">icon</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_checkable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkable</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_checked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">set_separator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">separator</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="Action"><a class="viewcode-back" href="../../../api_ref/widgets/action.html#enaml.widgets.action.Action">[docs]</a><span class="k">class</span> <span class="nc">Action</span><span class="p">(</span><span class="n">ToolkitObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A non visible widget used in a ToolBar or Menu.</span>
+
+<span class="sd">    An Action represents an actionable item in a ToolBar or a Menu.</span>
+<span class="sd">    Though an Action itself is a non-visible component, it will be</span>
+<span class="sd">    rendered in an appropriate fashion for the location where it is</span>
+<span class="sd">    used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: The text label associate with the action.</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: The tool tip text to use for this action. Typically displayed</span>
+    <span class="c">#: as a small label when the user hovers over the action.</span>
+    <span class="n">tool_tip</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: The text that is displayed in the status bar when the user</span>
+    <span class="c">#: hovers over the action.</span>
+    <span class="n">status_tip</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Unicode</span><span class="p">())</span>
+
+    <span class="c">#: The icon to use for the Action.</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Typed</span><span class="p">(</span><span class="n">Icon</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the action can be checked.</span>
+    <span class="n">checkable</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the action is checked. This value only has meaning</span>
+    <span class="c">#: if &#39;checkable&#39; is set to True.</span>
+    <span class="n">checked</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the item representing the action is enabled.</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the item representing the action is visible.</span>
+    <span class="n">visible</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="c">#: Whether or not the action should be treated as a separator. If</span>
+    <span class="c">#: this value is True, none of the other values have meaning.</span>
+    <span class="n">separator</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+
+    <span class="c">#: An event fired when the action is triggered by user interaction.</span>
+    <span class="c">#: They payload will be the current checked state. This event is</span>
+    <span class="c">#: triggered by the proxy object when the action is triggerd.</span>
+    <span class="n">triggered</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Event</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span> <span class="n">writable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: An event fired when a checkable action changes its checked state.</span>
+    <span class="c">#: The payload will be the current checked state. This event is</span>
+    <span class="c">#: triggerd by the proxy object when the action is toggled.</span>
+    <span class="n">toggled</span> <span class="o">=</span> <span class="n">d_</span><span class="p">(</span><span class="n">Event</span><span class="p">(</span><span class="nb">bool</span><span class="p">),</span> <span class="n">writable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c">#: A reference to the ProxyAction object.</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">Typed</span><span class="p">(</span><span class="n">ProxyAction</span><span class="p">)</span>
+
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="c"># Observers</span>
+    <span class="c">#--------------------------------------------------------------------------</span>
+    <span class="nd">@observe</span><span class="p">(</span><span class="s">&#39;text&#39;</span><span class="p">,</span> <span class="s">&#39;tool_tip&#39;</span><span class="p">,</span> <span class="s">&#39;status_tip&#39;</span><span class="p">,</span> <span class="s">&#39;icon&#39;</span><span class="p">,</span> <span class="s">&#39;checkable&#39;</span><span class="p">,</span> <span class="s">&#39;checked&#39;</span><span class="p">,</span>
+        <span class="s">&#39;enabled&#39;</span><span class="p">,</span> <span class="s">&#39;visible&#39;</span><span class="p">,</span> <span class="s">&#39;separator&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; An observer which updates the proxy when the Action changes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># The superclass implementation is sufficient</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Action</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_proxy</span><span class="p">(</span><span class="n">change</span><span class="p">)</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

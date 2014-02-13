@@ -1,0 +1,25 @@
+Buttons Example
+===============================================================================
+
+:download:`buttons <../../../examples/widgets/buttons.enaml>`
+
+::
+
+    An example of the various button widgets in Enaml.
+    
+    This example shows the usage of the `PushButton`, `CheckBox`, and
+    `RadioButton` widgets.
+    
+    The intent of this example is to demonstrate the use of the button
+    widgets. See the other examples for explanations of layout and other
+    language features.
+
+::
+
+ $ enaml-run buttons
+
+.. image:: images/ex_buttons.png
+
+.. literalinclude:: ../../../examples/widgets/buttons.enaml
+    :language: enaml
+

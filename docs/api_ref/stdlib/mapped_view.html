@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>enaml.stdlib.mapped_view &mdash; Enaml 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootswatch-3.0.0/cosmo/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Enaml 0.9.1 documentation" href="../../index.html" />
+    <link rel="up" title="enaml.stdlib" href="index.html" />
+    <link rel="next" title="enaml.styling" href="../styling.html" />
+    <link rel="prev" title="enaml.stdlib.fields" href="fields.html" />
+  
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="../../_static/enamldoc.css" type="text/css" />
+  <script type="text/javascript" src="../../_static/enamldoc.js"></script>
+
+  </head>
+  <body>
+  
+  
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Enaml</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a href="../../index.html"
+     class="dropdown-toggle"
+     data-toggle="dropdown">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+    ><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">API Reference</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"><ul>
+<li><a class="reference internal" href="#">enaml.stdlib.mapped_view</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+    <li><a href="../../genindex.html", title="Index">Index</a></li>
+
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="enamldoc-sidebar" class="enamldoc-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev_guides/index.html">Developer Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arch_ref/index.html">Architecture Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs/index.html">FAQs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../applib/index.html">applib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../application.html">application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../colors.html">colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core/index.html">core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fonts.html">fonts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../icon.html">icon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../image.html">image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../layout/index.html">layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nodevisitor.html">nodevisitor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scintilla/index.html">scintilla</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">stdlib</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="fields.html">fields</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">mapped_view</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../styling.html">styling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../validator.html">validator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../version.html">version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../widgets/index.html">widgets</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+    </div>
+  
+
+    <div class="col-md-9">
+      
+  <span class="target" id="module-enaml.stdlib.mapped_view"></span><div class="section" id="enaml-stdlib-mapped-view">
+<h1>enaml.stdlib.mapped_view<a class="headerlink" href="#enaml-stdlib-mapped-view" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#enaml.stdlib.mapped_view.MappedView" title="enaml.stdlib.mapped_view.MappedView"><tt class="xref py py-obj docutils literal"><span class="pre">MappedView</span></tt></a></td>
+<td>A custom Include subtype which will automatically create a</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="enaml.stdlib.mapped_view.MappedView">
+<em class="property">class </em><tt class="descclassname">enaml.stdlib.mapped_view.</tt><tt class="descname">MappedView</tt><big>(</big><em>parent=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#enaml.stdlib.mapped_view.MappedView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../core/include.html#enaml.core.include.Include" title="enaml.core.include.Include"><tt class="xref py py-class docutils literal"><span class="pre">enaml.core.include.Include</span></tt></a></p>
+<p>A custom Include subtype which will automatically create a
+view based on the type of a given model object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>model</strong> : object</p>
+<blockquote>
+<div><p>The object acting as the model for this view. The mro of the
+type of this object is traversed to find a match in the given
+type map. If a match exists, the corresponding view is created.</p>
+</div></blockquote>
+<p><strong>typemap</strong> : dict</p>
+<blockquote>
+<div><p>A dictionary which maps object type to a callable which returns
+a view or iterable of views when invoked.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : dict, optional</p>
+<blockquote>
+<div><p>Additional keyword arguments to pass to the matching callable.
+The default is an empty dictionary.</p>
+</div></blockquote>
+<p><strong>modelkey</strong> : str, optional</p>
+<blockquote class="last">
+<div><p>If non-empty, this key will be added to the dict of keyword
+arguments passed to a matching callable in the typemap. The
+value of the key will be the model instance associated with
+this AutoView. The default is &#8216;model&#8217;.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2013, Nucleic Development Team.<br/>
+      Last updated on Feb 12, 2014.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
