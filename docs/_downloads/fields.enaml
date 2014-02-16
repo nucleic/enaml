@@ -21,6 +21,22 @@ from enaml.widgets.api import (
 from enaml.core.api import Include
 
 
+class VContainer(Container):
+    """ A simple expanding vertical container.
+
+    This container will always layout its children using a vbox with a
+    spacer as the last element. User-defined constraints are ignored.
+
+    """
+    def layout_constraints(self):
+        """ Generate the list of constraints for the container.
+
+        """
+        items = self.widgets()
+        items.append(spacer(0))
+        return [vbox(*items)]
+
+
 enamldef Main(Window):
     Container:
         padding = 0
@@ -28,8 +44,7 @@ enamldef Main(Window):
             hbox(cont1, cont2, cont3),
             align('width', cont1, cont2, cont3)
         ]
-        hug_height = 'strong'
-        Container: cont1:
+        VContainer: cont1:
             Label:
                 text = 'Replace All'
                 align = 'center'
@@ -43,7 +58,7 @@ enamldef Main(Window):
                 # will be destroyed. This is the simplest way to use
                 # the Include, albeit not the most efficient.
                 objects << [Field(text=str(i)) for i in xrange(spin1.value)]
-        Container: cont2:
+        VContainer: cont2:
             Label:
                 text = 'Random Shuffle'
                 align = 'center'
@@ -62,7 +77,7 @@ enamldef Main(Window):
             Include: inc2:
                 # The Fields are initialized with the spin box value.
                 objects = [Field(text=str(i)) for i in xrange(10)]
-        Container: cont3:
+        VContainer: cont3:
             Label:
                 text = 'Modify In-Place'
                 align = 'center'

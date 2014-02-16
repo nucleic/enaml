@@ -257,17 +257,14 @@ enamldef Main(Window):
     attr foo_model = FooModel()
     attr bar_model = BarModel()
     Container:
-        hug_height = 'strong'
         GroupBox:
             title = 'Foo Model'
-            hug_height = 'strong'
             flat = True
             AutoForm:
                 padding = 0
                 model = foo_model
         GroupBox:
             title = 'Bar Model'
-            hug_height = 'strong'
             flat = True
             AutoForm:
                 padding = 0

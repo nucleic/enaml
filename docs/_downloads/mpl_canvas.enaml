@@ -46,4 +46,3 @@ enamldef Main(Window):
             checked := canvas.toolbar_visible
         MPLCanvas: canvas:
             figure << figures[cbox.selected_item]
-

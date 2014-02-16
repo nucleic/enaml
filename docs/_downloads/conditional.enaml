@@ -27,7 +27,6 @@ class Baz(object): pass
 
 enamldef FooView(Container):
     attr model: Foo
-    hug_height = 'strong'
     PushButton: text = str(model)
     PushButton: text = str(model)
     PushButton: text = str(model)
@@ -35,7 +34,6 @@ enamldef FooView(Container):
 
 enamldef BarView(Container):
     attr model: Bar
-    hug_height = 'strong'
     Field: text = str(model)
     Field: text = str(model)
     Field: text = str(model)
@@ -43,7 +41,6 @@ enamldef BarView(Container):
 
 enamldef BazView(Container):
     attr model: Baz
-    hug_height = 'strong'
     CheckBox: text = str(model)
     CheckBox: text = str(model)
     CheckBox: text = str(model)
