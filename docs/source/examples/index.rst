@@ -140,4 +140,3 @@ Applib Examples
 .. toctree::
 
     ex_live_editor
-    
