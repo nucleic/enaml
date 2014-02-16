@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Group Box Example &mdash; Enaml 0.9.1 documentation</title>
+    <title>Vtk Canvas Example &mdash; Enaml 0.9.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -31,8 +31,8 @@
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
     <link rel="top" title="Enaml 0.9.1 documentation" href="../index.html" />
     <link rel="up" title="Examples" href="index.html" />
-    <link rel="next" title="Image View Example" href="ex_image_view.html" />
-    <link rel="prev" title="Form Example" href="ex_form.html" />
+    <link rel="next" title="Window Example" href="ex_window.html" />
+    <link rel="prev" title="Tool Bar Example" href="ex_tool_bar.html" />
   
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
@@ -85,7 +85,7 @@
                 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown">Page <b class="caret"></b></a>
   <ul class="dropdown-menu localtoc"><ul>
-<li><a class="reference internal" href="#">Group Box Example</a></li>
+<li><a class="reference internal" href="#">Vtk Canvas Example</a></li>
 </ul>
 </ul>
 </li>
@@ -133,7 +133,7 @@
 <li class="toctree-l3"><a class="reference internal" href="ex_file_dialog.html">File Dialog Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_flow_area.html">Flow Area Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_form.html">Form Example</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="">Group Box Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ex_group_box.html">Group Box Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_image_view.html">Image View Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_main_window.html">Main Window Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_menu_bar.html">Menu Bar Example</a></li>
@@ -147,7 +147,7 @@
 <li class="toctree-l3"><a class="reference internal" href="ex_spin_box.html">Spin Box Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_splitter.html">Splitter Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_tool_bar.html">Tool Bar Example</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ex_vtk_canvas.html">Vtk Canvas Example</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Vtk Canvas Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_window.html">Window Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_window_children.html">Window Children Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ex_window_closing.html">Window Closing Example</a></li>
@@ -171,82 +171,74 @@
 
     <div class="col-md-9">
       
-  <div class="section" id="group-box-example">
-<h1>Group Box Example<a class="headerlink" href="#group-box-example" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference download internal" href="../_downloads/group_box.enaml"><tt class="xref download docutils literal"><span class="pre">group_box</span></tt></a></p>
-<div class="highlight-python"><pre>An example of the `GroupBox` widget.
-
-A `GroupBox` is a simple subclass of `Container` which draws itself with
-an optional bounding box and title.</pre>
+  <div class="section" id="vtk-canvas-example">
+<h1>Vtk Canvas Example<a class="headerlink" href="#vtk-canvas-example" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference download internal" href="../_downloads/vtk_canvas.enaml"><tt class="xref download docutils literal"><span class="pre">vtk_canvas</span></tt></a></p>
+<div class="highlight-python"><pre>An example of the `VTKCanavs` widget.</pre>
 </div>
-<div class="highlight-python"><pre>$ enaml-run group_box</pre>
+<div class="highlight-python"><pre>$ enaml-run vtk_canvas</pre>
 </div>
-<img alt="../_images/ex_group_box.png" src="../_images/ex_group_box.png" />
-<div class="highlight-enaml"><pre>#------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file COPYING.txt, distributed with this software.
-#------------------------------------------------------------------------------
-""" An example of the `GroupBox` widget.
+<img alt="../_images/ex_vtk_canvas.png" src="../_images/ex_vtk_canvas.png" />
+<div class="highlight-enaml"><div class="highlight"><pre><span class="c">#------------------------------------------------------------------------------</span>
+<span class="c"># Copyright (c) 2013, Nucleic Development Team.</span>
+<span class="c">#</span>
+<span class="c"># Distributed under the terms of the Modified BSD License.</span>
+<span class="c">#</span>
+<span class="c"># The full license is in the file COPYING.txt, distributed with this software.</span>
+<span class="c">#------------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot; An example of the `VTKCanavs` widget.</span>
 
-A `GroupBox` is a simple subclass of `Container` which draws itself with
-an optional bounding box and title.
+<span class="sd">&lt;&lt; autodoc-me &gt;&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">enaml.widgets.api</span> <span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">Container</span><span class="p">,</span> <span class="n">VTKCanvas</span>
 
-&lt;&lt; autodoc-me &gt;&gt;
-"""
-from enaml.layout.api import vbox, hbox, spacer, align
-from enaml.widgets.api import (
-    Window, Container, GroupBox, Form, Label, Field, CheckBox, ComboBox,
-    MultilineField, PushButton,
-)
+<span class="kn">import</span> <span class="nn">vtk</span>
 
 
-enamldef Main(Window):
-    title = "Group Boxes"
-    Container:
-        constraints = [
-            vbox(
-                grp_box,
-                hbox(push, spacer, title_check, flat_check, combo_box),
-                multiline,
-            ),
-            align('v_center', title_check, flat_check, combo_box),
-        ]
-        GroupBox: grp_box:
-            title &lt;&lt; "Personal Details" if title_check.checked else ""
-            title_align &lt;&lt; combo_box.items[combo_box.index]
-            Form:
-                Label:
-                    text = "First name:"
-                Field:
-                    pass
-                Label:
-                    text = "Last name:"
-                Field:
-                    pass
-                Label:
-                    text = "Home phone:"
-                Field:
-                    pass
-        CheckBox: title_check:
-            text = "Show Title"
-            checked = True
-        CheckBox: flat_check:
-            text = "Flat"
-            checked := grp_box.flat
-        PushButton: push:
-            text = "Submit"
-            clicked ::
-                print 'Submit'
-                print multiline.text
-        ComboBox: combo_box:
-            index = 0
-            items = ['left', 'center', 'right']
-        MultilineField: multiline:
-            pass
-</pre>
+<span class="k">def</span> <span class="nf">create_renderer</span><span class="p">():</span>
+    <span class="n">quadric</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkQuadric</span><span class="p">()</span>
+    <span class="n">quadric</span><span class="o">.</span><span class="n">SetCoefficients</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">.</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">.</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">sample</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkSampleFunction</span><span class="p">()</span>
+    <span class="n">sample</span><span class="o">.</span><span class="n">SetSampleDimensions</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+    <span class="n">sample</span><span class="o">.</span><span class="n">SetImplicitFunction</span><span class="p">(</span><span class="n">quadric</span><span class="p">)</span>
+
+    <span class="n">contours</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkContourFilter</span><span class="p">()</span>
+    <span class="n">contours</span><span class="o">.</span><span class="n">SetInputConnection</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">GetOutputPort</span><span class="p">())</span>
+    <span class="n">contours</span><span class="o">.</span><span class="n">GenerateValues</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">)</span>
+
+    <span class="n">contour_mapper</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyDataMapper</span><span class="p">()</span>
+    <span class="n">contour_mapper</span><span class="o">.</span><span class="n">SetInputConnection</span><span class="p">(</span><span class="n">contours</span><span class="o">.</span><span class="n">GetOutputPort</span><span class="p">())</span>
+    <span class="n">contour_mapper</span><span class="o">.</span><span class="n">SetScalarRange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">)</span>
+
+    <span class="n">contour_actor</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkActor</span><span class="p">()</span>
+    <span class="n">contour_actor</span><span class="o">.</span><span class="n">SetMapper</span><span class="p">(</span><span class="n">contour_mapper</span><span class="p">)</span>
+
+    <span class="n">outline</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkOutlineFilter</span><span class="p">()</span>
+    <span class="n">outline</span><span class="o">.</span><span class="n">SetInputConnection</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">GetOutputPort</span><span class="p">())</span>
+
+    <span class="n">outline_mapper</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkPolyDataMapper</span><span class="p">()</span>
+    <span class="n">outline_mapper</span><span class="o">.</span><span class="n">SetInputConnection</span><span class="p">(</span><span class="n">outline</span><span class="o">.</span><span class="n">GetOutputPort</span><span class="p">())</span>
+
+    <span class="n">outline_actor</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkActor</span><span class="p">()</span>
+    <span class="n">outline_actor</span><span class="o">.</span><span class="n">SetMapper</span><span class="p">(</span><span class="n">outline_mapper</span><span class="p">)</span>
+    <span class="n">outline_actor</span><span class="o">.</span><span class="n">GetProperty</span><span class="p">()</span><span class="o">.</span><span class="n">SetColor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">renderer</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkRenderer</span><span class="p">()</span>
+    <span class="n">renderer</span><span class="o">.</span><span class="n">AddActor</span><span class="p">(</span><span class="n">contour_actor</span><span class="p">)</span>
+    <span class="n">renderer</span><span class="o">.</span><span class="n">AddActor</span><span class="p">(</span><span class="n">outline_actor</span><span class="p">)</span>
+    <span class="n">renderer</span><span class="o">.</span><span class="n">SetBackground</span><span class="p">(</span><span class="o">.</span><span class="mi">75</span><span class="p">,</span> <span class="o">.</span><span class="mi">75</span><span class="p">,</span> <span class="o">.</span><span class="mi">75</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">renderer</span>
+
+
+<span class="k">enamldef</span> <span class="nc">Main</span><span class="p">(</span>Window<span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;VTK Canvas&#39;</span>
+    <span class="nt">Container</span><span class="p">:</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="nt">VTKCanvas</span><span class="p">:</span>
+            <span class="n">renderer</span> <span class="o">=</span> <span class="n">create_renderer</span><span class="p">()</span>
+</pre></div>
 </div>
 </div>
 
