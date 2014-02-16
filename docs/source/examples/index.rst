@@ -141,5 +141,3 @@ Applib Examples
 
     ex_live_editor
     
-    
-
