@@ -5,8 +5,8 @@ include Makefile
 recursive-include docs *.rst
 recursive-include docs *.png
 recursive-include docs *.py
-recursive-include examples *.py
-recursive-include examples *.rst
+recursive-include docs *.enaml
+recursive-include examples *.*
 recursive-include licenses *.txt
 recursive-include tools *.*
 recursive-include tests *.py
