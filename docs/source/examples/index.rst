@@ -42,8 +42,10 @@ Widgets Examples
     ex_spin_box
     ex_splitter
     ex_tool_bar
+    ex_vtk_canvas
     ex_window
     ex_window_children
+    ex_window_closing
 
 
 Layout Examples

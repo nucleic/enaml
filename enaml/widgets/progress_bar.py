@@ -5,10 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from functools import partial
-
 from atom.api import (
-    Typed, ForwardTyped, Bool, Int, cached_property, observe, set_default
+    Typed, ForwardTyped, Property, Bool, Int, observe, set_default
 )
 
 from enaml.core.declarative import d_
@@ -54,6 +52,9 @@ class ProgressBar(Control):
     #: always fall between the minimum and maximum.
     value = d_(Int(0))
 
+    #: A read only cached property which computes the integer percentage.
+    percentage = d_(Property(cached=True), writable=False)
+
     #: Whether or not to display progress percentage on the control.
     #: This may not be supported by all toolkits and platforms.
     text_visible = d_(Bool(False))
@@ -65,12 +66,9 @@ class ProgressBar(Control):
     #: A reference to the ProxyProgressBar object.
     proxy = Typed(ProxyProgressBar)
 
-    @partial(d_, writable=False)
-    @cached_property
-    def percentage(self):
-        """ The percentage completed, rounded to an int.
-
-        This is a readonly convenience property.
+    @percentage.getter
+    def get_percentage(self):
+        """ The getter function for the read only percentage property.
 
         """
         minimum = self.minimum
