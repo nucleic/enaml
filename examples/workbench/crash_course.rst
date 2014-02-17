@@ -118,7 +118,7 @@ a few conceptual steps.
    Additional manifest can be added and removed dynamically at runtime.
 6. Start the application. How this is done is application dependent.
 
-Points 0 - 3 require the most mental effort. The framework rovides a few pre-
+Points 0 - 3 require the most mental effort. The framework provides a few pre-
 defined plugins and Workbench subclasses (described later) which make the last
 few steps of the process more-or-less trivial.
 
@@ -183,9 +183,9 @@ attributes of interest:
 id
 	This is a globally unique identifier which identifies both the manifest
 	and the plugin which will be created for it. It should be a string in
-	dot-separated form, typically 'org.pkg.module.name'. It also servers as
+	dot-separated form, typically 'org.pkg.module.name'. It also serves as
 	the enclosing namespace for the identifiers of its extension points and
-	extensions. The global uniqueness of this identifier is enfored.
+	extensions. The global uniqueness of this identifier is enforced.
 
 factory
 	A callable which takes no arguments and returns an instance of Plugin.
@@ -422,7 +422,7 @@ The plugin provides the following commands:
 	no parameters.
 
 'enaml.workbench.ui.select_workspace'
-	This command will select and a activate a new workspace. It takes
+	This command will select and activate a new workspace. It takes
 	a single 'workspace' parameter which is the fully qualified id of
 	the extension point which contributes the workspace of interest.
 
