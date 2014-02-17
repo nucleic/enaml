@@ -82,12 +82,11 @@ controls the parameters for the entire area.
 
 << autodoc-me >>
 """
-import random
+from enaml.core.api import Include
 from enaml.widgets.api import (
     FlowArea, FlowItem, Window, Form, Label, Field, SpinBox, ComboBox,
     Container, Html, GroupBox, Slider, PushButton,
 )
-from enaml.core.api import Include
 
 
 enamldef Item(FlowItem):
@@ -98,7 +97,6 @@ enamldef Item(FlowItem):
     GroupBox:
         Form:
             padding = 0
-            hug_height = 'strong'
             Label:
                 text = 'Preferred Width'
             SpinBox: pref_width:
@@ -129,10 +127,9 @@ enamldef Item(FlowItem):
                 items = ['leading', 'center', 'trailing']
                 index = 0
             Html:
-                attr fixed_height: int = random.randint(25, 75)
                 resist_height = 'weak'
-                constraints = [height == fixed_height]
-                source = '<center>Height == %d</center>'%fixed_height
+                source = '<center>Hello World</center>'
+
 
 enamldef AreaControls(GroupBox):
     attr area: FlowArea
@@ -140,8 +137,8 @@ enamldef AreaControls(GroupBox):
     event remove_item
     title = 'Area Controls'
     Label:
-        text = """Add new items to see how the flow area works.
-You can also tweak the flow parameters"""
+        text =('Add new items to see how the flow area works.\n'
+               'You can also tweak the flow parameters')
     PushButton:
         text = 'Add Item'
         clicked :: add_item()
@@ -193,4 +190,3 @@ enamldef Main(Window):
                             inc.objects.pop()
             Include: inc:
                 pass
-

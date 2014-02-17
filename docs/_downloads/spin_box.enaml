@@ -12,14 +12,13 @@ used to select from a discrete range of integer values.
 
 << autodoc-me >>
 """
-from enaml.widgets.api import Window, Container, Label, Field, SpinBox
+from enaml.widgets.api import Window, Form, Label, Field, SpinBox
 from enaml.layout.api import hbox, vbox
 
 
 enamldef Main(Window):
     title = 'SpinBox Example'
-    Container:
-        constraints = [vbox(hbox(lbl, sbox), fld)]
+    Form:
         Label: lbl:
             text = 'Select Age'
         SpinBox: sbox:

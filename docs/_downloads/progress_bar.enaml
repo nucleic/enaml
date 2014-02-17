@@ -38,4 +38,3 @@ enamldef Main(Window):
                     progress.value = min(val, 100)
                 else:
                     progress.value = 0
-

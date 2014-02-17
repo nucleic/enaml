@@ -1,0 +1,18 @@
+Vtk Canvas Example
+===============================================================================
+
+:download:`vtk_canvas <../../../examples/widgets/vtk_canvas.enaml>`
+
+::
+
+    An example of the `VTKCanavs` widget.
+
+::
+
+ $ enaml-run vtk_canvas
+
+.. image:: images/ex_vtk_canvas.png
+
+.. literalinclude:: ../../../examples/widgets/vtk_canvas.enaml
+    :language: enaml
+

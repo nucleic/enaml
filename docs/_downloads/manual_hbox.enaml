@@ -21,7 +21,6 @@ from enaml.widgets.api import Window, Container, PushButton
 
 enamldef Main(Window):
     Container:
-        hug_height = 'strong'
         constraints = [
             # Horizontal Constraints
             contents_left == pb1.left,

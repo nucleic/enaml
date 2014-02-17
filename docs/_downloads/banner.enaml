@@ -53,8 +53,8 @@ enamldef Main(Window):
             style_class << 'banner' if cbox.checked else ''
         Form: form:
             padding = 0
-            hug_height = 'required'
             hug_width = 'strong'
+            hug_height = 'required'
             Label:
                 text = 'First'
             Field:

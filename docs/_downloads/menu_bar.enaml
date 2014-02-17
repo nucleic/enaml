@@ -87,4 +87,3 @@ enamldef Main(MainWindow):
                     checkable = True
                     text = 'Justify'
                     toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
-
