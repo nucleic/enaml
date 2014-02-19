@@ -6,6 +6,8 @@ Sample Workbench Example
 .. literalinclude:: ../../../examples/workbench/sample.py
     :language: python
 
+:download:`download here <../../../examples/workspace/sample.py>`)
+
 The resulting GUI looks like this (on Ubuntu):
 
 .. image:: images/wb_main.png

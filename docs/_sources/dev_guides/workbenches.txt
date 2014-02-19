@@ -1,3 +1,3 @@
+.. _workbenches:
 
-
-.. include:: ../../examples/workbench/crash_course.rst
+.. include:: ../../../examples/workbench/crash_course.rst
