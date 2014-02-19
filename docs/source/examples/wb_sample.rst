@@ -4,7 +4,7 @@ Sample Workbench Example
 ===============================================================================
 
 Here is the Python entry point for the example (:download:`download here
-<../../../examples/workspace/sample.py>`):
+<../../../examples/workbench/sample.py>`):
 
 .. literalinclude:: ../../../examples/workbench/sample.py
     :language: python
