@@ -1,6 +1,11 @@
 Enaml Release Notes
 ===================
 
+0.9.2 - 02/20/2014
+------------------
+- Update the layout (if needed) when changing fonts.
+- Minor code cleanup and documentation updates.
+
 0.9.1 - 02/11/2014
 ------------------
 - Add the workbench plugin framework. 2ab09c6782b4_
