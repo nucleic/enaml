@@ -52,7 +52,7 @@ class QtLabel(QtControl, ProxyLabel):
         """
         super(QtLabel, self).init_widget()
         d = self.declaration
-        self.set_text(d.text, guard=False)
+        self.set_text(d.text)
         self.set_align(d.align)
         self.set_vertical_align(d.vertical_align)
         self.widget.linkActivated.connect(self.on_link_activated)
@@ -69,14 +69,11 @@ class QtLabel(QtControl, ProxyLabel):
     #--------------------------------------------------------------------------
     # ProxyLabel API
     #--------------------------------------------------------------------------
-    def set_text(self, text, guard=True):
+    def set_text(self, text):
         """ Set the text in the widget.
 
         """
-        if guard:
-            with self.geometry_guard():
-                self.widget.setText(text)
-        else:
+        with self.geometry_guard():
             self.widget.setText(text)
 
     def set_align(self, align):

@@ -127,7 +127,7 @@ class QtSplitter(QtConstraintsWidget, ProxySplitter):
         """
         super(QtSplitter, self).init_widget()
         d = self.declaration
-        self.set_orientation(d.orientation, guard=False)
+        self.set_orientation(d.orientation)
         self.set_live_drag(d.live_drag)
 
     def init_layout(self):
@@ -209,14 +209,11 @@ class QtSplitter(QtConstraintsWidget, ProxySplitter):
     #--------------------------------------------------------------------------
     # ProxySplitter API
     #--------------------------------------------------------------------------
-    def set_orientation(self, orientation, guard=True):
+    def set_orientation(self, orientation):
         """ Update the orientation of the QSplitter.
 
         """
-        if guard:
-            with self.geometry_guard():
-                self.widget.setOrientation(ORIENTATION[orientation])
-        else:
+        with self.geometry_guard():
             self.widget.setOrientation(ORIENTATION[orientation])
 
     def set_live_drag(self, live_drag):

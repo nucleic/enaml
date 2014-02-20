@@ -47,21 +47,18 @@ class WxLabel(WxControl, ProxyLabel):
         """
         super(WxLabel, self).init_widget()
         d = self.declaration
-        self.set_text(d.text, guard=False)
+        self.set_text(d.text)
         self.set_align(d.align)
         self.set_vertical_align(d.vertical_align)
 
     #--------------------------------------------------------------------------
     # ProxyLabel API
     #--------------------------------------------------------------------------
-    def set_text(self, text, guard=True):
+    def set_text(self, text):
         """ Set the text in the underlying widget.
 
         """
-        if guard:
-            with self.geometry_guard():
-                self.widget.SetLabel(text)
-        else:
+        with self.geometry_guard():
             self.widget.SetLabel(text)
 
     def set_align(self, align):
