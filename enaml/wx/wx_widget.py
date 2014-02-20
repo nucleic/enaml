@@ -128,7 +128,11 @@ class WxWidget(WxToolkitObject, ProxyWidget):
         """ Set the font on the underlying widget.
 
         """
-        wxfont = get_cached_wxfont(font)
+        if font is not None:
+            wxfont = get_cached_wxfont(font)
+        else:
+            index = wx.SYS_DEFAULT_GUI_FONT
+            wxfont = wx.SystemSettings.GetFont(index)
         widget = self.widget
         widget.SetFont(wxfont)
         widget.Refresh()
