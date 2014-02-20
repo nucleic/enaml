@@ -93,3 +93,15 @@ class WxConstraintsWidget(WxWidget, ProxyConstraintsWidget):
             old_min != widget.GetMinSize() or
             old_max != widget.GetMaxSize()):
             self.geometry_updated()
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def set_font(self, font):
+        """ A reimplemented font setter.
+
+        This method sets the font from within a geometry guard.
+
+        """
+        with self.geometry_guard():
+            super(WxConstraintsWidget, self).set_font(font)

@@ -101,3 +101,15 @@ class QtConstraintsWidget(QtWidget, ProxyConstraintsWidget):
             old_min != widget.minimumSize() or
             old_max != widget.maximumSize()):
             self.geometry_updated()
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def set_font(self, font):
+        """ A reimplemented font setter.
+
+        This method sets the font from within a geometry guard.
+
+        """
+        with self.geometry_guard():
+            super(QtConstraintsWidget, self).set_font(font)
