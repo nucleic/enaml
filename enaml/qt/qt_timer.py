@@ -87,7 +87,7 @@ class QtTimer(QtToolkitObject, ProxyTimer):
         """
         self.widget.stop()
 
-    def is_active(self):
+    def is_running(self):
         """ Get whether or not the timer is running.
 
         """

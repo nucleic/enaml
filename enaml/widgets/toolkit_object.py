@@ -29,6 +29,13 @@ class ProxyToolkitObject(Atom):
     #: A reference to the ToolkitObject declaration.
     declaration = ForwardTyped(lambda: ToolkitObject)
 
+    @property
+    def is_active(self):
+        """ Test whether or not the proxy is fully activated.
+
+        """
+        return self.declaration.proxy_is_active
+
     def activate_top_down(self):
         """ A method called by the declaration to activate the proxy.
 

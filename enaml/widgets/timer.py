@@ -30,7 +30,7 @@ class ProxyTimer(ProxyToolkitObject):
     def stop(self):
         raise NotImplementedError
 
-    def is_active(self):
+    def is_running(self):
         raise NotImplementedError
 
 
@@ -87,5 +87,5 @@ class Timer(ToolkitObject):
 
         """
         if self.proxy_is_active:
-            return self.proxy.is_active()
+            return self.proxy.is_running()
         return False
