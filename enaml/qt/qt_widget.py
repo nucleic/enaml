@@ -157,11 +157,10 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """ Set the font of the widget.
 
         """
-        widget = self.widget
         if font is not None:
-            widget.setFont(get_cached_qfont(font))
+            self.widget.setFont(get_cached_qfont(font))
         else:
-            widget.setFont(QFont())
+            self.widget.setFont(QFont())
 
     def set_show_focus_rect(self, show):
         """ Set whether or not to show the focus rect.
