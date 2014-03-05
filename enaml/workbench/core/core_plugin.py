@@ -70,7 +70,7 @@ class CorePlugin(Plugin):
         event.parameters = parameters
         event.trigger = trigger
 
-        command.handler(event)
+        return command.handler(event)
 
     #--------------------------------------------------------------------------
     # Private API
