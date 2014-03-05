@@ -57,6 +57,11 @@ class CorePlugin(Plugin):
         trigger : object, optional
             The object which triggered the command.
 
+        Returns
+        -------
+        result : object
+            The return value of the command handler.
+
         """
         if command_id not in self._commands:
             msg = "'%s' is not a registered command id"
