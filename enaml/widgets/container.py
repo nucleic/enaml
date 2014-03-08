@@ -76,6 +76,12 @@ class Container(Frame, ContentsConstrainableMixin):
         """
         return [c for c in self.children if isinstance(c, ConstraintsWidget)]
 
+    def visible_widgets(self):
+        """ Get the visible child ConstraintsWidgets on the container.
+
+        """
+        return [w for w in self.widgets() if w.visible]
+
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
@@ -128,4 +134,4 @@ class Container(Frame, ContentsConstrainableMixin):
         """
         if self.constraints:
             return self.constraints
-        return [vbox(*self.widgets())]
+        return [vbox(*self.visible_widgets())]
