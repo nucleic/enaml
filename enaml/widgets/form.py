@@ -5,8 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from atom.api import Int, observe
+
 from enaml.layout.constrainable import ConstraintMember
 from enaml.layout.layout_helpers import align, vertical, horizontal, spacer
+
+from enaml.core.declarative import d_
 
 from .container import Container
 
@@ -27,6 +31,26 @@ class Form(Container):
     #: and widgets are aligned.
     midline = ConstraintMember()
 
+    #: The spacing to place between the form rows, in pixels.
+    row_spacing = d_(Int(10))
+
+    #: The spacing to place between the form columns, in pixels.
+    column_spacing = d_(Int(10))
+
+    #--------------------------------------------------------------------------
+    # Observers
+    #--------------------------------------------------------------------------
+    @observe('row_spacing', 'column_spacing')
+    def _layout_invalidated(self, change):
+        """ A private observer which invalidates the layout.
+
+        """
+        # The superclass handler is sufficient.
+        super(Form, self)._layout_invalidated(change)
+
+    #--------------------------------------------------------------------------
+    # Layout Constraints
+    #--------------------------------------------------------------------------
     def layout_constraints(self):
         """ Get the layout constraints for a Form.
 
@@ -35,8 +59,7 @@ class Form(Container):
         will be added on top of the generated form constraints.
 
         """
-        # FIXME: do something sensible when children are not visible.
-        children = self.widgets()
+        children = self.visible_widgets()
         labels = children[::2]
         widgets = children[1::2]
         n_labels = len(labels)
@@ -52,8 +75,11 @@ class Form(Container):
         # Boundary flex spacer
         b_flx = spacer(0).flex()
 
-        # Inter-widget flex spacer
-        w_flx = spacer(10).flex()
+        # Inter-column flex spacer
+        c_flx = spacer(max(0, self.column_spacing)).flex()
+
+        # Inter-row flex spacer
+        r_flx = spacer(max(0, self.row_spacing)).flex()
 
         # Generate the row constraints and make the column stacks
         midline = self.midline
@@ -69,11 +95,11 @@ class Form(Container):
         for label, widget in zip(labels, widgets):
             push((widget.left == midline) | 'strong')
             push(align('v_center', label, widget) | 'strong')
-            push(horizontal(left, b_flx, label, w_flx, widget, b_flx, right))
+            push(horizontal(left, b_flx, label, c_flx, widget, b_flx, right))
             push_col1(label)
-            push_col1(w_flx)
+            push_col1(r_flx)
             push_col2(widget)
-            push_col2(w_flx)
+            push_col2(r_flx)
 
         # Handle the odd child and create the column constraints
         if odd_child is not None:
