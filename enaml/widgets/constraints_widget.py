@@ -59,7 +59,7 @@ class ConstraintsWidget(Widget, ConstrainableMixin):
     #--------------------------------------------------------------------------
     @observe(
         'constraints', 'hug_width', 'hug_height', 'resist_width',
-        'resist_height', 'limit_width', 'limit_height')
+        'resist_height', 'limit_width', 'limit_height', 'visible')
     def _layout_invalidated(self, change):
         """ An observer which will relayout the proxy widget.
 
