@@ -26,6 +26,7 @@ from .flow_item import FlowItem
 from .form import Form
 from .frame import Border
 from .group_box import GroupBox
+from .h_group import HGroup
 from .html import Html
 from .image_view import ImageView
 from .label import Label
@@ -57,6 +58,7 @@ from .status_item import StatusItem
 from .time_selector import TimeSelector
 from .timer import Timer
 from .tool_bar import ToolBar
+from .v_group import VGroup
 from .vtk_canvas import VTKCanvas
 from .web_view import WebView
 from .window import Window
