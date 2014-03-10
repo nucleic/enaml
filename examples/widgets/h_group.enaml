@@ -11,6 +11,7 @@ The HGroup is a convenience container which provides a simple horizontal
 group of child widgets, with knobs to control inter-widget spacing, leading
 and trailing spacers, and width alignment.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import spacer
 from enaml.widgets.api import (

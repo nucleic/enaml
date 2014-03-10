@@ -11,6 +11,7 @@ The VGroup is a convenience container which provides a simple vertical
 group of child widgets, with knobs to control inter-widget spacing and
 leading and trailing spacers.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import spacer
 from enaml.widgets.api import (
