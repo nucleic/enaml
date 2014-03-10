@@ -6,6 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from .constraint_helper import ConstraintHelper
+from .factory_helper import FactoryHelper
 from .grid_helper import GridHelper
 from .linear_box_helper import LinearBoxHelper
 from .sequence_helper import SequenceHelper
@@ -92,6 +93,25 @@ def align(anchor, *items, **config):
     """
     config.setdefault('spacing', 0)
     return SequenceHelper(anchor, anchor, items, **config)
+
+
+def factory(func, *args, **kwargs):
+    """ Create a FactoryHelper with the given factory function.
+
+    Parameters
+    ----------
+    func : callable
+        The callable which will generate the list of constraints.
+        The owner widget will be passed as the first argument.
+
+    *args
+        Additional positional arguments to pass to the factory.
+
+    **kwargs
+        Additional keyword arguments to pass to the factory.
+
+    """
+    return FactoryHelper(func, *args, **kwargs)
 
 
 def grid(*rows, **config):
