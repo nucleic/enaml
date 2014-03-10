@@ -24,7 +24,7 @@ enamldef Main(Window):
     VGroup:
         padding = 0
         spacing = 0
-        Form: f1:
+        Form:
             Label:
                 text = 'Leading Spacer'
             CheckBox: lsp:
@@ -41,9 +41,9 @@ enamldef Main(Window):
                 text = 'Spacing'
             SpinBox: spin:
                 value = 10
-        Separator: sep:
+        Separator:
             pass
-        HGroup: vg:
+        HGroup:
             leading_spacer << spacer(0) if lsp.checked else None
             trailing_spacer << spacer(0) if rsp.checked else None
             spacing << spin.value
