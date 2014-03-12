@@ -176,9 +176,12 @@ enamldef Main(Window):
             text = 'Restore Layout'
             enabled << stored is not None
             clicked ::
-                layout = cPickle.loads(stored)
-                with area.suppress_dock_events():
-                    area.apply_layout(layout)
+                #layout = cPickle.loads(stored)
+                #with area.suppress_dock_events():
+                #    area.apply_layout(layout)
+                from enaml.widgets.dock_area import save_dock_area
+                print save_dock_area(area)
+
         PushButton: add_b:
             text = 'Add Items'
             clicked ::

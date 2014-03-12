@@ -5,10 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import cPickle
+
 from atom.api import (
     Coerced, Event, Unicode, Bool, Range, Typed, ForwardTyped, observe
 )
 
+import enaml
 from enaml.application import deferred_call
 from enaml.core.declarative import d_
 from enaml.icon import Icon
@@ -128,6 +131,39 @@ class DockItem(Widget):
         if self.proxy_is_active:
             self.proxy.alert(level, on, off, repeat, persist)
 
+    def save_state(self):
+        """ A method used to save the state of a custom dock item.
+
+        This method is intended to be implemented by subclasses. It is
+        invoked by a parent DockArea when the dock area state is saved.
+        The created dict will be passed to the 'restore_state' method
+        when the dock area restores the saved dock item.
+
+        Returns
+        -------
+        result : dict
+            The dictionary of relevant state information. The contents
+            of the dict should be serializable.
+
+        """
+        return {'name': self.name, 'title': self.title}
+
+    def restore_state(self, state):
+        """ A method used to restore the state of a custom dock item.
+
+        This method is intended to be implemented by subclasses. It is
+        invoked by the parent DockArea when the dock area is restored
+        from saved state.
+
+        Parameters
+        ----------
+        state : dict
+            The dict returned by a previous call to 'save_state'.
+
+        """
+        self.name = state['name']
+        self.title = state['title']
+
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
@@ -150,3 +186,47 @@ class DockItem(Widget):
         # TODO allow the user to veto the close request
         self.closed()
         deferred_call(self.destroy)
+
+
+def save_dock_item(item):
+    """ Save a DockItem to a serializable dictionary.
+
+    Parameters
+    ----------
+    item : DockItem
+        The dock item of interest.
+
+    Returns
+    -------
+    result : dict
+        A serializable dictionary which can be used to reconstruct
+        the dock item by invoking the 'restore_dock_item' function.
+
+    """
+    assert isinstance(item, DockItem), 'item must be a DockItem'
+    data =  {
+        'type': cPickle.dumps(type(item)),
+        'state': item.save_state(),
+    }
+    return data
+
+
+def restore_dock_item(data):
+    """ Restore a dock item from its saved information.
+
+    Parameters
+    ----------
+    data : dict
+        The dict returned by a previous call to 'save_dock_item'.
+
+    Returns
+    -------
+    result : DockItem
+        The restored dock item.
+
+    """
+    with enaml.imports():
+        item_type = cPickle.loads(data['type'])
+    item = item_type()
+    item.restore_state(data['state'])
+    return item

@@ -37,18 +37,9 @@ def second_view_factory(workbench):
     return space
 
 
-def third_view_factory(workbench):
-    from sample_workspace import SampleWorkspace
-
-    import enaml
-    with enaml.imports():
-        from third_view import ThirdView, ThirdManifest
-
-    space = SampleWorkspace()
-    space.window_title = 'Third View'
-    space.content_def = ThirdView
-    space.manifest_def = ThirdManifest
-    return space
+def persistent_view_factory(workbench):
+    from persistent_workspace import PersistentWorkspace
+    return PersistentWorkspace()
 
 
 enamldef SampleManifest(PluginManifest):
@@ -98,12 +89,12 @@ enamldef SampleManifest(PluginManifest):
             command = 'enaml.workbench.ui.select_workspace'
             parameters = {'workspace': 'sample.second_view'}
         ActionItem:
-            path = '/workspace/third'
-            label = 'Third'
+            path = '/workspace/persistent'
+            label = 'Persistent'
             shortcut = 'Ctrl+3'
             group = 'spaces'
             command = 'enaml.workbench.ui.select_workspace'
-            parameters = {'workspace': 'sample.third_view'}
+            parameters = {'workspace': 'sample.persistent_view'}
         ActionItem:
             path = '/workspace/close'
             label = 'Close Workspace'
@@ -118,6 +109,6 @@ enamldef SampleManifest(PluginManifest):
         point = 'enaml.workbench.ui.workspaces'
         factory = second_view_factory
     Extension:
-        id = 'third_view'
+        id = 'persistent_view'
         point = 'enaml.workbench.ui.workspaces'
-        factory = third_view_factory
+        factory = persistent_view_factory
