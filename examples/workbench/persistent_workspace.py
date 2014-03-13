@@ -9,33 +9,20 @@ import cPickle
 
 from atom.api import Unicode
 
-from enaml.layout.api import HSplitLayout
-from enaml.widgets.api import Container, DockArea
-from enaml.widgets.dock_area import save_dock_area, restore_dock_area
+from enaml.widgets.api import Container
 from enaml.workbench.ui.api import Workspace
 
 import enaml
 with enaml.imports():
-    from persistent_view import Pane, PersistentManifest
+    from persistent_view import PersistentManifest, create_new_area
 
 
 print 'Imported Persistent Workspace!'
 
 
-#: Storage for the persisted dock area data. This would be saved
+#: Storage for the pickled dock area. This would be saved
 #: to some persistent storage media in a real application.
-PERSISTED_DOCK_AREA_DATA = None
-
-
-def create_new_area():
-    """ Create a new persistent dock area.
-
-    """
-    area = DockArea(name='the_dock_area')
-    Pane(area, name='first', title='Pane 0')
-    Pane(area, name='second', title='Pane 1')
-    area.layout = HSplitLayout('first', 'second')
-    return area
+PICKLED_DOCK_AREA = None
 
 
 class PersistentWorkspace(Workspace):
@@ -52,10 +39,8 @@ class PersistentWorkspace(Workspace):
         provided plugin with the workbench.
 
         """
-        content = Container(padding=0)
-        area = self.load_area()
-        area.set_parent(content)
-        self.content = content
+        self.content = Container(padding=0)
+        self.load_area()
         manifest = PersistentManifest()
         self._manifest_id = manifest.id
         self.workbench.register(manifest)
@@ -74,16 +59,16 @@ class PersistentWorkspace(Workspace):
         """ Save the dock area for the workspace.
 
         """
-        global PERSISTED_DOCK_AREA_DATA
+        global PICKLED_DOCK_AREA
         area = self.content.find('the_dock_area')
-        data = cPickle.dumps(save_dock_area(area))
-        PERSISTED_DOCK_AREA_DATA = data
+        PICKLED_DOCK_AREA = cPickle.dumps(area)
 
     def load_area(self):
-        """ Load the dock area for the workspace.
+        """ Load the dock area into the workspace content.
 
         """
-        if PERSISTED_DOCK_AREA_DATA is not None:
-            data = cPickle.loads(PERSISTED_DOCK_AREA_DATA)
-            return restore_dock_area(data)
-        return create_new_area()
+        if PICKLED_DOCK_AREA is not None:
+            area = cPickle.loads(PICKLED_DOCK_AREA)
+        else:
+            area = create_new_area()
+        area.set_parent(self.content)

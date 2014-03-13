@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from enaml.layout.api import HSplitLayout, InsertItem
-from enaml.widgets.api import Container, DockItem, Html
+from enaml.widgets.api import Container, DockArea, DockItem, Html
 from enaml.workbench.api import Extension, PluginManifest
 from enaml.workbench.core.api import Command
 from enaml.workbench.ui.api import ActionItem, MenuItem
@@ -15,11 +15,76 @@ from enaml.workbench.ui.api import ActionItem, MenuItem
 print 'Imported Persistent View!'
 
 
-enamldef Pane(DockItem): item:
-    closable = False
+class PickableDockItem(DockItem):
+    """ A custom pickable dock item class.
+
+    """
+    def __getstate__(self):
+        """ Get the pickle state for the dock item.
+
+        This method saves the necessary state for the dock items used
+        in this example. Different applications will have different
+        state saving requirements.
+
+        The default __setstate__ method provided on the Atom base class
+        provides sufficient unpickling behavior.
+
+        """
+        return {'name': self.name, 'title': self.title}
+
+
+class PickableDockArea(DockArea):
+    """ A custom pickable dock area class.
+
+    """
+    def get_save_items(self):
+        """ Get the list of dock items to save with this dock area.
+
+        """
+        return [c for c in self.children if isinstance(c, PickableDockItem)]
+
+    def __getstate__(self):
+        """ Get the pickle state for the dock area.
+
+        This method saves the necessary state for the dock area used
+        in this example. Different applications will have different
+        state saving requirements.
+
+        """
+        state = {
+            'name': self.name,
+            'layout': self.save_layout(),
+            'items': self.get_save_items(),
+        }
+        return state
+
+    def __setstate__(self, state):
+        """ Restore the state of the dock area.
+
+        """
+        self.name = state['name']
+        self.layout = state['layout']
+        self.insert_children(None, state['items'])
+
+
+enamldef Pane(PickableDockItem):
+    """ A pickable dock item with default Html content.
+
+    """
     Container:
         Html:
-            source = '<h1><center>%s</center></h1>' % item.title
+            source = '<h1><center>%s</center></h1>' % title
+
+
+def create_new_area():
+    """ Create a new pickable dock area with two child panes.
+
+    """
+    area = PickableDockArea(name='the_dock_area')
+    Pane(area, name='first', title='Pane 0')
+    Pane(area, name='second', title='Pane 1')
+    area.layout = HSplitLayout('first', 'second')
+    return area
 
 
 def new_item(event):

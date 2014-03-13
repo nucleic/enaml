@@ -39,7 +39,9 @@ def second_view_factory(workbench):
 
 def persistent_view_factory(workbench):
     from persistent_workspace import PersistentWorkspace
-    return PersistentWorkspace()
+    space = PersistentWorkspace()
+    space.window_title = 'Persistent View'
+    return space
 
 
 enamldef SampleManifest(PluginManifest):
