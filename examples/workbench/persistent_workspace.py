@@ -61,7 +61,7 @@ class PersistentWorkspace(Workspace):
         """
         global PICKLED_DOCK_AREA
         area = self.content.find('the_dock_area')
-        PICKLED_DOCK_AREA = cPickle.dumps(area)
+        PICKLED_DOCK_AREA = cPickle.dumps(area, -1)
 
     def load_area(self):
         """ Load the dock area into the workspace content.
