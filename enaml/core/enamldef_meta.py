@@ -8,8 +8,8 @@
 from .declarative_meta import DeclarativeMeta
 
 
-def __newobj__(cls, *args):
-    """ A compatibility pickler function.
+def __enamldef_newobj__(cls, *args):
+    """ An enamldef pickler function.
 
     This function is not part of the public Enaml api.
 
@@ -27,7 +27,7 @@ def __reduce_ex__(self, proto):
 
     """
     args = (type(self),) + self.__getnewargs__()
-    return (__newobj__, args, self.__getstate__())
+    return (__enamldef_newobj__, args, self.__getstate__())
 
 
 class EnamlDefMeta(DeclarativeMeta):
