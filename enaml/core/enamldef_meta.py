@@ -5,7 +5,29 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .declarative import DeclarativeMeta
+from .declarative_meta import DeclarativeMeta
+
+
+def __enamldef_newobj__(cls, *args):
+    """ An enamldef pickler function.
+
+    This function is not part of the public Enaml api.
+
+    """
+    instance = cls.__new__(cls, *args)
+    cls.__node__(instance)
+    return instance
+
+
+def __reduce_ex__(self, proto):
+    """ An implementation of the reduce protocol.
+
+    This method creates a reduction tuple for enamldef instances. It
+    is not part of the public Enaml api.
+
+    """
+    args = (type(self),) + self.__getnewargs__()
+    return (__enamldef_newobj__, args, self.__getstate__())
 
 
 class EnamlDefMeta(DeclarativeMeta):
@@ -16,6 +38,18 @@ class EnamlDefMeta(DeclarativeMeta):
     #: the compiler when the enamldef class is created. It should not
     #: be modified by user code.
     __node__ = None
+
+    def __new__(meta, name, bases, dct):
+        """ Create a new enamldef subclass.
+
+        This method overrides the default Atom pickle reducer with one
+        which invokes the Enaml compiler node during unpickling.
+
+        """
+        cls = DeclarativeMeta.__new__(meta, name, bases, dct)
+        if cls.__reduce_ex__ is not __reduce_ex__:
+            cls.__reduce_ex__ = __reduce_ex__
+        return cls
 
     def __repr__(cls):
         """ A nice repr for a type created by the `enamldef` keyword.
