@@ -1,6 +1,12 @@
 Enaml Release Notes
 ===================
 
+0.9.4 - 03/13/2014
+------------------
+- Allow enamldef objects to be properly pickled. db99d02fa377_
+
+.. _db99d02fa377: https://github.com/nucleic/enaml/commit/db99d02fa3773ac99f5e02709037e6ba0df952af
+
 0.9.3 - 03/10/2014
 ------------------
 - Return the value of the command handler from CorePlugin.invoke_command. 5322bd1d2a67_
