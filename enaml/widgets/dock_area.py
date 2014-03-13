@@ -6,21 +6,19 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
-import cPickle
 
 from atom.api import (
     Bool, Coerced, Enum, Typed, ForwardTyped, Unicode, Event, observe,
     set_default
 )
 
-import enaml
 from enaml.core.declarative import d_
 from enaml.layout.dock_layout import DockLayout, DockLayoutOp
 from enaml.styling import StyleSheet
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
 from .dock_events import DockEvent
-from .dock_item import DockItem, save_dock_item, restore_dock_item
+from .dock_item import DockItem
 
 
 _dock_area_styles = None
@@ -28,6 +26,7 @@ def get_registered_styles(name):
     # lazy import the stdlib module in case it's never needed.
     global _dock_area_styles
     if _dock_area_styles is None:
+        import enaml
         with enaml.imports():
             from enaml.stdlib import dock_area_styles
         _dock_area_styles = dock_area_styles
@@ -184,39 +183,6 @@ class DockArea(ConstraintsWidget):
         yield
         self.dock_events_enabled = enabled
 
-    def save_state(self):
-        """ A method used to save the state of a custom dock area.
-
-        This method is intended to be implemented by subclasses. It
-        is invoked by the 'save_dock_area' function when the dock area
-        is being saved. It should not include any data about the child
-        dock items; that is handled externally.
-
-        Returns
-        -------
-        result : dict
-            The dictionary of relevant state information. The contents
-            of the dict should be serializable.
-
-        """
-        return {'name': self.name}
-
-    def restore_state(self, state):
-        """ A method used to restore the state of a custom dock area.
-
-        This method is intended to be implemented by subclasses. It is
-        invoked by the 'restore_dock_area' function when the dock area
-        is being restored. It will be invoked after the restored child
-        dock items have been added to the dock area.
-
-        Parameters
-        ----------
-        state : dict
-            The dict returned by a previous call to 'save_state'.
-
-        """
-        self.name = state['name']
-
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
@@ -260,63 +226,3 @@ class DockArea(ConstraintsWidget):
                 style_t()(sheet)
                 self._internal_style = sheet
                 sheet.set_parent(self)
-
-
-def save_dock_area(area):
-    """ Save a DockArea to a serializable dictionary.
-
-    Parameters
-    ----------
-    area : DockArea
-        The dock area of interest.
-
-    Returns
-    -------
-    result : dict
-        A serializable dictionary which can be used to reconstruct
-        the dock area by invoking the 'restore_dock_area' function.
-
-    """
-    assert isinstance(area, DockArea), 'area must be a DockArea'
-    data = {
-        'type': cPickle.dumps(type(area)),
-        'state': area.save_state(),
-        'layout': area.save_layout(),
-        'items': map(save_dock_item, area.dock_items()),
-    }
-    return data
-
-
-def restore_dock_area(data):
-    """ Restore a dock item from its saved information.
-
-    Parameters
-    ----------
-    data : dict
-        The dict returned by a previous call to 'save_dock_area'.
-
-    Returns
-    -------
-    result : DockArea
-        The restored dock area.
-
-    """
-    with enaml.imports():
-        area_type = cPickle.loads(data['type'])
-    area = area_type()  # XXX - delete declared children?
-    items = map(restore_dock_item, data['items'])
-    area.insert_children(None, items)
-    area.layout = data['layout']
-    area.restore_state(data['state'])
-    return area
-
-    # Note regarding whether or not to delete declared children:
-    # My gut feeling says "no", since saving/restoring a complete
-    # dock area should really be done procedurally. i.e. the dock
-    # area will be definined completely independently of its dock
-    # item children. I can't envision a real-life scenario where
-    # one would want to declaratively define children which could
-    # then be added or removed and expect that restoring one of
-    # those dock areas would work correctly - since there would
-    # be a glaring inconsistency between the declared text and
-    # what actually gets put on the screen. - SCC
