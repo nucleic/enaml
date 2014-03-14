@@ -72,7 +72,7 @@ class CorePlugin(Plugin):
         event = ExecutionEvent()
         event.command = command
         event.workbench = self.workbench
-        event.parameters = parameters
+        event.parameters = parameters  # copied on assignment
         event.trigger = trigger
 
         return command.handler(event)
