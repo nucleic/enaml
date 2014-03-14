@@ -56,7 +56,7 @@ class Extension(Declarative):
         Parameters
         ----------
         kind : type
-            The declartive type of the child of interest.
+            The declarative type of the child of interest.
 
         reverse : bool, optional
             Whether to search in reversed order. The default is False.
@@ -79,7 +79,7 @@ class Extension(Declarative):
         Parameters
         ----------
         kind : type
-            The declartive type of the children of interest.
+            The declarative type of the children of interest.
 
         Returns
         -------
