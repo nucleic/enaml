@@ -45,7 +45,7 @@ def solve_ordering(nodes):
 
     """
     variables = {}
-    for idx, node in enumerate(nodes):
+    for node in nodes:
         variables[node.id] = kiwi.Variable(str(node.id))
 
     prev_var = None
