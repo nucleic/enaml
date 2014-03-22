@@ -12,4 +12,4 @@ enamldef PersonView(Window):
         Label:
             text = 'Last Name'
         Field:
-            text = person.last_name
+            text := person.last_name
