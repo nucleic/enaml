@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import os
 import linecache
 import traceback
 from types import ModuleType
@@ -17,6 +18,7 @@ from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
 from enaml.widgets.widget import Widget
 
+POSIX = True if os.name == "posix" else False
 
 def _fake_linecache(text, filename):
     """ Inject text into the linecache for traceback purposes.
@@ -123,7 +125,7 @@ class LiveEditorModel(Atom):
         This validator replaces CRLF with LF characters.
 
         """
-        return new.replace('\r\n', '\n')
+        return new.replace('\r', '\n') if POSIX else new.replace('\r\n', '\n')
 
     def _post_validate_view_text(self, old, new):
         """ Post validate the view text.
@@ -131,7 +133,7 @@ class LiveEditorModel(Atom):
         This validator replaces CRLF with LF characters.
 
         """
-        return new.replace('\r\n', '\n')
+        return new.replace('\r', '\n') if POSIX else new.replace('\r\n', '\n')
 
     #--------------------------------------------------------------------------
     # Observers
