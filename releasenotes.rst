@@ -1,6 +1,14 @@
 Enaml Release Notes
 ===================
 
+0.9.5 - 04/28/2014
+------------------
+- Allow pressing escape while dragging a floating dock window. e732d2bb3c6c_
+- Fix line ending issues in live editor on old versions of OSX (thanks to JF). 0a54944728ae_
+
+.. _e732d2bb3c6c: https://github.com/nucleic/enaml/commit/e732d2bb3c6c905cd7f2fe92171e2eab46d8d0e4
+.. _0a54944728ae: https://github.com/nucleic/enaml/commit/0a54944728ae8a688310bb68177092b13baa6c62
+
 0.9.4 - 03/13/2014
 ------------------
 - Allow enamldef objects to be properly pickled. db99d02fa377_
