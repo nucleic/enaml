@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import ast
 
-from atom.api import Atom, Enum, Int, List, Str, Instance, Tuple, Typed
+from atom.api import Atom, Bool, Enum, Int, List, Str, Instance, Tuple, Typed
 
 
 class ASTNode(Atom):
@@ -88,7 +88,8 @@ class EnamlDef(ASTNode):
     pragmas = List(Pragma)
 
     #: The list of body nodes for the enamldef. This will be composed
-    #: of StorageExpr, Binding, ChildDef, and TemplateInst nodes.
+    #: of StorageExpr, Binding, ArrowMethodDef, ChildDef and
+    #: TemplateInst nodes.
     body = List()
 
 
@@ -103,7 +104,8 @@ class ChildDef(ASTNode):
     identifier = Str()
 
     #: The list of body nodes for the child def. This will be composed
-    #: of StorageExpr, Binding, ChildDef and TemplateInst nodes.
+    #: of StorageExpr, Binding, ArrowMethodDef, ChildDef and
+    #: TemplateInst nodes.
     body = List()
 
 
@@ -133,6 +135,18 @@ class AliasExpr(ASTNode):
 
     #: The chain of names being accessed by the alias.
     chain = Tuple()
+
+
+class ArrowMethodDef(ASTNode):
+    """ An AST node which represents an arrow method declaration.
+
+    """
+    #: The Python function definition for the method.
+    funcdef = Typed(ast.FunctionDef)
+
+    #: True if the method was declared with the 'func' keyword.
+    #: False if it represents a method override.
+    is_decl = Bool(False)
 
 
 class OperatorExpr(ASTNode):

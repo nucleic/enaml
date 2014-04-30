@@ -117,15 +117,6 @@ aug_assign_allowed = set([
 ])
 
 
-# The disallowed ast types on the rhs of a :: operator
-notification_disallowed = {
-    ast.FunctionDef: 'function definition',
-    ast.ClassDef: 'class definition',
-    ast.Yield: 'yield statement',
-    ast.Return: 'return statement',
-}
-
-
 # A mapping of aug assignment operators to ast types
 augassign_table = {
     '&=': ast.BitAnd(),
@@ -429,6 +420,7 @@ def p_enamldef_suite_items2(p):
 
 def p_enamldef_suite_item(p):
     ''' enamldef_suite_item : enamldef_simple_item
+                            | arrow_methoddef
                             | child_def
                             | template_inst '''
     p[0] = p[1]
@@ -681,6 +673,7 @@ def p_child_def_suite_items2(p):
 
 def p_child_def_suite_item(p):
     ''' child_def_suite_item : child_def_simple_item
+                             | arrow_methoddef
                              | child_def
                              | template_inst '''
     p[0] = p[1]
@@ -763,18 +756,86 @@ def p_operator_expr2(p):
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
 
 
+# The disallowed ast types on the rhs of a :: operator
+_NOTIFICATION_DISALLOWED = {
+    ast.FunctionDef: 'function definition',
+    ast.ClassDef: 'class definition',
+    ast.Yield: 'yield statement',
+    ast.Return: 'return statement',
+}
+
+
 def p_operator_expr3(p):
     ''' operator_expr : DOUBLECOLON suite '''
     lineno = p.lineno(1)
     mod = ast.Module()
     mod.body = p[2]
     for item in ast.walk(mod):
-        if type(item) in notification_disallowed:
+        if type(item) in _NOTIFICATION_DISALLOWED:
             msg = '%s not allowed in a notification block'
-            msg = msg % notification_disallowed[type(item)]
+            msg = msg % _NOTIFICATION_DISALLOWED[type(item)]
             syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
     python = enaml_ast.PythonModule(ast=mod, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
+
+
+#------------------------------------------------------------------------------
+# Arrow Method
+#------------------------------------------------------------------------------
+# The disallowed ast types in the body of an arrow method
+_ARROW_METHOD_DISALLOWED = {
+    ast.FunctionDef: 'function definition',
+    ast.ClassDef: 'class definition',
+    ast.Yield: 'yield statement',
+}
+
+
+def _validate_arrow_method(p, funcdef):
+    walker = ast.walk(funcdef)
+    walker.next()  # discard toplevel funcdef
+    for item in walker:
+        if type(item) in _ARROW_METHOD_DISALLOWED:
+            msg = '%s not allowed in an arrow method block'
+            msg = msg % _ARROW_METHOD_DISALLOWED[type(item)]
+            syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
+
+
+def p_arrow_methoddef1(p):
+    ''' arrow_methoddef : NAME parameters RIGHTARROW suite '''
+    lineno = p.lineno(1)
+    funcdef = ast.FunctionDef()
+    funcdef.name = p[1]
+    funcdef.args = p[2]
+    funcdef.body = p[4]
+    funcdef.decorator_list = []
+    funcdef.lineno = lineno
+    ast.fix_missing_locations(funcdef)
+    _validate_arrow_method(p, funcdef)
+    methoddef = enaml_ast.ArrowMethodDef()
+    methoddef.lineno = lineno
+    methoddef.funcdef = funcdef
+    methoddef.is_decl = False
+    p[0] = methoddef
+
+
+def p_arrow_methoddef2(p):
+    ''' arrow_methoddef : NAME NAME parameters RIGHTARROW suite '''
+    lineno = p.lineno(1)
+    if p[1] != 'func':
+        syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
+    funcdef = ast.FunctionDef()
+    funcdef.name = p[2]
+    funcdef.args = p[3]
+    funcdef.body = p[5]
+    funcdef.decorator_list = []
+    funcdef.lineno = lineno
+    ast.fix_missing_locations(funcdef)
+    _validate_arrow_method(p, funcdef)
+    methoddef = enaml_ast.ArrowMethodDef()
+    methoddef.lineno = lineno
+    methoddef.funcdef = funcdef
+    methoddef.is_decl = True
+    p[0] = methoddef
 
 
 #------------------------------------------------------------------------------

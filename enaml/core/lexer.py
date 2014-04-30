@@ -153,6 +153,7 @@ class EnamlLexer(object):
         (r'::', 'DOUBLECOLON'),
         (r'\.\.\.', 'ELLIPSIS'),
         (r':=', 'COLONEQUAL'),
+        (r'->', 'RIGHTARROW'),
     )
 
     tokens = (
@@ -544,11 +545,22 @@ class EnamlLexer(object):
 
     def make_token_stream(self):
         token_stream = iter(self.lexer.token, None)
+        token_stream = self.ensure_token_lexer(token_stream)
         token_stream = self.create_strings(token_stream)
         token_stream = self.annotate_indentation_state(token_stream)
         token_stream = self.synthesize_indentation_tokens(token_stream)
         token_stream = self.add_endmarker(token_stream)
         return token_stream
+
+    def ensure_token_lexer(self, token_stream):
+        # PLY only assigns the lexer to tokens which are passed
+        # to t_* functions. This ensures each token gets assigned
+        # a lexer, since that is required by the error handlers.
+        lexer = self.lexer
+        for tok in token_stream:
+            if getattr(tok, 'lexer', None) is None:
+                tok.lexer = lexer
+            yield tok
 
     def create_strings(self, token_stream):
         for tok in token_stream:
@@ -636,7 +648,7 @@ class EnamlLexer(object):
             # by suppressing NEWLINE tokens in a multiline expression.
             # So, we can treat double colon the same as colon here for
             # handling the logic surrounding indentation state.
-            if token.type in ("COLON", "DOUBLECOLON"):
+            if token.type in ("COLON", "DOUBLECOLON", "RIGHTARROW"):
                 at_line_start = False
                 indent = MAY_INDENT
                 token.must_indent = False
