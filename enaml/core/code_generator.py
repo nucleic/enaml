@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import ast
 from contextlib import contextmanager
 
 from atom.api import Atom, Bool, Int, List, Str
@@ -368,6 +369,21 @@ class CodeGenerator(Atom):
         if trim:  # skip ReturnValue
             bp_code = bp_code[:-1]
         self.code_ops.extend(bp_code)
+
+    def insert_python_funcdef(self, funcdef):
+        """ Create a Python function and leave it on the TOS.
+
+        Parameters
+        ----------
+        funcdef : ast.FunctionDef
+            The python function def ast node.
+
+        """
+        mod = ast.Module(body=[funcdef])
+        code = compile(mod, self.filename, mode='exec')
+        bp_code = bp.Code.from_code(code).code
+        # skip SetLineno, STORE_NAME, LOAD_CONST, and RETURN_VALUE
+        self.code_ops.extend(bp_code[1:-3])
 
     def rewrite_to_fast_locals(self, local_names):
         """ Rewrite the locals to be loaded from fast locals.

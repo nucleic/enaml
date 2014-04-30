@@ -628,6 +628,34 @@ def gen_storage_expr(cg, node, index, local_names):
         cg.pop_top()
 
 
+def gen_arrow_method(cg, node, index):
+    """ Generate the code for an arrow method definition.
+
+    The caller should ensure that NODE_LIST is present in the fast
+    locals of the code object.
+
+    Parameters
+    ----------
+    cg : CodeGenerator
+        The code generator with which to write the code.
+
+    node : ArrowMethodDef
+        The enaml ast node of interest.
+
+    index : int
+        The index of the target node in the node list.
+
+    """
+    with cg.try_squash_raise():
+        cg.set_lineno(node.lineno)
+        load_helper(cg, 'add_arrow_method')
+        load_node(cg, index)
+        cg.insert_python_funcdef(node.funcdef)
+        cg.load_const(node.is_decl)
+        cg.call_function(3)
+        cg.pop_top()
+
+
 class CompilerBase(ASTVisitor):
     """ A base class for defining compilers.
 

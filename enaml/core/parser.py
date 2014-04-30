@@ -780,7 +780,7 @@ def p_operator_expr3(p):
 
 
 #------------------------------------------------------------------------------
-# Arrow Method
+# Method Definition
 #------------------------------------------------------------------------------
 # The disallowed ast types in the body of an arrow method
 _ARROW_METHOD_DISALLOWED = {
@@ -801,7 +801,7 @@ def _validate_arrow_method(p, funcdef):
 
 
 def p_arrow_methoddef1(p):
-    ''' arrow_methoddef : NAME parameters RIGHTARROW suite '''
+    ''' arrow_methoddef : NAME LPAR RPAR RIGHTARROW suite '''
     lineno = p.lineno(1)
     funcdef = ast.FunctionDef()
     funcdef.name = p[1]
@@ -817,16 +817,13 @@ def p_arrow_methoddef1(p):
     methoddef.is_decl = False
     p[0] = methoddef
 
-
 def p_arrow_methoddef2(p):
-    ''' arrow_methoddef : NAME NAME parameters RIGHTARROW suite '''
+    ''' arrow_methoddef : NAME LPAR varargslist RPAR RIGHTARROW suite '''
     lineno = p.lineno(1)
-    if p[1] != 'func':
-        syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
     funcdef = ast.FunctionDef()
-    funcdef.name = p[2]
-    funcdef.args = p[3]
-    funcdef.body = p[5]
+    funcdef.name = p[1]
+    funcdef.args = p[2]
+    funcdef.body = p[4]
     funcdef.decorator_list = []
     funcdef.lineno = lineno
     ast.fix_missing_locations(funcdef)
@@ -834,8 +831,26 @@ def p_arrow_methoddef2(p):
     methoddef = enaml_ast.ArrowMethodDef()
     methoddef.lineno = lineno
     methoddef.funcdef = funcdef
-    methoddef.is_decl = True
+    methoddef.is_decl = False
     p[0] = methoddef
+# def p_arrow_methoddef2(p):
+#     ''' arrow_methoddef : NAME NAME parameters RIGHTARROW suite '''
+#     lineno = p.lineno(1)
+#     if p[1] != 'func':
+#         syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
+#     funcdef = ast.FunctionDef()
+#     funcdef.name = p[2]
+#     funcdef.args = p[3]
+#     funcdef.body = p[5]
+#     funcdef.decorator_list = []
+#     funcdef.lineno = lineno
+#     ast.fix_missing_locations(funcdef)
+#     _validate_arrow_method(p, funcdef)
+#     methoddef = enaml_ast.ArrowMethodDef()
+#     methoddef.lineno = lineno
+#     methoddef.funcdef = funcdef
+#     methoddef.is_decl = True
+#     p[0] = methoddef
 
 
 #------------------------------------------------------------------------------
@@ -3917,8 +3932,8 @@ def p_error(t):
 _parse_dir = os.path.join(os.path.dirname(__file__), 'parse_tab')
 _parse_module = 'enaml.core.parse_tab.parsetab'
 _parser = yacc.yacc(
-    debug=0, outputdir=_parse_dir, tabmodule=_parse_module, optimize=1,
-    errorlog=yacc.NullLogger(),
+    debug=1, outputdir=_parse_dir, tabmodule=_parse_module, optimize=1,
+   # errorlog=yacc.NullLogger(),
 )
 
 
