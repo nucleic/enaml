@@ -110,7 +110,7 @@ class FirstPassBlockCompiler(BaseBlockCompiler):
         # Grab the index of the parent node for later use.
         self.aux_index_map[node] = self.parent_index()
 
-    def visit_ArrowMethodDef(self, node):
+    def visit_FuncDef(self, node):
         # Grab the index of the parent node for later use.
         self.aux_index_map[node] = self.parent_index()
 
@@ -173,8 +173,8 @@ class SecondPassBlockCompiler(BaseBlockCompiler):
         if node.expr is not None:
             cmn.gen_operator_binding(cg, node.expr, index, node.name)
 
-    def visit_ArrowMethodDef(self, node):
-        # Generate the code for the method declaration.
+    def visit_FuncDef(self, node):
+        # Generate the code for the function declaration.
         cg = self.code_generator
         index = self.parent_index()
-        cmn.gen_arrow_method(cg, node, index)
+        cmn.gen_decl_funcdef(cg, node, index)

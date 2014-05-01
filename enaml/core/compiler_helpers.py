@@ -13,6 +13,7 @@ from .compiler_nodes import (
     DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstanceNode
 )
 from .declarative import Declarative, d_
+from .declarative_function import DeclarativeFunction
 from .declarative_meta import patch_d_member
 from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
@@ -708,36 +709,8 @@ def validate_unpack_size(template_inst, count, variadic):
         raise ValueError("too many values to unpack")
 
 
-class ArrowMethod(object):
-
-    def __init__(self, func):
-        self._func = func
-
-    def __get__(self, owner, cls):
-        if owner is None:
-            return self
-        return BoundArrowMethod(owner, self._func)
-
-class BoundArrowMethod(object):
-
-    def __init__(self, owner, func):
-        self._owner = owner
-        self._func = func
-
-    def __call__(self, *args, **kwargs):
-        from .funchelper import call_func
-        from .dynamicscope import DynamicScope
-        func = self._func
-        f_globals = func.func_globals
-        f_builtins = f_globals['__builtins__']
-        #f_locals = self.get_locals(owner)
-        f_locals = {}
-        scope = DynamicScope(self._owner, f_locals, f_globals, f_builtins)
-        return call_func(func, (), {}, scope)
-
-
-def add_arrow_method(node, func, is_decl):
-    """ Add an arrow method to a declarative class.
+def add_decl_funcdef(node, func, is_decl):
+    """ Add a declarative function def to a declarative class.
 
     Parameters
     ----------
@@ -752,12 +725,12 @@ def add_arrow_method(node, func, is_decl):
 
     """
     name = func.__name__
-    setattr(node.klass, name, ArrowMethod(func))
+    setattr(node.klass, name, DeclarativeFunction(func, node.scope_key))
 
 
 __compiler_helpers = {
     'add_alias': add_alias,
-    'add_arrow_method': add_arrow_method,
+    'add_decl_funcdef': add_decl_funcdef,
     'add_template_scope': add_template_scope,
     'add_storage': add_storage,
     'declarative_node': declarative_node,
