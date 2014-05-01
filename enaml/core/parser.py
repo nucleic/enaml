@@ -367,7 +367,7 @@ def p_enamldef_impl2(p):
     ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_simple_item '''
     body = filter(None, [p[7]])
     enamldef = enaml_ast.EnamlDef(
-        typename=p[2], base=p[4], body=body,lineno=p.lineno(1)
+        typename=p[2], base=p[4], body=body, lineno=p.lineno(1)
     )
     _validate_enamldef(enamldef, p.lexer.lexer)
     p[0] = enamldef
@@ -414,13 +414,13 @@ def p_enamldef_suite_items1(p):
 
 
 def p_enamldef_suite_items2(p):
-   ''' enamldef_suite_items : enamldef_suite_items enamldef_suite_item '''
-   p[0] = p[1] + [p[2]]
+    ''' enamldef_suite_items : enamldef_suite_items enamldef_suite_item '''
+    p[0] = p[1] + [p[2]]
 
 
 def p_enamldef_suite_item(p):
     ''' enamldef_suite_item : enamldef_simple_item
-                            | arrow_methoddef
+                            | decl_funcdef
                             | child_def
                             | template_inst '''
     p[0] = p[1]
@@ -667,13 +667,13 @@ def p_child_def_suite_items1(p):
 
 
 def p_child_def_suite_items2(p):
-   ''' child_def_suite_items : child_def_suite_items child_def_suite_item '''
-   p[0] = p[1] + [p[2]]
+    ''' child_def_suite_items : child_def_suite_items child_def_suite_item '''
+    p[0] = p[1] + [p[2]]
 
 
 def p_child_def_suite_item(p):
     ''' child_def_suite_item : child_def_simple_item
-                             | arrow_methoddef
+                             | decl_funcdef
                              | child_def
                              | template_inst '''
     p[0] = p[1]
@@ -780,77 +780,62 @@ def p_operator_expr3(p):
 
 
 #------------------------------------------------------------------------------
-# Method Definition
+# Declarative Function Definition
 #------------------------------------------------------------------------------
-# The disallowed ast types in the body of an arrow method
-_ARROW_METHOD_DISALLOWED = {
+# The disallowed ast types in the body of a declarative function
+_DECL_FUNCDEF_DISALLOWED = {
     ast.FunctionDef: 'function definition',
     ast.ClassDef: 'class definition',
     ast.Yield: 'yield statement',
 }
 
 
-def _validate_arrow_method(p, funcdef):
+def _validate_decl_funcdef(p, funcdef):
     walker = ast.walk(funcdef)
     walker.next()  # discard toplevel funcdef
     for item in walker:
-        if type(item) in _ARROW_METHOD_DISALLOWED:
-            msg = '%s not allowed in an arrow method block'
-            msg = msg % _ARROW_METHOD_DISALLOWED[type(item)]
+        if type(item) in _DECL_FUNCDEF_DISALLOWED:
+            msg = '%s not allowed in a declarative function block'
+            msg = msg % _DECL_FUNCDEF_DISALLOWED[type(item)]
             syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
 
 
-def p_arrow_methoddef1(p):
-    ''' arrow_methoddef : NAME LPAR RPAR RIGHTARROW suite '''
+def p_decl_funcdef1(p):
+    ''' decl_funcdef : NAME NAME parameters COLON suite '''
     lineno = p.lineno(1)
+    if p[1] != 'func':
+        syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
     funcdef = ast.FunctionDef()
-    funcdef.name = p[1]
-    funcdef.args = p[2]
-    funcdef.body = p[4]
+    funcdef.name = p[2]
+    funcdef.args = p[3]
+    funcdef.body = p[5]
     funcdef.decorator_list = []
     funcdef.lineno = lineno
     ast.fix_missing_locations(funcdef)
-    _validate_arrow_method(p, funcdef)
-    methoddef = enaml_ast.ArrowMethodDef()
-    methoddef.lineno = lineno
-    methoddef.funcdef = funcdef
-    methoddef.is_decl = False
-    p[0] = methoddef
+    _validate_decl_funcdef(p, funcdef)
+    decl_funcdef = enaml_ast.FuncDef()
+    decl_funcdef.lineno = lineno
+    decl_funcdef.funcdef = funcdef
+    decl_funcdef.is_decl = True
+    p[0] = decl_funcdef
 
-def p_arrow_methoddef2(p):
-    ''' arrow_methoddef : NAME LPAR varargslist RPAR RIGHTARROW suite '''
+
+def p_decl_funcdef2(p):
+    ''' decl_funcdef : NAME RIGHTARROW parameters COLON suite '''
     lineno = p.lineno(1)
     funcdef = ast.FunctionDef()
     funcdef.name = p[1]
-    funcdef.args = p[2]
-    funcdef.body = p[4]
+    funcdef.args = p[3]
+    funcdef.body = p[5]
     funcdef.decorator_list = []
     funcdef.lineno = lineno
     ast.fix_missing_locations(funcdef)
-    _validate_arrow_method(p, funcdef)
-    methoddef = enaml_ast.ArrowMethodDef()
-    methoddef.lineno = lineno
-    methoddef.funcdef = funcdef
-    methoddef.is_decl = False
-    p[0] = methoddef
-# def p_arrow_methoddef2(p):
-#     ''' arrow_methoddef : NAME NAME parameters RIGHTARROW suite '''
-#     lineno = p.lineno(1)
-#     if p[1] != 'func':
-#         syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
-#     funcdef = ast.FunctionDef()
-#     funcdef.name = p[2]
-#     funcdef.args = p[3]
-#     funcdef.body = p[5]
-#     funcdef.decorator_list = []
-#     funcdef.lineno = lineno
-#     ast.fix_missing_locations(funcdef)
-#     _validate_arrow_method(p, funcdef)
-#     methoddef = enaml_ast.ArrowMethodDef()
-#     methoddef.lineno = lineno
-#     methoddef.funcdef = funcdef
-#     methoddef.is_decl = True
-#     p[0] = methoddef
+    _validate_decl_funcdef(p, funcdef)
+    decl_funcdef = enaml_ast.FuncDef()
+    decl_funcdef.lineno = lineno
+    decl_funcdef.funcdef = funcdef
+    decl_funcdef.is_decl = False
+    p[0] = decl_funcdef
 
 
 #------------------------------------------------------------------------------
@@ -2150,7 +2135,7 @@ def p_with_item_list1(p):
 
 def p_with_item_list2(p):
     ''' with_item_list : COMMA with_item '''
-    p[0]  = [p[2]]
+    p[0] = [p[2]]
 
 
 def p_funcdef(p):
@@ -3932,8 +3917,8 @@ def p_error(t):
 _parse_dir = os.path.join(os.path.dirname(__file__), 'parse_tab')
 _parse_module = 'enaml.core.parse_tab.parsetab'
 _parser = yacc.yacc(
-    debug=1, outputdir=_parse_dir, tabmodule=_parse_module, optimize=1,
-   # errorlog=yacc.NullLogger(),
+    debug=0, outputdir=_parse_dir, tabmodule=_parse_module, optimize=1,
+    errorlog=yacc.NullLogger(),
 )
 
 

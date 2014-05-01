@@ -153,7 +153,7 @@ class EnamlLexer(object):
         (r'::', 'DOUBLECOLON'),
         (r'\.\.\.', 'ELLIPSIS'),
         (r':=', 'COLONEQUAL'),
-        (r'<-', 'LEFTARROW'),
+        (r'->', 'RIGHTARROW'),
     )
 
     tokens = (
@@ -648,7 +648,7 @@ class EnamlLexer(object):
             # by suppressing NEWLINE tokens in a multiline expression.
             # So, we can treat double colon the same as colon here for
             # handling the logic surrounding indentation state.
-            if token.type in ("COLON", "DOUBLECOLON", "LEFTARROW"):
+            if token.type in ("COLON", "DOUBLECOLON", "RIGHTARROW"):
                 at_line_start = False
                 indent = MAY_INDENT
                 token.must_indent = False

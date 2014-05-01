@@ -88,8 +88,7 @@ class EnamlDef(ASTNode):
     pragmas = List(Pragma)
 
     #: The list of body nodes for the enamldef. This will be composed
-    #: of StorageExpr, Binding, ArrowMethodDef, ChildDef and
-    #: TemplateInst nodes.
+    #: of StorageExpr, Binding, FuncDef, ChildDef and TemplateInst nodes.
     body = List()
 
 
@@ -104,8 +103,7 @@ class ChildDef(ASTNode):
     identifier = Str()
 
     #: The list of body nodes for the child def. This will be composed
-    #: of StorageExpr, Binding, ArrowMethodDef, ChildDef and
-    #: TemplateInst nodes.
+    #: of StorageExpr, Binding, FuncDef, ChildDef and TemplateInst nodes.
     body = List()
 
 
@@ -137,15 +135,15 @@ class AliasExpr(ASTNode):
     chain = Tuple()
 
 
-class ArrowMethodDef(ASTNode):
-    """ An AST node which represents an arrow method declaration.
+class FuncDef(ASTNode):
+    """ An AST node which represents a 'func' declaration or override.
 
     """
-    #: The Python function definition for the method.
+    #: The Python function definition.
     funcdef = Typed(ast.FunctionDef)
 
-    #: True if the method was declared with the 'func' keyword.
-    #: False if it represents a method override.
+    #: True if the function was declared with 'func', False if the
+    #: function was declared using the method override -> syntax.
     is_decl = Bool(False)
 
 
