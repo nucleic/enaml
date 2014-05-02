@@ -698,8 +698,7 @@ def gen_decl_funcdef(cg, node, index):
         load_helper(cg, 'add_decl_function')
         load_node(cg, index)
         _insert_decl_function(cg, node.funcdef)
-        cg.load_const(node.is_decl)
-        cg.call_function(3)
+        cg.call_function(2)
         cg.pop_top()
 
 

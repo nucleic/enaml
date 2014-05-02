@@ -800,7 +800,7 @@ def _validate_decl_funcdef(p, funcdef):
             syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
 
 
-def p_decl_funcdef1(p):
+def p_decl_funcdef(p):
     ''' decl_funcdef : NAME NAME parameters COLON suite '''
     lineno = p.lineno(1)
     if p[1] != 'func':
@@ -816,25 +816,6 @@ def p_decl_funcdef1(p):
     decl_funcdef = enaml_ast.FuncDef()
     decl_funcdef.lineno = lineno
     decl_funcdef.funcdef = funcdef
-    decl_funcdef.is_decl = True
-    p[0] = decl_funcdef
-
-
-def p_decl_funcdef2(p):
-    ''' decl_funcdef : NAME RIGHTARROW parameters COLON suite '''
-    lineno = p.lineno(1)
-    funcdef = ast.FunctionDef()
-    funcdef.name = p[1]
-    funcdef.args = p[3]
-    funcdef.body = p[5]
-    funcdef.decorator_list = []
-    funcdef.lineno = lineno
-    ast.fix_missing_locations(funcdef)
-    _validate_decl_funcdef(p, funcdef)
-    decl_funcdef = enaml_ast.FuncDef()
-    decl_funcdef.lineno = lineno
-    decl_funcdef.funcdef = funcdef
-    decl_funcdef.is_decl = False
     p[0] = decl_funcdef
 
 

@@ -142,10 +142,6 @@ class FuncDef(ASTNode):
     #: The Python function definition.
     funcdef = Typed(ast.FunctionDef)
 
-    #: True if the function was declared with 'func', False if the
-    #: function was declared using the method override -> syntax.
-    is_decl = Bool(False)
-
 
 class OperatorExpr(ASTNode):
     """ An AST node which represents an operator expression.
