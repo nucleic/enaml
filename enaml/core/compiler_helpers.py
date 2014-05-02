@@ -72,6 +72,11 @@ def resolve_alias(node, alias):
     return (None, None)
 
 
+def _override_fail(klass, name):
+    msg = "can't override '%s.%s'"
+    raise TypeError(msg % (klass.__name__, name))
+
+
 def add_alias(node, name, target, chain):
     """ Add an alias to a Declarative subclass.
 
@@ -92,8 +97,7 @@ def add_alias(node, name, target, chain):
     """
     klass = node.klass
     if hasattr(klass, name):
-        msg = "can't override '%s': %r"
-        raise TypeError(msg % (name, getattr(klass, name)))
+        _override_fail(klass, name)
     alias = Alias(target, chain, node.scope_key)
     res_node, res_member = resolve_alias(node, alias)
     if res_node is None:
@@ -132,14 +136,13 @@ def add_storage(node, name, store_type, kind):
     member = members.get(name)
     if member is not None:
         if member.metadata is None or not member.metadata.get('d_member'):
-            msg = "can't override non-declarative member '%s'"
-            raise TypeError(msg % name)
+            msg = "can't override non-declarative member '%s.%s'"
+            raise TypeError(msg % (klass.__name__, name))
         if member.metadata.get('d_final'):
-            msg = "can't override final member '%s'"
-            raise TypeError(msg % name)
+            msg = "can't override final member '%s.%s'"
+            raise TypeError(msg % (klass.__name__, name))
     elif hasattr(klass, name):
-        msg = "can't override '%s': %r"
-        raise TypeError(msg % (name, getattr(klass, name)))
+        _override_fail(klass, name)
 
     if kind == 'event':
         new = d_(Event(store_type), writable=False, final=False)
@@ -704,7 +707,7 @@ def validate_unpack_size(template_inst, count, variadic):
         raise ValueError("too many values to unpack")
 
 
-def add_func_decl(node, func):
+def add_decl_function(node, func, is_decl):
     """ Add a declarative function to a declarative class.
 
     Parameters
@@ -715,42 +718,28 @@ def add_func_decl(node, func):
     func : FunctionType
         The python function to add to the class.
 
-    """
-    name = func.__name__
-    klass = node.klass
-    if hasattr(klass, name):
-        msg = "can't override '%s': %r"
-        raise TypeError(msg % (name, getattr(klass, name)))
-    setattr(klass, name, DeclarativeFunction(func, node.scope_key))
-
-
-def add_func_override(node, func):
-    """ Add a declarative function override to a declarative class.
-
-    Parameters
-    ----------
-    node : DeclarativeNode
-        The compiler node holding the declarative class.
-
-    func : FunctionType
-        The python function to use as the method override.
+    is_decl : bool
+        True if the function is 'func' declaration, False if it
+        is a function override.
 
     """
     name = func.__name__
     klass = node.klass
-    if not hasattr(klass, name):
-        msg = "%s is "
-    current = getattr(klass, name)
-    if not getattr(current, "_d_virtual", False):
-        msg = "can't override '%s': %r"
-        raise TypeError(msg % (name, getattr(klass, name)))
-    setattr(klass, name, DeclarativeFunction(func, node.scope_key))
+    if is_decl:
+        if hasattr(klass, name):
+            _override_fail(klass, name)
+    else:
+        current = getattr(klass, name, None)
+        if not getattr(current, "_d_func", False):
+            msg = "'%s.%s' is not a declarative method"
+            raise TypeError(msg % (klass.__name__, name))
+    d_func = DeclarativeFunction(func, klass, node.scope_key)
+    setattr(klass, name, d_func)
 
 
 __compiler_helpers = {
     'add_alias': add_alias,
-    'add_func_decl': add_func_decl,
-    'add_func_override': add_func_override,
+    'add_decl_function': add_decl_function,
     'add_template_scope': add_template_scope,
     'add_storage': add_storage,
     'declarative_node': declarative_node,

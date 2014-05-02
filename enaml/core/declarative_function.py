@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2014, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,37 +9,14 @@ from .dynamicscope import DynamicScope
 from .funchelper import call_func
 
 
-def d_virtual(func):
-    """ A decorator for creating declarative virtual method.
-
-    This decorator can be applied to a method of a Declarative subclass
-    in order to allow that method to be overriden using Enaml method
-    override syntax.
-
-    Parameters
-    ----------
-    func : FunctionType
-        The function to make declarative virtual.
-
-    Returns
-    -------
-    result : func
-        The original function tagged with the appropriate metadata
-        for the compiler.
-
-    """
-    func._d_virtual = True
-    return func
-
-
 class DeclarativeFunction(object):
     """ A descriptor which represents a declarative function.
 
     """
     # XXX move this class to C++
-    __slots__ = ('im_func', 'im_key', '_d_virtual')
+    __slots__ = ('im_func', 'im_class', 'im_key')
 
-    def __init__(self, im_func, im_key):
+    def __init__(self, im_func, im_class, im_key):
         """ Initialize a DeclarativeFunction.
 
         Parameters
@@ -47,25 +24,59 @@ class DeclarativeFunction(object):
         im_func : FunctionType
             The Python function which implements the logic.
 
+        im_class : type
+            The declarative class on which this function lives.
+
         im_key : object
             The scope im_key to lookup the function locals.
 
         """
         self.im_func = im_func
+        self.im_class = im_class
         self.im_key = im_key
-        self._d_virtual = True
+
+    @property
+    def _d_func(self):
+        return True
 
     def __repr__(self):
-        mod = self.im_func.__module__
+        klass = self.im_class.__name__
         name = self.im_func.__name__
-        return '<declarative function %s.%s>' % (mod, name)
+        return '<declarative function %s.%s>' % (klass, name)
 
-    def __get__(self, im_self, im_class):
+    def __get__(self, im_self, ignored):
         if im_self is None:
             return self
-        im_func = self.im_func
-        im_key = self.im_key
-        return BoundDeclarativeMethod(im_func, im_self, im_key)
+        return BoundDeclarativeMethod(
+            self.im_func, self.im_class, self.im_key, im_self)
+
+
+def _make_super(im_class, im_self):
+    """ Create a super() function bound to a class and instance.
+
+    This is an internal function is used to create a super object
+    for use within a declarative function. It should not be consumed
+    by user code.
+
+    Parameters
+    ----------
+    im_class : type
+        The class object for the super call.
+
+    im_self : object
+        The instance object for the super call.
+
+    Returns
+    -------
+    result : FunctionType
+        A closure which takes no arguments and returns a *real*
+        bound super object when invoked.
+
+    """
+    def super():
+        global super
+        return super(im_class, im_self)
+    return super
 
 
 class BoundDeclarativeMethod(object):
@@ -73,9 +84,9 @@ class BoundDeclarativeMethod(object):
 
     """
     # XXX move this class to C++
-    __slots__ = ('im_func', 'im_self', 'im_key')
+    __slots__ = ('im_func', 'im_class', 'im_key', 'im_self')
 
-    def __init__(self, im_func, im_self, im_key):
+    def __init__(self, im_func, im_class, im_key, im_self):
         """ Initialize a BoundDeclarativeMethod.
 
         Parameters
@@ -83,21 +94,26 @@ class BoundDeclarativeMethod(object):
         im_func : FunctionType
             The Python function which implements the logic.
 
+        im_class : type
+            The declarative class on which this function lives.
+
+        im_key : object
+            The scope key to lookup the function locals.
+
         im_self : Declarative
             The declarative 'self' context for the function.
 
-        key : object
-            The scope key to lookup the function locals.
-
         """
         self.im_func = im_func
-        self.im_self = im_self
+        self.im_class = im_class
         self.im_key = im_key
+        self.im_self = im_self
 
     def __repr__(self):
+        im_func = self.im_func
         im_self = self.im_self
-        args = (self.im_func.__name__, type(im_self).__name__, im_self)
-        return "<bound declarative method %s.%s of %r>" % args
+        args = (type(im_self).__name__, im_func.__name__, im_self)
+        return '<bound declarative method %s.%s of %r>' % args
 
     def __call__(self, *args, **kwargs):
         im_func = self.im_func
@@ -106,4 +122,5 @@ class BoundDeclarativeMethod(object):
         im_self = self.im_self
         f_locals = im_self._d_storage.get(self.im_key) or {}
         scope = DynamicScope(im_self, f_locals, f_globals, f_builtins)
+        scope['super'] = _make_super(self.im_class, im_self)
         return call_func(im_func, args, kwargs, scope)
