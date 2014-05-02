@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import List, ForwardTyped, Typed, observe
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, d_func
 from enaml.layout.constrainable import ConstrainableMixin, PolicyEnum
 
 from .widget import Widget, ProxyWidget
@@ -103,6 +103,7 @@ class ConstraintsWidget(Widget, ConstrainableMixin):
         if switch:
             return self
 
+    @d_func
     def layout_constraints(self):
         """ Get the constraints to use for this component's layout.
 

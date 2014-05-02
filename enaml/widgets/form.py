@@ -58,6 +58,8 @@ class Form(Container):
         children in a two column layout. User defined 'constraints'
         will be added on top of the generated form constraints.
 
+        This method cannot be overridden from Enaml syntax.
+
         """
         children = self.visible_widgets()
         labels = children[::2]

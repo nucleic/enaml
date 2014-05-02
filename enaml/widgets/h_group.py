@@ -54,6 +54,8 @@ class HGroup(Container):
         children of the container in addition to any user-supplied
         constraints.
 
+        This method cannot be overridden from Enaml syntax.
+
         """
         widgets = self.visible_widgets()
         items = [self.leading_spacer] + widgets + [self.trailing_spacer]

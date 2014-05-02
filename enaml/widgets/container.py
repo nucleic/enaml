@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, Coerced, ForwardTyped, Typed, observe, set_default
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, d_func
 from enaml.layout.constrainable import ContentsConstrainableMixin
 from enaml.layout.geometry import Box
 from enaml.layout.layout_helpers import vbox
@@ -125,6 +125,7 @@ class Container(Frame, ContentsConstrainableMixin):
     #--------------------------------------------------------------------------
     # Layout Constraints
     #--------------------------------------------------------------------------
+    @d_func
     def layout_constraints(self):
         """ The constraints generation for a Container.
 
