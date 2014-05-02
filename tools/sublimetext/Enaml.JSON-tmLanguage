@@ -92,6 +92,48 @@
       ]
     },
     {
+      "comment": "function declaration",
+      "name": "meta.function.enaml",
+      "begin": "^\\s*(func)\\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\\s*\\()",
+      "beginCaptures": {
+        "1": { "name": "storage.type.function.enaml" }
+      },
+      "end": "(\\))\\s*(?:(\\:)|(.*$\n?))",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.parameters.end.enaml" },
+        "2": { "name": "punctuation.section.function.begin.enaml" },
+        "3": { "name": "invalid.illegal.missing-section-begin.enaml" }
+      },
+      "patterns": [
+        {
+          "contentName": "entity.name.function.enaml",
+          "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
+          "end": "(?![A-Za-z0-9_])",
+          "patterns": [
+            { "include": "#entity_name_function" }
+          ]
+        },
+        {
+          "contentName": "meta.function.parameters.enaml",
+          "begin": "(\\()",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.parameters.begin.enaml" }
+          },
+          "end": "(?=\\)\\s*\\:)",
+          "patterns": [
+            { "include": "#keyword_arguments" },
+            {
+              "match": "\\b([a-zA-Z_][a-zA-Z_0-9]*)\\s*(?:(,)|(?=[\n\\)]))",
+              "captures": {
+                "1": { "name": "variable.parameter.function.enaml" },
+                "2": { "name": "punctuation.separator.parameters.enaml" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "comment": "template instantiation",
       "name": "meta.function-call.enaml",
       "begin": "^\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s*(?=\\(.*?\\).*?\\:\\s*$)",
