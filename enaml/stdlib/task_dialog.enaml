@@ -79,7 +79,7 @@ enamldef TaskDialogDetailsArea(Container):
     #: The default padding is set appropriate for common use cases.
     padding = (0, 10, 15, 10)
 
-    # XXX ideally, this shouldn't be needed
+    # XXX ideally, this shouldn't be needed.
     visible :: parent.request_relayout()
 
 
@@ -117,15 +117,15 @@ enamldef TaskDialogBody(Container):
     #: The dialog body has no padding by default.
     padding = 0
 
-    #: The dialog footnote separator.
-    #: This is only made visible when using a footnote.
+    #: The dialog footnote separator. This is only made visible when
+    #: using a dialog footnote area.
     Separator: separator:
         visible = False
 
     #: Generate the layout constraints for the dialog body. This method
-    #: will setup a grid layout which is appropriate for the task dialog
-    #: area children defined for the dialog body. The 'constraints'
-    #: attribute is ignored entirely.
+    #: will setup a layout which is appropriate for the task dialog area
+    #: children defined for the dialog body. The 'constraints' attribute
+    #: is ignored entirely.
     func layout_constraints():
         icon = inst = ctnt = dtls = cmnd = ftnt = None
         for item in self.visible_widgets():
@@ -141,12 +141,14 @@ enamldef TaskDialogBody(Container):
                 dtls = item
             elif isinstance(item, TaskDialogFootnoteArea):
                 ftnt = item
+
         if ftnt is not None:
             separator.visible = True
             sepr = separator
         else:
             separator.visible = False
             sepr = None
+
         t = self.contents_top
         r = self.contents_right
         b = self.contents_bottom
@@ -157,6 +159,7 @@ enamldef TaskDialogBody(Container):
             align('left', l, cmnd, sepr, ftnt),
             align('left', inst, ctnt, dtls),
         ]
+
         if icon is None:
             cns.append(align('left', l, inst or ctnt or dtls))
         else:
@@ -165,6 +168,7 @@ enamldef TaskDialogBody(Container):
                 align('left', l, icon),
                 align('left', icon.right, inst or ctnt or dtls),
             ])
+
         return cns
 
 
