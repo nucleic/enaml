@@ -129,8 +129,11 @@ class Container(Frame, ContentsConstrainableMixin):
     def layout_constraints(self):
         """ The constraints generation for a Container.
 
-        This method supplies default vbox constraints to the children of
-        the container unless the user has given explicit 'constraints'.
+        This method supplies default vbox constraints to the visible
+        children of the container unless the user has given explicit
+        'constraints'.
+
+        This method may also be overridden from Enaml syntax.
 
         """
         if self.constraints:
