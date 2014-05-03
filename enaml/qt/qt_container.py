@@ -352,14 +352,14 @@ class QtContainer(QtFrame, ProxyContainer):
 
         """
         # If this container owns the layout, (re)start the timer. The
-        # list of layout items is reset to prevent an edge case where
+        # list of layout items is cleared to prevent an edge case where
         # a parent container layout occurs before the child container,
         # causing the child to resize potentially deleted widgets which
         # still have strong refs in the layout items list.
         manager = self._layout_manager
         if manager is not None:
             if self._layout_timer is None:
-                manager.set_items([])
+                manager.clear_items()
                 self.widget.setUpdatesEnabled(False)
                 timer = self._layout_timer = QTimer()
                 timer.setSingleShot(True)
