@@ -62,6 +62,21 @@ class ProxyWidget(ProxyToolkitObject):
     def restyle(self):
         raise NotImplementedError
 
+    def set_focus(self):
+        raise NotImplementedError
+
+    def clear_focus(self):
+        raise NotImplementedError
+
+    def has_focus(self):
+        raise NotImplementedError
+
+    def focus_next_child(self):
+        raise NotImplementedError
+
+    def focus_previous_child(self):
+        raise NotImplementedError
+
 
 class Widget(ToolkitObject, Stylable):
     """ The base class of visible widgets in Enaml.
@@ -158,3 +173,49 @@ class Widget(ToolkitObject, Stylable):
         self.visible = False
         if self.proxy_is_active:
             self.proxy.ensure_hidden()
+
+    def set_focus(self):
+        """ Set the keyboard input focus to this widget.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            self.proxy.set_focus()
+
+    def clear_focus(self):
+        """ Clear the keyboard input focus from this widget.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            self.proxy.clear_focus()
+
+    def has_focus(self):
+        """ Test whether this widget has input focus.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.has_focus()
+        return False
+
+    def focus_next_child(self):
+        """ Give focus to the next widget in the focus chain.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            self.proxy.focus_next_child()
+
+    def focus_previous_child(self):
+        """ Give focus to the previous widget in the focus chain.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            self.proxy.focus_previous_child()

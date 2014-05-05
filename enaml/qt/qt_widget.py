@@ -200,3 +200,33 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.refresh_style_sheet()
+
+    def set_focus(self):
+        """ Set the keyboard input focus to this widget.
+
+        """
+        self.widget.setFocus(Qt.OtherFocusReason)
+
+    def clear_focus(self):
+        """ Clear the keyboard input focus from this widget.
+
+        """
+        self.widget.clearFocus()
+
+    def has_focus(self):
+        """ Test whether this widget has input focus.
+
+        """
+        return self.widget.hasFocus()
+
+    def focus_next_child(self):
+        """ Give focus to the next widget in the focus chain.
+
+        """
+        self.widget.focusNextChild()
+
+    def focus_previous_child(self):
+        """ Give focus to the previous widget in the focus chain.
+
+        """
+        self.widget.focusPreviousChild()
