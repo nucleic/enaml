@@ -101,3 +101,22 @@ class QtApplication(Application):
 
         """
         return QThread.currentThread() == self._qapp.thread()
+
+    def focus_widget(self):
+        """ Get the widget with the current keyboard input focus.
+
+        Returns
+        -------
+        result : Widget or None
+            The widget with keyboard input focus, or None if no widget
+            has focus, or if the focused toolkit widget does not
+            correspond to an Enaml widget.
+
+        """
+        widget = QApplication.focusWidget()
+        if widget is None:
+            return None
+        proxy = getattr(widget, '_d_proxy', None)
+        if proxy is None:
+            return None
+        return proxy.declaration
