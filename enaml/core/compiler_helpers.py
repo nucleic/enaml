@@ -707,7 +707,7 @@ def validate_unpack_size(template_inst, count, variadic):
         raise ValueError("too many values to unpack")
 
 
-def add_decl_function(node, func):
+def add_decl_function(node, func, is_override):
     """ Add a declarative function to a declarative class.
 
     Parameters
@@ -718,13 +718,19 @@ def add_decl_function(node, func):
     func : FunctionType
         The python function to add to the class.
 
+    is_override : bool
+        True if the function was declared with override syntax, False
+        if declared as a new function on the declarative class.
+
     """
     name = func.__name__
     klass = node.klass
-    if hasattr(klass, name):
-        current = getattr(klass, name)
+    if is_override:
+        current = getattr(klass, name, None)
         if not getattr(current, "_d_func", False):
-            _override_fail(klass, name)
+            raise TypeError("'%s' is not a declarative function" % name)
+    elif hasattr(klass, name):
+        _override_fail(klass, name)
     d_func = DeclarativeFunction(func, klass, node.scope_key)
     setattr(klass, name, d_func)
 

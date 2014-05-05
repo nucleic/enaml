@@ -790,17 +790,17 @@ _DECL_FUNCDEF_DISALLOWED = {
 }
 
 
-def _validate_decl_funcdef(p, funcdef):
+def _validate_decl_funcdef(funcdef, lexer):
     walker = ast.walk(funcdef)
     walker.next()  # discard toplevel funcdef
     for item in walker:
         if type(item) in _DECL_FUNCDEF_DISALLOWED:
             msg = '%s not allowed in a declarative function block'
             msg = msg % _DECL_FUNCDEF_DISALLOWED[type(item)]
-            syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
+            syntax_error(msg, FakeToken(lexer, item.lineno))
 
 
-def p_decl_funcdef(p):
+def p_decl_funcdef1(p):
     ''' decl_funcdef : NAME NAME parameters COLON suite '''
     lineno = p.lineno(1)
     if p[1] != 'func':
@@ -812,10 +812,29 @@ def p_decl_funcdef(p):
     funcdef.decorator_list = []
     funcdef.lineno = lineno
     ast.fix_missing_locations(funcdef)
-    _validate_decl_funcdef(p, funcdef)
+    _validate_decl_funcdef(funcdef, p.lexer.lexer)
     decl_funcdef = enaml_ast.FuncDef()
     decl_funcdef.lineno = lineno
     decl_funcdef.funcdef = funcdef
+    decl_funcdef.is_override = False
+    p[0] = decl_funcdef
+
+
+def p_decl_funcdef2(p):
+    ''' decl_funcdef : NAME RIGHTARROW parameters COLON suite '''
+    lineno = p.lineno(1)
+    funcdef = ast.FunctionDef()
+    funcdef.name = p[1]
+    funcdef.args = p[3]
+    funcdef.body = p[5]
+    funcdef.decorator_list = []
+    funcdef.lineno = lineno
+    ast.fix_missing_locations(funcdef)
+    _validate_decl_funcdef(funcdef, p.lexer.lexer)
+    decl_funcdef = enaml_ast.FuncDef()
+    decl_funcdef.lineno = lineno
+    decl_funcdef.funcdef = funcdef
+    decl_funcdef.is_override = True
     p[0] = decl_funcdef
 
 

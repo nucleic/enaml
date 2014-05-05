@@ -153,6 +153,7 @@ class EnamlLexer(object):
         (r'::', 'DOUBLECOLON'),
         (r'\.\.\.', 'ELLIPSIS'),
         (r':=', 'COLONEQUAL'),
+        (r'=>', 'RIGHTARROW'),
     )
 
     tokens = (
