@@ -308,19 +308,6 @@ class Application(Atom):
         """
         raise NotImplementedError
 
-    def focus_widget(self):
-        """ Get the widget with the current keyboard input focus.
-
-        Returns
-        -------
-        result : Widget or None
-            The widget with keyboard input focus, or None if no widget
-            has focus, or if the focused toolkit widget does not
-            correspond to an Enaml widget.
-
-        """
-        raise NotImplementedError
-
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
