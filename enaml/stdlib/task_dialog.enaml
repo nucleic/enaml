@@ -29,7 +29,7 @@ enamldef TaskDialogIconArea(Container):
     #: Generate the layout constraints for the icon area. The icon area
     #: gets a default spacer so that it can expand to accomodate larger
     #: content areas.
-    func layout_constraints():
+    layout_constraints => ():
         if self.constraints:
             return self.constraints
         items = self.visible_widgets()
@@ -126,7 +126,7 @@ enamldef TaskDialogBody(Container):
     #: will setup a layout which is appropriate for the task dialog area
     #: children defined for the dialog body. The 'constraints' attribute
     #: is ignored entirely.
-    func layout_constraints():
+    layout_constraints => ():
         icon = inst = ctnt = dtls = cmnd = ftnt = None
         for item in self.visible_widgets():
             if isinstance(item, TaskDialogIconArea):
