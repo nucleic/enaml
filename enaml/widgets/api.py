@@ -61,4 +61,5 @@ from .tool_bar import ToolBar
 from .v_group import VGroup
 from .vtk_canvas import VTKCanvas
 from .web_view import WebView
+from .widget import Feature
 from .window import Window

@@ -1,0 +1,73 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2014, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using the FocusTraversal advanced widget feature.
+
+The FocusTraversal is an advanced widget feature for controlling the
+order in which widgets receive focus during Tab and Shit+Tab keyboard
+events. It enables two methods which can be implemented as declarative
+Enaml functions which will compute the next/previous focus widgets on
+demand.
+
+In this example, the traversal handlers simply return the next or
+previous field from a double-linked list of fields. However, there
+is no restriction on how the handlers actually compute the focus
+widgets.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window, GroupBox, Field, Container, Feature
+
+
+enamldef LinkField(Field):
+    attr next_field
+    attr prev_field
+
+
+enamldef Main(Window):
+    title = 'Focus Traversal'
+    Container:
+        features = Feature.FocusTraversal
+
+        next_focus_child => (current):      # triggered on Tab
+            return getattr(current, 'next_field', None)
+
+        previous_focus_child => (current):  # triggered on Shift+Tab
+            return getattr(current, 'prev_field', None)
+
+        GroupBox:
+            title = 'First Group'
+            LinkField: f1:
+                placeholder = '1'
+                next_field = f4
+                prev_field = f5
+            LinkField: f2:
+                placeholder = '5'
+                next_field = f7
+                prev_field = f6
+            LinkField: f3:
+                placeholder = '3'
+                next_field = f6
+                prev_field = f4
+            LinkField: f4:
+                placeholder = '2'
+                next_field = f3
+                prev_field = f1
+        GroupBox:
+            title = 'Second Group'
+            LinkField: f5:
+                placeholder = '7'
+                next_field = f1
+                prev_field = f7
+            LinkField: f6:
+                placeholder = '4'
+                next_field = f2
+                prev_field = f3
+            LinkField: f7:
+                placeholder = '6'
+                next_field = f5
+                prev_field = f2

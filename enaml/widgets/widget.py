@@ -5,15 +5,25 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
+from atom.api import (
+    Bool, Enum, IntEnum, Unicode, Coerced, Typed, ForwardTyped, observe
+)
 
 from enaml.colors import ColorMember
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, d_func
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
 from enaml.styling import Stylable
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
+
+
+class Feature(IntEnum):
+    """ An IntEnum defining the advanced widget features.
+
+    """
+    #: Enables support for custom focus traversal functions.
+    FocusTraversal = 0x1
 
 
 class ProxyWidget(ProxyToolkitObject):
@@ -116,6 +126,11 @@ class Widget(ToolkitObject, Stylable):
     #: on all clients. A value of None indicates to use the default as
     #: supplied by the client.
     show_focus_rect = d_(Enum(None, True, False))
+
+    #: Set the extra features to enable for this widget. This value must
+    #: be provided when the widget is instantiated. Runtime changes to
+    #: this value are ignored.
+    features = d_(Coerced(Feature.Flags))
 
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
@@ -224,3 +239,61 @@ class Widget(ToolkitObject, Stylable):
         """
         if self.proxy_is_active:
             self.proxy.focus_previous_child()
+
+    @d_func
+    def next_focus_child(self, current):
+        """ Compute the next widget which should gain focus.
+
+        When the FocusTraversal feature of the widget is enabled, this
+        method will be invoked as a result of a Tab key press or from
+        a call to the 'focus_next_child' method on a decendant of the
+        owner widget. It should be reimplemented in order to provide
+        custom logic for computing the next focus widget.
+
+        ** The FocusTraversal feature must be enabled for the widget in
+        order for this method to be called. **
+
+        Parameters
+        ----------
+        current : Widget or None
+            The current widget with input focus, or None if no widget
+            has focus or if the toolkit widget with focus does not
+            correspond to an Enaml widget.
+
+        Returns
+        -------
+        result : Widget or None
+            The next widget which should gain focus, or None to follow
+            the default toolkit behavior.
+
+        """
+        return None
+
+    @d_func
+    def previous_focus_child(self, current):
+        """ Compute the previous widget which should gain focus.
+
+        When the FocusTraversal feature of the widget is enabled, this
+        method will be invoked as a result of a Shift+Tab key press or
+        from a call to the 'focus_prev_child' method on a decendant of
+        the owner widget. It should be reimplemented in order to provide
+        custom logic for computing the previous focus widget.
+
+        ** The FocusTraversal feature must be enabled for the widget in
+        order for this method to be called. **
+
+        Parameters
+        ----------
+        current : Widget or None
+            The current widget with input focus, or None if no widget
+            has focus or if the toolkit widget with focus does not
+            correspond to an Enaml widget.
+
+        Returns
+        -------
+        result : Widget or None
+            The previous widget which should gain focus, or None to
+            follow the default toolkit behavior.
+
+        """
+        return None

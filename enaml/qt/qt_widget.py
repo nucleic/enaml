@@ -7,10 +7,10 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Typed
+from atom.api import Typed, Coerced
 
 from enaml.styling import StyleCache
-from enaml.widgets.widget import ProxyWidget
+from enaml.widgets.widget import Feature, ProxyWidget
 
 from .QtCore import Qt, QSize
 from .QtGui import QFont, QWidget, QApplication
@@ -20,12 +20,30 @@ from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
 
 
+def _focused_declaration():
+    """ Returns the Enaml declaration of the current focus widget.
+
+    """
+    widget = QApplication.focusWidget()
+    if widget is None:
+        return None
+    proxy = getattr(widget, '_d_proxy', None)
+    if proxy is None:
+        return None
+    return proxy.declaration
+
+
 class QtWidget(QtToolkitObject, ProxyWidget):
     """ A Qt implementation of an Enaml ProxyWidget.
 
     """
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QWidget)
+
+    #: A private copy of the declaration features. This ensures that
+    #: feature cleanup will proceed correctly in the event that user
+    #: code modifies the declaration features value at runtime.
+    _features = Coerced(Feature.Flags)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -41,6 +59,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         super(QtWidget, self).init_widget()
+        self._setup_features()
         d = self.declaration
         if d.background:
             self.set_background(d.background)
@@ -68,6 +87,56 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         # are created.
         if self.widget.parent() or not d.visible:
             self.set_visible(d.visible)
+
+    def destroy(self):
+        """ Destroy the underlying QWidget object.
+
+        """
+        self._teardown_features()
+        super(QtWidget, self).destroy()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _setup_features(self):
+        """ Setup the advanced widget features.
+
+        """
+        features = self._features = self.declaration.features
+        if not features:
+            return
+        widget = self.widget
+        if features & Feature.FocusTraversal:
+            widget.focusNextPrevChild = self._focusNextPrevChild
+
+    def _teardown_features(self):
+        """ Cleanup the resources for the advanced widget features.
+
+        """
+        features = self._features
+        if not features:
+            return
+        widget = self.widget
+        if features & Feature.FocusTraversal:
+            del widget.focusNextPrevChild
+
+    def _focusNextPrevChild(self, next_child):
+        """ The duck-punched 'focusNextPrevChild' implementation.
+
+        """
+        d = self.declaration
+        current = _focused_declaration()
+        if next_child:
+            child = d.next_focus_child(current)
+            reason = Qt.TabFocusReason
+        else:
+            child = d.previous_focus_child(current)
+            reason = Qt.BacktabFocusReason
+        if child is not None and child.proxy_is_active:
+            child.proxy.widget.setFocus(reason)
+            return True
+        widget = self.widget
+        return type(widget).focusNextPrevChild(widget, next_child)
 
     #--------------------------------------------------------------------------
     # Protected API
