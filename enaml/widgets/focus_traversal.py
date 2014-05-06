@@ -29,7 +29,7 @@ class FocusTraversal(ToolkitObject):
 
     Declaring more than one FocusTraversal child on a given Widget
     or reparenting a FocusTraversal object is a programming error
-    and will have undefined behavior.
+    and the resulting behavior is undefined.
 
     """
     #: A reference to the ProxyFocusTraversal object.
@@ -41,8 +41,8 @@ class FocusTraversal(ToolkitObject):
 
         This method is invoked as a result of a Tab key press or from
         a call to the 'focus_next_child' method on a decendant of the
-        owner. It may be reimplemented in order to provide custom logic
-        for computing the next widget to gain focus.
+        owner widget. It should be reimplemented in order to provide
+        custom logic for computing the next focus widget.
 
         Parameters
         ----------
@@ -66,8 +66,8 @@ class FocusTraversal(ToolkitObject):
 
         This method is invoked as a result of a Shift+Tab key press or
         from a call to the 'focus_prev_child' method on a decendant of
-        the owner. It may be reimplemented in order to provide custom
-        logic for computing the previous widget to gain focus.
+        the owner widget. It should be reimplemented in order to provide
+        custom logic for computing the previous focus widget.
 
         Parameters
         ----------

@@ -197,6 +197,11 @@ class Widget(ToolkitObject, Stylable):
 
         FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
 
+        Returns
+        -------
+        result : bool
+            True if this widget has input focus, False otherwise.
+
         """
         if self.proxy_is_active:
             return self.proxy.has_focus()
