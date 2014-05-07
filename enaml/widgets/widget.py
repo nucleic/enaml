@@ -25,6 +25,9 @@ class Feature(IntEnum):
     #: Enables support for custom focus traversal functions.
     FocusTraversal = 0x1
 
+    #: Enables support for focus events.
+    FocusEvents = 0x2
+
 
 class ProxyWidget(ProxyToolkitObject):
     """ The abstract definition of a proxy Widget object.
@@ -297,3 +300,23 @@ class Widget(ToolkitObject, Stylable):
 
         """
         return None
+
+    @d_func
+    def focus_gained(self):
+        """ A method invoked when the widget gains input focus.
+
+        When the FocusEvents feature must is enabled for the widget,
+        this method will be called when the widget gains input focus.
+
+        """
+        pass
+
+    @d_func
+    def focus_lost(self):
+        """ A method invoked when the widget loses input focus.
+
+        When the FocusEvents feature must is enabled for the widget,
+        this method will be called when the widget loses input focus.
+
+        """
+        pass

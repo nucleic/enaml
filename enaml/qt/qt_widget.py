@@ -20,19 +20,6 @@ from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
 
 
-def _focused_declaration():
-    """ Returns the Enaml declaration of the current focus widget.
-
-    """
-    widget = QApplication.focusWidget()
-    if widget is None:
-        return None
-    proxy = getattr(widget, '_d_proxy', None)
-    if proxy is None:
-        return None
-    return proxy.declaration
-
-
 class QtWidget(QtToolkitObject, ProxyWidget):
     """ A Qt implementation of an Enaml ProxyWidget.
 
@@ -59,7 +46,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         super(QtWidget, self).init_widget()
-        self._setup_features()
+        self._install_features()
         d = self.declaration
         if d.background:
             self.set_background(d.background)
@@ -92,14 +79,14 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """ Destroy the underlying QWidget object.
 
         """
-        self._teardown_features()
+        self._remove_features()
         super(QtWidget, self).destroy()
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _setup_features(self):
-        """ Setup the advanced widget features.
+    def _install_features(self):
+        """ Install the advanced widget feature handlers.
 
         """
         features = self._features = self.declaration.features
@@ -108,9 +95,12 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         widget = self.widget
         if features & Feature.FocusTraversal:
             widget.focusNextPrevChild = self._focusNextPrevChild
+        if features & Feature.FocusEvents:
+            widget.focusInEvent = self._focusInEvent
+            widget.focusOutEvent = self._focusOutEvent
 
-    def _teardown_features(self):
-        """ Cleanup the resources for the advanced widget features.
+    def _remove_features(self):
+        """ Remove the advanced widget feature handlers.
 
         """
         features = self._features
@@ -119,24 +109,46 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         widget = self.widget
         if features & Feature.FocusTraversal:
             del widget.focusNextPrevChild
+        if features & Feature.FocusEvents:
+            del widget.focusInEvent
+            del widget.focusOutEvent
 
     def _focusNextPrevChild(self, next_child):
         """ The duck-punched 'focusNextPrevChild' implementation.
 
         """
-        d = self.declaration
-        current = _focused_declaration()
+        fw = QApplication.focusWidget()
+        fp = fw and getattr(fw, '_d_proxy', None)
+        fd = fp and fp.declaration
         if next_child:
-            child = d.next_focus_child(current)
+            child = self.declaration.next_focus_child(fd)
             reason = Qt.TabFocusReason
         else:
-            child = d.previous_focus_child(current)
+            child = self.declaration.previous_focus_child(fd)
             reason = Qt.BacktabFocusReason
         if child is not None and child.proxy_is_active:
-            child.proxy.widget.setFocus(reason)
-            return True
+            cw = child.proxy.widget
+            if cw.focusPolicy() & Qt.TabFocus:
+                cw.setFocus(reason)
+                return True
         widget = self.widget
         return type(widget).focusNextPrevChild(widget, next_child)
+
+    def _focusInEvent(self, event):
+        """ The duck-punched 'focusInEvent' implementation.
+
+        """
+        widget = self.widget
+        type(widget).focusInEvent(widget, event)
+        self.declaration.focus_gained()
+
+    def _focusOutEvent(self, event):
+        """ The duck-punched 'focusOutEvent' implementation.
+
+        """
+        widget = self.widget
+        type(widget).focusOutEvent(widget, event)
+        self.declaration.focus_lost()
 
     #--------------------------------------------------------------------------
     # Protected API
