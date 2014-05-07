@@ -7,10 +7,10 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Typed
+from atom.api import Typed, Coerced, Value
 
 from enaml.styling import StyleCache
-from enaml.widgets.widget import ProxyWidget
+from enaml.widgets.widget import Feature, ProxyWidget
 
 from .QtCore import Qt, QSize
 from .QtGui import QFont, QWidget, QApplication
@@ -20,12 +20,30 @@ from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
 
 
+#: A mapping of Enaml focus policies -> Qt focus policies.
+FOCUS_POLICIES = {
+    'tab_focus': Qt.TabFocus,
+    'click_focus': Qt.ClickFocus,
+    'strong_focus': Qt.StrongFocus,
+    'wheel_focus': Qt.WheelFocus,
+    'no_focus': Qt.NoFocus,
+}
+
+
 class QtWidget(QtToolkitObject, ProxyWidget):
     """ A Qt implementation of an Enaml ProxyWidget.
 
     """
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QWidget)
+
+    #: A private copy of the declaration features. This ensures that
+    #: feature cleanup will proceed correctly in the event that user
+    #: code modifies the declaration features value at runtime.
+    _features = Coerced(Feature.Flags)
+
+    #: An internal cache of the widget's default focus policy.
+    _default_focus_policy = Value()
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -41,6 +59,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         super(QtWidget, self).init_widget()
+        self._install_features()
         d = self.declaration
         if d.background:
             self.set_background(d.background)
@@ -50,6 +69,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.set_font(d.font)
         if d.show_focus_rect is not None:
             self.set_show_focus_rect(d.show_focus_rect)
+        if d.focus_policy != 'default':
+            self.set_focus_policy(d.focus_policy)
         if -1 not in d.minimum_size:
             self.set_minimum_size(d.minimum_size)
         if -1 not in d.maximum_size:
@@ -68,6 +89,81 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         # are created.
         if self.widget.parent() or not d.visible:
             self.set_visible(d.visible)
+
+    def destroy(self):
+        """ Destroy the underlying QWidget object.
+
+        """
+        self._remove_features()
+        super(QtWidget, self).destroy()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _install_features(self):
+        """ Install the advanced widget feature handlers.
+
+        """
+        features = self._features = self.declaration.features
+        if not features:
+            return
+        widget = self.widget
+        if features & Feature.FocusTraversal:
+            widget.focusNextPrevChild = self._focusNextPrevChild
+        if features & Feature.FocusEvents:
+            widget.focusInEvent = self._focusInEvent
+            widget.focusOutEvent = self._focusOutEvent
+
+    def _remove_features(self):
+        """ Remove the advanced widget feature handlers.
+
+        """
+        features = self._features
+        if not features:
+            return
+        widget = self.widget
+        if features & Feature.FocusTraversal:
+            del widget.focusNextPrevChild
+        if features & Feature.FocusEvents:
+            del widget.focusInEvent
+            del widget.focusOutEvent
+
+    def _focusNextPrevChild(self, next_child):
+        """ The duck-punched 'focusNextPrevChild' implementation.
+
+        """
+        fw = QApplication.focusWidget()
+        fp = fw and getattr(fw, '_d_proxy', None)
+        fd = fp and fp.declaration
+        if next_child:
+            child = self.declaration.next_focus_child(fd)
+            reason = Qt.TabFocusReason
+        else:
+            child = self.declaration.previous_focus_child(fd)
+            reason = Qt.BacktabFocusReason
+        if child is not None and child.proxy_is_active:
+            cw = child.proxy.widget
+            if cw.focusPolicy() & Qt.TabFocus:
+                cw.setFocus(reason)
+                return True
+        widget = self.widget
+        return type(widget).focusNextPrevChild(widget, next_child)
+
+    def _focusInEvent(self, event):
+        """ The duck-punched 'focusInEvent' implementation.
+
+        """
+        widget = self.widget
+        type(widget).focusInEvent(widget, event)
+        self.declaration.focus_gained()
+
+    def _focusOutEvent(self, event):
+        """ The duck-punched 'focusOutEvent' implementation.
+
+        """
+        widget = self.widget
+        type(widget).focusOutEvent(widget, event)
+        self.declaration.focus_lost()
 
     #--------------------------------------------------------------------------
     # Protected API
@@ -171,6 +267,19 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         if sys.platform == 'darwin':
             self.widget.setAttribute(Qt.WA_MacShowFocusRect, bool(show))
 
+    def set_focus_policy(self, policy):
+        """ Set the focus policy of the widget.
+
+        """
+        widget = self.widget
+        if self._default_focus_policy is None:
+            self._default_focus_policy = widget.focusPolicy()
+        if policy == 'default':
+            q_policy = self._default_focus_policy
+        else:
+            q_policy = FOCUS_POLICIES[policy]
+        widget.setFocusPolicy(q_policy)
+
     def set_tool_tip(self, tool_tip):
         """ Set the tool tip for the widget.
 
@@ -200,3 +309,33 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.refresh_style_sheet()
+
+    def set_focus(self):
+        """ Set the keyboard input focus to this widget.
+
+        """
+        self.widget.setFocus(Qt.OtherFocusReason)
+
+    def clear_focus(self):
+        """ Clear the keyboard input focus from this widget.
+
+        """
+        self.widget.clearFocus()
+
+    def has_focus(self):
+        """ Test whether this widget has input focus.
+
+        """
+        return self.widget.hasFocus()
+
+    def focus_next_child(self):
+        """ Give focus to the next widget in the focus chain.
+
+        """
+        self.widget.focusNextChild()
+
+    def focus_previous_child(self):
+        """ Give focus to the previous widget in the focus chain.
+
+        """
+        self.widget.focusPreviousChild()

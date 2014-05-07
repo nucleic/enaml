@@ -23,6 +23,7 @@ from .file_dialog import FileDialog
 from .file_dialog_ex import FileDialogEx
 from .flow_area import FlowArea
 from .flow_item import FlowItem
+from .focus_tracker import FocusTracker
 from .form import Form
 from .frame import Border
 from .group_box import GroupBox
@@ -61,4 +62,5 @@ from .tool_bar import ToolBar
 from .v_group import VGroup
 from .vtk_canvas import VTKCanvas
 from .web_view import WebView
+from .widget import Feature
 from .window import Window

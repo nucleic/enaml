@@ -51,32 +51,13 @@ class DeclarativeFunction(object):
             self.im_func, self.im_class, self.im_key, im_self)
 
 
-def _make_super(im_class, im_self):
-    """ Create a super() function bound to a class and instance.
-
-    This is an internal function is used to create a super object
-    for use within a declarative function. It should not be consumed
-    by user code.
-
-    Parameters
-    ----------
-    im_class : type
-        The class object for the super call.
-
-    im_self : object
-        The instance object for the super call.
-
-    Returns
-    -------
-    result : FunctionType
-        A closure which takes no arguments and returns a *real*
-        bound super object when invoked.
+def super_disallowed(*args, **kwargs):
+    """ A function which disallows super() in a declarative function.
 
     """
-    def super():
-        global super
-        return super(im_class, im_self)
-    return super
+    msg = ('super() is not allowed in a declarative function, '
+           'use SomeClass.some_method(self, ...) instead.')
+    raise TypeError(msg)
 
 
 class BoundDeclarativeMethod(object):
@@ -122,5 +103,5 @@ class BoundDeclarativeMethod(object):
         im_self = self.im_self
         f_locals = im_self._d_storage.get(self.im_key) or {}
         scope = DynamicScope(im_self, f_locals, f_globals, f_builtins)
-        scope['super'] = _make_super(self.im_class, im_self)
+        scope['super'] = super_disallowed
         return call_func(im_func, args, kwargs, scope)
