@@ -105,6 +105,11 @@ def flow_item_factory():
     return QtFlowItem
 
 
+def focus_tracker_factory():
+    from .qt_focus_tracker import QtFocusTracker
+    return QtFocusTracker
+
+
 def group_box_factory():
     from .qt_group_box import QtGroupBox
     return QtGroupBox
@@ -310,6 +315,7 @@ QT_FACTORIES = {
     'FileDialogEx': file_dialog_ex_factory,
     'FlowArea': flow_area_factory,
     'FlowItem': flow_item_factory,
+    'FocusTracker': focus_tracker_factory,
     'GroupBox': group_box_factory,
     'Html': html_factory,
     'Image': image_factory,
