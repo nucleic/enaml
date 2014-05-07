@@ -143,6 +143,12 @@ class WxWidget(WxToolkitObject, ProxyWidget):
         """
         pass
 
+    def set_focus_policy(self, policy):
+        """ This is not supported on Wx.
+
+        """
+        pass
+
     def set_tool_tip(self, tool_tip):
         """ Set the tool tip of for this widget.
 
