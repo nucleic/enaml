@@ -1,6 +1,13 @@
 Enaml Release Notes
 ===================
 
+0.9.6 - 05/08/2014
+------------------
+- Add a declarative function syntax to the grammar.
+- Add a comprehensive focus API. 1090b3f35a9c_
+
+.. _1090b3f35a9c: https://github.com/nucleic/enaml/commit/1090b3f35a9c90b6496864907b816a507951ffb5
+
 0.9.5 - 04/28/2014
 ------------------
 - Allow pressing escape while dragging a floating dock window. e732d2bb3c6c_
