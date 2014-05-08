@@ -9,6 +9,7 @@ from .action import Action
 from .action_group import ActionGroup
 from .calendar import Calendar
 from .check_box import CheckBox
+from .color_dialog import ColorDialog
 from .combo_box import ComboBox
 from .container import Container
 from .date_selector import DateSelector
