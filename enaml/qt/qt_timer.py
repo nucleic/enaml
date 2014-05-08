@@ -25,7 +25,7 @@ class QtTimer(QtToolkitObject, ProxyTimer):
     # Initialization
     #--------------------------------------------------------------------------
     def create_widget(self):
-        """ Create the calender widget.
+        """ Create the underlying timer object.
 
         """
         self.widget = QTimer()

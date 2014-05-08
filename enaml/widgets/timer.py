@@ -8,7 +8,8 @@
 from atom.api import Bool, Event, Int, ForwardTyped, Typed, observe
 
 from enaml.core.declarative import d_
-from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
+
+from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
 class ProxyTimer(ProxyToolkitObject):
