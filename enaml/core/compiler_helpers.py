@@ -731,7 +731,7 @@ def add_decl_function(node, func, is_override):
             raise TypeError("'%s' is not a declarative function" % name)
     elif hasattr(klass, name):
         _override_fail(klass, name)
-    d_func = DeclarativeFunction(func, klass, node.scope_key)
+    d_func = DeclarativeFunction(func, node.scope_key)
     setattr(klass, name, d_func)
 
 
