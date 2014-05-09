@@ -143,7 +143,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             reason = Qt.BacktabFocusReason
         if child is not None and child.proxy_is_active:
             cw = child.proxy.widget
-            if cw.focusPolicy() & Qt.TabFocus:
+            if cw.focusPolicy() & Qt.TabFocus and cw.isEnabled():
                 cw.setFocus(reason)
                 return True
         widget = self.widget
