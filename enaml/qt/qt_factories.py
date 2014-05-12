@@ -120,14 +120,14 @@ def html_factory():
     return QtHtml
 
 
-def image_factory():
-    from .qt_image import QtImage
-    return QtImage
-
-
 def image_view_factory():
     from .qt_image_view import QtImageView
     return QtImageView
+
+
+def ipython_console_factory():
+    from .qt_ipython_console import QtIPythonConsole
+    return QtIPythonConsole
 
 
 def label_factory():
@@ -318,8 +318,8 @@ QT_FACTORIES = {
     'FocusTracker': focus_tracker_factory,
     'GroupBox': group_box_factory,
     'Html': html_factory,
-    'Image': image_factory,
     'ImageView': image_view_factory,
+    'IPythonConsole': ipython_console_factory,
     'Label': label_factory,
     'MainWindow': main_window_factory,
     'MdiArea': mdi_area_factory,
