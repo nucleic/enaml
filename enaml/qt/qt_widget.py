@@ -57,8 +57,6 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.set_foreground(d.foreground)
         if d.font:
             self.set_font(d.font)
-        if d.show_focus_rect is not None:
-            self.set_show_focus_rect(d.show_focus_rect)
         if -1 not in d.minimum_size:
             self.set_minimum_size(d.minimum_size)
         if -1 not in d.maximum_size:
@@ -308,15 +306,6 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.widget.setFont(get_cached_qfont(font))
         else:
             self.widget.setFont(QFont())
-
-    def set_show_focus_rect(self, show):
-        """ Set whether or not to show the focus rect.
-
-        This is currently only supported on OSX.
-
-        """
-        if sys.platform == 'darwin':
-            self.widget.setAttribute(Qt.WA_MacShowFocusRect, bool(show))
 
     def set_tool_tip(self, tool_tip):
         """ Set the tool tip for the widget.

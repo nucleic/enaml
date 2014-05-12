@@ -52,9 +52,6 @@ class ProxyWidget(ProxyToolkitObject):
     def set_status_tip(self, status_tip):
         raise NotImplementedError
 
-    def set_show_focus_rect(self, show_focus_rect):
-        raise NotImplementedError
-
     def ensure_visible(self):
         raise NotImplementedError
 
@@ -124,12 +121,6 @@ class Widget(ToolkitObject, Stylable):
     #: The status tip to show when the user hovers over the widget.
     status_tip = d_(Unicode())
 
-    #: A flag indicating whether or not to show the focus rectangle for
-    #: the given widget. This is not necessarily support by all widgets
-    #: on all clients. A value of None indicates to use the default as
-    #: supplied by the client.
-    show_focus_rect = d_(Enum(None, True, False))
-
     #: Set the extra features to enable for this widget. This value must
     #: be provided when the widget is instantiated. Runtime changes to
     #: this value are ignored.
@@ -142,8 +133,7 @@ class Widget(ToolkitObject, Stylable):
     # Observers
     #--------------------------------------------------------------------------
     @observe('enabled', 'visible', 'background', 'foreground', 'font',
-        'minimum_size', 'maximum_size', 'show_focus_rect', 'tool_tip',
-        'status_tip')
+        'minimum_size', 'maximum_size', 'tool_tip', 'status_tip')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
 
