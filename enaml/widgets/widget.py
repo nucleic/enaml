@@ -295,8 +295,8 @@ class Widget(ToolkitObject, Stylable):
     def focus_gained(self):
         """ A method invoked when the widget gains input focus.
 
-        When the FocusEvents feature must is enabled for the widget,
-        this method will be called when the widget gains input focus.
+        ** The FocusEvents feature must be enabled for the widget in
+        order for this method to be called. **
 
         """
         pass
@@ -305,8 +305,8 @@ class Widget(ToolkitObject, Stylable):
     def focus_lost(self):
         """ A method invoked when the widget loses input focus.
 
-        When the FocusEvents feature must is enabled for the widget,
-        this method will be called when the widget loses input focus.
+        ** The FocusEvents feature must be enabled for the widget in
+        order for this method to be called. **
 
         """
         pass
