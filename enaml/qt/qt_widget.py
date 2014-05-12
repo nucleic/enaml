@@ -49,7 +49,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         super(QtWidget, self).init_widget()
         widget = self.widget
         focus_registry.register(widget, self)
-        self._install_features()
+        self._setup_features()
         d = self.declaration
         if d.background:
             self.set_background(d.background)
@@ -82,72 +82,36 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """ Destroy the underlying QWidget object.
 
         """
-        self._remove_features()
+        self._teardown_features()
         focus_registry.unregister(self.widget)
         super(QtWidget, self).destroy()
 
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _install_features(self):
-        """ Install the advanced widget feature handlers.
+    def _setup_features(self):
+        """ Setup the advanced widget feature handlers.
 
         """
         features = self._features = self.declaration.features
         if not features:
             return
-        widget = self.widget
         if features & Feature.FocusTraversal:
-            widget.focusNextPrevChild = self._focusNextPrevChild
+            self.hook_focus_traversal()
         if features & Feature.FocusEvents:
-            widget.focusInEvent = self._focusInEvent
-            widget.focusOutEvent = self._focusOutEvent
+            self.hook_focus_events()
 
-    def _remove_features(self):
-        """ Remove the advanced widget feature handlers.
+    def _teardown_features(self):
+        """ Teardowns the advanced widget feature handlers.
 
         """
         features = self._features
         if not features:
             return
-        widget = self.widget
         if features & Feature.FocusTraversal:
-            del widget.focusNextPrevChild
+            self.unhook_focus_traversal()
         if features & Feature.FocusEvents:
-            del widget.focusInEvent
-            del widget.focusOutEvent
-
-    def _focusNextPrevChild(self, next_child):
-        """ The duck-punched 'focusNextPrevChild' implementation.
-
-        """
-        fd = focus_registry.focused_declaration()
-        if next_child:
-            child = self.declaration.next_focus_child(fd)
-            reason = Qt.TabFocusReason
-        else:
-            child = self.declaration.previous_focus_child(fd)
-            reason = Qt.BacktabFocusReason
-        if child is not None and child.proxy_is_active:
-            return child.proxy.tab_focus_request(reason)
-        widget = self.widget
-        return type(widget).focusNextPrevChild(widget, next_child)
-
-    def _focusInEvent(self, event):
-        """ The duck-punched 'focusInEvent' implementation.
-
-        """
-        widget = self.widget
-        type(widget).focusInEvent(widget, event)
-        self.declaration.focus_gained()
-
-    def _focusOutEvent(self, event):
-        """ The duck-punched 'focusOutEvent' implementation.
-
-        """
-        widget = self.widget
-        type(widget).focusOutEvent(widget, event)
-        self.declaration.focus_lost()
+            self.unhook_focus_events()
 
     #--------------------------------------------------------------------------
     # Protected API
@@ -202,6 +166,74 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         return self.widget
+
+    def hook_focus_traversal(self):
+        """ Install the hooks for focus traversal.
+
+        This method may be overridden by subclasses as needed.
+
+        """
+        self.widget.focusNextPrevChild = self.focusNextPrevChild
+
+    def unhook_focus_traversal(self):
+        """ Remove the hooks for the next/prev child focusing.
+
+        This method may be overridden by subclasses as needed.
+
+        """
+        del self.widget.focusNextPrevChild
+
+    def hook_focus_events(self):
+        """ Install the hooks for focus events.
+
+        This method may be overridden by subclasses as needed.
+
+        """
+        widget = self.widget
+        widget.focusInEvent = self.focusInEvent
+        widget.focusOutEvent = self.focusOutEvent
+
+    def unhook_focus_events(self):
+        """ Remove the hooks for the focus events.
+
+        This method may be overridden by subclasses as needed.
+
+        """
+        widget = self.widget
+        del widget.focusInEvent
+        del widget.focusOutEvent
+
+    def focusNextPrevChild(self, next_child):
+        """ The default 'focusNextPrevChild' implementation.
+
+        """
+        fd = focus_registry.focused_declaration()
+        if next_child:
+            child = self.declaration.next_focus_child(fd)
+            reason = Qt.TabFocusReason
+        else:
+            child = self.declaration.previous_focus_child(fd)
+            reason = Qt.BacktabFocusReason
+        if child is not None and child.proxy_is_active:
+            return child.proxy.tab_focus_request(reason)
+        widget = self.widget
+        return type(widget).focusNextPrevChild(widget, next_child)
+
+    def focusInEvent(self, event):
+        """ The default 'focusInEvent' implementation.
+
+        """
+        widget = self.widget
+        type(widget).focusInEvent(widget, event)
+        self.declaration.focus_gained()
+
+    def focusOutEvent(self, event):
+        """ The default 'focusOutEvent' implementation.
+
+        """
+        widget = self.widget
+        type(widget).focusOutEvent(widget, event)
+        self.declaration.focus_lost()
 
     #--------------------------------------------------------------------------
     # ProxyWidget API
