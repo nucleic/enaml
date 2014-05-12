@@ -55,9 +55,6 @@ class ProxyWidget(ProxyToolkitObject):
     def set_show_focus_rect(self, show_focus_rect):
         raise NotImplementedError
 
-    def set_focus_policy(self, policy):
-        raise NotImplementedError
-
     def ensure_visible(self):
         raise NotImplementedError
 
@@ -127,21 +124,6 @@ class Widget(ToolkitObject, Stylable):
     #: The status tip to show when the user hovers over the widget.
     status_tip = d_(Unicode())
 
-    #: The policy which dictates how the widget can receive focus.
-    #:
-    #:  'default'       - The toolkit default policy is used.
-    #:  'tab_focus'     - The widget accepts focus by tabbing.
-    #:  'click_focus'   - The widget accepts focus by clicking.
-    #:  'strong_focus'  - Equivalent to 'tab' plus 'click'.
-    #:  'wheel_focus'   - Equivalent to 'strong' plus mouse wheel.
-    #:  'no_focus'      - The widget does not accept focus.
-    #:
-    #: Irrespective of the chosen focus policy, a widget can always
-    #: be manually focused by calling it's `set_focus()` method.
-    focus_policy = d_(Enum(
-        'default', 'tab_focus', 'click_focus',
-        'strong_focus', 'wheel_focus', 'no_focus'))
-
     #: A flag indicating whether or not to show the focus rectangle for
     #: the given widget. This is not necessarily support by all widgets
     #: on all clients. A value of None indicates to use the default as
@@ -161,7 +143,7 @@ class Widget(ToolkitObject, Stylable):
     #--------------------------------------------------------------------------
     @observe('enabled', 'visible', 'background', 'foreground', 'font',
         'minimum_size', 'maximum_size', 'show_focus_rect', 'tool_tip',
-        'status_tip', 'focus_policy')
+        'status_tip')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
 

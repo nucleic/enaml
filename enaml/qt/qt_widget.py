@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Typed, Coerced, Value
+from atom.api import Typed, Coerced
 
 from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
@@ -21,16 +21,6 @@ from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
 
 
-#: A mapping of Enaml focus policies -> Qt focus policies.
-FOCUS_POLICIES = {
-    'tab_focus': Qt.TabFocus,
-    'click_focus': Qt.ClickFocus,
-    'strong_focus': Qt.StrongFocus,
-    'wheel_focus': Qt.WheelFocus,
-    'no_focus': Qt.NoFocus,
-}
-
-
 class QtWidget(QtToolkitObject, ProxyWidget):
     """ A Qt implementation of an Enaml ProxyWidget.
 
@@ -42,9 +32,6 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     #: feature cleanup will proceed correctly in the event that user
     #: code modifies the declaration features value at runtime.
     _features = Coerced(Feature.Flags)
-
-    #: An internal cache of the widget's default focus policy.
-    _default_focus_policy = Value()
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -72,8 +59,6 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.set_font(d.font)
         if d.show_focus_rect is not None:
             self.set_show_focus_rect(d.show_focus_rect)
-        if d.focus_policy != 'default':
-            self.set_focus_policy(d.focus_policy)
         if -1 not in d.minimum_size:
             self.set_minimum_size(d.minimum_size)
         if -1 not in d.maximum_size:
@@ -300,19 +285,6 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """
         if sys.platform == 'darwin':
             self.widget.setAttribute(Qt.WA_MacShowFocusRect, bool(show))
-
-    def set_focus_policy(self, policy):
-        """ Set the focus policy of the widget.
-
-        """
-        widget = self.widget
-        if self._default_focus_policy is None:
-            self._default_focus_policy = widget.focusPolicy()
-        if policy == 'default':
-            q_policy = self._default_focus_policy
-        else:
-            q_policy = FOCUS_POLICIES[policy]
-        widget.setFocusPolicy(q_policy)
 
     def set_tool_tip(self, tool_tip):
         """ Set the tool tip for the widget.
