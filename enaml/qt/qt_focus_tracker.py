@@ -9,6 +9,7 @@ from enaml.widgets.focus_tracker import ProxyFocusTracker
 
 from .QtGui import QApplication
 
+from . import focus_registry
 from .qt_toolkit_object import QtToolkitObject
 
 
@@ -28,14 +29,16 @@ class QtFocusTracker(QtToolkitObject, ProxyFocusTracker):
 
         """
         super(QtFocusTracker, self).init_widget()
-        QApplication.instance().focusChanged.connect(self._on_focus_changed)
+        app = QApplication.instance()
+        app.focusChanged.connect(self._on_focus_changed)
         self._update_focus_widget()
 
     def destroy(self):
         """ A reimplemented destructor.
 
         """
-        QApplication.instance().focusChanged.disconnect(self._on_focus_changed)
+        app = QApplication.instance()
+        app.focusChanged.disconnect(self._on_focus_changed)
         super(QtFocusTracker, self).destroy()
 
     def _on_focus_changed(self, old, new):
@@ -48,7 +51,5 @@ class QtFocusTracker(QtToolkitObject, ProxyFocusTracker):
         """ Update the tracker with currently focused widget.
 
         """
-        fw = QApplication.focusWidget()
-        fp = fw and getattr(fw, '_d_proxy', None)
-        fd = fp and fp.declaration
+        fd = focus_registry.focused_declaration()
         self.declaration.focused_widget = fd

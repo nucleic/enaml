@@ -46,8 +46,6 @@ class QtToolkitObject(ProxyToolkitObject):
         """
         widget = self.widget
         if widget is not None:
-            # Tag the widget with a back-reference to the proxy.
-            widget._d_proxy = self
             # Each Qt object gets a name. If one is not provided by the
             # widget author, one is generated. This is required so that
             # Qt stylesheet cascading can be prevented (Enaml's styling
@@ -93,7 +91,6 @@ class QtToolkitObject(ProxyToolkitObject):
         widget = self.widget
         if widget is not None:
             widget.setParent(None)
-            widget._d_proxy = None
             del self.widget
         super(QtToolkitObject, self).destroy()
 

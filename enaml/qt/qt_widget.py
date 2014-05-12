@@ -15,6 +15,7 @@ from enaml.widgets.widget import Feature, ProxyWidget
 from .QtCore import Qt, QSize
 from .QtGui import QFont, QWidget, QApplication
 
+from . import focus_registry
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
@@ -59,6 +60,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         super(QtWidget, self).init_widget()
+        widget = self.widget
+        focus_registry.register(widget, self)
         self._install_features()
         d = self.declaration
         if d.background:
@@ -87,7 +90,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         # then reparented by the status bar. Real top-level widgets must
         # be explicitly shown by calling their .show() method after they
         # are created.
-        if self.widget.parent() or not d.visible:
+        if widget.parent() or not d.visible:
             self.set_visible(d.visible)
 
     def destroy(self):
@@ -95,6 +98,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self._remove_features()
+        focus_registry.unregister(self.widget)
         super(QtWidget, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -132,9 +136,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """ The duck-punched 'focusNextPrevChild' implementation.
 
         """
-        fw = QApplication.focusWidget()
-        fp = fw and getattr(fw, '_d_proxy', None)
-        fd = fp and fp.declaration
+        fd = focus_registry.focused_declaration()
         if next_child:
             child = self.declaration.next_focus_child(fd)
             reason = Qt.TabFocusReason
