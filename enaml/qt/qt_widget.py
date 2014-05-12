@@ -144,10 +144,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             child = self.declaration.previous_focus_child(fd)
             reason = Qt.BacktabFocusReason
         if child is not None and child.proxy_is_active:
-            cw = child.proxy.widget
-            if cw.focusPolicy() & Qt.TabFocus and cw.isEnabled():
-                cw.setFocus(reason)
-                return True
+            return child.proxy.tab_focus_request(reason)
         widget = self.widget
         return type(widget).focusNextPrevChild(widget, next_child)
 
@@ -185,6 +182,41 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         else:
             stylesheet = u''
         self.widget.setStyleSheet(stylesheet)
+
+    def tab_focus_request(self, reason):
+        """ Handle a custom tab focus request.
+
+        This method is called when focus is being set on the proxy
+        as a result of a user-implemented focus traversal handler.
+        This can be reimplemented by subclasses as needed.
+
+        Parameters
+        ----------
+        reason : Qt.FocusReason
+            The reason value for the focus request.
+
+        Returns
+        -------
+        result : bool
+            True if focus was set, False otherwise.
+
+        """
+        widget = self.focus_target()
+        if ((widget.focusPolicy() & Qt.TabFocus) and
+            widget.isEnabled() and
+            widget.isVisibleTo(widget.window())):
+            widget.setFocus(reason)
+            return True
+        return False
+
+    def focus_target(self):
+        """ Return the current focus target for a focus request.
+
+        This can be reimplemented by subclasses as needed. The default
+        implementation of this method returns the current proxy widget.
+
+        """
+        return self.widget
 
     #--------------------------------------------------------------------------
     # ProxyWidget API
@@ -316,28 +348,28 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """ Set the keyboard input focus to this widget.
 
         """
-        self.widget.setFocus(Qt.OtherFocusReason)
+        self.focus_target().setFocus(Qt.OtherFocusReason)
 
     def clear_focus(self):
         """ Clear the keyboard input focus from this widget.
 
         """
-        self.widget.clearFocus()
+        self.focus_target().clearFocus()
 
     def has_focus(self):
         """ Test whether this widget has input focus.
 
         """
-        return self.widget.hasFocus()
+        return self.focus_target().hasFocus()
 
     def focus_next_child(self):
         """ Give focus to the next widget in the focus chain.
 
         """
-        self.widget.focusNextChild()
+        self.focus_target().focusNextChild()
 
     def focus_previous_child(self):
         """ Give focus to the previous widget in the focus chain.
 
         """
-        self.widget.focusPreviousChild()
+        self.focus_target().focusPreviousChild()
