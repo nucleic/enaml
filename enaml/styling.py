@@ -372,7 +372,10 @@ class _RestyleTask(Atom):
 def _app_style_sheet():
     app = Application.instance()
     if app is not None:
-        return app.style_sheet
+        sheet = app.style_sheet
+        if sheet is not None and not sheet.is_initialized:
+            sheet.initialize()
+        return sheet
 
 
 class StyleCache(object):
