@@ -2301,8 +2301,8 @@ def p_import_from4(p):
 
 
 def p_import_from5(p):
-    ''' import_from : FROM import_from_dots dotted_name IMPORT import_as_name '''
-    imprt = ast.ImportFrom(module=p[3], names=[p[5]], level=len(p[2]))
+    ''' import_from : FROM import_from_dots dotted_name IMPORT import_as_names '''
+    imprt = ast.ImportFrom(module=p[3], names=p[5], level=len(p[2]))
     imprt.col_offset = 0
     p[0] = imprt
 
@@ -2344,6 +2344,16 @@ def p_import_from_dots1(p):
 def p_import_from_dots2(p):
     ''' import_from_dots : import_from_dots DOT '''
     p[0] = p[1] + [p[2]]
+
+
+def p_import_from_dots3(p):
+    ''' import_from_dots : ELLIPSIS '''
+    p[0] = ['.', '.', '.']
+
+
+def p_import_from_dots4(p):
+    ''' import_from_dots : import_from_dots ELLIPSIS '''
+    p[0] = p[1] + ['.', '.', '.']
 
 
 def p_import_as_name1(p):
