@@ -15,6 +15,7 @@ from IPython.qt.inprocess import QtInProcessKernelManager
 from .QtGui import QFrame, QVBoxLayout
 
 from . import focus_registry
+from .q_deferred_caller import deferredCall
 from .qt_control import QtControl
 
 
@@ -49,6 +50,8 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
         self._setup_kernel()
         focus_registry.register(self.text_control, self)
         focus_registry.register(self.page_control, self)
+        self.update_namespace(self.declaration.initial_namespace())
+        self.ipy_widget.exit_requested.connect(self._on_exit_requested)
 
     def init_layout(self):
         """ Initialize the underlying widget layout.
@@ -92,6 +95,12 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
         ipy_widget = self.ipy_widget
         ipy_widget.kernel_client.stop_channels()
         ipy_widget.kernel_manager.shutdown_kernel()
+
+    def _on_exit_requested(self, obj):
+        """ Handle the 'exit_requested' signal on the widget.
+
+        """
+        deferredCall(self.declaration.exit_requested)
 
     #--------------------------------------------------------------------------
     # Protected API
@@ -191,3 +200,21 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
 
         """
         return self.ipy_widget._page_control
+
+    #--------------------------------------------------------------------------
+    # ProxyIPythonConsole API
+    #--------------------------------------------------------------------------
+    def update_namespace(self, ns):
+        """ Update the namespace of the underlying console.
+
+        """
+        if len(ns) > 0:
+            kernel = self.ipy_widget.kernel_manager.kernel
+            kernel.shell.push(ns)
+
+    def snap_namespace(self):
+        """ Return a copy of the current console namespace.
+
+        """
+        kernel = self.ipy_widget.kernel_manager.kernel
+        return kernel.shell.user_ns.copy()
