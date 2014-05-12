@@ -30,6 +30,9 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
     #: The internal IPython console widget.
     ipy_widget = Typed(RichIPythonWidget)
 
+    #--------------------------------------------------------------------------
+    # Lifecycle API
+    #--------------------------------------------------------------------------
     def create_widget(self):
         """ Create the underlying widget.
 
@@ -43,7 +46,7 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
 
         """
         super(QtIPythonConsole, self).init_widget()
-        self.setup_kernel()
+        self._setup_kernel()
         focus_registry.register(self.text_control, self)
         focus_registry.register(self.page_control, self)
 
@@ -62,12 +65,15 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
         """ Destroy the underlying widget.
 
         """
-        self.teardown_kernel()
+        self._teardown_kernel()
         focus_registry.unregister(self.text_control)
         focus_registry.unregister(self.page_control)
         super(QtIPythonConsole, self).destroy()
 
-    def setup_kernel(self):
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _setup_kernel(self):
         """ Setup the kernel for the widget.
 
         """
@@ -79,7 +85,7 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
         ipy_widget.kernel_manager = kernel_manager
         ipy_widget.kernel_client = kernel_client
 
-    def teardown_kernel(self):
+    def _teardown_kernel(self):
         """ Teardown the kernel for the widget.
 
         """
@@ -87,6 +93,81 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
         ipy_widget.kernel_client.stop_channels()
         ipy_widget.kernel_manager.shutdown_kernel()
 
+    #--------------------------------------------------------------------------
+    # Protected API
+    #--------------------------------------------------------------------------
+    def focus_target(self):
+        """ Returns the current focus target for the widget.
+
+        """
+        page = self.page_control
+        if page.isVisibleTo(self.widget):
+            return page
+        return self.text_control
+
+    def hook_focus_events(self):
+        """ Hook the focus events for the underlyling widget.
+
+        """
+        text = self.text_control
+        text.focusInEvent = self.textFocusInEvent
+        text.focusOutEvent = self.textFocusOutEvent
+        page = self.page_control
+        page.focusInEvent = self.pageFocusInEvent
+        page.focusOutEvent = self.pageFocusOutEvent
+
+    def unhook_focus_events(self):
+        """ Unhook the focus events for the underling widget.
+
+        """
+        text = self.text_control
+        del text.focusInEvent
+        del text.focusOutEvent
+        page = self.page_control
+        del page.focusInEvent
+        del page.focusOutEvent
+
+    def textFocusInEvent(self, event):
+        """ Handle the focusInEvent for the text widget.
+
+        """
+        self.handleFocusInEvent(self.text_control, event)
+
+    def textFocusOutEvent(self, event):
+        """ Handle the focusOutEvent for the text widget.
+
+        """
+        self.handleFocusOutEvent(self.text_control, event)
+
+    def pageFocusInEvent(self, event):
+        """ Handle the focusInEvent for the page widget.
+
+        """
+        self.handleFocusInEvent(self.page_control, event)
+
+    def pageFocusOutEvent(self, event):
+        """ Handle the focusOutEvent for the page widget.
+
+        """
+        self.handleFocusOutEvent(self.page_control, event)
+
+    def handleFocusInEvent(self, widget, event):
+        """ Handle the focusInEvent for the given widget.
+
+        """
+        type(widget).focusInEvent(widget, event)
+        self.declaration.focus_gained()
+
+    def handleFocusOutEvent(self, widget, event):
+        """ Handle the focusOutEvent for the given widget.
+
+        """
+        type(widget).focusOutEvent(widget, event)
+        self.declaration.focus_lost()
+
+    #--------------------------------------------------------------------------
+    # Public API
+    #--------------------------------------------------------------------------
     @property
     def text_control(self):
         """ Return the text control for the IPython widget.
@@ -110,12 +191,3 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
 
         """
         return self.ipy_widget._page_control
-
-    def focus_target(self):
-        """ Returns the current focus target for the widget.
-
-        """
-        page = self.page_control
-        if page.isVisibleTo(self.widget):
-            return page
-        return self.text_control
