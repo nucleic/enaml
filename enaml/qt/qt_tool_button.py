@@ -66,6 +66,9 @@ class QtToolButton(QtAbstractButton, ProxyToolButton):
                 self.widget.setMenu(child.widget)
                 break
 
+    #--------------------------------------------------------------------------
+    # Child Events
+    #--------------------------------------------------------------------------
     def child_added(self, child):
         """ Handle the child added event for the tool button.
 
