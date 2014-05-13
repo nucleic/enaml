@@ -1,0 +1,101 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2014, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example demonstrating the use of ToolBar buttons.
+
+This example shows how ToolBar buttons can be used both as children of
+a ToolBar and as regular widgets in a Container. It also demonstrates
+adding a menu to a ToolButton along with the various modes for
+configuring popup behavior.
+
+<< autodoc-me >>
+"""
+import os
+
+from enaml.icon import Icon, IconImage
+from enaml.image import Image
+from enaml.layout.api import hbox, vbox
+from enaml.widgets.api import (
+	MainWindow, Container, ToolBar, ToolButton, Menu, Action, Html, Field
+)
+
+
+def load_icon(name):
+	dirname = os.path.dirname(__file__)
+	fname = os.path.join(dirname, 'images', '%s.png' % name)
+	with open(fname, 'rb') as f:
+		data = f.read()
+	img = Image(data=data)
+	icg = IconImage(image=img)
+	return Icon(images=[icg])
+
+
+NEW_ICON = load_icon('document-new')
+OPEN_ICON = load_icon('document-open')
+SETTINGS_ICON = load_icon('emblem-system')
+ADD_ICON = load_icon('list-add')
+REMOVE_ICON = load_icon('list-remove')
+SEARCH_ICON = load_icon('system-search')
+BACK_ICON = load_icon('go-previous')
+
+
+enamldef Main(MainWindow):
+	title = 'Tool Buttons'
+	ToolBar:
+		ToolButton:
+			text = 'New'
+			icon = NEW_ICON
+			button_style = 'text_beside_icon'
+			popup_mode = 'button'
+			Menu:
+				Action:
+					text = 'File'
+				Action:
+					text = 'Directory'
+				Action:
+					text = 'Share'
+		Action:
+			text = 'Open'
+			icon = OPEN_ICON
+		Action:
+			separator = True
+		Action:
+			text = 'Settings'
+			icon = SETTINGS_ICON
+		Action:
+			text = 'Add'
+			icon = ADD_ICON
+		Action:
+			text = 'Remove'
+			icon = REMOVE_ICON
+	Container:
+		constraints = [vbox(hbox(back, 1, field, 1, search), html)]
+		ToolButton: back:
+			text = 'Back'
+			icon = BACK_ICON
+			Menu:
+				Action:
+					text = 'First'
+				Action:
+					text = 'Second'
+				Action:
+					text = 'Third'
+		ToolButton: search:
+			text = 'Search'
+			icon = SEARCH_ICON
+			popup_mode = 'instant'
+			Menu:
+				Action:
+					text = 'Google'
+				Action:
+					text = 'Bing'
+				Action:
+					text = 'Yahoo'
+		Field: field:
+			placeholder = 'Search...'
+		Html: html:
+			source = '<h1><center>Hello</center></h1>'
