@@ -10,7 +10,7 @@ from atom.api import Typed
 from enaml.widgets.tool_button import ProxyToolButton
 
 from .QtCore import Qt
-from .QtGui import QToolButton
+from .QtGui import QToolButton, QToolBar, QSizePolicy
 
 from .qt_abstract_button import QtAbstractButton
 from .qt_menu import QtMenu
@@ -44,7 +44,13 @@ class QtToolButton(QtAbstractButton, ProxyToolButton):
         """ Create the underlying widget.
 
         """
-        self.widget = QToolButton(self.parent_widget())
+        parent = self.parent_widget()
+        widget = QToolButton(parent)
+        if not isinstance(parent, QToolBar):
+            sp = widget.sizePolicy()
+            sp.setHorizontalPolicy(QSizePolicy.Minimum)
+            widget.setSizePolicy(sp)
+        self.widget = widget
 
     def init_widget(self):
         """ Initialize the underlying widget.
