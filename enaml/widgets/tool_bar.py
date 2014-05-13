@@ -21,6 +21,9 @@ class ProxyToolBar(ProxyConstraintsWidget):
     #: A reference to the ToolBar declaration.
     declaration = ForwardTyped(lambda: ToolBar)
 
+    def set_button_style(self, style):
+        raise NotImplementedError
+
     def set_movable(self, movable):
         raise NotImplementedError
 
@@ -50,6 +53,11 @@ class ToolBar(ConstraintsWidget):
     lose its ability to be docked.
 
     """
+    #: The button style to apply to actions added to the tool bar.
+    button_style = d_(Enum(
+        'icon_only', 'text_only', 'text_beside_icon', 'text_under_icon'
+    ))
+
     #: Whether or not the tool bar is movable by the user. This value
     #: only has meaning if the tool bar is the child of a MainWindow.
     movable = d_(Bool(True))
@@ -98,7 +106,7 @@ class ToolBar(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe('movable', 'floatable', 'floating', 'dock_area',
+    @observe('button_style', 'movable', 'floatable', 'floating', 'dock_area',
         'allowed_dock_areas', 'orientation')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.

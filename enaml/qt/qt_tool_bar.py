@@ -46,6 +46,15 @@ _ORIENTATION_MAP = {
 }
 
 
+#: A mapping from Enaml button style to Qt ToolButtonStyle
+_BUTTON_STYLE_MAP = {
+    'icon_only': Qt.ToolButtonIconOnly,
+    'text_only': Qt.ToolButtonTextOnly,
+    'text_beside_icon': Qt.ToolButtonTextBesideIcon,
+    'text_under_icon': Qt.ToolButtonTextUnderIcon,
+}
+
+
 class QCustomToolBar(QToolBar):
     """ A custom QToolBar which adds some Enaml specific features.
 
@@ -180,6 +189,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """
         super(QtToolBar, self).init_widget()
         d = self.declaration
+        self.set_button_style(d.button_style)
         self.set_movable(d.movable)
         self.set_floatable(d.floatable)
         self.set_floating(d.floating)
@@ -288,6 +298,13 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
     #--------------------------------------------------------------------------
     # ProxyToolBar API
     #--------------------------------------------------------------------------
+    def set_button_style(self, style):
+        """ Set the button style for the toolbar.
+
+        """
+        q_style = _BUTTON_STYLE_MAP[style]
+        self.widget.setToolButtonStyle(q_style)
+
     def set_movable(self, movable):
         """ Set the movable state on the underlying widget.
 

@@ -409,6 +409,12 @@ class WxToolBar(WxConstraintsWidget, ProxyToolBar):
         # XXX implement me!
         pass
 
+    def set_button_style(self, style):
+        """ This is not supported on wx.
+
+        """
+        pass
+
     def set_orientation(self, orientation):
         """ Set the orientation of the underlying widget.
 
