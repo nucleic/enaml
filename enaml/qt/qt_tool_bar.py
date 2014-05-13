@@ -17,6 +17,7 @@ from .QtGui import QToolBar, QMainWindow
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup
 from .qt_constraints_widget import QtConstraintsWidget
+from .qt_tool_button import QtToolButton
 
 
 #: A mapping from Enaml dock area to Qt tool bar areas
@@ -47,7 +48,7 @@ _ORIENTATION_MAP = {
 
 
 #: A mapping from Enaml button style to Qt ToolButtonStyle
-_BUTTON_STYLE_MAP = {
+BUTTON_STYLES = {
     'icon_only': Qt.ToolButtonIconOnly,
     'text_only': Qt.ToolButtonTextOnly,
     'text_beside_icon': Qt.ToolButtonTextBesideIcon,
@@ -211,6 +212,8 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
                 widget.addAction(child.widget)
             elif isinstance(child, QtActionGroup):
                 widget.addActions(child.actions())
+            elif isinstance(child, QtToolButton):
+                widget.addWidget(child.widget)
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -236,10 +239,16 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
             if found:
                 if isinstance(dchild, QtAction):
                     return dchild.widget
-                if isinstance(dchild, QtActionGroup):
-                    acts = dchild.actions()
-                    if len(acts) > 0:
-                        return acts[0]
+                elif isinstance(dchild, QtActionGroup):
+                    actions = dchild.actions()
+                    if len(actions) > 0:
+                        return actions[0]
+                elif isinstance(dchild, QtToolButton):
+                    toolbar = self.widget
+                    target = dchild.widget
+                    for action in toolbar.actions():
+                        if toolbar.widgetForAction(action) is target:
+                            return action
             else:
                 found = dchild is child
 
@@ -257,6 +266,9 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         elif isinstance(child, QtActionGroup):
             before = self.find_next_action(child)
             self.widget.insertActions(before, child.actions())
+        elif isinstance(child, QtToolButton):
+            before = self.find_next_action(child)
+            self.widget.insertWidget(before, child.widget)
 
     def child_removed(self, child):
         """  Handle the child removed event for a QtToolBar.
@@ -302,8 +314,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """ Set the button style for the toolbar.
 
         """
-        q_style = _BUTTON_STYLE_MAP[style]
-        self.widget.setToolButtonStyle(q_style)
+        self.widget.setToolButtonStyle(BUTTON_STYLES[style])
 
     def set_movable(self, movable):
         """ Set the movable state on the underlying widget.
