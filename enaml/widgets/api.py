@@ -60,6 +60,7 @@ from .status_item import StatusItem
 from .time_selector import TimeSelector
 from .timer import Timer
 from .tool_bar import ToolBar
+from .tool_button import ToolButton
 from .v_group import VGroup
 from .vtk_canvas import VTKCanvas
 from .web_view import WebView
