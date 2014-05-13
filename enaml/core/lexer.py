@@ -745,10 +745,10 @@ class EnamlLexer(object):
         # we're on line number 1. If that's the case, then we don't
         # need another newline token.
         if token is None:
-            yield self.newline(-1)
+            yield self.newline(self.lexer.lineno)
         elif token.type != 'NEWLINE':
             if token.type != 'WS' or token.lineno == 1:
-                yield self.newline(-1)
+                yield self.newline(self.lexer.lineno)
 
         # Must dedent any remaining levels
         if len(levels) > 1:
