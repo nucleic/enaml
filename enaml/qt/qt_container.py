@@ -15,7 +15,7 @@ from enaml.widgets.constraints_widget import ConstraintsWidget
 from enaml.widgets.container import ProxyContainer
 
 from .QtCore import QRect, QSize, QTimer, Signal
-from .QtGui import QFrame, QWidgetItem
+from .QtGui import QFrame, QWidgetItem, QSizePolicy
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_frame import QtFrame
@@ -25,6 +25,10 @@ from .qt_frame import QtFrame
 DEFAULT_BEST_SIZE = QSize(-1, -1)
 DEFAULT_MIN_SIZE = QSize(0, 0)
 DEFAULT_MAX_SIZE = QSize(16777215, 16777215)
+
+# The size policy to apply to containers. This allows the container
+# to behave properly when added to standard Qt layouts and widgets.
+CONTAINER_POLICY = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
 
 class LayoutPoint(Atom):
@@ -318,7 +322,9 @@ class QtContainer(QtFrame, ProxyContainer):
         """ Creates the QContainer widget.
 
         """
-        self.widget = QContainer(self.parent_widget())
+        widget = QContainer(self.parent_widget())
+        widget.setSizePolicy(CONTAINER_POLICY)
+        self.widget = widget
 
     def init_layout(self):
         """ Initialize the layout of the widget.
