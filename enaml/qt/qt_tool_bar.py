@@ -21,7 +21,7 @@ from .qt_tool_button import QtToolButton
 
 
 #: A mapping from Enaml dock area to Qt tool bar areas
-_DOCK_AREA_MAP = {
+DOCK_AREAS = {
     'top': Qt.TopToolBarArea,
     'right': Qt.RightToolBarArea,
     'bottom': Qt.BottomToolBarArea,
@@ -31,7 +31,7 @@ _DOCK_AREA_MAP = {
 
 
 #: A mapping from Qt tool bar areas to Enaml dock areas
-_DOCK_AREA_INV_MAP = {
+DOCK_AREAS_INV = {
     Qt.TopToolBarArea: 'top',
     Qt.RightToolBarArea: 'right',
     Qt.BottomToolBarArea: 'bottom',
@@ -41,7 +41,7 @@ _DOCK_AREA_INV_MAP = {
 
 
 #: A mapping from Enaml orientation to Qt Orientation
-_ORIENTATION_MAP = {
+ORIENTATIONS = {
     'horizontal': Qt.Horizontal,
     'vertical': Qt.Vertical,
 }
@@ -303,7 +303,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
             self._guard |= FLOATED_GUARD
             try:
                 self.declaration.floating = False
-                self.declaration.dock_area = _DOCK_AREA_INV_MAP[area]
+                self.declaration.dock_area = DOCK_AREAS_INV[area]
             finally:
                 self._guard &= ~FLOATED_GUARD
 
@@ -343,7 +343,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """ Set the dock area on the underyling widget.
 
         """
-        self.widget.setToolBarArea(_DOCK_AREA_MAP[dock_area])
+        self.widget.setToolBarArea(DOCK_AREAS[dock_area])
 
     def set_allowed_dock_areas(self, dock_areas):
         """ Set the allowed dock areas on the underlying widget.
@@ -351,7 +351,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """
         qt_areas = Qt.NoToolBarArea
         for area in dock_areas:
-            qt_areas |= _DOCK_AREA_MAP[area]
+            qt_areas |= DOCK_AREAS[area]
         self.widget.setAllowedAreas(qt_areas)
 
     def set_orientation(self, orientation):
@@ -364,4 +364,4 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         widget = self.widget
         parent = widget.parent()
         if not isinstance(parent, QMainWindow):
-            widget.setOrientation(_ORIENTATION_MAP[orientation])
+            widget.setOrientation(ORIENTATIONS[orientation])
