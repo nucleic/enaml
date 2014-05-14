@@ -5,16 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed
+from atom.api import Typed, Dict
 
 from enaml.widgets.menu import ProxyMenu
 
 from .QtCore import Qt
-from .QtGui import QMenu, QCursor
+from .QtGui import QMenu, QCursor, QWidgetAction
 
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup
 from .qt_toolkit_object import QtToolkitObject
+from .qt_widget import QtWidget
 
 
 class QCustomMenu(QMenu):
@@ -108,6 +109,9 @@ class QtMenu(QtToolkitObject, ProxyMenu):
     #: A reference to the widget created by the proxy.
     widget = Typed(QCustomMenu)
 
+    #: The widget actions created for menu item widgets.
+    _widget_actions = Dict()
+
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
@@ -141,6 +145,11 @@ class QtMenu(QtToolkitObject, ProxyMenu):
                 widget.addAction(child.widget)
             elif isinstance(child, QtActionGroup):
                 widget.addActions(child.actions())
+            elif isinstance(child, QtWidget):
+                action = QWidgetAction(widget)
+                action.setDefaultWidget(child.widget)
+                self._widget_actions[child] = action
+                widget.addAction(action)
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -165,12 +174,15 @@ class QtMenu(QtToolkitObject, ProxyMenu):
             if found:
                 if isinstance(dchild, QtMenu):
                     return dchild.widget.menuAction()
-                if isinstance(dchild, QtAction):
+                elif isinstance(dchild, QtAction):
                     return dchild.widget
-                if isinstance(dchild, QtActionGroup):
+                elif isinstance(dchild, QtActionGroup):
                     acts = dchild.actions()
                     if len(acts) > 0:
                         return acts[0]
+                elif isinstance(dchild, QtWidget):
+                    if dchild in self._widget_actions:
+                        pass
             else:
                 found = dchild is child
 
@@ -188,6 +200,7 @@ class QtMenu(QtToolkitObject, ProxyMenu):
         elif isinstance(child, QtActionGroup):
             before = self.find_next_action(child)
             self.widget.insertActions(before, child.actions())
+        elif isinstance(child, )
 
     def child_removed(self, child):
         """  Handle the child removed event for a QtMenu.
@@ -233,3 +246,9 @@ class QtMenu(QtToolkitObject, ProxyMenu):
 
         """
         self.widget.exec_(QCursor.pos())
+
+    def close(self):
+        """ Close the underlying menu.
+
+        """
+        self.widget.close()
