@@ -17,7 +17,7 @@ from .QtGui import QToolBar, QMainWindow
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup
 from .qt_constraints_widget import QtConstraintsWidget
-from .qt_tool_button import QtToolButton
+from .qt_widget import QtWidget
 
 
 #: A mapping from Enaml dock area to Qt tool bar areas
@@ -212,7 +212,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
                 widget.addAction(child.widget)
             elif isinstance(child, QtActionGroup):
                 widget.addActions(child.actions())
-            elif isinstance(child, QtToolButton):
+            elif isinstance(child, QtWidget):
                 widget.addWidget(child.widget)
 
     #--------------------------------------------------------------------------
@@ -243,7 +243,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
                     actions = dchild.actions()
                     if len(actions) > 0:
                         return actions[0]
-                elif isinstance(dchild, QtToolButton):
+                elif isinstance(dchild, QtWidget):
                     toolbar = self.widget
                     target = dchild.widget
                     for action in toolbar.actions():
@@ -266,7 +266,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         elif isinstance(child, QtActionGroup):
             before = self.find_next_action(child)
             self.widget.insertActions(before, child.actions())
-        elif isinstance(child, QtToolButton):
+        elif isinstance(child, QtWidget):
             before = self.find_next_action(child)
             self.widget.insertWidget(before, child.widget)
 
