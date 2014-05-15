@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import sys
-
 from atom.api import Typed, Coerced
 
 from enaml.styling import StyleCache
@@ -19,6 +17,48 @@ from . import focus_registry
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
 from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
+
+
+class BorrowedWidgetAction(QWidgetAction):
+    """ A custom widget action class for a QtWidget object.
+
+    The class is intended for internal use by the framework. Unlike
+    the QWidgetAction class, this class does not take ownership of
+    the default widget.
+
+    """
+    def __init__(self, widget, parent=None):
+        """ Initialize a BorrowedWidgetAction.
+
+        Parameters
+        ----------
+        widget : QWidget
+            The widget to use with the action.
+
+        parent : QObject, optional
+            The parent to use for the action.
+
+        """
+        super(BorrowedWidgetAction, self).__init__(parent)
+        self._widget = widget
+
+    def createWidget(self, parent):
+        """ A reimplemented virtual method.
+
+        This method reparents and returns the underlying widget.
+
+        """
+        widget = self._widget
+        widget.setParent(parent)
+        return widget
+
+    def deleteWidget(self, widget):
+        """ A reimplemented virtual method.
+
+        This method unparents the provided widget.
+
+        """
+        widget.setParent(None)
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):
@@ -85,10 +125,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """
         self._teardown_features()
         focus_registry.unregister(self.widget)
-        action = self._widget_action
-        if action is not None:
-            action.setDefaultWidget(None)
-            action.setParent(None)
+        self.clear_action()
         super(QtWidget, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -262,9 +299,21 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """
         action = self._widget_action
         if action is None and create:
-            action = self._widget_action = QWidgetAction(self.parent_widget())
-            action.setDefaultWidget(self.widget)
+            widget = self.widget
+            parent = self.parent_widget()
+            action = BorrowedWidgetAction(widget, parent)
+            self._widget_action = action
         return action
+
+    def clear_action(self):
+        """ Clear the internal widget action, if one exists.
+
+        """
+        action = self._widget_action
+        if action is not None:
+            action.releaseWidget(self.widget)
+            action.setParent(None)
+            self._widget_action = None
 
     #--------------------------------------------------------------------------
     # ProxyWidget API
