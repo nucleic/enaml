@@ -13,7 +13,7 @@ from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
 
 from .QtCore import Qt, QSize
-from .QtGui import QFont, QWidget, QApplication
+from .QtGui import QFont, QWidget, QWidgetAction, QApplication
 
 from . import focus_registry
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
@@ -32,6 +32,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     #: feature cleanup will proceed correctly in the event that user
     #: code modifies the declaration features value at runtime.
     _features = Coerced(Feature.Flags)
+
+    #: Internal storage for the shared widget action.
+    _widget_action = Typed(QWidgetAction)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -82,6 +85,10 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """
         self._teardown_features()
         focus_registry.unregister(self.widget)
+        action = self._widget_action
+        if action is not None:
+            action.setDefaultWidget(None)
+            action.setParent(None)
         super(QtWidget, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -234,6 +241,32 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         self.declaration.focus_lost()
 
     #--------------------------------------------------------------------------
+    # Framework API
+    #--------------------------------------------------------------------------
+    def get_action(self, create=False):
+        """ Get the shared widget action for this widget.
+
+        This API is used to support widgets in tool bars and menus.
+
+        Parameters
+        ----------
+        create : bool, optional
+            Whether to create the action if it doesn't already exist.
+            The default is False.
+
+        Returns
+        -------
+        result : QWidgetAction or None
+            The cached widget action or None, depending on arguments.
+
+        """
+        action = self._widget_action
+        if action is None and create:
+            action = self._widget_action = QWidgetAction(self.parent_widget())
+            action.setDefaultWidget(self.widget)
+        return action
+
+    #--------------------------------------------------------------------------
     # ProxyWidget API
     #--------------------------------------------------------------------------
     def set_minimum_size(self, min_size):
@@ -265,6 +298,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setVisible(visible)
+        action = self._widget_action
+        if action is not None:
+            action.setVisible(visible)
 
     def set_background(self, background):
         """ Set the background color of the widget.
@@ -324,12 +360,18 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setVisible(True)
+        action = self._widget_action
+        if action is not None:
+            action.setVisible(True)
 
     def ensure_hidden(self):
         """ Ensure the widget is hidden.
 
         """
         self.widget.setVisible(False)
+        action = self._widget_action
+        if action is not None:
+            action.setVisible(False)
 
     def restyle(self):
         """ Restyle the widget with the current style data.
