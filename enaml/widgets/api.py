@@ -31,6 +31,7 @@ from .group_box import GroupBox
 from .h_group import HGroup
 from .html import Html
 from .image_view import ImageView
+from .ipython_console import IPythonConsole
 from .label import Label
 from .main_window import MainWindow
 from .mdi_area import MdiArea
