@@ -50,7 +50,7 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
         self._setup_kernel()
         focus_registry.register(self.text_control, self)
         focus_registry.register(self.page_control, self)
-        self.update_namespace(self.declaration.initial_namespace())
+        self.update_ns(self.declaration.initial_ns)
         self.ipy_widget.exit_requested.connect(self._on_exit_requested)
 
     def init_layout(self):
@@ -204,17 +204,17 @@ class QtIPythonConsole(QtControl, ProxyIPythonConsole):
     #--------------------------------------------------------------------------
     # ProxyIPythonConsole API
     #--------------------------------------------------------------------------
-    def update_namespace(self, ns):
+    def get_var(self, name, default):
+        """ Get a variable from the console namespace.
+
+        """
+        kernel = self.ipy_widget.kernel_manager.kernel
+        return kernel.shell.user_ns.get(name, default)
+
+    def update_ns(self, ns):
         """ Update the namespace of the underlying console.
 
         """
         if len(ns) > 0:
             kernel = self.ipy_widget.kernel_manager.kernel
             kernel.shell.push(ns)
-
-    def snap_namespace(self):
-        """ Return a copy of the current console namespace.
-
-        """
-        kernel = self.ipy_widget.kernel_manager.kernel
-        return kernel.shell.user_ns.copy()

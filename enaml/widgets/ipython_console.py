@@ -5,9 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, ForwardTyped, set_default
+from atom.api import Dict, Event, Typed, ForwardTyped, set_default
 
-from enaml.core.declarative import d_func
+from enaml.core.declarative import d_
 
 from .control import Control, ProxyControl
 
@@ -19,10 +19,10 @@ class ProxyIPythonConsole(ProxyControl):
     #: A reference to the IPythonConsole declaration.
     declaration = ForwardTyped(lambda: IPythonConsole)
 
-    def update_namespace(self, ns):
+    def get_var(self, name, default):
         raise NotImplementedError
 
-    def snap_namespace(self):
+    def update_ns(self, ns):
         raise NotImplementedError
 
 
@@ -30,6 +30,14 @@ class IPythonConsole(Control):
     """ A widget which hosts an embedded IPython console.
 
     """
+    #: The initial namespace to apply to the console. Runtime changes
+    #: to this value will be ignored. Use 'update_ns' to add variables
+    #: to the console at runtime.
+    initial_ns = d_(Dict())
+
+    #: An event fired when the user invokes a console exit command.
+    exit_requested = d_(Event(), writable=False)
+
     #: The ipython console expands freely by default.
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
@@ -37,55 +45,36 @@ class IPythonConsole(Control):
     #: A reference to the ProxyIPythonConsole object.
     proxy = Typed(ProxyIPythonConsole)
 
-    @d_func
-    def initial_namespace(self):
-        """ Compute and return the initial console namespace.
-
-        This method is invoked during startup to retrieve the initial
-        variables to add to the console. The default implementation
-        returns an empty dictionary.
-
-        Returns
-        -------
-        result : dict
-            A dictionary of local variables to add to the console.
-
-        """
-        return {}
-
-    def update_namespace(self, **ns):
-        """ Inject variables into the console namespace.
+    def get_var(self, name, default=None):
+        """ Get a variable from the console namespace.
 
         Parameters
         ----------
-        **ns
-            The variables to inject into the namespace.
+        name : basestring
+            The name of the variable to retrieve.
 
-        """
-        if self.proxy_is_active:
-            self.proxy.update_namespace(ns)
-
-    def snap_namespace(self):
-        """ Snap a copy of the current console namespace.
+        default : object, optional
+            The value to return if the variable does not exist. The
+            default is None.
 
         Returns
         -------
-        result : dict
-            A copy of the current console namespace.
+        result : object
+            The variable in the namespace, or the provided default.
 
         """
         if self.proxy_is_active:
-            return self.proxy.snap_namespace()
-        return {}
+            return self.proxy.get_var(name, default)
+        return default
 
-    @d_func
-    def exit_requested(self):
-        """ A method invoked when user attemps to exit the console.
+    def update_ns(self, **kwargs):
+        """ Update the variables in the console namespace.
 
-        This will be called when the user invokes a console command
-        which would otherwise close the terminal. User code should
-        reimplement this method to take appropriate action. By
-        default, the request is ignored.
+        Parameters
+        ----------
+        **kwargs
+            The variables to update in the console namespace.
 
         """
-        pass
+        if self.proxy_is_active:
+            self.proxy.update_ns(kwargs)
