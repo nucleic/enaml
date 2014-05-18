@@ -211,7 +211,7 @@ class QtMenu(QtToolkitObject, ProxyMenu):
         elif isinstance(child, QtActionGroup):
             self.widget.removeActions(child.actions())
         elif isinstance(child, QtWidget):
-            child.clear_action()
+            self.widget.removeAction(child.get_action(False))
 
     #--------------------------------------------------------------------------
     # ProxyMenu API

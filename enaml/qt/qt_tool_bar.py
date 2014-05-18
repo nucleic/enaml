@@ -277,7 +277,8 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
             self.widget.removeAction(child.widget)
         elif isinstance(child, QtActionGroup):
             self.widget.removeActions(child.actions())
-        # widget actions are removed when the child is unparented
+        elif isinstance(child, QtWidget):
+            self.widget.removeAction(child.get_action(False))
 
     #--------------------------------------------------------------------------
     # Signal Handlers
