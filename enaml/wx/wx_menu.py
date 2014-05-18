@@ -726,3 +726,9 @@ class WxMenu(WxToolkitObject, ProxyMenu):
         # popped up over a specified window. It can't be done using
         # global coordinates.
         pass
+
+    def close(self):
+        """ This is not supported in wx.
+
+        """
+        raise NotImplementedError

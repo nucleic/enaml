@@ -213,7 +213,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
             elif isinstance(child, QtActionGroup):
                 widget.addActions(child.actions())
             elif isinstance(child, QtWidget):
-                widget.addWidget(child.widget)
+                widget.addAction(child.get_action(True))
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -244,11 +244,9 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
                     if len(actions) > 0:
                         return actions[0]
                 elif isinstance(dchild, QtWidget):
-                    toolbar = self.widget
-                    target = dchild.widget
-                    for action in toolbar.actions():
-                        if toolbar.widgetForAction(action) is target:
-                            return action
+                    action = dchild.get_action(False)
+                    if action is not None:
+                        return action
             else:
                 found = dchild is child
 
@@ -268,7 +266,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
             self.widget.insertActions(before, child.actions())
         elif isinstance(child, QtWidget):
             before = self.find_next_action(child)
-            self.widget.insertWidget(before, child.widget)
+            self.widget.insertAction(before, child.get_action(True))
 
     def child_removed(self, child):
         """  Handle the child removed event for a QtToolBar.
@@ -276,10 +274,11 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """
         super(QtToolBar, self).child_removed(child)
         if isinstance(child, QtAction):
-            if child.widget is not None:
-                self.widget.removeAction(child.widget)
+            self.widget.removeAction(child.widget)
         elif isinstance(child, QtActionGroup):
             self.widget.removeActions(child.actions())
+        elif isinstance(child, QtWidget):
+            self.widget.removeAction(child.get_action(False))
 
     #--------------------------------------------------------------------------
     # Signal Handlers
