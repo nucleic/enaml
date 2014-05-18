@@ -66,7 +66,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.set_tool_tip(d.tool_tip)
         if d.status_tip:
             self.set_status_tip(d.status_tip)
-        self.set_enabled(d.enabled)
+        if not d.enabled:
+            self.set_enabled(d.enabled)
         self.refresh_style_sheet()
         # Don't make toplevel widgets visible during init or they will
         # flicker onto the screen. This applies particularly for things
@@ -292,6 +293,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widget.setEnabled(enabled)
+        action = self._widget_action
+        if action is not None:
+            action.setEnabled(enabled)
 
     def set_visible(self, visible):
         """ Set the visibility of the widget.
