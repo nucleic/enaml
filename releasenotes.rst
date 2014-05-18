@@ -1,6 +1,15 @@
 Enaml Release Notes
 ===================
 
+0.9.7 - 05/18/2014
+------------------
+- Add an IPythonConsole widget.
+- Add support for widgets in tool bars and menus.
+- Add a ToolButton widget.
+- Removed the 'focus_policy' attribute.
+- Removed the 'show_focus_rect' attribute.
+- Fix bugs #122, #123, #124, #131, #145
+
 0.9.6 - 05/08/2014
 ------------------
 - Add a declarative function syntax to the grammar.

@@ -66,7 +66,7 @@ if sys.platform == 'win32':
 
 setup(
     name='enaml',
-    version='0.9.6',
+    version='0.9.7',
     author='The Nucleic Development Team',
     author_email='sccolbert@gmail.com',
     url='https://github.com/nucleic/enaml',
