@@ -55,7 +55,7 @@ class Container(Frame, ContentsConstrainableMixin):
     #: margin than what is specified by the padding.
     padding = d_(Coerced(Box, (10, 10, 10, 10)))
 
-    #: A Container does not generate contraints for its size hint by
+    #: A Container does not generate constraints for its size hint by
     #: default. The minimum and maximum size constraints are sufficient
     #: to supply size limits and make for the most natural interaction
     #: between nested containers.

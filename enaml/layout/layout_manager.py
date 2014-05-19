@@ -140,7 +140,7 @@ class LayoutItem(Atom):
         result : Contrainable or ContentsContrainable
             An object which implements the Constrainable interface.
             If the 'margins' method returns a non-empty tuple, then
-            the object must also implement the ContentsContrainable
+            the object must also implement the ContentsConstrainable
             interface.
 
         """
