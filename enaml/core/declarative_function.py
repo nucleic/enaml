@@ -30,7 +30,7 @@ def _invoke(func, key, self, args, kwargs):
         The local scope key for the scope locals.
 
     self : Declarative
-        The declartive context 'self' object.
+        The declarative context 'self' object.
 
     args : tuple
         The positional arguments to pass to the function.
