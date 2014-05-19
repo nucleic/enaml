@@ -60,7 +60,7 @@ class WxLayoutItem(LayoutItem):
 
         Returns
         -------
-        result : Contrainable
+        result : Constrainable
             An object which implements the Constrainable interface.
 
         """
