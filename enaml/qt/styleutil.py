@@ -195,13 +195,18 @@ def _dock_bar_handle(name, pc):
 
 def _dock_container(name, pc):
     rest = []
+    tabbed = False
     floating = False
     for part in pc.split(u':'):
-        if part == 'floating':
+        if part == 'tabbed':
+            tabbed = True
+        elif part == 'floating':
             floating = True
         else:
             rest.append(part)
-    if floating:
+    if tabbed:
+        root = u'QDockTabWidget QDockContainer'
+    elif floating:
         root = u'QDockContainer[floating="true"]'
     else:
         root = u'QDockContainer'
@@ -279,7 +284,23 @@ def _maybe_alert(root, name, pc):
 
 
 def _base_dock_item(name, pc):
-    return _maybe_alert(u'QDockItem', name, pc)
+    rest = []
+    tabbed = False
+    floating = False
+    for part in pc.split(u':'):
+        if part == 'tabbed':
+            tabbed = True
+        elif part == 'floating':
+            floating = True
+        else:
+            rest.append(part)
+    if tabbed:
+        root = u'QDockTabWidget QDockItem'
+    elif floating:
+        root = u'QDockContainer[floating="true"] QDockItem'
+    else:
+        root = u'QDockItem'
+    return _maybe_alert(root, name, u':'.join(rest))
 
 
 def _title_bar(name, pc):

@@ -453,6 +453,7 @@ class QDockContainer(QDockFrame):
         self.showLinkButton()
         self.hidePinButton()
         repolish(self)
+        repolish(self.dockItem())
         self.topLevelChanged.emit(True)
 
     def unfloat(self):
@@ -469,6 +470,7 @@ class QDockContainer(QDockFrame):
         self.hideLinkButton()
         self.showPinButton()
         repolish(self)
+        repolish(self.dockItem())
         self.topLevelChanged.emit(False)
 
     def parentDockArea(self):
