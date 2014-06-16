@@ -1,17 +1,21 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example which demonstrates linear relational constraints.
 
 This example shows how one may define a constraint as a linear relation
 of some other constraint. In this example, the horizontal position and
-width of a `PushButton` depends up the width of the `Container`, and the 
-vertical position of another `PushButton` depends upon the width of the 
+width of a `PushButton` depends up the width of the `Container`, and the
+vertical position of another `PushButton` depends upon the width of the
 other `PushButton`.
 
 This is a contrieved example, but serves to demonstrate the feature.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, PushButton
 
@@ -26,9 +30,9 @@ enamldef Main(Window):
             # of the container.
             pb1.left == 0.3 * width,
 
-            # Relate the width of the push button to the width of 
+            # Relate the width of the push button to the width of
             # the container
-            pb1.width == 0.5 * width, 
+            pb1.width == 0.5 * width,
 
             # Pin the second push button to the left contents anchor.
             pb2.left == contents_left,

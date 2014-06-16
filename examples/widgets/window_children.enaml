@@ -1,6 +1,9 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example of using children with a `Window` widget.
 
@@ -17,6 +20,7 @@ print the central widget of the window to the shell.
 This example focuses on features of the `Window` widget, see the other
 examples for explanations of the other widgets and language features.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, PushButton
 

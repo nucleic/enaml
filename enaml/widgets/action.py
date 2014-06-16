@@ -104,8 +104,8 @@ class Action(ToolkitObject):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('text', 'tool_tip', 'status_tip', 'icon', 'checkable', 'checked',
-        'enabled', 'visible', 'separator'))
+    @observe('text', 'tool_tip', 'status_tip', 'icon', 'checkable', 'checked',
+        'enabled', 'visible', 'separator')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the Action changes.
 

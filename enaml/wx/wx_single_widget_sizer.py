@@ -32,6 +32,12 @@ class wxSingleWidgetSizer(wx.PySizer):
             return self._default_size
         return widget.GetMaxSize()
 
+    def GetWidget(self):
+        """ Get a reference tot he underlying widget.
+
+        """
+        return self._widget
+
     def Add(self, widget):
         """ Adds the given widget to the sizer, removing the old widget
         if present. The old widget is not destroyed.

@@ -11,7 +11,6 @@ from atom.api import Typed
 
 from enaml.widgets.label import ProxyLabel
 
-from .wx_constraints_widget import size_hint_guard
 from .wx_control import WxControl
 
 
@@ -19,7 +18,7 @@ ALIGN_MAP = {
     'left': wx.ALIGN_LEFT,
     'right': wx.ALIGN_RIGHT,
     'center': wx.ALIGN_CENTER,
-    'justify': wx.ALIGN_LEFT, # wx doesn't support justification
+    'justify': wx.ALIGN_LEFT,  # wx doesn't support justification
 }
 
 
@@ -48,21 +47,18 @@ class WxLabel(WxControl, ProxyLabel):
         """
         super(WxLabel, self).init_widget()
         d = self.declaration
-        self.set_text(d.text, sh_guard=False)
+        self.set_text(d.text)
         self.set_align(d.align)
         self.set_vertical_align(d.vertical_align)
 
     #--------------------------------------------------------------------------
     # ProxyLabel API
     #--------------------------------------------------------------------------
-    def set_text(self, text, sh_guard=True):
+    def set_text(self, text):
         """ Set the text in the underlying widget.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.SetLabel(text)
-        else:
+        with self.geometry_guard():
             self.widget.SetLabel(text)
 
     def set_align(self, align):

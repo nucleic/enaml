@@ -123,7 +123,7 @@ class LiveEditorModel(Atom):
         This validator replaces CRLF with LF characters.
 
         """
-        return new.replace('\r\n', '\n')
+        return new.replace('\r\n', '\n').replace('\r', '\n')
 
     def _post_validate_view_text(self, old, new):
         """ Post validate the view text.
@@ -131,24 +131,26 @@ class LiveEditorModel(Atom):
         This validator replaces CRLF with LF characters.
 
         """
-        return new.replace('\r\n', '\n')
+        return new.replace('\r\n', '\n').replace('\r', '\n')
 
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('model_text', 'model_item'))
+    @observe('model_text', 'model_item')
     def _refresh_model_trigger(self, change):
         """ An observer which triggers a compiled model refresh.
 
         """
-        self.refresh_model()
+        if change['type'] == 'update':
+            self.refresh_model()
 
-    @observe(('view_text', 'view_item'))
+    @observe('view_text', 'view_item')
     def _refresh_view_trigger(self, change):
         """ An observer which triggers a compiled view refresh.
 
         """
-        self.refresh_view()
+        if change['type'] == 'update':
+            self.refresh_view()
 
     #--------------------------------------------------------------------------
     # Public API

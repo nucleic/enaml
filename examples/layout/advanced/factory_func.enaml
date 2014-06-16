@@ -1,0 +1,57 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2014, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using a factory function to generate constraints.
+
+This example shows how a function can be used as a delegate for generating
+the list of layout constraints. This mode of constraint generation is useful
+when the children of a container change dynamically at runtime. The factory
+will be invoked automatically whenever the internal layout engine determines
+that a relayout is necessary.
+
+<< autodoc-me >>
+"""
+from itertools import izip_longest
+
+from enaml.core.api import Include
+from enaml.layout.api import align, grid, factory
+from enaml.widgets.api import Window, Container, Form, Field, Label, SpinBox
+
+
+def generate_grid(container, num_cols):
+    """ Generate grid constraints with given number of columns.
+
+    """
+    rows = []
+    widgets = container.visible_widgets()
+    row_iters = (iter(widgets),) * num_cols
+    rows = list(izip_longest(*row_iters))
+    return [grid(*rows), align('width', *widgets)]
+
+
+enamldef Main(Window):
+    title = 'Factory Helper'
+    Container:
+        padding = 0
+        Form:
+            Label:
+                text = 'Widget Count'
+            SpinBox: w_count:
+                value = 4
+            Label:
+                text = 'Column Count'
+            SpinBox: c_count:
+                value = 2
+                minimum = 1
+                maximum = 5
+        Container:
+            # The << operator is only needed for the subscription to
+            # the column count. The factory is automatically invoked
+            # whenever the number of children of the container change.
+            constraints << [factory(generate_grid, c_count.value)]
+            Include:
+                objects << [Field(text=str(i)) for i in xrange(w_count.value)]

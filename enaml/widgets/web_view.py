@@ -55,7 +55,7 @@ class WebView(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('url', 'html'))
+    @observe('url', 'html')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

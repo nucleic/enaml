@@ -78,7 +78,7 @@ class AbstractButton(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('text', 'icon', 'icon_size', 'checkable', 'checked'))
+    @observe('text', 'icon', 'icon_size', 'checkable', 'checked')
     def _update_proxy(self, change):
         """ An observer which updates the proxy widget.
 

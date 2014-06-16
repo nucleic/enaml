@@ -1,0 +1,50 @@
+from enaml.widgets.api import (
+    Window, Container, PushButton
+)
+from enaml.styling import (
+    StyleSheet, Style, Setter
+)
+from enaml.qt.qt_application import (
+    QtApplication
+)
+
+enamldef AppSheet(StyleSheet):
+    Style:
+        element = 'PushButton'
+        Setter:
+            field = 'color'
+            value = 'blue'
+
+enamldef View(Window):
+    title = 'Style Sheet'
+    Container:
+        Container:
+            padding = 0
+            StyleSheet:
+                Style:
+                    element = 'PushButton'
+                    Setter:
+                        field = 'color'
+                        value = 'red'
+            PushButton:
+                text = 'One'
+            PushButton:
+                text = 'Two'
+        PushButton:
+            text = 'Three'
+        PushButton:
+            text = 'Four'
+        PushButton:
+            text = 'Five'
+            StyleSheet:
+                Style:
+                    Setter:
+                        field = 'color'
+                        value = 'green'
+
+def main():
+    app = QtApplication()
+    app.style_sheet = AppSheet()
+    view = View()
+    view.show()
+    app.start()

@@ -75,15 +75,15 @@ class ObjectCombo(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('items', 'to_string', 'to_icon'))
+    @observe('items', 'to_string', 'to_icon')
     def _refresh_proxy(self, change):
         """ An observer which requests an items refresh from the proxy.
 
         """
-        if self.proxy_is_active:
+        if change['type'] == 'update' and self.proxy_is_active:
             self.proxy.request_items_refresh()
 
-    @observe(('selected', 'editable'))
+    @observe('selected', 'editable')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

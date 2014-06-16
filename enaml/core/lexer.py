@@ -74,6 +74,24 @@ def syntax_error(message, token):
     _parsing_error(SyntaxError, message, token)
 
 
+def syntax_warning(message, token):
+    """ Raise a warning about dubious syntax.
+
+    Parameters
+    ----------
+    message : string
+        The message to pass to the IndentationError
+
+    token : LexToken
+        The current lextoken for the error.
+
+    """
+    import warnings
+    filename = token.lexer.filename
+    lineno = token.lineno
+    warnings.warn_explicit(message, SyntaxWarning, filename, lineno)
+
+
 def indentation_error(message, token):
     """ Raise a ParsingError which will be converted into an proper
     IndentationError during parsing.
@@ -135,6 +153,7 @@ class EnamlLexer(object):
         (r'::', 'DOUBLECOLON'),
         (r'\.\.\.', 'ELLIPSIS'),
         (r':=', 'COLONEQUAL'),
+        (r'=>', 'RIGHTARROW'),
     )
 
     tokens = (
@@ -151,6 +170,7 @@ class EnamlLexer(object):
         'RBRACE',
         'RPAR',
         'RSQB',
+        'PRAGMA',
         'STRING',
         'WS',
 
@@ -164,10 +184,12 @@ class EnamlLexer(object):
 
     reserved = {
         'and': 'AND',
+        'alias': 'ALIAS',
         'as': 'AS',
         'assert': 'ASSERT',
         'break': 'BREAK',
         'class': 'CLASS',
+        'const': 'CONST',
         'continue': 'CONTINUE',
         'def': 'DEF',
         'del': 'DEL',
@@ -191,6 +213,7 @@ class EnamlLexer(object):
         'print': 'PRINT',
         'raise': 'RAISE',
         'return': 'RETURN',
+        'template': 'TEMPLATE',
         'try': 'TRY',
         'while': 'WHILE',
         'with': 'WITH',
@@ -216,6 +239,7 @@ class EnamlLexer(object):
     #--------------------------------------------------------------------------
     t_COMMA = r','
     t_NUMBER = tokenize.Number
+    t_PRAGMA = r'\$pragma'
 
     # Generate the token matching rules for the operators
     for tok_pattern, tok_name in operators:
@@ -521,11 +545,22 @@ class EnamlLexer(object):
 
     def make_token_stream(self):
         token_stream = iter(self.lexer.token, None)
+        token_stream = self.ensure_token_lexer(token_stream)
         token_stream = self.create_strings(token_stream)
         token_stream = self.annotate_indentation_state(token_stream)
         token_stream = self.synthesize_indentation_tokens(token_stream)
         token_stream = self.add_endmarker(token_stream)
         return token_stream
+
+    def ensure_token_lexer(self, token_stream):
+        # PLY only assigns the lexer to tokens which are passed
+        # to t_* functions. This ensures each token gets assigned
+        # a lexer, since that is required by the error handlers.
+        lexer = self.lexer
+        for tok in token_stream:
+            if getattr(tok, 'lexer', None) is None:
+                tok.lexer = lexer
+            yield tok
 
     def create_strings(self, token_stream):
         for tok in token_stream:
@@ -710,10 +745,10 @@ class EnamlLexer(object):
         # we're on line number 1. If that's the case, then we don't
         # need another newline token.
         if token is None:
-            yield self.newline(-1)
+            yield self.newline(self.lexer.lineno)
         elif token.type != 'NEWLINE':
             if token.type != 'WS' or token.lineno == 1:
-                yield self.newline(-1)
+                yield self.newline(self.lexer.lineno)
 
         # Must dedent any remaining levels
         if len(levels) > 1:

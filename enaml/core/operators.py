@@ -6,519 +6,267 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from contextlib import contextmanager
-
-from atom.api import DefaultValue, Typed
-from atom.datastructures.api import sortedmap
-
-from .dynamic_scope import DynamicScope, Nonlocals
-from .exceptions import DeclarativeError
-from .funchelper import call_func
-from .standard_inverter import StandardInverter
-from .standard_tracer import StandardTracer
-
-
-class OperatorBase(object):
-    """ The base class of the standard Enaml operator implementations.
-
-    """
-    __slots__ = 'binding'
-
-    def __init__(self, binding):
-        """ Initialize an OperatorBase.
-
-        Parameters
-        ----------
-        binding : BindingConstruct
-            The construct node for the operator binding.
-
-        """
-        self.binding = binding
-
-    def get_locals(self, owner):
-        """ Get the local scope for this operator and owner.
-
-        Parameters
-        ----------
-        owner : Declarative
-            The declarative object of interest.
-
-        """
-        scope_member = self.binding.parent.scope_member
-        if scope_member:
-            return scope_member.get_slot(owner) or {}
-        return {}
-
-    def release(self, owner):
-        """ Release any resources held for the given owner.
-
-        This method is called by a declarative object when it is being
-        destroyed. It releases the strong reference the owner may have
-        to the local scope. Subclasses should reimplement this method
-        if more control is needed.
-
-        Parameters
-        ----------
-        owner : Declarative
-            The declarative object being destroyed.
-
-        """
-        scope_member = self.binding.parent.scope_member
-        if scope_member:
-            scope_member.set_slot(owner, None)
-
-
-class OpSimple(OperatorBase):
-    """ An operator class which implements the `=` operator semantics.
-
-    """
-    __slots__ = ()
-
-    def eval(self, owner):
-        """ Evaluate and return the expression value.
-
-        This method is called by the '_run_eval_operator()' method on
-        a Declarative instance.
-
-        Parameters
-        ----------
-        owner : Declarative
-            The declarative object requesting the evaluation.
-
-        """
-        overrides = {'nonlocals': Nonlocals(owner, None), 'self': owner}
-        f_locals = self.get_locals(owner)
-        func = self.binding.func
-        scope = DynamicScope(
-            owner, f_locals, overrides, func.func_globals, None
-        )
-        return call_func(func, (), {}, scope)
-
-
-class DeprecatedNotificationEvent(object):
-    """ A backwards compatibility object.
-
-    This object implements the magic 'event' scope object on the rhs
-    of a '::' operator. That object is deprecated and this object will
-    raise a deprecation warning when it is used.
-
-    """
-    # TODO: Remove this class in Enaml version 0.8.0
-    __slots__ = ('_change', '_binding')
-
-    _warning_registry = {}
-
-    def __init__(self, change, binding):
-        self._change = change
-        self._binding = binding
-
-    def _raise_warning(self):
-        msg = "The 'event' scope object will be removed in Enaml "
-        msg += "version 0.8.0. Use the 'change' scope object instead."
-        binding = self._binding
-        filename = binding.root().filename
-        lineno = binding.lineno
-        reg = self._warning_registry
-        import warnings
-        warnings.warn_explicit(msg, FutureWarning, filename, lineno, '', reg)
-
-    @property
-    def obj(self):
-        self._raise_warning()
-        return self._change['object']
-
-    @property
-    def name(self):
-        self._raise_warning()
-        return self._change['name']
-
-    @property
-    def old(self):
-        self._raise_warning()
-        return self._change.get('oldvalue')
-
-    @property
-    def new(self):
-        self._raise_warning()
-        return self._change.get('value')
-
-
-class OpNotify(OperatorBase):
-    """ An operator class which implements the `::` operator semantics.
-
-    """
-    __slots__ = ()
-
-    def notify(self, change):
-        """ Run the notification code bound to the operator.
-
-        This method is called by the '_run_notify_operator()' method on
-        a Declarative instance.
-
-        Parameters
-        ----------
-        change : dict
-            The change dict for the change on the requestor.
-
-        """
-        owner = change['object']
-        nonlocals = Nonlocals(owner, None)
-        overrides = {'change': change, 'nonlocals': nonlocals, 'self': owner}
-        # TODO remove 'event' in Enaml version 0.8.0
-        overrides['event'] = DeprecatedNotificationEvent(change, self.binding)
-        f_locals = self.get_locals(owner)
-        func = self.binding.func
-        scope = DynamicScope(
-            owner, f_locals, overrides, func.func_globals, None
-        )
-        call_func(func, (), {}, scope)
-
-
-class OpUpdate(OperatorBase):
-    """ An operator class which implements the `>>` operator semantics.
-
-    """
-    __slots__ = ()
-
-    def notify(self, change):
-        """ Run the notification code bound to the operator.
-
-        This method is called by the '_run_notify_operator()' method on
-        a Declarative instance.
-
-        Parameters
-        ----------
-        change : dict
-            The change dict for the change on the requestor.
-
-        """
-        owner = change['object']
-        nonlocals = Nonlocals(owner, None)
-        overrides = {'nonlocals': nonlocals, 'self': owner}
-        inverter = StandardInverter(nonlocals)
-        f_locals = self.get_locals(owner)
-        func = self.binding.func
-        scope = DynamicScope(
-            owner, f_locals, overrides, func.func_globals, None
-        )
-        call_func(func, (inverter, change.get('value')), {}, scope)
-
-
-class SubscriptionObserver(object):
-    """ An observer used to listen for changes in "<<" expressions.
-
-    Instances of this class are created and managed by the OpSubscribe
-    class when the operator is evaluated and traced.
-
-    """
-    __slots__ = ('owner', 'name')
-
-    def __init__(self, owner, name):
-        """ Initialize a SubscriptionObserver.
-
-        Parameters
-        ----------
-        owner : Declarative
-            The declarative owner of interest.
-
-        name : string
-            The name to which the operator is bound.
-
-        """
-        self.owner = owner  # will be reset to None by OpSubscribe
-        self.name = name
-
-    def __nonzero__(self):
-        """ The notifier is valid when it has an internal owner.
-
-        The atom observer mechanism will remove the observer when it
-        tests boolean False. This removes the need to keep a weakref
-        to the owner.
-
-        """
-        return self.owner is not None
-
-    def __call__(self, change):
-        """ The handler for the change notification.
-
-        This will be invoked by the Atom observer mechanism when the
-        item which is being observed changes.
-
-        """
-        owner = self.owner
-        if owner is not None:
-            name = self.name
-            setattr(owner, name, owner._run_eval_operator(name))
-
-
-class OpSubscribe(OperatorBase):
-    """ An operator class which implements the `<<` operator semantics.
-
-    """
-    __slots__ = ()
-
-    def get_storage(self, owner):
-        """ Get the operator storage for the owner.
-
-        """
-        member = owner.get_member('__op_storage__')
-        if member is None:
-            raise RuntimeError('no operator storage')
-        return member.do_getattr(owner)
-
-    def release(self, owner):
-        """ Release the resources held for the given owner.
-
-        """
-        super(OpSubscribe, self).release(owner)
-        storage = self.get_storage(owner)
-        observer = storage.pop(self, None)
-        if observer is not None:
-            observer.owner = None
-
-    def eval(self, owner):
-        """ Evaluate and return the expression value.
-
-        """
-        tracer = StandardTracer()
-        overrides = {'nonlocals': Nonlocals(owner, tracer), 'self': owner}
-        f_locals = self.get_locals(owner)
-        func = self.binding.func
-        scope = DynamicScope(
-            owner, f_locals, overrides, func.func_globals, tracer
-        )
-        result = call_func(func, (tracer,), {}, scope)
-
-        # Invalidate the old observer so that it gets cleaned up.
-        storage = self.get_storage(owner)
-        old_observer = storage.get(self)
-        if old_observer is not None:
-            old_observer.owner = None
-
-        # Create a new observer to bind to the current change set.
-        if tracer.traced_items:
-            observer = SubscriptionObserver(owner, self.binding.name)
-            storage[self] = observer
-            for obj, name in tracer.traced_items:
-                obj.observe(name, observer)
-
-        return result
-
-
-class OpDelegate(OpSubscribe):
-    """ An operator class which implements the `:=` operator semantics.
-
-    """
-    __slots__ = ()
-
-    def notify(self, change):
-        """ Run the notification code bound to the operator.
-
-        This method is called by the '_run_notify_operator()' method on
-        a Declarative instance.
-
-        Parameters
-        ----------
-        change : dict
-            The change dict for the change on the requestor.
-
-        """
-        owner = change['object']
-        nonlocals = Nonlocals(owner, None)
-        inverter = StandardInverter(nonlocals)
-        overrides = {'nonlocals': nonlocals, 'self': owner}
-        f_locals = self.get_locals(owner)
-        func = self.binding.auxfunc
-        scope = DynamicScope(
-            owner, f_locals, overrides, func.func_globals, None
-        )
-        call_func(func, (inverter, change.get('value')), {}, scope)
-
-
-# TODO remove this in Enaml 0.8.0
-_warn_color_registry = {}
-def _warn_color_binding(binding):
-    msg = "The '%s' attribute has been removed. Use '%s' instead. "
-    msg += "Compatibility will be removed in Enaml version 0.8.0."
-    d = {
-        'fgcolor': ('fgcolor', 'foreground'),
-        'bgcolor': ('bgcolor', 'background')
-    }
-    msg = msg % d[binding.name]
-    lineno = binding.lineno
-    filename = binding.root().filename
-    reg = _warn_color_registry
-    import warnings
-    warnings.warn_explicit(msg, FutureWarning, filename, lineno, '', reg)
-
-
-def assert_d_member(klass, binding, readable, writable):
-    """ Assert binding points to a valid declarative member.
+from types import FunctionType
+
+from .byteplay import (
+    Code, LOAD_NAME, LOAD_FAST, STORE_NAME, STORE_FAST, DELETE_NAME,
+    DELETE_FAST
+)
+from .code_tracing import inject_tracing, inject_inversion
+from .expression_engine import HandlerPair
+from .standard_handlers import (
+    StandardReadHandler, StandardWriteHandler, StandardTracedReadHandler,
+    StandardInvertedWriteHandler
+)
+
+
+def optimize_locals(codelist):
+    """ Optimize the codelist for fast locals access.
+
+    All STORE_NAME opcodes will be replaced with STORE_FAST. Names
+    which are stored and then loaded via LOAD_NAME are rewritten to
+    LOAD_FAST and DELETE_NAME is rewritten to DELETE_FAST. This
+    transformation is performed in-place.
 
     Parameters
     ----------
-    klass : Declarative
-        The declarative class which owns the binding.
+    codelist : list
+        The list of byteplay code ops to modify.
 
-    binding : BindingConstruct
-        The binding construct created by the resolver.
+    """
+    fast_locals = set()
+    for idx, (op, op_arg) in enumerate(codelist):
+        if op == STORE_NAME:
+            fast_locals.add(op_arg)
+            codelist[idx] = (STORE_FAST, op_arg)
+    for idx, (op, op_arg) in enumerate(codelist):
+        if op == LOAD_NAME and op_arg in fast_locals:
+            codelist[idx] = (LOAD_FAST, op_arg)
+        elif op == DELETE_NAME and op_arg in fast_locals:
+            codelist[idx] = (DELETE_FAST, op_arg)  # py2.6 list comps
 
-    readable : bool
-        Whether the member should have the 'd_readable' metadata flag.
 
-    writable : bool
-        Whether the member should have the 'd_writable' metadata flag.
+def gen_simple(code, f_globals):
+    """ Generate a simple function from a code object.
+
+    Parameters
+    ----------
+    code : CodeType
+        The code object created by the Enaml compiler.
+
+    f_globals : dict
+        The global scope for the returned function.
 
     Returns
     -------
-    result : tuple
-        A 2-tuple of (name, member) on which the binding should operate.
-
-    Raises
-    ------
-    DeclarativeError
-        This will be raised if the member is not valid for the spec.
+    result : FunctionType
+        A new function with optimized local variable access.
 
     """
-    members = klass.members()
-    m = members.get(binding.name)
-
-    # TODO remove this backwards compatibility mod in Enaml 0.8.0
-    if m is None:
-        if binding.name == 'fgcolor' and 'foreground' in members:
-            _warn_color_binding(binding)
-            binding.name = 'foreground'
-            m = members['foreground']
-        elif binding.name == 'bgcolor' and 'background' in members:
-            _warn_color_binding(binding)
-            binding.name = 'background'
-            m = members['background']
-
-    if m is None or m.metadata is None or not m.metadata.get('d_member'):
-        msg = "'%s' is not a declarative member" % binding.name
-        root = binding.root()
-        filename = root.filename
-        context = root.typename
-        lineno = binding.lineno
-        raise DeclarativeError(msg, filename, context, lineno)
-    if readable and not m.metadata.get('d_readable'):
-        msg = "'%s' is not readable from enaml" % binding.name
-        root = binding.root()
-        filename = root.filename
-        context = root.typename
-        lineno = binding.lineno
-        raise DeclarativeError(msg, filename, context, lineno)
-    if writable and not m.metadata.get('d_writable'):
-        msg = "'%s' is not writable from enaml" % binding.name
-        root = binding.root()
-        filename = root.filename
-        context = root.typename
-        lineno = binding.lineno
-        raise DeclarativeError(msg, filename, context, lineno)
-    return m
+    bp_code = Code.from_code(code)
+    optimize_locals(bp_code.code)
+    bp_code.newlocals = False
+    new_code = bp_code.to_code()
+    return FunctionType(new_code, f_globals)
 
 
-def bind_read_operator(klass, binding, operator):
-    """ Bind a readable operator for the binding to the given klass.
+def gen_tracer(code, f_globals):
+    """ Generate a trace function from a code object.
 
     Parameters
     ----------
-    klass : Declarative
-        The declarative class which owns the binding.
+    code : CodeType
+        The code object created by the Enaml compiler.
 
-    binding : dict
-        The binding dict created by the enaml compiler.
+    f_globals : dict
+        The global scope for the returned function.
 
-    operator : object
-        The operator to bind to the class.
+    Returns
+    -------
+    result : FunctionType
+        A new function with optimized local variable access
+        and instrumentation for invoking a code tracer.
 
     """
-    member = assert_d_member(klass, binding, True, False)
-    klass.notify_operators().setdefault(binding.name, []).append(operator)
-    if not member.has_observer('_run_notify_operator'):
-        clone = member.clone()
-        clone.add_static_observer('_run_notify_operator')
-        klass.members()[binding.name] = clone
-        setattr(klass, binding.name, clone)
+    bp_code = Code.from_code(code)
+    optimize_locals(bp_code.code)
+    bp_code.code = inject_tracing(bp_code.code)
+    bp_code.newlocals = False
+    bp_code.args = ('_[tracer]',) + bp_code.args
+    new_code = bp_code.to_code()
+    return FunctionType(new_code, f_globals)
 
 
-def bind_write_operator(klass, binding, operator):
-    """ Bind a writable operator for the binding to the given klass.
+def gen_inverter(code, f_globals):
+    """ Generate an inverter function from a code object.
 
     Parameters
     ----------
-    klass : Declarative
-        The declarative class which owns the binding.
+    code : CodeType
+        The code object created by the Enaml compiler.
 
-    binding : dict
-        The binding dict created by the enaml compiler.
+    f_globals : dict
+        The global scope for the returned function.
 
-    operator : OperatorBase
-        The operator handler to bind to the class.
-
-    """
-    member = assert_d_member(klass, binding, False, True)
-    klass.eval_operators()[binding.name] = operator
-    mode = (DefaultValue.ObjectMethod_Name, '_run_eval_operator')
-    if member.default_value_mode != mode:
-        clone = member.clone()
-        clone.set_default_value_mode(*mode)
-        klass.members()[binding.name] = clone
-        setattr(klass, binding.name, clone)
-
-
-def add_operator_storage(klass):
-    """ Add a member to the class named '__op_storage__'.
-
-    This member will be added as needed, and can be used to store
-    instance specific data needed by the operators. The value of the
-    storage will be a sortedmap.
+    Returns
+    -------
+    result : FunctionType
+        A new function with optimized local variable access
+        and instrumentation for inverting the operation.
 
     """
-    members = klass.members()
-    if '__op_storage__' not in members:
-        m = Typed(sortedmap, ())
-        m.set_name('__op_storage__')
-        m.set_index(len(members))
-        members['__op_storage__'] = m
+    bp_code = Code.from_code(code)
+    optimize_locals(bp_code.code)
+    bp_code.code = inject_inversion(bp_code.code)
+    bp_code.newlocals = False
+    bp_code.args = ('_[inverter]', '_[value]') + bp_code.args
+    new_code = bp_code.to_code()
+    return FunctionType(new_code, f_globals)
 
 
-def op_simple(klass, binding):
+def op_simple(code, scope_key, f_globals):
     """ The default Enaml operator function for the `=` operator.
 
+    This operator generates a simple function with optimized local
+    access and hooks it up to a StandardReadHandler. This operator
+    does not support write semantics.
+
+    Parameters
+    ----------
+    code : CodeType
+        The code object created by the Enaml compiler.
+
+    scope_key : object
+        The block scope key created by the Enaml compiler.
+
+    f_globals : dict
+        The global scope for the for code execution.
+
+    Returns
+    -------
+    result : HandlerPair
+        A pair with the reader set to a StandardReadHandler.
+
     """
-    bind_write_operator(klass, binding, OpSimple(binding))
+    func = gen_simple(code, f_globals)
+    reader = StandardReadHandler(func=func, scope_key=scope_key)
+    return HandlerPair(reader=reader)
 
 
-def op_notify(klass, binding):
+def op_notify(code, scope_key, f_globals):
     """ The default Enaml operator function for the `::` operator.
 
+    This operator generates a simple function with optimized local
+    access and hooks it up to a StandardWriteHandler. This operator
+    does not support read semantics.
+
+    Parameters
+    ----------
+    code : CodeType
+        The code object created by the Enaml compiler.
+
+    scope_key : object
+        The block scope key created by the Enaml compiler.
+
+    f_globals : dict
+        The global scope for the for code execution.
+
+    Returns
+    -------
+    result : HandlerPair
+        A pair with the writer set to a StandardWriteHandler.
+
     """
-    bind_read_operator(klass, binding, OpNotify(binding))
+    func = gen_simple(code, f_globals)
+    writer = StandardWriteHandler(func=func, scope_key=scope_key)
+    return HandlerPair(writer=writer)
 
 
-def op_update(klass, binding):
-    """ The default Enaml operator function for the `>>` operator.
-
-    """
-    bind_read_operator(klass, binding, OpUpdate(binding))
-
-
-def op_subscribe(klass, binding):
+def op_subscribe(code, scope_key, f_globals):
     """ The default Enaml operator function for the `<<` operator.
 
+    This operator generates a tracer function with optimized local
+    access and hooks it up to a StandardTracedReadHandler. This
+    operator does not support write semantics.
+
+    Parameters
+    ----------
+    code : CodeType
+        The code object created by the Enaml compiler.
+
+    scope_key : object
+        The block scope key created by the Enaml compiler.
+
+    f_globals : dict
+        The global scope for the for code execution.
+
+    Returns
+    -------
+    result : HandlerPair
+        A pair with the reader set to a StandardTracedReadHandler.
+
     """
-    bind_write_operator(klass, binding, OpSubscribe(binding))
-    add_operator_storage(klass)
+    func = gen_tracer(code, f_globals)
+    reader = StandardTracedReadHandler(func=func, scope_key=scope_key)
+    return HandlerPair(reader=reader)
 
 
-def op_delegate(klass, binding):
+def op_update(code, scope_key, f_globals):
+    """ The default Enaml operator function for the `>>` operator.
+
+    This operator generates a inverter function with optimized local
+    access and hooks it up to a StandardInvertedWriteHandler. This
+    operator does not support read semantics.
+
+    Parameters
+    ----------
+    code : CodeType
+        The code object created by the Enaml compiler.
+
+    scope_key : object
+        The block scope key created by the Enaml compiler.
+
+    f_globals : dict
+        The global scope for the for code execution.
+
+    Returns
+    -------
+    result : HandlerPair
+        A pair with the writer set to a StandardInvertedWriteHandler.
+
+    """
+    func = gen_inverter(code, f_globals)
+    writer = StandardInvertedWriteHandler(func=func, scope_key=scope_key)
+    return HandlerPair(writer=writer)
+
+
+def op_delegate(code, scope_key, f_globals):
     """ The default Enaml operator function for the `:=` operator.
 
+    This operator combines the '<<' and the '>>' operators into a
+    single operator. It supports both read and write semantics.
+
+    Parameters
+    ----------
+    code : CodeType
+        The code object created by the Enaml compiler.
+
+    scope_key : object
+        The block scope key created by the Enaml compiler.
+
+    f_globals : dict
+        The global scope for the for code execution.
+
+    Returns
+    -------
+    result : HandlerPair
+        A pair with the reader set to a StandardTracedReadHandler and
+        the writer set to a StandardInvertedWriteHandler.
+
     """
-    operator = OpDelegate(binding)
-    bind_read_operator(klass, binding, operator)
-    bind_write_operator(klass, binding, operator)
-    add_operator_storage(klass)
+    p1 = op_subscribe(code, scope_key, f_globals)
+    p2 = op_update(code, scope_key, f_globals)
+    return HandlerPair(reader=p1.reader, writer=p2.writer)
 
 
 DEFAULT_OPERATORS = {

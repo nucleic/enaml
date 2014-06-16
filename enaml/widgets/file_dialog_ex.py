@@ -203,8 +203,8 @@ class FileDialogEx(ToolkitDialog):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('accept_mode', 'file_mode', 'show_dirs_only', 'current_path',
-        'name_filters', 'selected_name_filter'))
+    @observe('accept_mode', 'file_mode', 'show_dirs_only', 'current_path',
+        'name_filters', 'selected_name_filter')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the data changes.
 

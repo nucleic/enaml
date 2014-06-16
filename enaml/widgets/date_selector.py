@@ -51,7 +51,7 @@ class DateSelector(BoundedDate):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('date_format', 'calendar_popup'))
+    @observe('date_format', 'calendar_popup')
     def _update_proxy(self, change):
         """ An observer which updates the proxy with state change.
 

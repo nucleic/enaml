@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
-
 from atom.api import (
     Coerced, Event, Unicode, Bool, Range, Typed, ForwardTyped, observe
 )
@@ -46,6 +44,9 @@ class ProxyDockItem(ProxyWidget):
         raise NotImplementedError
 
     def set_closable(self, closable):
+        raise NotImplementedError
+
+    def alert(self, level, on, off, repeat, persist):
         raise NotImplementedError
 
 
@@ -97,27 +98,41 @@ class DockItem(Widget):
             if isinstance(child, Container):
                 return child
 
-    if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
+    def alert(self, level, on=250, off=250, repeat=4, persist=False):
+        """ Set the alert level on the dock item.
 
-        def split(self, direction, *names):
-            """ This method is deprecated.
+        This will override any currently applied alert level.
 
-            """
-            args = ('split_item', direction, self.name) + names
-            self._call_parent('apply_layout_op', *args)
+        Parameters
+        ----------
+        level : unicode
+            The alert level token to apply to the dock item.
 
-        def tabify(self, direction, *names):
-            """ This method is deprecated.
+        on : int
+            The duration of the 'on' cycle, in ms. A value of -1 means
+            always on.
 
-            """
-            args = ('tabify_item', direction, self.name) + names
-            self._call_parent('apply_layout_op', *args)
+        off : int
+            The duration of the 'off' cycle, in ms. If 'on' is -1, this
+            value is ignored.
+
+        repeat : int
+            The number of times to repeat the on-off cycle. If 'on' is
+            -1, this value is ignored.
+
+        persist : bool
+            Whether to leave the alert in the 'on' state when the cycles
+            finish. If 'on' is -1, this value is ignored.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.alert(level, on, off, repeat, persist)
 
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'title_editable', 'title_bar_visible', 'icon',
-        'icon_size', 'stretch', 'closable'))
+    @observe('title', 'title_editable', 'title_bar_visible', 'icon',
+        'icon_size', 'stretch', 'closable')
     def _update_proxy(self, change):
         """ Update the proxy when the item state changes.
 
@@ -135,13 +150,3 @@ class DockItem(Widget):
         # TODO allow the user to veto the close request
         self.closed()
         deferred_call(self.destroy)
-
-    def _call_parent(self, name, *args, **kwargs):
-        """ Call a parent method with the given name and arguments.
-
-        """
-        # Avoid a circular import
-        from .dock_area import DockArea
-        parent = self.parent
-        if isinstance(parent, DockArea):
-            getattr(parent, name)(*args, **kwargs)

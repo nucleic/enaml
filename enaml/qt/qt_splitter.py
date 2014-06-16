@@ -16,7 +16,7 @@ from .QtGui import (
     QSplitter, QSplitterHandle, QVBoxLayout, QFrame, QApplication
 )
 
-from .qt_constraints_widget import QtConstraintsWidget, size_hint_guard
+from .qt_constraints_widget import QtConstraintsWidget
 from .qt_split_item import QtSplitItem
 
 
@@ -127,7 +127,7 @@ class QtSplitter(QtConstraintsWidget, ProxySplitter):
         """
         super(QtSplitter, self).init_widget()
         d = self.declaration
-        self.set_orientation(d.orientation, sh_guard=False)
+        self.set_orientation(d.orientation)
         self.set_live_drag(d.live_drag)
 
     def init_layout(self):
@@ -193,7 +193,7 @@ class QtSplitter(QtConstraintsWidget, ProxySplitter):
         """ Handle the `layoutRequested` signal from the QSplitter.
 
         """
-        self.size_hint_updated()
+        self.geometry_updated()
 
     def on_win32_splitter_moved(self):
         """ Handle the 'splitterMoved' signal from the QSplitter.
@@ -209,14 +209,11 @@ class QtSplitter(QtConstraintsWidget, ProxySplitter):
     #--------------------------------------------------------------------------
     # ProxySplitter API
     #--------------------------------------------------------------------------
-    def set_orientation(self, orientation, sh_guard=True):
+    def set_orientation(self, orientation):
         """ Update the orientation of the QSplitter.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setOrientation(ORIENTATION[orientation])
-        else:
+        with self.geometry_guard():
             self.widget.setOrientation(ORIENTATION[orientation])
 
     def set_live_drag(self, live_drag):

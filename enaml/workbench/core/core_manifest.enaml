@@ -1,0 +1,36 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.workbench.extension_point import ExtensionPoint
+from enaml.workbench.plugin_manifest import PluginManifest
+
+
+def core_plugin_factory():
+    """ A factory function which creates a CorePlugin instance.
+
+    """
+    from .core_plugin import CorePlugin
+    return CorePlugin()
+
+
+COMMANDS_DESCRIPTION = \
+""" Extensions to this point may contribute `Command` objects which can
+be invoked via the `invoke_command` method of the CorePlugin instance.
+Commands can be provided by declaring them as children of the Extension
+and/or by declaring a factory function which takes the workbench as an
+argument and returns a list of Command instances. """
+
+
+enamldef CoreManifest(PluginManifest):
+    """ The manifest for the Enaml workbench core plugin.
+
+    """
+    id = 'enaml.workbench.core'
+    factory = core_plugin_factory
+    ExtensionPoint:
+        id = 'commands'
+        description = COMMANDS_DESCRIPTION

@@ -1,0 +1,44 @@
+from enaml.widgets.api import (
+    Window, Container, PushButton, Field,
+    CheckBox
+)
+from enaml.styling import (
+    StyleSheet, Style, Setter
+)
+
+enamldef Main(Window):
+    title = 'Style Sheet'
+    StyleSheet:
+        Style:
+            element = 'PushButton'
+            Setter:
+                field = 'color'
+                value = 'red'
+        Style:
+            style_class = 'blue-class'
+            Setter:
+                field = 'color'
+                value = 'blue'
+        Style:
+            object_name = 'special'
+            Setter:
+                field = 'color'
+                value = 'green'
+            Setter:
+                field = 'font-weight'
+                value = 'bold'
+    Container:
+        PushButton:
+            text = 'One'
+        PushButton:
+            text = 'Two'
+        Field:
+            style_class = 'blue-class'
+            text = 'Three'
+        CheckBox:
+            style_class = 'blue-class'
+            text = 'Four'
+            checked = True
+        PushButton:
+            text = 'Five'
+            name = 'special'

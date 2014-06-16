@@ -6,11 +6,10 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Unicode, Enum, Bool, Event, Coerced, Typed, ForwardTyped, observe,
+    Atom, Unicode, Enum, Bool, Event, Coerced, Typed, ForwardTyped, observe,
     set_default
 )
 
-from enaml.application import deferred_call
 from enaml.core.declarative import d_
 from enaml.icon import Icon
 from enaml.layout.geometry import Pos, Rect, Size
@@ -59,7 +58,13 @@ class ProxyWindow(ProxyWidget):
     def minimize(self):
         raise NotImplementedError
 
+    def is_minimized(self):
+        raise NotImplementedError
+
     def maximize(self):
+        raise NotImplementedError
+
+    def is_maximized(self):
         raise NotImplementedError
 
     def restore(self):
@@ -71,6 +76,9 @@ class ProxyWindow(ProxyWidget):
     def send_to_back(self):
         raise NotImplementedError
 
+    def activate_window(self):
+        raise NotImplementedError
+
     def center_on_screen(self):
         raise NotImplementedError
 
@@ -79,6 +87,40 @@ class ProxyWindow(ProxyWidget):
 
     def close(self):
         raise NotImplementedError
+
+
+class CloseEvent(Atom):
+    """ An payload object carried by a window 'closing' event.
+
+    User code can manipulate this object to veto a close event.
+
+    """
+    #: The internal accepted state.
+    _accepted = Bool(True)
+
+    def is_accepted(self):
+        """ Get whether or not the event is accepted.
+
+        Returns
+        -------
+        result : bool
+            True if the event is accepted, False otherwise. The
+            default is True.
+
+        """
+        return self._accepted
+
+    def accept(self):
+        """ Accept the close event and allow the window to be closed.
+
+        """
+        self._accepted = True
+
+    def ignore(self):
+        """ Reject the close event and prevent the window from closing.
+
+        """
+        self._accepted = False
 
 
 class Window(Widget):
@@ -121,11 +163,18 @@ class Window(Widget):
     #: The title bar icon.
     icon = d_(Typed(Icon))
 
-    #: Whether or not the window remains on top of all others.
+    #: Whether the window styas on top of other windows on the desktop.
+    #: Changes to this value after the window is shown will be ignored.
     always_on_top = d_(Bool(False))
 
-    #: An event fired when the window is closed. This event is triggered
-    #: by the proxy object when the window is closed.
+    #: An event fired when the user request the window to be closed.
+    #: This will happen when the user clicks on the "X" button in the
+    #: title bar button, or when the 'close' method is called. The
+    #: payload will be a CloseEvent object which will allow code to
+    #: veto the close event and prevent the window from closing.
+    closing = d_(Event(CloseEvent), writable=False)
+
+    #: An event fired when the window is closed.
     closed = d_(Event(), writable=False)
 
     #: Windows are invisible by default.
@@ -254,39 +303,75 @@ class Window(Widget):
         return Rect(-1, -1, -1, -1)
 
     def maximize(self):
-        """ Send the 'maximize' action to the client widget.
+        """ Maximize the window.
 
         """
         if self.proxy_is_active:
             self.proxy.maximize()
 
+    def is_maximized(self):
+        """ Get whether the window is maximized.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.is_maximized()
+        return False
+
     def minimize(self):
-        """ Send the 'minimize' action to the client widget.
+        """ Minimize the window.
 
         """
         if self.proxy_is_active:
             self.proxy.minimize()
 
+    def is_minimized(self):
+        """ Get whether the window is minimized.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.is_minimized()
+        return False
+
     def restore(self):
-        """ Send the 'restore' action to the client widget.
+        """ Restore the window from a maximized or minimized state.
 
         """
         if self.proxy_is_active:
             self.proxy.restore()
 
     def send_to_front(self):
-        """ Send the window to the top of the Z order.
+        """ Send the window to the top of the Z-order.
+
+        This will only affect the Z-order of the window relative to the
+        Z-order of other windows in the same application.
 
         """
         if self.proxy_is_active:
             self.proxy.send_to_front()
 
     def send_to_back(self):
-        """ Send the window to the bottom of the Z order.
+        """ Send the window to the bottom of the Z-order.
+
+        This will only affect the Z-order of the window relative to the
+        Z-order of other windows in the same application.
 
         """
         if self.proxy_is_active:
             self.proxy.send_to_back()
+
+    def activate_window(self):
+        """ Set this window to be the active application window.
+
+        This performs the same operation as clicking the mouse on the
+        title bar of the window, except that it will not effect the Z
+        order of the window.
+
+        On Windows, this will cause the taskbar icon to flash if the
+        window does not belong to the active application.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.activate_window()
 
     def center_on_screen(self):
         """ Center the window on the screen.
@@ -334,22 +419,10 @@ class Window(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'modality', 'icon'))
+    @observe('title', 'modality', 'icon')
     def _update_proxy(self, change):
         """ Update the ProxyWindow when the Window data changes.
 
         """
         # The superclass handler implementation is sufficient.
         super(Window, self)._update_proxy(change)
-
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def _handle_close(self):
-        """ Handle the close event from the proxy widget.
-
-        """
-        self.visible = False
-        self.closed()
-        if self.destroy_on_close:
-            deferred_call(self.destroy)

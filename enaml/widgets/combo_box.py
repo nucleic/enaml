@@ -5,11 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from functools import partial
-
 from atom.api import (
-    Bool, List, Int, Unicode, Typed, ForwardTyped, set_default, observe,
-    cached_property
+    Bool, List, Int, Property, Unicode, Typed, ForwardTyped, set_default,
+    observe
 )
 
 from enaml.core.declarative import d_
@@ -39,14 +37,18 @@ class ComboBox(Control):
 
     Use a combo box to select a single item from a collection of items.
 
+    See `ObjectCombo` for a more robust combo box control.
+
     """
     #: The unicode strings to display in the combo box.
     items = d_(List(Unicode()))
 
-    #: The integer index of the currently selected item. If the given
-    #: index falls outside of the range of items, the item will be
-    #: deselected.
+    #: The integer index of the currently selected item. If the index
+    #: falls outside the range of items, the item will be deselected.
     index = d_(Int(-1))
+
+    #: A read only cached property which returns the selected item.
+    selected_item = d_(Property(cached=True), writable=False)
 
     #: Whether the text in the combo box can be edited by the user.
     editable = d_(Bool(False))
@@ -57,10 +59,9 @@ class ComboBox(Control):
     #: A reference to the ProxyComboBox object.
     proxy = Typed(ProxyComboBox)
 
-    @partial(d_, writable=False)
-    @cached_property
-    def selected_item(self):
-        """ A read only cached property which returns the selected item.
+    @selected_item.getter
+    def get_selected_item(self):
+        """ The getter function for the selected item property.
 
         If the index falls out of range, the selected item will be an
         empty string.
@@ -75,7 +76,7 @@ class ComboBox(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('index', 'items', 'editable'))
+    @observe('index', 'items', 'editable')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
@@ -83,9 +84,10 @@ class ComboBox(Control):
         # The superclass handler implementation is sufficient.
         super(ComboBox, self)._update_proxy(change)
 
-    @observe(('index', 'items'))
+    @observe('index', 'items')
     def _reset_selected_item(self, change):
         """ Reset the selected item when the index or items changes.
 
         """
-        self.get_member('selected_item').reset(self)
+        if change['type'] == 'update':
+            self.get_member('selected_item').reset(self)

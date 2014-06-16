@@ -1,0 +1,308 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+import sys
+
+from enaml.core.dynamic_template import DynamicTemplate
+from enaml.image import Image
+from enaml.layout.layout_helpers import align, hbox, spacer
+from enaml.stdlib.dialog_buttons import DialogButtonBox, DialogButton
+from enaml.stdlib.task_dialog import (TaskDialogBody, TaskDialogContentArea,
+    TaskDialogCommandArea, TaskDialogDetailsArea, TaskDialogIconArea,
+    TaskDialogInstructionArea, TaskDialogStyleSheet)
+from enaml.widgets.check_box import CheckBox
+from enaml.widgets.dialog import Dialog
+from enaml.widgets.html import Html
+from enaml.widgets.image_view import ImageView
+from enaml.widgets.label import Label
+
+
+enamldef MessageBox(Dialog):
+    """ A dialog which provides the functionality of a message box.
+
+    This element uses the task dialog components to assemble a dialog
+    based on the provided attribute values.
+
+    Simple versions of this dialog can be launched with the functions
+    'about', 'critical', 'information', 'question', and 'warning'
+    defined in this module. These functions are intended to be simple
+    and do not provide all options available on this element. If full
+    control over the message box is needed, use this element directly.
+
+    Attributes
+    ----------
+    image: Image, optional
+        The image to use for the icon in the dialog body icon area. If
+        this is not provided, no icon area will be generated.
+
+    text : basetring
+        The text to display in the instruction area of the dialog. This
+        should always be provided.
+
+    content : basestring, optional
+        The secondary text to place in the content area of the dialog.
+
+    details : basestring, optional
+        Extra information to show in the details area. This string will
+        be provided to an Html area, and can therefore contain html
+        markup. If this is provided, the details area will be togglable
+        via a check box placed in the dialog command area.
+
+    buttons : list
+        The list of DialogButton objects which define the buttons to
+        display in a DialogButtonBox which is placed in the dialog
+        command area. This should always be provided.
+
+    """
+    attr image: Image
+    attr text: basestring
+    attr content: basestring
+    attr details: basestring
+    attr buttons: list = []
+    TaskDialogStyleSheet:
+        pass
+    TaskDialogBody:
+        attr show_details = False
+        DynamicTemplate:
+            base = _MessageBoxBody
+            args = (bool(image), bool(content), bool(details))
+
+
+def about(parent, title, text):
+    """ Display a simple about box with title and text.
+
+    Parameters
+    ----------
+    parent : Widget or None
+        The Enaml widget which should be the parent of the dialog.
+
+    title : basestring
+        The text for the window title bar.
+
+    text : basestring
+        The main text to display in the dialog.
+
+    """
+    buttons = [DialogButton('OK', 'accept')]
+    _exec_box(parent, title, text, buttons, '')
+
+
+def critical(parent, title, text, buttons=None):
+    """ Display an critical message box with title and text.
+
+    On Windows, the dialog will display the stock critical icon.
+
+    Parameters
+    ----------
+    parent : Widget or None
+        The Enaml widget which should be the parent of the dialog.
+
+    title : basestring
+        The text for the window title bar.
+
+    buttons : list, optional
+        The list of DialogButton instances to display in the dialog.
+        If this is not provided, an 'OK' button will be created.
+
+    Returns
+    -------
+    result : DialogButton or None
+        The dialog button object which was clicked, or None if the
+        dialog was closed without clicking a dialog button.
+
+    """
+    buttons = buttons or [DialogButton('OK', 'accept')]
+    return _exec_box(parent, title, text, buttons, 'critical')
+
+
+def information(parent, title, text, buttons=None):
+    """ Display an information message box with title and text.
+
+    On Windows, the dialog will display the stock information icon.
+
+    Parameters
+    ----------
+    parent : Widget or None
+        The Enaml widget which should be the parent of the dialog.
+
+    title : basestring
+        The text for the window title bar.
+
+    buttons : list, optional
+        The list of DialogButton instances to display in the dialog.
+        If this is not provided, an 'OK' button will be created.
+
+    Returns
+    -------
+    result : DialogButton or None
+        The dialog button object which was clicked, or None if the
+        dialog was closed without clicking a dialog button.
+
+    """
+    buttons = buttons or [DialogButton('OK', 'accept')]
+    return _exec_box(parent, title, text, buttons, 'information')
+
+
+def question(parent, title, text, buttons=None):
+    """ Display a question message box with title and text.
+
+    On Windows, the dialog will display the stock question icon.
+
+    Parameters
+    ----------
+    parent : Widget or None
+        The Enaml widget which should be the parent of the dialog.
+
+    title : basestring
+        The text for the window title bar.
+
+    buttons : list, optional
+        The list of DialogButton instances to display in the dialog.
+        If this is not provided, 'Yes'|'No' buttons will be created.
+
+    Returns
+    -------
+    result : DialogButton or None
+        The dialog button object which was clicked, or None if the
+        dialog was closed without clicking a dialog button.
+
+    """
+    buttons = buttons or [DialogButton('Yes', 'accept'),
+                          DialogButton('No', 'reject')]
+    return _exec_box(parent, title, text, buttons, 'question')
+
+
+def warning(parent, title, text, buttons=None):
+    """ Display a warning message box with title and text.
+
+    On Windows, the dialog will display the stock warning icon.
+
+    Parameters
+    ----------
+    parent : Widget or None
+        The Enaml widget which should be the parent of the dialog.
+
+    title : basestring
+        The text for the window title bar.
+
+    buttons : list, optional
+        The list of DialogButton instances to display in the dialog.
+        If this is not provided, an 'OK' button will be created.
+
+    Returns
+    -------
+    result : DialogButton or None
+        The dialog button object which was clicked, or None if the
+        dialog was closed without clicking a dialog button.
+
+    """
+    buttons = buttons or [DialogButton('OK', 'accept')]
+    return _exec_box(parent, title, text, buttons, 'warning')
+
+
+#------------------------------------------------------------------------------
+# Private API
+#------------------------------------------------------------------------------
+template _BodyImage(HasImage: False): pass
+template _BodyImage(HasImage: True):
+    TaskDialogIconArea:
+        ImageView:
+            hug_width = 'strong'
+            hug_height = 'strong'
+            image = nonlocals(1).image
+
+
+template _BodyContent(HasContent: False): pass
+template _BodyContent(HasContent: True):
+    TaskDialogContentArea:
+        Label:
+            text = content
+            style_class = 'task-dialog-content'
+
+
+template _BodyDetails(HasDetails: False): pass
+template _BodyDetails(HasDetails: True):
+    TaskDialogDetailsArea:
+        visible << show_details
+        Html:
+            source = details
+
+
+template _BodyCommand(HasDetails: False):
+    TaskDialogCommandArea:
+        constraints = [hbox(spacer, buttons)]
+        DialogButtonBox: buttons:
+            buttons = nonlocals(1).buttons
+
+
+template _BodyCommand(HasDetails: True):
+    TaskDialogCommandArea:
+        constraints = [
+            hbox(details_cb, spacer, buttons),
+            align('v_center', details_cb, buttons),
+        ]
+        CheckBox: details_cb:
+            text = 'More details'
+            checked := show_details
+        DialogButtonBox: buttons:
+            buttons = nonlocals(1).buttons
+
+
+template _MessageBoxBody(HasImage, HasContent, HasDetails):
+    TaskDialogInstructionArea:
+        Label:
+            text = nonlocals(1).text or u''
+            style_class = 'task-dialog-instructions'
+    _BodyImage(HasImage): pass
+    _BodyContent(HasContent): pass
+    _BodyDetails(HasDetails): pass
+    _BodyCommand(HasDetails): pass
+
+
+def _null_icon():
+    return None
+
+
+_ICONS = {
+    '': _null_icon,
+    'critical': _null_icon,
+    'information': _null_icon,
+    'question': _null_icon,
+    'warning': _null_icon,
+}
+
+
+if sys.platform == 'win32':
+
+    from enaml import winutil
+
+    def _win_icon(which):
+        image = [None]
+        def _maker():
+            if image[0] is None:
+                data, size = winutil.load_icon(which)
+                image[0] = Image(data=data, raw_size=size, format='argb32')
+            return image[0]
+        return _maker
+
+    _ICONS['critical'] = _win_icon(winutil.OIC_ERROR)
+    _ICONS['information'] = _win_icon(winutil.OIC_INFORMATION)
+    _ICONS['question'] = _win_icon(winutil.OIC_QUES)
+    _ICONS['warning'] = _win_icon(winutil.OIC_WARNING)
+
+
+def _exec_box(parent, title, text, buttons, icon):
+    box = MessageBox()
+    box.title = title
+    box.text = text
+    box.image = _ICONS[icon]()
+    box.buttons = buttons
+    box.set_parent(parent)
+    box.exec_()
+    for button in box.buttons:
+        if button.was_clicked:
+            return button

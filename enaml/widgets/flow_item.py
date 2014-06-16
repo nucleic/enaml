@@ -80,7 +80,7 @@ class FlowItem(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('preferred_size', 'align', 'stretch', 'ortho_stretch'))
+    @observe('preferred_size', 'align', 'stretch', 'ortho_stretch')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

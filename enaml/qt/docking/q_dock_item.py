@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.qt.QtCore import QRect, QSize, QPoint, QTimer, Signal
+from enaml.qt.QtCore import Qt, QRect, QSize, QPoint, QTimer, Signal
 from enaml.qt.QtGui import QApplication, QFrame, QLayout
 
 from .event_types import (
@@ -13,6 +13,22 @@ from .event_types import (
 )
 from .q_dock_tab_widget import QDockTabWidget
 from .q_dock_title_bar import QDockTitleBar
+from .utils import repolish
+
+
+class _AlertData(object):
+    """ A private class which stores the data needed for item alerts.
+
+    """
+    def __init__(self, timer, level, on, off, repeat, persist):
+        self.timer = timer
+        self.level = level
+        self.on = on
+        self.off = off
+        self.repeat = repeat
+        self.persist = persist
+        self.remaining = repeat
+        self.active = False
 
 
 class QDockItemLayout(QLayout):
@@ -179,7 +195,8 @@ class QDockItemLayout(QLayout):
         ms = self._max_size
         if not ms.isValid():
             widget = self._dock_widget
-            if widget is not None:
+            parent = self.parentWidget()
+            if widget is not None and parent.isFloating():
                 ms = widget.maximumSize()
                 title = self._title_bar
                 if title is not None and not title.isHidden():
@@ -257,6 +274,10 @@ class QDockItem(QFrame):
     #: signal is proxied from the current dock item title bar.
     titleBarRightClicked = Signal(QPoint)
 
+    #: A signal emitted when the item is alerted. The payload is the
+    #: new alert level. An empty string indicates no alert.
+    alerted = Signal(unicode)
+
     def __init__(self, parent=None):
         """ Initialize a QDockItem.
 
@@ -272,7 +293,9 @@ class QDockItem(QFrame):
         layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
         self.setLayout(layout)
         self.setTitleBarWidget(QDockTitleBar())
+        self.alerted.connect(self._onAlerted)
         self._manager = None  # Set and cleared by the DockManager
+        self._alert_data = None
         self._vis_changed = None
         self._closable = True
         self._closing = False
@@ -323,6 +346,16 @@ class QDockItem(QFrame):
         # Don't post when closing; A closed event is posted instead.
         if not self._closing:
             self._postVisibilityChange(False)
+
+    def mousePressEvent(self, event):
+        """ Handle the mouse press event for the dock item.
+
+        This handler will clear any alert level on a left click.
+
+        """
+        if event.button() == Qt.LeftButton:
+            self.clearAlert()
+        super(QDockItem, self).mousePressEvent(event)
 
     #--------------------------------------------------------------------------
     # Public API
@@ -486,6 +519,15 @@ class QDockItem(QFrame):
         """
         self.titleBarWidget().setPinned(pinned, quiet)
 
+    def isFloating(self):
+        """ Get whether the dock item is free floating.
+
+        """
+        container = self.parent()
+        if container is not None:
+            return container.isWindow()
+        return self.isWindow()
+
     def titleEditable(self):
         """ Get whether the title is user editable.
 
@@ -645,9 +687,117 @@ class QDockItem(QFrame):
         """
         self.layout().setDockWidget(widget)
 
+    def alert(self, level, on=250, off=250, repeat=4, persist=False):
+        """ Set the alert level on the dock item.
+
+        This will override any currently applied alert level.
+
+        Parameters
+        ----------
+        level : unicode
+            The alert level token to apply to the dock item.
+
+        on : int
+            The duration of the 'on' cycle, in ms. A value of -1 means
+            always on.
+
+        off : int
+            The duration of the 'off' cycle, in ms. If 'on' is -1, this
+            value is ignored.
+
+        repeat : int
+            The number of times to repeat the on-off cycle. If 'on' is
+            -1, this value is ignored.
+
+        persist : bool
+            Whether to leave the alert in the 'on' state when the cycles
+            finish. If 'on' is -1, this value is ignored.
+
+        """
+        if self._alert_data is not None:
+            self.clearAlert()
+        app = QApplication.instance()
+        app.focusChanged.connect(self._onAppFocusChanged)
+        timer = QTimer()
+        timer.setSingleShot(True)
+        timer.timeout.connect(self._onAlertTimer)
+        on, off, repeat = max(-1, on), max(0, off), max(1, repeat)
+        self._alert_data = _AlertData(timer, level, on, off, repeat, persist)
+        if on < 0:
+            self.alerted.emit(level)
+        else:
+            self._onAlertTimer()
+
+    def clearAlert(self):
+        """ Clear the current alert level, if any.
+
+        """
+        if self._alert_data is not None:
+            self._alert_data.timer.stop()
+            self._alert_data = None
+            app = QApplication.instance()
+            app.focusChanged.disconnect(self._onAppFocusChanged)
+            self.alerted.emit(u'')
+
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    def _onAlertTimer(self):
+        """ Handle the alert data timer timeout.
+
+        This handler will refresh the alert level for the current tick,
+        or clear|persist the alert level if the ticks have expired.
+
+        """
+        data = self._alert_data
+        if data is not None:
+            if not data.active:
+                data.active = True
+                data.timer.start(data.on)
+                self.alerted.emit(data.level)
+            else:
+                data.active = False
+                data.remaining -= 1
+                if data.remaining > 0:
+                    data.timer.start(data.off)
+                    self.alerted.emit(u'')
+                elif data.persist:
+                    data.timer.stop()
+                    self.alerted.emit(data.level)
+                else:
+                    self.clearAlert()
+
+    def _onAlerted(self, level):
+        """ A signal handler for the 'alerted' signal.
+
+        This handler will set the 'alert' dynamic property on the
+        dock item, the title bar, and the title bar label, and then
+        repolish all three items.
+
+        """
+        level = level or None
+        title_bar = self.titleBarWidget()
+        label = title_bar.label()
+        self.setProperty(u'alert', level)
+        title_bar.setProperty(u'alert', level)
+        label.setProperty(u'alert', level)
+        repolish(label)
+        repolish(title_bar)
+        repolish(self)
+
+    def _onAppFocusChanged(self, old, new):
+        """ A signal handler for the 'focusChanged' app signal
+
+        This handler will clear the alert if one of the descendant
+        widgets or the item itself gains focus.
+
+        """
+        while new is not None:
+            if new is self:
+                self.clearAlert()
+                break
+            new = new.parent()
+
     def _onVisibilityTimer(self):
         """ Handle the visibility timer timeout.
 

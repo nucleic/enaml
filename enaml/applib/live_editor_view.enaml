@@ -120,6 +120,8 @@ enamldef ViewPanel(Container):
     attr model: LiveEditorModel
     padding = 0
     MdiArea:
+        # MdiArea generates a huge size hint. Ignore it in favor
+        # of something more reasonable.
         resist_width = 'ignore'
         resist_height = 'ignore'
         constraints = [width >= 640, height >= 480]

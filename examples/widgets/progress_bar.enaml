@@ -1,12 +1,16 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example of the 'ProgressBar' widget.
 
 This example demonstrates the use the `ProgressBar` widget by hooking
 it up to a `PushButton` widgets which simulates a work update.
 
+<< autodoc-me >>
 """
 import random
 from enaml.layout.api import hbox, align
@@ -34,4 +38,3 @@ enamldef Main(Window):
                     progress.value = min(val, 100)
                 else:
                     progress.value = 0
-

@@ -1,0 +1,82 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using style sheets to create a banner from a Label.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import (
+    Window, Container, Label, Form, Field, Html, MultilineField, CheckBox
+)
+from enaml.styling import StyleSheet, Style, Setter
+from enaml.layout.api import vbox, hbox, align
+
+
+enamldef BannerSheet(StyleSheet):
+    Style:
+        element = 'Label'
+        style_class = 'banner'
+        Setter:
+            field = 'background'
+            value = ('lineargradient(x1: 0, y1:0, x2:0, y2:1, '
+                        'stop: 0 #222222, stop: 0.5 #1A1A1A, stop: 1 #111111)')
+        Setter:
+            field = 'color'
+            value = '#FFFFEF'
+        Setter:
+            field = 'padding'
+            value = '5px'
+        Setter:
+            field = 'font'
+            value = '18pt Verdana'
+
+
+enamldef Main(Window):
+    title = 'Banner Example'
+    BannerSheet:
+        pass
+    Container:
+        constraints = [
+            vbox(hbox(form, description), primary),
+            banner.top == top,
+            banner.left == left,
+            banner.right == right,
+            banner.bottom + 10 == form.top,
+            align('top', form, description),
+        ]
+        Label: banner:
+            text = 'Banner Text'
+            style_class << 'banner' if cbox.checked else ''
+        Form: form:
+            padding = 0
+            hug_width = 'strong'
+            hug_height = 'required'
+            Label:
+                text = 'First'
+            Field:
+                placeholder = 'First Value'
+            Label:
+                text = 'Second'
+            Field:
+                placeholder = 'Second Value'
+            Label:
+                text = 'Third'
+            Field:
+                placeholder = 'Third Value'
+            Label:
+                text = 'Fourth'
+            Field:
+                placeholder = 'Fourth Value'
+            CheckBox: cbox:
+                text = 'Toggle Banner Style'
+                checked = True
+        MultilineField: description:
+            text = 'description...'
+            enabled = False
+            constraints = [height == form.height]
+        Html: primary:
+            source = '<h1><center>Primary Content</center></h1>'

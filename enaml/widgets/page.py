@@ -71,12 +71,12 @@ class Page(Widget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'closable', 'icon'))
+    @observe('title', 'closable', 'icon')
     def _update_proxy(self, change):
         """ Send the member state change to the proxy.
 
         """
-        # The superclass implementation is suffient
+        # The superclass implementation is sufficient
         super(Page, self)._update_proxy(change)
 
     #--------------------------------------------------------------------------
@@ -89,17 +89,19 @@ class Page(Widget):
         self.visible = False
         self.closed()
 
-    # TODO remove these in enaml version 0.8.0
+    # TODO spend some time thinking about the open/close api
+    # I would rather everything be consistent, which likely
+    # means destroy-on-close behavior should be the norm.
     def open(self):
-        msg = "The 'open()' method will be removed in Enaml version "
-        msg += "0.8.0. Use 'show()' instead."
-        import warnings
-        warnings.warn(msg, FutureWarning, stacklevel=2)
+        #msg = "The 'open()' method will be removed in Enaml version "
+        #msg += "0.8.0. Use 'show()' instead."
+        #import warnings
+        #warnings.warn(msg, FutureWarning, stacklevel=2)
         self.show()
 
     def close(self):
-        msg = "The 'close()' method will be removed in Enaml version "
-        msg += "0.8.0. Use 'hide()' instead."
-        import warnings
-        warnings.warn(msg, FutureWarning, stacklevel=2)
+        #msg = "The 'close()' method will be removed in Enaml version "
+        #msg += "0.8.0. Use 'hide()' instead."
+        #import warnings
+        #warnings.warn(msg, FutureWarning, stacklevel=2)
         self.hide()

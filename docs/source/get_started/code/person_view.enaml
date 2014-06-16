@@ -1,0 +1,15 @@
+# person_view.enaml
+from enaml.widgets.api import Window, Form, Label, Field
+
+enamldef PersonView(Window):
+    attr person
+    title = 'Person View'
+    Form:
+        Label:
+            text = 'First Name'
+        Field:
+            text := person.first_name
+        Label:
+            text = 'Last Name'
+        Field:
+            text := person.last_name

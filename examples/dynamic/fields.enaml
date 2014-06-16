@@ -1,20 +1,22 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example of using Include to generate Field widgets on demand.
 
 There are three columns in the example, each showing one of the many
 ways that the Include component may be used.
 
-This example requires Enaml version >= 0.4.0
-
+<< autodoc-me >>
 """
 import random
 
 from enaml.layout.api import hbox, vbox, align, spacer
 from enaml.widgets.api import (
-    Window, Container, Label, Field, SpinBox, PushButton,
+    Window, Container, Label, Field, SpinBox, PushButton, VGroup
 )
 from enaml.core.api import Include
 
@@ -26,8 +28,8 @@ enamldef Main(Window):
             hbox(cont1, cont2, cont3),
             align('width', cont1, cont2, cont3)
         ]
-        hug_height = 'strong'
-        Container: cont1:
+        VGroup: cont1:
+            trailing_spacer = spacer(0)
             Label:
                 text = 'Replace All'
                 align = 'center'
@@ -40,11 +42,9 @@ enamldef Main(Window):
                 # time the spin box is changed. All the old widgets
                 # will be destroyed. This is the simplest way to use
                 # the Include, albeit not the most efficient.
-                #
-                # FIXME: this causes more flicker than i'd like. It
-                # should be possible to reduce it quite a bit.
                 objects << [Field(text=str(i)) for i in xrange(spin1.value)]
-        Container: cont2:
+        VGroup: cont2:
+            trailing_spacer = spacer(0)
             Label:
                 text = 'Random Shuffle'
                 align = 'center'
@@ -63,7 +63,8 @@ enamldef Main(Window):
             Include: inc2:
                 # The Fields are initialized with the spin box value.
                 objects = [Field(text=str(i)) for i in xrange(10)]
-        Container: cont3:
+        VGroup: cont3:
+            trailing_spacer = spacer(0)
             Label:
                 text = 'Modify In-Place'
                 align = 'center'

@@ -1,6 +1,165 @@
 Enaml Release Notes
 ===================
 
+0.9.7 - 05/18/2014
+------------------
+- Add an IPythonConsole widget.
+- Add support for widgets in tool bars and menus.
+- Add a ToolButton widget.
+- Removed the 'focus_policy' attribute.
+- Removed the 'show_focus_rect' attribute.
+- Fix bugs #122, #123, #124, #131, #145
+
+0.9.6 - 05/08/2014
+------------------
+- Add a declarative function syntax to the grammar.
+- Add a comprehensive focus API. 1090b3f35a9c_
+
+.. _1090b3f35a9c: https://github.com/nucleic/enaml/commit/1090b3f35a9c90b6496864907b816a507951ffb5
+
+0.9.5 - 04/28/2014
+------------------
+- Allow pressing escape while dragging a floating dock window. e732d2bb3c6c_
+- Fix line ending issues in live editor on old versions of OSX (thanks to JF). 0a54944728ae_
+
+.. _e732d2bb3c6c: https://github.com/nucleic/enaml/commit/e732d2bb3c6c905cd7f2fe92171e2eab46d8d0e4
+.. _0a54944728ae: https://github.com/nucleic/enaml/commit/0a54944728ae8a688310bb68177092b13baa6c62
+
+0.9.4 - 03/13/2014
+------------------
+- Allow enamldef objects to be properly pickled. db99d02fa377_
+
+.. _db99d02fa377: https://github.com/nucleic/enaml/commit/db99d02fa3773ac99f5e02709037e6ba0df952af
+
+0.9.3 - 03/10/2014
+------------------
+- Return the value of the command handler from CorePlugin.invoke_command. 5322bd1d2a67_
+- Automatically request relayout when widget visibility changes. 5d24f8ab13cb_
+- Add knobs for controlling Form row and column spacing. cdb747d8d1fa_
+- Add VGroup and HGroup convenience layout factories. aed5ddd623d1_
+- Add a 'factory' layout helper. 41480f2694d2_
+
+.. _5322bd1d2a67: https://github.com/nucleic/enaml/commit/5322bd1d2a675348f50df1adc0479f6aa4b406dd
+.. _5d24f8ab13cb: https://github.com/nucleic/enaml/commit/5d24f8ab13cb23385ce22701389920779b3dc546
+.. _cdb747d8d1fa: https://github.com/nucleic/enaml/commit/cdb747d8d1fa49732d95f7b4b358f4da9820477a
+.. _aed5ddd623d1: https://github.com/nucleic/enaml/commit/aed5ddd623d1a4041dd9349af5baf4a56f5863dd
+.. _41480f2694d2: https://github.com/nucleic/enaml/commit/41480f2694d27cecbc97cc347f60000e205d4c8f
+
+0.9.2 - 02/20/2014
+------------------
+- Update the layout (if needed) when changing fonts.
+- Minor code cleanup and documentation updates.
+
+0.9.1 - 02/11/2014
+------------------
+- Add the workbench plugin framework. 2ab09c6782b4_
+- Fix idiosyncrasies in layout. 5a9f529671dd_
+- Add a VTKCanvas control. b04262195c27_
+- Add ability to veto a window close. bbd9aa1be9f2_
+- Fix issues #64 #119 #120 #128 #129
+
+.. _2ab09c6782b4: https://github.com/nucleic/enaml/commit/2ab09c6782b4d4d5002bb4cfee7f4dbeb6102187
+.. _5a9f529671dd: https://github.com/nucleic/enaml/commit/5a9f529671dd1af8ed81e202b70738d0aee10a0d
+.. _b04262195c27: https://github.com/nucleic/enaml/commit/b04262195c27cb43e7e2836b576ce8ba01a9a356
+.. _bbd9aa1be9f2: https://github.com/nucleic/enaml/commit/bbd9aa1be9f2f02315b651cc18cb2222d7ff67d1
+
+0.9.0 - 01/13/2014
+------------------
+- Fix issue #78. f0d1fc7da0d7_
+- Update the layout engine to use the Kiwi solver. d41729049f63_
+
+.. _f0d1fc7da0d7: https://github.com/nucleic/enaml/commit/f0d1fc7da0d7bc9c184119e983da266422635a0b
+.. _d41729049f63: https://github.com/nucleic/enaml/commit/d41729049f637def16f7bc9685dc685a8c780032
+
+0.8.9 - 11/25/2013
+------------------
+- Add ability to query window minimized/maximized state. 713feb85952a_
+- Implement 'always_on_top' window flag. 3ac3e6955579_
+- A handful of bug fixes.
+
+.. _713feb85952a: https://github.com/nucleic/enaml/commit/713feb85952ab93094d6f06a8af457871355207c
+.. _3ac3e6955579: https://github.com/nucleic/enaml/commit/3ac3e6955579595c1c2ce2a74e79c1f96fe4a21e
+
+0.8.8 - 11/7/2013
+-----------------
+- Add a task dialog mini-framework and a MessageBox stlib component. 5583808f293a_
+
+.. _5583808f293a: https://github.com/nucleic/enaml/commit/5583808f293a881ea52b00907fd3d85cc2b3e7b0
+
+0.8.7 - 11/4/2013
+-----------------
+- Add an alerting api for dock items in a dock area. ba766d773090_
+
+.. _ba766d773090: https://github.com/nucleic/enaml/commit/ba766d7730908c7370727da8713a74f7d1380ed2
+
+0.8.6 - 10/30/2013
+------------------
+- Add 'limit_width' and 'limit_height' virtual constraints. 8722be90844e_
+
+.. _8722be90844e: https://github.com/nucleic/enaml/commit/8722be90844ed68809de792b818cd399bbb8bfa2
+
+0.8.5 - 10/29/2013
+------------------
+- Add support for style sheets to the DockArea. 5e38c591ad55_
+
+.. _5e38c591ad55: https://github.com/nucleic/enaml/commit/5e38c591ad55683d367b652460f70b75f3f087b2
+
+0.8.4 - 10/28/2013
+------------------
+- Add a size hint mode switch to Notebook and Stack. 330c7a337c32d_
+
+.. _330c7a337c32d: https://github.com/nucleic/enaml/commit/330c7a337c32d1b15a8d8d50acfc4ea208fd5330
+
+0.8.3 - 10/25/2013
+------------------
+- Add support for style sheets. 77e2a0afbd56_
+- Fix a bug with a null widget and the notebook selected tab. 64cfe8789838_
+
+.. _77e2a0afbd56: https://github.com/nucleic/enaml/commit/77e2a0afbd56489fe457c13c0b3e12e0187393ce
+.. _64cfe8789838: https://github.com/nucleic/enaml/commit/64cfe87898382b9a76a0450914d40272b6fa6d02
+
+0.8.2 - 10/11/2013
+------------------
+- Add a DynamicTemplate declarative object. ede76a778a86_
+- Add 'window' mode to PopupView. f37263fd7b7d_
+- Add 'selected_tab' attribute to the Notebook. 45ca092e7222_
+- Overhaul of the docs and doc build system.
+- Various bug fixes and performance improvements.
+
+.. _ede76a778a86: https://github.com/nucleic/enaml/commit/ede76a778a864dbb79636f38a15fd6b24e975228
+.. _f37263fd7b7d: https://github.com/nucleic/enaml/commit/f37263fd7b7db22c0a404660ccaea3f444b8a171
+.. _45ca092e7222: https://github.com/nucleic/enaml/commit/45ca092e722209163c4dad81741d2f09595efade
+
+0.8.1 - 09/25/2013
+------------------
+- Update the PopupView to automatically reposition on-screen. 3225683f9411_
+- Minor bug fixes.
+- Added an ImageView example.
+
+.. _3225683f9411: https://github.com/nucleic/enaml/commit/3225683f9411266d98b050be252440c7f5a1e892
+
+0.8.0 - 09/20/2013
+------------------
+- Added templates to the language.
+- Added aliases to the language.
+- Removed the compatibility code scheduled for removal.
+- Added a completely new declarative expression engine.
+
+0.7.20 - 08/12/2013
+-------------------
+- Bugfix area layout traversal. 308164fd5134_
+- Allow alpha hex colors. d9605cc55bb5_
+- Add a declarative Timer object. 13259258e6fd_
+- Added a Scintilla widget.
+- Added the applib sub-package.
+- Added live editor components to the applib.
+- Added an 'auto_sync' submit trigger to Field. 1926cde5e64b_
+
+.. _308164fd5134: https://github.com/nucleic/enaml/commit/308164fd513416ffb52a38db9b5b7039942e32f2
+.. _d9605cc55bb5: https://github.com/nucleic/enaml/commit/d9605cc55bb546f1a2593df0865687678de182f1
+.. _13259258e6fd: https://github.com/nucleic/enaml/commit/13259258e6fdb62181a26b24cef9d69f70c37ac3
+.. _1926cde5e64b: https://github.com/nucleic/enaml/commit/1926cde5e64ba3b4227886268869b10e755d5c0b
+
 0.7.19 - 07/22/2013
 -------------------
 - Added dock layout ops for extending/retracting from dock bars. 00ee34a102f_

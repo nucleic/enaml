@@ -1,8 +1,11 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Str, Range, Bool, observe
+from atom.api import Atom, Unicode, Range, Bool, observe
 
 import enaml
 from enaml.qt.qt_application import QtApplication
@@ -12,9 +15,9 @@ class Person(Atom):
     """ A simple class representing a person object.
 
     """
-    last_name = Str()
+    last_name = Unicode()
 
-    first_name = Str()
+    first_name = Unicode()
 
     age = Range(low=0)
 
@@ -31,6 +34,7 @@ class Person(Atom):
                 first=self.first_name, last=self.last_name, age=self.age,
             )
             print s
+
 
 if __name__ == '__main__':
     with enaml.imports():

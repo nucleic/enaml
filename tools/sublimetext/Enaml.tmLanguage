@@ -11,229 +11,464 @@
 	<key>patterns</key>
 	<array>
 		<dict>
-			<key>captures</key>
+			<key>begin</key>
+			<string>^\s*(enamldef)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\()</string>
+			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>keyword.other</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>variable.other</string>
+					<string>storage.type.class.enaml</string>
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>Enaml Identifier</string>
-			<key>match</key>
-			<string>^\s*(id):\s*([A-Za-z_][A-Za-z0-9_]*)\s*$</string>
-		</dict>
-		<dict>
-			<key>captures</key>
+			<string>enamldef declaration</string>
+			<key>end</key>
+			<string>(\))\s*(?:(?:\:\s*([a-zA-Z_][a-zA-Z_0-9]*)\s*(\:))|(\:)|(.*$
+?))</string>
+			<key>endCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>punctuation.definition.inheritance.end.enaml</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>entity.name.type</string>
+					<string>variable.language.enaml</string>
 				</dict>
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.inherited-class</string>
-				</dict>
-			</dict>
-			<key>comment</key>
-			<string>Enaml Declaration</string>
-			<key>match</key>
-			<string>^(enamldef)\s*([A-Za-z_][A-Za-z0-9_]*)\((.*?)\):\s*$</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>storage.type</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>entity.name.type</string>
-				</dict>
-				<key>3</key>
-				<dict>
-					<key>name</key>
-					<string>entity.other.inherited-class</string>
+					<string>punctuation.section.class.begin.enaml</string>
 				</dict>
 				<key>4</key>
 				<dict>
 					<key>name</key>
-					<string>variable.other</string>
+					<string>punctuation.section.class.begin.enaml</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>invalid.illegal.missing-section-begin.enaml</string>
 				</dict>
 			</dict>
-			<key>comment</key>
-			<string>Enaml Declaration with id</string>
-			<key>match</key>
-			<string>^(enamldef)\s*([A-Za-z_][A-Za-z0-9_]*)\((.*?)\):\s*([A-Za-z_][A-Za-z0-9_]*):\s*$</string>
+			<key>name</key>
+			<string>meta.class.enaml</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>begin</key>
+					<string>(?=[A-Za-z_][A-Za-z0-9_]*)</string>
+					<key>contentName</key>
+					<string>entity.name.type.class.enaml</string>
+					<key>end</key>
+					<string>(?![A-Za-z0-9_])</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#entity_name_class</string>
+						</dict>
+					</array>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>(\()</string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.definition.inheritance.begin.enaml</string>
+						</dict>
+					</dict>
+					<key>contentName</key>
+					<string>meta.class.inheritance.enaml</string>
+					<key>end</key>
+					<string>(?=\))</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>begin</key>
+							<string>(?&lt;=\(|,)\s*</string>
+							<key>contentName</key>
+							<string>entity.other.inherited-class.enaml</string>
+							<key>end</key>
+							<string>\s*(?:(,)|(?=\)))</string>
+							<key>endCaptures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>punctuation.separator.inheritance.python</string>
+								</dict>
+							</dict>
+							<key>patterns</key>
+							<array>
+								<dict>
+									<key>include</key>
+									<string>source.python</string>
+								</dict>
+							</array>
+						</dict>
+					</array>
+				</dict>
+			</array>
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^(enamldef)\s*([A-Za-z_][A-Za-z0-9_]*)\((.*?)\):\s*([A-Za-z_][A-Za-z0-9_]*):</string>
+			<string>^\s*(template)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\()</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.type.function.enaml</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>template declaration</string>
+			<key>end</key>
+			<string>(\))\s*(?:(\:)|(.*$
+?))</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.parameters.end.enaml</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>entity.name.type</string>
+					<string>punctuation.section.function.begin.enaml</string>
 				</dict>
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.inherited-class</string>
-				</dict>
-				<key>4</key>
-				<dict>
-					<key>name</key>
-					<string>variable.other</string>
+					<string>invalid.illegal.missing-section-begin.enaml</string>
 				</dict>
 			</dict>
-			<key>comment</key>
-			<string>Enaml Declaration one liner with id</string>
-			<key>end</key>
-			<string>$</string>
+			<key>name</key>
+			<string>meta.function.enaml</string>
 			<key>patterns</key>
 			<array>
 				<dict>
-					<key>include</key>
-					<string>source.python</string>
+					<key>begin</key>
+					<string>(?=[A-Za-z_][A-Za-z0-9_]*)</string>
+					<key>contentName</key>
+					<string>entity.name.function.enaml</string>
+					<key>end</key>
+					<string>(?![A-Za-z0-9_])</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#entity_name_function</string>
+						</dict>
+					</array>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>(\()</string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.definition.parameters.begin.enaml</string>
+						</dict>
+					</dict>
+					<key>contentName</key>
+					<string>meta.function.parameters.enaml</string>
+					<key>end</key>
+					<string>(?=\)\s*\:)</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#keyword_arguments</string>
+						</dict>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>variable.parameter.function.enaml</string>
+								</dict>
+								<key>2</key>
+								<dict>
+									<key>name</key>
+									<string>punctuation.separator.parameters.enaml</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(?:(,)|(?=[
+\)]))</string>
+						</dict>
+					</array>
 				</dict>
 			</array>
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^(enamldef)\s*([A-Za-z_][A-Za-z0-9_]*)\((.*?)\):</string>
+			<string>^\s*(func)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\()</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.type.function.enaml</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>function declaration</string>
+			<key>end</key>
+			<string>(\))\s*(?:(\:)|(.*$
+?))</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.parameters.end.enaml</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>entity.name.type</string>
+					<string>punctuation.section.function.begin.enaml</string>
 				</dict>
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.inherited-class</string>
+					<string>invalid.illegal.missing-section-begin.enaml</string>
 				</dict>
 			</dict>
-			<key>comment</key>
-			<string>Enaml Declaration one liner</string>
-			<key>end</key>
-			<string>$</string>
+			<key>name</key>
+			<string>meta.function.enaml</string>
 			<key>patterns</key>
 			<array>
 				<dict>
-					<key>include</key>
-					<string>source.python</string>
+					<key>begin</key>
+					<string>(?=[A-Za-z_][A-Za-z0-9_]*)</string>
+					<key>contentName</key>
+					<string>entity.name.function.enaml</string>
+					<key>end</key>
+					<string>(?![A-Za-z0-9_])</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#entity_name_function</string>
+						</dict>
+					</array>
 				</dict>
-			</array>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
 				<dict>
-					<key>name</key>
-					<string>support.class</string>
-				</dict>
-			</dict>
-			<key>comment</key>
-			<string>Enaml Instantiation</string>
-			<key>match</key>
-			<string>^\s*([A-Za-z_][A-Za-z0-9_]*):\s*$</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>support.class</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>variable.other</string>
-				</dict>
-			</dict>
-			<key>comment</key>
-			<string>Enaml Instantiation with id</string>
-			<key>match</key>
-			<string>^\s*([A-Za-z_][A-Za-z0-9_]*):\s*([A-Za-z_][A-Za-z0-9_]*):\s*$</string>
-		</dict>
-		<dict>
-			<key>begin</key>
-			<string>^\s*([A-Za-z_][A-Za-z0-9_]*):\s*([A-Za-z_][A-Za-z0-9_]*):</string>
-			<key>beginCaptures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>support.class</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>variable.other</string>
-				</dict>
-			</dict>
-			<key>comment</key>
-			<string>Enaml Instantiation one liner with id</string>
-			<key>end</key>
-			<string>$</string>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>include</key>
-					<string>source.python</string>
+					<key>begin</key>
+					<string>(\()</string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.definition.parameters.begin.enaml</string>
+						</dict>
+					</dict>
+					<key>contentName</key>
+					<string>meta.function.parameters.enaml</string>
+					<key>end</key>
+					<string>(?=\)\s*\:)</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#keyword_arguments</string>
+						</dict>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>variable.parameter.function.enaml</string>
+								</dict>
+								<key>2</key>
+								<dict>
+									<key>name</key>
+									<string>punctuation.separator.parameters.enaml</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(?:(,)|(?=[
+\)]))</string>
+						</dict>
+					</array>
 				</dict>
 			</array>
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^\s*([A-Za-z_][A-Za-z0-9_]*):</string>
+			<string>^\s*(?=[a-zA-Z_][a-zA-Z_0-9]*\s*=&gt;\s*\()</string>
+			<key>comment</key>
+			<string>function override</string>
+			<key>end</key>
+			<string>(\))\s*(?:(\:)|(.*$
+?))</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.parameters.end.enaml</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.section.function.begin.enaml</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>invalid.illegal.missing-section-begin.enaml</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>meta.function.enaml</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>keyword.operator</string>
+						</dict>
+					</dict>
+					<key>match</key>
+					<string>[A-Za-z_][A-Za-z0-9_]*\s*(=&gt;)\s*</string>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>(\()</string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.definition.parameters.begin.enaml</string>
+						</dict>
+					</dict>
+					<key>contentName</key>
+					<string>meta.function.parameters.enaml</string>
+					<key>end</key>
+					<string>(?=\)\s*\:)</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#keyword_arguments</string>
+						</dict>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>variable.parameter.function.enaml</string>
+								</dict>
+								<key>2</key>
+								<dict>
+									<key>name</key>
+									<string>punctuation.separator.parameters.enaml</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(?:(,)|(?=[
+\)]))</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>^\s+([a-zA-Z_][a-zA-Z_0-9]*)\s*(?=\(.*?\).*?\:\s*$)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>Enaml Instantiation one liner</string>
+			<string>template instantiation</string>
 			<key>end</key>
-			<string>$</string>
+			<string>\:\s*$</string>
+			<key>name</key>
+			<string>meta.function-call.enaml</string>
 			<key>patterns</key>
 			<array>
 				<dict>
-					<key>include</key>
-					<string>source.python</string>
+					<key>begin</key>
+					<string>(\()</string>
+					<key>beginCaptures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.definition.arguments.begin.enaml</string>
+						</dict>
+					</dict>
+					<key>contentName</key>
+					<string>meta.function-call.arguments.enaml</string>
+					<key>end</key>
+					<string>(\))\s*(?=\:)</string>
+					<key>endCaptures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>punctuation.definition.arguments.end.enaml</string>
+						</dict>
+					</dict>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>source.python</string>
+						</dict>
+					</array>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>\s*(?=\*?\s*[a-zA-Z_][a-zA-Z_0-9]*)</string>
+					<key>end</key>
+					<string>(?=\:)</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>variable.language.enaml</string>
+								</dict>
+								<key>2</key>
+								<dict>
+									<key>name</key>
+									<string>punctuation.separator.arguments.enaml</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>\s*\*?\s*([a-zA-Z_][a-zA-Z_0-9]*)\s*(,)?\s*</string>
+						</dict>
+					</array>
 				</dict>
 			</array>
 		</dict>
@@ -243,7 +478,33 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>entity.name.tag</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>variable.language.enaml</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.section.class.begin.enaml</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>declarative instantiation</string>
+			<key>match</key>
+			<string>^\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\:\s*([a-zA-Z_][a-zA-Z_0-9]*)\s*)?(\:)\s*$</string>
+			<key>name</key>
+			<string>meta.class-instantiation.enaml</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>storage.modifier</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -252,9 +513,9 @@
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>Enaml Attribute Declaration</string>
+			<string>storage declaration</string>
 			<key>match</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
+			<string>^\s+(attr|event|const)\s+([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -262,7 +523,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.modifier</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -272,23 +533,23 @@
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>Enaml Attribute Declaration with Type</string>
+			<string>storage declaration with type</string>
 			<key>match</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
+			<string>^\s+(attr|event|const)\s+([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
+			<string>^\s+(attr|event|const)\s+([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.modifier</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -302,7 +563,7 @@
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>Enaml Attribute Declaration with Binding</string>
+			<string>storage declaration with binding</string>
 			<key>end</key>
 			<string>$</string>
 			<key>patterns</key>
@@ -315,13 +576,13 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(attr|event)\s*([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
+			<string>^\s+(attr|event|const)\s+([A-Za-z_][A-Za-z_0-9]*)\s*:\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type</string>
+					<string>storage.modifier</string>
 				</dict>
 				<key>2</key>
 				<dict>
@@ -331,7 +592,7 @@
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>support.class</string>
+					<string>entity.name.tag</string>
 				</dict>
 				<key>4</key>
 				<dict>
@@ -340,7 +601,7 @@
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>Enaml Attribute Declaration with Type and Binding</string>
+			<string>storage declaration with type and binding</string>
 			<key>end</key>
 			<string>$</string>
 			<key>patterns</key>
@@ -352,8 +613,84 @@
 			</array>
 		</dict>
 		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>storage.modifier</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.other.attribute-name</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>alias definition single</string>
+			<key>match</key>
+			<string>^\s+(alias)\s+([A-Za-z_][A-Za-z_0-9]*)\s*$</string>
+		</dict>
+		<dict>
 			<key>begin</key>
-			<string>^\s*([A-Za-z_][A-Za-z_0-9]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
+			<string>^\s+(alias)\s+([A-Za-z_][A-Za-z_0-9]*)\s*\:\s*</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>storage.modifier</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.other.attribute-name</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>alias definition extended</string>
+			<key>end</key>
+			<string>\s*$</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>begin</key>
+					<string>(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)</string>
+					<key>end</key>
+					<string>(?![A-Za-z0-9_\.])</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>entity.other.attribute-name</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>\.([A-Za-z_][A-Za-z0-9_]*)</string>
+						</dict>
+						<dict>
+							<key>captures</key>
+							<dict>
+								<key>1</key>
+								<dict>
+									<key>name</key>
+									<string>entity.other.attribute-name</string>
+								</dict>
+							</dict>
+							<key>match</key>
+							<string>(?&lt;!\.)([A-Za-z_][A-Za-z0-9_]*)</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>^\s+([A-Za-z_][A-Za-z_0-9\.]*)\s*(=|:=|&lt;&lt;|&gt;&gt;|::)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>2</key>
@@ -363,7 +700,7 @@
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>Enaml Attribute Binding</string>
+			<string>expression binding</string>
 			<key>end</key>
 			<string>$</string>
 			<key>patterns</key>

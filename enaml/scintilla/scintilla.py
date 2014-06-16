@@ -167,7 +167,7 @@ class Scintilla(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('document', 'syntax', 'theme', 'settings', 'zoom'))
+    @observe('document', 'syntax', 'theme', 'settings', 'zoom')
     def _update_proxy(self, change):
         """ An observer which sends the document change to the proxy.
 

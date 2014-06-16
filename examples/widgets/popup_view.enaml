@@ -10,6 +10,7 @@
 The PopupView is useful for displaying transient configuration dialogs
 and notification windows. The widget supports a transparent background.
 
+<< autodoc-me >>
 """
 from enaml.core.api import Include
 from enaml.widgets.api import (
@@ -38,7 +39,6 @@ enamldef ConfigPopup(PopupView): popup:
     anchor << POSITIONS[view_box.selected_item]
     arrow_size << sizer.value
     arrow_edge << arrow_edge.selected_item
-    arrow_position << positioner.value / 100.0
     offset << (offset_x.value, offset_y.value)
     Form:
         padding = 20
@@ -46,16 +46,9 @@ enamldef ConfigPopup(PopupView): popup:
             foreground = 'white'
             text = 'Arrow Size'
         Slider: sizer:
-            minimum = 0
+            minimum = 5
             maximum = 30
             value = 20
-        Label:
-            foreground = 'white'
-            text = 'Arrow Position'
-        Slider: positioner:
-            minimum = 0
-            maximum = 100
-            value = 50
         Label:
             foreground = 'white'
             text = 'Arrow Edge'
@@ -109,7 +102,6 @@ enamldef NotificationPopup(PopupView):
     fade_in_duration = 500
     fade_out_duration = 500
     Container:
-        hug_height = 'strong'
         Label:
             foreground = 'white'
             text = 'Hello Enaml Notifications'
@@ -124,10 +116,16 @@ enamldef Main(Window): win:
             clicked :: ConfigPopup(self).show()
         PushButton:
             text = 'Show Window Notification'
-            clicked :: NotificationPopup(win).show()
+            clicked :: NotificationPopup(win, window_type='window').show()
         PushButton:
             text = 'Show Desktop Notification'
             clicked :: NotificationPopup().show()
         PushButton:
             text = 'Show Mouse Notification'
-            clicked :: NotificationPopup(anchor_mode='cursor').show()
+            clicked ::
+                popup = NotificationPopup()
+                popup.anchor_mode = 'cursor'
+                popup.anchor = (0.0, 0.0)
+                popup.offset = (0, 0)
+                popup.timeout = 1
+                popup.show()

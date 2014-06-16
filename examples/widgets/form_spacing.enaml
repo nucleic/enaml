@@ -1,0 +1,57 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2014, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of controlling Form spacing.
+
+The Form widget allows the developer to control the spacing between the
+rows and columns in the form. Changes to the row and column spacing at
+runtime are automatically reflected in the layout.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import vbox
+from enaml.widgets.api import (
+    Window, Container, Form, CheckBox, Label, Field, Separator, SpinBox
+)
+
+
+enamldef Main(Window):
+    title = 'Form Spacing'
+    Container:
+        padding = 0
+        constraints = [vbox(f1, 0, sep, 0, f2)]
+        Form: f1:
+            Label:
+                text = 'Two Visible'
+            CheckBox: cbox:
+                checked = True
+            Label:
+                text = 'Row Spacing'
+            SpinBox: rspin:
+                value = 10
+            Label:
+                text = 'Column Spacing'
+            SpinBox: cspin:
+                value = 10
+        Separator: sep:
+            pass
+        Form: f2:
+            row_spacing << rspin.value
+            column_spacing << cspin.value
+            Label:
+                text = 'One'
+            Field:
+                pass
+            Label:
+                text = 'Two'
+                visible << cbox.checked
+            Field:
+                visible << cbox.checked
+            Label:
+                text = 'A Long Label'
+            Field:
+                pass

@@ -1,6 +1,9 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -17,16 +20,19 @@
 
 import sys, os
 
-## from enaml.import_hooks import EnamlImporter
-## EnamlImporter.install()
+from enaml.version import version_info
+
+import sphinx_bootstrap_theme
+
+from enaml.core.import_hooks import EnamlImporter
+EnamlImporter.install()
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('./sphinxext'))
-sys.path.insert(0, os.path.abspath('./developer_guide'))
-sys.path.insert(0, os.path.abspath('../')); from enaml.version import version_info
+sys.path.insert(0, os.path.abspath('./_sphinxext'))
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -47,12 +53,15 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.autosummary',
-    'refactordoc',
-    #'enamldoc.sphinx_ext',
+    #'enamldoc'
+    'numpydoc'
     ]
 
+# Disable numpy auto-gen class members.
+numpydoc_show_class_members = False
+
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['templates']
+templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -64,7 +73,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'enaml'
+project = u'Enaml'
 copyright = u'2013, Nucleic Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -88,7 +97,7 @@ today_fmt = '%B %d, %Y'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['templates']
+exclude_patterns = ['_templates', '_sphinxext']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -105,7 +114,7 @@ exclude_patterns = ['templates']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'trac'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -138,10 +147,11 @@ autosummary_generate = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'nucleic_doc'
+# html_theme = 'nucleic_doc'
 #'default'
 #'agogo'
 #
+html_theme = 'bootstrap'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -150,9 +160,16 @@ html_theme = 'nucleic_doc'
 ##     'pagewidth' : '70em',
 ##     'sidebarwidth' : '20em'
 ##     }
+html_theme_options = {
+    #'navbar_class': 'navbar-inverse',
+    'navbar_sidebarrel': False,
+    'bootswatch_theme': 'cosmo',
+    'bootstrap_version': '3',
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['./']
+# html_theme_path = ['./']
+html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -173,7 +190,7 @@ html_short_title = project + " v" + release
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -184,7 +201,12 @@ html_last_updated_fmt = '%b %d, %Y'
 html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    '**': ['realglobaltoc.html'],
+    'index': [],
+    'genindex': [],
+    'search': [],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -200,7 +222,7 @@ html_use_index = True
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -264,7 +286,7 @@ latex_domain_indices = True
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'enaml', u'enaml Documentation',
+    ('index', 'enaml', u'Enaml Documentation',
      [u'Nucleic Development Team'], 1)
 ]
 
@@ -314,7 +336,3 @@ intersphinx_mapping = {
     'python' : ('http://docs.python.org/', None),
     #'atom' : ('https://github.com/nucleic/atom/', None)
     }
-
-rst_epilog = """
-.. |Enaml| replace:: Enaml
-"""

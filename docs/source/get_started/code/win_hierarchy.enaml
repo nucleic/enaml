@@ -1,0 +1,25 @@
+from enaml.widgets.api import (
+    MainWindow, MenuBar, Menu, Container, Form, Label, Field, PushButton
+)
+
+enamldef Main(MainWindow):
+    title = 'Window'
+    MenuBar:
+        Menu:
+            title = 'Item 1'
+        Menu:
+            title = 'Item 2'
+        Menu:
+            title = 'Item 3'
+    Container:
+        Form:
+            Label:
+                text = 'Label 1'
+            Field:
+                pass
+            Label:
+                text = 'Label 2'
+            Field:
+                pass
+        PushButton:
+            text = 'Button'

@@ -5,14 +5,17 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from weakref import ref
+
 from enaml.qt.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent
 from enaml.qt.QtGui import (
     QApplication, QTabBar, QTabWidget, QMouseEvent, QResizeEvent, QStyle,
-    QCursor
+    QCursor, QStylePainter, QStyleOptionTabV3, QPixmap, QPainter
 )
 
 from .event_types import QDockItemEvent, DockTabSelected
 from .q_bitmap_button import QBitmapButton
+from .utils import repolish
 from .xbms import CLOSE_BUTTON
 
 
@@ -38,6 +41,23 @@ class QDockTabCloseButton(QBitmapButton):
         return opt
 
 
+class _TabData(object):
+    """ A private class which holds data about a tab in a tab bar.
+
+    """
+    __slots__ = ('ref', 'normal', 'selected', 'alerted')
+
+    def __init__(self, container):
+        self.ref = ref(container)
+        self.normal = None
+        self.selected = None
+        self.alerted = False
+
+    @property
+    def container(self):
+        return self.ref()
+
+
 class QDockTabBar(QTabBar):
     """ A custom QTabBar that manages safetly undocking a tab.
 
@@ -57,7 +77,10 @@ class QDockTabBar(QTabBar):
         """
         super(QDockTabBar, self).__init__(parent)
         self.setSelectionBehaviorOnRemove(QTabBar.SelectPreviousTab)
+        self.tabMoved.connect(self._onTabMoved)
+        self._has_alerts = False
         self._has_mouse = False
+        self._tab_data = []
 
     #--------------------------------------------------------------------------
     # Public API
@@ -97,6 +120,16 @@ class QDockTabBar(QTabBar):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
+    def _onTabMoved(self, from_index, to_index):
+        """ A handler for the 'tabMoved' signal.
+
+        This handler synchronizes the internal tab data structures for
+        the new positions of the tabs.
+
+        """
+        data = self._tab_data.pop(from_index)
+        self._tab_data.insert(to_index, data)
+
     def _onCloseButtonClicked(self):
         """ Handle the 'clicked' signal on the tab close buttons.
 
@@ -109,6 +142,89 @@ class QDockTabBar(QTabBar):
             if self.tabButton(index, QTabBar.RightSide) is button:
                 self.tabCloseRequested.emit(index)
 
+    def _onAlerted(self, level):
+        """ A signal handler for the 'alerted' signal on a container.
+
+        This handler will re-snap the pixmaps for the alerted tab
+        and trigger a repaint of the tab bar.
+
+        """
+        container = self.sender()
+        index = self.parent().indexOf(container)
+        if index != -1:
+            if level:
+                self._snapAlertPixmaps(index, level)
+            else:
+                self._clearAlertPixmaps(index)
+            self.update()
+
+    def _snapAlertPixmaps(self, index, level):
+        """ Snap the alert pixmaps for the specified tab.
+
+        Parameters
+        ----------
+        index : int
+            The index of the tab of interest.
+
+        level : unicode
+            The alert level for which to snap the pixmaps.
+
+        """
+        # Force an internal update of the stylesheet rules
+        self.setProperty(u'alert', level)
+        repolish(self)
+
+        # Setup the style option for the control
+        opt = QStyleOptionTabV3()
+        self.initStyleOption(opt, index)
+        opt.rect.moveTo(0, 0)
+
+        # Snap the normal pixmap
+        opt.state &= ~QStyle.State_Selected
+        normal = QPixmap(opt.rect.size())
+        normal.fill(Qt.transparent)
+        painter = QStylePainter(normal, self)
+        painter.initFrom(self)
+        painter.drawControl(QStyle.CE_TabBarTab, opt)
+
+        # Snap the selected pixmap
+        opt.state |= QStyle.State_Selected
+        selected = QPixmap(opt.rect.size())
+        selected.fill(Qt.transparent)
+        painter = QStylePainter(selected, self)
+        painter.initFrom(self)
+        painter.drawControl(QStyle.CE_TabBarTab, opt)
+
+        # Reset the internal stylesheet style
+        self.setProperty(u'alert', None)
+        repolish(self)
+
+        # Update the internal tab data
+        data = self._tab_data[index]
+        data.normal = normal
+        data.selected = selected
+        data.alerted = True
+
+        # Flip the alert flag so the pixmaps are painted
+        self._has_alerts = True
+
+    def _clearAlertPixmaps(self, index):
+        """ Clear the alert pixmaps for the specified tab.
+
+        Parameters
+        ----------
+        index : int
+            The index of the tab of interest.
+
+        """
+        data = self._tab_data[index]
+        data.normal = None
+        data.selected = None
+        data.alerted = False
+
+        # Turn off alert painting if there are no more alerts
+        self._has_alerts = any(d.alerted for d in self._tab_data)
+
     #--------------------------------------------------------------------------
     # Reimplementations
     #--------------------------------------------------------------------------
@@ -117,8 +233,9 @@ class QDockTabBar(QTabBar):
 
         This handler will create the close button for the tab and then
         update its visibilty depending on whether or not the dock item
-        is closable. This method assumes that this tab bar is parented
-        by a QDockTabWidget.
+        is closable. It will also build the internal tab data structure
+        for the new tab. This method assumes that this tab bar is
+        parented by a QDockTabWidget.
 
         """
         button = QDockTabCloseButton(self)
@@ -128,8 +245,22 @@ class QDockTabBar(QTabBar):
         button.clicked.connect(self._onCloseButtonClicked)
         self.setTabButton(index, QTabBar.LeftSide, None)
         self.setTabButton(index, QTabBar.RightSide, button)
-        visible = self.parent().widget(index).closable()
-        self.setCloseButtonVisible(index, visible)
+        container = self.parent().widget(index)
+        container.alerted.connect(self._onAlerted)
+        self.setCloseButtonVisible(index, container.closable())
+        self._tab_data.insert(index, _TabData(container))
+
+    def tabRemoved(self, index):
+        """ Handle a tab removal from the tab bar.
+
+        This will remove the internal tab data structure and disconnect
+        the relevant signals.
+
+        """
+        data = self._tab_data.pop(index)
+        container = data.container
+        if container is not None:
+            container.alerted.disconnect(self._onAlerted)
 
     def mousePressEvent(self, event):
         """ Handle the mouse press event for the tab bar.
@@ -141,8 +272,14 @@ class QDockTabBar(QTabBar):
         super(QDockTabBar, self).mousePressEvent(event)
         self._has_mouse = False
         if event.button() == Qt.LeftButton:
-            if self.tabAt(event.pos()) != -1:
+            index = self.tabAt(event.pos())
+            if index != -1:
                 self._has_mouse = True
+                data = self._tab_data[index]
+                container = data.container
+                if container is not None:
+                    # likey a no-op, but just in case
+                    container.dockItem().clearAlert()
         elif event.button() == Qt.RightButton:
             index = self.tabAt(event.pos())
             if index != -1:
@@ -199,6 +336,23 @@ class QDockTabBar(QTabBar):
         super(QDockTabBar, self).mouseReleaseEvent(event)
         if event.button() == Qt.LeftButton:
             self._has_mouse = False
+
+    def paintEvent(self, event):
+        """ A custom paint event for the tab bar.
+
+        This paint event will blit the pixmaps for the alerted tabs as
+        necessary, after the superclass paint event handler is run.
+
+        """
+        super(QDockTabBar, self).paintEvent(event)
+        if self._has_alerts:
+            painter = QPainter(self)
+            current = self.currentIndex()
+            for index, data in enumerate(self._tab_data):
+                if data.alerted:
+                    rect = self.tabRect(index)
+                    pm = data.selected if index == current else data.normal
+                    painter.drawPixmap(rect, pm)
 
 
 class QDockTabWidget(QTabWidget):

@@ -1,0 +1,56 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2014, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `HGroup` convenience container.
+
+The HGroup is a convenience container which provides a simple horizontal
+group of child widgets, with knobs to control inter-widget spacing, leading
+and trailing spacers, and width alignment.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import spacer
+from enaml.widgets.api import (
+    Window, Label, Separator, Field, Form, VGroup, HGroup, CheckBox, SpinBox
+)
+
+
+enamldef Main(Window):
+    title = 'HGroup'
+    VGroup:
+        padding = 0
+        spacing = 0
+        Form:
+            Label:
+                text = 'Leading Spacer'
+            CheckBox: lsp:
+                checked = False
+            Label:
+                text = 'Trailing Spacer'
+            CheckBox: rsp:
+                checked = False
+            Label:
+                text = 'Align Widths'
+            CheckBox: wbx:
+                checked = True
+            Label:
+                text = 'Spacing'
+            SpinBox: spin:
+                value = 10
+        Separator:
+            pass
+        HGroup:
+            leading_spacer << spacer(0) if lsp.checked else None
+            trailing_spacer << spacer(0) if rsp.checked else None
+            spacing << spin.value
+            align_widths << wbx.checked
+            Field:
+                pass
+            Field:
+                pass
+            Field:
+                pass

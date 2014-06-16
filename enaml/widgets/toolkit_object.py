@@ -29,6 +29,13 @@ class ProxyToolkitObject(Atom):
     #: A reference to the ToolkitObject declaration.
     declaration = ForwardTyped(lambda: ToolkitObject)
 
+    @property
+    def is_active(self):
+        """ Test whether or not the proxy is fully activated.
+
+        """
+        return self.declaration.proxy_is_active
+
     def activate_top_down(self):
         """ A method called by the declaration to activate the proxy.
 
@@ -239,7 +246,7 @@ class ToolkitObject(Declarative):
         as a base observer handler
 
         """
-        if self.proxy_is_active and change['type'] == 'update':
+        if change['type'] == 'update' and self.proxy_is_active:
             handler = getattr(self.proxy, 'set_' + change['name'], None)
             if handler is not None:
                 handler(change['value'])

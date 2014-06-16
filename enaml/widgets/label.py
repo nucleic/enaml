@@ -57,7 +57,7 @@ class Label(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('text', 'align', 'vertical_align'))
+    @observe('text', 'align', 'vertical_align')
     def _update_proxy(self, change):
         """ An observer which sends the state change to the proxy.
 

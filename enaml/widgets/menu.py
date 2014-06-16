@@ -36,6 +36,9 @@ class ProxyMenu(ProxyToolkitObject):
     def popup(self):
         raise NotImplementedError
 
+    def close(self):
+        raise NotImplementedError
+
 
 class Menu(ToolkitObject):
     """ A widget used as a menu in a MenuBar.
@@ -68,7 +71,7 @@ class Menu(ToolkitObject):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'enabled', 'visible', 'context_menu'))
+    @observe('title', 'enabled', 'visible', 'context_menu')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the menu changes.
 
@@ -88,3 +91,13 @@ class Menu(ToolkitObject):
         if not self.proxy_is_active:
             self.activate_proxy()
         self.proxy.popup()
+
+    def close(self):
+        """ Close the menu.
+
+        This API can be used by embedded widgets to close the menu
+        at the appropriate time.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.close()

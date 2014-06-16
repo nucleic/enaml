@@ -268,7 +268,7 @@ class WxActionGroup(WxToolkitObject, ProxyActionGroup):
         super(WxActionGroup, self).init_layout()
         widget = self.widget
         for action in self.actions():
-            widget.addAction(action)
+            widget.AddAction(action)
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -342,7 +342,7 @@ class WxActionGroup(WxToolkitObject, ProxyActionGroup):
 
         """
         isinst = isinstance
-        return [c.widget() for c in self.children() if isinst(c, WxAction)]
+        return [c.widget for c in self.children() if isinst(c, WxAction)]
 
     #--------------------------------------------------------------------------
     # ProxyActionGroup API

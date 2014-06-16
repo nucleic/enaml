@@ -95,8 +95,8 @@ class SpinBox(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('minimum', 'maximum', 'value', 'prefix', 'suffix',
-        'special_value_text', 'single_step', 'read_only', 'wrapping'))
+    @observe('minimum', 'maximum', 'value', 'prefix', 'suffix',
+        'special_value_text', 'single_step', 'read_only', 'wrapping')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

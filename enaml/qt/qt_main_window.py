@@ -7,11 +7,12 @@
 #------------------------------------------------------------------------------
 import sys
 
-from atom.api import Typed
+from atom.api import Typed, atomref
 
 from enaml.widgets.main_window import ProxyMainWindow
+from enaml.widgets.window import CloseEvent
 
-from .QtCore import Qt, Signal
+from .QtCore import Qt
 from .QtGui import QMainWindow
 
 from .q_deferred_caller import deferredCall
@@ -20,25 +21,47 @@ from .qt_dock_pane import QtDockPane
 from .qt_menu_bar import QtMenuBar
 from .qt_status_bar import QtStatusBar
 from .qt_tool_bar import QtToolBar
-from .qt_window import QtWindow
+from .qt_window import QtWindow, finalize_close
 
 
 class QCustomMainWindow(QMainWindow):
     """ A custom QMainWindow which adds some Enaml specific features.
 
     """
-    #: A signal emitted when the window is closed by the user
-    closed = Signal()
+    def __init__(self, proxy, parent=None, flags=Qt.Widget):
+        """ Initialize a QCustomMainWindow.
 
-    #--------------------------------------------------------------------------
-    # Private API
-    #--------------------------------------------------------------------------
-    def closeEvent(self, event):
-        """ A close event handler which emits the 'closed' signal.
+        Parameters
+        ----------
+        proxy : QtMainWindow
+            The proxy object which owns this window. Only an atomref
+            will be maintained to this object.
+
+        parent : QWidget, optional
+            The parent of the window.
+
+        flags : Qt.WindowFlags, optional
+            The window flags to pass to the parent constructor.
 
         """
-        super(QCustomMainWindow, self).closeEvent(event)
-        self.closed.emit()
+        super(QCustomMainWindow, self).__init__(parent, Qt.Window | flags)
+        self._proxy_ref = atomref(proxy)
+
+    def closeEvent(self, event):
+        """ Handle the close event for the window.
+
+        """
+        event.accept()
+        if not self._proxy_ref:
+            return
+        proxy = self._proxy_ref()
+        d = proxy.declaration
+        d_event = CloseEvent()
+        d.closing(d_event)
+        if d_event.is_accepted():
+            deferredCall(finalize_close, d)
+        else:
+            event.ignore()
 
     #--------------------------------------------------------------------------
     # Public API
@@ -108,7 +131,8 @@ class QtMainWindow(QtWindow, ProxyMainWindow):
         """ Create the underlying widget QMainWindow widget.
 
         """
-        widget = QCustomMainWindow(self.parent_widget())
+        flags = self.creation_flags()
+        widget = QCustomMainWindow(self, self.parent_widget(), flags)
         widget.setDocumentMode(True)
         widget.setDockNestingEnabled(True)
         self.widget = widget

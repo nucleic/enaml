@@ -5,6 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+"""
+Example demonstrating a dual slider.
+
+<< autodoc-me >>
+"""
 from enaml.layout.api import align, vbox, hbox
 from enaml.stdlib.fields import IntField
 from enaml.widgets.api import (

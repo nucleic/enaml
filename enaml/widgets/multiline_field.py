@@ -61,7 +61,7 @@ class MultilineField(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('text', 'read_only', 'auto_sync_text'))
+    @observe('text', 'read_only', 'auto_sync_text')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

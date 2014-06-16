@@ -1,0 +1,144 @@
+blockquote {
+  border-left: 2px solid #EEEEEE;
+}
+
+
+.ffms, #style-field-type-table td:nth-of-type(2) {
+  font-family: monospace;
+}
+
+
+.table th.field-name {
+  white-space: nowrap;
+  background-color: #F0F0F0;
+  border: 2px solid black;
+}
+
+
+.table td.field-body > blockquote {
+  border: none;
+}
+
+
+.table td.field-body > blockquote p {
+  font-size: 14px;
+}
+
+
+.table td.field-body {
+  padding-left: 20px;
+}
+
+
+.alert-info {
+  background-color: #FDFA92;
+  border-color: #FDFA92;
+  color: #333333;
+}
+
+
+.h-imgs img {
+  float: left;
+  padding: 10px;
+}
+
+
+.padded-img img {
+  padding: 10px;
+}
+
+
+.code-and-img {
+  padding: 0;
+}
+
+
+.code-and-img > div {
+  float: left;
+  width: 30em;
+}
+
+
+.code-and-img pre {
+  overflow-x: hidden;
+}
+
+
+.highlighttable {
+  width: 100%;
+}
+
+
+.highlighttable .code {
+  width: 100%;
+}
+
+
+.enamldoc-sidenav form, .enamldoc-sidenav #sourcelink {
+  padding: 5px 20px;
+}
+
+
+.enamldoc-sidenav {
+  position: relative;
+  display: inline-block;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  padding-top:    10px;
+  padding-bottom: 10px;
+  text-shadow: 0 1px 0 #FFFFFF;
+  background-color: #F5F5F5;
+  border: 1px solid #CCCCCC;
+}
+
+
+.enamldoc-sidenav .nav > li > a {
+  display: block;
+  color: #716B7A;
+  padding: 5px 20px;
+}
+
+
+.enamldoc-sidenav .nav > li > a:hover,
+.enamldoc-sidenav .nav > li > a:focus {
+  text-decoration: none;
+  background-color: #E5E5E5;
+}
+
+
+.enamldoc-sidenav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 30px;
+  font-size: 90%;
+}
+
+
+.enamldoc-sidenav .nav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 40px;
+  font-size: 90%;
+}
+
+
+.enamldoc-sidenav .nav .nav .nav .nav > li > a {
+  padding-top:    3px;
+  padding-bottom: 3px;
+  padding-left: 50px;
+  font-size: 90%;
+}
+
+
+@media screen and (min-width: 992px) {
+  .enamldoc-sidenav {
+    width: 213px;
+  }
+}
+
+
+@media screen and (min-width: 1200px) {
+  .enamldoc-sidenav  {
+    width: 263px;
+  }
+}

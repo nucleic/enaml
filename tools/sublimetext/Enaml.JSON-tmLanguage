@@ -3,119 +3,243 @@
   "fileTypes": ["enaml"],
   "patterns": [
     {
-      "comment": "Enaml Identifier",
-      "match": "^\\s*(id):\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*$",
-      "captures": {
-        "1": { "name": "keyword.other" },
-        "2": { "name": "variable.other" }
-      }
-    },
-    {
-      "comment": "Enaml Declaration",
-      "match": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):\\s*$",
-      "captures": {
-        "1": { "name": "storage.type"},
-        "2": { "name": "entity.name.type" },
-        "3": { "name": "entity.other.inherited-class" }
-      }
-    },
-    {
-      "comment": "Enaml Declaration with id",
-      "match": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*$",
-      "captures": {
-        "1": { "name": "storage.type"},
-        "2": { "name": "entity.name.type" },
-        "3": { "name": "entity.other.inherited-class" },
-        "4": { "name": "variable.other" }
-      }
-    },
-    {
-      "comment": "Enaml Declaration one liner with id",
-      "begin": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):\\s*([A-Za-z_][A-Za-z0-9_]*):",
+      "comment": "enamldef declaration",
+      "name": "meta.class.enaml",
+      "begin": "^\\s*(enamldef)\\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\\s*\\()",
       "beginCaptures": {
-        "1": { "name": "storage.type"},
-        "2": { "name": "entity.name.type" },
-        "3": { "name": "entity.other.inherited-class" },
-        "4": { "name": "variable.other" }
+        "1": { "name": "storage.type.class.enaml" }
+      },
+      "end": "(\\))\\s*(?:(?:\\:\\s*([a-zA-Z_][a-zA-Z_0-9]*)\\s*(\\:))|(\\:)|(.*$\n?))",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.inheritance.end.enaml" },
+        "2": { "name": "variable.language.enaml" },
+        "3": { "name": "punctuation.section.class.begin.enaml" },
+        "4": { "name": "punctuation.section.class.begin.enaml" },
+        "5": { "name": "invalid.illegal.missing-section-begin.enaml" }
       },
       "patterns": [
-        { "include": "source.python" }
-      ],
-      "end": "$"
+        {
+          "contentName": "entity.name.type.class.enaml",
+          "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
+          "end": "(?![A-Za-z0-9_])",
+          "patterns": [
+            { "include": "#entity_name_class" }
+          ]
+        },
+        {
+          "contentName": "meta.class.inheritance.enaml",
+          "begin": "(\\()",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.inheritance.begin.enaml" }
+          },
+          "end": "(?=\\))",
+          "patterns": [
+            {
+              "contentName": "entity.other.inherited-class.enaml",
+              "begin": "(?<=\\(|,)\\s*",
+              "end": "\\s*(?:(,)|(?=\\)))",
+              "endCaptures": {
+                "1": { "name": "punctuation.separator.inheritance.python" }
+              },
+              "patterns": [
+                { "include": "source.python" }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-      "comment": "Enaml Declaration one liner",
-      "begin": "^(enamldef)\\s*([A-Za-z_][A-Za-z0-9_]*)\\((.*?)\\):",
+      "comment": "template declaration",
+      "name": "meta.function.enaml",
+      "begin": "^\\s*(template)\\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\\s*\\()",
       "beginCaptures": {
-        "1": { "name": "storage.type"},
-        "2": { "name": "entity.name.type" },
-        "3": { "name": "entity.other.inherited-class" }
+        "1": { "name": "storage.type.function.enaml" }
+      },
+      "end": "(\\))\\s*(?:(\\:)|(.*$\n?))",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.parameters.end.enaml" },
+        "2": { "name": "punctuation.section.function.begin.enaml" },
+        "3": { "name": "invalid.illegal.missing-section-begin.enaml" }
       },
       "patterns": [
-        { "include": "source.python" }
-      ],
-      "end": "$"
+        {
+          "contentName": "entity.name.function.enaml",
+          "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
+          "end": "(?![A-Za-z0-9_])",
+          "patterns": [
+            { "include": "#entity_name_function" }
+          ]
+        },
+        {
+          "contentName": "meta.function.parameters.enaml",
+          "begin": "(\\()",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.parameters.begin.enaml" }
+          },
+          "end": "(?=\\)\\s*\\:)",
+          "patterns": [
+            { "include": "#keyword_arguments" },
+            {
+              "match": "\\b([a-zA-Z_][a-zA-Z_0-9]*)\\s*(?:(,)|(?=[\n\\)]))",
+              "captures": {
+                "1": { "name": "variable.parameter.function.enaml" },
+                "2": { "name": "punctuation.separator.parameters.enaml" }
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-      "comment": "Enaml Instantiation",
-      "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*$",
+      "comment": "function declaration",
+      "name": "meta.function.enaml",
+      "begin": "^\\s*(func)\\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\\s*\\()",
+      "beginCaptures": {
+        "1": { "name": "storage.type.function.enaml" }
+      },
+      "end": "(\\))\\s*(?:(\\:)|(.*$\n?))",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.parameters.end.enaml" },
+        "2": { "name": "punctuation.section.function.begin.enaml" },
+        "3": { "name": "invalid.illegal.missing-section-begin.enaml" }
+      },
+      "patterns": [
+        {
+          "contentName": "entity.name.function.enaml",
+          "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
+          "end": "(?![A-Za-z0-9_])",
+          "patterns": [
+            { "include": "#entity_name_function" }
+          ]
+        },
+        {
+          "contentName": "meta.function.parameters.enaml",
+          "begin": "(\\()",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.parameters.begin.enaml" }
+          },
+          "end": "(?=\\)\\s*\\:)",
+          "patterns": [
+            { "include": "#keyword_arguments" },
+            {
+              "match": "\\b([a-zA-Z_][a-zA-Z_0-9]*)\\s*(?:(,)|(?=[\n\\)]))",
+              "captures": {
+                "1": { "name": "variable.parameter.function.enaml" },
+                "2": { "name": "punctuation.separator.parameters.enaml" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "comment": "function override",
+      "name": "meta.function.enaml",
+      "begin": "^\\s*(?=[a-zA-Z_][a-zA-Z_0-9]*\\s*=>\\s*\\()",
+      "end": "(\\))\\s*(?:(\\:)|(.*$\n?))",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.parameters.end.enaml" },
+        "2": { "name": "punctuation.section.function.begin.enaml" },
+        "3": { "name": "invalid.illegal.missing-section-begin.enaml" }
+      },
+      "patterns": [
+        {
+          "match": "[A-Za-z_][A-Za-z0-9_]*\\s*(=>)\\s*",
+          "captures": {
+            "1": { "name": "keyword.operator" }
+          }
+        },
+        {
+          "contentName": "meta.function.parameters.enaml",
+          "begin": "(\\()",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.parameters.begin.enaml" }
+          },
+          "end": "(?=\\)\\s*\\:)",
+          "patterns": [
+            { "include": "#keyword_arguments" },
+            {
+              "match": "\\b([a-zA-Z_][a-zA-Z_0-9]*)\\s*(?:(,)|(?=[\n\\)]))",
+              "captures": {
+                "1": { "name": "variable.parameter.function.enaml" },
+                "2": { "name": "punctuation.separator.parameters.enaml" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "comment": "template instantiation",
+      "name": "meta.function-call.enaml",
+      "begin": "^\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s*(?=\\(.*?\\).*?\\:\\s*$)",
+      "beginCaptures": {
+        "1": { "name": "entity.name.tag" }
+      },
+      "end": "\\:\\s*$",
+      "patterns": [
+        {
+          "contentName": "meta.function-call.arguments.enaml",
+          "begin": "(\\()",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.arguments.begin.enaml" }
+          },
+          "end": "(\\))\\s*(?=\\:)",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.arguments.end.enaml" }
+          },
+          "patterns": [
+            { "include": "source.python" }
+          ]
+        },
+        {
+          "begin": "\\s*(?=\\*?\\s*[a-zA-Z_][a-zA-Z_0-9]*)",
+          "end": "(?=\\:)",
+          "patterns": [
+            {
+              "match": "\\s*\\*?\\s*([a-zA-Z_][a-zA-Z_0-9]*)\\s*(,)?\\s*",
+              "captures": {
+                "1": { "name": "variable.language.enaml"},
+                "2": { "name": "punctuation.separator.arguments.enaml" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "comment": "declarative instantiation",
+      "name": "meta.class-instantiation.enaml",
+      "match": "^\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?:\\:\\s*([a-zA-Z_][a-zA-Z_0-9]*)\\s*)?(\\:)\\s*$",
       "captures": {
-        "1": { "name": "support.class" }
+        "1": { "name": "entity.name.tag" },
+        "2": { "name": "variable.language.enaml" },
+        "3": { "name": "punctuation.section.class.begin.enaml" }
       }
     },
     {
-      "comment": "Enaml Instantiation with id",
-      "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*$",
+      "comment": "storage declaration",
+      "match": "^\\s+(attr|event|const)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*$",
       "captures": {
-        "1": { "name": "support.class" },
-        "2": { "name": "variable.other" }
-      }
-    },
-    {
-      "comment": "Enaml Instantiation one liner with id",
-      "begin": "^\\s*([A-Za-z_][A-Za-z0-9_]*):\\s*([A-Za-z_][A-Za-z0-9_]*):",
-      "beginCaptures": {
-        "1": { "name": "support.class" },
-        "2": { "name": "variable.other" }
-      },
-      "patterns": [
-        { "include": "source.python" }
-      ],
-      "end": "$"
-    },
-    {
-      "comment": "Enaml Instantiation one liner",
-      "begin": "^\\s*([A-Za-z_][A-Za-z0-9_]*):",
-      "beginCaptures": {
-        "1": { "name": "support.class" }
-      },
-      "patterns": [
-        { "include": "source.python" }
-      ],
-      "end": "$"
-    },
-    {
-      "comment": "Enaml Attribute Declaration",
-      "match": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
-      "captures": {
-        "1": { "name": "storage.type" },
+        "1": { "name": "storage.modifier" },
         "2": { "name": "entity.other.attribute-name" }
       }
     },
     {
-      "comment": "Enaml Attribute Declaration with Type",
-      "match": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
+      "comment": "storage declaration with type",
+      "match": "^\\s+(attr|event|const)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*$",
       "captures": {
-        "1": { "name": "storage.type" },
+        "1": { "name": "storage.modifier" },
         "2": { "name": "entity.other.attribute-name" },
-        "3": { "name": "support.class" }
+        "3": { "name": "entity.name.tag" }
       }
     },
     {
-      "comment": "Enaml Attribute Declaration with Binding",
-      "begin": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "comment": "storage declaration with binding",
+      "begin": "^\\s+(attr|event|const)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
       "beginCaptures": {
-        "1": { "name": "storage.type" },
+        "1": { "name": "storage.modifier" },
         "2": { "name": "entity.other.attribute-name" },
         "3": { "name": "keyword.operator" }
       },
@@ -125,12 +249,12 @@
       "end": "$"
     },
     {
-      "comment": "Enaml Attribute Declaration with Type and Binding",
-      "begin": "^\\s*(attr|event)\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "comment": "storage declaration with type and binding",
+      "begin": "^\\s+(attr|event|const)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*:\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
       "beginCaptures": {
-        "1": { "name": "storage.type" },
+        "1": { "name": "storage.modifier" },
         "2": { "name": "entity.other.attribute-name" },
-        "3": { "name": "support.class" },
+        "3": { "name": "entity.name.tag" },
         "4": { "name": "keyword.operator" }
       },
       "patterns": [
@@ -139,8 +263,45 @@
       "end": "$"
     },
     {
-      "comment": "Enaml Attribute Binding",
-      "begin": "^\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*(=|:=|<<|>>|::)",
+      "comment": "alias definition single",
+      "match": "^\\s+(alias)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*$",
+      "captures": {
+        "1": { "name": "storage.modifier" },
+        "2": { "name": "entity.other.attribute-name" }
+      }
+    },
+    {
+      "comment": "alias definition extended",
+      "begin": "^\\s+(alias)\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*\\:\\s*",
+      "beginCaptures": {
+        "1": { "name": "storage.modifier" },
+        "2": { "name": "entity.other.attribute-name" }
+      },
+      "end": "\\s*$",
+      "patterns": [
+        {
+          "begin": "(?=[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)",
+          "end": "(?![A-Za-z0-9_\\.])",
+          "patterns": [
+            {
+              "match": "\\.([A-Za-z_][A-Za-z0-9_]*)",
+              "captures": {
+                  "1": { "name": "entity.other.attribute-name" }
+              }
+            },
+            {
+              "match": "(?<!\\.)([A-Za-z_][A-Za-z0-9_]*)",
+              "captures": {
+                  "1": { "name": "entity.other.attribute-name" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "comment": "expression binding",
+      "begin": "^\\s+([A-Za-z_][A-Za-z_0-9\\.]*)\\s*(=|:=|<<|>>|::)",
       "beginCaptures": {
         "2": { "name": "keyword.operator" }
       },

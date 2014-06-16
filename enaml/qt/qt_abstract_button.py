@@ -13,7 +13,6 @@ from .QtCore import QSize
 from .QtGui import QAbstractButton, QIcon
 
 from .q_resource_helpers import get_cached_qicon
-from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
@@ -51,11 +50,11 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
         super(QtAbstractButton, self).init_widget()
         d = self.declaration
         if d.text:
-            self.set_text(d.text, sh_guard=False)
+            self.set_text(d.text)
         if d.icon:
-            self.set_icon(d.icon, sh_guard=False)
+            self.set_icon(d.icon)
         if -1 not in d.icon_size:
-            self.set_icon_size(d.icon_size, sh_guard=False)
+            self.set_icon_size(d.icon_size)
         self.set_checkable(d.checkable)
         self.set_checked(d.checked)
         widget = self.widget
@@ -87,17 +86,14 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
     #--------------------------------------------------------------------------
     # ProxyAbstractButton API
     #--------------------------------------------------------------------------
-    def set_text(self, text, sh_guard=True):
+    def set_text(self, text):
         """ Sets the widget's text with the provided value.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setText(text)
-        else:
+        with self.geometry_guard():
             self.widget.setText(text)
 
-    def set_icon(self, icon, sh_guard=True):
+    def set_icon(self, icon):
         """ Set the icon on the widget.
 
         """
@@ -105,20 +101,14 @@ class QtAbstractButton(QtControl, ProxyAbstractButton):
             qicon = get_cached_qicon(icon)
         else:
             qicon = QIcon()
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setIcon(qicon)
-        else:
+        with self.geometry_guard():
             self.widget.setIcon(qicon)
 
-    def set_icon_size(self, size, sh_guard=True):
+    def set_icon_size(self, size):
         """ Sets the widget's icon size.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setIconSize(QSize(*size))
-        else:
+        with self.geometry_guard():
             self.widget.setIconSize(QSize(*size))
 
     def set_checkable(self, checkable):

@@ -8,12 +8,14 @@
 import sys
 from weakref import WeakKeyDictionary
 
-from atom.api import Typed
+from atom.api import Int, IntEnum, Typed
 
 from enaml.widgets.notebook import ProxyNotebook
 
-from .QtCore import Qt, QEvent, Signal
-from .QtGui import QTabWidget, QTabBar, QResizeEvent, QApplication
+from .QtCore import Qt, QEvent, QSize, Signal
+from .QtGui import (
+    QTabWidget, QTabBar, QResizeEvent, QApplication, QStackedWidget
+)
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_page import QtPage
@@ -37,6 +39,20 @@ class QNotebook(QTabWidget):
     """ A custom QTabWidget which handles children of type QPage.
 
     """
+    class SizeHintMode(IntEnum):
+        """ An int enum defining the size hint modes of the notebook.
+
+        """
+        #: The size hint is the union of all tabs.
+        Union = 0
+
+        #: The size hint is the size hint of the current tab.
+        Current = 1
+
+    #: Proxy the SizeHintMode values as if it were an anonymous enum.
+    Union = SizeHintMode.Union
+    Current = SizeHintMode.Current
+
     #: A signal emitted when a LayoutRequest event is posted to the
     #: notebook widget. This will typically occur when the size hint
     #: of the notebook is no longer valid.
@@ -55,6 +71,9 @@ class QNotebook(QTabWidget):
         super(QNotebook, self).__init__(*args, **kwargs)
         self.tabCloseRequested.connect(self.onTabCloseRequested)
         self._hidden_pages = WeakKeyDictionary()
+        self._size_hint = QSize()
+        self._min_size_hint = QSize()
+        self._size_hint_mode = QNotebook.Union
 
     #--------------------------------------------------------------------------
     # Private API
@@ -101,8 +120,80 @@ class QNotebook(QTabWidget):
         """
         res = super(QNotebook, self).event(event)
         if event.type() == QEvent.LayoutRequest:
+            self._size_hint = QSize()
+            self._min_size_hint = QSize()
             self.layoutRequested.emit()
         return res
+
+    def sizeHint(self):
+        """ A reimplemented size hint handler.
+
+        """
+        # Cached for performance. Invalidated on a layout request.
+        hint = self._size_hint
+        if hint.isValid():
+            return hint
+        # QTabWidget does not allow assigning a custom QStackedWidget,
+        # so the default sizeHint is computed, and the effects of the
+        # stack size hint are replaced by the current tab's size hint.
+        hint = super(QNotebook, self).sizeHint()
+        if self._size_hint_mode == QNotebook.Current:
+            stack = self.findChild(QStackedWidget)
+            if stack is not None:
+                curr = stack.currentWidget()
+                if curr is not None:
+                    hint -= stack.sizeHint()
+                    hint += curr.sizeHint()
+        self._size_hint = hint
+        return hint
+
+    def minimumSizeHint(self):
+        """ A reimplemented minimum size hint handler.
+
+        """
+        # Cached for performance. Invalidated on a layout request.
+        hint = self._size_hint
+        if hint.isValid():
+            return hint
+        # QTabWidget does not allow assigning a custom QStackedWidget,
+        # so the default minimumSizeHint is computed, and the effects
+        # of the stack size hint are replaced by the current tab's
+        # minimum size hint.
+        hint = super(QNotebook, self).minimumSizeHint()
+        if self._size_hint_mode == QNotebook.Current:
+            stack = self.findChild(QStackedWidget)
+            if stack is not None:
+                curr = stack.currentWidget()
+                if curr is not None:
+                    hint -= stack.minimumSizeHint()
+                    hint += curr.minimumSizeHint()
+        self._size_hint = hint
+        return hint
+
+    def sizeHintMode(self):
+        """ Get the size hint mode of the notebook.
+
+        Returns
+        -------
+        result : QNotebook.SizeHintMode
+            The size hint mode enum value for the notebook.
+
+        """
+        return self._size_hint_mode
+
+    def setSizeHintMode(self, mode):
+        """ Set the size hint mode of the notebook.
+
+        Parameters
+        ----------
+        mode : QNotebook.SizeHintMode
+            The size hint mode for the notebook.
+
+        """
+        assert isinstance(mode, QNotebook.SizeHintMode)
+        self._size_hint = QSize()
+        self._min_size_hint = QSize()
+        self._size_hint_mode = mode
 
     def showPage(self, page):
         """ Show a hidden QPage instance in the notebook.
@@ -261,12 +352,26 @@ class QNotebook(QTabWidget):
         self._refreshTabBar()
 
 
+#: A mapping Enaml -> Qt size hint modes.
+SIZE_HINT_MODE = {
+    'union': QNotebook.Union,
+    'current': QNotebook.Current,
+}
+
+
+#: A guard flag for the tab change
+CHANGE_GUARD = 0x01
+
+
 class QtNotebook(QtConstraintsWidget, ProxyNotebook):
     """ A Qt implementation of an Enaml ProxyNotebook.
 
     """
     #: A reference to the widget created by the proxy.
     widget = Typed(QNotebook)
+
+    #: A bitfield of guard flags for the object.
+    _guard = Int(0)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -293,6 +398,8 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         self.set_tab_position(d.tab_position)
         self.set_tabs_closable(d.tabs_closable)
         self.set_tabs_movable(d.tabs_movable)
+        self.set_size_hint_mode(d.size_hint_mode, update=False)
+        # the selected tab is synchronized during init_layout
 
     def init_layout(self):
         """ Handle the layout initialization for the notebook.
@@ -302,7 +409,9 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         widget = self.widget
         for page in self.pages():
             widget.addPage(page)
+        self.init_selected_tab()
         widget.layoutRequested.connect(self.on_layout_requested)
+        widget.currentChanged.connect(self.on_current_changed)
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -315,6 +424,42 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
             w = p.proxy.widget
             if w is not None:
                 yield w
+
+    def find_page(self, name):
+        """ Find the page with the given name.
+
+        Parameters
+        ----------
+        name : unicode
+            The object name for the page of interest.
+
+        Returns
+        -------
+        result : QPage or None
+            The target page or None if one is not found.
+
+        """
+        for page in self.pages():
+            if page.objectName() == name:
+                return page
+
+    def init_selected_tab(self):
+        """ Initialize the selected tab.
+
+        This should be called only during widget initialization.
+
+        """
+        d = self.declaration
+        if d.selected_tab:
+            self.set_selected_tab(d.selected_tab)
+        else:
+            current = self.widget.currentWidget()
+            name = current.objectName() if current is not None else u''
+            self._guard |= CHANGE_GUARD
+            try:
+                d.selected_tab = name
+            finally:
+                self._guard &= ~CHANGE_GUARD
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -344,7 +489,20 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
         """ Handle the `layoutRequested` signal from the QNotebook.
 
         """
-        self.size_hint_updated()
+        self.geometry_updated()
+
+    def on_current_changed(self):
+        """ Handle the 'currentChanged' signal from the QNotebook.
+
+        """
+        if not self._guard & CHANGE_GUARD:
+            self._guard |= CHANGE_GUARD
+            try:
+                page = self.widget.currentWidget()
+                name = page.objectName() if page is not None else u''
+                self.declaration.selected_tab = name
+            finally:
+                self._guard &= ~CHANGE_GUARD
 
     #--------------------------------------------------------------------------
     # ProxyNotebook API
@@ -372,3 +530,28 @@ class QtNotebook(QtConstraintsWidget, ProxyNotebook):
 
         """
         self.widget.setMovable(movable)
+
+    def set_selected_tab(self, name):
+        """ Set the selected tab of the widget.
+
+        """
+        if not self._guard & CHANGE_GUARD:
+            page = self.find_page(name)
+            if page is None:
+                import warnings
+                msg = "cannot select tab '%s' - tab not found"
+                warnings.warn(msg % name, UserWarning)
+                return
+            self._guard |= CHANGE_GUARD
+            try:
+                self.widget.setCurrentWidget(page)
+            finally:
+                self._guard &= ~CHANGE_GUARD
+
+    def set_size_hint_mode(self, mode, update=True):
+        """ Set the size hint mode for the widget.
+
+        """
+        self.widget.setSizeHintMode(SIZE_HINT_MODE[mode])
+        if update:
+            self.geometry_updated()

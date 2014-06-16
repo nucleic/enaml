@@ -1,40 +1,72 @@
-.. Enaml documentation master file
+================
+Welcome to Enaml
+================
 
-Welcome to Enaml!
-====================================
+Enaml is a programming language and framework for creating professional quality
+user interfaces with minimal effort. Enaml combines a domain specific declarative language with a constraints based layout system to allow users to easily define
+rich UIs with complex and flexible layouts. Enaml applications can be run on any
+platform which supports Python and Qt.
 
-**E**\naml is **N**\ot **A** **M**\arkup **L**\anguage. |Enaml| is a library for
-creating professional quality user interfaces with minimal effort. Enaml combines
-a domain specific declarative language with a constraints based layout system to
-allow users to easily define rich UIs with complex and flexible layouts. Enaml
-applications can transparently run on multiple backends (Qt and Wx) and on
-multiple operating systems (Windows, OSX, Linux).
+A few highlights of the framework:
 
-Other great Enaml features include
+    * A declarative language which extends the grammar of Python
+    * A set of operators which automatically track runtime dependencies
+    * A layout system which uses symbolic constraint declarations
+    * A design which encourages model-view separation
+    * A well documented and easy to follow code base
 
-    1) Declarative UI specification langauge that is a strict superset of Python
-    2) Architecture design which encourages Model View separation
-    3) Subscription based operators which allow state and events to freely flow between models and views
-    4) Ability to easily subclass widgets to override functionality of builtin widgets
-    5) Support for custom UI widgets
-    6) Class based widget design encourages re-use of UI code
-    7) Well documented code base that is easy to understand
-
-Table of Contents
-=================
 
 .. toctree::
-    :maxdepth: 2
+    :hidden:
 
-    Getting Started <instructional/index.rst>
-    API Reference <api_ref/index.rst>
-    Developer's Guide <developer_guide/index.rst>
-    Technical Reference <tech_ref/index.rst>
+    Getting Started <get_started/index>
+    Developer Guides <dev_guides/index>
+    Architecture Reference <arch_ref/index>
+    FAQs <faqs/index>
+    Examples <examples/index>
+    API Reference <api_ref/index>
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. list-table::
+    :class: borderless
 
+    * - :doc:`get_started/index`
+
+        The first stop for all those new to Enaml. This section includes
+        an introduction to Enaml, installation instructions, and all the
+        information needed to write your first Enaml application.
+
+      - :doc:`dev_guides/index`
+
+        The stuff that wasn't covered in :doc:`get_started/index`. This
+        section provides in-depth documentation on a wide range of topics
+        you are likely to encounter when developing production applications
+        with Enaml. Look here for details on Enaml's scoping rules, aliases,
+        templates, best practices, and more.
+
+
+    * - :doc:`arch_ref/index`
+
+        Hackers welcome! This section offers a collection of topics covering
+        the low level details of Enaml's architecture and implementation.
+        Look here if you want to understand how Enaml works internally, or
+        if you are interested in extending Enaml for your own custom needs.
+
+      - :doc:`examples/index`
+
+        "Just show me the code!" This section provides an easy-to-browse
+        alternative to running Enaml's examples from the command line. We've
+        even included screenshots!
+
+    * - :doc:`faqs/index`
+
+        If you think you may not be the only one to have thought a thought,
+        you are probably right. Look here to see if your if your question has
+        already been asked, then take solace in the realization that you are
+        not alone.
+
+      - :doc:`api_ref/index`
+
+        "Use the source, Luke." When all else fails, consult the API docs to
+        find the answer you need. The API docs also include convenient links
+        to the most definitive Enaml documentation: the source.

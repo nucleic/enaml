@@ -1,20 +1,23 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example of using dynamic notebook pages.
 
 This example demonstrates using the `Include` component to dynamically
 insert and remove pages from a notebook.
 
-This example requires Enaml version >= 0.4.0
-
+<< autodoc-me >>
 """
+from enaml.core.api import Include
 from enaml.layout.api import vbox, hbox, align, spacer
 from enaml.widgets.api import (
     Window, Notebook, Page, Container, PushButton, Field, Html, CheckBox
 )
-from enaml.core.api import Include
+
 
 enamldef ContentPage(Page):
     attr n: int
@@ -84,4 +87,3 @@ enamldef Main(Window): main:
                         source = '<h1><center>Static Page 2</center></h1>'
             Include: dyn_pages:
                 pass
-

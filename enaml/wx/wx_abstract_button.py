@@ -9,7 +9,6 @@ from atom.api import Int
 
 from enaml.widgets.abstract_button import ProxyAbstractButton
 
-from .wx_constraints_widget import size_hint_guard
 from .wx_control import WxControl
 
 
@@ -44,7 +43,7 @@ class WxAbstractButton(WxControl, ProxyAbstractButton):
         super(WxAbstractButton, self).init_widget()
         d = self.declaration
         if d.text:
-            self.set_text(d.text, sh_guard=False)
+            self.set_text(d.text)
         self.set_checkable(d.checkable)
         self.set_checked(d.checked)
 
@@ -82,14 +81,11 @@ class WxAbstractButton(WxControl, ProxyAbstractButton):
     #--------------------------------------------------------------------------
     # ProxyAbstractButton API
     #--------------------------------------------------------------------------
-    def set_text(self, text, sh_guard=True):
+    def set_text(self, text):
         """ Sets the widget's text with the provided value.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.SetLabel(text)
-        else:
+        with self.geometry_guard():
             self.widget.SetLabel(text)
 
     def set_icon(self, icon):

@@ -51,7 +51,7 @@ class GroupBox(Container):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('title', 'flat', 'title_align'))
+    @observe('title', 'flat', 'title_align')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

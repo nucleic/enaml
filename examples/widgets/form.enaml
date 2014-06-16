@@ -1,6 +1,9 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example of the `Form` widget.
 
@@ -11,6 +14,7 @@ columns. The typical use case of a `Form` alternates `Label` and `Field`
 instances, but there is not restriction on the types of children used
 with a form, except that they be constrainable.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import hbox
 from enaml.widgets.api import Window, Form, Container, Label, Slider, Field
@@ -41,4 +45,3 @@ enamldef Main(Window):
                 pass
         Field:
             placeholder = 'Odd Number Child'
-

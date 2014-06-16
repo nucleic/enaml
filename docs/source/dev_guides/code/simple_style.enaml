@@ -1,0 +1,22 @@
+from enaml.widgets.api import (
+    Window, Container, PushButton
+)
+from enaml.styling import (
+    StyleSheet, Style, Setter
+)
+
+enamldef Main(Window):
+    title = 'Style Sheet'
+    StyleSheet:
+        Style:
+            element = 'PushButton'
+            Setter:
+                field = 'color'
+                value = 'blue'
+    Container:
+        PushButton:
+            text = 'First'
+        PushButton:
+            text = 'Second'
+        PushButton:
+            text = 'Third'

@@ -12,18 +12,18 @@ class StandardInverter(CodeInverter):
     """ The standard code inverter for Enaml expressions.
 
     """
-    __slots__ = '_nonlocals'
+    __slots__ = 'scope'
 
-    def __init__(self, nonlocals):
+    def __init__(self, scope):
         """ Initialize a StandardInverter.
 
         Parameters
         ----------
-        nonlocals : Nonlocals
-            The nonlocal scope for the executing expression.
+        scope : DynamicScope
+            The dynamic scope for the executing expression.
 
         """
-        self._nonlocals = nonlocals
+        self.scope = scope
 
     #--------------------------------------------------------------------------
     # CodeInverter Interface
@@ -35,7 +35,7 @@ class StandardInverter(CodeInverter):
         See also: `CodeInverter.load_name`.
 
         """
-        self._nonlocals[name] = value
+        self.scope['nonlocals'][name] = value
 
     def load_attr(self, obj, attr, value):
         """ Called before the LOAD_ATTR opcode is executed.
@@ -70,4 +70,3 @@ class StandardInverter(CodeInverter):
 
         """
         obj[idx] = value
-

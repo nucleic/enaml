@@ -5,10 +5,54 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom
+from atom.api import Atom, atomref
 
+from .alias import Alias
 from .code_tracing import CodeTracer
-from .dynamic_scope import AbstractScopeListener
+
+
+class SubscriptionObserver(object):
+    """ An observer object which manages a tracer subscription.
+
+    """
+    __slots__ = ('ref', 'name')
+
+    def __init__(self, owner, name):
+        """ Initialize a SubscriptionObserver.
+
+        Parameters
+        ----------
+        owner : Declarative
+            The declarative owner of interest.
+
+        name : string
+            The name to which the operator is bound.
+
+        """
+        self.ref = atomref(owner)
+        self.name = name
+
+    def __nonzero__(self):
+        """ The notifier is valid when it has an internal owner.
+
+        The atom observer mechanism will remove the observer when it
+        tests boolean False.
+
+        """
+        return bool(self.ref)
+
+    def __call__(self, change):
+        """ The handler for the change notification.
+
+        This will be invoked by the Atom observer mechanism when the
+        item which is being observed changes.
+
+        """
+        if self.ref:
+            owner = self.ref()
+            engine = owner._d_engine
+            if engine is not None:
+                engine.update(owner, self.name)
 
 
 class StandardTracer(CodeTracer):
@@ -18,18 +62,20 @@ class StandardTracer(CodeTracer):
     (obj, name) pairs of atom items discovered during tracing.
 
     """
-    __slots__ = 'traced_items'
+    __slots__ = ('owner', 'name', 'items')
 
-    def __init__(self):
+    def __init__(self, owner, name):
         """ Initialize a StandardTracer.
 
         """
-        self.traced_items = set()
+        self.owner = owner
+        self.name = name
+        self.items = set()
 
     #--------------------------------------------------------------------------
-    # Private API
+    # Utility Methods
     #--------------------------------------------------------------------------
-    def _trace_atom(self, obj, name):
+    def trace_atom(self, obj, name):
         """ Add the atom object and name pair to the traced items.
 
         Parameters
@@ -38,11 +84,41 @@ class StandardTracer(CodeTracer):
             The atom object owning the attribute.
 
         name : string
-            The member name to for which to bind a handler.
+            The member name for which to bind a handler.
 
         """
         if obj.get_member(name) is not None:
-            self.traced_items.add((obj, name))
+            self.items.add((obj, name))
+        else:
+            alias = getattr(type(obj), name, None)
+            if isinstance(alias, Alias):
+                alias_obj, alias_attr = alias.resolve(obj)
+                if alias_attr:
+                    self.trace_atom(alias_obj, alias_attr)
+
+    def finalize(self):
+        """ Finalize the tracing process.
+
+        This method will discard the old observer and attach a new
+        observer to the traced dependencies.
+
+        """
+        owner = self.owner
+        name = self.name
+        key = '_[%s|trace]' % name
+        storage = owner._d_storage
+
+        # invalidate the old observer so that it can be collected
+        old_observer = storage.get(key)
+        if old_observer is not None:
+            old_observer.ref = None
+
+        # create a new observer and subscribe it to the dependencies
+        if self.items:
+            observer = SubscriptionObserver(owner, name)
+            storage[key] = observer
+            for obj, d_name in self.items:
+                obj.observe(d_name, observer)
 
     #--------------------------------------------------------------------------
     # AbstractScopeListener Interface
@@ -55,7 +131,7 @@ class StandardTracer(CodeTracer):
 
         """
         if isinstance(obj, Atom):
-            self._trace_atom(obj, attr)
+            self.trace_atom(obj, attr)
 
     #--------------------------------------------------------------------------
     # CodeTracer Interface
@@ -68,7 +144,7 @@ class StandardTracer(CodeTracer):
 
         """
         if isinstance(obj, Atom):
-            self._trace_atom(obj, attr)
+            self.trace_atom(obj, attr)
 
     def call_function(self, func, argtuple, argspec):
         """ Called before the CALL_FUNCTION opcode is executed.
@@ -82,7 +158,12 @@ class StandardTracer(CodeTracer):
         if (func is getattr and (nargs == 2 or nargs == 3) and nkwargs == 0):
             obj, attr = argtuple[0], argtuple[1]
             if isinstance(obj, Atom) and isinstance(attr, basestring):
-                self._trace_atom(obj, attr)
+                self.trace_atom(obj, attr)
 
+    def return_value(self, value):
+        """ Called before the RETURN_VALUE opcode is executed.
 
-AbstractScopeListener.register(StandardTracer)
+        This handler finalizes the subscription.
+
+        """
+        self.finalize()

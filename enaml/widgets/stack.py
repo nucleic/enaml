@@ -47,6 +47,9 @@ class ProxyStack(ProxyConstraintsWidget):
     def set_transition(self, transition):
         raise NotImplementedError
 
+    def set_size_hint_mode(self, mode):
+        raise NotImplementedError
+
 
 class Stack(ConstraintsWidget):
     """ A component which displays its children as a stack of widgets,
@@ -61,6 +64,12 @@ class Stack(ConstraintsWidget):
 
     #: The item transition to use when changing between stack items.
     transition = d_(Typed(Transition))
+
+    #: The size hint mode for the stack. The default is 'union' and
+    #: means that the size hint of the stack is the union of all the
+    #: stack item size hints. 'current' means the size hint of the
+    #: stack will be the size hint of the current stack item.
+    size_hint_mode = d_(Enum('union', 'current'))
 
     #: A Stack expands freely in height and width by default
     hug_width = set_default('ignore')
@@ -78,7 +87,7 @@ class Stack(ConstraintsWidget):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('index', 'transition'))
+    @observe('index', 'transition', 'size_hint_mode')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

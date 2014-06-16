@@ -8,7 +8,8 @@
 from atom.api import Bool, Event, Int, ForwardTyped, Typed, observe
 
 from enaml.core.declarative import d_
-from enaml.widgets.toolkit_object import ToolkitObject, ProxyToolkitObject
+
+from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
 class ProxyTimer(ProxyToolkitObject):
@@ -30,7 +31,7 @@ class ProxyTimer(ProxyToolkitObject):
     def stop(self):
         raise NotImplementedError
 
-    def is_active(self):
+    def is_running(self):
         raise NotImplementedError
 
 
@@ -55,7 +56,7 @@ class Timer(ToolkitObject):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('single_shot', 'interval'))
+    @observe('single_shot', 'interval')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the state changes.
 
@@ -87,5 +88,5 @@ class Timer(ToolkitObject):
 
         """
         if self.proxy_is_active:
-            return self.proxy.is_active()
+            return self.proxy.is_running()
         return False

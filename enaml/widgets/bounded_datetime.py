@@ -56,7 +56,7 @@ class BoundedDatetime(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('minimum', 'maximum', 'datetime'))
+    @observe('minimum', 'maximum', 'datetime')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the data changes.
 

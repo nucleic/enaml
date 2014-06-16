@@ -11,7 +11,7 @@ import os
 import ply.yacc as yacc
 
 from . import enaml_ast
-from .lexer import syntax_error, EnamlLexer, ParsingError
+from .lexer import syntax_error, syntax_warning, EnamlLexer, ParsingError
 
 
 #------------------------------------------------------------------------------
@@ -117,15 +117,6 @@ aug_assign_allowed = set([
 ])
 
 
-# The disallowed ast types on the rhs of a :: operator
-notification_disallowed = {
-    ast.FunctionDef: 'function definition',
-    ast.ClassDef: 'class definition',
-    ast.Yield: 'yield statement',
-    ast.Return: 'return statement',
-}
-
-
 # A mapping of aug assignment operators to ast types
 augassign_table = {
     '&=': ast.BitAnd(),
@@ -219,35 +210,6 @@ def ast_for_dotted_name(dotted_name):
     return res
 
 
-# The nodes which can be inverted to form an assignable expression.
-_INVERTABLE = (ast.Name, ast.Attribute, ast.Call, ast.Subscript)
-
-
-def validate_invertable(node, lineno, p):
-    """ Validates that its possible for the compiler to generated
-    inversion code for the given ast node.
-
-    Currently, code is invertable if the expression terminates with
-    a node of the following types: Name, Attribute, Call, Subscript.
-
-    Parameters
-    ----------
-    node : ast.AST
-        The ast expression node to validate.
-
-    lineno : int
-        The line number of the declaration.
-
-    p : Yacc Production
-        The Ply object passed to the parser rule. This is used to
-        extract the filename for syntax error reporting.
-
-    """
-    if not isinstance(node, _INVERTABLE):
-        msg = "can't assign to expression of this form"
-        syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
-
-
 class CommaSeparatedList(object):
     """ A parsing helper to delineate a comma separated list.
 
@@ -303,10 +265,10 @@ def p_enaml_module(p):
     body = []
     stmts = []
     for item in p[1]:
-        if isinstance(item, enaml_ast.EnamlDef):
+        if isinstance(item, (enaml_ast.EnamlDef, enaml_ast.Template)):
             if stmts:
                 mod = ast.Module(body=stmts)
-                python = enaml_ast.Python(ast=mod, lineno=stmts[0].lineno)
+                python = enaml_ast.PythonModule(ast=mod, lineno=stmts[0].lineno)
                 body.append(python)
                 stmts = []
             body.append(item)
@@ -314,324 +276,419 @@ def p_enaml_module(p):
             stmts.append(item)
     if stmts:
         mod = ast.Module(body=stmts)
-        python = enaml_ast.Python(ast=mod, lineno=stmts[0].lineno)
+        python = enaml_ast.PythonModule(ast=mod, lineno=stmts[0].lineno)
         body.append(python)
     p[0] = enaml_ast.Module(body=body)
 
 
 def p_enaml_module_body1(p):
     ''' enaml_module_body : enaml_module_body enaml_module_item '''
-    p[0] = p[1] + [p[2]]
+    items = p[2]  # a stmt can be a list
+    if not isinstance(items, list):
+        items = [items]
+    p[0] = p[1] + items
 
 
 def p_enaml_module_body2(p):
     ''' enaml_module_body : enaml_module_item '''
-    p[0] = [p[1]]
+    items = p[1]  # a stmt can be a list
+    if not isinstance(items, list):
+        items = [items]
+    p[0] = items
 
 
-def p_enaml_module_item1(p):
+def p_enaml_module_item(p):
     ''' enaml_module_item : stmt
-                          | enamldef '''
+                          | enamldef
+                          | template '''
     p[0] = p[1]
-
-
-def p_enaml_module_item2(p):
-    ''' enaml_module_item : decorators enamldef '''
-    enamldef = p[2]
-    decorators = []
-    for decnode in p[1]:
-        expr = ast.Expression()
-        expr.body = decnode
-        python = enaml_ast.Python(ast=expr, lineno=decnode.lineno)
-        decorators.append(python)
-    enamldef.decorators = decorators
-    p[0] = enamldef
 
 
 #------------------------------------------------------------------------------
 # EnamlDef
 #------------------------------------------------------------------------------
+def _validate_enamldef(node, lexer):
+    """ Validate the correctness of names in an enamldef definition.
+
+    This function ensures that identifiers do not shadow one another.
+
+    """
+    ident_names = set()
+
+    def check_id(name, node):
+        if name in ident_names:
+            msg = "redeclaration of identifier '%s'"
+            msg += " (this will be an error in Enaml version 1.0)"
+            syntax_warning(msg % name, FakeToken(lexer, node.lineno))
+        ident_names.add(name)
+
+    # validate the identifiers
+    ChildDef = enaml_ast.ChildDef
+    TemplateInst = enaml_ast.TemplateInst
+    stack = list(reversed(node.body))
+    while stack:
+        node = stack.pop()
+        if isinstance(node, ChildDef):
+            if node.identifier:
+                check_id(node.identifier, node)
+            stack.extend(reversed(node.body))
+        elif isinstance(node, TemplateInst):
+            idents = node.identifiers
+            if idents is not None:
+                for name in idents.names:
+                    check_id(name, idents)
+                if idents.starname:
+                    check_id(idents.starname, idents)
+
+
 def p_enamldef1(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_body '''
-    doc, idn, items = p[7]
-    enamldef = enaml_ast.EnamlDef(
-        typename=p[2], base=p[4], identifier=idn, docstring=doc, body=items,
-        lineno=p.lineno(1)
-    )
-    p[0] = enamldef
+    ''' enamldef : enamldef_impl '''
+    p[0] = p[1]
 
 
 def p_enamldef2(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON PASS NEWLINE '''
-    p[0] = enaml_ast.EnamlDef(typename=p[2], base=p[4], lineno=p.lineno(1))
+    ''' enamldef : pragmas enamldef_impl '''
+    node = p[2]
+    node.pragmas = p[1]
+    p[0] = node
 
 
-def p_enamldef3(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_body '''
-    doc, idn, items = p[9]
-    if idn:
-        msg = 'multiple identifiers declared'
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
+def p_enamldef_impl1(p):
+    ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_suite '''
+    doc, body = p[7]
     enamldef = enaml_ast.EnamlDef(
-        typename=p[2], base=p[4], identifier=p[7], docstring=doc, body=items,
+        typename=p[2], base=p[4], docstring=doc, body=body, lineno=p.lineno(1)
+    )
+    _validate_enamldef(enamldef, p.lexer.lexer)
+    p[0] = enamldef
+
+
+def p_enamldef_impl2(p):
+    ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON enamldef_simple_item '''
+    body = filter(None, [p[7]])
+    enamldef = enaml_ast.EnamlDef(
+        typename=p[2], base=p[4], body=body, lineno=p.lineno(1)
+    )
+    _validate_enamldef(enamldef, p.lexer.lexer)
+    p[0] = enamldef
+
+
+def p_enamldef_impl3(p):
+    ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_suite '''
+    doc, body = p[9]
+    enamldef = enaml_ast.EnamlDef(
+        typename=p[2], base=p[4], identifier=p[7], docstring=doc, body=body,
         lineno=p.lineno(1)
     )
+    _validate_enamldef(enamldef, p.lexer.lexer)
     p[0] = enamldef
 
 
-def p_enamldef4(p):
-    ''' enamldef : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON PASS NEWLINE '''
+def p_enamldef_impl4(p):
+    ''' enamldef_impl : ENAMLDEF NAME LPAR NAME RPAR COLON NAME COLON enamldef_simple_item '''
+    body = filter(None, [p[9]])
     enamldef = enaml_ast.EnamlDef(
-        typename=p[2], base=p[4], identifier=p[7], lineno=p.lineno(1)
+        typename=p[2], base=p[4], identifier=p[7], body=body, lineno=p.lineno(1)
     )
+    _validate_enamldef(enamldef, p.lexer.lexer)
     p[0] = enamldef
 
 
-def p_enamldef_body1(p):
-    ''' enamldef_body : NEWLINE INDENT enamldef_body_items DEDENT '''
+def p_enamldef_suite1(p):
+    ''' enamldef_suite : NEWLINE INDENT enamldef_suite_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
-    # TODO only a 2-tuple required after removing old identifiers
-    p[0] = ('', '', items)
+    p[0] = ('', items)
 
 
-def p_enamldef_body2(p):
-    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE enamldef_body_items DEDENT '''
+def p_enamldef_suite2(p):
+    ''' enamldef_suite : NEWLINE INDENT STRING NEWLINE enamldef_suite_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[5])
-    # TODO only a 2-tuple required after removing old identifiers
-    p[0] = (p[3], '', items)
+    p[0] = (p[3], items)
 
 
-def p_enamldef_body3(p):
-    ''' enamldef_body : NEWLINE INDENT identifier DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    p[0] = ('', p[3], [])
-
-
-def p_enamldef_body4(p):
-    ''' enamldef_body : NEWLINE INDENT identifier enamldef_body_items DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    # Filter out any pass statements
-    items = filter(None, p[4])
-    p[0] = ('', p[3], items)
-
-
-def p_enamldef_body5(p):
-    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE identifier DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
-    p[0] = (p[3], p[5], [])
-
-
-def p_enamldef_body6(p):
-    ''' enamldef_body : NEWLINE INDENT STRING NEWLINE identifier enamldef_body_items DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(4) + 1)
-    # Filter out any pass statements
-    items = filter(None, p[6])
-    p[0] = (p[3], p[5], items)
-
-
-def p_enamldef_body_items1(p):
-    ''' enamldef_body_items : enamldef_body_item '''
+def p_enamldef_suite_items1(p):
+    ''' enamldef_suite_items : enamldef_suite_item '''
     p[0] = [p[1]]
 
 
-def p_enamldef_body_items2(p):
-    ''' enamldef_body_items : enamldef_body_items enamldef_body_item '''
+def p_enamldef_suite_items2(p):
+    ''' enamldef_suite_items : enamldef_suite_items enamldef_suite_item '''
     p[0] = p[1] + [p[2]]
 
 
-def p_enamldef_body_item1(p):
-    ''' enamldef_body_item : storage_def '''
+def p_enamldef_suite_item(p):
+    ''' enamldef_suite_item : enamldef_simple_item
+                            | decl_funcdef
+                            | child_def
+                            | template_inst '''
     p[0] = p[1]
 
 
-def p_enamldef_body_item2(p):
-    ''' enamldef_body_item : binding '''
+def p_enamldef_simple_item1(p):
+    ''' enamldef_simple_item : binding
+                             | ex_binding
+                             | alias_expr
+                             | storage_expr '''
     p[0] = p[1]
 
 
-def p_enamldef_body_item3(p):
-    ''' enamldef_body_item : child_def '''
-    p[0] = p[1]
-
-
-def p_enamldef_body_item4(p):
-    ''' enamldef_body_item : PASS NEWLINE '''
+def p_enamldef_simple_item2(p):
+    ''' enamldef_simple_item : PASS NEWLINE '''
     p[0] = None
 
 
 #------------------------------------------------------------------------------
-# Identifier
+# Pragmas
 #------------------------------------------------------------------------------
-# TODO get rid of old identifiers in Enaml version 0.8.0
-def p_identifier(p):
-    ''' identifier : NAME COLON NAME NEWLINE '''
-    lhs = p[1]
-    if lhs != 'id':
-        msg = "'id' required. Got '%s' instead." % lhs
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    p[0] = p[3]
+def p_pragmas1(p):
+    ''' pragmas : pragma pragmas '''
+    p[0] = [p[1]] + p[2]
 
 
-_warn_reg = {}
+def p_pragmas2(p):
+    ''' pragmas : pragma '''
+    p[0] = [p[1]]
 
 
-def _warn_ident(filename, lineno):
-    msg = "The 'id' tag is deprecated and will be removed in Enaml version "
-    msg += "0.8.0. Use the 'Foo: name: ...' construct instead."
-    import warnings
-    warnings.warn_explicit(msg, FutureWarning, filename, lineno, '', _warn_reg)
+def p_pragma1(p):
+    ''' pragma : PRAGMA NAME NEWLINE
+               | PRAGMA NAME LPAR RPAR NEWLINE '''
+    node = enaml_ast.Pragma()
+    node.lineno = p.lineno(1)
+    node.command = p[2]
+    p[0] = node
+
+
+def p_pragma2(p):
+    ''' pragma : PRAGMA NAME LPAR pragma_args RPAR NEWLINE '''
+    node = enaml_ast.Pragma()
+    node.lineno = p.lineno(1)
+    node.command = p[2]
+    node.arguments = p[4]
+    p[0] = node
+
+
+def p_pragma_args1(p):
+    ''' pragma_args : pragma_arg COMMA pragma_args '''
+    p[0] = [p[1]] + p[3]
+
+
+def p_pragma_args2(p):
+    ''' pragma_args : pragma_arg '''
+    p[0] = [p[1]]
+
+
+def p_pragma_arg(p):
+    ''' pragma_arg : NAME '''
+    p[0] = enaml_ast.PragmaArg(kind='token', value=p[1])
+
+
+def p_pragma_arg2(p):
+    ''' pragma_arg : NUMBER '''
+    p[0] = enaml_ast.PragmaArg(kind='number', value=p[1])
+
+
+def p_pragma_arg3(p):
+    ''' pragma_arg : STRING '''
+    p[0] = enaml_ast.PragmaArg(kind='string', value=p[1])
 
 
 #------------------------------------------------------------------------------
-# StorageDef
+# AliasExpr
 #------------------------------------------------------------------------------
-def p_storage_def1(p):
-    ''' storage_def : NAME NAME NEWLINE '''
-    kind = p[1]
+def p_alias_expr1(p):
+    ''' alias_expr : ALIAS NAME NEWLINE '''
+    node = enaml_ast.AliasExpr()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.target = p[2]
+    p[0] = node
+
+
+def p_alias_expr2(p):
+    ''' alias_expr : ALIAS NAME COLON NAME NEWLINE '''
+    node = enaml_ast.AliasExpr()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.target = p[4]
+    p[0] = node
+
+
+def p_alias_expr3(p):
+    ''' alias_expr : ALIAS NAME COLON NAME ex_dotted_names NEWLINE '''
+    node = enaml_ast.AliasExpr()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.target = p[4]
+    node.chain = tuple(p[5])
+    p[0] = node
+
+
+#------------------------------------------------------------------------------
+# ConstExpr
+#------------------------------------------------------------------------------
+def p_const_expr1(p):
+    ''' const_expr : CONST NAME EQUAL test NEWLINE '''
+    lineno = p.lineno(1)
+    body = p[4]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    node = enaml_ast.ConstExpr()
+    node.lineno = lineno
+    node.name = p[2]
+    node.expr = python
+    p[0] = node
+
+
+def p_const_expr2(p):
+    ''' const_expr : CONST NAME COLON NAME EQUAL test NEWLINE '''
+    lineno = p.lineno(1)
+    body = p[6]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    node = enaml_ast.ConstExpr()
+    node.lineno = lineno
+    node.name = p[2]
+    node.typename = p[4]
+    node.expr = python
+    p[0] = node
+
+
+#------------------------------------------------------------------------------
+# StorageExpr
+#------------------------------------------------------------------------------
+def _validate_storage_expr(kind, lineno, lexer):
     if kind not in ('attr', 'event'):
-        msg = "expected keyword 'attr' or 'event', got '%s' instead." % kind
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    p[0] = enaml_ast.StorageDef(kind=kind, name=p[2], lineno=p.lineno(1))
+        syntax_error('invalid syntax', FakeToken(lexer, lineno))
 
 
-def p_storage_def2(p):
-    ''' storage_def : NAME NAME COLON NAME NEWLINE '''
+def p_storage_expr1(p):
+    ''' storage_expr : NAME NAME NEWLINE '''
     kind = p[1]
-    if kind not in ('attr', 'event'):
-        msg = "expected keyword 'attr' or 'event', got '%s' instead." % kind
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    storage_def = enaml_ast.StorageDef(
-        kind=kind, name=p[2], typename=p[4], lineno=p.lineno(1)
-    )
-    p[0] = storage_def
+    lineno = p.lineno(1)
+    _validate_storage_expr(kind, lineno, p.lexer.lexer)
+    node = enaml_ast.StorageExpr()
+    node.lineno = lineno
+    node.kind = kind
+    node.name = p[2]
+    p[0] = node
 
 
-def p_storage_def3(p):
-    ''' storage_def : NAME NAME operator_expr '''
+def p_storage_expr2(p):
+    ''' storage_expr : NAME NAME COLON NAME NEWLINE '''
     kind = p[1]
-    if kind not in ('attr', 'event'):
-        msg = "expected keyword 'attr' or 'event', got '%s' instead." % kind
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    storage_def = enaml_ast.StorageDef(
-        kind=kind, name=p[2], expr=p[3], lineno=p.lineno(1)
-    )
-    p[0] = storage_def
+    lineno = p.lineno(1)
+    _validate_storage_expr(kind, lineno, p.lexer.lexer)
+    node = enaml_ast.StorageExpr()
+    node.lineno = lineno
+    node.kind = kind
+    node.name = p[2]
+    node.typename = p[4]
+    p[0] = node
 
 
-def p_storage_def4(p):
-    ''' storage_def : NAME NAME COLON NAME operator_expr '''
+def p_storage_expr3(p):
+    ''' storage_expr : NAME NAME operator_expr '''
     kind = p[1]
-    if kind not in ('attr', 'event'):
-        msg = "expected keyword 'attr' or 'event', got '%s' instead." % kind
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
-    storage_def = enaml_ast.StorageDef(
-        kind=kind, name=p[2], typename=p[4], expr=p[5], lineno=p.lineno(1)
-    )
-    p[0] = storage_def
+    lineno = p.lineno(1)
+    _validate_storage_expr(kind, lineno, p.lexer.lexer)
+    node = enaml_ast.StorageExpr()
+    node.lineno = lineno
+    node.kind = kind
+    node.name = p[2]
+    node.expr = p[3]
+    p[0] = node
+
+
+def p_storage_expr4(p):
+    ''' storage_expr : NAME NAME COLON NAME operator_expr '''
+    kind = p[1]
+    lineno = p.lineno(1)
+    _validate_storage_expr(kind, lineno, p.lexer.lexer)
+    node = enaml_ast.StorageExpr()
+    node.lineno = lineno
+    node.kind = kind
+    node.name = p[2]
+    node.typename = p[4]
+    node.expr = p[5]
+    p[0] = node
 
 
 #------------------------------------------------------------------------------
 # ChildDef
 #------------------------------------------------------------------------------
 def p_child_def1(p):
-    ''' child_def : NAME COLON child_def_body '''
-    idn, items = p[3]
+    ''' child_def : NAME COLON child_def_suite '''
     child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=idn, body=items, lineno=p.lineno(1)
+        typename=p[1], body=p[3], lineno=p.lineno(1)
     )
     p[0] = child_def
 
 
 def p_child_def2(p):
-    ''' child_def : NAME COLON binding
-                  | NAME COLON storage_def '''
-    p[0] = enaml_ast.ChildDef(typename=p[1], body=[p[3]], lineno=p.lineno(1))
+    ''' child_def : NAME COLON child_def_simple_item '''
+    body = filter(None, [p[3]])
+    p[0] = enaml_ast.ChildDef(typename=p[1], body=body, lineno=p.lineno(1))
 
 
 def p_child_def3(p):
-    ''' child_def : NAME COLON PASS NEWLINE '''
-    p[0] = enaml_ast.ChildDef(typename=p[1], lineno=p.lineno(1))
+    ''' child_def : NAME COLON NAME COLON child_def_suite '''
+    child_def = enaml_ast.ChildDef(
+        typename=p[1], identifier=p[3], body=p[5], lineno=p.lineno(1)
+    )
+    p[0] = child_def
 
 
 def p_child_def4(p):
-    ''' child_def : NAME COLON NAME COLON child_def_body '''
-    idn, items = p[5]
-    if idn:
-        msg = 'multiple identifiers declared'
-        syntax_error(msg, FakeToken(p.lexer.lexer, p.lineno(1)))
+    ''' child_def : NAME COLON NAME COLON child_def_simple_item  '''
+    body = filter(None, [p[5]])
     child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=p[3], body=items, lineno=p.lineno(1)
+        typename=p[1], identifier=p[3], body=body, lineno=p.lineno(1)
     )
     p[0] = child_def
 
 
-def p_child_def5(p):
-    ''' child_def : NAME COLON NAME COLON binding
-                  | NAME COLON NAME COLON storage_def '''
-    child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=p[3], body=[p[5]], lineno=p.lineno(1)
-    )
-    p[0] = child_def
-
-
-def p_child_def6(p):
-    ''' child_def : NAME COLON NAME COLON PASS NEWLINE '''
-    child_def = enaml_ast.ChildDef(
-        typename=p[1], identifier=p[3], lineno=p.lineno(1)
-    )
-    p[0] = child_def
-
-
-def p_child_def_body1(p):
-    ''' child_def_body : NEWLINE INDENT child_def_body_items DEDENT '''
+def p_child_def_suite(p):
+    ''' child_def_suite : NEWLINE INDENT child_def_suite_items DEDENT '''
     # Filter out any pass statements
     items = filter(None, p[3])
-    p[0] = ('', items)
+    p[0] = items
 
 
-def p_child_def_body2(p):
-    ''' child_def_body : NEWLINE INDENT identifier DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    p[0] = (p[3], [])
-
-
-def p_child_def_body3(p):
-    ''' child_def_body : NEWLINE INDENT identifier child_def_body_items DEDENT '''
-    _warn_ident(p.lexer.filename, p.lineno(2))
-    # Filter out any pass statements
-    items = filter(None, p[4])
-    p[0] = (p[3], items)
-
-
-def p_child_def_body_items1(p):
-    ''' child_def_body_items : child_def_body_item '''
+def p_child_def_suite_items1(p):
+    ''' child_def_suite_items : child_def_suite_item '''
     p[0] = [p[1]]
 
 
-def p_child_def_body_items2(p):
-    ''' child_def_body_items : child_def_body_items child_def_body_item '''
+def p_child_def_suite_items2(p):
+    ''' child_def_suite_items : child_def_suite_items child_def_suite_item '''
     p[0] = p[1] + [p[2]]
 
 
-def p_child_def_body_item1(p):
-    ''' child_def_body_item : child_def '''
+def p_child_def_suite_item(p):
+    ''' child_def_suite_item : child_def_simple_item
+                             | decl_funcdef
+                             | child_def
+                             | template_inst '''
     p[0] = p[1]
 
 
-def p_child_def_body_item2(p):
-    ''' child_def_body_item : binding '''
+def p_child_def_simple_item1(p):
+    ''' child_def_simple_item : binding
+                              | ex_binding
+                              | alias_expr
+                              | storage_expr '''
     p[0] = p[1]
 
 
-def p_child_def_body_item3(p):
-    ''' child_def_body_item : storage_def '''
-    p[0] = p[1]
-
-
-def p_child_def_body_item4(p):
-    ''' child_def_body_item : PASS NEWLINE '''
+def p_child_def_simple_item2(p):
+    ''' child_def_simple_item : PASS NEWLINE '''
     p[0] = None
 
 
@@ -639,8 +696,30 @@ def p_child_def_body_item4(p):
 # Binding
 #------------------------------------------------------------------------------
 def p_binding(p):
-    ''' binding : NAME operator_expr'''
+    ''' binding : NAME operator_expr '''
     p[0] = enaml_ast.Binding(name=p[1], expr=p[2], lineno=p.lineno(1))
+
+
+#------------------------------------------------------------------------------
+# ExBinding
+#------------------------------------------------------------------------------
+def p_ex_binding(p):
+    ''' ex_binding : NAME ex_dotted_names operator_expr '''
+    node = enaml_ast.ExBinding()
+    node.lineno = p.lineno(1)
+    node.chain = (p[1],) + tuple(p[2])
+    node.expr = p[3]
+    p[0] = node
+
+
+def p_ex_dotted_names1(p):
+    ''' ex_dotted_names : DOT NAME '''
+    p[0] = [p[2]]
+
+
+def p_ex_dotted_names2(p):
+    ''' ex_dotted_names : DOT NAME ex_dotted_names '''
+    p[0] = [p[2]] + p[3]
 
 
 #------------------------------------------------------------------------------
@@ -650,23 +729,40 @@ def p_operator_expr1(p):
     ''' operator_expr : EQUAL test NEWLINE
                       | LEFTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
-    expr = ast.Expression(body=p[2])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
-    python = enaml_ast.Python(ast=expr, lineno=lineno)
+    body = p[2]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
+
+
+# The nodes which can be inverted to form an assignable expression.
+_INVERTABLE = (ast.Name, ast.Attribute, ast.Call, ast.Subscript)
 
 
 def p_operator_expr2(p):
     ''' operator_expr : COLONEQUAL test NEWLINE
                       | RIGHTSHIFT test NEWLINE '''
     lineno = p.lineno(1)
-    validate_invertable(p[2], lineno, p)
-    expr = ast.Expression(body=p[2])
-    expr.lineno = lineno
-    ast.fix_missing_locations(expr)
-    python = enaml_ast.Python(ast=expr, lineno=lineno)
+    body = p[2]
+    if not isinstance(body, _INVERTABLE):
+        msg = "can't assign to expression of this form"
+        syntax_error(msg, FakeToken(p.lexer.lexer, lineno))
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
+
+
+# The disallowed ast types on the rhs of a :: operator
+_NOTIFICATION_DISALLOWED = {
+    ast.FunctionDef: 'function definition',
+    ast.ClassDef: 'class definition',
+    ast.Yield: 'yield statement',
+    ast.Return: 'return statement',
+}
 
 
 def p_operator_expr3(p):
@@ -675,12 +771,594 @@ def p_operator_expr3(p):
     mod = ast.Module()
     mod.body = p[2]
     for item in ast.walk(mod):
-        if type(item) in notification_disallowed:
+        if type(item) in _NOTIFICATION_DISALLOWED:
             msg = '%s not allowed in a notification block'
-            msg = msg % notification_disallowed[type(item)]
+            msg = msg % _NOTIFICATION_DISALLOWED[type(item)]
             syntax_error(msg, FakeToken(p.lexer.lexer, item.lineno))
-    python = enaml_ast.Python(ast=mod, lineno=lineno)
+    python = enaml_ast.PythonModule(ast=mod, lineno=lineno)
     p[0] = enaml_ast.OperatorExpr(operator=p[1], value=python, lineno=lineno)
+
+
+#------------------------------------------------------------------------------
+# Declarative Function Definition
+#------------------------------------------------------------------------------
+# The disallowed ast types in the body of a declarative function
+_DECL_FUNCDEF_DISALLOWED = {
+    ast.FunctionDef: 'function definition',
+    ast.ClassDef: 'class definition',
+    ast.Yield: 'yield statement',
+}
+
+
+def _validate_decl_funcdef(funcdef, lexer):
+    walker = ast.walk(funcdef)
+    walker.next()  # discard toplevel funcdef
+    for item in walker:
+        if type(item) in _DECL_FUNCDEF_DISALLOWED:
+            msg = '%s not allowed in a declarative function block'
+            msg = msg % _DECL_FUNCDEF_DISALLOWED[type(item)]
+            syntax_error(msg, FakeToken(lexer, item.lineno))
+
+
+def p_decl_funcdef1(p):
+    ''' decl_funcdef : NAME NAME parameters COLON suite '''
+    lineno = p.lineno(1)
+    if p[1] != 'func':
+        syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
+    funcdef = ast.FunctionDef()
+    funcdef.name = p[2]
+    funcdef.args = p[3]
+    funcdef.body = p[5]
+    funcdef.decorator_list = []
+    funcdef.lineno = lineno
+    ast.fix_missing_locations(funcdef)
+    _validate_decl_funcdef(funcdef, p.lexer.lexer)
+    decl_funcdef = enaml_ast.FuncDef()
+    decl_funcdef.lineno = lineno
+    decl_funcdef.funcdef = funcdef
+    decl_funcdef.is_override = False
+    p[0] = decl_funcdef
+
+
+def p_decl_funcdef2(p):
+    ''' decl_funcdef : NAME RIGHTARROW parameters COLON suite '''
+    lineno = p.lineno(1)
+    funcdef = ast.FunctionDef()
+    funcdef.name = p[1]
+    funcdef.args = p[3]
+    funcdef.body = p[5]
+    funcdef.decorator_list = []
+    funcdef.lineno = lineno
+    ast.fix_missing_locations(funcdef)
+    _validate_decl_funcdef(funcdef, p.lexer.lexer)
+    decl_funcdef = enaml_ast.FuncDef()
+    decl_funcdef.lineno = lineno
+    decl_funcdef.funcdef = funcdef
+    decl_funcdef.is_override = True
+    p[0] = decl_funcdef
+
+
+#------------------------------------------------------------------------------
+# Template
+#------------------------------------------------------------------------------
+def _validate_template(node, lexer):
+    """ Validate the correctness of names in a template definitions.
+
+    This function ensures that parameters, const expressions, and
+    identifiers do not shadow one another.
+
+    """
+    param_names = set()
+    const_names = set()
+    ident_names = set()
+
+    def check_const(name, node):
+        msg = None
+        if name in param_names:
+            msg = "declaration of 'const %s' shadows a parameter"
+        elif name in const_names:
+            msg = "redeclaration of 'const %s'"
+        if msg is not None:
+            syntax_error(msg % name, FakeToken(lexer, node.lineno))
+        const_names.add(name)
+
+    def check_id(name, node):
+        msg = None
+        if name in param_names:
+            msg = "identifier '%s' shadows a parameter"
+        elif name in const_names:
+            msg = "identifier '%s' shadows a const expression"
+        elif name in ident_names:
+            msg = "redeclaration of identifier '%s'"
+        if msg is not None:
+            syntax_error(msg % name, FakeToken(lexer, node.lineno))
+        ident_names.add(name)
+
+    # collect the parameter names
+    params = node.parameters
+    for param in params.positional:
+        param_names.add(param.name)
+    for param in params.keywords:
+        param_names.add(param.name)
+    if params.starparam:
+        param_names.add(params.starparam)
+
+    # validate the const expressions
+    ConstExpr = enaml_ast.ConstExpr
+    for item in node.body:
+        if isinstance(item, ConstExpr):
+            check_const(item.name, item)
+
+    # validate the identifiers
+    ChildDef = enaml_ast.ChildDef
+    TemplateInst = enaml_ast.TemplateInst
+    stack = list(reversed(node.body))
+    while stack:
+        node = stack.pop()
+        if isinstance(node, ChildDef):
+            if node.identifier:
+                check_id(node.identifier, node)
+            stack.extend(reversed(node.body))
+        elif isinstance(node, TemplateInst):
+            idents = node.identifiers
+            if idents is not None:
+                for name in idents.names:
+                    check_id(name, idents)
+                if idents.starname:
+                    check_id(idents.starname, idents)
+
+
+def p_template1(p):
+    ''' template : template_impl '''
+    p[0] = p[1]
+
+
+def p_template2(p):
+    ''' template : pragmas template_impl '''
+    node = p[2]
+    node.pragmas = p[1]
+    p[0] = node
+
+
+def p_template_impl1(p):
+    ''' template_impl : TEMPLATE NAME template_params COLON template_suite '''
+    node = enaml_ast.Template()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.parameters = p[3]
+    node.body = p[5]
+    _validate_template(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_impl2(p):
+    ''' template_impl : TEMPLATE NAME template_params COLON template_simple_item '''
+    node = enaml_ast.Template()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.parameters = p[3]
+    node.body = filter(None, [p[5]])
+    _validate_template(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_impl3(p):
+    ''' template_impl : TEMPLATE NAME template_params COLON template_doc_suite '''
+    doc, body = p[5]
+    node = enaml_ast.Template()
+    node.lineno = p.lineno(1)
+    node.name = p[2]
+    node.parameters = p[3]
+    node.docstring = doc
+    node.body = body
+    _validate_template(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_suite(p):
+    ''' template_suite : NEWLINE INDENT template_suite_items DEDENT '''
+    # Filter out any pass statements
+    p[0] = filter(None, p[3])
+
+
+def p_template_doc_suite(p):
+    ''' template_doc_suite : NEWLINE INDENT STRING NEWLINE template_suite_items DEDENT '''
+    # Filter out any pass statements
+    p[0] = (p[3], filter(None, p[5]))
+
+
+def p_template_suite_items1(p):
+    ''' template_suite_items : template_suite_item '''
+    p[0] = [p[1]]
+
+
+def p_template_suite_items2(p):
+    ''' template_suite_items : template_suite_items template_suite_item '''
+    p[0] = p[1] + [p[2]]
+
+
+def p_template_suite_item(p):
+    ''' template_suite_item : template_simple_item
+                            | child_def
+                            | template_inst '''
+    p[0] = p[1]
+
+
+def p_template_simple_item1(p):
+    ''' template_simple_item : const_expr '''
+    p[0] = p[1]
+
+
+def p_template_simple_item2(p):
+    ''' template_simple_item : PASS NEWLINE '''
+    p[0] = None
+
+
+def p_template_params1(p):
+    ''' template_params : LPAR RPAR '''
+    node = enaml_ast.TemplateParameters()
+    node.lineno = p.lineno(1)
+    p[0] = node
+
+
+def _validate_template_paramlist(paramlist, starparam, lexer):
+    keywords = []
+    positional = []
+    seen_params = set([starparam])
+    for param in paramlist:
+        if param.name in seen_params:
+            msg = "duplicate argument '%s' in template definition"
+            syntax_error(msg % param.name, FakeToken(lexer, param.lineno))
+        seen_params.add(param.name)
+        if isinstance(param, enaml_ast.KeywordParameter):
+            keywords.append(param)
+        elif keywords:
+            msg = "non-default argument follows default argument"
+            syntax_error(msg, FakeToken(lexer, param.lineno))
+        else:
+            positional.append(param)
+    return positional, keywords
+
+
+def p_template_params2(p):
+    ''' template_params : LPAR template_paramlist RPAR '''
+    params, starparam = p[2]
+    pos, kwds = _validate_template_paramlist(params, starparam, p.lexer.lexer)
+    node = enaml_ast.TemplateParameters()
+    node.positional = pos
+    node.keywords = kwds
+    node.starparam = starparam
+    p[0] = node
+
+
+def p_template_paramlist1(p):
+    ''' template_paramlist : template_param '''
+    p[0] = ([p[1]], '')
+
+
+def p_template_paramlist2(p):
+    ''' template_paramlist : STAR NAME '''
+    p[0] = ([], p[2])
+
+
+def p_template_paramlist3(p):
+    ''' template_paramlist : template_param template_paramlist_list '''
+    p[0] = ([p[1]] + p[2], '')
+
+
+def p_template_paramlist4(p):
+    ''' template_paramlist : template_param COMMA STAR NAME '''
+    p[0] = ([p[1]], p[4])
+
+
+def p_template_paramlist5(p):
+    ''' template_paramlist : template_param template_paramlist_list COMMA STAR NAME '''
+    p[0] = ([p[1]] + p[2], p[5])
+
+
+def p_template_paramlist_list1(p):
+    ''' template_paramlist_list : COMMA template_param '''
+    p[0] = [p[2]]
+
+
+def p_template_paramlist_list2(p):
+    ''' template_paramlist_list : template_paramlist_list COMMA template_param '''
+    p[0] = p[1] + [p[3]]
+
+
+def p_template_param1(p):
+    ''' template_param : NAME '''
+    node = enaml_ast.PositionalParameter()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    p[0] = node
+
+
+def p_template_param2(p):
+    ''' template_param : NAME COLON test '''
+    lineno = p.lineno(1)
+    node = enaml_ast.PositionalParameter()
+    node.lineno = lineno
+    node.name = p[1]
+    body = p[3]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    node.specialization = python
+    p[0] = node
+
+
+def p_template_param3(p):
+    ''' template_param : NAME EQUAL test '''
+    lineno = p.lineno(1)
+    node = enaml_ast.KeywordParameter()
+    node.lineno = lineno
+    node.name = p[1]
+    body = p[3]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    python = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    node.default = python
+    p[0] = node
+
+
+#------------------------------------------------------------------------------
+# Template Instantiation
+#------------------------------------------------------------------------------
+def _validate_template_inst(node, lexer):
+    """ Validate a template instantiation.
+
+    This function ensures that the bindings on the instantiation refer
+    to declared identifiers on the instantiation.
+
+    """
+    names = set()
+    if node.identifiers:
+        names.update(node.identifiers.names)
+    for binding in node.body:
+        if binding.name not in names:
+            msg = "'%s' is not a valid template id reference"
+            syntax_error(msg % binding.name, FakeToken(lexer, binding.lineno))
+
+
+def p_template_inst1(p):
+    ''' template_inst : template_inst_impl '''
+    p[0] = p[1]
+
+
+def p_template_inst2(p):
+    ''' template_inst : pragmas template_inst_impl '''
+    node = p[2]
+    node.pragmas = p[1]
+    p[0] = node
+
+
+def p_template_inst_impl1(p):
+    ''' template_inst_impl : NAME template_args COLON template_inst_suite_item '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[2]
+    node.body = filter(None, [p[4]])
+    _validate_template_inst(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_inst_impl2(p):
+    ''' template_inst_impl : NAME template_args COLON template_ids COLON template_inst_suite_item '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[2]
+    node.identifiers = p[4]
+    node.body = filter(None, [p[6]])
+    _validate_template_inst(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_inst_impl3(p):
+    ''' template_inst_impl : NAME template_args COLON template_inst_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[2]
+    node.body = filter(None, p[4])
+    _validate_template_inst(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_inst_impl4(p):
+    ''' template_inst_impl : NAME template_args COLON template_ids COLON template_inst_suite '''
+    node = enaml_ast.TemplateInst()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.arguments = p[2]
+    node.identifiers = p[4]
+    node.body = filter(None, p[6])
+    _validate_template_inst(node, p.lexer.lexer)
+    p[0] = node
+
+
+def p_template_args1(p):
+    ''' template_args : LPAR RPAR '''
+    node = enaml_ast.TemplateArguments()
+    node.lineno = p.lineno(1)
+    p[0] = node
+
+
+def _fixup_template_args(node):
+    lineno = node.lineno
+    for arg in node.args:
+        if arg.lineno == -1:
+            arg.lineno = lineno
+        else:
+            lineno = arg.lineno
+        arg.ast.body.lineno = lineno
+        ast.fix_missing_locations(arg.ast.body)
+
+
+def p_template_args2(p):
+    ''' template_args : LPAR template_arglist RPAR '''
+    args, stararg = p[2]
+    node = enaml_ast.TemplateArguments()
+    node.lineno = p.lineno(1)
+    node.args = args
+    node.stararg = stararg
+    _fixup_template_args(node)
+    p[0] = node
+
+
+def p_template_arglist1(p):
+    ''' template_arglist : template_argument '''
+    p[0] = ([p[1]], None)
+
+
+def p_template_arglist2(p):
+    ''' template_arglist : STAR test '''
+    lineno = p.lineno(1)
+    body = p[2]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    p[0] = ([], node)
+
+
+def p_template_arglist3(p):
+    ''' template_arglist : template_argument template_arglist_list '''
+    p[0] = ([p[1]] + p[2], None)
+
+
+def p_template_arglist4(p):
+    ''' template_arglist : template_argument COMMA STAR test '''
+    lineno = p.lineno(3)
+    body = p[4]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    p[0] = ([p[1]], node)
+
+
+def p_template_arglist5(p):
+    ''' template_arglist : template_argument template_arglist_list COMMA STAR test '''
+    lineno = p.lineno(4)
+    body = p[5]
+    body.lineno = lineno
+    ast.fix_missing_locations(body)
+    expr = ast.Expression(body=body)
+    node = enaml_ast.PythonExpression(ast=expr, lineno=lineno)
+    p[0] = ([p[1]] + p[2], node)
+
+
+def p_template_arglist_list1(p):
+    ''' template_arglist_list : COMMA template_argument '''
+    arg = p[2]
+    if arg.lineno == -1:
+        arg.lineno = p.lineno(1)
+    p[0] = [arg]
+
+
+def p_template_arglist_list2(p):
+    ''' template_arglist_list : template_arglist_list COMMA template_argument '''
+    arg = p[3]
+    if arg.lineno == -1:
+        arg.lineno = p.lineno(2)
+    p[0] = p[1] + [arg]
+
+
+def p_template_argument1(p):
+    ''' template_argument : test '''
+    expr = ast.Expression(body=p[1])
+    node = enaml_ast.PythonExpression(ast=expr)
+    p[0] = node
+
+
+def p_template_argument2(p):
+    ''' template_argument : test comp_for '''
+    expr = ast.GeneratorExp(elt=p[1], generators=p[2])
+    node = enaml_ast.PythonExpression(ast=expr)
+    p[0] = node
+
+
+def p_template_ids1(p):
+    ''' template_ids : NAME '''
+    node = enaml_ast.TemplateIdentifiers()
+    node.lineno = p.lineno(1)
+    node.names = [p[1]]
+    p[0] = node
+
+
+def p_template_ids2(p):
+    ''' template_ids : template_id_list NAME '''
+    node = enaml_ast.TemplateIdentifiers()
+    node.lineno = p.lineno(2)
+    node.names = p[1] + [p[2]]
+    p[0] = node
+
+
+def p_template_ids3(p):
+    ''' template_ids : STAR NAME '''
+    node = enaml_ast.TemplateIdentifiers()
+    node.lineno = p.lineno(1)
+    node.starname = p[2]
+    p[0] = node
+
+
+def p_template_ids4(p):
+    ''' template_ids : template_id_list STAR NAME '''
+    node = enaml_ast.TemplateIdentifiers()
+    node.lineno = p.lineno(2)
+    node.names = p[1]
+    node.starname = p[3]
+    p[0] = node
+
+
+def p_template_id_list1(p):
+    ''' template_id_list : NAME COMMA '''
+    p[0] = [p[1]]
+
+
+def p_template_id_list2(p):
+    ''' template_id_list : template_id_list NAME COMMA '''
+    p[0] = p[1] + [p[2]]
+
+
+def p_template_inst_suite(p):
+    ''' template_inst_suite : NEWLINE INDENT template_inst_suite_items DEDENT '''
+    p[0] = p[3]
+
+
+def p_template_inst_suite_items1(p):
+    ''' template_inst_suite_items : template_inst_suite_items template_inst_suite_item '''
+    p[0] = p[1] + [p[2]]
+
+
+def p_template_inst_suite_items2(p):
+    ''' template_inst_suite_items : template_inst_suite_item '''
+    p[0] = [p[1]]
+
+
+def p_template_inst_suite_item1(p):
+    ''' template_inst_suite_item : template_inst_binding '''
+    p[0] = p[1]
+
+
+def p_template_inst_suite_item2(p):
+    ''' template_inst_suite_item : PASS NEWLINE '''
+    p[0] = None
+
+
+def p_template_inst_binding(p):
+    ''' template_inst_binding : NAME ex_dotted_names operator_expr '''
+    node = enaml_ast.TemplateInstBinding()
+    node.lineno = p.lineno(1)
+    node.name = p[1]
+    node.chain = tuple(p[2])
+    node.expr = p[3]
+    p[0] = node
 
 
 #------------------------------------------------------------------------------
@@ -1457,7 +2135,7 @@ def p_with_item_list1(p):
 
 def p_with_item_list2(p):
     ''' with_item_list : COMMA with_item '''
-    p[0]  = [p[2]]
+    p[0] = [p[2]]
 
 
 def p_funcdef(p):
@@ -1623,8 +2301,8 @@ def p_import_from4(p):
 
 
 def p_import_from5(p):
-    ''' import_from : FROM import_from_dots dotted_name IMPORT import_as_name '''
-    imprt = ast.ImportFrom(module=p[3], names=[p[5]], level=len(p[2]))
+    ''' import_from : FROM import_from_dots dotted_name IMPORT import_as_names '''
+    imprt = ast.ImportFrom(module=p[3], names=p[5], level=len(p[2]))
     imprt.col_offset = 0
     p[0] = imprt
 
@@ -1666,6 +2344,16 @@ def p_import_from_dots1(p):
 def p_import_from_dots2(p):
     ''' import_from_dots : import_from_dots DOT '''
     p[0] = p[1] + [p[2]]
+
+
+def p_import_from_dots3(p):
+    ''' import_from_dots : ELLIPSIS '''
+    p[0] = ['.', '.', '.']
+
+
+def p_import_from_dots4(p):
+    ''' import_from_dots : import_from_dots ELLIPSIS '''
+    p[0] = p[1] + ['.', '.', '.']
 
 
 def p_import_as_name1(p):
@@ -1942,7 +2630,7 @@ def p_xor_expr2(p):
 
 def p_xor_expr_list1(p):
     ''' xor_expr_list : CIRCUMFLEX and_expr '''
-    p[0] = [[ast.BitXor(), p[1]]]
+    p[0] = [[ast.BitXor(), p[2]]]
 
 
 def p_xor_expr_list2(p):
@@ -1965,7 +2653,7 @@ def p_and_expr2(p):
 
 def p_and_expr_list1(p):
     ''' and_expr_list : AMPER shift_expr '''
-    p[0] = [[ast.BitAnd(), p[3]]]
+    p[0] = [[ast.BitAnd(), p[2]]]
 
 
 def p_and_expr_list2(p):
@@ -2235,7 +2923,7 @@ def p_atom7(p):
 
 def p_atom8(p):
     ''' atom : NAME '''
-    p[0] = ast.Name(id=p[1], ctx=Load)
+    p[0] = ast.Name(id=p[1], ctx=Load, lineno=p.lineno(1))
 
 
 def p_atom9(p):
@@ -2358,7 +3046,7 @@ def p_trailer3(p):
 
 def p_trailer4(p):
     ''' trailer : DOT NAME '''
-    p[0] = ast.Attribute(attr=p[2], ctx=Load)
+    p[0] = ast.Attribute(attr=p[2], ctx=Load, lineno=p.lineno(2))
 
 
 def p_subscriptlist1(p):
@@ -3171,7 +3859,7 @@ def p_varargslist_list4(p):
 
 def p_fpdef1(p):
     ''' fpdef : NAME '''
-    p[0] = ast.Name(id=p[1], ctx=ast.Param())
+    p[0] = ast.Name(id=p[1], ctx=ast.Param(), lineno=p.lineno(1))
 
 
 def p_fpdef2(p):

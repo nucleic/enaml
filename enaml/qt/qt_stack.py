@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Int, Typed
+from atom.api import Int, IntEnum, Typed
 
 from enaml.widgets.stack import ProxyStack
 
@@ -63,6 +63,20 @@ class QStack(QStackedWidget):
     """ A QStackedWidget subclass which adds support for transitions.
 
     """
+    class SizeHintMode(IntEnum):
+        """ An int enum defining the size hint modes of the stack.
+
+        """
+        #: The size hint is the union of all stack items.
+        Union = 0
+
+        #: The size hint is the size hint of the current stack item.
+        Current = 1
+
+    #: Proxy the SizeHintMode values as if it were an anonymous enum.
+    Union = SizeHintMode.Union
+    Current = SizeHintMode.Current
+
     #: A signal emitted when a LayoutRequest event is posted to the
     #: stack widget. This will typically occur when the size hint of
     #: the stack is no longer valid.
@@ -82,6 +96,7 @@ class QStack(QStackedWidget):
         self._painter = None
         self._transition = None
         self._transition_index = 0
+        self._size_hint_mode = QStack.Union
 
     #--------------------------------------------------------------------------
     # Private API
@@ -168,6 +183,57 @@ class QStack(QStackedWidget):
             self.layoutRequested.emit()
         return res
 
+    def sizeHint(self):
+        """ A reimplemented size hint handler.
+
+        This method will compute the size hint based on the size hint
+        of the current tab, instead of the default behavior which is
+        the maximum of all the size hints of the tabs.
+
+        """
+        if self._size_hint_mode == QStack.Current:
+            curr = self.currentWidget()
+            if curr is not None:
+                return curr.sizeHint()
+        return super(QStack, self).sizeHint()
+
+    def minimumSizeHint(self):
+        """ A reimplemented minimum size hint handler.
+
+        This method will compute the size hint based on the size hint
+        of the current tab, instead of the default behavior which is
+        the maximum of all the minimum size hints of the tabs.
+
+        """
+        if self._size_hint_mode == QStack.Current:
+            curr = self.currentWidget()
+            if curr is not None:
+                return curr.minimumSizeHint()
+        return super(QStack, self).minimumSizeHint()
+
+    def sizeHintMode(self):
+        """ Get the size hint mode of the stack.
+
+        Returns
+        -------
+        result : QStack.SizeHintMode
+            The size hint mode enum value for the stack.
+
+        """
+        return self._size_hint_mode
+
+    def setSizeHintMode(self, mode):
+        """ Set the size hint mode of the stack.
+
+        Parameters
+        ----------
+        mode : QStack.SizeHintMode
+            The size hint mode for the stack.
+
+        """
+        assert isinstance(mode, QStack.SizeHintMode)
+        self._size_hint_mode = mode
+
     def transition(self):
         """ Get the transition installed on this widget.
 
@@ -219,6 +285,13 @@ class QStack(QStackedWidget):
             self.setCurrentIndex(index)
 
 
+#: A mapping Enaml -> Qt size hint modes.
+SIZE_HINT_MODE = {
+    'union': QStack.Union,
+    'current': QStack.Current,
+}
+
+
 #: Cyclic notification guard
 INDEX_FLAG = 0x1
 
@@ -247,7 +320,9 @@ class QtStack(QtConstraintsWidget, ProxyStack):
 
         """
         super(QtStack, self).init_widget()
-        self.set_transition(self.declaration.transition)
+        d = self.declaration
+        self.set_transition(d.transition)
+        self.set_size_hint_mode(d.size_hint_mode, update=False)
 
     def init_layout(self):
         """ Initialize the layout of the underlying control.
@@ -302,7 +377,7 @@ class QtStack(QtConstraintsWidget, ProxyStack):
         """ Handle the `layoutRequested` signal from the QStack.
 
         """
-        self.size_hint_updated()
+        self.geometry_updated()
 
     def on_current_changed(self):
         """ Handle the `currentChanged` signal from the QStack.
@@ -337,3 +412,11 @@ class QtStack(QtConstraintsWidget, ProxyStack):
             self.widget.setTransition(make_transition(transition))
         else:
             self.widget.setTransition(None)
+
+    def set_size_hint_mode(self, mode, update=True):
+        """ Set the size hint mode for the widget.
+
+        """
+        self.widget.setSizeHintMode(SIZE_HINT_MODE[mode])
+        if update:
+            self.geometry_updated()

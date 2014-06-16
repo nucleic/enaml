@@ -58,8 +58,8 @@ class WxWidget(WxToolkitObject, ProxyWidget):
     #--------------------------------------------------------------------------
     # Public API
     #--------------------------------------------------------------------------
-    def update_geometry(self):
-        """ Notify the layout system that this widget has changed.
+    def post_wx_layout_request(self):
+        """ Post a wx layout request event to this widget's parent.
 
         This method should be called when the geometry of the widget has
         changed and the layout system should update the layout. This will
@@ -128,16 +128,14 @@ class WxWidget(WxToolkitObject, ProxyWidget):
         """ Set the font on the underlying widget.
 
         """
-        wxfont = get_cached_wxfont(font)
+        if font is not None:
+            wxfont = get_cached_wxfont(font)
+        else:
+            index = wx.SYS_DEFAULT_GUI_FONT
+            wxfont = wx.SystemSettings.GetFont(index)
         widget = self.widget
         widget.SetFont(wxfont)
         widget.Refresh()
-
-    def set_show_focus_rect(self, show):
-        """ This is not supported on Wx.
-
-        """
-        pass
 
     def set_tool_tip(self, tool_tip):
         """ Set the tool tip of for this widget.
@@ -162,3 +160,9 @@ class WxWidget(WxToolkitObject, ProxyWidget):
 
         """
         self.widget.Show(False)
+
+    def restyle(self):
+        """ Stylesheets are not supported on Wx.
+
+        """
+        pass

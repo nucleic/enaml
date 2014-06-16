@@ -45,7 +45,8 @@ def main():
     # Create a proper module in which to execute the compiled code so
     # that exceptions get reported with better meaning
     module = types.ModuleType('__main__')
-    module.__file__ = enaml_file
+    module.__file__ = os.path.abspath(enaml_file)
+    sys.modules['__main__'] = module
     ns = module.__dict__
 
     # Put the directory of the Enaml file first in the path so relative

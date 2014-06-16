@@ -10,17 +10,16 @@ from atom.api import Typed
 from enaml.widgets.toolkit_object import ProxyToolkitObject
 
 from .QtCore import QObject
-from . import QT_API
 
 
 class QtToolkitObject(ProxyToolkitObject):
     """ A Qt implementation of an Enaml ProxyToolkitObject.
 
     """
-    # PySide requires weakrefs for using bound methods as slots
-    if QT_API == 'pyside':
-        __slots__ = '__weakref__' 
-    
+    # PySide requires weakrefs for using bound methods as slots.
+    # PyQt doesn't, but executes unsafe code if not using weakrefs.
+    __slots__ = '__weakref__'
+
     #: A reference to the toolkit widget created by the proxy.
     widget = Typed(QObject)
 
@@ -45,7 +44,16 @@ class QtToolkitObject(ProxyToolkitObject):
         state of the widget. The child widgets will not yet be created.
 
         """
-        pass
+        widget = self.widget
+        if widget is not None:
+            # Each Qt object gets a name. If one is not provided by the
+            # widget author, one is generated. This is required so that
+            # Qt stylesheet cascading can be prevented (Enaml's styling
+            # engine applies the cascade itself). Names provided by the
+            # widget author are assumed to be unique.
+            d = self.declaration
+            name = d.name or u'obj-%d' % id(d)
+            widget.setObjectName(name)
 
     def init_layout(self):
         """ Initialize the layout of the toolkit widget.
@@ -80,8 +88,9 @@ class QtToolkitObject(ProxyToolkitObject):
         and set its parent to None.
 
         """
-        if self.widget is not None:
-            self.widget.setParent(None)
+        widget = self.widget
+        if widget is not None:
+            widget.setParent(None)
             del self.widget
         super(QtToolkitObject, self).destroy()
 

@@ -12,7 +12,6 @@ from enaml.widgets.separator import ProxySeparator
 from .QtCore import QSize
 from .QtGui import QFrame
 
-from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
@@ -75,52 +74,40 @@ class QtSeparator(QtControl, ProxySeparator):
         """
         super(QtSeparator, self).init_widget()
         d = self.declaration
-        self.set_orientation(d.orientation, sh_guard=False)
-        self.set_line_style(d.line_style, sh_guard=False)
-        self.set_line_width(d.line_width, sh_guard=False)
-        self.set_midline_width(d.midline_width, sh_guard=False)
+        self.set_orientation(d.orientation)
+        self.set_line_style(d.line_style)
+        self.set_line_width(d.line_width)
+        self.set_midline_width(d.midline_width)
 
     #--------------------------------------------------------------------------
     # Widget Update Methods
     #--------------------------------------------------------------------------
-    def set_orientation(self, orientation, sh_guard=True):
+    def set_orientation(self, orientation):
         """ Set the orientation of the underlying widget.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setFrameShape(LINE_SHAPES[orientation])
-        else:
+        with self.geometry_guard():
             self.widget.setFrameShape(LINE_SHAPES[orientation])
 
-    def set_line_style(self, style, sh_guard=True):
+    def set_line_style(self, style):
         """ Set the line style of the underlying widget.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setFrameShadow(LINE_STYLES[style])
-        else:
+        with self.geometry_guard():
             self.widget.setFrameShadow(LINE_STYLES[style])
 
-    def set_line_width(self, width, sh_guard=True):
+    def set_line_width(self, width):
         """ Set the line width of the underlying widget.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setLineWidth(width)
-        else:
+        with self.geometry_guard():
             self.widget.setLineWidth(width)
         self.widget.update()
 
-    def set_midline_width(self, width, sh_guard=True):
+    def set_midline_width(self, width):
         """ Set the midline width of the underlying widget.
 
         """
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setMidLineWidth(width)
-        else:
+        with self.geometry_guard():
             self.widget.setMidLineWidth(width)
         self.widget.update()

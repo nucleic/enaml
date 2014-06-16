@@ -12,6 +12,7 @@ a child of a widget and setting the 'context_menu' attribute to True. The
 second method is by creating the menu on-demand, and then invoking it's
 'popup()' method to show the menu at the current mouse location.
 
+<< autodoc-me >>
 """
 from enaml.widgets.api import (
     Window, Container, PushButton, Menu, Action, Field

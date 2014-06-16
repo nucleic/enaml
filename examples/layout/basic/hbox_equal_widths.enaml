@@ -1,15 +1,18 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" An example which demonstrates the use of the `hbox` layout helper
-along with some auxiliary constraints.
+""" An example of the `hbox` layout helper with auxiliary constraints.
 
 This example is nearly identical to the `hbox.enaml` example. However,
 this time we add some auxiliary constraints to make the buttons equal
 widths. When resizing the window, each button is therefore guaranteed
 to expand by the same amount.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import hbox
 from enaml.widgets.api import Window, Container, PushButton

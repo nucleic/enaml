@@ -7,28 +7,17 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, List
 
-from .declarative import Declarative, d_
+from .compiler_nodes import new_scope
+from .declarative import d_
+from .pattern import Pattern
 
 
-def populate_conditional(conditional, node, f_locals):
-    """ The populate function for the Conditional class.
-
-    """
-    if node.scope_member:
-        node.scope_member.set_slot(conditional, f_locals)
-    if node.identifier:
-        f_locals[node.identifier] = conditional
-    conditional._cdata.append((node, f_locals))
-
-
-class Conditional(Declarative):
-    """ A declarative object that represents conditional objects.
+class Conditional(Pattern):
+    """ A pattern object that represents conditional objects.
 
     When the `condition` attribute is True, the conditional will create
     its child items and insert them into its parent; when False, the old
     items will be destroyed.
-
-    Creating a `Conditional` without a parent is a programming error.
 
     """
     #: The condition variable. If this is True, a copy of the children
@@ -40,52 +29,20 @@ class Conditional(Declarative):
     #: not be manipulated directly by user code.
     items = List()
 
-    #: Private data storage for the conditional.
-    _cdata = List()
-
-    @classmethod
-    def populator_func(cls):
-        """ Get the populator function for the Conditional class.
-
-        This returns a populator function which intercepts the creation
-        of the child items and defers it until the initialization pass.
-
-        """
-        return populate_conditional
-
     #--------------------------------------------------------------------------
     # Lifetime API
     #--------------------------------------------------------------------------
-    def initialize(self):
-        """ A reimplemented initialization method.
-
-        """
-        super(Conditional, self).initialize()
-        self._refresh_items()
-        # The conditional is responsible for initializing new items
-        # during the initialization pass. At all other times, the
-        # parent declarative object will initialize new children.
-        for item in self.items:
-            item.initialize()
-
     def destroy(self):
-        """ A reimplemented destructor
+        """ A reimplemented destructor.
 
-        The conditional will destroy all of its items, provided that
-        the items and parent are not already destroyed.
+        The conditional will release the owned items on destruction.
 
         """
-        parent = self.parent
-        destroy_items = parent is not None and not parent.is_destroyed
         super(Conditional, self).destroy()
-        if destroy_items:
-            for item in self.items:
-                if not item.is_destroyed:
-                    item.destroy()
         del self.items
 
     #--------------------------------------------------------------------------
-    # Private API
+    # Observers
     #--------------------------------------------------------------------------
     def _observe_condition(self, change):
         """ A private observer for the `condition` attribute.
@@ -94,31 +51,41 @@ class Conditional(Declarative):
         items will be refreshed.
 
         """
-        if self.is_initialized:
-            self._refresh_items()
+        if change['type'] == 'update' and self.is_initialized:
+            self.refresh_items()
 
-    def _refresh_items(self):
-        """ A private method which refreshes the conditional items.
+    #--------------------------------------------------------------------------
+    # Pattern API
+    #--------------------------------------------------------------------------
+    def pattern_items(self):
+        """ Get a list of items created by the pattern.
+
+        """
+        return self.items[:]
+
+    def refresh_items(self):
+        """ Refresh the items of the pattern.
 
         This method destroys the old items and creates and initializes
         the new items.
 
         """
         items = []
-        condition = self.condition
-        cdata = self._cdata
-
-        if condition and len(cdata) > 0:
-            for node, f_locals in cdata:
-                new_locals = f_locals.copy()
-                for child_node in node.child_defs:
-                    child = child_node.typeclass()
-                    child_node.populate(child, child_node, new_locals)
-                    items.append(child)
+        if self.condition:
+            for nodes, key, f_locals in self.pattern_nodes:
+                with new_scope(key, f_locals):
+                    for node in nodes:
+                        child = node(None)
+                        if isinstance(child, list):
+                            items.extend(child)
+                        else:
+                            items.append(child)
 
         for old in self.items:
             if not old.is_destroyed:
                 old.destroy()
+
         if len(items) > 0:
             self.parent.insert_children(self, items)
+
         self.items = items

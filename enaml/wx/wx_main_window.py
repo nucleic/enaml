@@ -353,7 +353,8 @@ class WxMainWindow(WxWindow, ProxyMainWindow):
         """ Create the underlying widget wxMainWindow widget.
 
         """
-        self.widget = wxMainWindow(self.parent_widget())
+        style = self.creation_style()
+        self.widget = wxMainWindow(self.parent_widget(), style=style)
 
     def init_layout(self):
         """ Initialize the layout for the underlying widget.

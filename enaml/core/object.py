@@ -51,7 +51,7 @@ class Object(Atom):
 
     """
     #: An optional name to give to this object to assist in finding it
-    #: in the tree (see . the 'find' method. There is no guarantee of
+    #: in the tree (see . the 'find' method). There is no guarantee of
     #: uniqueness for an object `name`. It is left to the developer to
     #: choose an appropriate name.
     name = Unicode()
@@ -109,6 +109,7 @@ class Object(Atom):
         """
         self.is_destroyed = True
         self.destroyed()
+        self.unobserve()
         for child in self._children:
             child.destroy()
         del self._children

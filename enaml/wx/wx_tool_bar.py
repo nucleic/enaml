@@ -341,7 +341,7 @@ class WxToolBar(WxConstraintsWidget, ProxyToolBar):
             if isinstance(child, WxAction):
                 widget.AddAction(child.widget, False)
             elif isinstance(child, WxActionGroup):
-                widget.AddActions(child.actions, False)
+                widget.AddActions(child.actions(), False)
         widget.Realize()
 
     #--------------------------------------------------------------------------
@@ -407,6 +407,12 @@ class WxToolBar(WxConstraintsWidget, ProxyToolBar):
 
         """
         # XXX implement me!
+        pass
+
+    def set_button_style(self, style):
+        """ This is not supported on wx.
+
+        """
         pass
 
     def set_orientation(self, orientation):

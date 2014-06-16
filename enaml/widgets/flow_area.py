@@ -88,8 +88,8 @@ class FlowArea(Frame):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('direction', 'align', 'horizontal_spacing', 'vertical_spacing',
-        'margins'))
+    @observe('direction', 'align', 'horizontal_spacing', 'vertical_spacing',
+        'margins')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

@@ -1,6 +1,9 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example of the `MainWindow` widget.
 
@@ -14,11 +17,12 @@ of `DockPane` and `ToolBar` children, and at most one `MenuBar`.
 Support for a `StatusBar` will be added in the future.
 
 Implementation Notes:
-    
+
     The main window facilities in Wx are very weak. If these features
-    are required for a particular application, strongly prefer the Qt 
+    are required for a particular application, strongly prefer the Qt
     backend over Wx (this is generally a good life-rule).
 
+<< autodoc-me >>
 """
 from enaml.layout.api import vbox
 from enaml.widgets.api import (

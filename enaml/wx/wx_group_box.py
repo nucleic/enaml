@@ -231,11 +231,12 @@ class WxGroupBox(WxContainer, ProxyGroupBox):
     #--------------------------------------------------------------------------
     # Layout Handling
     #--------------------------------------------------------------------------
-    def contents_margins(self):
+    @staticmethod
+    def margins_func(widget):
         """ Get the current contents margins for the group box.
 
         """
-        return self.widget.GetContentsMargins()
+        return widget.GetContentsMargins()
 
     #--------------------------------------------------------------------------
     # ProxyGroupBox API
@@ -252,7 +253,7 @@ class WxGroupBox(WxContainer, ProxyGroupBox):
         widget.SetTitle(title)
         new_margins = widget.GetContentsMargins()
         if old_margins != new_margins:
-            self.contents_margins_updated()
+            self.margins_updated()
 
     def set_flat(self, flat):
         """ Updates the flattened appearance of the group box.

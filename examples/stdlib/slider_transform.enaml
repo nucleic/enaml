@@ -1,0 +1,32 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of using a slider transform to handle float values.
+
+"""
+from atom.api import Atom, Float
+
+from enaml.stdlib.slider_transform import FloatTransform
+from enaml.widgets.api import Window, Container, Field, Slider
+
+
+class Model(Atom):
+    value = Float(42.0)
+
+
+enamldef Main(Window):
+    attr model = Model()
+    Container:
+        Field:
+            text << "%.4f" % model.value
+            read_only = True
+        Slider:
+            FloatTransform:
+                value := model.value
+                minimum = 0.0
+                maximum = 100.0
+                precision = 300

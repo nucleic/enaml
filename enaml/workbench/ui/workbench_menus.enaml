@@ -1,0 +1,69 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.application import deferred_call
+from enaml.widgets.action import Action
+from enaml.widgets.action_group import ActionGroup
+from enaml.widgets.menu import Menu
+from enaml.workbench.workbench import Workbench
+
+from .action_item import ActionItem
+from .item_group import ItemGroup
+from .menu_item import MenuItem
+
+
+def invoke_action(workbench, item):
+    """ Invoke the command indicated by the given action item.
+
+    """
+    core = workbench.get_plugin('enaml.workbench.core')
+    core.invoke_command(item.command, item.parameters, item)
+
+
+def action_text(text, shortcut):
+    """ Concatenate action text and a keyboard shortcut.
+
+    """
+    return u'\t'.join(filter(None, (text, shortcut)))
+
+
+enamldef WorkbenchAction(Action):
+    """ A custom Action def for use in the Enaml workbench.
+
+    """
+    attr workbench: Workbench
+    attr item: ActionItem
+    text << action_text(item.label, item.shortcut)
+    visible << item.visible
+    enabled << item.enabled
+    checkable << item.checkable
+    checked := item.checked
+    icon << item.icon
+    tool_tip << item.tool_tip
+    status_tip << item.status_tip
+    triggered :: deferred_call(invoke_action, workbench, item)
+
+
+enamldef WorkbenchActionGroup(ActionGroup):
+    """ A custom action group def for use in the Enaml workbench.
+
+    """
+    attr group: ItemGroup
+    visible << group.visible
+    enabled << group.enabled
+    exclusive << group.exclusive
+
+
+enamldef WorkbenchMenu(Menu):
+    """ A custom menu def for use in the Enaml workbench.
+
+    """
+    attr group: ItemGroup
+    attr item: MenuItem
+    title << item.label
+    visible << item.visible and group.visible
+    enabled << item.enabled and group.enabled

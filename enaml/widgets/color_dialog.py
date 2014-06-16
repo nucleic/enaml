@@ -164,7 +164,7 @@ class ColorDialog(ToolkitDialog):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('current_color', 'show_alpha', 'show_buttons'))
+    @observe('current_color', 'show_alpha', 'show_buttons')
     def _update_proxy(self, change):
         """ An observer which updates the proxy when the data changes.
 

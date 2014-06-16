@@ -1,0 +1,53 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2014, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `VGroup` convenience container.
+
+The VGroup is a convenience container which provides a simple vertical
+group of child widgets, with knobs to control inter-widget spacing and
+leading and trailing spacers.
+
+<< autodoc-me >>
+"""
+from enaml.layout.api import spacer
+from enaml.widgets.api import (
+    Window, Label, Separator, Field, Form, VGroup, CheckBox, SpinBox
+)
+
+
+enamldef Main(Window):
+    title = 'VGroup'
+    VGroup:
+        padding = 0
+        spacing = 0
+        Form:
+            Label:
+                text = 'Leading Spacer'
+            CheckBox: lsp:
+                checked = False
+            Label:
+                text = 'Trailing Spacer'
+            CheckBox: rsp:
+                checked = False
+            Label:
+                text = 'Spacing'
+            SpinBox: spin:
+                value = 10
+        Separator:
+            pass
+        VGroup:
+            leading_spacer << spacer(0) if lsp.checked else None
+            trailing_spacer << spacer(0) if rsp.checked else None
+            spacing << spin.value
+            Field:
+                pass
+            Field:
+                pass
+            Field:
+                pass
+            Field:
+                pass

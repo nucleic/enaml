@@ -5,8 +5,26 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from enaml.fontext import FontStyle, FontCaps
+
 from .QtCore import Qt, QSize
 from .QtGui import QColor, QFont, QImage, QIcon, QPixmap
+
+
+FONT_STYLES = {
+    FontStyle.Normal: QFont.StyleNormal,
+    FontStyle.Italic: QFont.StyleItalic,
+    FontStyle.Oblique: QFont.StyleOblique,
+}
+
+
+FONT_CAPS = {
+    FontCaps.MixedCase: QFont.MixedCase,
+    FontCaps.AllUppercase: QFont.AllUppercase,
+    FontCaps.AllLowercase: QFont.AllLowercase,
+    FontCaps.SmallCaps: QFont.SmallCaps,
+    FontCaps.Capitalize: QFont.Capitalize,
+}
 
 
 ASPECT_RATIO_MODE = {
@@ -51,9 +69,13 @@ def QImage_from_Image(image):
 
     """
     format = image.format
-    if format == 'auto':
-        format = ''
-    qimage = QImage.fromData(image.data, format)
+    if format == 'argb32':
+        w, h = image.raw_size
+        qimage = QImage(image.data, w, h, QImage.Format_ARGB32)
+    else:
+        if format == 'auto':
+            format = ''
+        qimage = QImage.fromData(image.data, format)
     if -1 not in image.size and not qimage.isNull():
         qsize = QSize(*image.size)
         if qsize != qimage.size():
@@ -185,8 +207,8 @@ def QFont_from_Font(font):
 
     """
     qfont = QFont(font.family, font.pointsize, font.weight)
-    qfont.setStyle(font.style)
-    qfont.setCapitalization(font.caps)
+    qfont.setStyle(FONT_STYLES[font.style])
+    qfont.setCapitalization(FONT_CAPS[font.caps])
     return qfont
 
 

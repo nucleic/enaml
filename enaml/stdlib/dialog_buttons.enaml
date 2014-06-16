@@ -1,0 +1,93 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from atom.api import Atom, Bool, Enum, Unicode
+from enaml.core.looper import Looper
+from enaml.layout.layout_helpers import hbox
+from enaml.widgets.container import Container
+from enaml.widgets.push_button import PushButton
+
+
+class DialogButton(Atom):
+    """ A class for specifying a button in a button box.
+
+    Instances of this class are created by users to specify the buttons
+    which will be shown in a DialogButtonBox.
+
+    """
+    #: The text for the button.
+    text = Unicode()
+
+    #: The dialog action to perform when the button is clicked.
+    action = Enum('accept', 'reject')
+
+    #: Whether or not the button is the default button for the dialog.
+    default = Bool(False)
+
+    #: Whether or not the button is enabled. The button will subscribe
+    #: to this attribute, and reflect the changes at runtime.
+    enabled = Bool(True)
+
+    #: Whether or not the button was clicked by the user.
+    was_clicked = Bool(False)
+
+    def __init__(self, text, action, **kwargs):
+        """ Initialize a DialogButton.
+
+        Parameters
+        ----------
+        text : unicode
+            The unicode label for the button.
+
+        action : 'accept' or 'reject'
+            The dialog action to perform when the button is clicked.
+
+        **kwargs
+            Additional optional state to apply to the button.
+
+        """
+        super(DialogButton, self).__init__(text=text, action=action, **kwargs)
+
+
+enamldef DialogButtonBox(Container): box:
+    """ A component for defining a button box for a dialog.
+
+    The dialog button box must be used as a decendant of a Dialog, and
+    relies on dynamic scoping to invoke the dialog action when a button
+    is clicked. The button widgets created by the dialog can be styled
+    using the style class 'dialog-box-button'.
+
+    Attributes
+    ----------
+    buttons : list
+        A list of DialogButton objects which represent the buttons to
+        create for the dialog box. This value should be set before the
+        widget is shown. Dynamic changes will not update the UI.
+
+    Events
+    ------
+    clicked
+        This event will be emitted when a button is clicked, but before
+        the dialog action is taken. The payload will be the DialogButton
+        instance for the button which was clicked.
+
+    """
+    attr buttons: list = []
+    event clicked: DialogButton
+    padding = 0
+    constraints = [hbox(*sum(looper.items, []), spacing=6)]
+    Looper: looper:
+        iterable = buttons
+        PushButton:
+            style_class = 'dialog-box-button'
+            text = loop_item.text
+            default = loop_item.default
+            enabled << loop_item.enabled
+            clicked ::
+                loop_item.was_clicked = True
+                box.clicked(loop_item)
+                nonlocals[loop_item.action]()

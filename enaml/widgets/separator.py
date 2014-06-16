@@ -58,7 +58,7 @@ class Separator(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('orientation', 'line_style', 'line_width', 'midline_width'))
+    @observe('orientation', 'line_style', 'line_width', 'midline_width')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

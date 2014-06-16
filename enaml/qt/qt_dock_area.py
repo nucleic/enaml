@@ -5,10 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
-
 from atom.api import Typed
 
+from enaml.styling import StyleCache
 from enaml.widgets.dock_area import ProxyDockArea
 from enaml.widgets.dock_events import DockItemEvent
 
@@ -25,6 +24,7 @@ from .docking.style_sheets import get_style_sheet
 
 from .qt_constraints_widget import QtConstraintsWidget
 from .qt_dock_item import QtDockItem
+from .styleutil import translate_dock_area_style
 
 
 TAB_POSITIONS = {
@@ -51,7 +51,7 @@ class DockLayoutFilter(QObject):
     """ An event filter used by the QtDockArea.
 
     This event filter listens for LayoutRequest events on the dock
-    area widget, and will send a size_hint_updated notification to
+    area widget, and will send a geometry_updated notification to
     the constraints system when the dock area size hint changes. The
     notifications are collapsed on a single shot timer so that the
     dock area geometry can fully settle before being snapped by the
@@ -68,7 +68,7 @@ class DockLayoutFilter(QObject):
         timer.timeout.connect(self.onNotify)
 
     def onNotify(self):
-        self._owner.size_hint_updated()
+        self._owner.geometry_updated()
         self._pending = False
 
     def eventFilter(self, obj, event):
@@ -138,7 +138,7 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         d = self.declaration
         self.set_tab_position(d.tab_position)
         self.set_live_drag(d.live_drag)
-        if d.style:
+        if d.style:  # TODO remove this in Enaml 1.0
             self.set_style(d.style)
         self.set_dock_events_enabled(d.dock_events_enabled)
 
@@ -167,6 +167,28 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         del self.dock_event_filter
         self.manager.destroy()
         super(QtDockArea, self).destroy()
+
+    #--------------------------------------------------------------------------
+    # Overrides
+    #--------------------------------------------------------------------------
+    def refresh_style_sheet(self):
+        """ A reimplemented styling method.
+
+        The dock area uses custom stylesheet processing.
+
+        """
+        # workaround win-7 sizing bug
+        parts = [u'QDockTabWidget::pane {}']
+        name = self.widget.objectName()
+        for style in StyleCache.styles(self.declaration):
+            t = translate_dock_area_style(name, style)
+            if t:
+                parts.append(t)
+        if len(parts) > 1:
+            stylesheet = u'\n\n'.join(parts)
+        else:
+            stylesheet = u''
+        self.widget.setStyleSheet(stylesheet)
 
     #--------------------------------------------------------------------------
     # Utility Methods
@@ -222,7 +244,12 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """ Set the style for the underlying widget.
 
         """
-        self.widget.setStyleSheet(get_style_sheet(style))
+        # If get_style_sheet returns something, it means the user will
+        # have already called register_style_sheet, which will raise
+        # a deprecation warning. TODO remove this method in Enaml 1.0.
+        sheet = get_style_sheet(style)
+        if sheet:
+            self.widget.setStyleSheet(sheet)
 
     def set_dock_events_enabled(self, enabled):
         """ Set whether or not dock events are enabled for the area.
@@ -239,19 +266,12 @@ class QtDockArea(QtConstraintsWidget, ProxyDockArea):
         """ Save the current layout on the underlying widget.
 
         """
-        layout = self.manager.save_layout()
-        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-            from enaml.layout.dock_layout import convert_to_old_docklayout
-            layout = convert_to_old_docklayout(layout)
-        return layout
+        return self.manager.save_layout()
 
     def apply_layout(self, layout):
         """ Apply a new layout to the underlying widget.
 
         """
-        if os.environ.get('ENAML_DEPRECATED_DOCK_LAYOUT'):
-            from enaml.layout.dock_layout import convert_to_new_docklayout
-            layout = convert_to_new_docklayout(layout)
         self.manager.apply_layout(layout)
 
     def update_layout(self, ops):

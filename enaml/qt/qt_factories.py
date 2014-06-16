@@ -55,6 +55,11 @@ def datetime_selector_factory():
     return QtDatetimeSelector
 
 
+def dialog_factory():
+    from .qt_dialog import QtDialog
+    return QtDialog
+
+
 def dock_area_factory():
     from .qt_dock_area import QtDockArea
     return QtDockArea
@@ -100,6 +105,11 @@ def flow_item_factory():
     return QtFlowItem
 
 
+def focus_tracker_factory():
+    from .qt_focus_tracker import QtFocusTracker
+    return QtFocusTracker
+
+
 def group_box_factory():
     from .qt_group_box import QtGroupBox
     return QtGroupBox
@@ -110,19 +120,14 @@ def html_factory():
     return QtHtml
 
 
-def image_factory():
-    from .qt_image import QtImage
-    return QtImage
-
-
 def image_view_factory():
     from .qt_image_view import QtImageView
     return QtImageView
 
 
-def ipython_prompt_factory():
-    from. qt_ipython_prompt import QtIPythonPrompt
-    return QtIPythonPrompt
+def ipython_console_factory():
+    from .qt_ipython_console import QtIPythonConsole
+    return QtIPythonConsole
 
 
 def label_factory():
@@ -275,6 +280,16 @@ def tool_bar_factory():
     return QtToolBar
 
 
+def tool_button_factory():
+    from .qt_tool_button import QtToolButton
+    return QtToolButton
+
+
+def vtk_canvas_factory():
+    from .qt_vtk_canvas import QtVTKCanvas
+    return QtVTKCanvas
+
+
 def web_view_factory():
     from .qt_web_view import QtWebView
     return QtWebView
@@ -295,6 +310,7 @@ QT_FACTORIES = {
     'Container': container_factory,
     'DateSelector': date_selector_factory,
     'DatetimeSelector': datetime_selector_factory,
+    'Dialog': dialog_factory,
     'DockArea': dock_area_factory,
     'DockItem': dock_item_factory,
     'DockPane': dock_pane_factory,
@@ -304,11 +320,11 @@ QT_FACTORIES = {
     'FileDialogEx': file_dialog_ex_factory,
     'FlowArea': flow_area_factory,
     'FlowItem': flow_item_factory,
+    'FocusTracker': focus_tracker_factory,
     'GroupBox': group_box_factory,
     'Html': html_factory,
-    'Image': image_factory,
     'ImageView': image_view_factory,
-    'IPythonPrompt': ipython_prompt_factory,
+    'IPythonConsole': ipython_console_factory,
     'Label': label_factory,
     'MainWindow': main_window_factory,
     'MdiArea': mdi_area_factory,
@@ -339,6 +355,8 @@ QT_FACTORIES = {
     'TimeSelector': time_selector_factory,
     'Timer': timer_factory,
     'ToolBar': tool_bar_factory,
+    'ToolButton': tool_button_factory,
+    'VTKCanvas': vtk_canvas_factory,
     'WebView': web_view_factory,
     'Window': window_factory,
 }

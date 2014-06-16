@@ -1,10 +1,13 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import datetime
 
-from atom.api import Atom, Str, Range, Bool, Value, Int, Tuple, observe
+from atom.api import Atom, Unicode, Range, Bool, Value, Int, Tuple, observe
 import enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -13,9 +16,9 @@ class Person(Atom):
     """ A simple class representing a person object.
 
     """
-    last_name = Str()
+    last_name = Unicode()
 
-    first_name = Str()
+    first_name = Unicode()
 
     age = Range(low=0)
 
@@ -41,7 +44,7 @@ class Employer(Person):
 
     """
     # The name of the company
-    company_name = Str()
+    company_name = Unicode()
 
 
 class Employee(Person):
@@ -54,7 +57,7 @@ class Employee(Person):
     # The employee's phone number as a tuple of 3 ints
     phone = Tuple(Int())
 
-    # This method will be called automatically by atom when the 
+    # This method will be called automatically by atom when the
     # employee's phone number changes
     def _phone_changed(self, val):
         print 'received new phone number for %s: %s' % (self.first_name, val)
@@ -67,7 +70,7 @@ if __name__ == '__main__':
     )
     employee_mary = Employee(
         first_name='Mary', last_name='Sue', boss=boss_john,
-        phone = (555, 555, 5555),
+        phone=(555, 555, 5555),
     )
 
     # Import our Enaml EmployeeView
@@ -80,5 +83,3 @@ if __name__ == '__main__':
     view.show()
 
     app.start()
-
-

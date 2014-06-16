@@ -12,7 +12,6 @@ from enaml.widgets.image_view import ProxyImageView
 from .QtGui import QFrame, QPainter, QPixmap
 
 from .q_resource_helpers import get_cached_qimage
-from .qt_constraints_widget import size_hint_guard
 from .qt_control import QtControl
 
 
@@ -232,7 +231,7 @@ class QtImageView(QtControl, ProxyImageView):
     #--------------------------------------------------------------------------
     # Widget Update Methods
     #--------------------------------------------------------------------------
-    def set_image(self, image, sh_guard=True):
+    def set_image(self, image):
         """ Set the image on the underlying widget.
 
         """
@@ -240,10 +239,7 @@ class QtImageView(QtControl, ProxyImageView):
         if image:
             qimage = get_cached_qimage(image)
             qpixmap = QPixmap.fromImage(qimage)
-        if sh_guard:
-            with size_hint_guard(self):
-                self.widget.setPixmap(qpixmap)
-        else:
+        with self.geometry_guard():
             self.widget.setPixmap(qpixmap)
 
     def set_scale_to_fit(self, scale):

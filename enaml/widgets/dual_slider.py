@@ -107,8 +107,8 @@ class DualSlider(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('minimum', 'maximum', 'low_value', 'high_value', 'tick_position',
-        'tick_interval', 'orientation', 'tracking'))
+    @observe('minimum', 'maximum', 'low_value', 'high_value', 'tick_position',
+        'tick_interval', 'orientation', 'tracking')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

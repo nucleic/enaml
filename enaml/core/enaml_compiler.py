@@ -5,16 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import ast
 import sys
-import types
 
-from .byteplay import (
-    Code, LOAD_FAST, CALL_FUNCTION, LOAD_GLOBAL, STORE_FAST, LOAD_CONST,
-    RETURN_VALUE, STORE_NAME, LOAD_NAME, DELETE_NAME, DELETE_FAST, SetLineno
-)
-from .code_tracing import inject_tracing, inject_inversion
-
+from . import compiler_common as cmn
+from .enaml_ast import Module
+from .enamldef_compiler import EnamlDefCompiler
+from .template_compiler import TemplateCompiler
 
 # Increment this number whenever the compiler changes the code which it
 # generates. This number is used by the import hooks to know which version
@@ -85,7 +81,7 @@ from .code_tracing import inject_tracing, inject_inversion
 #     update adds a check for running on < 2.7 and dups the TOS.
 # 12 : Post process an enamldef immediately. - 18 March 2013
 #     This removes the need for the 2.6 check from version 11 since it
-#     does not rely on the LIST_APPEND instruction. It almost means
+#     does not rely on the LIST_APPEND instruction. It also means
 #     that widget names must appear before they are used, just like in
 #     normal Python class bodies.
 # 13 : Move the post processing of enamldefs to before running the
@@ -95,477 +91,172 @@ from .code_tracing import inject_tracing, inject_inversion
 #     for class creation when a module is imported. The serialized data
 #     which lives in the code object is unpacked into a construction
 #     tree which is then used for various transformations.
-COMPILER_VERSION = 14
+# 15 : Complete reimplementation of the expression engine - 22 August 2013
+#     This updates the compiler to generate the building logic so that
+#     all of the type resolution and type hierarchy building is performed
+#     at import time using native code instead of serialized dict and a
+#     runtime resolver object (I have no idea what I was thinking with
+#     with compiler versions 9 - 14).
+# 16 : Support for templates - 9 September 2013
+#     This overhauls the compiler with added support for templates to
+#     the language grammar. The various compiler bits have been broken
+#     out into their own classes and delegate to a CodeGenerator for
+#     actually writing the bytecode operations. A large number of new
+#     compiler helpers were needed for this, and they are now held in
+#     a module level dictionary since the dict must persist for the
+#     lifetime of the module in order to insantiate templates. The dict
+#     helps remove namespace pollution.
+# 17 : Support for aliases - 19 September 2013
+#     The introduction of templates with version 16 introduced a strong
+#     need for an alias construct. This version implements suppor for
+#     such a thing. It was quite the overhaul and represents almost an
+#     entirely new compiler.
+# 18 : Allow const exprs to raise unsquashed - 20 September 2013
+#     There was a bug in the code generated for evaluating template
+#     const expressions, where an error raised by a function called
+#     by the expression would have its traceback erroneously squashed.
+#     This version fixes that bug.
+# 19 : Fix a bug in variadic template args - 20 September 2013
+#     The code generated for variadic template functions did not set
+#     the varargs flag on the code object. This is now fixed.
+# 20 : Fix a bug in template instantiation scoping - 13 January 2014
+#     The generated code did not properly handle the scope key for
+#     binding expressions on template instantiations.
+#     https://github.com/nucleic/enaml/issues/78
+# 21 : Add support for declarative functions - 2 May 2014
+#     This update add support for the 'func' keyword and '->' style
+#     declarative method overrides.
+# 22 : Update the syntax of arrow functions - 5 May 2014
+#     This updates the arrow functions to use "=>" instead of "->".
+COMPILER_VERSION = 22
 
 
-#------------------------------------------------------------------------------
-# Compiler Helpers
-#------------------------------------------------------------------------------
 # Code that will be executed at the top of every enaml module
-STARTUP = ['from enaml.core.compiler_helpers import __make_enamldef_helper']
+STARTUP = ['from enaml.core.compiler_helpers import __compiler_helpers']
 
 
-# Cleanup code that will be included in every compiled enaml module
-CLEANUP = ['del __make_enamldef_helper']
+# Cleanup code that will be included at the end of every enaml module
+CLEANUP = []
 
 
-def update_firstlineno(code, firstlineno):
-    """ Returns a new code object with an updated first line number.
-
-    """
-    return types.CodeType(
-        code.co_argcount, code.co_nlocals, code.co_stacksize, code.co_flags,
-        code.co_code, code.co_consts, code.co_names, code.co_varnames,
-        code.co_filename, code.co_name, firstlineno, code.co_lnotab,
-        code.co_freevars, code.co_cellvars,
-    )
-
-
-#------------------------------------------------------------------------------
-# Expression Compilers
-#------------------------------------------------------------------------------
-def replace_global_loads(codelist, explicit=None):
-    """ A code transformer which rewrites LOAD_GLOBAL opcodes.
-
-    This transform will replace the LOAD_GLOBAL opcodes with LOAD_NAME
-    opcodes. The operation is performed in-place.
-
-    Parameters
-    ----------
-    codelist : list
-        The list of byteplay code ops to modify.
-
-    explicit : set or None
-        The set of global names declared explicitly and which should
-        remain untransformed.
-
-    """
-    # Replacing LOAD_GLOBAL with LOAD_NAME enables dynamic scoping by
-    # way of a custom locals mapping. The `call_func` function in the
-    # `funchelper` module enables passing a locals map to a function.
-    explicit = explicit or set()
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == LOAD_GLOBAL and op_arg not in explicit:
-            codelist[idx] = (LOAD_NAME, op_arg)
-
-
-def optimize_locals(codelist):
-    """ Optimize the given code object for fast locals access.
-
-    All STORE_NAME opcodes will be replaced with STORE_FAST. Names which
-    are stored and then loaded via LOAD_NAME are rewritten to LOAD_FAST
-    and DELETE_NAME is rewritten to DELETE_FAST. This transformation is
-    applied in-place.
-
-    Parameters
-    ----------
-    codelist : list
-        The list of byteplay code ops to modify.
-
-    """
-    fast_locals = set()
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == STORE_NAME:
-            fast_locals.add(op_arg)
-            codelist[idx] = (STORE_FAST, op_arg)
-    for idx, (op, op_arg) in enumerate(codelist):
-        if op == LOAD_NAME and op_arg in fast_locals:
-            codelist[idx] = (LOAD_FAST, op_arg)
-        elif op == DELETE_NAME and op_arg in fast_locals:
-            codelist[idx] = (DELETE_FAST, op_arg)
-
-
-def compile_simple(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `=`.
-
-    Parameters
-    ----------
-    py_ast : ast.Expression
-        A Python ast Expression node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : types.CodeType
-        A Python code object which implements the desired behavior.
-
-    """
-    code = compile(py_ast, filename, mode='eval')
-    code = update_firstlineno(code, py_ast.lineno)
-    bp_code = Code.from_code(code)
-    replace_global_loads(bp_code.code)
-    optimize_locals(bp_code.code)
-    bp_code.newlocals = False
-    return bp_code.to_code()
-
-
-def compile_notify(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `::`.
-
-    Parameters
-    ----------
-    py_ast : ast.Module
-        A Python ast Module node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : types.CodeType
-        A Python code object which implements the desired behavior.
-
-    """
-    explicit_globals = set()
-    for node in ast.walk(py_ast):
-        if isinstance(node, ast.Global):
-            explicit_globals.update(node.names)
-    code = compile(py_ast, filename, mode='exec')
-    bp_code = Code.from_code(code)
-    replace_global_loads(bp_code.code, explicit_globals)
-    optimize_locals(bp_code.code)
-    bp_code.newlocals = False
-    return bp_code.to_code()
-
-
-def compile_subscribe(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `<<`.
-
-    Parameters
-    ----------
-    py_ast : ast.Expression
-        A Python ast Expression node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : types.CodeType
-        A Python code object which implements the desired behavior.
-
-    """
-    code = compile(py_ast, filename, mode='eval')
-    code = update_firstlineno(code, py_ast.lineno)
-    bp_code = Code.from_code(code)
-    replace_global_loads(bp_code.code)
-    optimize_locals(bp_code.code)
-    bp_code.code = inject_tracing(bp_code.code)
-    bp_code.newlocals = False
-    bp_code.args = ('_[tracer]',) + bp_code.args
-    return bp_code.to_code()
-
-
-def compile_update(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `>>`.
-
-    Parameters
-    ----------
-    py_ast : ast.Expression
-        A Python ast Expression node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : types.CodeType
-        A Python code object which implements the desired behavior.
-
-    """
-    code = compile(py_ast, filename, mode='eval')
-    code = update_firstlineno(code, py_ast.lineno)
-    bp_code = Code.from_code(code)
-    replace_global_loads(bp_code.code)
-    optimize_locals(bp_code.code)
-    bp_code.code = inject_inversion(bp_code.code)
-    bp_code.newlocals = False
-    bp_code.args = ('_[inverter]', '_[value]') + bp_code.args
-    return bp_code.to_code()
-
-
-def compile_delegate(py_ast, filename):
-    """ Compile an ast into a code object implementing operator `:=`.
-
-    This will generate two code objects: one which is equivalent to
-    operator `<<` and another which is equivalent to `>>`.
-
-    Parameters
-    ----------
-    py_ast : ast.Expression
-        A Python ast Expression node.
-
-    filename : string
-        The filename which generated the expression.
-
-    Returns
-    -------
-    result : tuple
-        A 2-tuple of types.CodeType equivalent to operators `<<` and
-        `>>` respectively.
-
-    """
-    code = compile(py_ast, filename, mode='eval')
-    code = update_firstlineno(code, py_ast.lineno)
-    bp_code = Code.from_code(code)
-    bp_code.newlocals = False
-    codelist = bp_code.code[:]
-    bp_args = tuple(bp_code.args)
-    replace_global_loads(codelist)
-    optimize_locals(codelist)
-    sub_list = inject_tracing(codelist)
-    bp_code.code = sub_list
-    bp_code.args = ('_[tracer]',) + bp_args
-    sub_code = bp_code.to_code()
-    upd_list = inject_inversion(codelist)
-    bp_code.code = upd_list
-    bp_code.args = ('_[inverter]', '_[value]') + bp_args
-    upd_code = bp_code.to_code()
-    return (sub_code, upd_code)
-
-
-COMPILE_OP_MAP = {
-    '=': compile_simple,
-    '::': compile_notify,
-    '<<': compile_subscribe,
-    '>>': compile_update,
-    ':=': compile_delegate,
-}
-
-
-#------------------------------------------------------------------------------
-# Node Visitor
-#------------------------------------------------------------------------------
-class _NodeVisitor(object):
-    """ A node visitor class that is used as base class for the various
-    Enaml compilers.
-
-    """
-    def visit(self, node):
-        """ The main visitor dispatch method.
-
-        Unhandled nodes will raise an error.
-
-        """
-        name = 'visit_%s' % node.__class__.__name__
-        try:
-            method = getattr(self, name)
-        except AttributeError:
-            method = self.default_visit
-        method(node)
-
-    def visit_nonstrict(self, node):
-        """ A nonstrict visitor dispatch method.
-
-        Unhandled nodes will be ignored.
-
-        """
-        name = 'visit_%s' % node.__class__.__name__
-        try:
-            method = getattr(self, name)
-        except AttributeError:
-            pass
-        else:
-            method(node)
-
-    def default_visit(self, node):
-        """ The default visitor method. Raises an error since there
-        should not be any unhandled nodes.
-
-        """
-        raise ValueError('Unhandled Node %s.' % node)
-
-
-#------------------------------------------------------------------------------
-# EnamlDef Compiler
-#------------------------------------------------------------------------------
-class EnamlDefCompiler(_NodeVisitor):
-    """ A visitor which compiles an EnamlDef into a marshallable dict.
-
-    """
-    @classmethod
-    def compile(cls, node, filename):
-        """ The main entry point of the EnamlDefCompiler.
-
-        This compiler compiles the given EnamlDef node into a dictionary
-        which can be used to build out the component tree at run time.
-
-        Parameters
-        ----------
-        node : EnamlDef
-            The EnamlDef node to compile.
-
-        filename : string
-            The string filename to use for the enamldef.
-
-        """
-        compiler = cls(filename)
-        compiler.visit(node)
-        return compiler.stack.pop()
-
-    def __init__(self, filename):
-        self.filename = filename
-        self.stack = []
-
-    def visit_EnamlDef(self, node):
-        obj = {
-            'filename': self.filename,
-            'lineno': node.lineno,
-            'typename': node.typename,
-            'base': node.base,
-            'identifier': node.identifier,
-            'docstring': node.docstring,
-            'storage_defs': [],
-            'bindings': [],
-            'child_defs': [],
-        }
-        self.stack.append(obj)
-        for item in node.body:
-            self.visit(item)
-
-    def visit_StorageDef(self, node):
-        storage_def = {
-            'lineno': node.lineno,
-            'kind': node.kind,
-            'name': node.name,
-            'typename': node.typename,
-        }
-        self.stack[-1]['storage_defs'].append(storage_def)
-        if node.expr is not None:
-            self.visit_Binding(node)
-
-    def visit_Binding(self, node):
-        opexpr = node.expr
-        pyast = opexpr.value.ast
-        opcompiler = COMPILE_OP_MAP[opexpr.operator]
-        code = opcompiler(pyast, self.filename)
-        binding = {
-            'lineno': node.lineno,
-            'name': node.name,
-            'operator': opexpr.operator,
-        }
-        if isinstance(code, tuple):
-            code, auxcode = code
-            binding['code'] = code
-            binding['auxcode'] = auxcode
-        else:
-            binding['code'] = code
-            binding['auxcode'] = None
-        self.stack[-1]['bindings'].append(binding)
-
-    def visit_ChildDef(self, node):
-        obj = {
-            'lineno': node.lineno,
-            'typename': node.typename,
-            'identifier': node.identifier,
-            'filename': self.filename,
-            'storage_defs': [],
-            'bindings': [],
-            'child_defs': [],
-        }
-        self.stack.append(obj)
-        for item in node.body:
-            self.visit(item)
-        self.stack.pop()
-        self.stack[-1]['child_defs'].append(obj)
-
-
-#------------------------------------------------------------------------------
-# Enaml Compiler
-#------------------------------------------------------------------------------
-class EnamlCompiler(_NodeVisitor):
-    """ A visitor that will compile an enaml module ast node.
+class EnamlCompiler(cmn.CompilerBase):
+    """ A compiler which will compile an Enaml module.
 
     The entry point is the `compile` classmethod which will compile
     the ast into an appropriate python code object for a module.
 
     """
     @classmethod
-    def compile(cls, module_ast, filename):
+    def compile(cls, node, filename):
         """ The main entry point of the compiler.
 
         Parameters
         ----------
-        module_ast : Instance(enaml_ast.Module)
-            The enaml module ast node that should be compiled.
+        node : Module
+            The enaml ast Module node that should be compiled.
 
-        filename : string
+        filename : str
             The string filename of the module ast being compiled.
 
         Returns
         -------
-        result : types.CodeType
+        result : CodeType
             The code object for the compiled module.
 
         """
+        assert isinstance(node, Module), 'invalid node'
+
         # Protect against unicode filenames, which are incompatible
         # with code objects created via types.CodeType
         if isinstance(filename, unicode):
             filename = filename.encode(sys.getfilesystemencoding())
 
-        # Generate the startup code for the module
-        module_ops = [(SetLineno, 1)]
-        for start in STARTUP:
-            start_code = compile(start, filename, mode='exec')
-            bp_code = Code.from_code(start_code)
-            # Skip the SetLineo and ReturnValue codes
-            module_ops.extend(bp_code.code[1:-2])
-
-        # Add in the code ops for the module
-        compiler = cls(filename)
-        compiler.visit(module_ast)
-        module_ops.extend(compiler.code_ops)
-
-        # Generate the cleanup code for the module
-        for end in CLEANUP:
-            end_code = compile(end, filename, mode='exec')
-            bp_code = Code.from_code(end_code)
-            # Skip the SetLineo and ReturnValue codes
-            module_ops.extend(bp_code.code[1:-2])
-
-        # Add in the final return value ops
-        module_ops.extend([
-            (LOAD_CONST, None),
-            (RETURN_VALUE, None),
-        ])
-
-        # Generate and return the module code object.
-        mod_code = Code(
-            module_ops, [], [], False, False, False, '',  filename, 0, '',
-        )
-        return mod_code.to_code()
-
-    def __init__(self, filename):
-        self.filename = filename
-        self.code_ops = []
+        # Create the compiler and generate the code.
+        compiler = cls(filename=filename)
+        return compiler.visit(node)
 
     def visit_Module(self, node):
+        cg = self.code_generator
+
+        # Generate the startup code for the module.
+        cg.set_lineno(1)
+        for start in STARTUP:
+            cg.insert_python_block(start)
+
+        # Create the template map.
+        cg.build_map()
+        cg.store_global(cmn.TEMPLATE_MAP)
+
+        # Populate the body of the module.
         for item in node.body:
             self.visit(item)
 
-    def visit_Python(self, node):
-        py_code = compile(node.ast, self.filename, mode='exec')
-        bp_code = Code.from_code(py_code)
-        # Skip the SetLineo and ReturnValue codes
-        self.code_ops.extend(bp_code.code[1:-2])
+        # Delete the template map.
+        cg.delete_global(cmn.TEMPLATE_MAP)
+
+        # Generate the cleanup code for the module.
+        for end in CLEANUP:
+            cg.insert_python_block(end)
+
+        # Finalize the ops and return the code object.
+        cg.load_const(None)
+        cg.return_value()
+        return cg.to_code()
+
+    def visit_PythonModule(self, node):
+        # Inline the bytecode for the Python statement block.
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+        cg.insert_python_block(node.ast)
 
     def visit_EnamlDef(self, node):
-        code_ops = self.code_ops
-        dct = EnamlDefCompiler.compile(node, self.filename)
-        for decorator in node.decorators:
-            code = compile(decorator.ast, self.filename, mode='eval')
-            bpcode = Code.from_code(code).code
-            code_ops.extend(bpcode[:-1])  # skip the return value op
-        code_ops.extend([
-            (SetLineno, node.lineno),
-            (LOAD_NAME, '__make_enamldef_helper'),  # Foo = __make_enamldef_helper(dct, globals)
-            (LOAD_CONST, dct),                      # dct is a marshalable description dict
-            (LOAD_NAME, 'globals'),
-            (CALL_FUNCTION, 0x0000),
-            (CALL_FUNCTION, 0x0002),
-        ])
-        for dec in node.decorators:
-            code_ops.append((CALL_FUNCTION, 0x0001))
-        code_ops.append((STORE_NAME, node.typename))
+        # Invoke the enamldef code and store result in the namespace.
+        cg = self.code_generator
+        code = EnamlDefCompiler.compile(node, cg.filename)
+        cg.load_const(code)
+        cg.make_function()
+        cg.call_function()
+        cg.store_global(node.typename)
+
+    def visit_Template(self, node):
+        cg = self.code_generator
+        cg.set_lineno(node.lineno)
+
+        with cg.try_squash_raise():
+
+            # Load and validate the parameter specializations
+            for index, param in enumerate(node.parameters.positional):
+                spec = param.specialization
+                if spec is not None:
+                    cmn.load_helper(cg, 'validate_spec', from_globals=True)
+                    cg.load_const(index)
+                    cmn.safe_eval_ast(
+                        cg, spec.ast, node.name, param.lineno, set()
+                    )
+                    cg.call_function(2)
+                else:
+                    cg.load_const(None)
+
+            # Store the specializations as a tuple
+            cg.build_tuple(len(node.parameters.positional))
+
+            # Evaluate the default parameters
+            for param in node.parameters.keywords:
+                cmn.safe_eval_ast(
+                    cg, param.default.ast, node.name, param.lineno, set()
+                )
+
+            # Generate the template code and function
+            code = TemplateCompiler.compile(node, cg.filename)
+            cg.load_const(code)
+            cg.make_function(len(node.parameters.keywords))
+
+            # Load and call the helper which will build the template
+            cmn.load_helper(cg, 'make_template', from_globals=True)
+            cg.rot_three()
+            cg.load_const(node.name)
+            cg.load_global('globals')
+            cg.call_function()
+            cg.load_global(cmn.TEMPLATE_MAP)
+            cg.call_function(5)
+            cg.pop_top()

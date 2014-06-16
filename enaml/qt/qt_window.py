@@ -5,16 +5,19 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed
+import sys
+
+from atom.api import Typed, atomref
 
 from enaml.layout.geometry import Pos, Rect, Size
-from enaml.widgets.window import ProxyWindow
+from enaml.widgets.window import ProxyWindow, CloseEvent
 
-from .QtCore import Qt, QPoint, QRect, QSize, Signal
-from .QtGui import QApplication, QFrame, QLayout, QIcon
+from .QtCore import Qt, QPoint, QRect, QSize
+from .QtGui import QApplication, QIcon
 
+from .q_deferred_caller import deferredCall
 from .q_resource_helpers import get_cached_qicon
-from .q_single_widget_layout import QSingleWidgetLayout
+from .q_window_base import QWindowBase
 from .qt_container import QtContainer
 from .qt_widget import QtWidget
 
@@ -26,169 +29,60 @@ MODALITY = {
 }
 
 
-class QWindowLayout(QSingleWidgetLayout):
-    """ A QSingleWidgetLayout subclass which adds support for windows
-    which explicitly set their minimum and maximum sizes.
+def finalize_close(d):
+    """ Finalize the closing of the declaration object.
+
+    This is performed as a deferred call so that the window may fully
+    close before the declaration is potentially destroyed.
 
     """
-    def minimumSize(self):
-        """ The minimum size for the layout area.
-
-        This is a reimplemented method which will return the explicit
-        minimum size of the window, if provided.
-
-        """
-        parent = self.parentWidget()
-        if parent is not None:
-            size = parent.explicitMinimumSize()
-            if size.isValid():
-                return size
-        return super(QWindowLayout, self).minimumSize()
-
-    def maximumSize(self):
-        """ The maximum size for the layout area.
-
-        This is a reimplemented method which will return the explicit
-        maximum size of the window, if provided.
-
-        """
-        parent = self.parentWidget()
-        if parent is not None:
-            size = parent.explicitMaximumSize()
-            if size.isValid():
-                return size
-        return super(QWindowLayout, self).maximumSize()
+    d.visible = False
+    d.closed()
+    if d.destroy_on_close:
+        d.destroy()
 
 
-class QWindow(QFrame):
-    """ A custom QFrame which uses a QWindowLayout to manage its
-    central widget.
+class QWindow(QWindowBase):
+    """ A window base subclass which handles the close event.
 
     The window layout computes the min/max size of the window based
     on its central widget, unless the user explicitly changes them.
 
     """
-    #: A signal emitted when the window is closed.
-    closed = Signal()
-
-    def __init__(self, parent=None):
+    def __init__(self, proxy, parent=None, flags=Qt.Widget):
         """ Initialize a QWindow.
 
         Parameters
         ----------
-        *args, **kwargs
-            The positional and keyword arguments needed to initialize
-            a QFrame.
+        proxy : QtWindow
+            The proxy object which owns this window. Only an atomref
+            will be maintained to this object.
+
+        parent : QWidget, optional
+            The parent of the window.
+
+        flags : Qt.WindowFlags, optional
+            The window flags to pass to the parent constructor.
 
         """
-        super(QWindow, self).__init__(parent, Qt.Window)
-        self._central_widget = None
-        self._expl_min_size = QSize()
-        self._expl_max_size = QSize()
-        layout = QWindowLayout()
-        layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        self.setLayout(layout)
+        super(QWindow, self).__init__(parent, Qt.Window | flags)
+        self._proxy_ref = atomref(proxy)
 
     def closeEvent(self, event):
-        """ Handle the QCloseEvent from the window system.
-
-        By default, this handler calls the superclass' method to close
-        the window and then emits the 'closed' signal.
+        """ Handle the close event for the window.
 
         """
-        super(QWindow, self).closeEvent(event)
-        self.closed.emit()
-
-    def centralWidget(self):
-        """ Returns the central widget for the window.
-
-        Returns
-        -------
-        result : QWidget or None
-            The central widget of the window, or None if no widget
-            was provided.
-
-        """
-        return self._central_widget
-
-    def setCentralWidget(self, widget):
-        """ Set the central widget for this window.
-
-        Parameters
-        ----------
-        widget : QWidget
-            The widget to use as the content of the window.
-
-        """
-        self._central_widget = widget
-        self.layout().setWidget(widget)
-
-    def explicitMinimumSize(self):
-        """ Return the explicit minimum size for this widget.
-
-        Returns
-        -------
-        result : QSize
-            If the user has explitly set the minimum size of the
-            widget, that size will be returned. Otherwise, an
-            invalid QSize will be returned.
-
-        """
-        return self._expl_min_size
-
-    def explicitMaximumSize(self):
-        """ Return the explicit maximum size for this widget.
-
-        Returns
-        -------
-        result : QSize
-            If the user has explitly set the maximum size of the
-            widget, that size will be returned. Otherwise, an
-            invalid QSize will be returned.
-
-        """
-        return self._expl_max_size
-
-    def setMinimumSize(self, size):
-        """ Set the minimum size for the QWindow.
-
-        This is an overridden parent class method which stores the
-        provided size as the explictly set QSize. The explicit
-        size can be reset by passing a QSize of (0, 0).
-
-        Parameters
-        ----------
-        size : QSize
-            The minimum size for the QWindow.
-
-        """
-        super(QWindow, self).setMinimumSize(size)
-        if size == QSize(0, 0):
-            self._expl_min_size = QSize()
+        event.accept()
+        if not self._proxy_ref:
+            return
+        proxy = self._proxy_ref()
+        d = proxy.declaration
+        d_event = CloseEvent()
+        d.closing(d_event)
+        if d_event.is_accepted():
+            deferredCall(finalize_close, d)
         else:
-            self._expl_min_size = size
-        self.layout().update()
-
-    def setMaximumSize(self, size):
-        """ Set the maximum size for the QWindow.
-
-        This is an overridden parent class method which stores the
-        provided size as the explictly set QSize. The explicit
-        size can be reset by passing a QSize equal to the maximum
-        widget size of QSize(16777215, 16777215).
-
-        Parameters
-        ----------
-        size : QSize
-            The maximum size for the QWindow.
-
-        """
-        super(QWindow, self).setMaximumSize(size)
-        if size == QSize(16777215, 16777215):
-            self._expl_max_size = QSize()
-        else:
-            self._expl_max_size = size
-        self.layout().update()
+            event.ignore()
 
 
 class QtWindow(QtWidget, ProxyWindow):
@@ -201,11 +95,21 @@ class QtWindow(QtWidget, ProxyWindow):
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
+    def creation_flags(self):
+        """ A convenience function for getting the creation flags.
+
+        """
+        flags = Qt.Widget
+        if self.declaration.always_on_top:
+            flags |= Qt.WindowStaysOnTopHint
+        return flags
+
     def create_widget(self):
         """ Create the QWindow widget.
 
         """
-        self.widget = QWindow(self.parent_widget())
+        flags = self.creation_flags()
+        self.widget = QWindow(self, self.parent_widget(), flags)
 
     def init_widget(self):
         """ Initialize the widget.
@@ -223,7 +127,6 @@ class QtWindow(QtWidget, ProxyWindow):
             self.set_modality(d.modality)
         if d.icon:
             self.set_icon(d.icon)
-        self.widget.closed.connect(self.on_closed)
 
     def init_layout(self):
         """ Initialize the widget layout.
@@ -248,14 +151,6 @@ class QtWindow(QtWidget, ProxyWindow):
         d = self.declaration.central_widget()
         if d is not None:
             return d.proxy.widget
-
-    def on_closed(self):
-        """ The signal handler for the 'closed' signal.
-
-        This method will fire the 'closed' event on the declaration.
-
-        """
-        self.declaration._handle_close()
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -357,11 +252,23 @@ class QtWindow(QtWidget, ProxyWindow):
         """
         self.widget.showMaximized()
 
+    def is_maximized(self):
+        """ Get whether the window is maximized.
+
+        """
+        return bool(self.widget.windowState() & Qt.WindowMaximized)
+
     def minimize(self):
         """ Minimize the window.
 
         """
         self.widget.showMinimized()
+
+    def is_minimized(self):
+        """ Get whether the window is minimized.
+
+        """
+        return bool(self.widget.windowState() & Qt.WindowMinimized)
 
     def restore(self):
         """ Restore the window after a minimize or maximize.
@@ -380,6 +287,16 @@ class QtWindow(QtWidget, ProxyWindow):
 
         """
         self.widget.lower()
+
+    def activate_window(self):
+        """ Activate the underlying window widget.
+
+        """
+        self.widget.activateWindow()
+        if sys.platform == 'win32':
+            # For some reason, this needs to be called twice on Windows
+            # in order to get the taskbar entry to flash.
+            self.widget.activateWindow()
 
     def center_on_screen(self):
         """ Center the window on the screen.

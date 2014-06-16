@@ -25,6 +25,27 @@ class CodeTracer(object):
     """
     __slots__ = ()
 
+    def dynamic_load(self, obj, attr, value):
+        """ Called when an dynamic attribute is loaded.
+
+        This method is called by the dynamic scope when it loads an
+        attribute from some object in the object hierarchy due to the
+        execution of the LOAD_NAME opcode.
+
+        Parameters
+        ----------
+        obj : Object
+            The Enaml object which owns the dynamically scoped attr.
+
+        attr : str
+            The name of the attribute which was loaded.
+
+        value : object
+            The value which was loaded.
+
+        """
+        pass
+
     def load_attr(self, obj, attr):
         """ Called before the LOAD_ATTR opcode is executed.
 
@@ -92,6 +113,17 @@ class CodeTracer(object):
         ----------
         obj : object
             The object which should return an iterator.
+
+        """
+        pass
+
+    def return_value(self, value):
+        """ Called before the RETURN_VALUE opcode is executed.
+
+        Parameters
+        ----------
+        value : object
+            The value that will be returned from the code object.
 
         """
         pass
@@ -281,6 +313,16 @@ def inject_tracing(codelist):
                 (ROT_TWO, None),            # obj -> tracefunc -> obj
                 (CALL_FUNCTION, 0x0001),    # obj -> retval
                 (POP_TOP, None),            # obj
+            ]
+            inserts[idx] = code
+        elif op == RETURN_VALUE:
+            code = [
+                (DUP_TOP, None),                # obj
+                (LOAD_FAST, '_[tracer]'),       # obj -> obj -> tracer
+                (LOAD_ATTR, 'return_value'),    # obj -> obj -> tracefunc
+                (ROT_TWO, None),                # obj -> tracefunc -> obj
+                (CALL_FUNCTION, 0x0001),        # obj -> retval
+                (POP_TOP, None),                # obj
             ]
             inserts[idx] = code
 

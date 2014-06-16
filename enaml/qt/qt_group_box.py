@@ -102,11 +102,12 @@ class QtGroupBox(QtContainer, ProxyGroupBox):
     #--------------------------------------------------------------------------
     # Layout Handling
     #--------------------------------------------------------------------------
-    def contents_margins(self):
-        """ Get the current contents margins for the group box.
+    @staticmethod
+    def margins_func(widget_item):
+        """ Get the margins for the given widget item.
 
         """
-        m = self.widget.contentsMargins()
+        m = widget_item.widget().contentsMargins()
         return (m.top(), m.right(), m.bottom(), m.left())
 
     #--------------------------------------------------------------------------
@@ -124,7 +125,7 @@ class QtGroupBox(QtContainer, ProxyGroupBox):
         widget.setTitle(title)
         new_margins = widget.contentsMargins()
         if old_margins != new_margins:
-            self.contents_margins_updated()
+            self.margins_updated()
 
     def set_flat(self, flat):
         """ Updates the flattened appearance of the group box.

@@ -1,0 +1,116 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.workbench.api import Extension, PluginManifest
+from enaml.workbench.ui.api import ActionItem, Branding, MenuItem, ItemGroup
+
+
+def first_view_factory(workbench):
+    from sample_workspace import SampleWorkspace
+
+    import enaml
+    with enaml.imports():
+        from first_view import FirstView, FirstManifest
+
+    space = SampleWorkspace()
+    space.window_title = 'First View'
+    space.content_def = FirstView
+    space.manifest_def = FirstManifest
+    return space
+
+
+def second_view_factory(workbench):
+    from sample_workspace import SampleWorkspace
+
+    import enaml
+    with enaml.imports():
+        from second_view import SecondView, SecondManifest
+
+    space = SampleWorkspace()
+    space.window_title = 'Second View'
+    space.content_def = SecondView
+    space.manifest_def = SecondManifest
+    return space
+
+
+def persistent_view_factory(workbench):
+    from persistent_workspace import PersistentWorkspace
+    space = PersistentWorkspace()
+    space.window_title = 'Persistent View'
+    return space
+
+
+enamldef SampleManifest(PluginManifest):
+    """ The plugin manifest for the primary example plugin.
+
+    This plugin acts as the entry point for all other plugins in this
+    example. It contributes the window branding, default actions, and
+    the workspace definitions.
+
+    """
+    id = 'sample'
+    Extension:
+        id = 'branding'
+        point = 'enaml.workbench.ui.branding'
+        Branding:
+            title = 'Sample Plugin App'
+    Extension:
+        id = 'actions'
+        point = 'enaml.workbench.ui.actions'
+        MenuItem:
+            path = '/file'
+            label = 'File'
+            ItemGroup:
+                id = 'user'
+        MenuItem:
+            path = '/workspace'
+            label = 'Workspace'
+            ItemGroup:
+                id = 'spaces'
+        ActionItem:
+            path = '/file/close'
+            label = 'Close'
+            shortcut = 'Ctrl+Q'
+            command = 'enaml.workbench.ui.close_window'
+        ActionItem:
+            path = '/workspace/first'
+            label = 'First'
+            shortcut = 'Ctrl+1'
+            group = 'spaces'
+            command = 'enaml.workbench.ui.select_workspace'
+            parameters = {'workspace': 'sample.first_view'}
+        ActionItem:
+            path = '/workspace/second'
+            label = 'Second'
+            shortcut = 'Ctrl+2'
+            group = 'spaces'
+            command = 'enaml.workbench.ui.select_workspace'
+            parameters = {'workspace': 'sample.second_view'}
+        ActionItem:
+            path = '/workspace/persistent'
+            label = 'Persistent'
+            shortcut = 'Ctrl+3'
+            group = 'spaces'
+            command = 'enaml.workbench.ui.select_workspace'
+            parameters = {'workspace': 'sample.persistent_view'}
+        ActionItem:
+            path = '/workspace/close'
+            label = 'Close Workspace'
+            shortcut = 'Ctrl+D'
+            command = 'enaml.workbench.ui.close_workspace'
+    Extension:
+        id = 'first_view'
+        point = 'enaml.workbench.ui.workspaces'
+        factory = first_view_factory
+    Extension:
+        id = 'second_view'
+        point = 'enaml.workbench.ui.workspaces'
+        factory = second_view_factory
+    Extension:
+        id = 'persistent_view'
+        point = 'enaml.workbench.ui.workspaces'
+        factory = persistent_view_factory

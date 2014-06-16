@@ -1,0 +1,18 @@
+include *.txt
+include *.rst
+include *.md
+include Makefile
+recursive-include docs *.rst
+recursive-include docs *.png
+recursive-include docs *.py
+recursive-include docs *.enaml
+recursive-include examples *.*
+recursive-include licenses *.txt
+recursive-include tools *.*
+recursive-include tests *.py
+recursive-include enaml/src *.cpp
+recursive-include enaml/src *.h
+prune .git
+prune docs/build
+prune dist
+prune build

@@ -1,6 +1,9 @@
 #------------------------------------------------------------------------------
-#  Copyright (c) 2013, Nucleic Development Team.
-#  All rights reserved.
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 """ An example of the `ToolBar` widget.
 
@@ -13,14 +16,15 @@ but it can also used as a child of a `Container` and layed out using
 constraints.
 
 Implementation Notes:
-    
-    The tool bar facilities in Wx are very weak. Due to technical 
+
+    The tool bar facilities in Wx are very weak. Due to technical
     limitations, the `ToolBar` widget in Wx does not have the slick
     docking features which are available in Qt. It also does not
     look nice when used as the child of a `Container`. If a `ToolBar`
     is required for a particular application, strongly prefer the
     Qt backend over Wx (this is generally a good life-rule).
 
+<< autodoc-me >>
 """
 from enaml.layout.api import vbox
 from enaml.widgets.api import (
@@ -39,7 +43,7 @@ enamldef MyToolBar(ToolBar):
             checkable = True
             text = 'Exclusive'
             triggered :: print 'triggered'
-            toggled :: print 'toggled' 
+            toggled :: print 'toggled'
         Action:
             checkable = True
             text = 'ToolBar'
@@ -68,4 +72,3 @@ enamldef Main(MainWindow):
             source = '<h1><center>Hello World!</center></h1>'
         MyToolBar: tbar:
             pass
-

@@ -22,6 +22,7 @@ which is chosen to expand is nondeterministic. To force are particular
 choice would require extra constraints to be defined on the buttons.
 That extra specification is deliberately omitted in this example.
 
+<< autodoc-me >>
 """
 from enaml.layout.api import hbox
 from enaml.widgets.api import Window, Container, PushButton

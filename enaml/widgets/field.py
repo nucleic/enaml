@@ -28,6 +28,9 @@ class ProxyField(ProxyControl):
     def set_mask(self, mask):
         raise NotImplementedError
 
+    def set_submit_triggers(self, triggers):
+        raise NotImplementedError
+
     def set_placeholder(self, placeholder):
         raise NotImplementedError
 
@@ -87,9 +90,12 @@ class Field(Control):
 
     #: The list of actions which should cause the client to submit its
     #: text to the server for validation and update. The currently
-    #: supported values are 'lost_focus' and 'return_pressed'.
+    #: supported values are 'lost_focus', 'return_pressed', and 'auto'.
+    #: The 'auto_sync' mode will attempt to validate and synchronize the
+    #: text when the user stops typing.
     submit_triggers = d_(List(
-        Enum('lost_focus', 'return_pressed'), ['lost_focus', 'return_pressed']
+        Enum('lost_focus', 'return_pressed', 'auto_sync'),
+        ['lost_focus', 'return_pressed']
     ))
 
     #: The grayed-out text to display if the field is empty and the
@@ -119,8 +125,8 @@ class Field(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe(('text', 'placeholder', 'echo_mode', 'max_length', 'read_only',
-        'submit_triggers', 'validator'))
+    @observe('text', 'mask', 'submit_triggers', 'placeholder', 'echo_mode',
+        'max_length', 'read_only')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
