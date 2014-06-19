@@ -13,7 +13,8 @@ from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
 
 from .QtCore import Qt, QSize, QMimeData, QByteArray, QPoint
-from .QtGui import QFont, QWidget, QWidgetAction, QApplication
+from .QtGui import QFont, QWidget, QWidgetAction, QApplication, QDrag, \
+    QPixmap, QColor
 
 from . import focus_registry
 from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
@@ -113,6 +114,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         widget.dragEnterEvent = self.dragEnterEvent
         widget.dragLeaveEvent = self.dragLeaveEvent
+        widget.dragMoveEvent = self.dragMoveEvent
         widget.dropEvent = self.dropEvent
 
     def destroy(self):
@@ -490,8 +492,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     # Drag and drop
     #--------------------------------------------------------------------------
     def drag_repr(self):
-        """ An image representation of the widget. This method can be overridden
-        for custom representations.
+        """ An image representation of the widget. This method can be
+        overridden for custom representations.
 
         """
         return QPixmap.grabWidget(self.widget)
@@ -526,6 +528,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.widgetMouseMoveEvent(event)
+
         if self._accept_drags:
             distance = (event.pos() - self.original_pos).manhattanLength()
             if distance > 20:
@@ -547,12 +550,32 @@ class QtWidget(QtToolkitObject, ProxyWidget):
                 self.selected_type = format
                 event.acceptProposedAction()
 
+        content = {
+            'data': event.mimeData().data(self.selected_type).data(),
+            'pos': (event.pos().x(), event.pos().y()),
+            'type': self.selected_type,
+        }
+        self.declaration._handle_drop_hover_enter(content)
+
     def dragLeaveEvent(self, event):
-        """ Fire when an object is dragged off the widget
+        """ Fired when an object is dragged off the widget
 
         """
+        self.declaration._handle_drop_hover_exit({})
+
         if self._highlight_drop:
             self.hover_exit()
+
+    def dragMoveEvent(self, event):
+        """ Fired when an object is moved while dragging
+
+        """
+        content = {
+            'data': event.mimeData().data(self.selected_type).data(),
+            'pos': (event.pos().x(), event.pos().y()),
+            'type': self.selected_type,
+        }
+        self.declaration._handle_drag_move(content)
 
     def dropEvent(self, event):
         """ Fired when an object is dropped on the widget

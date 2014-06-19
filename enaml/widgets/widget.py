@@ -148,6 +148,16 @@ class Widget(ToolkitObject, Stylable):
     #: Fired when something is dropped on the widget
     dropped = d_(Event(), writable=False)
 
+    #: Fired when the user hovers over the widget when dragging but does not
+    #: release the drop
+    drop_hover_enter = d_(Event(), writable=False)
+
+    #: Fired when the user stop hovering over a widget while dragging
+    drop_hover_exit = d_(Event(), writable=False)
+
+    #: Fired when the user moves the mouse while dragging
+    drag_moved = d_(Event(), writable=False)
+
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
 
@@ -215,6 +225,27 @@ class Widget(ToolkitObject, Stylable):
 
         """
         self.dropped(content)
+
+    def _handle_drop_hover_enter(self, content):
+        """ A method called by the proxy when the user hovers over the widget
+        while dragging another widget, but has not yet released the mouse.
+
+        """
+        self.drop_hover_enter(content)
+
+    def _handle_drop_hover_exit(self, content):
+        """ A method called by the proxy when the user stops hovering over a
+        widget while dragging another widget.
+
+        """
+        self.drop_hover_exit(content)
+
+    def _handle_drag_move(self, content):
+        """ A method claled when the user moves the mouse while dragging the
+        widget.
+
+        """
+        self.drag_moved(content)
 
     def set_focus(self):
         """ Set the keyboard input focus to this widget.
