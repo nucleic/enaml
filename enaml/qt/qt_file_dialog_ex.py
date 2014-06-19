@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import os
-
 from atom.api import Int, Typed
 
 from enaml.widgets.file_dialog_ex import ProxyFileDialogEx
