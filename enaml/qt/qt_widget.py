@@ -549,12 +549,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """ Fired when an object is dragged off the widget
 
         """
-        content = {
-            'data': event.mimeData().data(self._drag_type).data(),
-            'pos': (event.pos().x(), event.pos().y()),
-            'type': self._drag_type,
-        }
-        self.declaration._handle_drag_leave(content)
+        self.declaration._handle_drag_leave({})
 
     def _on_drag_move(self, event):
         """ Fired when an object is moved while dragging
