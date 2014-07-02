@@ -23,7 +23,3 @@ class Drag(Atom):
 
     #: The image that should be displayed under the cursor.
     image = Typed(Image)
-
-    #: The mouse position of the drag operation. This should not be changed
-    #: by user code.
-    position = Coerced(Pos, (-1, -1))
