@@ -12,9 +12,11 @@ from atom.api import (
 
 from enaml.colors import ColorMember
 from enaml.core.declarative import d_, d_func
+from enaml.drag import Drag
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
 from enaml.styling import Stylable
+from enaml.validator import Validator
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
@@ -51,6 +53,12 @@ class ProxyWidget(ProxyToolkitObject):
         raise NotImplementedError
 
     def set_status_tip(self, status_tip):
+        raise NotImplementedError
+
+    def set_accept_drops(self, accept_drops):
+        raise NotImplementedError
+
+    def set_drag(self, drag):
         raise NotImplementedError
 
     def ensure_visible(self):
@@ -127,36 +135,24 @@ class Widget(ToolkitObject, Stylable):
     #: this value are ignored.
     features = d_(Coerced(Feature.Flags))
 
-    #: Whether or not the widget can be dropped on
-    accept_drops = d_(Bool(False))
+    #: A function that returns True if the widget accepts the given Drag
+    #: object, or False
+    accept_drops = d_(Typed(Validator))
 
-    #: Whether or not the widget can be dragged
-    accept_drags = d_(Bool(False))
+    #: The object that holds the drag data for the widget.
+    drag = d_(Typed(Drag))
 
-    #: The mime-type associated with the drag
-    drag_type = d_(Unicode())
+    #: Fired when a drag operation is finished on the widget.
+    drop = d_(Event(), writable=False)
 
-    #: The data to be dragged
-    drag_data = d_(Unicode())
+    #: Fired when a drag operation enters the bounds of the widget.
+    drag_enter = d_(Event(), writable=False)
 
-    #: The mime types that the widget allows to be dropped on itself
-    drop_types = d_(List())
+    #: Fired when a drag operation leaves the bounds of the widget.
+    drag_leave = d_(Event(), writable=False)
 
-    #: Whether or not to highlight drop areas
-    highlight_drop = d_(Bool(False))
-
-    #: Fired when something is dropped on the widget
-    dropped = d_(Event(), writable=False)
-
-    #: Fired when the user hovers over the widget when dragging but does not
-    #: release the drop
-    drop_hover_enter = d_(Event(), writable=False)
-
-    #: Fired when the user stop hovering over a widget while dragging
-    drop_hover_exit = d_(Event(), writable=False)
-
-    #: Fired when the user moves the mouse while dragging
-    drag_moved = d_(Event(), writable=False)
+    #: Fired when a drag operation moves within the bounds of the widget.
+    drag_move = d_(Event(), writable=False)
 
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
@@ -166,8 +162,7 @@ class Widget(ToolkitObject, Stylable):
     #--------------------------------------------------------------------------
     @observe('enabled', 'visible', 'background', 'foreground', 'font',
              'minimum_size', 'maximum_size', 'tool_tip', 'status_tip',
-             'accept_drops', 'accept_drags', 'drag_type', 'drag_data',
-             'drop_types', 'highlight_drop')
+             'accept_drops', 'drag')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
 
@@ -219,33 +214,32 @@ class Widget(ToolkitObject, Stylable):
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
-    def _handle_drop(self, content):
-        """ A method called by the proxy when the user drops the dragged
-        widget.
+    def _handle_drag_enter(self, content):
+        """ A method called when a drag operation is moved into the bounds
+        of the widget.
 
         """
-        self.dropped(content)
+        self.drag_enter(content)
 
-    def _handle_drop_hover_enter(self, content):
-        """ A method called by the proxy when the user hovers over the widget
-        while dragging another widget, but has not yet released the mouse.
-
-        """
-        self.drop_hover_enter(content)
-
-    def _handle_drop_hover_exit(self, content):
-        """ A method called by the proxy when the user stops hovering over a
-        widget while dragging another widget.
+    def _handle_drag_leave(self, content):
+        """ A method called when a drag operation is moved out of the bounds
+        of the widget.
 
         """
-        self.drop_hover_exit(content)
+        self.drag_leave(content)
 
     def _handle_drag_move(self, content):
-        """ A method claled when the user moves the mouse while dragging the
-        widget.
+        """ A method called when a drag operation is moved while in the bounds
+        of the widget.
 
         """
-        self.drag_moved(content)
+        self.drag_move(content)
+
+    def _handle_drop(self, content):
+        """ Called by the proxy when a drag ends on the widget.
+
+        """
+        self.drop(content)
 
     def set_focus(self):
         """ Set the keyboard input focus to this widget.
