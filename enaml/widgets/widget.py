@@ -135,8 +135,8 @@ class Widget(ToolkitObject, Stylable):
     #: this value are ignored.
     features = d_(Coerced(Feature.Flags))
 
-    #: A function that returns True if the widget accepts the given Drag
-    #: object, or False
+    #: A validator whose validate function returns whether or not the
+    #: drag type is accepted.
     accept_drops = d_(Typed(Validator))
 
     #: The object that holds the drag data for the widget.
