@@ -46,6 +46,10 @@ class DragDropEventFilter(QObject):
             self.mouseMoved.emit(event)
             return False
 
+        elif event.type() == QEvent.DragMove:
+            self.dragMoved.emit(event)
+            return False
+
         elif event.type() == QEvent.DragEnter:
             self.dragEntered.emit(event)
             return False
@@ -396,6 +400,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         if accept_drops is not None:
             self.widget.setAcceptDrops(True)
             self._drag_drop_filter.dragEntered.connect(self._on_drag_enter)
+            self._drag_drop_filter.dragMoved.connect(self._on_drag_move)
             self._drag_drop_filter.dragLeft.connect(self._on_drag_leave)
             self._drag_drop_filter.dropped.connect(self._on_drop)
 
