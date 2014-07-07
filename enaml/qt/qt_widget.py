@@ -109,6 +109,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         widget = self.widget
         focus_registry.register(widget, self)
         self._setup_features()
+        self._drag_drop_filter = DragDropEventFilter()
+        widget.installEventFilter(self._drag_drop_filter)
         d = self.declaration
         if d.background:
             self.set_background(d.background)
@@ -139,14 +141,6 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         # are created.
         if widget.parent() or not d.visible:
             self.set_visible(d.visible)
-
-        self._drag_drop_filter = DragDropEventFilter()
-        self._drag_drop_filter.mousePressed.connect(self._on_mouse_press)
-        self._drag_drop_filter.mouseMoved.connect(self._on_mouse_move)
-        self._drag_drop_filter.dragEntered.connect(self._on_drag_enter)
-        self._drag_drop_filter.dragLeft.connect(self._on_drag_leave)
-        self._drag_drop_filter.dropped.connect(self._on_drop)
-        widget.installEventFilter(self._drag_drop_filter)
 
     def destroy(self):
         """ Destroy the underlying QWidget object.
@@ -397,15 +391,33 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         """ Set whether or not the widget accepts drops
 
         """
+        self._accept_drops = accept_drops
+
         if accept_drops is not None:
             self.widget.setAcceptDrops(True)
-        self._accept_drops = accept_drops
+            self._drag_drop_filter.dragEntered.connect(self._on_drag_enter)
+            self._drag_drop_filter.dragLeft.connect(self._on_drag_leave)
+            self._drag_drop_filter.dropped.connect(self._on_drop)
+
+        else:
+            self.widget.setAcceptDrops(False)
+            self._drag_drop_filter.dragEntered.disconnect()
+            self._drag_drop_filter.dragLeft.disconnect()
+            self._drag_drop_filter.dropped.disconnect()
 
     def set_drag(self, drag):
         """ Set the drag object for the widget.
 
         """
         self._drag = drag
+
+        if drag is not None:
+            self._drag_drop_filter.mousePressed.connect(self._on_mouse_press)
+            self._drag_drop_filter.mouseMoved.connect(self._on_mouse_move)
+
+        else:
+            self._drag_drop_filter.mousePressed.disconnect()
+            self._drag_drop_filter.mouseMoved.disconnect()
 
     def set_foreground(self, foreground):
         """ Set the foreground color of the widget.
