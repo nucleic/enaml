@@ -9,6 +9,7 @@ import sys
 
 from atom.api import Atom, Float, Int, Str, Typed, Value, set_default
 
+from enaml.qt import QT_API
 from enaml.qt.QtCore import Qt, QRect, QPoint
 from enaml.qt.QtGui import QFrame, QImage, QPainter
 
@@ -131,7 +132,9 @@ class QGuideRose(QFrame):
         # above the rubber band in the Z-order. On Windows, the tooltip
         # leaves a dropshadow on Qt >= 4.8 whereas tool does not.
         if sys.platform == 'darwin':
-            self.setAttribute(Qt.WA_MacNoShadow, True)
+            # Qt.WA_MacNoShadow does not exist in PySide.
+            if QT_API != 'pyside':
+                self.setAttribute(Qt.WA_MacNoShadow, True)
             flags = Qt.ToolTip
         else:
             flags = Qt.Tool

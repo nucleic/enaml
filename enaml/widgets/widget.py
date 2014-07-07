@@ -6,14 +6,17 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Enum, IntEnum, Unicode, Coerced, Typed, ForwardTyped, observe
+    Bool, Enum, IntEnum, Unicode, Coerced, Typed, ForwardTyped, List, Event,
+    observe
 )
 
 from enaml.colors import ColorMember
 from enaml.core.declarative import d_, d_func
+from enaml.drag import Drag
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
 from enaml.styling import Stylable
+from enaml.validator import Validator
 
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
@@ -50,6 +53,12 @@ class ProxyWidget(ProxyToolkitObject):
         raise NotImplementedError
 
     def set_status_tip(self, status_tip):
+        raise NotImplementedError
+
+    def set_accept_drops(self, accept_drops):
+        raise NotImplementedError
+
+    def set_drag(self, drag):
         raise NotImplementedError
 
     def ensure_visible(self):
@@ -126,6 +135,25 @@ class Widget(ToolkitObject, Stylable):
     #: this value are ignored.
     features = d_(Coerced(Feature.Flags))
 
+    #: A validator whose validate function returns whether or not the
+    #: drag type is accepted.
+    accept_drops = d_(Typed(Validator))
+
+    #: The object that holds the drag data for the widget.
+    drag = d_(Typed(Drag))
+
+    #: Fired when a drag operation is finished on the widget.
+    drop = d_(Event(), writable=False)
+
+    #: Fired when a drag operation enters the bounds of the widget.
+    drag_enter = d_(Event(), writable=False)
+
+    #: Fired when a drag operation leaves the bounds of the widget.
+    drag_leave = d_(Event(), writable=False)
+
+    #: Fired when a drag operation moves within the bounds of the widget.
+    drag_move = d_(Event(), writable=False)
+
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
 
@@ -133,7 +161,8 @@ class Widget(ToolkitObject, Stylable):
     # Observers
     #--------------------------------------------------------------------------
     @observe('enabled', 'visible', 'background', 'foreground', 'font',
-        'minimum_size', 'maximum_size', 'tool_tip', 'status_tip')
+             'minimum_size', 'maximum_size', 'tool_tip', 'status_tip',
+             'accept_drops', 'drag')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
 
@@ -181,6 +210,36 @@ class Widget(ToolkitObject, Stylable):
         self.visible = False
         if self.proxy_is_active:
             self.proxy.ensure_hidden()
+
+    #--------------------------------------------------------------------------
+    # Private API
+    #--------------------------------------------------------------------------
+    def _handle_drag_enter(self, content):
+        """ A method called when a drag operation is moved into the bounds
+        of the widget.
+
+        """
+        self.drag_enter(content)
+
+    def _handle_drag_leave(self, content):
+        """ A method called when a drag operation is moved out of the bounds
+        of the widget.
+
+        """
+        self.drag_leave(content)
+
+    def _handle_drag_move(self, content):
+        """ A method called when a drag operation is moved while in the bounds
+        of the widget.
+
+        """
+        self.drag_move(content)
+
+    def _handle_drop(self, content):
+        """ Called by the proxy when a drag ends on the widget.
+
+        """
+        self.drop(content)
 
     def set_focus(self):
         """ Set the keyboard input focus to this widget.

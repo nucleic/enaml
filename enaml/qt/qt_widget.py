@@ -5,18 +5,63 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Typed, Coerced
+from atom.api import Typed, Coerced, Bool, Unicode, List, Instance
 
+from enaml.drag import Drag
 from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
+from enaml.validator import Validator
 
-from .QtCore import Qt, QSize
-from .QtGui import QFont, QWidget, QWidgetAction, QApplication
+from .QtCore import (Qt, QSize, QObject, Signal, QEvent, QMimeData, QByteArray,
+                     QPoint)
+from .QtGui import (QFont, QWidget, QWidgetAction, QApplication, QDrag,
+                    QPixmap, QColor)
 
 from . import focus_registry
-from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
+from .q_resource_helpers import (get_cached_qcolor, get_cached_qfont,
+                                 get_cached_qimage)
 from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
+
+
+class DragDropEventFilter(QObject):
+    """ An event filter for mouse and drag/drop events.
+
+    """
+    mousePressed = Signal(object)
+    mouseMoved = Signal(object)
+    dragEntered = Signal(object)
+    dragLeft = Signal(object)
+    dragMoved = Signal(object)
+    dropped = Signal(object)
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.MouseButtonPress:
+            self.mousePressed.emit(event)
+            return False
+
+        elif event.type() == QEvent.MouseMove:
+            self.mouseMoved.emit(event)
+            return False
+
+        elif event.type() == QEvent.DragMove:
+            self.dragMoved.emit(event)
+            return False
+
+        elif event.type() == QEvent.DragEnter:
+            self.dragEntered.emit(event)
+            return False
+
+        elif event.type() == QEvent.DragLeave:
+            self.dragLeft.emit(event)
+            return False
+
+        elif event.type() == QEvent.Drop:
+            self.dropped.emit(event)
+            return False
+
+        else:
+            return super(DragDropEventFilter, self).eventFilter(obj, event)
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):
@@ -33,6 +78,21 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
     #: Internal storage for the shared widget action.
     _widget_action = Typed(QWidgetAction)
+
+    #: Internal storage for the drag object
+    _drag = Typed(Drag)
+
+    #: The function to check whether a drop is supported.
+    _accept_drops = Typed(Validator)
+
+    #: An event filter for catching mouse events
+    _drag_drop_filter = Typed(DragDropEventFilter)
+
+    #: The position where the drag event started.
+    _drag_origin = Typed(QPoint)
+
+    #: The type of data being dragged.
+    _drag_type = Unicode()
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -51,6 +111,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         widget = self.widget
         focus_registry.register(widget, self)
         self._setup_features()
+        self._drag_drop_filter = DragDropEventFilter()
+        widget.installEventFilter(self._drag_drop_filter)
         d = self.declaration
         if d.background:
             self.set_background(d.background)
@@ -66,6 +128,10 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.set_tool_tip(d.tool_tip)
         if d.status_tip:
             self.set_status_tip(d.status_tip)
+        if d.drag:
+            self.set_drag(d.drag)
+        if d.accept_drops:
+            self.set_accept_drops(d.accept_drops)
         if not d.enabled:
             self.set_enabled(d.enabled)
         self.refresh_style_sheet()
@@ -323,6 +389,39 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         palette.setColor(role, qcolor)
         widget.setPalette(palette)
 
+    def set_accept_drops(self, accept_drops):
+        """ Set whether or not the widget accepts drops
+
+        """
+        self._accept_drops = accept_drops
+
+        if accept_drops is not None:
+            self.widget.setAcceptDrops(True)
+            self._drag_drop_filter.dragEntered.connect(self._on_drag_enter)
+            self._drag_drop_filter.dragMoved.connect(self._on_drag_move)
+            self._drag_drop_filter.dragLeft.connect(self._on_drag_leave)
+            self._drag_drop_filter.dropped.connect(self._on_drop)
+
+        else:
+            self.widget.setAcceptDrops(False)
+            self._drag_drop_filter.dragEntered.disconnect()
+            self._drag_drop_filter.dragLeft.disconnect()
+            self._drag_drop_filter.dropped.disconnect()
+
+    def set_drag(self, drag):
+        """ Set the drag object for the widget.
+
+        """
+        self._drag = drag
+
+        if drag is not None:
+            self._drag_drop_filter.mousePressed.connect(self._on_mouse_press)
+            self._drag_drop_filter.mouseMoved.connect(self._on_mouse_move)
+
+        else:
+            self._drag_drop_filter.mousePressed.disconnect()
+            self._drag_drop_filter.mouseMoved.disconnect()
+
     def set_foreground(self, foreground):
         """ Set the foreground color of the widget.
 
@@ -412,3 +511,80 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         self.focus_target().focusPreviousChild()
+
+    #--------------------------------------------------------------------------
+    # Drag and drop
+    #--------------------------------------------------------------------------
+    def _on_mouse_press(self, event):
+        """ Handler for the mouseButtonPress event.
+
+        """
+        self._drag_origin = event.pos()
+
+    def _on_mouse_move(self, event):
+        """ Handler for the mouseMove event.
+
+        """
+        if self._drag is not None:
+            distance = (event.pos() - self._drag_origin).manhattanLength()
+            if distance > QApplication.startDragDistance():
+                drag = QDrag(self.widget)
+
+                mime_data = QMimeData()
+                mime_data.setData(self._drag.type,
+                                  QByteArray(str(self._drag.data)))
+                drag.setMimeData(mime_data)
+
+                if self._drag.image:
+                    qimage = get_cached_qimage(self._drag.image)
+                    drag.setPixmap(QPixmap.fromImage(qimage))
+                else:
+                    drag.setPixmap(QPixmap.grabWidget(self.widget))
+
+                drag.exec_(Qt.CopyAction)
+
+    def _on_drag_enter(self, event):
+        """ Fired when a dragged object is hovering over the widget
+
+        """
+        for format in event.mimeData().formats():
+            if self._accept_drops.validate(format):
+                self._drag_type = format
+                event.acceptProposedAction()
+                break
+
+        content = {
+            'data': event.mimeData().data(self._drag_type).data(),
+            'pos': (event.pos().x(), event.pos().y()),
+            'type': self._drag_type,
+        }
+        self.declaration._handle_drag_enter(content)
+
+    def _on_drag_leave(self, event):
+        """ Fired when an object is dragged off the widget
+
+        """
+        self.declaration._handle_drag_leave({})
+
+    def _on_drag_move(self, event):
+        """ Fired when an object is moved while dragging
+
+        """
+        content = {
+            'data': event.mimeData().data(self._drag_type).data(),
+            'pos': (event.pos().x(), event.pos().y()),
+            'type': self._drag_type,
+        }
+        self.declaration._handle_drag_move(content)
+
+    def _on_drop(self, event):
+        """ Fired when an object is dropped on the widget
+
+        """
+        content = {
+            'data': event.mimeData().data(self._drag_type).data(),
+            'pos': (event.pos().x(), event.pos().y()),
+            'type': self._drag_type,
+        }
+        self.declaration._handle_drop(content)
+        event.acceptProposedAction()
