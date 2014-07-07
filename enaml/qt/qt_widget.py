@@ -5,8 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from types import BuiltinFunctionType, MethodType
-
 from atom.api import Typed, Coerced, Bool, Unicode, List, Instance
 
 from enaml.drag import Drag
