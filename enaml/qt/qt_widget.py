@@ -306,6 +306,8 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
                 drag.exec_(Qt.CopyAction)
 
+        type(widget).mouseMoveEvent(widget, event)
+
     def hook_drop(self):
         """ Install hooks for drop operations.
 
