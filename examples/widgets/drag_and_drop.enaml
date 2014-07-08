@@ -1,0 +1,22 @@
+from enaml.widgets.api import MainWindow, Container, Label, Feature
+from enaml.layout.api import hbox, align
+
+
+enamldef Main(MainWindow):
+    Container:
+        constraints = [
+            hbox(one, two),
+            align('width', one, two)
+        ]
+
+        Label: one:
+            text = 'Testing'
+            features = Feature.Drag
+            drag_data => ():
+                return self.text
+
+        Label: two:
+            features = Feature.Drop
+            drop => (position, data):
+                self.text = data
+
