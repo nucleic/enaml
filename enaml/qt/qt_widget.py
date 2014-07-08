@@ -11,8 +11,7 @@ from enaml.layout.geometry import Pos
 from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
 
-from .QtCore import (Qt, QSize, QObject, Signal, QEvent, QPoint, QMimeData,
-                     QByteArray)
+from .QtCore import Qt, QSize, QPoint, QMimeData, QByteArray
 from .QtGui import QFont, QWidget, QWidgetAction, QApplication, QDrag, QPixmap
 
 from . import focus_registry
@@ -20,25 +19,6 @@ from .q_resource_helpers import (get_cached_qcolor, get_cached_qfont,
                                  get_cached_qimage)
 from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
-
-
-class DragEventFilter(QObject):
-    """ An event filter for drag operations. Intercepts MouseButtonPress and
-    MouseMove events to detect the start of a drag operation.
-
-    """
-    mousePressed = Signal(object)
-    mouseMoved = Signal(object)
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.MouseButtonPress:
-            self.mousePressed.emit(event)
-            return False
-        elif event.type() == QEvent.MouseMove:
-            self.mouseMoved.emit(event)
-            return False
-        else:
-            return super(DragEventFilter, self).eventFilter(obj, event)
 
 
 class QtWidget(QtToolkitObject, ProxyWidget):
