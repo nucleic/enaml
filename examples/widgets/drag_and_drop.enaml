@@ -12,11 +12,16 @@ enamldef Main(MainWindow):
         Label: one:
             text = 'Testing'
             features = Feature.Drag
+
             drag_data => ():
-                return self.text
+                return ('text', self.text)
 
         Label: two:
             features = Feature.Drop
-            drop => (position, data):
+
+            validate_drop => (dtype):
+                return dtype == 'text'
+
+            drop => (data, dtype, position):
                 self.text = data
 

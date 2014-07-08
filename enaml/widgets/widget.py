@@ -327,11 +327,12 @@ class Widget(ToolkitObject, Stylable):
 
         Returns:
         --------
-        data : bytearray
-            The data that represents the drag operation.
+        result : tuple
+            A tuple of (dtype, data) where dtype is a string and data is a
+            bytearray.
 
         """
-        return bytearray()
+        return (bytearray(), '')
 
     @d_func
     def drag_image(self):
@@ -350,7 +351,7 @@ class Widget(ToolkitObject, Stylable):
         return None
 
     @d_func
-    def drag_enter(self, position, data):
+    def drag_enter(self, data, dtype, position):
         """ A method invoked when a drag operation enters the widget's bounds.
 
         ** The Drop feature must be enabled for the widget in order for this
@@ -358,17 +359,20 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        position : Pos
-            The (x, y) coordinates of the drag operation.
-
         data : bytearray
             The data provided by the drag operation.
+
+        dtype : str
+            The type of data provided by the drag operation.
+
+        position : Pos
+            The (x, y) coordinates of the drag operation.
 
         """
         pass
 
     @d_func
-    def drag_move(self, position, data):
+    def drag_move(self, data, dtype, position):
         """ A method invoked when a drag operation moves within the widget's
         bounds.
 
@@ -377,11 +381,14 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        position : Pos
-            The (x, y) coordinates of the drag operation.
-
         data : bytearray
             The data provided by the drag operation.
+
+        dtype : str
+            The type of data provided by the drag operation.
+
+        position : Pos
+            The (x, y) coordinates of the drag operation.
 
         """
         pass
@@ -397,7 +404,25 @@ class Widget(ToolkitObject, Stylable):
         pass
 
     @d_func
-    def drop(self, position, data):
+    def validate_drop(self, dtype):
+        """ A method invoked to determine whether a drop operation should be
+        allowed on the widget.
+
+        Parameters
+        ----------
+        dtype : str
+            The type of the data.
+
+        Returns
+        -------
+        A boolean value representing whether the drop operation should be
+        allowed or not.
+
+        """
+        return True
+
+    @d_func
+    def drop(self, data, dtype, position):
         """ A method invoked when a drag operation ends on the widget.
 
         ** The Drop feature must be enabled for the widget in order for this
@@ -405,11 +430,14 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        position : Pos
-            The (x, y) coordinates of the drag operation.
-
         data : bytearray
             The data provided by the drag operation.
+
+        dtype : str
+            The type of data provided by the drag operation.
+
+        position : Pos
+            The (x, y) coordinates of the drag operation.
 
         """
         pass

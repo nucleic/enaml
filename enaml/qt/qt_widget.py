@@ -312,9 +312,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             if distance > QApplication.startDragDistance():
                 drag = QDrag(widget)
 
+                dtype, data = d.drag_data()
                 mime_data = QMimeData()
-                mime_data.setData('text/plain',
-                                  QByteArray(str(d.drag_data())))
+                mime_data.setData(dtype, QByteArray(str(data)))
                 drag.setMimeData(mime_data)
 
                 image = d.drag_image()
@@ -351,17 +351,28 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     def dragEnterEvent(self, event):
         widget = self.widget
         position = Pos(event.pos().x(), event.pos().y())
-        data = event.mimeData().data('text/plain').data()
-        event.acceptProposedAction()
+
+        mime_data = event.mimeData()
+        dtype = mime_data.formats()[0]
+        data = mime_data.data(dtype).data()
+
+        if self.declaration.validate_drop(dtype):
+            event.acceptProposedAction()
+
         type(widget).dragEnterEvent(widget, event)
-        self.declaration.drag_enter(position, data)
+        self.declaration.drag_enter(data, dtype, position)
 
     def dragMoveEvent(self, event):
         widget = self.widget
         position = Pos(event.pos().x(), event.pos().y())
-        data = event.mimeData().data('text/plain').data()
+
+        mime_data = event.mimeData()
+        dtype = mime_data.formats()[0]
+        data = mime_data.data(dtype).data()
+
+        event.acceptProposedAction()
         type(widget).dragMoveEvent(widget, event)
-        self.declaration.drag_move(position, data)
+        self.declaration.drag_move(data, dtype, position)
 
     def dragLeaveEvent(self, event):
         widget = self.widget
@@ -371,10 +382,14 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     def dropEvent(self, event):
         widget = self.widget
         position = Pos(event.pos().x(), event.pos().y())
-        data = event.mimeData().data('text/plain').data()
+
+        mime_data = event.mimeData()
+        dtype = mime_data.formats()[0]
+        data = mime_data.data(dtype).data()
+
         event.acceptProposedAction()
         type(widget).dropEvent(widget, event)
-        self.declaration.drop(position, data)
+        self.declaration.drop(data, dtype, position)
 
     #--------------------------------------------------------------------------
     # Framework API
