@@ -332,7 +332,7 @@ class Widget(ToolkitObject, Stylable):
             bytearray.
 
         """
-        return (bytearray(), '')
+        return ('', bytearray())
 
     @d_func
     def drag_image(self):
