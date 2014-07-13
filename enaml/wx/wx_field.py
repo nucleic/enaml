@@ -330,6 +330,20 @@ class WxField(WxControl, ProxyField):
         # creating a brand-new control, so we just ignore the change.
         pass
 
+    def set_completion_list(self, completion_list):
+        """ Set a list of completion texts in the widget.
+
+        """
+        # Not implemented in Wx.
+        pass
+
+    def set_completion_case_sensitive(self, completion_case_sensitive):
+        """ Set the case sensitivity of completion text in the widget.
+
+        """
+        # Not implemented in Wx.
+        pass
+
     def field_text(self):
         """ Get the text stored in the widget.
 

@@ -119,6 +119,12 @@ class Field(Control):
     #: the width hug by default, so they expand freely in width.
     hug_width = set_default('ignore')
 
+    #: The list of completions to use for the field
+    completion_list = d_(List())
+
+    #: Whether or not completions should be case sensitive
+    completion_case_sensitive = d_(Bool(False))
+
     #: A reference to the ProxyField object.
     proxy = Typed(ProxyField)
 
@@ -126,7 +132,8 @@ class Field(Control):
     # Observers
     #--------------------------------------------------------------------------
     @observe('text', 'mask', 'submit_triggers', 'placeholder', 'echo_mode',
-        'max_length', 'read_only')
+        'max_length', 'read_only', 'completion_list',
+        'completion_case_sensitive')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 
