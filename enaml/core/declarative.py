@@ -47,6 +47,24 @@ def d_(member, readable=True, writable=True, final=True):
     return member
 
 
+def d_func(func):
+    """ Mark a method as overridable from Enaml syntax.
+
+    Parameters
+    ----------
+    func : FunctionType
+        The function to tag as declarative.
+
+    Returns
+    -------
+    result : func
+        The original function tagged with the compiler metadata.
+
+    """
+    func._d_func = True
+    return func
+
+
 #: The flag indicating that the Declarative object has been initialized.
 INITIALIZED_FLAG = flag_generator.next()
 

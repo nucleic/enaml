@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Bool, Coerced, ForwardTyped, Typed, observe, set_default
 
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, d_func
 from enaml.layout.constrainable import ContentsConstrainableMixin
 from enaml.layout.geometry import Box
 from enaml.layout.layout_helpers import vbox
@@ -55,7 +55,7 @@ class Container(Frame, ContentsConstrainableMixin):
     #: margin than what is specified by the padding.
     padding = d_(Coerced(Box, (10, 10, 10, 10)))
 
-    #: A Container does not generate contraints for its size hint by
+    #: A Container does not generate constraints for its size hint by
     #: default. The minimum and maximum size constraints are sufficient
     #: to supply size limits and make for the most natural interaction
     #: between nested containers.
@@ -75,6 +75,12 @@ class Container(Frame, ContentsConstrainableMixin):
 
         """
         return [c for c in self.children if isinstance(c, ConstraintsWidget)]
+
+    def visible_widgets(self):
+        """ Get the visible child ConstraintsWidgets on the container.
+
+        """
+        return [w for w in self.widgets() if w.visible]
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -119,13 +125,17 @@ class Container(Frame, ContentsConstrainableMixin):
     #--------------------------------------------------------------------------
     # Layout Constraints
     #--------------------------------------------------------------------------
+    @d_func
     def layout_constraints(self):
         """ The constraints generation for a Container.
 
-        This method supplies default vbox constraints to the children of
-        the container unless the user has given explicit 'constraints'.
+        This method supplies default vbox constraints to the visible
+        children of the container unless the user has given explicit
+        'constraints'.
+
+        This method may also be overridden from Enaml syntax.
 
         """
         if self.constraints:
             return self.constraints
-        return [vbox(*self.widgets())]
+        return [vbox(*self.visible_widgets())]

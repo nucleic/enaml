@@ -223,7 +223,7 @@ class QtImageView(QtControl, ProxyImageView):
         """
         super(QtImageView, self).init_widget()
         d = self.declaration
-        self.set_image(d.image, guard=False)
+        self.set_image(d.image)
         self.set_scale_to_fit(d.scale_to_fit)
         self.set_allow_upscaling(d.allow_upscaling)
         self.set_preserve_aspect_ratio(d.preserve_aspect_ratio)
@@ -231,7 +231,7 @@ class QtImageView(QtControl, ProxyImageView):
     #--------------------------------------------------------------------------
     # Widget Update Methods
     #--------------------------------------------------------------------------
-    def set_image(self, image, guard=True):
+    def set_image(self, image):
         """ Set the image on the underlying widget.
 
         """
@@ -239,10 +239,7 @@ class QtImageView(QtControl, ProxyImageView):
         if image:
             qimage = get_cached_qimage(image)
             qpixmap = QPixmap.fromImage(qimage)
-        if guard:
-            with self.geometry_guard():
-                self.widget.setPixmap(qpixmap)
-        else:
+        with self.geometry_guard():
             self.widget.setPixmap(qpixmap)
 
     def set_scale_to_fit(self, scale):

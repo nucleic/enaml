@@ -15,6 +15,7 @@ from .QtGui import QMenu, QCursor
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup
 from .qt_toolkit_object import QtToolkitObject
+from .qt_widget import QtWidget
 
 
 class QCustomMenu(QMenu):
@@ -141,6 +142,8 @@ class QtMenu(QtToolkitObject, ProxyMenu):
                 widget.addAction(child.widget)
             elif isinstance(child, QtActionGroup):
                 widget.addActions(child.actions())
+            elif isinstance(child, QtWidget):
+                widget.addAction(child.get_action(True))
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -165,12 +168,16 @@ class QtMenu(QtToolkitObject, ProxyMenu):
             if found:
                 if isinstance(dchild, QtMenu):
                     return dchild.widget.menuAction()
-                if isinstance(dchild, QtAction):
+                elif isinstance(dchild, QtAction):
                     return dchild.widget
-                if isinstance(dchild, QtActionGroup):
+                elif isinstance(dchild, QtActionGroup):
                     acts = dchild.actions()
                     if len(acts) > 0:
                         return acts[0]
+                elif isinstance(dchild, QtWidget):
+                    action = dchild.get_action(False)
+                    if action is not None:
+                        return action
             else:
                 found = dchild is child
 
@@ -188,6 +195,9 @@ class QtMenu(QtToolkitObject, ProxyMenu):
         elif isinstance(child, QtActionGroup):
             before = self.find_next_action(child)
             self.widget.insertActions(before, child.actions())
+        elif isinstance(child, QtWidget):
+            before = self.find_next_action(child)
+            self.widget.insertAction(before, child.get_action(True))
 
     def child_removed(self, child):
         """  Handle the child removed event for a QtMenu.
@@ -200,6 +210,8 @@ class QtMenu(QtToolkitObject, ProxyMenu):
             self.widget.removeAction(child.widget)
         elif isinstance(child, QtActionGroup):
             self.widget.removeActions(child.actions())
+        elif isinstance(child, QtWidget):
+            self.widget.removeAction(child.get_action(False))
 
     #--------------------------------------------------------------------------
     # ProxyMenu API
@@ -233,3 +245,9 @@ class QtMenu(QtToolkitObject, ProxyMenu):
 
         """
         self.widget.exec_(QCursor.pos())
+
+    def close(self):
+        """ Close the underlying menu.
+
+        """
+        self.widget.close()

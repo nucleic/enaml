@@ -150,13 +150,3 @@ class DockItem(Widget):
         # TODO allow the user to veto the close request
         self.closed()
         deferred_call(self.destroy)
-
-    def _call_parent(self, name, *args, **kwargs):
-        """ Call a parent method with the given name and arguments.
-
-        """
-        # Avoid a circular import
-        from .dock_area import DockArea
-        parent = self.parent
-        if isinstance(parent, DockArea):
-            getattr(parent, name)(*args, **kwargs)

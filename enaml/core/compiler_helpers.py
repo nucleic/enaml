@@ -13,6 +13,7 @@ from .compiler_nodes import (
     DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstanceNode
 )
 from .declarative import Declarative, d_
+from .declarative_function import DeclarativeFunction
 from .declarative_meta import patch_d_member
 from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
@@ -71,6 +72,11 @@ def resolve_alias(node, alias):
     return (None, None)
 
 
+def _override_fail(klass, name):
+    msg = "can't override '%s.%s'"
+    raise TypeError(msg % (klass.__name__, name))
+
+
 def add_alias(node, name, target, chain):
     """ Add an alias to a Declarative subclass.
 
@@ -90,13 +96,8 @@ def add_alias(node, name, target, chain):
 
     """
     klass = node.klass
-    item = getattr(klass, name, None)
-    if isinstance(item, Alias):
-        msg = "can't override alias '%s'"
-        raise TypeError(msg % name)
-    if name in klass.members():
-        msg = "can't override member '%s' with an alias"
-        raise TypeError(msg % name)
+    if hasattr(klass, name):
+        _override_fail(klass, name)
     alias = Alias(target, chain, node.scope_key)
     res_node, res_member = resolve_alias(node, alias)
     if res_node is None:
@@ -131,19 +132,17 @@ def add_storage(node, name, store_type, kind):
         raise TypeError("%s is not a type" % store_type)
 
     klass = node.klass
-    if isinstance(getattr(klass, name, None), Alias):
-        msg = "can't override alias '%s' with a member"
-        raise TypeError(msg % name)
-
     members = klass.members()
     member = members.get(name)
     if member is not None:
         if member.metadata is None or not member.metadata.get('d_member'):
-            msg = "can't override non-declarative member '%s'"
-            raise TypeError(msg % name)
+            msg = "can't override non-declarative member '%s.%s'"
+            raise TypeError(msg % (klass.__name__, name))
         if member.metadata.get('d_final'):
-            msg = "can't override final member '%s'"
-            raise TypeError(msg % name)
+            msg = "can't override final member '%s.%s'"
+            raise TypeError(msg % (klass.__name__, name))
+    elif hasattr(klass, name):
+        _override_fail(klass, name)
 
     if kind == 'event':
         new = d_(Event(store_type), writable=False, final=False)
@@ -708,8 +707,37 @@ def validate_unpack_size(template_inst, count, variadic):
         raise ValueError("too many values to unpack")
 
 
+def add_decl_function(node, func, is_override):
+    """ Add a declarative function to a declarative class.
+
+    Parameters
+    ----------
+    node : DeclarativeNode
+        The compiler node holding the declarative class.
+
+    func : FunctionType
+        The python function to add to the class.
+
+    is_override : bool
+        True if the function was declared with override syntax, False
+        if declared as a new function on the declarative class.
+
+    """
+    name = func.__name__
+    klass = node.klass
+    if is_override:
+        current = getattr(klass, name, None)
+        if not getattr(current, "_d_func", False):
+            raise TypeError("'%s' is not a declarative function" % name)
+    elif hasattr(klass, name):
+        _override_fail(klass, name)
+    d_func = DeclarativeFunction(func, node.scope_key)
+    setattr(klass, name, d_func)
+
+
 __compiler_helpers = {
     'add_alias': add_alias,
+    'add_decl_function': add_decl_function,
     'add_template_scope': add_template_scope,
     'add_storage': add_storage,
     'declarative_node': declarative_node,

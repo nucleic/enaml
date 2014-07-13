@@ -123,7 +123,7 @@ class LiveEditorModel(Atom):
         This validator replaces CRLF with LF characters.
 
         """
-        return new.replace('\r\n', '\n')
+        return new.replace('\r\n', '\n').replace('\r', '\n')
 
     def _post_validate_view_text(self, old, new):
         """ Post validate the view text.
@@ -131,7 +131,7 @@ class LiveEditorModel(Atom):
         This validator replaces CRLF with LF characters.
 
         """
-        return new.replace('\r\n', '\n')
+        return new.replace('\r\n', '\n').replace('\r', '\n')
 
     #--------------------------------------------------------------------------
     # Observers

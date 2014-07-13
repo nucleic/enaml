@@ -57,6 +57,11 @@ class CorePlugin(Plugin):
         trigger : object, optional
             The object which triggered the command.
 
+        Returns
+        -------
+        result : object
+            The return value of the command handler.
+
         """
         if command_id not in self._commands:
             msg = "'%s' is not a registered command id"
@@ -67,10 +72,10 @@ class CorePlugin(Plugin):
         event = ExecutionEvent()
         event.command = command
         event.workbench = self.workbench
-        event.parameters = parameters
+        event.parameters = parameters  # copied on assignment
         event.trigger = trigger
 
-        command.handler(event)
+        return command.handler(event)
 
     #--------------------------------------------------------------------------
     # Private API

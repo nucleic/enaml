@@ -123,7 +123,12 @@ from .template_compiler import TemplateCompiler
 #     The generated code did not properly handle the scope key for
 #     binding expressions on template instantiations.
 #     https://github.com/nucleic/enaml/issues/78
-COMPILER_VERSION = 20
+# 21 : Add support for declarative functions - 2 May 2014
+#     This update add support for the 'func' keyword and '->' style
+#     declarative method overrides.
+# 22 : Update the syntax of arrow functions - 5 May 2014
+#     This updates the arrow functions to use "=>" instead of "->".
+COMPILER_VERSION = 22
 
 
 # Code that will be executed at the top of every enaml module

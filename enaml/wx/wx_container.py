@@ -60,7 +60,7 @@ class WxLayoutItem(LayoutItem):
 
         Returns
         -------
-        result : Contrainable
+        result : Constrainable
             An object which implements the Constrainable interface.
 
         """
@@ -353,7 +353,7 @@ class WxContainer(WxFrame, ProxyContainer):
         manager = self._layout_manager
         if manager is not None:
             if self._layout_timer is None:
-                manager.set_items([])
+                manager.clear_items()
                 self.widget.Freeze()
                 self._layout_timer = wxLayoutTimer(self)
             self._layout_timer.Start(1, oneShot=True)

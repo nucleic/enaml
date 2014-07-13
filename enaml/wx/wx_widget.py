@@ -128,16 +128,14 @@ class WxWidget(WxToolkitObject, ProxyWidget):
         """ Set the font on the underlying widget.
 
         """
-        wxfont = get_cached_wxfont(font)
+        if font is not None:
+            wxfont = get_cached_wxfont(font)
+        else:
+            index = wx.SYS_DEFAULT_GUI_FONT
+            wxfont = wx.SystemSettings.GetFont(index)
         widget = self.widget
         widget.SetFont(wxfont)
         widget.Refresh()
-
-    def set_show_focus_rect(self, show):
-        """ This is not supported on Wx.
-
-        """
-        pass
 
     def set_tool_tip(self, tool_tip):
         """ Set the tool tip of for this widget.

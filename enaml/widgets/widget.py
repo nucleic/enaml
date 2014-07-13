@@ -5,10 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Bool, Enum, Unicode, Coerced, Typed, ForwardTyped, observe
+from atom.api import (
+    Bool, Enum, IntEnum, Unicode, Coerced, Typed, ForwardTyped, observe
+)
 
 from enaml.colors import ColorMember
-from enaml.core.declarative import d_
+from enaml.core.declarative import d_, d_func
 from enaml.fonts import FontMember
 from enaml.layout.geometry import Size
 from enaml.styling import Stylable
@@ -50,9 +52,6 @@ class ProxyWidget(ProxyToolkitObject):
     def set_status_tip(self, status_tip):
         raise NotImplementedError
 
-    def set_show_focus_rect(self, show_focus_rect):
-        raise NotImplementedError
-
     def ensure_visible(self):
         raise NotImplementedError
 
@@ -61,6 +60,32 @@ class ProxyWidget(ProxyToolkitObject):
 
     def restyle(self):
         raise NotImplementedError
+
+    def set_focus(self):
+        raise NotImplementedError
+
+    def clear_focus(self):
+        raise NotImplementedError
+
+    def has_focus(self):
+        raise NotImplementedError
+
+    def focus_next_child(self):
+        raise NotImplementedError
+
+    def focus_previous_child(self):
+        raise NotImplementedError
+
+
+class Feature(IntEnum):
+    """ An IntEnum defining the advanced widget features.
+
+    """
+    #: Enables support for custom focus traversal functions.
+    FocusTraversal = 0x1
+
+    #: Enables support for focus events.
+    FocusEvents = 0x2
 
 
 class Widget(ToolkitObject, Stylable):
@@ -96,11 +121,10 @@ class Widget(ToolkitObject, Stylable):
     #: The status tip to show when the user hovers over the widget.
     status_tip = d_(Unicode())
 
-    #: A flag indicating whether or not to show the focus rectangle for
-    #: the given widget. This is not necessarily support by all widgets
-    #: on all clients. A value of None indicates to use the default as
-    #: supplied by the client.
-    show_focus_rect = d_(Enum(None, True, False))
+    #: Set the extra features to enable for this widget. This value must
+    #: be provided when the widget is instantiated. Runtime changes to
+    #: this value are ignored.
+    features = d_(Coerced(Feature.Flags))
 
     #: A reference to the ProxyWidget object.
     proxy = Typed(ProxyWidget)
@@ -109,8 +133,7 @@ class Widget(ToolkitObject, Stylable):
     # Observers
     #--------------------------------------------------------------------------
     @observe('enabled', 'visible', 'background', 'foreground', 'font',
-        'minimum_size', 'maximum_size', 'show_focus_rect', 'tool_tip',
-        'status_tip')
+        'minimum_size', 'maximum_size', 'tool_tip', 'status_tip')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
 
@@ -158,3 +181,132 @@ class Widget(ToolkitObject, Stylable):
         self.visible = False
         if self.proxy_is_active:
             self.proxy.ensure_hidden()
+
+    def set_focus(self):
+        """ Set the keyboard input focus to this widget.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            self.proxy.set_focus()
+
+    def clear_focus(self):
+        """ Clear the keyboard input focus from this widget.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            self.proxy.clear_focus()
+
+    def has_focus(self):
+        """ Test whether this widget has input focus.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        Returns
+        -------
+        result : bool
+            True if this widget has input focus, False otherwise.
+
+        """
+        if self.proxy_is_active:
+            return self.proxy.has_focus()
+        return False
+
+    def focus_next_child(self):
+        """ Give focus to the next widget in the focus chain.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            self.proxy.focus_next_child()
+
+    def focus_previous_child(self):
+        """ Give focus to the previous widget in the focus chain.
+
+        FOR ADVANCED USE CASES ONLY: DO NOT ABUSE THIS!
+
+        """
+        if self.proxy_is_active:
+            self.proxy.focus_previous_child()
+
+    @d_func
+    def next_focus_child(self, current):
+        """ Compute the next widget which should gain focus.
+
+        When the FocusTraversal feature of the widget is enabled, this
+        method will be invoked as a result of a Tab key press or from
+        a call to the 'focus_next_child' method on a decendant of the
+        owner widget. It should be reimplemented in order to provide
+        custom logic for computing the next focus widget.
+
+        ** The FocusTraversal feature must be enabled for the widget in
+        order for this method to be called. **
+
+        Parameters
+        ----------
+        current : Widget or None
+            The current widget with input focus, or None if no widget
+            has focus or if the toolkit widget with focus does not
+            correspond to an Enaml widget.
+
+        Returns
+        -------
+        result : Widget or None
+            The next widget which should gain focus, or None to follow
+            the default toolkit behavior.
+
+        """
+        return None
+
+    @d_func
+    def previous_focus_child(self, current):
+        """ Compute the previous widget which should gain focus.
+
+        When the FocusTraversal feature of the widget is enabled, this
+        method will be invoked as a result of a Shift+Tab key press or
+        from a call to the 'focus_prev_child' method on a decendant of
+        the owner widget. It should be reimplemented in order to provide
+        custom logic for computing the previous focus widget.
+
+        ** The FocusTraversal feature must be enabled for the widget in
+        order for this method to be called. **
+
+        Parameters
+        ----------
+        current : Widget or None
+            The current widget with input focus, or None if no widget
+            has focus or if the toolkit widget with focus does not
+            correspond to an Enaml widget.
+
+        Returns
+        -------
+        result : Widget or None
+            The previous widget which should gain focus, or None to
+            follow the default toolkit behavior.
+
+        """
+        return None
+
+    @d_func
+    def focus_gained(self):
+        """ A method invoked when the widget gains input focus.
+
+        ** The FocusEvents feature must be enabled for the widget in
+        order for this method to be called. **
+
+        """
+        pass
+
+    @d_func
+    def focus_lost(self):
+        """ A method invoked when the widget loses input focus.
+
+        ** The FocusEvents feature must be enabled for the widget in
+        order for this method to be called. **
+
+        """
+        pass

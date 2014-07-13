@@ -9,6 +9,7 @@ from .action import Action
 from .action_group import ActionGroup
 from .calendar import Calendar
 from .check_box import CheckBox
+from .color_dialog import ColorDialog
 from .combo_box import ComboBox
 from .container import Container
 from .date_selector import DateSelector
@@ -23,11 +24,14 @@ from .file_dialog import FileDialog
 from .file_dialog_ex import FileDialogEx
 from .flow_area import FlowArea
 from .flow_item import FlowItem
+from .focus_tracker import FocusTracker
 from .form import Form
 from .frame import Border
 from .group_box import GroupBox
+from .h_group import HGroup
 from .html import Html
 from .image_view import ImageView
+from .ipython_console import IPythonConsole
 from .label import Label
 from .main_window import MainWindow
 from .mdi_area import MdiArea
@@ -57,6 +61,9 @@ from .status_item import StatusItem
 from .time_selector import TimeSelector
 from .timer import Timer
 from .tool_bar import ToolBar
+from .tool_button import ToolButton
+from .v_group import VGroup
 from .vtk_canvas import VTKCanvas
 from .web_view import WebView
+from .widget import Feature
 from .window import Window

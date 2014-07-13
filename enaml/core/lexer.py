@@ -153,6 +153,7 @@ class EnamlLexer(object):
         (r'::', 'DOUBLECOLON'),
         (r'\.\.\.', 'ELLIPSIS'),
         (r':=', 'COLONEQUAL'),
+        (r'=>', 'RIGHTARROW'),
     )
 
     tokens = (
@@ -544,11 +545,22 @@ class EnamlLexer(object):
 
     def make_token_stream(self):
         token_stream = iter(self.lexer.token, None)
+        token_stream = self.ensure_token_lexer(token_stream)
         token_stream = self.create_strings(token_stream)
         token_stream = self.annotate_indentation_state(token_stream)
         token_stream = self.synthesize_indentation_tokens(token_stream)
         token_stream = self.add_endmarker(token_stream)
         return token_stream
+
+    def ensure_token_lexer(self, token_stream):
+        # PLY only assigns the lexer to tokens which are passed
+        # to t_* functions. This ensures each token gets assigned
+        # a lexer, since that is required by the error handlers.
+        lexer = self.lexer
+        for tok in token_stream:
+            if getattr(tok, 'lexer', None) is None:
+                tok.lexer = lexer
+            yield tok
 
     def create_strings(self, token_stream):
         for tok in token_stream:
@@ -733,10 +745,10 @@ class EnamlLexer(object):
         # we're on line number 1. If that's the case, then we don't
         # need another newline token.
         if token is None:
-            yield self.newline(-1)
+            yield self.newline(self.lexer.lineno)
         elif token.type != 'NEWLINE':
             if token.type != 'WS' or token.lineno == 1:
-                yield self.newline(-1)
+                yield self.newline(self.lexer.lineno)
 
         # Must dedent any remaining levels
         if len(levels) > 1:

@@ -78,16 +78,16 @@ class QtColorDialog(QtToolkitDialog, ProxyColorDialog):
         """ Initialize the underlying widget.
 
         """
-        # Do not call super(...) as it connects the standard 'finished'
-        # signal. This widget uses the custom 'reallyFinished' signal.
+        super(QtColorDialog, self).init_widget()
         d = self.declaration
-        self.set_title(d.title)
         self.set_current_color(d.current_color)
         self.set_show_alpha(d.show_alpha)
         self.set_show_buttons(d.show_buttons)
         widget = self.widget
         widget.currentColorChanged.connect(self.on_current_color_changed)
         widget.colorSelected.connect(self.on_color_selected)
+        # use the custom finished signal instead of the superclass'
+        widget.finished.disconnect(self.on_finished)
         widget.reallyFinished.connect(self.on_finished)
 
     #--------------------------------------------------------------------------

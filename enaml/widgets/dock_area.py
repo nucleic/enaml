@@ -13,9 +13,7 @@ from atom.api import (
 )
 
 from enaml.core.declarative import d_
-from enaml.layout.dock_layout import (
-    DockLayout, DockLayoutValidator, DockLayoutOp
-)
+from enaml.layout.dock_layout import DockLayout, DockLayoutOp
 from enaml.styling import StyleSheet
 
 from .constraints_widget import ConstraintsWidget, ProxyConstraintsWidget
@@ -73,14 +71,6 @@ class DockArea(ConstraintsWidget):
     #: 'save_layout' method should be called to retrieve the current
     #: layout state.
     layout = d_(Coerced(DockLayout, ()))
-
-    def _post_validate_layout(self, old, new):
-        """ Post validate the layout using the DockLayoutValidator.
-
-        """
-        available = (i.name for i in self.dock_items())
-        DockLayoutValidator(available)(new)
-        return new
 
     #: The default tab position for newly created dock tabs.
     tab_position = d_(Enum('top', 'bottom', 'left', 'right'))
@@ -154,13 +144,11 @@ class DockArea(ConstraintsWidget):
 
         Parameters
         ----------
-        layout : docklayout
-            The docklayout to apply to the dock area.
+        layout : DockLayout
+            The dock layout to apply to the dock area.
 
         """
         assert isinstance(layout, DockLayout), 'layout must be a DockLayout'
-        available = (i.name for i in self.dock_items())
-        DockLayoutValidator(available)(layout)
         if self.proxy_is_active:
             return self.proxy.apply_layout(layout)
 

@@ -12,6 +12,6 @@ from .dock_layout import (
     FloatItem, FloatArea, RemoveItem, ExtendItem, RetractItem
 )
 from .layout_helpers import (
-    align, hbox, vbox, horizontal, vertical, grid, spacer,
+    align, hbox, vbox, horizontal, vertical, factory, grid, spacer,
 )
 from .geometry import Box, BoxF, Pos, PosF, Rect, RectF, Size, SizeF

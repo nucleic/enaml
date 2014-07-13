@@ -5,14 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import set_default
 from enaml.layout.layout_helpers import align, spacer, vbox, vertical
 from enaml.styling import StyleSheet, Style, Setter
 from enaml.widgets.container import Container
 from enaml.widgets.separator import Separator
 
 
-class TaskDialogIconArea(Container):
+enamldef TaskDialogIconArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -20,29 +19,25 @@ class TaskDialogIconArea(Container):
 
     """
     #: The default padding is set appropriate for common use cases.
-    padding = set_default((10, 0, 15, 10))
+    padding = (10, 0, 15, 10)
 
     #: The icon area resists clipping by default, since it is typically
     #: taller than the instruction and could otherwise lead to a system
     #: where the the instruction and icon compete to set the min height.
-    resist_height = set_default('strong')
+    resist_height = 'strong'
 
-    def layout_constraints(self):
-        """ Generate the layout constraints for the icon area.
-
-        The icon area gets a spacer by default so that it can expand
-        to accomodate large content areas.
-
-        """
-        cns = self.constraints
-        if not cns:
-            items = self.widgets()
-            items.append(spacer(0))
-            cns = [vbox(*items)]
-        return cns
+    #: Generate the layout constraints for the icon area. The icon area
+    #: gets a default spacer so that it can expand to accomodate larger
+    #: content areas.
+    layout_constraints => ():
+        if self.constraints:
+            return self.constraints
+        items = self.visible_widgets()
+        items.append(spacer(0))
+        return [vbox(*items)]
 
 
-class TaskDialogInstructionArea(Container):
+enamldef TaskDialogInstructionArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -50,10 +45,10 @@ class TaskDialogInstructionArea(Container):
 
     """
     #: The default padding is set appropriate for common use cases.
-    padding = set_default((10, 10, 15, 10))
+    padding = (10, 10, 15, 10)
 
 
-class TaskDialogContentArea(Container):
+enamldef TaskDialogContentArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -61,10 +56,10 @@ class TaskDialogContentArea(Container):
 
     """
     #: The default padding is set appropriate for common use cases.
-    padding = set_default((0, 10, 15, 10))
+    padding = (0, 10, 15, 10)
 
 
-class TaskDialogCommandArea(Container):
+enamldef TaskDialogCommandArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -74,7 +69,7 @@ class TaskDialogCommandArea(Container):
     pass
 
 
-class TaskDialogDetailsArea(Container):
+enamldef TaskDialogDetailsArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -82,14 +77,13 @@ class TaskDialogDetailsArea(Container):
 
     """
     #: The default padding is set appropriate for common use cases.
-    padding = set_default((0, 10, 15, 10))
+    padding = (0, 10, 15, 10)
 
-    def _observe_visible(self, change):
-        if change['type'] == 'update':
-            self.parent.request_relayout()
+    # XXX ideally, this shouldn't be needed.
+    visible :: parent.request_relayout()
 
 
-class TaskDialogFootnoteArea(Container):
+enamldef TaskDialogFootnoteArea(Container):
     """ A custom container for use in a task dialog.
 
     User code can declare and instance of this element in the body of a
@@ -99,12 +93,12 @@ class TaskDialogFootnoteArea(Container):
     pass
 
 
-class TaskDialogBody(Container):
+enamldef TaskDialogBody(Container):
     """ A custom container used to create a task dialog body.
 
     A TaskDialogBody element should be declared as the central widget
-    of a Dialog widget. The element layout logic which automatically
-    arranges the dialog area containers declared as children.
+    of a Dialog widget. The element layout logic automatically arranges
+    the dialog area containers declared as children.
 
     The dialog body supports the following area children, all of which
     are optional. User code should declare at most one of each type
@@ -121,33 +115,20 @@ class TaskDialogBody(Container):
 
     """
     #: The dialog body has no padding by default.
-    padding = set_default(0)
+    padding = 0
 
-    def initialize(self):
-        """ A reimplemented initialization method.
+    #: The dialog footnote separator. This is only made visible when
+    #: using a dialog footnote area.
+    Separator: separator:
+        visible = False
 
-        This initializer will add a horizontal separator as a child of
-        the element if it detects a child footnote area.
-
-        """
-        super(TaskDialogBody, self).initialize()
-        for child in self.children:
-            if isinstance(child, TaskDialogFootnoteArea):
-                separator = Separator(self)
-                separator.style_class = 'footnote-separator'
-                separator.initialize()
-                break
-
-    def layout_constraints(self):
-        """ A reimplemented constraints generation method.
-
-        This method will setup a grid layout which is appropriate for
-        the task dialog area children defined for the dialog body. The
-        'constraints' attribute is ignored entirely.
-
-        """
-        icon = inst = ctnt = dtls = cmnd = sepr = ftnt = None
-        for item in self.widgets():
+    #: Generate the layout constraints for the dialog body. This method
+    #: will setup a layout which is appropriate for the task dialog area
+    #: children defined for the dialog body. The 'constraints' attribute
+    #: is ignored entirely.
+    layout_constraints => ():
+        icon = inst = ctnt = dtls = cmnd = ftnt = None
+        for item in self.visible_widgets():
             if isinstance(item, TaskDialogIconArea):
                 icon = item
             elif isinstance(item, TaskDialogInstructionArea):
@@ -160,10 +141,14 @@ class TaskDialogBody(Container):
                 dtls = item
             elif isinstance(item, TaskDialogFootnoteArea):
                 ftnt = item
-            elif isinstance(item, Separator):
-                sepr = item
-        if dtls is not None and not dtls.visible:
-            dtls = None
+
+        if ftnt is not None:
+            separator.visible = True
+            sepr = separator
+        else:
+            separator.visible = False
+            sepr = None
+
         t = self.contents_top
         r = self.contents_right
         b = self.contents_bottom
@@ -174,6 +159,7 @@ class TaskDialogBody(Container):
             align('left', l, cmnd, sepr, ftnt),
             align('left', inst, ctnt, dtls),
         ]
+
         if icon is None:
             cns.append(align('left', l, inst or ctnt or dtls))
         else:
@@ -182,6 +168,7 @@ class TaskDialogBody(Container):
                 align('left', l, icon),
                 align('left', icon.right, inst or ctnt or dtls),
             ])
+
         return cns
 
 

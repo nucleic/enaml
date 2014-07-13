@@ -1,6 +1,55 @@
 Enaml Release Notes
 ===================
 
+0.9.7 - 05/18/2014
+------------------
+- Add an IPythonConsole widget.
+- Add support for widgets in tool bars and menus.
+- Add a ToolButton widget.
+- Removed the 'focus_policy' attribute.
+- Removed the 'show_focus_rect' attribute.
+- Fix bugs #122, #123, #124, #131, #145
+
+0.9.6 - 05/08/2014
+------------------
+- Add a declarative function syntax to the grammar.
+- Add a comprehensive focus API. 1090b3f35a9c_
+
+.. _1090b3f35a9c: https://github.com/nucleic/enaml/commit/1090b3f35a9c90b6496864907b816a507951ffb5
+
+0.9.5 - 04/28/2014
+------------------
+- Allow pressing escape while dragging a floating dock window. e732d2bb3c6c_
+- Fix line ending issues in live editor on old versions of OSX (thanks to JF). 0a54944728ae_
+
+.. _e732d2bb3c6c: https://github.com/nucleic/enaml/commit/e732d2bb3c6c905cd7f2fe92171e2eab46d8d0e4
+.. _0a54944728ae: https://github.com/nucleic/enaml/commit/0a54944728ae8a688310bb68177092b13baa6c62
+
+0.9.4 - 03/13/2014
+------------------
+- Allow enamldef objects to be properly pickled. db99d02fa377_
+
+.. _db99d02fa377: https://github.com/nucleic/enaml/commit/db99d02fa3773ac99f5e02709037e6ba0df952af
+
+0.9.3 - 03/10/2014
+------------------
+- Return the value of the command handler from CorePlugin.invoke_command. 5322bd1d2a67_
+- Automatically request relayout when widget visibility changes. 5d24f8ab13cb_
+- Add knobs for controlling Form row and column spacing. cdb747d8d1fa_
+- Add VGroup and HGroup convenience layout factories. aed5ddd623d1_
+- Add a 'factory' layout helper. 41480f2694d2_
+
+.. _5322bd1d2a67: https://github.com/nucleic/enaml/commit/5322bd1d2a675348f50df1adc0479f6aa4b406dd
+.. _5d24f8ab13cb: https://github.com/nucleic/enaml/commit/5d24f8ab13cb23385ce22701389920779b3dc546
+.. _cdb747d8d1fa: https://github.com/nucleic/enaml/commit/cdb747d8d1fa49732d95f7b4b358f4da9820477a
+.. _aed5ddd623d1: https://github.com/nucleic/enaml/commit/aed5ddd623d1a4041dd9349af5baf4a56f5863dd
+.. _41480f2694d2: https://github.com/nucleic/enaml/commit/41480f2694d27cecbc97cc347f60000e205d4c8f
+
+0.9.2 - 02/20/2014
+------------------
+- Update the layout (if needed) when changing fonts.
+- Minor code cleanup and documentation updates.
+
 0.9.1 - 02/11/2014
 ------------------
 - Add the workbench plugin framework. 2ab09c6782b4_

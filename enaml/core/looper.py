@@ -96,7 +96,7 @@ class Looper(Pattern):
         new_iter_data = sortedmap()
         new_items = []
 
-        if iterable and len(pattern_nodes) > 0:
+        if iterable is not None and len(pattern_nodes) > 0:
             for loop_index, loop_item in enumerate(iterable):
                 iteration = old_iter_data.get(loop_item)
                 if iteration is not None:

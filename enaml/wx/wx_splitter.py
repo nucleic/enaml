@@ -200,7 +200,7 @@ class WxSplitter(WxConstraintsWidget, ProxySplitter):
         """
         super(WxSplitter, self).init_widget()
         d = self.declaration
-        self.set_orientation(d.orientation, guard=False)
+        self.set_orientation(d.orientation)
         self.set_live_drag(d.live_drag)
 
     def init_layout(self):
@@ -250,17 +250,13 @@ class WxSplitter(WxConstraintsWidget, ProxySplitter):
     #--------------------------------------------------------------------------
     # ProxySplitter API
     #--------------------------------------------------------------------------
-    def set_orientation(self, orientation, guard=True):
+    def set_orientation(self, orientation):
         """ Update the orientation of the splitter.
 
         """
         wx_orientation = _ORIENTATION_MAP[orientation]
         widget = self.widget
-        if guard:
-            with self.geometry_guard():
-                widget.SetOrientation(wx_orientation)
-                widget.SizeWindows()
-        else:
+        with self.geometry_guard():
             widget.SetOrientation(wx_orientation)
             widget.SizeWindows()
 

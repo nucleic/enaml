@@ -43,7 +43,7 @@ class WxAbstractButton(WxControl, ProxyAbstractButton):
         super(WxAbstractButton, self).init_widget()
         d = self.declaration
         if d.text:
-            self.set_text(d.text, guard=False)
+            self.set_text(d.text)
         self.set_checkable(d.checkable)
         self.set_checked(d.checked)
 
@@ -81,14 +81,11 @@ class WxAbstractButton(WxControl, ProxyAbstractButton):
     #--------------------------------------------------------------------------
     # ProxyAbstractButton API
     #--------------------------------------------------------------------------
-    def set_text(self, text, guard=True):
+    def set_text(self, text):
         """ Sets the widget's text with the provided value.
 
         """
-        if guard:
-            with self.geometry_guard():
-                self.widget.SetLabel(text)
-        else:
+        with self.geometry_guard():
             self.widget.SetLabel(text)
 
     def set_icon(self, icon):

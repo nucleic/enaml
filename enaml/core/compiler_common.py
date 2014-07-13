@@ -12,10 +12,11 @@ import ast
 
 from atom.api import Str, Typed
 
+from . import byteplay as bp
 from .code_generator import CodeGenerator
 from .enaml_ast import (
     AliasExpr, ASTVisitor, Binding, ChildDef, EnamlDef, StorageExpr, Template,
-    TemplateInst, PythonExpression, PythonModule
+    TemplateInst, PythonExpression, PythonModule, FuncDef
 )
 
 
@@ -107,7 +108,7 @@ def should_store_locals(node):
         scopes, False otherwise.
 
     """
-    types = (AliasExpr, Binding)
+    types = (AliasExpr, Binding, FuncDef)
     for item in node.body:
         if isinstance(item, types):
             return True
@@ -402,7 +403,7 @@ def gen_child_def_node(cg, node, local_names):
         cg.pop_top()                            # base
 
     # Subclass the child class if needed
-    store_types = (StorageExpr, AliasExpr)
+    store_types = (StorageExpr, AliasExpr, FuncDef)
     if any(isinstance(item, store_types) for item in node.body):
         cg.load_const(node.typename)
         cg.rot_two()
@@ -625,6 +626,80 @@ def gen_storage_expr(cg, node, index, local_names):
             cg.load_const(None)
         cg.load_const(node.kind)
         cg.call_function(4)
+        cg.pop_top()
+
+
+def _insert_decl_function(cg, funcdef):
+    """ Create and place a declarative function on the TOS.
+
+    This will rewrite the function to convert each LOAD_GLOBAL opcode
+    into a LOAD_NAME opcode, unless the associated name was explicitly
+    made global via the 'global' keyword.
+
+    Parameters
+    ----------
+    funcdef : ast node
+        The python FunctionDef ast node.
+
+    """
+    # collect the explicit 'global' variable names
+    global_vars = set()
+    for node in ast.walk(funcdef):
+        if isinstance(node, ast.Global):
+            global_vars.update(node.names)
+
+    # generate the code object which will create the function
+    mod = ast.Module(body=[funcdef])
+    code = compile(mod, cg.filename, mode='exec')
+
+    # convert to a byteplay object and remove the leading and
+    # trailing ops: SetLineno STORE_NAME LOAD_CONST RETURN_VALUE
+    outer_ops = bp.Code.from_code(code).code[1:-3]
+
+    # the stack now looks like the following:
+    #   ...
+    #   ...
+    #   LOAD_CONST      (<code object>)
+    #   MAKE_FUCTION    (num defaults)      // TOS
+
+    # extract the inner code object which represents the actual
+    # function code and update its flags and global loads
+    inner = outer_ops[-2][1]
+    inner.newlocals = False
+    inner_ops = inner.code
+    for idx, (op, op_arg) in enumerate(inner_ops):
+        if op == bp.LOAD_GLOBAL and op_arg not in global_vars:
+            inner_ops[idx] = (bp.LOAD_NAME, op_arg)
+
+    # inline the modified code ops into the code generator
+    cg.code_ops.extend(outer_ops)
+
+
+def gen_decl_funcdef(cg, node, index):
+    """ Generate the code for a declarative function definition.
+
+    The caller should ensure that NODE_LIST is present in the fast
+    locals of the code object.
+
+    Parameters
+    ----------
+    cg : CodeGenerator
+        The code generator with which to write the code.
+
+    node : FuncDef
+        The enaml ast node of interest.
+
+    index : int
+        The index of the target node in the node list.
+
+    """
+    with cg.try_squash_raise():
+        cg.set_lineno(node.lineno)
+        load_helper(cg, 'add_decl_function')
+        load_node(cg, index)
+        _insert_decl_function(cg, node.funcdef)
+        cg.load_const(node.is_override)
+        cg.call_function(3)
         cg.pop_top()
 
 

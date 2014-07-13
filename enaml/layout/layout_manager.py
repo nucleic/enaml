@@ -140,7 +140,7 @@ class LayoutItem(Atom):
         result : Contrainable or ContentsContrainable
             An object which implements the Constrainable interface.
             If the 'margins' method returns a non-empty tuple, then
-            the object must also implement the ContentsContrainable
+            the object must also implement the ContentsConstrainable
             interface.
 
         """
@@ -274,7 +274,6 @@ class LayoutManager(Atom):
 
         """
         self._root_item = item
-        self.set_items([])
 
     def set_items(self, items):
         """ Set the layout items for this layout manager.
@@ -332,6 +331,12 @@ class LayoutManager(Atom):
 
         # Store the layout items for resize updates.
         self._layout_items = items
+
+    def clear_items(self):
+        """ Clear the child layout items in the layout.
+
+        """
+        del self._layout_items
 
     def resize(self, width, height):
         """ Update the size of target size of the layout.

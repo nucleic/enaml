@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, Int, Typed, List, atomref
 
-from enaml.layout.dock_layout import DockLayout
+from enaml.layout.dock_layout import DockLayout, DockLayoutValidator
 
 from enaml.qt.QtCore import Qt, QPoint, QRect, QObject
 from enaml.qt.QtGui import QApplication
@@ -177,9 +177,11 @@ class DockManager(Atom):
         Parameters
         ----------
         layout : DockLayout
-            The DockLayout to apply to the managed area.
+            The dock layout to apply to the managed area.
 
         """
+        available = (i.objectName() for i in self._dock_items)
+        DockLayoutValidator(available)(layout)
         LayoutBuilder(self)(layout)
 
     def update_layout(self, ops):

@@ -8,7 +8,7 @@
 from atom.api import Typed, Bool
 
 from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
-from enaml.qt.QtGui import QApplication, QLayout, QIcon
+from enaml.qt.QtGui import QApplication, QLayout, QIcon, QCursor
 
 from .event_types import QDockItemEvent, DockItemUndocked
 from .q_dock_area import QDockArea
@@ -117,8 +117,14 @@ class QDockContainer(QDockFrame):
         #: The original title bar press position.
         press_pos = Typed(QPoint)
 
+        #: The position of the frame when first moved.
+        start_pos = Typed(QPoint)
+
         #: Whether or not the dock item is being dragged.
         dragging = Bool(False)
+
+        #: Whether the frame was maximized before moving.
+        frame_was_maximized = Bool(False)
 
         #: Whether the dock item is maximized in the dock area.
         item_is_maximized = Bool(False)
@@ -422,6 +428,8 @@ class QDockContainer(QDockFrame):
         state = self.frame_state
         state.dragging = False
         state.press_pos = None
+        state.start_pos = None
+        state.frame_was_maximized = False
         state.in_dock_bar = False
         self.showNormal()
         self.unfloat()
@@ -445,6 +453,7 @@ class QDockContainer(QDockFrame):
         self.showLinkButton()
         self.hidePinButton()
         repolish(self)
+        repolish(self.dockItem())
         self.topLevelChanged.emit(True)
 
     def unfloat(self):
@@ -461,6 +470,7 @@ class QDockContainer(QDockFrame):
         self.hideLinkButton()
         self.showPinButton()
         repolish(self)
+        repolish(self.dockItem())
         self.topLevelChanged.emit(False)
 
     def parentDockArea(self):
@@ -542,6 +552,7 @@ class QDockContainer(QDockFrame):
         state = self.frame_state
         state.mouse_title = True
         state.dragging = True
+        state.frame_was_maximized = False
         self.float()
         self.raiseFrame()
         title_bar = self.dockItem().titleBarWidget()
@@ -549,7 +560,8 @@ class QDockContainer(QDockFrame):
         margins = self.layout().contentsMargins()
         offset = QPoint(margins.left(), margins.top())
         state.press_pos = title_bar.mapTo(self, title_pos) + offset
-        self.move(pos - state.press_pos)
+        state.start_pos = pos - state.press_pos
+        self.move(state.start_pos)
         self.show()
         self.grabMouse()
         self.activateWindow()
@@ -661,6 +673,25 @@ class QDockContainer(QDockFrame):
         """
         self.manager().close_container(self, event)
 
+    def keyPressEvent(self, event):
+        """ Handle the key press event for the dock container.
+
+        If the Escape key is pressed while dragging a floating
+        container, the container will be released. If it is not
+        released over a dock target, it will be moved back to its
+        starting position.
+
+        """
+        super(QDockContainer, self).keyPressEvent(event)
+        state = self.frame_state
+        if state.dragging and event.key() == Qt.Key_Escape:
+            pos = state.start_pos
+            self._releaseFrame();
+            if self.isWindow() and pos is not None:
+                self.move(pos)
+                if state.frame_was_maximized:
+                    self.showMaximized()
+
     def titleBarMousePressEvent(self, event):
         """ Handle a mouse press event on the title bar.
 
@@ -674,6 +705,7 @@ class QDockContainer(QDockFrame):
             state = self.frame_state
             if state.press_pos is None:
                 state.press_pos = event.pos()
+                state.start_pos = self.pos()
                 return True
         return False
 
@@ -709,7 +741,8 @@ class QDockContainer(QDockFrame):
         # normal size. The next move event will move the window.
         state.dragging = True
         if self.isWindow():
-            if self.isMaximized():
+            state.frame_was_maximized = self.isMaximized();
+            if state.frame_was_maximized:
                 coeff = state.press_pos.x() / float(self.width())
                 self.showNormal()
                 state.press_pos = _computePressPos(self, coeff)
@@ -734,12 +767,33 @@ class QDockContainer(QDockFrame):
         self.raiseFrame()
         margins = self.layout().contentsMargins()
         state.press_pos += QPoint(0, margins.top())
-        self.move(global_pos - state.press_pos)
+        state.start_pos = global_pos - state.press_pos
+        self.move(state.start_pos)
         self.show()
         self.grabMouse()
         self.activateWindow()
         self.raise_()
         return True
+
+    def _releaseFrame(self):
+        """ A helper method which releases the frame grab.
+
+        Returns
+        -------
+        result : bool
+            True if the frame was released, False otherwise.
+
+        """
+        state = self.frame_state
+        if state.press_pos is not None:
+            self.releaseMouse()
+            if self.isWindow():
+                self.manager().drag_release_frame(self, QCursor.pos())
+            state.dragging = False
+            state.press_pos = None
+            state.start_pos = None
+            return True
+        return False
 
     def titleBarMouseReleaseEvent(self, event):
         """ Handle a mouse release event on the title bar.
@@ -751,12 +805,5 @@ class QDockContainer(QDockFrame):
 
         """
         if event.button() == Qt.LeftButton:
-            state = self.frame_state
-            if state.press_pos is not None:
-                self.releaseMouse()
-                if self.isWindow():
-                    self.manager().drag_release_frame(self, event.globalPos())
-                state.dragging = False
-                state.press_pos = None
-                return True
+            return self._releaseFrame()
         return False

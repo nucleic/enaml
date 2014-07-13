@@ -76,10 +76,14 @@ class WxConstraintsWidget(WxWidget, ProxyConstraintsWidget):
     def geometry_guard(self):
         """ A context manager for guarding the geometry of the widget.
 
-        This manager will call 'geometry_updated' if the size hint,
-        minimum, or maximum size of the widget has changed.
+        If the proxy is fully active, this context manager will call the
+        'geometry_updated' method if the size hint, minimum, or maximum
+        size of the widget changes during context execution.
 
         """
+        if not self.is_active:
+            yield
+            return
         widget = self.widget
         old_hint = widget.GetBestSize()
         old_min = widget.GetMinSize()
@@ -89,3 +93,15 @@ class WxConstraintsWidget(WxWidget, ProxyConstraintsWidget):
             old_min != widget.GetMinSize() or
             old_max != widget.GetMaxSize()):
             self.geometry_updated()
+
+    #--------------------------------------------------------------------------
+    # Reimplementations
+    #--------------------------------------------------------------------------
+    def set_font(self, font):
+        """ A reimplemented font setter.
+
+        This method sets the font from within a geometry guard.
+
+        """
+        with self.geometry_guard():
+            super(WxConstraintsWidget, self).set_font(font)

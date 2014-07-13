@@ -17,10 +17,11 @@ from .QtGui import QToolBar, QMainWindow
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup
 from .qt_constraints_widget import QtConstraintsWidget
+from .qt_widget import QtWidget
 
 
 #: A mapping from Enaml dock area to Qt tool bar areas
-_DOCK_AREA_MAP = {
+DOCK_AREAS = {
     'top': Qt.TopToolBarArea,
     'right': Qt.RightToolBarArea,
     'bottom': Qt.BottomToolBarArea,
@@ -30,7 +31,7 @@ _DOCK_AREA_MAP = {
 
 
 #: A mapping from Qt tool bar areas to Enaml dock areas
-_DOCK_AREA_INV_MAP = {
+DOCK_AREAS_INV = {
     Qt.TopToolBarArea: 'top',
     Qt.RightToolBarArea: 'right',
     Qt.BottomToolBarArea: 'bottom',
@@ -40,9 +41,18 @@ _DOCK_AREA_INV_MAP = {
 
 
 #: A mapping from Enaml orientation to Qt Orientation
-_ORIENTATION_MAP = {
+ORIENTATIONS = {
     'horizontal': Qt.Horizontal,
     'vertical': Qt.Vertical,
+}
+
+
+#: A mapping from Enaml button style to Qt ToolButtonStyle
+BUTTON_STYLES = {
+    'icon_only': Qt.ToolButtonIconOnly,
+    'text_only': Qt.ToolButtonTextOnly,
+    'text_beside_icon': Qt.ToolButtonTextBesideIcon,
+    'text_under_icon': Qt.ToolButtonTextUnderIcon,
 }
 
 
@@ -180,6 +190,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """
         super(QtToolBar, self).init_widget()
         d = self.declaration
+        self.set_button_style(d.button_style)
         self.set_movable(d.movable)
         self.set_floatable(d.floatable)
         self.set_floating(d.floating)
@@ -201,6 +212,8 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
                 widget.addAction(child.widget)
             elif isinstance(child, QtActionGroup):
                 widget.addActions(child.actions())
+            elif isinstance(child, QtWidget):
+                widget.addAction(child.get_action(True))
 
     #--------------------------------------------------------------------------
     # Child Events
@@ -226,10 +239,14 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
             if found:
                 if isinstance(dchild, QtAction):
                     return dchild.widget
-                if isinstance(dchild, QtActionGroup):
-                    acts = dchild.actions()
-                    if len(acts) > 0:
-                        return acts[0]
+                elif isinstance(dchild, QtActionGroup):
+                    actions = dchild.actions()
+                    if len(actions) > 0:
+                        return actions[0]
+                elif isinstance(dchild, QtWidget):
+                    action = dchild.get_action(False)
+                    if action is not None:
+                        return action
             else:
                 found = dchild is child
 
@@ -247,6 +264,9 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         elif isinstance(child, QtActionGroup):
             before = self.find_next_action(child)
             self.widget.insertActions(before, child.actions())
+        elif isinstance(child, QtWidget):
+            before = self.find_next_action(child)
+            self.widget.insertAction(before, child.get_action(True))
 
     def child_removed(self, child):
         """  Handle the child removed event for a QtToolBar.
@@ -254,10 +274,11 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """
         super(QtToolBar, self).child_removed(child)
         if isinstance(child, QtAction):
-            if child.widget is not None:
-                self.widget.removeAction(child.widget)
+            self.widget.removeAction(child.widget)
         elif isinstance(child, QtActionGroup):
             self.widget.removeActions(child.actions())
+        elif isinstance(child, QtWidget):
+            self.widget.removeAction(child.get_action(False))
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -281,13 +302,19 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
             self._guard |= FLOATED_GUARD
             try:
                 self.declaration.floating = False
-                self.declaration.dock_area = _DOCK_AREA_INV_MAP[area]
+                self.declaration.dock_area = DOCK_AREAS_INV[area]
             finally:
                 self._guard &= ~FLOATED_GUARD
 
     #--------------------------------------------------------------------------
     # ProxyToolBar API
     #--------------------------------------------------------------------------
+    def set_button_style(self, style):
+        """ Set the button style for the toolbar.
+
+        """
+        self.widget.setToolButtonStyle(BUTTON_STYLES[style])
+
     def set_movable(self, movable):
         """ Set the movable state on the underlying widget.
 
@@ -315,7 +342,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """ Set the dock area on the underyling widget.
 
         """
-        self.widget.setToolBarArea(_DOCK_AREA_MAP[dock_area])
+        self.widget.setToolBarArea(DOCK_AREAS[dock_area])
 
     def set_allowed_dock_areas(self, dock_areas):
         """ Set the allowed dock areas on the underlying widget.
@@ -323,7 +350,7 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         """
         qt_areas = Qt.NoToolBarArea
         for area in dock_areas:
-            qt_areas |= _DOCK_AREA_MAP[area]
+            qt_areas |= DOCK_AREAS[area]
         self.widget.setAllowedAreas(qt_areas)
 
     def set_orientation(self, orientation):
@@ -336,4 +363,4 @@ class QtToolBar(QtConstraintsWidget, ProxyToolBar):
         widget = self.widget
         parent = widget.parent()
         if not isinstance(parent, QMainWindow):
-            widget.setOrientation(_ORIENTATION_MAP[orientation])
+            widget.setOrientation(ORIENTATIONS[orientation])
