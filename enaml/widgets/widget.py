@@ -88,10 +88,10 @@ class Feature(IntEnum):
     FocusEvents = 0x2
 
     #: Enables support for drag operations.
-    Drag = 0x3
+    Drag = 0x4
 
     #: Enables support for drop operations.
-    Drop = 0x4
+    Drop = 0x8
 
 
 class Widget(ToolkitObject, Stylable):
