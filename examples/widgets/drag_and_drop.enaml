@@ -21,10 +21,10 @@ If the widget has a `Drop` flag, the following declarative functions are
 available:
 
 `drag_enter`: Called when a drag operation enters the bounds of the widget.
-This function is called with the arguments (data, dtype, position).
+This function is called with one argument: a DragEvent.
 
 `drag_move`: Called when a drag operation moves within the bounds of the
-widget. This function is called with the arguments (data, dtype, position).
+widget. This function is called with one argument: a DragEvent.
 
 `drag_leave`: Called when a drag operation leaves the bounds of the widget.
 This function accepts no arguments.
@@ -34,34 +34,50 @@ value determining whether the drop operation should be permitted. Accepts one
 argument (dtype).
 
 `drop`: Called when a drop has occurred and has been validated by the
-`validate_drop` function. Accepts the arguments (data, dtype, position).
+`validate_drop` function. This function is called with one argument: a
+DragEvent.
 
 << autodoc-me >>
 """
 from enaml.widgets.api import MainWindow, Container, Label, Feature
-from enaml.layout.api import hbox, align
+from enaml.layout.api import hbox, vbox, align
+
+
+big_data = ''.join([str(i) for i in range(1000000)])
 
 
 enamldef Main(MainWindow):
     Container:
         constraints = [
-            hbox(one, two),
-            align('width', one, two)
+            hbox(
+                vbox(source_small, source_big),
+                target
+            ),
+            align('width', source_small, source_big, target)
         ]
 
-        Label: one:
-            text = 'Testing'
+        Label: source_small:
+            text = 'Small Data'
             features = Feature.Drag
 
             drag_data => ():
                 return ('text', self.text)
 
-        Label: two:
+        Label: source_big:
+            text = 'Large Data'
+            features = Feature.Drag
+
+            drag_data => ():
+                return ('text', big_data)
+
+        Label: target:
             features = Feature.Drop
+            background = 'rgba(0, 255, 0, 0.4)'
+            hug_height = 'ignore'
 
             validate_drop => (dtype):
                 return dtype == 'text'
 
-            drop => (data, dtype, position):
-                self.text = data
+            drop => (event):
+                self.text = event.data
 

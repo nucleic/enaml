@@ -15,6 +15,7 @@ from .QtCore import Qt, QSize, QPoint, QMimeData, QByteArray
 from .QtGui import QFont, QWidget, QWidgetAction, QApplication, QDrag, QPixmap
 
 from . import focus_registry
+from .q_drag_event import QDragEvent
 from .q_resource_helpers import (get_cached_qcolor, get_cached_qfont,
                                  get_cached_qimage)
 from .qt_toolkit_object import QtToolkitObject
@@ -332,29 +333,33 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
     def dragEnterEvent(self, event):
         widget = self.widget
-        position = Pos(event.pos().x(), event.pos().y())
 
+        position = Pos(event.pos().x(), event.pos().y())
         mime_data = event.mimeData()
         dtype = mime_data.formats()[0]
-        data = mime_data.data(dtype).data()
+
+        drag_event = QDragEvent(position=position, type=dtype,
+                                _q_mime_data=mime_data)
 
         if self.declaration.validate_drop(dtype):
             event.acceptProposedAction()
 
         type(widget).dragEnterEvent(widget, event)
-        self.declaration.drag_enter(data, dtype, position)
+        self.declaration.drag_enter(drag_event)
 
     def dragMoveEvent(self, event):
         widget = self.widget
-        position = Pos(event.pos().x(), event.pos().y())
 
+        position = Pos(event.pos().x(), event.pos().y())
         mime_data = event.mimeData()
         dtype = mime_data.formats()[0]
-        data = mime_data.data(dtype).data()
+
+        drag_event = QDragEvent(position=position, type=dtype,
+                                _q_mime_data=mime_data)
 
         event.acceptProposedAction()
         type(widget).dragMoveEvent(widget, event)
-        self.declaration.drag_move(data, dtype, position)
+        self.declaration.drag_move(drag_event)
 
     def dragLeaveEvent(self, event):
         widget = self.widget
@@ -363,15 +368,17 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
     def dropEvent(self, event):
         widget = self.widget
+        
         position = Pos(event.pos().x(), event.pos().y())
-
         mime_data = event.mimeData()
         dtype = mime_data.formats()[0]
-        data = mime_data.data(dtype).data()
+
+        drag_event = QDragEvent(position=position, type=dtype,
+                                _q_mime_data=mime_data)
 
         event.acceptProposedAction()
         type(widget).dropEvent(widget, event)
-        self.declaration.drop(data, dtype, position)
+        self.declaration.drop(drag_event)
 
     #--------------------------------------------------------------------------
     # Framework API

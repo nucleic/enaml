@@ -350,7 +350,7 @@ class Widget(ToolkitObject, Stylable):
         return None
 
     @d_func
-    def drag_enter(self, data, dtype, position):
+    def drag_enter(self, event):
         """ A method invoked when a drag operation enters the widget's bounds.
 
         ** The Drop feature must be enabled for the widget in order for this
@@ -358,20 +358,14 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        data : str
-            The data provided by the drag operation.
-
-        dtype : str
-            The type of data provided by the drag operation.
-
-        position : Pos
-            The (x, y) coordinates of the drag operation.
+        event : DragEvent
+            The event representing the drag operation.
 
         """
         pass
 
     @d_func
-    def drag_move(self, data, dtype, position):
+    def drag_move(self, event):
         """ A method invoked when a drag operation moves within the widget's
         bounds.
 
@@ -380,14 +374,8 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        data : str
-            The data provided by the drag operation.
-
-        dtype : str
-            The type of data provided by the drag operation.
-
-        position : Pos
-            The (x, y) coordinates of the drag operation.
+        event : DragEvent
+            The event representing the drag operation.
 
         """
         pass
@@ -421,7 +409,7 @@ class Widget(ToolkitObject, Stylable):
         return True
 
     @d_func
-    def drop(self, data, dtype, position):
+    def drop(self, event):
         """ A method invoked when a drag operation ends on the widget.
 
         ** The Drop feature must be enabled for the widget in order for this
@@ -429,14 +417,8 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        data : str
-            The data provided by the drag operation.
-
-        dtype : str
-            The type of data provided by the drag operation.
-
-        position : Pos
-            The (x, y) coordinates of the drag operation.
+        event : DragEvent
+            The event representing the drag operation.
 
         """
         pass
