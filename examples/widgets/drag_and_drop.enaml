@@ -1,3 +1,43 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the drag and drop functionality.
+
+This example demonstrates the use of the `Drag` and `Drop` Feature flags. When
+a widget has a `Drag` flag, the following declarative functions are available:
+
+`drag_data`: The data to be transferred in the drag operation. Accepts no
+arguments and returns a tuple of (dtype, data)
+
+`drag_image`: The image to be displayed under the cursor. Accepts no arguments
+and returns an Enaml `Image`. If this function is not defined, a snapshot of
+the widget will be used instead.
+
+If the widget has a `Drop` flag, the following declarative functions are
+available:
+
+`drag_enter`: Called when a drag operation enters the bounds of the widget.
+This function is called with the arguments (data, dtype, position).
+
+`drag_move`: Called when a drag operation moves within the bounds of the
+widget. This function is called with the arguments (data, dtype, position).
+
+`drag_leave`: Called when a drag operation leaves the bounds of the widget.
+This function accepts no arguments.
+
+`validate_drop`: Called when a drop operation is initiated. Returns a boolean
+value determining whether the drop operation should be permitted. Accepts one
+argument (dtype).
+
+`drop`: Called when a drop has occurred and has been validated by the
+`validate_drop` function. Accepts the arguments (data, dtype, position).
+
+<< autodoc-me >>
+"""
 from enaml.widgets.api import MainWindow, Container, Label, Feature
 from enaml.layout.api import hbox, align
 
