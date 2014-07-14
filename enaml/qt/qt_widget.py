@@ -294,7 +294,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
                 dtype, data = d.drag_data()
                 mime_data = QMimeData()
-                mime_data.setData(dtype, QByteArray(str(data)))
+                mime_data.setData(dtype, QByteArray(data))
                 drag.setMimeData(mime_data)
 
                 image = d.drag_image()

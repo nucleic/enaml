@@ -328,11 +328,10 @@ class Widget(ToolkitObject, Stylable):
         Returns:
         --------
         result : tuple
-            A tuple of (dtype, data) where dtype is a string and data is a
-            bytearray.
+            A tuple of (dtype, data) where dtype and data are both strings.
 
         """
-        return ('', bytearray())
+        return ('', '')
 
     @d_func
     def drag_image(self):
@@ -359,7 +358,7 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        data : bytearray
+        data : str
             The data provided by the drag operation.
 
         dtype : str
@@ -381,7 +380,7 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        data : bytearray
+        data : str
             The data provided by the drag operation.
 
         dtype : str
@@ -430,7 +429,7 @@ class Widget(ToolkitObject, Stylable):
 
         Parameters
         ----------
-        data : bytearray
+        data : str
             The data provided by the drag operation.
 
         dtype : str
