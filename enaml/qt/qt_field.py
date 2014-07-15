@@ -10,7 +10,7 @@ from atom.api import Int, Typed
 from enaml.widgets.field import ProxyField
 
 from .QtCore import QTimer, Signal, Qt
-from .QtGui import QLineEdit, QCompleter
+from .QtGui import QLineEdit, QCompleter, QStandardItem, QStandardItemModel
 
 from .qt_control import QtControl
 
@@ -76,9 +76,10 @@ class QtField(QtControl, ProxyField):
         self.set_max_length(d.max_length)
         self.set_read_only(d.read_only)
         self.set_submit_triggers(d.submit_triggers)
-        if d.completion_list:
-            self.set_completion_list(d.completion_list)
-            self.set_completion_case_sensitive(d.completion_case_sensitive)
+        if d.completer:
+            completer = QCompleter(d.completer.completions,
+                                   self.widget)
+            self.widget.setCompleter(completer)
         self.widget.textEdited.connect(self.on_text_edited)
 
     #--------------------------------------------------------------------------
@@ -160,6 +161,15 @@ class QtField(QtControl, ProxyField):
         else:
             self._clear_error_state()
 
+        d = self.declaration
+        if d.completer:
+            d.completer.update(self.widget.text())
+            model = QStandardItemModel()
+            for c in d.completer.completions:
+                item = QStandardItem(c)
+                model.appendRow(item)
+            self.widget.completer().setModel(model)
+
         if self._text_timer is not None:
             self._text_timer.start()
 
@@ -235,32 +245,8 @@ class QtField(QtControl, ProxyField):
         """
         self.widget.setReadOnly(read_only)
 
-    def set_completion_list(self, completion_list):
-        """ Set a list of completion texts in the widget.
-
-        """
-        if not completion_list:
-            self.widget.setCompleter(None)
-            return
-        completion_list.sort(key=lambda s: s.lower())
-        completer = QCompleter(completion_list, self.widget)
-        self.widget.setCompleter(completer)
-
-    def set_completion_case_sensitive(self, completion_case_sensitive):
-        """ Set the case sensitivity of completion text in the widget.
-
-        """
-        completer = self.widget.completer()
-        if not completer:
-            return
-        if completion_case_sensitive:
-            completer.setCaseSensitivity(Qt.CaseSensitive)
-        else:
-            completer.setCaseSensitivity(Qt.CaseInsensitive)
-
     def field_text(self):
         """ Get the text stored in the widget.
 
         """
         return self.widget.text()
-
