@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2014, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,17 +7,18 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed, Coerced
 
-from enaml.layout.geometry import Pos
+from enaml.drag_drop import DropAction
 from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
 
-from .QtCore import Qt, QSize, QPoint, QMimeData, QByteArray
+from .QtCore import Qt, QSize, QPoint
 from .QtGui import QFont, QWidget, QWidgetAction, QApplication, QDrag, QPixmap
 
 from . import focus_registry
-from .q_drag_event import QDragEvent
-from .q_resource_helpers import (get_cached_qcolor, get_cached_qfont,
-                                 get_cached_qimage)
+from .q_resource_helpers import (
+    get_cached_qcolor, get_cached_qfont, get_cached_qimage
+)
+from .qt_drag_drop import QtDropEvent
 from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
 
@@ -37,7 +38,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
     #: Internal storage for the shared widget action.
     _widget_action = Typed(QWidgetAction)
 
-    #: Internal storage for the drag origin point.
+    #: Internal storage for the drag origin position.
     _drag_origin = Typed(QPoint)
 
     #--------------------------------------------------------------------------
@@ -112,9 +113,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.hook_focus_traversal()
         if features & Feature.FocusEvents:
             self.hook_focus_events()
-        if features & Feature.Drag:
+        if features & Feature.DragEnabled:
             self.hook_drag()
-        if features & Feature.Drop:
+        if features & Feature.DropEnabled:
             self.hook_drop()
 
     def _teardown_features(self):
@@ -128,9 +129,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.unhook_focus_traversal()
         if features & Feature.FocusEvents:
             self.unhook_focus_events()
-        if features & Feature.Drag:
+        if features & Feature.DragEnabled:
             self.unhook_drag()
-        if features & Feature.Drop:
+        if features & Feature.DropEnabled:
             self.unhook_drop()
 
     #--------------------------------------------------------------------------
@@ -171,11 +172,13 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
         """
         widget = self.focus_target()
-        if ((widget.focusPolicy() & Qt.TabFocus) and
-            widget.isEnabled() and
-            widget.isVisibleTo(widget.window())):
-            widget.setFocus(reason)
-            return True
+        if not widget.focusPolicy & Qt.TabFocus:
+            return False
+        if not widget.isEnabled():
+            return False
+        if not widget.isVisibleTo(widget.window()):
+            return False
+        widget.setFocus(reason)
         return False
 
     def focus_target(self):
@@ -256,58 +259,53 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         self.declaration.focus_lost()
 
     def hook_drag(self):
-        """ Install hooks for drag operations.
+        """ Install the hooks for drag operations.
 
         """
         widget = self.widget
         widget.mousePressEvent = self.mousePressEvent
         widget.mouseMoveEvent = self.mouseMoveEvent
+        widget.mouseReleaseEvent = self.mouseReleaseEvent
 
     def unhook_drag(self):
-        """ Remove hooks for drag operations.
+        """ Remove the hooks for drag operations.
 
         """
         widget = self.widget
         del widget.mousePressEvent
         del widget.mouseMoveEvent
+        del widget.mouseReleaseEvent
 
     def mousePressEvent(self, event):
-        """ On mouse press, record the position to use as the origin for a
-        drag operation.
+        """ Handle the mouse press event for a drag operation.
 
         """
+        if event.button() == Qt.LeftButton:
+            self._drag_origin = event.pos()
         widget = self.widget
-        self._drag_origin = event.pos()
         type(widget).mousePressEvent(widget, event)
 
     def mouseMoveEvent(self, event):
-        """ On mouse move, check the distance from the drag origin and
-        initiate a drag operation if necessary.
+        """ Handle the mouse move event for a drag operation.
 
         """
+        if event.buttons() & Qt.LeftButton and self._drag_origin is not None:
+            dist = (event.pos() - self._drag_origin).manhattanLength()
+            if dist >= QApplication.startDragDistance():
+                self.do_drag()
+                self._drag_origin = None
+                return
         widget = self.widget
-        d = self.declaration
-
-        if self._drag_origin is not None:
-            distance = (event.pos() - self._drag_origin).manhattanLength()
-            if distance > QApplication.startDragDistance():
-                drag = QDrag(widget)
-
-                dtype, data = d.drag_data()
-                mime_data = QMimeData()
-                mime_data.setData(dtype, QByteArray(data))
-                drag.setMimeData(mime_data)
-
-                image = d.drag_image()
-                if image:
-                    qimage = get_cached_qimage(image)
-                    drag.setPixmap(QPixmap.fromImage(qimage))
-                else:
-                    drag.setPixmap(QPixmap.grabWidget(widget))
-
-                drag.exec_(Qt.CopyAction)
-
         type(widget).mouseMoveEvent(widget, event)
+
+    def mouseReleaseEvent(self, event):
+        """ Handle the mouse release event for the drag operation.
+
+        """
+        if event.button() == Qt.LeftButton:
+            self._drag_origin = None
+        widget = self.widget
+        type(widget).mouseReleaseEvent(widget, event)
 
     def hook_drop(self):
         """ Install hooks for drop operations.
@@ -331,54 +329,49 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         del widget.dragLeaveEvent
         del widget.dropEvent
 
-    def dragEnterEvent(self, event):
+    def do_drag(self):
+        """ Perform the drag operation for the widget.
+
+        """
+        drag_data = self.declaration.drag_start()
+        if drag_data is None:
+            return
         widget = self.widget
+        qdrag = QDrag(widget)
+        qdrag.setMimeData(drag_data.mime_data.q_data())
+        if drag_data.image is not None:
+            qimg = get_cached_qimage(drag_data.image)
+            qdrag.setPixmap(QPixmap.fromImage(qimg))
+        else:
+            qdrag.setPixmap(QPixmap.grabWidget(widget))
+        default = Qt.DropAction(drag_data.default_drop_action)
+        supported = Qt.DropActions(drag_data.supported_actions)
+        qresult = qdrag.exec_(supported, default)
+        self.declaration.drag_end(drag_data, DropAction(qresult))
 
-        position = Pos(event.pos().x(), event.pos().y())
-        mime_data = event.mimeData()
-        dtype = mime_data.formats()[0]
+    def dragEnterEvent(self, event):
+        """ Handle the drag enter event for the widget.
 
-        drag_event = QDragEvent(position=position, type=dtype,
-                                _q_mime_data=mime_data)
-
-        if self.declaration.validate_drop(dtype):
-            event.acceptProposedAction()
-
-        type(widget).dragEnterEvent(widget, event)
-        self.declaration.drag_enter(drag_event)
+        """
+        self.declaration.drag_enter(QtDropEvent(event))
 
     def dragMoveEvent(self, event):
-        widget = self.widget
+        """ Handle the drag move event for the widget.
 
-        position = Pos(event.pos().x(), event.pos().y())
-        mime_data = event.mimeData()
-        dtype = mime_data.formats()[0]
-
-        drag_event = QDragEvent(position=position, type=dtype,
-                                _q_mime_data=mime_data)
-
-        event.acceptProposedAction()
-        type(widget).dragMoveEvent(widget, event)
-        self.declaration.drag_move(drag_event)
+        """
+        self.declaration.drag_move(QtDropEvent(event))
 
     def dragLeaveEvent(self, event):
-        widget = self.widget
-        type(widget).dragLeaveEvent(widget, event)
+        """ Handle the drag leave event for the widget.
+
+        """
         self.declaration.drag_leave()
 
     def dropEvent(self, event):
-        widget = self.widget
-        
-        position = Pos(event.pos().x(), event.pos().y())
-        mime_data = event.mimeData()
-        dtype = mime_data.formats()[0]
+        """ Handle the drop event for the widget.
 
-        drag_event = QDragEvent(position=position, type=dtype,
-                                _q_mime_data=mime_data)
-
-        event.acceptProposedAction()
-        type(widget).dropEvent(widget, event)
-        self.declaration.drop(drag_event)
+        """
+        self.declaration.drop(QtDropEvent(event))
 
     #--------------------------------------------------------------------------
     # Framework API
