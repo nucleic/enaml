@@ -338,7 +338,7 @@ class Widget(ToolkitObject, Stylable):
         return None
 
     @d_func
-    def drag_end(self, drag_data, action):
+    def drag_end(self, drag_data, result):
         """ A method called at the end of a drag-drop operation.
 
         This method is called after the user has completed the drop
@@ -354,7 +354,7 @@ class Widget(ToolkitObject, Stylable):
         data : DragData
             The drag data created by the `drag_start` method.
 
-        action : DropAction
+        result : DropAction
             The requested drop action when the drop completed.
 
         """
