@@ -50,12 +50,13 @@ class DragData(Atom):
     mime_data = Typed(MimeData, factory=mime_data_factory)
 
     #: The default drop action for the drag data. If not provided,
-    #: the toolkit will choose a suitable default value.
-    default_drop_action = Coerced(DropAction, (0x0,))
+    #: the toolkit will choose a suitable default from among the
+    #: supported action.
+    default_drop_action = Coerced(DropAction, (DropAction.Ignore,))
 
-    #: The supported drop actions of the drag data. If not provided,
-    #: the toolkit will choose a suitable default value.
-    supported_actions = Coerced(DropAction.Flags)
+    #: The supported drop actions of the drag data. This is an OR'd
+    #: combination of the available DropAction flags.
+    supported_actions = Coerced(DropAction.Flags, (DropAction.Move,))
 
     #: The image to use for the drag. If this is not provided, the
     #: toolkit will choose a suitable default value.
