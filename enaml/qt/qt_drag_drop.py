@@ -7,14 +7,15 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed
 
+from enaml.drag_drop import DropAction, DropEvent
 from enaml.layout.geometry import Pos
-from enaml.widgets.drag_event import DragEvent
 
+from .QtCore import Qt
 from .QtGui import QDropEvent
 from .qt_mime_data import QtMimeData
 
 
-class QtDragEvent(DragEvent):
+class QtDropEvent(DropEvent):
     """ A Qt implementation of an Enaml DragEvent.
 
     """
@@ -22,7 +23,7 @@ class QtDragEvent(DragEvent):
     _q_event = Typed(QDropEvent)
 
     def __init__(self, event):
-        """ Initialize a QtDragEvent.
+        """ Initialize a QtDropEvent.
 
         Parameters
         ----------
@@ -54,6 +55,56 @@ class QtDragEvent(DragEvent):
 
         """
         return QtMimeData(self._q_event.mimeData())
+
+    def drop_action(self):
+        """ Get the action to be performed by the drop target.
+
+        Returns
+        -------
+        result : DropAction
+            A drop action enum value.
+
+        """
+        return DropAction(self._q_event.dropAction())
+
+    def possible_actions(self):
+        """ Get the OR'd combination of possible drop actions.
+
+        Returns
+        -------
+        result : DropAction.Flags
+            The combination of possible drop actions.
+
+        """
+        return DropAction.Flags(self._q_event.possibleActions())
+
+    def proposed_action(self):
+        """ Get the action proposed to be taken by the drop target.
+
+        Returns
+        -------
+        result : DropAction
+            The proposed action for the drop target.
+
+        """
+        return DropAction(self._q_event.proposedAction())
+
+    def accept_proposed_action(self):
+        """ Accept the event using the proposed drop action.
+
+        """
+        self._q_event.acceptProposedAction()
+
+    def set_drop_action(self, action):
+        """ Set the drop action to one of the possible actions.
+
+        Parameters
+        ----------
+        action : DropAction
+            The drop action to be performed by the target.
+
+        """
+        self._q_event.setDropAction(Qt.DropAction(action))
 
     def is_accepted(self):
         """ Test whether the event has been accepted.
