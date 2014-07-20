@@ -1,31 +1,72 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2014, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Property, Typed, Unicode
-
-from enaml.layout.geometry import Pos
+from atom.api import Atom
 
 
 class DragEvent(Atom):
-    """ A drag event that lazily fetches data.
+    """ An abstract class for defining a drag event.
+
+    Concrete implementations of this class will be created by a
+    toolkit backend and passed to the relevant frontend handlers.
 
     """
-    #: The type of the specified data.
-    type = Unicode()
+    def pos(self):
+        """ Get the current mouse position of the operation.
 
-    #: The position of the drag event.
-    position = Typed(Pos)
+        Returns
+        -------
+        result : Pos
+            The mouse position of the operation in widget coordinates.
 
-    #: The data represented by the drag operation.
-    data = Property()
+        """
+        raise NotImplementedError
 
-    def _get_data(self):
-        """ Fetches and returns the data for the drag operation. This method
-        should be implemented by toolkit specific subclasses.
+    def mime_data(self):
+        """ Get the mime data contained in the drag operation.
+
+        Returns
+        -------
+        result : MimeData
+            The mime data contained in the drag operation.
+
+        """
+        raise NotImplementedError
+
+    def is_accepted(self):
+        """ Test whether the event has been accepted.
+
+        Returns
+        -------
+        result : bool
+            True if the event is accepted, False otherwise.
+
+        """
+        raise NotImplementedError
+
+    def set_accepted(self, accepted):
+        """ Set the accepted state of the event.
+
+        Parameters
+        ----------
+        accepted : bool
+            The target accepted state of the event.
+
+        """
+        raise NotImplementedError
+
+    def accept(self):
+        """ Accept the drag event action.
+
+        """
+        raise NotImplementedError
+
+    def ignore(self):
+        """ Ignore the drag event action.
 
         """
         raise NotImplementedError
