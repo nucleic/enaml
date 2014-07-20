@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Bool, Enum, IntEnum, Unicode, Coerced, Typed, ForwardTyped, observe
+    Bool, IntEnum, Unicode, Coerced, Typed, ForwardTyped, observe
 )
 
 from enaml.colors import ColorMember
@@ -88,10 +88,10 @@ class Feature(IntEnum):
     FocusEvents = 0x2
 
     #: Enables support for drag operations.
-    Drag = 0x4
+    DragEnabled = 0x4
 
     #: Enables support for drop operations.
-    Drop = 0x8
+    DropEnabled = 0x8
 
 
 class Widget(ToolkitObject, Stylable):
@@ -139,7 +139,7 @@ class Widget(ToolkitObject, Stylable):
     # Observers
     #--------------------------------------------------------------------------
     @observe('enabled', 'visible', 'background', 'foreground', 'font',
-        'minimum_size', 'maximum_size', 'tool_tip', 'status_tip')
+             'minimum_size', 'maximum_size', 'tool_tip', 'status_tip')
     def _update_proxy(self, change):
         """ Update the proxy widget when the Widget data changes.
 
@@ -318,107 +318,111 @@ class Widget(ToolkitObject, Stylable):
         pass
 
     @d_func
-    def drag_data(self):
-        """ A method invoked to determine the data to be used in a drag
-        operation.
+    def drag_start(self):
+        """ A method called at the start of a drag-drop operation.
 
-        ** The Drag feature must be enabled for the widget in order for this
-        method to be called. **
+        This method is called when the user starts a drag operation
+        by dragging the widget with the left mouse button. It returns
+        the drag data for the drag operation.
 
-        Returns:
-        --------
-        result : tuple
-            A tuple of (dtype, data) where dtype and data are both strings.
+        ** The DragEnabled feature must be enabled for the widget in
+        order for this method to be called. **
 
-        """
-        return ('', '')
-
-    @d_func
-    def drag_image(self):
-        """ A method invoked to determine what image should be placed under
-        the cursor during a drag operation.
-
-        ** The Drag feature must be enabled for the widget in order for this
-        method to be called. **
-
-        Returns:
-        --------
-        image : Image
-            An Enaml image or None.
+        Returns
+        -------
+        result : DragData
+            An Enaml DragData object which holds the drag data. If
+            this is not provided, no drag operation will occur.
 
         """
         return None
 
     @d_func
-    def drag_enter(self, event):
-        """ A method invoked when a drag operation enters the widget's bounds.
+    def drag_end(self, drag_data, action):
+        """ A method called at the end of a drag-drop operation.
 
-        ** The Drop feature must be enabled for the widget in order for this
-        method to be called. **
+        This method is called after the user has completed the drop
+        operation by releasing the left mouse button. It is passed
+        the original drag data object along with the resulting drop
+        action of the operation.
+
+        ** The DragEnabled feature must be enabled for the widget in
+        order for this method to be called. **
 
         Parameters
         ----------
-        event : DragEvent
-            The event representing the drag operation.
+        data : DragData
+            The drag data created by the `drag_start` method.
+
+        action : DropAction
+            The requested drop action when the drop completed.
+
+        """
+        pass
+
+    @d_func
+    def drag_enter(self, event):
+        """ A method invoked when a drag operation enters the widget.
+
+        The widget should inspect the mime data of the event and
+        accept the event if it can handle the drop action. The event
+        must be accepted in order to receive further drag-drop events.
+
+        ** The DropEnabled feature must be enabled for the widget in
+        order for this method to be called. **
+
+        Parameters
+        ----------
+        event : DropEvent
+            The event representing the drag-drop operation.
 
         """
         pass
 
     @d_func
     def drag_move(self, event):
-        """ A method invoked when a drag operation moves within the widget's
-        bounds.
+        """ A method invoked when a drag operation moves in the widget.
 
-        ** The Drop feature must be enabled for the widget in order for this
-        method to be called. **
+        This method will not normally be implemented, but it can be
+        useful for supporting advanced drag-drop interactions.
+
+        ** The DropEnabled feature must be enabled for the widget in
+        order for this method to be called. **
 
         Parameters
         ----------
-        event : DragEvent
-            The event representing the drag operation.
+        event : DropEvent
+            The event representing the drag-drop operation.
 
         """
         pass
 
     @d_func
     def drag_leave(self):
-        """ A method invoked when a drag operation leaves the widget's bounds.
+        """ A method invoked when a drag operation leaves the widget.
 
-        ** The Drop feature must be enabled for the widget in order for this
-        method to be called. **
+        ** The DropEnabled feature must be enabled for the widget in
+        order for this method to be called. **
 
         """
         pass
 
     @d_func
-    def validate_drop(self, dtype):
-        """ A method invoked to determine whether a drop operation should be
-        allowed on the widget.
-
-        Parameters
-        ----------
-        dtype : str
-            The type of the data.
-
-        Returns
-        -------
-        A boolean value representing whether the drop operation should be
-        allowed or not.
-
-        """
-        return True
-
-    @d_func
     def drop(self, event):
-        """ A method invoked when a drag operation ends on the widget.
+        """ A method invoked when the user drops the data on the widget.
 
-        ** The Drop feature must be enabled for the widget in order for this
-        method to be called. **
+        The widget should either accept the proposed action, or set
+        the drop action to an appropriate action before accepting the
+        event, or set the drop action to DropAction.Ignore and then
+        ignore the event.
+
+        ** The DropEnabled feature must be enabled for the widget in
+        order for this method to be called. **
 
         Parameters
         ----------
-        event : DragEvent
-            The event representing the drag operation.
+        event : DropEvent
+            The event representing the drag-drop operation.
 
         """
         pass
