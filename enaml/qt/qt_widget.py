@@ -7,14 +7,17 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed, Coerced
 
+from enaml.layout.geometry import Pos
 from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
 
-from .QtCore import Qt, QSize
-from .QtGui import QFont, QWidget, QWidgetAction, QApplication
+from .QtCore import Qt, QSize, QPoint, QMimeData, QByteArray
+from .QtGui import QFont, QWidget, QWidgetAction, QApplication, QDrag, QPixmap
 
 from . import focus_registry
-from .q_resource_helpers import get_cached_qcolor, get_cached_qfont
+from .q_drag_event import QDragEvent
+from .q_resource_helpers import (get_cached_qcolor, get_cached_qfont,
+                                 get_cached_qimage)
 from .qt_toolkit_object import QtToolkitObject
 from .styleutil import translate_style
 
@@ -33,6 +36,9 @@ class QtWidget(QtToolkitObject, ProxyWidget):
 
     #: Internal storage for the shared widget action.
     _widget_action = Typed(QWidgetAction)
+
+    #: Internal storage for the drag origin point.
+    _drag_origin = Typed(QPoint)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -106,6 +112,10 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.hook_focus_traversal()
         if features & Feature.FocusEvents:
             self.hook_focus_events()
+        if features & Feature.Drag:
+            self.hook_drag()
+        if features & Feature.Drop:
+            self.hook_drop()
 
     def _teardown_features(self):
         """ Teardowns the advanced widget feature handlers.
@@ -118,6 +128,10 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             self.unhook_focus_traversal()
         if features & Feature.FocusEvents:
             self.unhook_focus_events()
+        if features & Feature.Drag:
+            self.unhook_drag()
+        if features & Feature.Drop:
+            self.unhook_drop()
 
     #--------------------------------------------------------------------------
     # Protected API
@@ -240,6 +254,131 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         widget = self.widget
         type(widget).focusOutEvent(widget, event)
         self.declaration.focus_lost()
+
+    def hook_drag(self):
+        """ Install hooks for drag operations.
+
+        """
+        widget = self.widget
+        widget.mousePressEvent = self.mousePressEvent
+        widget.mouseMoveEvent = self.mouseMoveEvent
+
+    def unhook_drag(self):
+        """ Remove hooks for drag operations.
+
+        """
+        widget = self.widget
+        del widget.mousePressEvent
+        del widget.mouseMoveEvent
+
+    def mousePressEvent(self, event):
+        """ On mouse press, record the position to use as the origin for a
+        drag operation.
+
+        """
+        widget = self.widget
+        self._drag_origin = event.pos()
+        type(widget).mousePressEvent(widget, event)
+
+    def mouseMoveEvent(self, event):
+        """ On mouse move, check the distance from the drag origin and
+        initiate a drag operation if necessary.
+
+        """
+        widget = self.widget
+        d = self.declaration
+
+        if self._drag_origin is not None:
+            distance = (event.pos() - self._drag_origin).manhattanLength()
+            if distance > QApplication.startDragDistance():
+                drag = QDrag(widget)
+
+                dtype, data = d.drag_data()
+                mime_data = QMimeData()
+                mime_data.setData(dtype, QByteArray(data))
+                drag.setMimeData(mime_data)
+
+                image = d.drag_image()
+                if image:
+                    qimage = get_cached_qimage(image)
+                    drag.setPixmap(QPixmap.fromImage(qimage))
+                else:
+                    drag.setPixmap(QPixmap.grabWidget(widget))
+
+                drag.exec_(Qt.CopyAction)
+
+        type(widget).mouseMoveEvent(widget, event)
+
+    def hook_drop(self):
+        """ Install hooks for drop operations.
+
+        """
+        widget = self.widget
+        widget.setAcceptDrops(True)
+        widget.dragEnterEvent = self.dragEnterEvent
+        widget.dragMoveEvent = self.dragMoveEvent
+        widget.dragLeaveEvent = self.dragLeaveEvent
+        widget.dropEvent = self.dropEvent
+
+    def unhook_drop(self):
+        """ Remove hooks for drop operations.
+
+        """
+        widget = self.widget
+        widget.setAcceptDrops(False)
+        del widget.dragEnterEvent
+        del widget.dragMoveEvent
+        del widget.dragLeaveEvent
+        del widget.dropEvent
+
+    def dragEnterEvent(self, event):
+        widget = self.widget
+
+        position = Pos(event.pos().x(), event.pos().y())
+        mime_data = event.mimeData()
+        dtype = mime_data.formats()[0]
+
+        drag_event = QDragEvent(position=position, type=dtype,
+                                _q_mime_data=mime_data)
+
+        if self.declaration.validate_drop(dtype):
+            event.acceptProposedAction()
+
+        type(widget).dragEnterEvent(widget, event)
+        self.declaration.drag_enter(drag_event)
+
+    def dragMoveEvent(self, event):
+        widget = self.widget
+
+        position = Pos(event.pos().x(), event.pos().y())
+        mime_data = event.mimeData()
+        dtype = mime_data.formats()[0]
+
+        drag_event = QDragEvent(position=position, type=dtype,
+                                _q_mime_data=mime_data)
+
+        event.acceptProposedAction()
+        type(widget).dragMoveEvent(widget, event)
+        self.declaration.drag_move(drag_event)
+
+    def dragLeaveEvent(self, event):
+        widget = self.widget
+        type(widget).dragLeaveEvent(widget, event)
+        self.declaration.drag_leave()
+
+    def dropEvent(self, event):
+        widget = self.widget
+        
+        position = Pos(event.pos().x(), event.pos().y())
+        mime_data = event.mimeData()
+        dtype = mime_data.formats()[0]
+
+        drag_event = QDragEvent(position=position, type=dtype,
+                                _q_mime_data=mime_data)
+
+        event.acceptProposedAction()
+        type(widget).dropEvent(widget, event)
+        self.declaration.drop(drag_event)
 
     #--------------------------------------------------------------------------
     # Framework API

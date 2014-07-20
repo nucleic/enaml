@@ -87,6 +87,12 @@ class Feature(IntEnum):
     #: Enables support for focus events.
     FocusEvents = 0x2
 
+    #: Enables support for drag operations.
+    Drag = 0x4
+
+    #: Enables support for drop operations.
+    Drop = 0x8
+
 
 class Widget(ToolkitObject, Stylable):
     """ The base class of visible widgets in Enaml.
@@ -307,6 +313,112 @@ class Widget(ToolkitObject, Stylable):
 
         ** The FocusEvents feature must be enabled for the widget in
         order for this method to be called. **
+
+        """
+        pass
+
+    @d_func
+    def drag_data(self):
+        """ A method invoked to determine the data to be used in a drag
+        operation.
+
+        ** The Drag feature must be enabled for the widget in order for this
+        method to be called. **
+
+        Returns:
+        --------
+        result : tuple
+            A tuple of (dtype, data) where dtype and data are both strings.
+
+        """
+        return ('', '')
+
+    @d_func
+    def drag_image(self):
+        """ A method invoked to determine what image should be placed under
+        the cursor during a drag operation.
+
+        ** The Drag feature must be enabled for the widget in order for this
+        method to be called. **
+
+        Returns:
+        --------
+        image : Image
+            An Enaml image or None.
+
+        """
+        return None
+
+    @d_func
+    def drag_enter(self, event):
+        """ A method invoked when a drag operation enters the widget's bounds.
+
+        ** The Drop feature must be enabled for the widget in order for this
+        method to be called. **
+
+        Parameters
+        ----------
+        event : DragEvent
+            The event representing the drag operation.
+
+        """
+        pass
+
+    @d_func
+    def drag_move(self, event):
+        """ A method invoked when a drag operation moves within the widget's
+        bounds.
+
+        ** The Drop feature must be enabled for the widget in order for this
+        method to be called. **
+
+        Parameters
+        ----------
+        event : DragEvent
+            The event representing the drag operation.
+
+        """
+        pass
+
+    @d_func
+    def drag_leave(self):
+        """ A method invoked when a drag operation leaves the widget's bounds.
+
+        ** The Drop feature must be enabled for the widget in order for this
+        method to be called. **
+
+        """
+        pass
+
+    @d_func
+    def validate_drop(self, dtype):
+        """ A method invoked to determine whether a drop operation should be
+        allowed on the widget.
+
+        Parameters
+        ----------
+        dtype : str
+            The type of the data.
+
+        Returns
+        -------
+        A boolean value representing whether the drop operation should be
+        allowed or not.
+
+        """
+        return True
+
+    @d_func
+    def drop(self, event):
+        """ A method invoked when a drag operation ends on the widget.
+
+        ** The Drop feature must be enabled for the widget in order for this
+        method to be called. **
+
+        Parameters
+        ----------
+        event : DragEvent
+            The event representing the drag operation.
 
         """
         pass
