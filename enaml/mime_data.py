@@ -14,6 +14,10 @@ class MimeData(Atom):
     Concrete implementations of this class will be created by a
     toolkit backend and passed to the relevant frontend methods.
 
+    This will never be instantiated directly by user code. A concrete
+    version can be created by calling the `create_mime_data` factory
+    method of an Application instance.
+
     """
     def formats(self):
         """ Get a list of the supported mime type formats.
