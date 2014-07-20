@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2014, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -304,6 +304,17 @@ class Application(Atom):
         -------
         result : bool
             True if called from the main gui thread. False otherwise.
+
+        """
+        raise NotImplementedError
+
+    def create_mime_data(self):
+        """ Create a new mime data object to be filled by the user.
+
+        Returns
+        -------
+        result : MimeData
+            A concrete implementation of the MimeData class.
 
         """
         raise NotImplementedError
