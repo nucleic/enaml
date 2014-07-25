@@ -347,7 +347,7 @@ class QtWidget(QtToolkitObject, ProxyWidget):
         default = Qt.DropAction(drag_data.default_drop_action)
         supported = Qt.DropActions(drag_data.supported_actions)
         qresult = qdrag.exec_(supported, default)
-        self.declaration.drag_end(drag_data, DropAction(qresult))
+        self.declaration.drag_end(drag_data, DropAction(int(qresult)))
 
     def dragEnterEvent(self, event):
         """ Handle the drag enter event for the widget.

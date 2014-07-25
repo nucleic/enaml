@@ -65,7 +65,7 @@ class QtDropEvent(DropEvent):
             A drop action enum value.
 
         """
-        return DropAction(self._q_event.dropAction())
+        return DropAction(int(self._q_event.dropAction()))
 
     def possible_actions(self):
         """ Get the OR'd combination of possible drop actions.
@@ -76,7 +76,7 @@ class QtDropEvent(DropEvent):
             The combination of possible drop actions.
 
         """
-        return DropAction.Flags(self._q_event.possibleActions())
+        return DropAction.Flags(int(self._q_event.possibleActions()))
 
     def proposed_action(self):
         """ Get the action proposed to be taken by the drop target.
@@ -87,7 +87,7 @@ class QtDropEvent(DropEvent):
             The proposed action for the drop target.
 
         """
-        return DropAction(self._q_event.proposedAction())
+        return DropAction(int(self._q_event.proposedAction()))
 
     def accept_proposed_action(self):
         """ Accept the event using the proposed drop action.
