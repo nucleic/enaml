@@ -1,6 +1,14 @@
 Enaml Release Notes
 ===================
 
+0.9.8 - 08/04/2014
+------------------
+- Add drag and drop support. 56a2127e714c_
+- Remove the Wx backend and free the people from their misery. bab233ff9782_
+
+.. _56a2127e714c: https://github.com/nucleic/enaml/commit/56a2127e714cef2a22b65b00f2afd6b8024f36ec
+.. _bab233ff9782: https://github.com/nucleic/enaml/commit/bab233ff9782011185730f9dcaccd7113817a297
+
 0.9.7 - 05/18/2014
 ------------------
 - Add an IPythonConsole widget.
