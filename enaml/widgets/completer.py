@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import (
-    Str, Enum, List, ForwardTyped, observe
+    Enum, List, Bool, ForwardTyped, observe
 )
 
 from enaml.core.declarative import d_, d_func
@@ -27,10 +27,10 @@ class ProxyCompleter(ProxyToolkitObject):
     def set_completion_model(self, completion_model):
         raise NotImplementedError
 
-    def set_prefix(self, prefix):
+    def set_sorting(self, sorting):
         raise NotImplementedError
 
-    def set_sorting(self, sorting):
+    def set_case_sensitivity(self, sensitivity):
         raise NotImplementedError
 
 
@@ -48,7 +48,7 @@ class Completer(ToolkitObject):
                       'case_sensitive_sorting'))
 
     #:
-    prefix = Str()
+    case_sensitivity = d_(Bool(True))
 
     #--------------------------------------------------------------------------
     # Public API

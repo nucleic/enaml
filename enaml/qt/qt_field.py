@@ -86,7 +86,7 @@ class QtField(QtControl, ProxyField):
         super(QtField, self).init_layout()
         c = self.completer()
         if c:
-            c.setWidget(self.widget)
+            self.widget.setCompleter(c)
             c.activated.connect(self._complete_text)
 
     #--------------------------------------------------------------------------
@@ -199,11 +199,7 @@ class QtField(QtControl, ProxyField):
         c = self.declaration.completer()
         if c:
             w = self.widget
-            prefix, model = c.propose_completion(w.text()[:w.cursorPosition()])
-            if model:
-                c.completion_model = model
-            c.prefix = prefix
-            c.proxy.widget.complete()
+            c.proxy.do_propose_completion(w.text()[:w.cursorPosition()])
 
         if self._text_timer is not None:
             self._text_timer.start()
@@ -211,16 +207,21 @@ class QtField(QtControl, ProxyField):
     #--------------------------------------------------------------------------
     # Child Events
     #--------------------------------------------------------------------------
-# XXXX crappy implementation
+# XXXX still crappy implementation
     def child_added(self, child):
         """ Handle the child added event for a QtField.
 
         """
         super(QtField, self).child_added(child)
         if isinstance(child, QtCompleter):
-            completer = self.completer()
-            completer.setWidget(self.widget)
-            completer.activated.connect(self.complete_text)
+            found = False
+            for child in self.children:
+                if isinstance(child, QtCompleter):
+                    if found:
+                        child.widget.activated.disconnect(self._complete_text)
+                    else:
+                        child.widget.activated.connect(self._complete_text)
+                        found = True
 
     def child_removed(self, child):
         """ Handle the child removed event for a QtField.
@@ -229,6 +230,9 @@ class QtField(QtControl, ProxyField):
         super(QtField, self).child_added(child)
         if isinstance(child, QtCompleter):
             child.widget.activated.disconnect(self._complete_text)
+            c = self.completer()
+            if c:
+                c.activated.connect(self._complete_text)
 
     #--------------------------------------------------------------------------
     # ProxyField API

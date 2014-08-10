@@ -28,4 +28,4 @@ enamldef Main(Window):
             placeholder = 'This field propose completion using space as a separator'
             Completer:
                 completion_model = ['France', 'England', 'USA']
-                mode = 'inline'
+                mode = 'unfiltered_popup'

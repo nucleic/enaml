@@ -10,6 +10,7 @@ from atom.api import Typed
 from enaml.widgets.completer import ProxyCompleter
 
 from .QtGui import QCompleter, QStringListModel
+from .Qt import QCaseSensitive, QCaseInsensitive
 
 from .qt_toolkit_object import QtToolkitObject
 
@@ -57,8 +58,20 @@ class QtCompleter(QtToolkitObject, ProxyCompleter):
         self.set_sorting(d.sorting)
 
     #--------------------------------------------------------------------------
-    # Private API
+    # Utility Methods
     #--------------------------------------------------------------------------
+    def do_propose_completion(self, text):
+        """
+
+        """
+        d = self.declaration
+        prefix, model = d.propose_completion(text)
+        if model:
+            d.completion_model = model
+            self.set_completion_model(model)
+        if prefix is not None:
+            self.widget.setCompletionPrefix(prefix)
+            self.widget.complete()
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -93,8 +106,11 @@ class QtCompleter(QtToolkitObject, ProxyCompleter):
             self.widget.setModel(QStringListModel(completion_model,
                                                   self.widget))
 
-    def set_prefix(self, prefix):
-        """ Set the prefix use to propose completion.
+    def set_case_sensitivity(self, sensitivity):
+        """ Set the case sensitivity.
 
         """
-        self.widget.setCompletionPrefix(prefix)
+        if sensitivity:
+            self.widget.setCaseSensitivity(QCaseSensitive)
+        else:
+            self.widget.setCaseSensitivity(QCaseInsensitive)
