@@ -13,6 +13,7 @@ from .QtCore import QTimer, Signal
 from .QtGui import QLineEdit
 
 from .qt_control import QtControl
+from .qt_completer import QtCompleter
 
 
 ECHO_MODES = {
@@ -78,6 +79,16 @@ class QtField(QtControl, ProxyField):
         self.set_submit_triggers(d.submit_triggers)
         self.widget.textEdited.connect(self.on_text_edited)
 
+    def init_layout(self):
+        """ Handle layout initialization for the field.
+
+        """
+        super(QtField, self).init_layout()
+        c = self.completer()
+        if c:
+            c.setWidget(self.widget)
+            c.activated.connect(self._complete_text)
+
     #--------------------------------------------------------------------------
     # Private API
     #--------------------------------------------------------------------------
@@ -135,6 +146,34 @@ class QtField(QtControl, ProxyField):
         v = self.declaration.validator
         return v is None or v.validate(text) or v.validate(v.fixup(text))
 
+    def _complete_text(self, choice):
+        """
+
+        """
+        d = self.declaration
+        w = self.widget
+        completer = d.completer()
+        new_text, cursor = completer.complete(choice, w.text(),
+                                              w.cursorPosition())
+        w.setText(new_text)
+        w.setCursorPosition(cursor)
+
+    #--------------------------------------------------------------------------
+    # Utility Methods
+    #--------------------------------------------------------------------------
+    def completer(self):
+        """ Find and return the completer child for this widget.
+
+        Returns
+        -------
+        result : QCompleter or None
+            The complter defined for this widget, or None if not defined.
+
+        """
+        c = self.declaration.completer()
+        if c is not None:
+            return c.proxy.widget
+
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
@@ -157,8 +196,39 @@ class QtField(QtControl, ProxyField):
         else:
             self._clear_error_state()
 
+        c = self.declaration.completer()
+        if c:
+            w = self.widget
+            prefix, model = c.propose_completion(w.text()[:w.cursorPosition()])
+            if model:
+                c.completion_model = model
+            c.prefix = prefix
+            c.proxy.widget.complete()
+
         if self._text_timer is not None:
             self._text_timer.start()
+
+    #--------------------------------------------------------------------------
+    # Child Events
+    #--------------------------------------------------------------------------
+# XXXX crappy implementation
+    def child_added(self, child):
+        """ Handle the child added event for a QtField.
+
+        """
+        super(QtField, self).child_added(child)
+        if isinstance(child, QtCompleter):
+            completer = self.completer()
+            completer.setWidget(self.widget)
+            completer.activated.connect(self.complete_text)
+
+    def child_removed(self, child):
+        """ Handle the child removed event for a QtField.
+
+        """
+        super(QtField, self).child_added(child)
+        if isinstance(child, QtCompleter):
+            child.widget.activated.disconnect(self._complete_text)
 
     #--------------------------------------------------------------------------
     # ProxyField API

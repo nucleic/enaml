@@ -1,0 +1,31 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+"""
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import (
+    Window, Container, Field
+)
+from enaml.widgets.completer import Completer
+
+
+enamldef Main(Window):
+    Container:
+        Field:
+            placeholder = 'This field propose completion using space as a separator'
+            Completer:
+                completion_model = ['France', 'England', 'USA']
+                mode = 'popup'
+
+        Field:
+            hug_width = 'strong'
+            placeholder = 'This field propose completion using space as a separator'
+            Completer:
+                completion_model = ['France', 'England', 'USA']
+                mode = 'inline'
