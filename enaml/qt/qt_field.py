@@ -199,7 +199,8 @@ class QtField(QtControl, ProxyField):
         c = self.declaration.completer()
         if c:
             w = self.widget
-            c.proxy.do_propose_completion(w.text()[:w.cursorPosition()])
+            aux = w.text()[:w.cursorPosition()]
+            c.proxy.do_propose_completion(aux, None)
 
         if self._text_timer is not None:
             self._text_timer.start()

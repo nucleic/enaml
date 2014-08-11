@@ -40,14 +40,14 @@ class Completer(ToolkitObject):
     #:
     mode = d_(Enum('popup', 'inline', 'unfiltered_popup'))
 
-    #:
+    #: Model providiing the completion.
     completion_model = d_(List())
 
-    #:
+    #: Should the completer sort the enrtries of the model.
     sorting = d_(Enum('unsorted', 'case_insensitve_sorting',
                       'case_sensitive_sorting'))
 
-    #:
+    #: Should the completer be case sensitive.
     case_sensitivity = d_(Bool(True))
 
     #--------------------------------------------------------------------------
@@ -55,19 +55,65 @@ class Completer(ToolkitObject):
     #--------------------------------------------------------------------------
     @d_func
     def propose_completion(self, text):
-        """
+        """ Determine the prefix to use for the completion.
+
+        This is called after every keystroke and receive the text before the
+        current position of the cursor.
+
+        Parameters
+        ----------
+        text : str
+            Text from which to extract the prefix.
+
+        Returns
+        -------
+        prefix : str or None
+            Prefix to use for the completion or None if no completion should be
+            proposed.
+
+        model : list or None
+            New model to use for the completion.
+
         """
         return text.split(' ')[-1], None
 
     @d_func
     def entry_highlighted(self, choice):
-        """
+        """ Method called when an entry of the completer is highlighted.
+
+        By default nothing happens.
+
+        Parameters
+        ----------
+        choice : str
+            The entry highlighted by the user.
+
         """
         pass
 
     @d_func
     def complete(self, choice, text, cursor_pos):
-        """
+        """ Method called when the user asks for completion.
+
+        Parameters
+        ----------
+        choice : str
+            The entry selected by the user and which should be inserted.
+
+        text : str
+            The relevant portion of text in which to insert choice.
+            For a field this is the whole text for a multiline widget the line
+            currently edited.
+
+        cursor_pos : int
+            The current position of the cursor as an int such as
+            text[:cursor_pos] is the text just to the left of the cursor.
+
+        Returns
+        -------
+        new :str
+            The new text as should be inserted in the widget.
+
         """
         before = text[0:cursor_pos]
         after = text[cursor_pos::]

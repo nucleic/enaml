@@ -60,18 +60,31 @@ class QtCompleter(QtToolkitObject, ProxyCompleter):
     #--------------------------------------------------------------------------
     # Utility Methods
     #--------------------------------------------------------------------------
-    def do_propose_completion(self, text):
-        """
+    def do_propose_completion(self, text, cursor_rect=None):
+        """ Convenience method used by the proxy field using the completer.
+
+        Parameters
+        ----------
+        text : str
+            Text on which to propose a completion (only before the cursor).
+
+        cursor_rect : QRect
+            Current cursor rect used to anchor the completer popup.
 
         """
         d = self.declaration
         prefix, model = d.propose_completion(text)
         if model:
+            # XXXX this is redundant but I don't know how to otherwise get an
+            # immediate update of the proxy
             d.completion_model = model
             self.set_completion_model(model)
         if prefix is not None:
             self.widget.setCompletionPrefix(prefix)
-            self.widget.complete()
+            if cursor_rect:
+                self.widget.complete(cursor_rect)
+            else:
+                self.widget.complete()
 
     #--------------------------------------------------------------------------
     # Signal Handlers

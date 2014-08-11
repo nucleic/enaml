@@ -18,14 +18,14 @@ from enaml.widgets.completer import Completer
 enamldef Main(Window):
     Container:
         Field:
-            placeholder = 'This field propose completion using space as a separator'
+            tool_tip = 'This field propose completion using space as a separator'
             Completer:
                 completion_model = ['France', 'England', 'USA']
                 mode = 'popup'
 
         Field:
             hug_width = 'strong'
-            placeholder = 'This field propose completion using space as a separator'
+            tool_tip = 'This field propose completion using space as a separator'
             Completer:
                 completion_model = ['France', 'England', 'USA']
                 mode = 'unfiltered_popup'
