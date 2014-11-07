@@ -9,7 +9,7 @@
 
 This example is functionally equivalent to 'chained_widget_alias.enaml',
 but it shows how the developer can exert more control over a widget by
-exposinf individual attributes instead of entire widgets.
+exposing individual attributes instead of entire widgets.
 
 << autodoc-me >>
 """
