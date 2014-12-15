@@ -11,7 +11,7 @@ from .bounded_date import BoundedDate, ProxyBoundedDate
 
 
 class ProxyCalendar(ProxyBoundedDate):
-    """ The abstract defintion of a proxy Calendar object.
+    """ The abstract definition of a proxy Calendar object.
 
     """
     #: A reference to the Calendar declaration.

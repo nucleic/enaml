@@ -78,7 +78,7 @@ class QCustomSplitter(QSplitter):
     def setOrientation(self, orientation):
         """ Set the orientation of the splitter.
 
-        This overriden method will call the `updateFrame` method of the
+        This overridden method will call the `updateFrame` method of the
         splitter handles when running on win32 platforms. On any other
         platform, this method simply calls the superclass method.
 

@@ -20,7 +20,7 @@ class ProxyStatusItem(ProxyToolkitObject):
     #: A reference to the StatusItem declaration
     declaration = ForwardTyped(lambda: StatusItem)
 
-    def set_mode(eslf, mode):
+    def set_mode(self, mode):
         raise NotImplementedError
 
     def set_stretch(self, stretch):

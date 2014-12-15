@@ -12,7 +12,7 @@ from enaml.core.declarative import d_
 from .control import Control, ProxyControl
 
 
-#: The base tick position enum defintion.
+#: The base tick position enum definition.
 TickPosition = Enum('no_ticks', 'left', 'right', 'top', 'bottom', 'both')
 
 

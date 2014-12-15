@@ -13,7 +13,7 @@ from .bounded_date import BoundedDate, ProxyBoundedDate
 
 
 class ProxyDateSelector(ProxyBoundedDate):
-    """ The abstract defintion of a proxy DateSelector object.
+    """ The abstract definition of a proxy DateSelector object.
 
     """
     #: A reference to the DateSelector declaration.
