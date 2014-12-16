@@ -15,7 +15,7 @@ from .toolkit_dialog import ToolkitDialog, ProxyToolkitDialog
 
 
 class ProxyColorDialog(ProxyToolkitDialog):
-    """ The abstract defintion of a proxy ColorDialog object.
+    """ The abstract definition of a proxy ColorDialog object.
 
     """
     #: A reference to the ColorDialog declaration.

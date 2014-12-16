@@ -18,7 +18,7 @@ from .qt_toolkit_object import QtToolkitObject
 class QCustomActionGroup(QActionGroup):
     """ A QActionGroup subclass which fixes some toggling issues.
 
-    When a QActionGroup is set from non-exlusive to exclusive, it
+    When a QActionGroup is set from non-exclusive to exclusive, it
     doesn't uncheck the non-current actions. It also does not keep
     track of the most recently checked widget when in non-exclusive
     mode, so that state is lost. This subclass corrects these issues.

@@ -27,7 +27,7 @@ class Validator(Atom):
 
         This method is called on every keystroke to validate the text
         as the user inputs characters. It should be efficient. This is
-        an abstract method which must be implemented by sublasses.
+        an abstract method which must be implemented by subclasses.
 
         Parameters
         ----------

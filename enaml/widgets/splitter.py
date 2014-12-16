@@ -29,7 +29,7 @@ class ProxySplitter(ProxyConstraintsWidget):
 
 class Splitter(ConstraintsWidget):
     """ A widget which displays its children in separate resizable
-    compartements that are connected with a resizing bar.
+    compartments that are connected with a resizing bar.
 
     A Splitter can have an arbitrary number of Container children.
 
