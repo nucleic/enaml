@@ -96,7 +96,7 @@ class QFlowItem(QFrame):
         return self._layout_data.alignment
 
     def setAlignment(self, alignment):
-        """ Set the alignment for the flot item.
+        """ Set the alignment for the flow item.
 
         This will trigger an invalidation of the layout data.
 

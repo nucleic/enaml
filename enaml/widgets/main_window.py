@@ -56,7 +56,7 @@ class MainWindow(Window):
     def status_bar(self):
         """ Get the status bar defined as a child on the window.
 
-        The last StatuBar declared as a child is used as the official
+        The last StatusBar declared as a child is used as the official
         status bar of the window.
 
         """

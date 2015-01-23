@@ -59,7 +59,7 @@ class _TabData(object):
 
 
 class QDockTabBar(QTabBar):
-    """ A custom QTabBar that manages safetly undocking a tab.
+    """ A custom QTabBar that manages safely undocking a tab.
 
     The user can undock a tab by holding Shift before dragging the tab.
     This tab bar assumes that its parent is a QTabWidget and that the

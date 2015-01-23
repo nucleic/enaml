@@ -13,7 +13,7 @@ from .toolkit_dialog import ToolkitDialog, ProxyToolkitDialog
 
 
 class ProxyFileDialogEx(ProxyToolkitDialog):
-    """ The abstract defintion of a proxy FileDialogEx object.
+    """ The abstract definition of a proxy FileDialogEx object.
 
     """
     #: A reference to the FileDialog declaration.
