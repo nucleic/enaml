@@ -183,7 +183,8 @@ class FontMember(Coerced):
 
     A font member can be set to a Font, a string, or None. A string
     font will be parsed into a Font object. If the parsing fails,
-    the font will be None.
+    the font will be None.  Font strings must be given in CSS grammar,
+    e.g. 'bold 12pt arial', which is order dependant.
 
     """
     __slots__ = ()

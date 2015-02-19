@@ -99,4 +99,4 @@ enamldef Main(MainWindow):
                 h_center == cntr.h_center,
             ]
             text = 'Button Ring'
-            font = 'arial 12 bold'
+            font = 'bold 12pt arial'
