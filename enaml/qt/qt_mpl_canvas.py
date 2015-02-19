@@ -10,7 +10,7 @@ from atom.api import Typed
 from enaml.widgets.mpl_canvas import ProxyMPLCanvas
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 
 from .QtCore import Qt
 from .QtGui import QFrame, QVBoxLayout
@@ -89,11 +89,17 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
         # visible, or QVBoxLayout will ignore it for size hinting.
         figure = self.declaration.figure
         if figure:
-            canvas = FigureCanvasQTAgg(figure)
+            if isinstance(figure.canvas, FigureCanvasQTAgg):
+                canvas = figure.canvas
+                canvas.manager.toolbar = None
+                toolbar = canvas.toolbar
+                toolbar.setParent(widget)
+            else:
+                canvas = FigureCanvasQTAgg(figure)
+                toolbar = NavigationToolbar2QT(canvas, widget)
             canvas.setParent(widget)
             canvas.setFocusPolicy(Qt.ClickFocus)
             canvas.setVisible(True)
-            toolbar = NavigationToolbar2QTAgg(canvas, widget)
             toolbar.setVisible(self.declaration.toolbar_visible)
             layout.addWidget(toolbar)
             layout.addWidget(canvas)
