@@ -86,16 +86,21 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
         figure = self.declaration.figure
         if figure:
             if not self.canvas:
+
                 if isinstance(figure.canvas, FigureCanvasQTAgg):
                     self.canvas = figure.canvas
+                else:
+                    self.canvas = FigureCanvasQTAgg(figure)
+
+                if self.canvas.toolbar:
                     # Avoid RuntimeError due to multiple calls to destroy
                     if hasattr(self.canvas, 'manager'):
                         self.canvas.manager.toolbar = None
                     toolbar = self.canvas.toolbar
                     toolbar.setParent(widget)
                 else:
-                    self.canvas = FigureCanvasQTAgg(figure)
                     toolbar = NavigationToolbar2QT(self.canvas, widget)
+
                 layout.addWidget(toolbar)
                 layout.addWidget(self.canvas)
                 self.canvas.setParent(widget)
@@ -103,6 +108,7 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
                 self.canvas.setFocusPolicy(Qt.StrongFocus)
                 self.canvas.setFocus()
                 self.canvas.setVisible(True)
+
             else:
                 canvas = self.canvas
                 # Reset and clear the toolbar
@@ -111,5 +117,6 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
                 figure.canvas = canvas
                 canvas.figure = figure
                 canvas.draw_idle()
+
             toolbar = self.canvas.toolbar
             toolbar.setVisible(self.declaration.toolbar_visible)
