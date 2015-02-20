@@ -99,13 +99,13 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
                 layout.addWidget(toolbar)
                 layout.addWidget(self.canvas)
                 self.canvas.setParent(widget)
-                # use focus policy from mpl FigureManager
+                # Use focus policy from MPL FigureManager
                 self.canvas.setFocusPolicy(Qt.StrongFocus)
                 self.canvas.setFocus()
                 self.canvas.setVisible(True)
             else:
                 canvas = self.canvas
-                # reset and clear the toolbar
+                # Reset and clear the toolbar
                 canvas.toolbar.home()
                 canvas.toolbar.update()
                 figure.canvas = canvas
