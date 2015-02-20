@@ -13,7 +13,7 @@ from .bounded_datetime import BoundedDatetime, ProxyBoundedDatetime
 
 
 class ProxyDatetimeSelector(ProxyBoundedDatetime):
-    """ The abstract defintion of a proxy DatetimeSelector object.
+    """ The abstract definition of a proxy DatetimeSelector object.
 
     """
     #: A reference to the DatetimeSelector declaration.

@@ -13,7 +13,7 @@ from .control import Control, ProxyControl
 
 
 class ProxyIPythonConsole(ProxyControl):
-    """ The abstract defintion of a proxy IPythonConsole object.
+    """ The abstract definition of a proxy IPythonConsole object.
 
     """
     #: A reference to the IPythonConsole declaration.

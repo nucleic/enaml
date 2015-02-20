@@ -163,7 +163,7 @@ class Window(Widget):
     #: The title bar icon.
     icon = d_(Typed(Icon))
 
-    #: Whether the window styas on top of other windows on the desktop.
+    #: Whether the window stays on top of other windows on the desktop.
     #: Changes to this value after the window is shown will be ignored.
     always_on_top = d_(Bool(False))
 

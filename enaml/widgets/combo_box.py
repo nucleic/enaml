@@ -16,7 +16,7 @@ from .control import Control, ProxyControl
 
 
 class ProxyComboBox(ProxyControl):
-    """ The abstract defintion of a proxy ComboBox object.
+    """ The abstract definition of a proxy ComboBox object.
 
     """
     #: A reference to the ComboBox declaration.
