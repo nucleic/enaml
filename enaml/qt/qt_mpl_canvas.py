@@ -88,6 +88,7 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
             if not self.canvas:
                 if isinstance(figure.canvas, FigureCanvasQTAgg):
                     self.canvas = figure.canvas
+                    # Avoid RuntimeError due to multiple calls to destroy
                     if hasattr(self.canvas, 'manager'):
                         self.canvas.manager.toolbar = None
                     toolbar = self.canvas.toolbar
@@ -98,11 +99,13 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
                 layout.addWidget(toolbar)
                 layout.addWidget(self.canvas)
                 self.canvas.setParent(widget)
+                # use focus policy from mpl FigureManager
                 self.canvas.setFocusPolicy(Qt.StrongFocus)
                 self.canvas.setFocus()
                 self.canvas.setVisible(True)
             else:
                 canvas = self.canvas
+                # reset and clear the toolbar
                 canvas.toolbar.home()
                 canvas.toolbar.update()
                 figure.canvas = canvas
