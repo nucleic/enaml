@@ -25,6 +25,9 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
     #: A reference to the widget created by the proxy.
     widget = Typed(QFrame)
 
+    #: MPL Canvas Object (Singleton)
+    canvas = Typed(FigureCanvasQTAgg)
+
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
@@ -73,33 +76,37 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
         """ Create the mpl widget and update the underlying control.
 
         """
-        # Delete the old widgets in the layout, it's just shenanigans
-        # to try to reuse the old widgets when the figure changes.
         widget = self.widget
         layout = widget.layout()
-        while layout.count():
-            layout_item = layout.takeAt(0)
-            layout_item.widget().deleteLater()
 
-        # Create the new figure and toolbar widgets. It seems that key
-        # events will not be processed without an mpl figure manager.
-        # However, a figure manager will create a new toplevel window,
-        # which is certainly not desired in this case. This appears to
-        # be a limitation of matplotlib. The canvas is manually set to
-        # visible, or QVBoxLayout will ignore it for size hinting.
+        # Create the new figure and toolbar widgets if suitable ones have
+        # not been created.
+        # The canvas is manually set to visible, or QVBoxLayout will
+        # ignore it for size hinting.
         figure = self.declaration.figure
         if figure:
-            if isinstance(figure.canvas, FigureCanvasQTAgg):
-                canvas = figure.canvas
-                canvas.manager.toolbar = None
-                toolbar = canvas.toolbar
-                toolbar.setParent(widget)
+            if not self.canvas:
+                if isinstance(figure.canvas, FigureCanvasQTAgg):
+                    self.canvas = figure.canvas
+                    if hasattr(self.canvas, 'manager'):
+                        self.canvas.manager.toolbar = None
+                    toolbar = self.canvas.toolbar
+                    toolbar.setParent(widget)
+                else:
+                    self.canvas = FigureCanvasQTAgg(figure)
+                    toolbar = NavigationToolbar2QT(self.canvas, widget)
+                layout.addWidget(toolbar)
+                layout.addWidget(self.canvas)
+                self.canvas.setParent(widget)
+                self.canvas.setFocusPolicy(Qt.StrongFocus)
+                self.canvas.setFocus()
+                self.canvas.setVisible(True)
             else:
-                canvas = FigureCanvasQTAgg(figure)
-                toolbar = NavigationToolbar2QT(canvas, widget)
-            canvas.setParent(widget)
-            canvas.setFocusPolicy(Qt.ClickFocus)
-            canvas.setVisible(True)
+                canvas = self.canvas
+                canvas.toolbar.home()
+                canvas.toolbar.update()
+                figure.canvas = canvas
+                canvas.figure = figure
+                canvas.draw_idle()
+            toolbar = self.canvas.toolbar
             toolbar.setVisible(self.declaration.toolbar_visible)
-            layout.addWidget(toolbar)
-            layout.addWidget(canvas)
