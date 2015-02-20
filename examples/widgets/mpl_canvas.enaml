@@ -29,6 +29,10 @@ figures = {
 }
 
 
+def keypress(event):
+    print(event.key)
+
+
 enamldef Main(Window):
     Container:
         constraints = [
@@ -46,3 +50,5 @@ enamldef Main(Window):
             checked := canvas.toolbar_visible
         MPLCanvas: canvas:
             figure << figures[cbox.selected_item]
+            activated ::
+                figure.canvas.mpl_connect('key_press_event', keypress)
