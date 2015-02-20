@@ -79,7 +79,7 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
         widget = self.widget
         layout = widget.layout()
 
-        # Create the new figure and toolbar widgets if suitable ones have
+        # Create the new canvas and toolbar widgets if suitable ones have
         # not been created.
         # The canvas is manually set to visible, or QVBoxLayout will
         # ignore it for size hinting.
