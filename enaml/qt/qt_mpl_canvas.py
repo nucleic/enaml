@@ -97,17 +97,12 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
                     if hasattr(canvas, 'manager'):
                         canvas.manager.toolbar = None
                     toolbar = canvas.toolbar
-                    toolbar.setParent(widget)
                 else:
                     toolbar = NavigationToolbar2QT(canvas, widget)
 
                 layout.addWidget(toolbar)
                 layout.addWidget(canvas)
-                canvas.setParent(widget)
-                # Use focus policy from MPL FigureManager
-                canvas.setFocusPolicy(Qt.StrongFocus)
-                canvas.setFocus()
-                canvas.setVisible(True)
+                canvas.setFocusPolicy(Qt.ClickFocus)
                 self.canvas = canvas
 
             else:
@@ -119,5 +114,15 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
                 canvas.figure = figure
                 canvas.draw_idle()
 
+            self.canvas.setVisible(True)
             toolbar = self.canvas.toolbar
             toolbar.setVisible(self.declaration.toolbar_visible)
+
+        elif self.canvas:
+            self.canvas.setVisible(False)
+            self.canvas.draw_idle()
+
+    def focus_target(self):
+        """ Return the canvas as the focus target.
+        """
+        return self.canvas
