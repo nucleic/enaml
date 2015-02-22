@@ -13,7 +13,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 
 from .QtCore import Qt
-from .QtGui import QFrame, QVBoxLayout
+from .QtGui import QFrame, QVBoxLayout, QWidget
 
 from .qt_control import QtControl
 
@@ -25,8 +25,11 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
     #: A reference to the widget created by the proxy.
     widget = Typed(QFrame)
 
-    #: MPL Canvas Object (Singleton)
+    #: The MPL canvas widget.
     canvas = Typed(FigureCanvasQTAgg)
+
+    #: The MPL toolbar widget.
+    toolbar = Typed(QWidget)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -63,11 +66,17 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
         """ Set the toolbar visibility for the widget.
 
         """
-        layout = self.widget.layout()
-        if layout.count() == 2:
+        if self.toolbar:
             with self.geometry_guard():
-                toolbar = layout.itemAt(0).widget()
-                toolbar.setVisible(visible)
+                self.toolbar.setVisible(visible)
+
+    def focus_target(self):
+        """ Get the focus target for the control.
+
+        This returns the canvas widget if possible.
+
+        """
+        return self.canvas or self.widget
 
     #--------------------------------------------------------------------------
     # Private API
@@ -76,53 +85,81 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
         """ Create the mpl widget and update the underlying control.
 
         """
-        widget = self.widget
-        layout = widget.layout()
-
-        # Create the new canvas and toolbar widgets if suitable ones have
-        # not been created.
-        # The canvas is manually set to visible, or QVBoxLayout will
-        # ignore it for size hinting.
         figure = self.declaration.figure
-        if figure:
-            if not self.canvas:
+        old_canvas = self.canvas
+        old_toolbar = self.toolbar
+        if not figure:
+            if old_canvas:
+                old_canvas.setParent(None)
+            if old_toolbar:
+                old_toolbar.setParent(None)
+            self.canvas = None
+            self.toolbar = None
+            return
 
-                if isinstance(figure.canvas, FigureCanvasQTAgg):
-                    canvas = figure.canvas
-                else:
-                    canvas = FigureCanvasQTAgg(figure)
+        new_canvas = _ensure_canvas(figure)
+        new_toolbar = _ensure_toolbar(new_canvas, self.widget)
 
-                if canvas.toolbar:
-                    # Avoid RuntimeError due to multiple calls to destroy
-                    if hasattr(canvas, 'manager'):
-                        canvas.manager.toolbar = None
-                    toolbar = canvas.toolbar
-                else:
-                    toolbar = NavigationToolbar2QT(canvas, widget)
+        if new_toolbar is not old_toolbar:
+            if old_toolbar:
+                old_toolbar.setParent(None)
+            self.widget.layout().insertWidget(0, new_toolbar)
 
-                layout.addWidget(toolbar)
-                layout.addWidget(canvas)
-                canvas.setFocusPolicy(Qt.ClickFocus)
-                self.canvas = canvas
+        if new_canvas is not old_canvas:
+            if old_canvas:
+                old_canvas.setParent(None)
+            self.widget.layout().insertWidget(1, new_canvas)
 
-            else:
-                canvas = self.canvas
-                # Reset and clear the toolbar
-                canvas.toolbar.home()
-                canvas.toolbar.update()
-                figure.canvas = canvas
-                canvas.figure = figure
-                canvas.draw_idle()
+        figure.canvas = new_canvas
+        new_canvas.figure = figure
+        new_canvas.setFocusPolicy(Qt.ClickFocus)
+        new_canvas.setVisible(True)
+        new_canvas.draw_idle()
 
-            self.canvas.setVisible(True)
-            toolbar = self.canvas.toolbar
-            toolbar.setVisible(self.declaration.toolbar_visible)
+        new_toolbar.setVisible(self.declaration.toolbar_visible)
+        new_toolbar.home()
+        new_toolbar.update()
 
-        elif self.canvas:
-            self.canvas.setVisible(False)
-            self.canvas.draw_idle()
+        self.canvas = new_canvas
+        self.toolbar = new_toolbar
 
-    def focus_target(self):
-        """ Return the canvas as the focus target.
-        """
-        return self.canvas
+
+def _ensure_canvas(figure):
+    """ Get the canvas associated with the figure, or create one.
+
+    Parameters
+    ----------
+    figure : Figure
+        The mpl figure object.
+
+    Returns
+    -------
+    result : FigureCanvasQTAgg
+        The Qt rendering canvas.
+
+    """
+    if isinstance(figure.canvas, FigureCanvasQTAgg):
+        return figure.canvas
+    return FigureCanvasQTAgg(figure)
+
+
+def _ensure_toolbar(canvas, parent):
+    """ Get the toolbar associated with the figure or create one.
+
+    Parameters
+    ----------
+    canvas : FigureCanvasQTAgg
+        The mpl canvas object.
+
+    parent : QWidget
+        The parent for the toolbar.
+
+    Returns
+    -------
+    result : QWidget
+        The toolbar for the figure.
+
+    """
+    if isinstance(canvas.toolbar, QWidget):
+        return canvas.toolbar
+    return NavigationToolbar2QT(canvas, parent)
