@@ -15,7 +15,7 @@ from .control import Control, ProxyControl
 
 
 class ProxySpinBox(ProxyControl):
-    """ The abstract defintion of a proxy SpinBox object.
+    """ The abstract definition of a proxy SpinBox object.
 
     """
     #: A reference to the SpinBox declaration.

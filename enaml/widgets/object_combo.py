@@ -15,7 +15,7 @@ from .control import Control, ProxyControl
 
 
 class ProxyObjectCombo(ProxyControl):
-    """ The abstract defintion of a proxy ObjectCombo object.
+    """ The abstract definition of a proxy ObjectCombo object.
 
     """
     #: A reference to the ObjectCombo declaration.

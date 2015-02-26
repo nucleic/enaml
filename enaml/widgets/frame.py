@@ -21,7 +21,7 @@ class Border(Atom):
     #: The style of the border.
     style = Enum('box', 'panel', 'styled_panel')
 
-    #: The showdow style applied to the border.
+    #: The shadow style applied to the border.
     line_style = Enum('plain', 'sunken', 'raised')
 
     #: The thickness of the outer border line.

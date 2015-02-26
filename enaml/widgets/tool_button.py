@@ -46,7 +46,7 @@ class ToolButton(AbstractButton):
     #: Whether or not auto-raise is enabled for the button.
     auto_raise = d_(Bool(True))
 
-    #: The mode for diplaying a child popup menu.
+    #: The mode for displaying a child popup menu.
     popup_mode = d_(Enum('delayed', 'button', 'instant'))
 
     #: A reference to the ProxyToolButton object.

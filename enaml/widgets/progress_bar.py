@@ -15,7 +15,7 @@ from .control import Control, ProxyControl
 
 
 class ProxyProgressBar(ProxyControl):
-    """ The abstract defintion of a proxy ProgressBar object.
+    """ The abstract definition of a proxy ProgressBar object.
 
     """
     #: A reference to the ProgressBar declaration.

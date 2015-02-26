@@ -11,7 +11,7 @@ from enaml.core.declarative import Declarative, d_
 
 
 class ExtensionPoint(Declarative):
-    """ A declarative class which represents a pulgin extension point.
+    """ A declarative class which represents a plugin extension point.
 
     An ExtensionPoint must be declared as a child of a PluginManifest.
 
