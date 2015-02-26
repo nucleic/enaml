@@ -91,4 +91,4 @@ class CustomCompleter(Completer):
             The unicode text entered by the user.
         """
         if self.callback:
-            self.completions = self.callback()
+            self.completions = self.callback(text)
