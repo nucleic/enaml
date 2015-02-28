@@ -15,7 +15,7 @@ from enaml.core.object import flag_generator, flag_property
 class ProxyToolkitObject(Atom):
     """ The base class of all proxy toolkit objects.
 
-    A ProxyToolkitObject is repsonsible for the communication between
+    A ProxyToolkitObject is responsible for the communication between
     the Declarative declaration of the object and then implementation
     object which actually performs the behavior.
 

@@ -1,0 +1,109 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2014, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the drag and drop functionality.
+
+In addition to the source widgets in this example, the drop target can
+accept data from other processes that have draggable data, such as text
+from a web page. The source drag data can also be dropped onto other
+processes which support the 'text/plain' mime type used in this example.
+
+The background color of the labels will update to indicate whether the
+drop target accepted or rejected the proposed drop action.
+
+If a widget has the `DragEnabled` Feature flag enabled, the following
+declarative functions are available:
+
+`drag_start`
+    The start of the drag operation. Returns a DragData object.
+
+`drag_end`
+    The end of the drag operation. Indicates the result of the drop.
+
+If a widget has the `DropEnabled` Feature flag enabled, the following
+declarative functions are available:
+
+`drag_enter`
+    Called when a drag operation enters the widget bounds. The event
+    must be accepted in order to receive further drag drop events.
+
+`drag_move`
+    Called when a drag operation moves within the widget bounds. This
+    is normally not implemented, but it can be useful is certain cases.
+
+`drag_leave`
+    Called when a drag operation leaves the widget bounds.
+
+`drop`
+    Called when the drag data is dropped on the widget. The event
+    can be ignored to indicated to the drag source that the event
+    was not accepted. Set the drop action to DropAction.Ignore for
+    that case. By default, the event is accepted.
+
+<< autodoc-me >>
+"""
+from enaml.drag_drop import DragData, DropAction
+from enaml.layout.api import hbox, vbox, align, spacer
+from enaml.styling import StyleSheet, Style, Setter
+from enaml.widgets.api import Window, Container, Label, Feature, MultilineField
+
+
+def create_drag_data(data):
+    drag = DragData()
+    drag.supported_actions = DropAction.Copy
+    drag.mime_data.set_data('text/plain', data)
+    return drag
+
+
+enamldef DragLabel(Label):
+    attr data: str
+    attr success = False
+    style_class << 'success' if success else 'fail'
+    features = Feature.DragEnabled
+    drag_start => ():
+        return create_drag_data(data)
+    drag_end => (drag_data, result):
+        self.success = result == DropAction.Copy
+
+
+enamldef DropField(MultilineField):
+    features = Feature.DropEnabled
+    drag_enter => (event):
+        if event.mime_data().has_format('text/plain'):
+            event.accept_proposed_action()
+    drop => (event):
+        self.text = event.mime_data().data('text/plain')
+
+
+enamldef ExampleStyleSheet(StyleSheet):
+    Style:
+        style_class = 'success'
+        Setter:
+            field = 'background-color'
+            value = '#DDFFDD'
+    Style:
+        style_class = 'fail'
+        Setter:
+            field = 'background-color'
+            value = '#FFDDDD'
+
+
+enamldef Main(Window):
+    ExampleStyleSheet:
+        pass
+    Container:
+        constraints = [
+            hbox(vbox(lbl1, lbl2, spacer), target),
+        ]
+        DragLabel: lbl1:
+            text = 'Drag Me 1'
+            data = 'small\ndata'
+        DragLabel: lbl2:
+            text = 'Drag Me 2'
+            data = '\n'.join([str(i) for i in range(100)])
+        DropField: target:
+            read_only = True

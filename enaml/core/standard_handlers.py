@@ -49,7 +49,7 @@ class HandlerMixin(Atom):
 class StandardReadHandler(ReadHandler, HandlerMixin):
     """ An expression read handler for simple read semantics.
 
-    This handler is used in conjuction with the standard '=' operator.
+    This handler is used in conjunction with the standard '=' operator.
 
     """
     def __call__(self, owner, name):

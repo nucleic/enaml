@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2014, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -14,6 +14,7 @@ from .QtGui import QApplication
 
 from .q_deferred_caller import deferredCall, timedCall
 from .qt_factories import QT_FACTORIES
+from .qt_mime_data import QtMimeData
 
 
 class QtApplication(Application):
@@ -101,3 +102,14 @@ class QtApplication(Application):
 
         """
         return QThread.currentThread() == self._qapp.thread()
+
+    def create_mime_data(self):
+        """ Create a new mime data object to be filled by the user.
+
+        Returns
+        -------
+        result : QtMimeData
+            A concrete implementation of the MimeData class.
+
+        """
+        return QtMimeData()

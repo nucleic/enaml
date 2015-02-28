@@ -13,7 +13,7 @@ from .bounded_time import BoundedTime, ProxyBoundedTime
 
 
 class ProxyTimeSelector(ProxyBoundedTime):
-    """ The abstract defintion of a proxy TimeSelector object.
+    """ The abstract definition of a proxy TimeSelector object.
 
     """
     #: A reference to the TimeSelector declaration.

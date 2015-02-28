@@ -16,7 +16,7 @@ from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 
 class ProxyToolkitDialog(ProxyToolkitObject):
-    """ The abstract defintion of a proxy ToolkitDialog object.
+    """ The abstract definition of a proxy ToolkitDialog object.
 
     """
     #: A reference to the ToolkitDialog declaration.
