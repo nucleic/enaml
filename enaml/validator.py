@@ -160,11 +160,11 @@ class ComplexValidator(Validator):
     """
     #: The minimum value allowed for the float, inclusive, or None if
     #: there is no lower bound.
-    minimum = Typed(float)
+    minimum = Typed(complex)
 
     #: The maximum value allowed for the float, inclusive, or None if
     #: there is no upper bound.
-    maximum = Typed(float)
+    maximum = Typed(complex)
 
     #: Whether or not to allow exponents like '1e6' in the input.
     allow_exponent = Bool(True)
@@ -189,16 +189,12 @@ class ComplexValidator(Validator):
             return False
         minimum = self.minimum
         if minimum is not None and (value.real < minimum or value.imag < minimum): 
-			return False
-			
+            return False
         maximum = self.maximum
-		
         if maximum is not None and (value.real > maximum or value.imag > maximum):
             return False
-			
         if not self.allow_exponent and 'e' in text.lower():
             return False
-			
         return True
         
 
