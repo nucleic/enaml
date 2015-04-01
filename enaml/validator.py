@@ -151,6 +151,57 @@ class FloatValidator(Validator):
         return True
 
 
+class ComplexValidator(Validator):
+    """ A concrete Validator which handles complex floating point input.
+
+    This validator ensures that the text represents a complex floating point
+    number within a specified range.
+
+    """
+    #: The minimum value allowed for the float, inclusive, or None if
+    #: there is no lower bound.
+    minimum = Typed(float)
+
+    #: The maximum value allowed for the float, inclusive, or None if
+    #: there is no upper bound.
+    maximum = Typed(float)
+
+    #: Whether or not to allow exponents like '1e6' in the input.
+    allow_exponent = Bool(True)
+
+    def validate(self, text):
+        """ Validates the given text matches the complex float range.
+
+        Parameters
+        ----------
+        text : unicode
+            The unicode text edited by the client widget.
+
+        Returns
+        -------
+        result : bool
+            True if the text is valid, False otherwise.
+
+        """
+        try:
+            value = complex(text)
+        except ValueError:
+            return False
+        minimum = self.minimum
+        if minimum is not None and (value.real < minimum or value.imag < minimum): 
+			return False
+			
+        maximum = self.maximum
+		
+        if maximum is not None and (value.real > maximum or value.imag > maximum):
+            return False
+			
+        if not self.allow_exponent and 'e' in text.lower():
+            return False
+			
+        return True
+        
+
 class RegexValidator(Validator):
     """ A concrete Validator which handles text input.
 
