@@ -15,24 +15,12 @@ different from the deafults ones.
 """
 from itertools import izip_longest
 
-from enaml.core.api import Include
-from enaml.layout.api import align, grid, factory
+from enaml.layout.api import align, grid
 from enaml.widgets.api import Window, Container, Field, Label, PushButton
 
 
-def generate_grid():
-    """ Generate grid constraints with 2 columns.
-
-    """
-    rows = []
-    widgets = self.visible_widgets()
-    row_iters = (iter(widgets),) * 2
-    rows = list(izip_longest(*row_iters))
-    return [grid(*rows), align('width', *widgets)]
-
-
 enamldef Main(Window):
-    title = 'Factory Helper'
+    title = 'Overridden layout_constraints'
     Container:
 
         layout_constraints => ():
@@ -51,7 +39,7 @@ enamldef Main(Window):
             pass
         Label:
             text = 'Surname'
-        Field: c_count:
+        Field:
             pass
 
         PushButton:

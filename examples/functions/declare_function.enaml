@@ -12,7 +12,7 @@ a function bound to an enaml declaration and how scoping rules apply.
 
 Note that when declaring a function using the `func` it will always be
 considered a method of the object on which it is defined hence the possibility
-to access to self which is a reference to the main window.
+to access self which in this case is a reference to the main window.
 
 Note also that such a function has access to the same scope as any other Enaml
 object allowing for example to access the SpinBox using its id which would not
@@ -22,7 +22,6 @@ block.
 << autodoc-me >>
 """
 from enaml.widgets.api import Window, PushButton, SpinBox, Container
-from enaml.layout.api import hbox, vbox
 
 
 enamldef Main(Window):

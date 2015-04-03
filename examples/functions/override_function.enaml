@@ -15,10 +15,8 @@ to mark a function as declarative and hence overridable from enaml.
 
 << autodoc-me >>
 """
-from atom.api import observe
 from enaml.core.declarative import d_func
 from enaml.widgets.api import Window, PushButton, Container
-from enaml.layout.api import hbox, vbox
 
 
 class MySpecialPushButton(PushButton):
