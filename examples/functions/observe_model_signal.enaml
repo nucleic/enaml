@@ -7,9 +7,9 @@
 #------------------------------------------------------------------------------
 """ An example showing how to use to observe a model signal.
 
-Here the model use a signal to notify listeners about in place change to a
-list. This pattern is interestign when a ContainerList would emit too
-many signal because notifications cannot be batched. This is a common case
+Here the model uses a signal to notify listeners about in place change to a
+list. This pattern is interesting when a ContainerList would emit too
+many signals because notifications cannot be batched. This is a common case
 when moving an element in a list for example.
 
 << autodoc-me >>
@@ -56,10 +56,14 @@ class Model(Atom):
 
 
 enamldef EditMenu(Menu):
-    """Menu use to edit the content of the list.
+    """Menu used to edit the content of the list.
 
-    The entries depend on the state of the list to avoid proposing absurd
-    operations.
+    The proposed operations depends on the state of the list and the index
+    of the object on which to operate:
+    - deleting an item is proposed as long as there are more than one item in
+      the list.
+    - moving an element up is proposed only if it is not the first one.
+    - moving an element down is proposed only if it is not the last one.
 
     """
     attr model
@@ -103,6 +107,10 @@ enamldef Main(MainWindow): main:
         func react_signal(kind):
             main._internal = model.values[:]
             if kind == 'moved':
+                # This request is necessary as in case of a move the Looper
+                # insert nor remove any child and hence no relayout is
+                # performed. We need to request one manually to update the
+                # order of the items.
                 self.request_relayout()
 
         initialized::
