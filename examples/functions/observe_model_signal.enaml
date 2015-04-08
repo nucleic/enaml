@@ -1,31 +1,30 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2015, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" An example showing how to use to observe a model signal.
+""" An which demonstrates how to observe a model signal.
 
-Here the model uses a signal to notify listeners about in place change to a
-list. This pattern is interesting when a ContainerList would emit too
-many signals because notifications cannot be batched. This is a common case
-when moving an element in a list for example.
+This examples uses a model with a signal to notify listeners about in
+place changes to a list. This pattern is interesting for the times when
+a ContainerList would emit too many synchronous notifications. A common
+example is reordering the elements in a list.
 
 << autodoc-me >>
 """
 from atom.api import Atom, List, Signal
-from enaml.widgets.api import (MainWindow, Form, PushButton, Field,
-                               Menu, Action)
 from enaml.core.api import Looper
+from enaml.widgets.api import Window, Form, PushButton, Field, Menu, Action
 
 
 class Model(Atom):
-    """Simple model holding simply a list.
+    """ A model which manages a collection of values.
 
-    This model expose a list which should be considered read-only and methods
-    to manipulate it. Those methods use a signal to notify listeners that
-    inplace changes occured on the list.
+    This model expose a list which should be considered read-only and
+    methods to manipulate it. The `values_changed` signal is emitted
+    when an in-place change occurs in the list.
 
     """
     values = List(default=['val'])
@@ -33,14 +32,14 @@ class Model(Atom):
     values_changed = Signal()
 
     def add_value(self, index, val):
-        """Add a value at a specified index.
+        """ Add a value at a specified index.
 
         """
         self.values.insert(index, val)
         self.values_changed('add')
 
     def move_value(self, old, new):
-        """Move a value from one index to another.
+        """ Move a value from one index to another.
 
         """
         val = self.values.pop(old)
@@ -48,7 +47,7 @@ class Model(Atom):
         self.values_changed('moved')
 
     def delete_value(self, index):
-        """Delete a value.
+        """ Delete a value.
 
         """
         del self.values[index]
@@ -56,72 +55,62 @@ class Model(Atom):
 
 
 enamldef EditMenu(Menu):
-    """Menu used to edit the content of the list.
+    """ A menu used to edit the content of the list.
 
-    The proposed operations depends on the state of the list and the index
-    of the object on which to operate:
-    - deleting an item is proposed as long as there are more than one item in
-      the list.
-    - moving an element up is proposed only if it is not the first one.
-    - moving an element down is proposed only if it is not the last one.
+    The visible menu items will vary to show appropriate actions based
+    on the current model state.
 
     """
-    attr model
-    attr index
-
+    attr model: Model
+    attr index: int
     Action:
         text = 'Add before'
-        triggered::
-            model.add_value(index, 'item{}'.format(len(model.values)))
+        triggered :: model.add_value(index, 'item %d' % len(model.values))
     Action:
         text = 'Add after'
-        triggered::
-            model.add_value(index+1, 'item{}'.format(len(model.values)))
+        triggered :: model.add_value(index + 1, 'item %d' % len(model.values))
     Action:
         separator = True
     Action:
         visible = index != 0
         text = 'Move up'
-        triggered::
-            model.move_value(index, index-1)
+        triggered :: model.move_value(index, index - 1)
     Action:
-        visible = index != len(model.values)-1
+        visible = index != len(model.values) - 1
         text = 'Move down'
-        triggered::
-            model.move_value(index, index+1)
+        triggered :: model.move_value(index, index + 1)
     Action:
         separator = True
     Action:
         visible = len(model.values) > 1
         text = 'Delete'
-        triggered::
-            model.delete_value(index)
+        triggered :: model.delete_value(index)
 
 
-enamldef Main(MainWindow): main:
+enamldef Main(Window):
+    """ The main window which displays the list contents as a form.
 
+    """
     attr model = Model()
-    attr _internal << model.values[:]
+    attr _values = model.values[:]
+
+    # Subscribe to the model when the window initializes.
+    initialized :: model.observe('values_changed', on_changed)
+
+    func on_changed(kind):
+        self._values = model.values[:]
+
+    func open_menu(item):
+        EditMenu(model=model, index=_values.index(item)).popup()
 
     Form:
-        func react_signal(kind):
-            main._internal = model.values[:]
-
-        initialized::
-            # This sets up the observer. Without this the UI would not know
-            # when the list change.
-            model.observe('values_changed', react_signal)
-
         Looper:
-            iterable << _internal
+            iterable << _values
             PushButton:
                 text = '>'
                 constraints = [width == 15, height == 20]
                 font = 'bold 12pt Consolas'
-                clicked::
-                    # This is needed to get fresh values for each invocation.
-                    EditMenu(model=model,
-                             index=_internal.index(loop_item)).popup()
+                clicked :: open_menu(loop_item)
             Field:
                 read_only = True
                 text = loop_item

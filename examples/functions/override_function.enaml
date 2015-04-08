@@ -1,17 +1,14 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2015, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" An example showing how to override a declarive function from enaml.
+""" An which demonstrates a declarive function override.
 
 This example demonstrates how to use the `=>` operator to override a
-declarative function from enaml.
-
-Note that when subclassing an enaml object you must use the @d_func decoarator
-to mark a function as declarative and hence overridable from enaml.
+declarative function defined with the @d_func decorator.
 
 << autodoc-me >>
 """
@@ -20,7 +17,7 @@ from enaml.widgets.api import Window, PushButton, Container
 
 
 class MySpecialPushButton(PushButton):
-    """Push button having something to say.
+    """ A push button which has something to say.
 
     """
     @d_func
@@ -32,15 +29,12 @@ class MySpecialPushButton(PushButton):
 enamldef Main(Window):
     attr name1 = 'John'
     attr name2 = 'Jane'
-
     Container:
-
         MySpecialPushButton:
             text = 'Say Hi'
-            clicked:: self.say_something(name1)
-
+            clicked :: self.say_something(name1)
         MySpecialPushButton:
             text = 'Say Hello'
+            clicked :: self.say_something(name2)
             say_something => (name):
                 print 'Hello, '+ name
-            clicked:: self.say_something(name2)
