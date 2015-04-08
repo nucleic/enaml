@@ -222,9 +222,12 @@ class Object(Atom):
 
         self._children = new
         child_added = self.child_added
+        child_moved = self.child_moved
         for child in insert_list:
             if child in insert_set:
                 child_added(child)
+            else:
+                child_moved(child)
 
     def parent_changed(self, old, new):
         """ A method invoked when the parent of the object changes.
@@ -253,6 +256,19 @@ class Object(Atom):
         ----------
         child : Object
             The child added to this object.
+
+        """
+        pass
+
+    def child_moved(self, child):
+        """ A method invoked when a child is moved in the object.
+
+        Sublasses may reimplement this method as required.
+
+        Parameters
+        ----------
+        child : Object
+            The child moved in this object.
 
         """
         pass

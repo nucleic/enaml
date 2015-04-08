@@ -98,6 +98,19 @@ class Container(Frame, ContentsConstrainableMixin):
             self.request_relayout()
         super(Container, self).child_added(child)
 
+    def child_moved(self, child):
+        """ Handle the child moved event on the container.
+
+        This event handler will request a relayout if the moved child
+        is an instance of 'ConstraintsWidget'.
+
+        """
+        # Request the relayout first so that the widget's updates are
+        # disabled before the child is actually moved.
+        if isinstance(child, ConstraintsWidget):
+            self.request_relayout()
+        super(Container, self).child_moved(child)
+
     def child_removed(self, child):
         """ Handle the child removed event on the container.
 
