@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" An which demonstrates how to observe a model signal.
+""" An example which demonstrates how to observe a model signal.
 
 This examples uses a model with a signal to notify listeners about in
 place changes to a list. This pattern is interesting for the times when
