@@ -106,12 +106,6 @@ enamldef Main(MainWindow): main:
     Form:
         func react_signal(kind):
             main._internal = model.values[:]
-            if kind == 'moved':
-                # This request is necessary as in case of a move the Looper
-                # insert nor remove any child and hence no relayout is
-                # performed. We need to request one manually to update the
-                # order of the items.
-                self.request_relayout()
 
         initialized::
             # This sets up the observer. Without this the UI would not know
