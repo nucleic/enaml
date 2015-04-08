@@ -1,0 +1,42 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example showing how to declare a declarive function using func
+
+This example demonstrates how one can use the `func` keyword to declare
+a function bound to an enaml declaration and how scoping rules apply.
+
+Note that when declaring a function using the `func` it will always be
+considered a method of the object on which it is defined hence the possibility
+to access self which in this case is a reference to the main window.
+
+Note also that such a function has access to the same scope as any other Enaml
+object allowing for example to access the SpinBox using its id which would not
+be possible using a function (defined using def) declared outside the enamldef
+block.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window, PushButton, SpinBox, Container
+
+
+enamldef Main(Window):
+    attr thing = 'twelve'
+    attr thing2 = 'nine'
+
+    func do_thing(param):
+       print thing, self.thing2, sbox.value, param
+
+    Container:
+
+        SpinBox: sbox:
+            maximum = 100
+            minimum = 0
+
+        PushButton:
+            text = 'Click Me'
+            clicked :: do_thing(42)

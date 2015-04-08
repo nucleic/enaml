@@ -1,0 +1,46 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2014, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of overriding layouts_constraints to generate layout.
+
+This example shows how one can override layout_constraints from enaml to
+generate constraints. This can be useful to generate default constraints
+different from the deafults ones.
+
+<< autodoc-me >>
+"""
+from itertools import izip_longest
+
+from enaml.layout.api import align, grid
+from enaml.widgets.api import Window, Container, Field, Label, PushButton
+
+
+enamldef Main(Window):
+    title = 'Overridden layout_constraints'
+    Container:
+
+        layout_constraints => ():
+            """ Generate grid constraints with 2 columns. A kind of cheap Form.
+
+            """
+            rows = []
+            widgets = self.visible_widgets()
+            row_iters = (iter(widgets),) * 2
+            rows = list(izip_longest(*row_iters))
+            return [grid(*rows)] + [align('v_center', *row) for row in rows]
+
+        Label:
+            text = 'Name'
+        Field:
+            pass
+        Label:
+            text = 'Surname'
+        Field:
+            pass
+
+        PushButton:
+            text = 'Click me'

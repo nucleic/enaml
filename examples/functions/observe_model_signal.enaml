@@ -1,0 +1,127 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example showing how to use to observe a model signal.
+
+Here the model uses a signal to notify listeners about in place change to a
+list. This pattern is interesting when a ContainerList would emit too
+many signals because notifications cannot be batched. This is a common case
+when moving an element in a list for example.
+
+<< autodoc-me >>
+"""
+from atom.api import Atom, List, Signal
+from enaml.widgets.api import (MainWindow, Form, PushButton, Field,
+                               Menu, Action)
+from enaml.core.api import Looper
+
+
+class Model(Atom):
+    """Simple model holding simply a list.
+
+    This model expose a list which should be considered read-only and methods
+    to manipulate it. Those methods use a signal to notify listeners that
+    inplace changes occured on the list.
+
+    """
+    values = List(default=['val'])
+
+    values_changed = Signal()
+
+    def add_value(self, index, val):
+        """Add a value at a specified index.
+
+        """
+        self.values.insert(index, val)
+        self.values_changed('add')
+
+    def move_value(self, old, new):
+        """Move a value from one index to another.
+
+        """
+        val = self.values.pop(old)
+        self.values.insert(new, val)
+        self.values_changed('moved')
+
+    def delete_value(self, index):
+        """Delete a value.
+
+        """
+        del self.values[index]
+        self.values_changed('deleted')
+
+
+enamldef EditMenu(Menu):
+    """Menu used to edit the content of the list.
+
+    The proposed operations depends on the state of the list and the index
+    of the object on which to operate:
+    - deleting an item is proposed as long as there are more than one item in
+      the list.
+    - moving an element up is proposed only if it is not the first one.
+    - moving an element down is proposed only if it is not the last one.
+
+    """
+    attr model
+    attr index
+
+    Action:
+        text = 'Add before'
+        triggered::
+            model.add_value(index, 'item{}'.format(len(model.values)))
+    Action:
+        text = 'Add after'
+        triggered::
+            model.add_value(index+1, 'item{}'.format(len(model.values)))
+    Action:
+        separator = True
+    Action:
+        visible = index != 0
+        text = 'Move up'
+        triggered::
+            model.move_value(index, index-1)
+    Action:
+        visible = index != len(model.values)-1
+        text = 'Move down'
+        triggered::
+            model.move_value(index, index+1)
+    Action:
+        separator = True
+    Action:
+        visible = len(model.values) > 1
+        text = 'Delete'
+        triggered::
+            model.delete_value(index)
+
+
+enamldef Main(MainWindow): main:
+
+    attr model = Model()
+    attr _internal << model.values[:]
+
+    Form:
+        func react_signal(kind):
+            main._internal = model.values[:]
+
+        initialized::
+            # This sets up the observer. Without this the UI would not know
+            # when the list change.
+            model.observe('values_changed', react_signal)
+
+        Looper:
+            iterable << _internal
+            PushButton:
+                text = '>'
+                constraints = [width == 15, height == 20]
+                font = 'bold 12pt Consolas'
+                clicked::
+                    # This is needed to get fresh values for each invocation.
+                    EditMenu(model=model,
+                             index=_internal.index(loop_item)).popup()
+            Field:
+                read_only = True
+                text = loop_item
