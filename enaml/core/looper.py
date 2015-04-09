@@ -33,6 +33,8 @@ class Looper(Pattern):
 
     """
     #: The iterable to use when creating the items for the looper.
+    #: The items in the iterable must be unique. This allows the
+    #: Looper to optimize the creation and destruction of widgets.
     iterable = d_(Instance(Iterable))
 
     #: The list of items created by the conditional. Each item in the
