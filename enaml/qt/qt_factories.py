@@ -5,6 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import pkg_resources
+
+
 def action_factory():
     from .qt_action import QtAction
     return QtAction
@@ -360,3 +363,10 @@ QT_FACTORIES = {
     'WebView': web_view_factory,
     'Window': window_factory,
 }
+
+# New Enaml factories can be added via this setuptools entry point based
+# plugin mechanism: enaml_factories
+for ep in pkg_resources.iter_entry_points('enaml_factories'):
+    if ep.name in QT_FACTORIES:
+        raise RuntimeError('reserved name: {0!r}'.format(ep.name))
+    QT_FACTORIES[ep.name] = ep.load()
