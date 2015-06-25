@@ -364,9 +364,18 @@ QT_FACTORIES = {
     'Window': window_factory,
 }
 
-# New Enaml factories can be added via this setuptools entry point based
+# Custom Enaml factories can be added via this setuptools entry point based
 # plugin mechanism: enaml_factories
+import enaml.widgets.api
 for ep in pkg_resources.iter_entry_points('enaml_factories'):
     if ep.name in QT_FACTORIES:
         raise RuntimeError('reserved name: {0!r}'.format(ep.name))
-    QT_FACTORIES[ep.name] = ep.load()
+    factory = ep.load()
+    QT_FACTORIES[ep.name] = factory
+
+    # TODO: here we are not lazy importing the Qt control anymore!
+    qt_control = factory()
+
+    # For convenience we inject the Control inside the enaml.widgets.api
+    # namespace so it can be easily imported from there.
+    setattr(enaml.widgets.api, ep.name, qt_control.declaration.resolve())
