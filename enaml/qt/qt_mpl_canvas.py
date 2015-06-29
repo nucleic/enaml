@@ -10,7 +10,10 @@ from atom.api import Typed
 from enaml.widgets.mpl_canvas import ProxyMPLCanvas
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
+try:
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
+except ImportError:
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 
 from .QtCore import Qt
 from .QtGui import QFrame, QVBoxLayout
@@ -93,7 +96,7 @@ class QtMPLCanvas(QtControl, ProxyMPLCanvas):
             canvas.setParent(widget)
             canvas.setFocusPolicy(Qt.ClickFocus)
             canvas.setVisible(True)
-            toolbar = NavigationToolbar2QTAgg(canvas, widget)
+            toolbar = NavigationToolbar2QT(canvas, widget)
             toolbar.setVisible(self.declaration.toolbar_visible)
             layout.addWidget(toolbar)
             layout.addWidget(canvas)
