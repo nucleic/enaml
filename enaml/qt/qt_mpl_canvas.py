@@ -11,7 +11,8 @@ from enaml.widgets.mpl_canvas import ProxyMPLCanvas
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 try:
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
+    from matplotlib.backends.backend_qt4agg import (NavigationToolbar2QTAgg
+                                                    as NavigationToolbar2QT)
 except ImportError:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 
