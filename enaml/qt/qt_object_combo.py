@@ -93,6 +93,7 @@ class QtObjectCombo(QtControl, ProxyObjectCombo):
         """
         super(QtObjectCombo, self).init_widget()
         self.refresh_items()
+        self.set_editable(self.declaration.editable)
         self.widget.currentIndexChanged.connect(self.on_index_changed)
 
     #--------------------------------------------------------------------------
