@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+	"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+
+<plist version="1.0">
+<dict>
+	<key>BBEditDocumentType</key>
+	<string>CodelessLanguageModule</string>
+
+	<key>BBLMLanguageDisplayName</key>
+	<string>Enaml</string>
+
+	<key>BBLMLanguageCode</key>
+	<string>ENM!</string>
+
+	<key>BBLMSuffixMap</key>
+	<array>
+		<dict>
+			<key>BBLMLanguageSuffix</key>
+			<string>.enaml</string>
+		</dict>
+	</array>
+
+	<key>BBLMColorsSyntax</key>
+	<true/>
+	<key>BBLMIsCaseSensitive</key>
+	<true />
+
+	<key>BBLMKeywordList</key>
+	<array>
+		<string>and</string>
+		<string>as</string>
+		<string>assert</string>
+		<string>attr</string>
+		<string>break</string>
+		<string>class</string>
+		<string>continue</string>
+		<string>def</string>
+		<string>del</string>
+		<string>elif</string>
+		<string>else</string>
+		<string>enamldef</string>
+		<string>except</string>
+		<string>exec</string>
+		<string>finally</string>
+		<string>for</string>
+		<string>from</string>
+		<string>func</string>
+		<string>global</string>
+		<string>if</string>
+		<string>import</string>
+		<string>in</string>
+		<string>is</string>
+		<string>lambda</string>
+		<string>not</string>
+		<string>or</string>
+		<string>pass</string>
+		<string>print</string>
+		<string>raise</string>
+		<string>return</string>
+		<string>template</string>
+		<string>try</string>
+		<string>while</string>
+		<string>with</string>
+		<string>yield</string>
+	</array>
+
+	<key>BBLMPredefinedNameList</key>
+	<array>
+		<string>Action</string>
+		<string>Field</string>
+		<string>MdiWindow</string>
+		<string>SplitItem</string>
+		<string>ActionGroup</string>
+		<string>FileDialog</string>
+		<string>Menu</string>
+		<string>Splitter</string>
+		<string>Border</string>
+		<string>FileDialogEx</string>
+		<string>MenuBar</string>
+		<string>Stack</string>
+		<string>Calendar</string>
+		<string>FlowArea</string>
+		<string>MultilineField</string>
+		<string>StackItem</string>
+		<string>CheckBox</string>
+		<string>FlowItem</string>
+		<string>Notebook</string>
+		<string>StatusBar</string>
+		<string>ColorDialog</string>
+		<string>FocusTracker</string>
+		<string>ObjectCombo</string>
+		<string>StatusItem</string>
+		<string>ComboBox</string>
+		<string>Form</string>
+		<string>Page</string>
+		<string>TimeSelector</string>
+		<string>Container</string>
+		<string>GroupBox</string>
+		<string>PopupView</string>
+		<string>Timer</string>
+		<string>DateSelector</string>
+		<string>HGroup</string>
+		<string>ProgressBar</string>
+		<string>ToolBar</string>
+		<string>DatetimeSelector</string>
+		<string>Html</string>
+		<string>PushButton</string>
+		<string>ToolButton</string>
+		<string>Dialog</string>
+		<string>IPythonConsole</string>
+		<string>RadioButton</string>
+		<string>Transition</string>
+		<string>DockArea</string>
+		<string>ImageView</string>
+		<string>RawWidget</string>
+		<string>VGroup</string>
+		<string>DockItem</string>
+		<string>Label</string>
+		<string>ScrollArea</string>
+		<string>VTKCanvas</string>
+		<string>DockPane</string>
+		<string>MPLCanvas</string>
+		<string>Separator</string>
+		<string>WebView</string>
+		<string>DualSlider</string>
+		<string>MainWindow</string>
+		<string>Slider</string>
+		<string>Window</string>
+		<string>Feature</string>
+		<string>MdiArea</string>
+		<string>SpinBox</string>
+		<string>grid</string>
+		<string>hbox</string>
+		<string>horizontal</string>
+		<string>spacer</string>
+		<string>vbox</string>
+		<string>vertical</string>
+		<string>align</string>
+		<string>Conditional</string>
+		<string>Looper</string>
+		<string>Include</string>
+		<string>d_</string>
+		<string>d_func</string>
+	</array>
+
+	<key>BBLMCommentLineDefault</key>
+	<string>#</string>
+
+	<key>Language Features</key>
+	<dict>
+		<key>Identifier and Keyword Character Class</key>
+		<string>A-Za-z0-9_!</string>
+
+		<key>Open Line Comments</key>
+		<string>#</string>
+
+		<key>Open Strings 1</key>
+		<string>"</string>
+		<key>Open Strings 2</key>
+		<string>"""</string>
+
+		<key>Close Strings 1</key>
+		<string>"</string>
+		<key>Close Strings 2</key>
+		<string>"""</string>
+
+		<key>Escape Char in Strings 1</key>
+		<string>\</string>
+
+		<key>End-of-line Ends Strings 1</key>
+		<true/>
+		<key>End-of-line Ends Strings 2</key>
+		<false/>
+
+		<key>Prefix for Functions</key>
+		<string>def</string>
+	</dict>
+
+</dict>
+</plist>
+
