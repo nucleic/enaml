@@ -273,6 +273,7 @@ class Workbench(Atom):
             if ext_id in self._extensions:
                 msg = "extension '%s' is already registered"
                 raise ValueError(msg % ext_id)
+            extension.initialize()
             self._extensions[ext_id] = extension
             grouped[extension.point].add(extension)
 
@@ -297,6 +298,7 @@ class Workbench(Atom):
             if ext_id not in self._extensions:
                 msg = "extension '%s' is not registered"
                 raise ValueError(msg % ext_id)
+            extension.destroy()
             del self._extensions[ext_id]
             grouped[extension.point].add(extension)
 
