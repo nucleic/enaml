@@ -54,6 +54,7 @@ class Workbench(Atom):
 
         self._manifests[plugin_id] = manifest
         manifest.workbench = self
+        manifest.initialize()
 
         self._add_extensions(manifest.extensions)
         self._add_extension_points(manifest.extension_points)
@@ -81,13 +82,15 @@ class Workbench(Atom):
         if plugin is not None:
             plugin.stop()
             plugin.manifest = None
-
+        
+        
         self._remove_extensions(manifest.extensions)
         self._remove_extension_points(manifest.extension_points)
 
         del self._manifests[plugin_id]
         manifest.workbench = None
-
+        manifest.destroy()
+        
         self.plugin_removed(plugin_id)
 
     def get_manifest(self, plugin_id):
@@ -273,7 +276,6 @@ class Workbench(Atom):
             if ext_id in self._extensions:
                 msg = "extension '%s' is already registered"
                 raise ValueError(msg % ext_id)
-            extension.initialize()
             self._extensions[ext_id] = extension
             grouped[extension.point].add(extension)
 
@@ -298,7 +300,6 @@ class Workbench(Atom):
             if ext_id not in self._extensions:
                 msg = "extension '%s' is not registered"
                 raise ValueError(msg % ext_id)
-            extension.destroy()
             del self._extensions[ext_id]
             grouped[extension.point].add(extension)
 
