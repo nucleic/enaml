@@ -4,7 +4,7 @@
 ;; (python keywords will automatically be highlighted as well)
 (defvar enaml-font-lock-keywords
   `(;; highlight these as keywords
-    (,(regexp-opt '("enamldef") 'words)
+    (,(regexp-opt '("enamldef" "template") 'words)
      1 font-lock-keyword-face)
     ;; highlight these as builtins
     (,(regexp-opt '("horizontal" "vertical" "hbox" "vbox"
@@ -14,7 +14,7 @@
     (,(regexp-opt '("attr" "event") 'words)
      1 font-lock-type-face)
     ;; enamldefs
-    (,(rx symbol-start "enamldef" (1+ space) (group (1+ (or word ?_))))
+    (,(rx symbol-start (or "enamldef" "template") (1+ space) (group (1+ (or word ?_))))
      (1 font-lock-type-face)))
   "Additional font lock keywords for Enaml mode.")
 
@@ -25,7 +25,8 @@
        (sequence
         symbol-start
         (or "def" "class" "if" "elif" "else" "try"
-            "except" "finally" "for" "while" "with" "enamldef")
+            "except" "finally" "for" "while" "with"
+            "enamldef" "template")
         symbol-end)
        ;; Any capitalized word following by ":"
        (sequence symbol-start upper (zero-or-more letter) symbol-end ":")
