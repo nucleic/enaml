@@ -96,6 +96,13 @@ class QtObjectCombo(QtControl, ProxyObjectCombo):
         self.set_editable(self.declaration.editable)
         self.widget.currentIndexChanged.connect(self.on_index_changed)
 
+    def destroy(self):
+        """Re-implemented here to take care of stopping the refresh timer.
+
+        """
+        self.refresh_timer.stop()
+        super(QtObjectCombo, self).destroy()
+
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------
