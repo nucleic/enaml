@@ -54,7 +54,6 @@ class Workbench(Atom):
 
         self._manifests[plugin_id] = manifest
         manifest.workbench = self
-        
         if not manifest.is_initialized:
             manifest.initialize()
 
@@ -84,16 +83,15 @@ class Workbench(Atom):
         if plugin is not None:
             plugin.stop()
             plugin.manifest = None
-        
+
         self._remove_extensions(manifest.extensions)
         self._remove_extension_points(manifest.extension_points)
 
         del self._manifests[plugin_id]
         manifest.workbench = None
-        
         if manifest.is_initialized:
             manifest.destroy()
-        
+
         self.plugin_removed(plugin_id)
 
     def get_manifest(self, plugin_id):
