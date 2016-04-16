@@ -129,8 +129,10 @@ class AbstractEnamlImporter(object):
         """
         code, path = self.get_code()
         if fullname in sys.modules:
+            pre_exists = True
             mod = sys.modules[fullname]
         else:
+            pre_exists = False
             mod = sys.modules[fullname] = types.ModuleType(fullname)
         mod.__loader__ = self
         mod.__file__ = path
@@ -139,8 +141,14 @@ class AbstractEnamlImporter(object):
         # manually installed and removed a hook. The contract here is
         # that the import hooks are always installed when executing the
         # module code of an Enaml file.
-        with imports():
-            exec code in mod.__dict__
+        try:
+            with imports():
+                exec code in mod.__dict__
+        except Exception:
+            if not pre_exists:
+                del sys.modules[fullname]
+            raise
+
         return mod
 
     #--------------------------------------------------------------------------
