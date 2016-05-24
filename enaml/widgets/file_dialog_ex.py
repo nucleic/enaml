@@ -5,6 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+
+from __future__ import unicode_literals
+
 from atom.api import Bool, Enum, List, Unicode, Typed, ForwardTyped, observe
 
 from enaml.core.declarative import d_
