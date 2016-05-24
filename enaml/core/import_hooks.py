@@ -17,7 +17,7 @@ import types
 from future.utils import with_metaclass, exec_
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
-from .parser import parse
+from .parsing import parse
 
 
 # The magic number as symbols for the current Python interpreter. These
