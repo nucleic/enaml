@@ -10,6 +10,15 @@
 #include <iostream>
 #include <sstream>
 #include "pythonhelpers.h"
+#include "py23compat.h"
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
 
 using namespace PythonHelpers;
 
@@ -53,7 +62,7 @@ static void
 Color_dealloc( Color* self )
 {
     Py_CLEAR( self->tkdata );
-    self->ob_type->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
 }
 
 
@@ -66,7 +75,7 @@ Color_repr( Color* self )
     uint32_t b = self->argb & 255;
     std::ostringstream ostr;
     ostr << "Color(red=" << r << ", green=" << g << ", blue=" << b << ", alpha=" << a << ")";
-    return PyString_FromString(ostr.str().c_str());
+    return Py23Str_FromString(ostr.str().c_str());
 }
 
 
@@ -74,7 +83,7 @@ static PyObject*
 Color_get_alpha( Color* self, void* context )
 {
     uint32_t a = ( self->argb >> 24 ) & 255;
-    return PyInt_FromLong( a );
+    return Py23Int_FromLong( a );
 }
 
 
@@ -82,7 +91,7 @@ static PyObject*
 Color_get_red( Color* self, void* context )
 {
     uint32_t r = ( self->argb >> 16 ) & 255;
-    return PyInt_FromLong( r );
+    return Py23Int_FromLong( r );
 }
 
 
@@ -90,7 +99,7 @@ static PyObject*
 Color_get_green( Color* self, void* context )
 {
     uint32_t g = ( self->argb >> 8 ) & 255;
-    return PyInt_FromLong( g );
+    return Py23Int_FromLong( g );
 }
 
 
@@ -98,7 +107,7 @@ static PyObject*
 Color_get_blue( Color* self, void* context )
 {
     uint32_t b = self->argb & 255;
-    return PyInt_FromLong( b );
+    return Py23Int_FromLong( b );
 }
 
 
@@ -152,8 +161,7 @@ Color_getset[] = {
 
 
 PyTypeObject Color_Type = {
-    PyObject_HEAD_INIT( 0 )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "colorext.Color",                       /* tp_name */
     sizeof( Color ),                        /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -161,7 +169,13 @@ PyTypeObject Color_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)Color_repr,                   /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */
@@ -201,23 +215,68 @@ PyTypeObject Color_Type = {
     (destructor)0                           /* tp_del */
 };
 
+struct module_state {
+    PyObject *error;
+};
+
 
 static PyMethodDef
 colorext_methods[] = {
     { 0 } // Sentinel
 };
 
+#if PY_MAJOR_VERSION >= 3
 
-PyMODINIT_FUNC
-initcolorext( void )
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static int colorext_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int colorext_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "colorext",
+        NULL,
+        sizeof(struct module_state),
+        colorext_methods,
+        NULL,
+        colorext_traverse,
+        colorext_clear,
+        NULL
+};
+
+#else
+
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+
+#endif
+
+MOD_INIT_FUNC(colorext)
 {
+#if PY_MAJOR_VERSION >= 3
+    PyObject *mod = PyModule_Create(&moduledef);
+#else
     PyObject* mod = Py_InitModule( "colorext", colorext_methods );
+#endif
+
     if( !mod )
-        return;
+        INITERROR;
 
     if( PyType_Ready( &Color_Type ) )
-        return;
+        INITERROR;
 
     Py_INCREF( ( PyObject* )( &Color_Type ) );
     PyModule_AddObject( mod, "Color", ( PyObject* )( &Color_Type ) );
+
+#if PY_MAJOR_VERSION >= 3
+    return mod;
+#endif
 }
