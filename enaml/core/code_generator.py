@@ -9,6 +9,7 @@ from contextlib import contextmanager
 
 from atom.api import Atom, Bool, Int, List, Str
 
+from ..compat import IS_PY3
 from . import byteplay as bp
 
 
@@ -21,6 +22,9 @@ class CodeGenerator(Atom):
 
     #: The arguments for the code.
     args = List()
+
+    #: Number of kwonly arguments
+    kwonlyargs = Int()
 
     #: Whether the code takes variadic args.
     varargs = Bool(False)
@@ -38,7 +42,7 @@ class CodeGenerator(Atom):
     filename = Str()
 
     #: The first line number for the code object.
-    firstlineno = Int()
+    firstlineno = Int(1)
 
     #: The docstring for the code object.
     docstring = Str()
@@ -50,11 +54,18 @@ class CodeGenerator(Atom):
         """ Create a Python code object from the current code ops.
 
         """
-        bp_code = bp.Code(
-            self.code_ops, self.freevars, self.args, self.varargs,
-            self.varkwargs, self.newlocals, self.name, self.filename,
-            self.firstlineno, self.docstring or None
-        )
+        if not IS_PY3:
+            bp_code = bp.Code(
+                self.code_ops, self.freevars, self.args, self.varargs,
+                self.varkwargs, self.newlocals, self.name, self.filename,
+                self.firstlineno, self.docstring or None
+                )
+        else:
+            bp_code = bp.Code(
+                self.code_ops, self.freevars, self.args, self.kwonlyargs,
+                self.varargs, self.varkwargs, self.newlocals, self.name,
+                self.filename, self.firstlineno, self.docstring or None
+                )
         return bp_code.to_code()
 
     def set_lineno(self, lineno):
@@ -210,9 +221,16 @@ class CodeGenerator(Atom):
         """ Store the key/value pair on the TOS into the map at 3rd pos.
 
         """
-        self.code_ops.append(                           # TOS -> map -> value -> key
-            (bp.STORE_MAP, None),                       # TOS -> map
-        )
+        if IS_PY3:
+            # On Python 3 emaulates store_map using MAP_ADD
+            # STORE_MAP was removed in Python 3.5
+            self.code_ops.append(
+                (bp.MAP_ADD, 1),
+            )
+        else:
+            self.code_ops.append(                       # TOS -> map -> value -> key
+                (bp.STORE_MAP, None),                   # TOS -> map
+            )
 
     def store_subscr(self):
         """ Store the index/value pair on the TOS into the 3rd item.
@@ -222,19 +240,30 @@ class CodeGenerator(Atom):
             (bp.STORE_SUBSCR, None),                    # TOS
         )
 
-    def build_class(self):
-        """ Build a class from the top 3 stack items.
+    if not IS_PY3:
+        def build_class(self):
+            """ Build a class from the top 3 stack items.
 
-        """
-        self.code_ops.append(                           # TOS -> name -> bases -> dict
-            (bp.BUILD_CLASS, None),                     # TOS -> class
-        )
+            """
+            self.code_ops.append(                           # TOS -> name -> bases -> dict
+                (bp.BUILD_CLASS, None),                     # TOS -> class
+            )
+
+    else:
+        def load_build_class(self):
+            """ Build a class from the top 3 stack items.
+
+            """
+            self.code_ops.append(                           # TOS
+                (bp.LOAD_BUILD_CLASS, None),                # TOS -> builtins.__build_class__
+            )
 
     def make_function(self, n_defaults=0):
         """ Make a function from a code object on the TOS.
 
         """
-        self.code_ops.append(                           # TOS -> code -> defaults
+        # qual_name is absent under Python 2
+        self.code_ops.append(                           # TOS -> qual_name -> code -> defaults
             (bp.MAKE_FUNCTION, n_defaults),             # TOS -> func
         )
 

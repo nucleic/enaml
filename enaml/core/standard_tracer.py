@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from past.builtins import basestring
 from atom.api import Atom, atomref
 
 from .alias import Alias
@@ -32,7 +33,7 @@ class SubscriptionObserver(object):
         self.ref = atomref(owner)
         self.name = name
 
-    def __nonzero__(self):
+    def __bool__(self):
         """ The notifier is valid when it has an internal owner.
 
         The atom observer mechanism will remove the observer when it
