@@ -10,7 +10,7 @@ from enaml.workbench.api import Extension, PluginManifest
 from enaml.workbench.ui.api import ActionItem, MenuItem, ItemGroup
 
 
-print 'Imported First View!'
+print('Imported First View!')
 
 
 enamldef FirstView(Container):

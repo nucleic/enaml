@@ -21,6 +21,7 @@ on any subclass of `ConstraintsWidget`. They need not be confined to a
 
 << autodoc-me >>
 """
+from __future__ import print_function
 import numpy as np
 from enaml.widgets.api import MainWindow, Container, PushButton, Label
 from enaml.core.include import Include
@@ -79,7 +80,7 @@ enamldef SimpleButton(PushButton):
     """
     hug_width = 'required'
     hug_height = 'required'
-    clicked :: print '%s clicked' % text
+    clicked :: print('%s clicked' % text)
 
 
 enamldef Main(MainWindow):

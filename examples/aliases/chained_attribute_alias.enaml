@@ -13,6 +13,7 @@ exposing individual attributes instead of entire widgets.
 
 << autodoc-me >>
 """
+from future.builtins import str
 from enaml.widgets.api import Window, Container, Slider, Field, GroupBox
 
 
@@ -56,4 +57,4 @@ enamldef Main(Window):
             value = 50
         Field:
             read_only = True
-            text << unicode(outer.slider_value)
+            text << str(outer.slider_value)
