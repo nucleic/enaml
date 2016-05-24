@@ -32,4 +32,4 @@ enamldef WorkbenchWindow(MainWindow):
         Include:
             objects << window_model.menus
     Include:
-        objects << filter(None, [window_model.workspace.content])
+        objects << list(filter(None, [window_model.workspace.content]))
