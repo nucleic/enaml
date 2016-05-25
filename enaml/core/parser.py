@@ -3444,22 +3444,6 @@ def p_arglist14(p):
         kwnames.add(kw.arg)
     p[0] = Arguments(keywords=keywords, starargs=p[2], kwargs=p[8])
 
-    def p_arglist15(self, p):
-        ''' arglist : arglist_list STAR test COMMA argument'''
-        kwnames = set()
-        keywords = [p[5]]
-        for kw in keywords:
-            if not isinstance(kw, ast.keyword):
-                msg = 'only named arguments may follow *expression'
-                tok = FakeToken(p.lexer.lexer, p.lineno(1))
-                syntax_error(msg, tok)
-            if kw.arg in kwnames:
-                msg = 'keyword argument repeated'
-                tok = FakeToken(p.lexer.lexer, kw.lineno)
-                syntax_error(msg, tok)
-            kwnames.add(kw.arg)
-        p[0] = Arguments(args=p[1], keywords=keywords, starargs=p[3])
-
 
 def p_arglist15(p):
     ''' arglist : arglist_list STAR test COMMA argument'''
