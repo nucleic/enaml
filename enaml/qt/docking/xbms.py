@@ -5,7 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Int, Str
+from future.builtins import bytes
+from atom.api import Atom, Int, Bytes
 
 from enaml.qt.QtCore import QSize
 from enaml.qt.QtGui import QBitmap, QImage
@@ -22,7 +23,7 @@ class XBM(Atom):
     height = Int()
 
     #: The bytestring of image data.
-    data = Str()
+    data = Bytes()
 
     def __init__(self, width, height, data):
         """ Initialize an XBM image.
@@ -41,21 +42,21 @@ class XBM(Atom):
 
         """
         assert len(data) == (width * height)
-        bytes = []
-        for row in xrange(height):
+        bytes_list = []
+        for row in range(height):
             val = 0
             offset = row * width
-            for col in xrange(width):
+            for col in range(width):
                 d = col % 8
                 if col > 0 and d == 0:
-                    bytes.append(chr(val))
+                    bytes_list.append(val)
                     val = 0
                 v = data[offset + col]
                 val |= v << (7 - d)
-            bytes.append(chr(val))
+            bytes_list.append(val)
         self.width = width
         self.height = height
-        self.data = ''.join(bytes)
+        self.data = bytes(bytes_list)
 
     def toBitmap(self):
         size = QSize(self.width, self.height)

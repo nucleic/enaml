@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from future.builtins import str
 from enaml.qt.QtCore import Qt, QRect, QSize, QPoint, QTimer, Signal
 from enaml.qt.QtGui import QApplication, QFrame, QLayout
 
@@ -264,7 +265,7 @@ class QDockItem(QFrame):
 
     #: A signal emitted when the title is edited by the user. This
     #: signal is proxied from the current dock item title bar.
-    titleEdited = Signal(unicode)
+    titleEdited = Signal(str)
 
     #: A signal emitted when the empty area is left double clicked.
     #: This signal is proxied from the current dock item title bar.
@@ -276,7 +277,7 @@ class QDockItem(QFrame):
 
     #: A signal emitted when the item is alerted. The payload is the
     #: new alert level. An empty string indicates no alert.
-    alerted = Signal(unicode)
+    alerted = Signal(str)
 
     def __init__(self, parent=None):
         """ Initialize a QDockItem.

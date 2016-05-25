@@ -138,7 +138,7 @@ class QDockTabBar(QTabBar):
 
         """
         button = self.sender()
-        for index in xrange(self.count()):
+        for index in range(self.count()):
             if self.tabButton(index, QTabBar.RightSide) is button:
                 self.tabCloseRequested.emit(index)
 

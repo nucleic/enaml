@@ -232,7 +232,7 @@ class QtScintilla(QtControl, ProxyScintilla):
         lexer.setFont(default_font)
 
         # Override the defaults with more specific syntax rules.
-        for token, rule in syntax_rules.iteritems():
+        for token, rule in syntax_rules.items():
             if token == 'default':
                 continue
             qtoken = getattr(lexer, syntax_tokens.get(token, ''), None)

@@ -346,7 +346,7 @@ class QNotebook(QTabWidget):
         # the state of the buttons when the flag is set to True.
         if closable:
             setVisible = self.setTabCloseButtonVisible
-            for index in xrange(self.count()):
+            for index in range(self.count()):
                 page = self.widget(index)
                 setVisible(index, page.isClosable(), refresh=False)
         self._refreshTabBar()
