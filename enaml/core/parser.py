@@ -3445,10 +3445,17 @@ def p_arglist14(p):
     p[0] = Arguments(keywords=keywords, starargs=p[2], kwargs=p[8])
 
 
-def p_arglist15(p):
-    ''' arglist : arglist_list STAR test COMMA argument'''
+def _validate_arglist_and_kwlist(p, items, keywords):
     kwnames = set()
-    keywords = [p[5]]
+    args = []
+    kws = []
+    _validate_arglist_list(items, p.lexer.lexer)
+    for arg in items:
+        if isinstance(arg, ast.keyword):
+            kws.append(arg)
+            kwnames.add(arg.arg)
+        else:
+            args.append(arg)
     for kw in keywords:
         if not isinstance(kw, ast.keyword):
             msg = 'only named arguments may follow *expression'
@@ -3459,60 +3466,33 @@ def p_arglist15(p):
             tok = FakeToken(p.lexer.lexer, kw.lineno)
             syntax_error(msg, tok)
         kwnames.add(kw.arg)
-    p[0] = Arguments(args=p[1], keywords=keywords, starargs=p[3])
+    kws.extend(keywords)
+
+    return args, kws
+
+
+def p_arglist15(p):
+    ''' arglist : arglist_list STAR test COMMA argument'''
+    args, kwargs = _validate_arglist_and_kwlist(p, p[1], [p[5]])
+    p[0] = Arguments(args=args, keywords=kwargs, starargs=p[3])
 
 
 def p_arglist16(p):
     ''' arglist : arglist_list STAR test COMMA arglist_list argument'''
-    kwnames = set()
-    keywords = p[5] + [p[6]]
-    for kw in keywords:
-        if not isinstance(kw, ast.keyword):
-            msg = 'only named arguments may follow *expression'
-            tok = FakeToken(p.lexer.lexer, p.lineno(1))
-            syntax_error(msg, tok)
-        if kw.arg in kwnames:
-            msg = 'keyword argument repeated'
-            tok = FakeToken(p.lexer.lexer, kw.lineno)
-            syntax_error(msg, tok)
-        kwnames.add(kw.arg)
-    p[0] = Arguments(args=p[1], keywords=keywords, starargs=p[3])
+    args, kwargs = _validate_arglist_and_kwlist(p, p[1], p[5] + [p[6]])
+    p[0] = Arguments(args=args, keywords=kwargs, starargs=p[3])
 
 
 def p_arglist17(p):
     ''' arglist : arglist_list STAR test COMMA argument COMMA DOUBLESTAR test '''
-    kwnames = set()
-    keywords = [p[5]]
-    for kw in keywords:
-        if not isinstance(kw, ast.keyword):
-            msg = 'only named arguments may follow *expression'
-            tok = FakeToken(p.lexer.lexer, p.lineno(1))
-            syntax_error(msg, tok)
-        if kw.arg in kwnames:
-            msg = 'keyword argument repeated'
-            tok = FakeToken(p.lexer.lexer, kw.lineno)
-            syntax_error(msg, tok)
-        kwnames.add(kw.arg)
-    p[0] = Arguments(args=p[1], keywords=keywords, starargs=p[3],
-                     kwargs=p[8])
+    args, kwargs = _validate_arglist_and_kwlist(p, p[1], [p[5]])
+    p[0] = Arguments(args=args, keywords=kwargs, starargs=p[3], kwargs=p[8])
 
 
 def p_arglist18(p):
     ''' arglist : arglist_list STAR test COMMA arglist_list argument COMMA DOUBLESTAR test '''
-    kwnames = set()
-    keywords = p[5] + [p[6]]
-    for kw in keywords:
-        if not isinstance(kw, ast.keyword):
-            msg = 'only named arguments may follow *expression'
-            tok = FakeToken(p.lexer.lexer, p.lineno(1))
-            syntax_error(msg, tok)
-        if kw.arg in kwnames:
-            msg = 'keyword argument repeated'
-            tok = FakeToken(p.lexer.lexer, kw.lineno)
-            syntax_error(msg, tok)
-        kwnames.add(kw.arg)
-    p[0] = Arguments(args=p[1], keywords=keywords, starargs=p[3],
-                     kwargs=p[9])
+    args, kwargs = _validate_arglist_and_kwlist(p, p[1], p[5] + [p[6]])
+    p[0] = Arguments(args=args, keywords=kwargs, starargs=p[3], kwargs=p[8])
 
 
 def p_arglist_list1(p):
