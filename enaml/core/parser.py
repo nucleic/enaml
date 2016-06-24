@@ -3459,7 +3459,7 @@ def _validate_arglist_and_kwlist(p, items, keywords):
     for kw in keywords:
         if not isinstance(kw, ast.keyword):
             msg = 'only named arguments may follow *expression'
-            tok = FakeToken(p.lexer.lexer, p.lineno(1))
+            tok = FakeToken(p.lexer.lexer, p.lineno(2))
             syntax_error(msg, tok)
         if kw.arg in kwnames:
             msg = 'keyword argument repeated'
@@ -3492,7 +3492,7 @@ def p_arglist17(p):
 def p_arglist18(p):
     ''' arglist : arglist_list STAR test COMMA arglist_list argument COMMA DOUBLESTAR test '''
     args, kwargs = _validate_arglist_and_kwlist(p, p[1], p[5] + [p[6]])
-    p[0] = Arguments(args=args, keywords=kwargs, starargs=p[3], kwargs=p[8])
+    p[0] = Arguments(args=args, keywords=kwargs, starargs=p[3], kwargs=p[9])
 
 
 def p_arglist_list1(p):
