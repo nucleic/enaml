@@ -3446,6 +3446,11 @@ def p_arglist14(p):
 
 
 def _validate_arglist_and_kwlist(p, items, keywords):
+    """Validate argument and keyword arguments.
+
+    Assume that the second token is a STAR.
+
+    """
     kwnames = set()
     args = []
     kws = []
