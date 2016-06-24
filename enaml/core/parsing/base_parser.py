@@ -2997,6 +2997,11 @@ class BaseEnamlParser(object):
         p[0] = Arguments(keywords=keywords, starargs=p[2], kwargs=p[8])
 
     def _validate_arglist_and_kwlist(self, p, items, keywords):
+        """Validate arguments and keywords arguments.
+
+        Assume that the second token is a STAR.
+
+        """
         kwnames = set()
         args = []
         kws = []
@@ -3010,7 +3015,7 @@ class BaseEnamlParser(object):
         for kw in keywords:
             if not isinstance(kw, ast.keyword):
                 msg = 'only named arguments may follow *expression'
-                tok = FakeToken(p.lexer.lexer, p.lineno(1))
+                tok = FakeToken(p.lexer.lexer, p.lineno(2))
                 syntax_error(msg, tok)
             if kw.arg in kwnames:
                 msg = 'keyword argument repeated'
@@ -3043,7 +3048,7 @@ class BaseEnamlParser(object):
         args, kwargs = self._validate_arglist_and_kwlist(p, p[1],
                                                          p[5] + [p[6]])
         p[0] = Arguments(args=args, keywords=kwargs, starargs=p[3],
-                         kwargs=p[8])
+                         kwargs=p[9])
 
     def p_arglist_list1(self, p):
         ''' arglist_list : argument COMMA '''
