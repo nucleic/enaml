@@ -110,4 +110,5 @@ setup(
     },
     entry_points={'console_scripts': ['enaml-run = enaml.runner:main']},
     ext_modules=ext_modules,
+    cmdclass={'build_ext': BuildExt},
 )
