@@ -11,6 +11,7 @@ from .calendar import Calendar
 from .check_box import CheckBox
 from .color_dialog import ColorDialog
 from .combo_box import ComboBox
+from .completer import Completer
 from .container import Container
 from .date_selector import DateSelector
 from .datetime_selector import DatetimeSelector

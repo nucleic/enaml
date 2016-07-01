@@ -35,6 +35,11 @@ def combo_box_factory():
     return QtComboBox
 
 
+def completer_factory():
+    from qt_completer import QtCompleter
+    return QtCompleter
+
+
 def container_factory():
     from .qt_container import QtContainer
     return QtContainer
@@ -307,6 +312,7 @@ QT_FACTORIES = {
     'CheckBox': check_box_factory,
     'ColorDialog': color_dialog_factory,
     'ComboBox': combo_box_factory,
+    'Completer': completer_factory,
     'Container': container_factory,
     'DateSelector': date_selector_factory,
     'DatetimeSelector': datetime_selector_factory,

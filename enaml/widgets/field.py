@@ -13,6 +13,7 @@ from enaml.core.declarative import d_
 from enaml.validator import Validator
 
 from .control import Control, ProxyControl
+from .completer import Completer
 
 
 class ProxyField(ProxyControl):
@@ -152,3 +153,11 @@ class Field(Control):
         if self.proxy_is_active:
             return self.proxy.field_text()
         return u''
+
+    def completer(self):
+        """ Get the completer defined for the Field, if any.
+
+        """
+        for child in reversed(self.children):
+            if isinstance(child, Completer):
+                return child
