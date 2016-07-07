@@ -11,6 +11,7 @@ from atom.api import (
 
 from enaml.core.declarative import d_
 from enaml.validator import Validator
+from enaml.completer import Completer
 
 from .control import Control, ProxyControl
 
@@ -119,6 +120,9 @@ class Field(Control):
     #: the width hug by default, so they expand freely in width.
     hug_width = set_default('ignore')
 
+    #: The completer to use for the field
+    completer = d_(Typed(Completer))
+
     #: A reference to the ProxyField object.
     proxy = Typed(ProxyField)
 
@@ -126,7 +130,7 @@ class Field(Control):
     # Observers
     #--------------------------------------------------------------------------
     @observe('text', 'mask', 'submit_triggers', 'placeholder', 'echo_mode',
-        'max_length', 'read_only')
+             'max_length', 'read_only')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

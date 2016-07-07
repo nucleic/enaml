@@ -9,8 +9,8 @@ from atom.api import Int, Typed
 
 from enaml.widgets.field import ProxyField
 
-from .QtCore import QTimer, Signal
-from .QtGui import QLineEdit
+from .QtCore import QTimer, Signal, Qt
+from .QtGui import QLineEdit, QCompleter, QStandardItem, QStandardItemModel
 
 from .qt_control import QtControl
 
@@ -76,6 +76,10 @@ class QtField(QtControl, ProxyField):
         self.set_max_length(d.max_length)
         self.set_read_only(d.read_only)
         self.set_submit_triggers(d.submit_triggers)
+        if d.completer:
+            completer = QCompleter(d.completer.completions,
+                                   self.widget)
+            self.widget.setCompleter(completer)
         self.widget.textEdited.connect(self.on_text_edited)
 
     #--------------------------------------------------------------------------
@@ -156,6 +160,15 @@ class QtField(QtControl, ProxyField):
             self._set_error_state()
         else:
             self._clear_error_state()
+
+        d = self.declaration
+        if d.completer:
+            d.completer.update(self.widget.text())
+            model = QStandardItemModel()
+            for c in d.completer.completions:
+                item = QStandardItem(c)
+                model.appendRow(item)
+            self.widget.completer().setModel(model)
 
         if self._text_timer is not None:
             self._text_timer.start()
