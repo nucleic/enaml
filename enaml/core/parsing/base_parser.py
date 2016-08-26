@@ -1439,10 +1439,11 @@ class BaseEnamlParser(object):
     def p_raise_stmt1(self, p):
         ''' raise_stmt : RAISE '''
         raise_stmt = ast.Raise()
-        raise_stmt.type = None
         if IS_PY3:
+            raise_stmt.exc = None
             raise_stmt.cause = None
         else:
+            raise_stmt.type = None
             raise_stmt.inst = None
             raise_stmt.tback = None
         p[0] = raise_stmt
@@ -1450,10 +1451,11 @@ class BaseEnamlParser(object):
     def p_raise_stmt2(self, p):
         ''' raise_stmt : RAISE test '''
         raise_stmt = ast.Raise()
-        raise_stmt.type = p[2]
         if IS_PY3:
+            raise_stmt.exc = p[2]
             raise_stmt.cause = None
         else:
+            raise_stmt.type = p[2]
             raise_stmt.inst = None
             raise_stmt.tback = None
         p[0] = raise_stmt
