@@ -1850,7 +1850,7 @@ class BaseEnamlParser(object):
         ''' except_clauses : except_clause '''
         p[0] = [p[1]]
 
-    def p_except_clause1(self,p):
+    def p_except_clause1(self, p):
         ''' except_clause : EXCEPT COLON suite '''
         excpt = ast.ExceptHandler()
         excpt.type = None
@@ -1875,8 +1875,11 @@ class BaseEnamlParser(object):
                           | EXCEPT test COMMA test COLON suite '''
         excpt = ast.ExceptHandler()
         excpt.type = p[2]
-        name = p[4]
-        self.set_context(name, Store, p)
+        if IS_PY3:
+            name = p[4].id
+        else:
+            name = p[4]
+            self.set_context(name, Store, p)
         excpt.name = name
         excpt.body = p[6]
         excpt.lineno = p.lineno(1)
