@@ -13,6 +13,7 @@ import os
 import struct
 import sys
 import types
+from zipfile import ZipFile
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
@@ -370,6 +371,150 @@ class EnamlImporter(AbstractEnamlImporter):
         return (code, file_info.src_path)
 
 
+
+#------------------------------------------------------------------------------
+# Enaml Zip Importer
+#------------------------------------------------------------------------------
+class EnamlZipImporter(EnamlImporter):
+    
+    #: For potential future changes.
+    supported_archives = {
+        '.zip':ZipFile,
+    }
+    
+    def __init__(self, file_info, archive_path):
+        """ Initialize an importer object.
+
+        Parameters
+        ----------
+        file_info : EnamlFileInfo
+            An instance of EnamlFileInfo.
+        archive_path : String 
+            File path to the archive to import from.
+
+        """
+        self.file_info = file_info
+        self.archive_path = archive_path
+    
+    @classmethod
+    def locate_module(cls, fullname, path=None):
+        """ Searches for the given Enaml module within a zip and returns an instance
+        of this class on success.
+
+        Paramters
+        ---------
+        fullname : string
+            The fully qualified name of the module.
+
+        path : list or None
+            The subpackage __path__ for submodules and subpackages
+            or None if a top-level module.
+
+        Returns
+        -------
+        results : Instance(AbstractEnamlImporter) or None
+            If the Enaml module is located an instance of the importer
+            that will perform the rest of the operations is returned.
+            Otherwise, returns None.
+
+        """
+        # We're looking inside a package and 'path' the package path
+        if path is not None:
+            modname = fullname.rsplit('.', 1)[-1]
+            pkgpath = fullname.split('.')[:-1]
+            leaf = ''.join((modname, os.path.extsep, 'enaml'))
+            for stem in path:
+                enaml_path = os.path.join(stem, leaf)
+                file_info = make_file_info(enaml_path)
+                
+                # Strip package off path to get the archive name
+                archive_path = reduce(lambda s,p:os.path.dirname(s),pkgpath,stem)
+                
+                if os.path.exists(file_info.cache_path):
+                    return cls(file_info,stem)
+                elif (os.path.exists(archive_path) and 
+                      cls._is_supported(archive_path)):
+                    
+                    # Path where code should be within the archive
+                    code_path = '/'.join(pkgpath+[leaf])
+                    try:
+                        with ZipFile(archive_path,'r') as archive:
+                            if (code_path in archive.namelist()):
+                                return cls(file_info,archive_path)
+                    except IOError:
+                        pass
+
+        # We're trying a load a package
+        elif '.' in fullname:
+            return
+
+        # We're doing a direct import
+        else:
+            leaf = fullname + os.path.extsep + 'enaml'
+            for stem in sys.path:
+                enaml_path = os.path.join(stem, leaf)
+                file_info = make_file_info(enaml_path)
+                if os.path.exists(file_info.cache_path):
+                    return cls(file_info,stem)
+                elif (os.path.exists(stem) and 
+                      cls._is_supported(stem)):
+                    try:
+                        with ZipFile(stem,'r') as archive:
+                            if (leaf in archive.namelist()):
+                                return cls(file_info,stem)
+                    except IOError:
+                        pass
+    
+    @classmethod
+    def _is_supported(cls,archive_path):
+        """ Returns true if the path is a supported 
+            archive type.
+        """
+        return os.path.splitext(archive_path)[-1].lower() in cls.supported_archives
+    
+    def get_code(self):
+        """ Loads and returns the code object for the Enaml module and
+        the full path to the module for use as the __file__ attribute
+        of the module.
+
+        Returns
+        -------
+        result : (code, path)
+            The Python code object for the .enaml module, and the full
+            path to the module as a string.
+
+        """
+        # If the .enaml file does not exists, just use the .enamlc file.
+        # We can presume that the latter exists because it was already
+        # checked by the loader. Should the situation ever arise that
+        # it was deleted between then and now, an IOError is more
+        # informative than an ImportError.
+        file_info = self.file_info
+        if not os.path.exists(self.archive_path):
+            code = self._load_cache(file_info)
+            return (code, file_info.src_path)
+
+        # Use the cached file if it exists and is current
+        src_mod_time = int(os.path.getmtime(self.archive_path))
+        if os.path.exists(file_info.cache_path):
+            magic, ts = self._get_magic_info(file_info)
+            if magic == MAGIC and src_mod_time <= ts:
+                code = self._load_cache(file_info)
+                return (code, file_info.src_path)
+
+        # Otherwise, compile from source and attempt to cache
+        with ZipFile(self.archive_path, 'r') as archive:
+            # Path sep is always / (even on windows)
+            code_path = os.path.relpath(file_info.src_path,
+                                        self.archive_path).replace("\\","/")
+            
+            src = archive.read(code_path)
+        ast = parse(src)
+        code = EnamlCompiler.compile(ast, file_info.src_path)
+        self._write_cache(code, src_mod_time, file_info)
+        return (code, file_info.src_path)
+    
+
 #------------------------------------------------------------------------------
 # Enaml Imports Context
 #------------------------------------------------------------------------------
@@ -382,7 +527,7 @@ class imports(object):
     """
     #: The framework-wide importers in use. We always have the default
     #: importer available, unless it is explicitly removed.
-    __importers = [EnamlImporter]
+    __importers = [EnamlImporter, EnamlZipImporter]
 
     @classmethod
     def get_importers(cls):
