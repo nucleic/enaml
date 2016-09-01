@@ -393,7 +393,7 @@ class EnamlZipImporter(EnamlImporter):
             File path to the archive to import from.
 
         """
-        self.file_info = file_info
+        super(EnamlZipImporter, self).__init__(file_info)
         self.archive_path = archive_path
     
     @classmethod
@@ -467,8 +467,18 @@ class EnamlZipImporter(EnamlImporter):
     
     @classmethod
     def _is_supported(cls,archive_path):
-        """ Returns true if the path is a supported 
-            archive type.
+        """ Checks if the given archive path is of one of the supported
+            archive types. 
+            
+            Paramters
+            ---------
+            archive_path : string
+                The fully path to the archive.
+
+        Returns
+        -------
+        results : bool
+                Whether the archive is supported or not.
         """
         return os.path.splitext(archive_path)[-1].lower() in cls.supported_archives
     
