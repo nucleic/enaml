@@ -431,7 +431,7 @@ class EnamlZipImporter(EnamlImporter):
                 archive_path = reduce(lambda s,p:os.path.dirname(s),pkgpath,stem)
                 
                 if os.path.exists(file_info.cache_path):
-                    return cls(file_info,stem)
+                    return cls(file_info,archive_path)
                 elif (os.path.exists(archive_path) and 
                       cls._is_supported(archive_path)):
                     
