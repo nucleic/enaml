@@ -1,15 +1,8 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2016, Nucleic Development Team.
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file COPYING.txt, distributed with this software.
-#------------------------------------------------------------------------------
 import sys
 import enaml
 
 def with_library(f):
-    # Add and remove library.zip from the sys path
+    #: Add and remove library.zip from the sys path
     def wrapped(*args,**kwargs):
         sys.path.append('library.zip')
         try:
@@ -32,6 +25,16 @@ def test_zipimport_subpackage():
         
         # Test import from libary.zip/package/subpackage/slider.enaml
         from package.subpackage import slider
+        
+
+@with_library
+def test_zipimport_cache():
+    with enaml.imports():
+        # Test import from enamlcache file within zip
+        import splitter
+        
+        # Test import from subpackage within zip
+        from package.subpackage import notebook
 
 
 @with_library
@@ -40,6 +43,7 @@ def main():
     
     with enaml.imports():
         #from buttons import Main
+        #from package.subpackage.notebook import Main
         from package.subpackage.slider import Main
 
     app = QtApplication()
@@ -54,5 +58,6 @@ def main():
 if __name__ == "__main__":
     test_zipimport()
     test_zipimport_subpackage()
+    test_zipimport_cache()
     main()
     
