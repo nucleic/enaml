@@ -303,6 +303,10 @@ def _base_dock_item(name, pc):
     return _maybe_alert(root, name, u':'.join(rest))
 
 
+def _tabbed_dock_item(name, pc):
+    return _maybe_alert(u'QTabWidget QDockItem', name, pc)
+
+
 def _title_bar(name, pc):
     return _maybe_alert(u'QDockTitleBar', name, pc)
 
@@ -357,6 +361,7 @@ _DOCK_AREA_PSEUDO_ELEMENTS = {
 
 _DOCK_ITEM_PSEUDO_ELEMENTS = {
     u'': _base_dock_item,
+    u'tabbed': _tabbed_dock_item,
     u'title-bar': _title_bar,
     u'title-bar-label': _title_bar_label,
     u'title-bar-button': _title_bar_button,
