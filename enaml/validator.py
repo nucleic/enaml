@@ -77,6 +77,10 @@ class IntValidator(Validator):
     #: The base in which the int is represented.
     base = Enum(10, 2, 8, 16)
 
+    #: Whether or not to automatically fix user input if it is
+    #: outside of the bounds set by minimum and maximum
+    fix_invalid_input = Bool(False)
+
     def validate(self, text):
         """ Validates the given text matches the integer range.
 
@@ -103,6 +107,30 @@ class IntValidator(Validator):
             return False
         return True
 
+    def fixup(self, text):
+        """ Fix the user input if fix_input is True
+
+        Parameters
+        ----------
+        text : unicode
+            The unicode text edited by the client widget.
+
+        Returns
+        -------
+        result : int
+            The value to place into the client widget
+        """
+        if self.fix_invalid_input:
+            try:
+                value = int(text)
+                if self.minimum is not None and value < self.minimum:
+                    text = self.minimum
+                elif self.maximum is not None and value > self.maximum:
+                    text = self.maximum
+            except ValueError:
+                # text isn't an int, return the input text
+                text = self.minimum
+        return str(text)
 
 class FloatValidator(Validator):
     """ A concrete Validator which handles floating point input.
@@ -121,6 +149,10 @@ class FloatValidator(Validator):
 
     #: Whether or not to allow exponents like '1e6' in the input.
     allow_exponent = Bool(True)
+
+    #: Whether or not to automatically fix user input if it is
+    #: outside of the bounds set by minimum and maximum
+    fix_invalid_input = Bool(False)
 
     def validate(self, text):
         """ Validates the given text matches the float range.
@@ -149,6 +181,31 @@ class FloatValidator(Validator):
         if not self.allow_exponent and 'e' in text.lower():
             return False
         return True
+
+    def fixup(self, text):
+        """ Fix the user input if fix_input is True
+
+        Parameters
+        ----------
+        text : unicode
+            The unicode text edited by the client widget.
+
+        Returns
+        -------
+        result : float
+            The value to place into the client widget
+        """
+        if self.fix_invalid_input:
+            try:
+                value = float(text)
+                if self.minimum is not None and value < self.minimum:
+                    text = self.minimum
+                elif self.maximum is not None and value > self.maximum:
+                    text = self.maximum
+            except ValueError:
+                # text isn't a float, return the input text
+                text = self.minimum
+        return str(text)
 
 
 class RegexValidator(Validator):

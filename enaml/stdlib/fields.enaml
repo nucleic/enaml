@@ -39,9 +39,13 @@ enamldef IntField(Field):
     attr base = 10
     attr value : int = 0
     attr converter << _int_converters.get(base, unicode)
+    attr fix_invalid_input : bool = False
     text << converter(value)
     text :: self.value = int(text, base)
-    validator << IntValidator(base=base, minimum=minimum, maximum=maximum)
+    validator << IntValidator(
+        base=base, minimum=minimum, maximum=maximum,
+        fix_invalid_input=fix_invalid_input
+    )
 
 
 enamldef FloatField(Field):
@@ -53,8 +57,10 @@ enamldef FloatField(Field):
     attr allow_exponent : bool = True
     attr value : float = 0.0
     attr converter = unicode
+    attr fix_invalid_input : bool = False
     text << converter(value)
     text :: self.value = float(text)
     validator << FloatValidator(
-        minimum=minimum, maximum=maximum, allow_exponent=allow_exponent
+        minimum=minimum, maximum=maximum, allow_exponent=allow_exponent,
+        fix_invalid_input=fix_invalid_input
     )

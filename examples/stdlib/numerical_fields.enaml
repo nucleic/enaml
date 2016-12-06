@@ -1,0 +1,105 @@
+
+""" An example of using Float and Int fields with auto-correcting limits
+
+This example shows how the Enaml FloatField and IntField widgets can
+auto-correct user input based on the provided min/max values.
+<< autodoc-me >>
+"""
+
+from atom.api import Atom, Float, Int, Bool, observe
+from enaml.stdlib.fields import FloatField, IntField
+from enaml.widgets.api import (
+    CheckBox, Container, Field, Form, GroupBox, Label, ObjectCombo, PushButton,
+    SpinBox, Window, MainWindow,
+)
+
+class FieldModel(Atom):
+    float_val = Float(5.)
+    float_min = Float(1.6)
+    float_max = Float(42.)
+    float_autocorrect = Bool(True)
+
+    int_val = Int(2)
+    int_min = Int(0)
+    int_max = Int(10)
+    int_autocorrect = Bool(False)
+    @observe('float_val', 'float_min', 'float_max', 'float_autocorrect',
+             'int_val', 'int_min', 'int_max', 'int_autocorrect')
+
+    def something_changed(self, update):
+        try:
+            name = update['name']
+            oldvalue = update['oldvalue']
+            value = update['value']
+            print('{} changed from {} to {}'.format(name, oldvalue, value))
+        except KeyError as ke:
+            # seems to be thrown at program startup, but not again
+            print('KeyError thrown: {}'.format(ke))
+
+        self.print_current_state()
+
+
+    def print_current_state(self):
+        output = "FloatField params..."
+        output += "\n\tCurrent Value: {}".format(self.float_val)
+        output += "\n\tCurrent Minimum: {}".format(self.float_min)
+        output += "\n\tCurrent Maximum: {}".format(self.float_max)
+        output += "\n\tCurrent Autocorrect state: {}".format(
+            self.float_autocorrect)
+
+        output = "\n\nIntField params..."
+        output += "\n\tCurrent Value: {}".format(self.int_val)
+        output += "\n\tCurrent Minimum: {}".format(self.int_min)
+        output += "\n\tCurrent Maximum: {}".format(self.int_max)
+        output += "\n\tCurrent Autocorrect state: {}".format(
+            self.int_autocorrect)
+
+enamldef Main(MainWindow):
+    title = "FloatField and IntField example"
+    attr model = FieldModel()
+    Container:
+        GroupBox:
+            title = "FloatField example"
+            Form:
+                Label:
+                    text = "float field"
+                FloatField:
+                    value := model.float_val
+                    minimum << model.float_min
+                    maximum << model.float_max
+                    fix_invalid_input << model.float_autocorrect
+                Label:
+                    text = 'float field minimum'
+                FloatField:
+                    value := model.float_min
+                Label:
+                    text = 'float field maximum'
+                FloatField:
+                    value := model.float_max
+                Label:
+                    text = 'autocorrect out of bounds input'
+                CheckBox:
+                    checked := model.float_autocorrect
+        GroupBox:
+            title = "IntField example"
+            Form:
+                Label:
+                    text = "int field"
+                IntField:
+                    value := model.int_val
+                    minimum << model.int_min
+                    maximum << model.int_max
+                    fix_invalid_input << model.int_autocorrect
+                Label:
+                    text = 'int field minimum'
+                IntField:
+                    value := model.int_min
+                Label:
+                    text = 'int field maximum'
+                IntField:
+                    value := model.int_max
+                Label:
+                    text = 'autocorrect out of bounds input'
+                CheckBox:
+                    checked := model.int_autocorrect
+
