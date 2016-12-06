@@ -75,8 +75,8 @@ class FileDialogEx(ToolkitDialog):
     #: A reference to the ProxyFileDialog object.
     proxy = Typed(ProxyFileDialogEx)
 
-    @staticmethod
-    def get_existing_directory(parent=None, **kwargs):
+    @classmethod
+    def get_existing_directory(cls, parent=None, **kwargs):
         """ Get an existing directory on the filesystem.
 
         Parameters
@@ -97,14 +97,14 @@ class FileDialogEx(ToolkitDialog):
         kwargs['accept_mode'] = 'open'
         kwargs['file_mode'] = 'directory'
         kwargs['show_dirs_only'] = True
-        dialog = FileDialogEx(parent, **kwargs)
+        dialog = cls(parent, **kwargs)
         if dialog.exec_native():
             if dialog.selected_paths:
                 return dialog.selected_paths[0]
         return u''
 
-    @staticmethod
-    def get_open_file_name(parent=None, **kwargs):
+    @classmethod
+    def get_open_file_name(cls, parent=None, **kwargs):
         """ Get the file name for an open file dialog.
 
         Parameters
@@ -124,14 +124,14 @@ class FileDialogEx(ToolkitDialog):
         """
         kwargs['accept_mode'] = 'open'
         kwargs['file_mode'] = 'existing_file'
-        dialog = FileDialogEx(parent, **kwargs)
+        dialog = cls(parent, **kwargs)
         if dialog.exec_native():
             if dialog.selected_paths:
                 return dialog.selected_paths[0]
         return u''
 
-    @staticmethod
-    def get_open_file_names(parent=None, **kwargs):
+    @classmethod
+    def get_open_file_names(cls, parent=None, **kwargs):
         """ Get the file names for an open files dialog.
 
         Parameters
@@ -151,13 +151,13 @@ class FileDialogEx(ToolkitDialog):
         """
         kwargs['accept_mode'] = 'open'
         kwargs['file_mode'] = 'existing_files'
-        dialog = FileDialogEx(parent, **kwargs)
+        dialog = cls(parent, **kwargs)
         if dialog.exec_native():
             return dialog.selected_paths
         return []
 
-    @staticmethod
-    def get_save_file_name(parent=None, **kwargs):
+    @classmethod
+    def get_save_file_name(cls, parent=None, **kwargs):
         """ Get the file name for a save file dialog.
 
         Parameters
@@ -177,7 +177,7 @@ class FileDialogEx(ToolkitDialog):
         """
         kwargs['accept_mode'] = 'save'
         kwargs['file_mode'] = 'any_file'
-        dialog = FileDialogEx(parent, **kwargs)
+        dialog = cls(parent, **kwargs)
         if dialog.exec_native():
             if dialog.selected_paths:
                 return dialog.selected_paths[0]
