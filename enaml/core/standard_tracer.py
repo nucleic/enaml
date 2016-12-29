@@ -10,6 +10,7 @@ from atom.api import Atom, atomref
 
 from .alias import Alias
 from .code_tracing import CodeTracer
+from ..compat import IS_PY3
 
 
 class SubscriptionObserver(object):
@@ -41,6 +42,10 @@ class SubscriptionObserver(object):
 
         """
         return bool(self.ref)
+
+    if not IS_PY3:
+        __nonzero__ = __bool__
+        del __bool__
 
     def __call__(self, change):
         """ The handler for the change notification.
