@@ -5,8 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from future.utils import exec_
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.core.parser import parse
+from enaml.core.parsing import parse
 
 
 def compile_source(source, item, filename='<test>'):
@@ -33,5 +34,5 @@ def compile_source(source, item, filename='<test>'):
     ast = parse(source, filename)
     code = EnamlCompiler.compile(ast, filename)
     namespace = {}
-    exec code in namespace
+    exec_(code, namespace)
     return namespace[item]
