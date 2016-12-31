@@ -129,8 +129,9 @@ from .template_compiler import TemplateCompiler
 #     declarative method overrides.
 # 22 : Update the syntax of arrow functions - 5 May 2014
 #     This updates the arrow functions to use "=>" instead of "->".
-# 23 : Support for Python 3
-COMPILER_VERSION = 23
+# 23 : Support for Python 3 and inlining of comprehensions.
+# 24 : Call comprehension functions in the proper scope rather than inlining
+COMPILER_VERSION = 24
 
 
 # Code that will be executed at the top of every enaml module

@@ -19,6 +19,7 @@ from .enamldef_meta import EnamlDefMeta
 from .expression_engine import ExpressionEngine
 from .operators import __get_operators
 from .template import Template
+from .funchelper import call_func
 
 
 def resolve_alias(node, alias):
@@ -754,4 +755,5 @@ __compiler_helpers = {
     'validate_spec': validate_spec,
     'validate_template': validate_template,
     'validate_unpack_size': validate_unpack_size,
+    'call_func': call_func,
 }

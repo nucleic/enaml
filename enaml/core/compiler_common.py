@@ -156,6 +156,8 @@ def count_nodes(node):
 def has_list_comp(pyast):
     """ Determine whether a Python expression has a list comprehension.
 
+    This function is only used under Python 2.
+
     Parameters
     ----------
     pyast : Expression
@@ -221,6 +223,7 @@ def load_helper(cg, name, from_globals=False):
     from_globals : bool, optional
         If True, the helpers will be loaded from the globals instead of
         the fast locals. The default is False.
+
     """
     if from_globals:
         cg.load_global(COMPILER_HELPERS)
@@ -341,8 +344,9 @@ def safe_eval_ast(cg, node, name, lineno, local_names):
 
     This method will eval the python code represented by the ast
     in the local namespace. If the code would have the side effect
-    of storing a value in the namespace, such as a list comp, then
-    the expression will be evaluated in it's own namespace.
+    of storing a value in the namespace, such as a list comp under
+    Python 2, then the expression will be evaluated in it's own
+    namespace.
 
     Parameters
     ----------
@@ -362,7 +366,7 @@ def safe_eval_ast(cg, node, name, lineno, local_names):
         The set of fast local names available to the code object.
 
     """
-    if has_list_comp(node):
+    if not IS_PY3 and has_list_comp(node):
         expr_cg = CodeGenerator()
         expr_cg.filename = cg.filename
         expr_cg.name = name
@@ -372,8 +376,6 @@ def safe_eval_ast(cg, node, name, lineno, local_names):
         call_args = expr_cg.rewrite_to_fast_locals(local_names)
         expr_code = expr_cg.to_code()
         cg.load_const(expr_code)
-        if IS_PY3:
-            cg.load_const(None)
         cg.make_function()
         for arg in call_args:
             if arg in local_names:
@@ -418,131 +420,56 @@ def rewrite_globals_access(code, global_vars):
             inner_ops[idx] = (bp.LOAD_NAME, op_arg)
 
 
-def _ids():
-    """Generator producing unique ids.
+def run_comprehensions_in_dynamic_scope(code, global_vars):
+    """Run all list/dict/set comprehensions in the proper dynamic scope.
 
-    """
-    i = 0
-    while True:
-        i += 1
-        yield i
-
-_ids = _ids()
-
-
-def new_name(name):
-    """Provide a unique name for a variable used in a comprehension.
-
-    """
-    return '_comprehension_var%s_%s' % (next(_ids), name)
-
-
-def _rewrite_comprehension(code):
-    """Rewrite the code associated with the function used in a comprehension
-    to make it inlineable.
+    This will also rewrite the function to convert each LOAD_GLOBAL opcode
+    into a LOAD_NAME opcode, unless the associated name is known to have been
+    made global via the 'global' keyword.
 
     Parameters
     ----------
     code :
-        Code of the function to inline
-
-    Returns
-    -------
-    creation_code : tuple
-        Op code used to create the iterable that will be filled by the
-        comprehension.
-
-    body : list[tuple]
-        List of operations filling the iterable should be placed right after
-        the GET_ITER op code.
+        Code object in which comprehension should be called in their own
+        dynamic namespace.
 
     """
-    # Start by discarding the first SetLineno and the RETURN_VALUE
-    ops = code.code[1:-1]
+    # Code generator used to modify the bytecode
+    cg = CodeGenerator()
+    fetch_helpers(cg)
 
-    # Extract the construction operation and dicsard the LOAD_FAST used to
-    # access the iterable.
-    build_op = ops[0]
-    code.code = ops[2:]
-
-    ops = []
-    comp_locals = {}
-    for idx, (op, op_arg) in enumerate(code.code):
-        if op == bp.STORE_FAST:
-            if op_arg not in comp_locals:
-                comp_locals[op_arg] = new_name(op_arg)
-            code.code[idx] = (op, comp_locals[op_arg])
-        elif op == bp.LOAD_FAST and op_arg in comp_locals:
-            code.code[idx] = (op, comp_locals[op_arg])
-        # We suppress lineno inside comprehension as sometimes we get huge
-        # lineno increases which leads to negative increase at a later time.
-        # This fact was checked using dis so it is not a byteplay issue.
-        elif op == bp.SetLineno:
-            continue
-        ops.append((op, op_arg))
-
-    code.code = ops
-    inline_comprehensions(code)
-
-    return build_op, code.code
-
-
-def inline_comprehensions(code):
-    """Inline all list/dict/set comprehensions to avoid scoping issues.
-
-    Parameters
-    ----------
-    code :
-        Code object in which comprehension should be inlined.
-
-    globs : set
-        True global variables in the scope, the others used inside the
-        comprehensions will be rewritten to use LOAD_NAME and STORE_NAME
-
-    """
-    # New op codes generated for the code.
-    new_ops = []
-    # Stack of function definitions which will have to be inlined
-    func_stack = []
-    # Flag marking the last byte code was a GET_ITER and hence if we see a
-    # (CALL_FUNCTION, 1) it a comprehension that we should inline.
+    # Flag indicating that the previous opcode is GET_ITER
     seen_GET_ITER = False
-    # Counter used to keep track of how many operations where seen since the
-    # last MAKE_FUNCTION to know where to insert the build_op returned by
-    # _rewrite_comprehension
-    counter = 0
 
-    offset = 2 if IS_PY3 else 1  # where to find the code of a function
-
-    # Scan all ops to detect function definitions and call after GET_ITER
+    # Scan all ops to detect function call after GET_ITER
     ops = enumerate(code.code)
     for idx, (op, op_arg) in ops:
-        if op == bp.MAKE_FUNCTION:
-            func_stack.append(new_ops[-offset][1])
-            del new_ops[-offset:]
-            counter = 0
-        elif op == bp.LOAD_CLOSURE:
-            while True:
-                idx, (op, op_arg) = next(ops)
-                if op == bp.MAKE_CLOSURE:
-                    counter = 0
-                    break
-                elif op == bp.LOAD_CONST and isinstance(op_arg, bp.Code):
-                    func_stack.append(op_arg)
+        if isinstance(op_arg, bp.Code):
+            # Allow to pass the dynamic scope as locals. There is no need
+            # to copy it as internal variables are stored in fast locals
+            # and hence does not affect the scope content.
+            op_arg.newlocals = False
+            run_comprehensions_in_dynamic_scope(op_arg, global_vars)
         elif op == bp.GET_ITER:
             seen_GET_ITER = True
-            new_ops.append((op, op_arg))
+            cg.code_ops.append((op, op_arg))
             continue
         elif seen_GET_ITER and op == bp.CALL_FUNCTION and op_arg == 1:
-            build_op, inlined_ops = _rewrite_comprehension(func_stack.pop())
-            new_ops.insert(-counter-1, build_op)
-            new_ops.extend(inlined_ops)
-        else:
-            new_ops.append((op, op_arg))
-            counter += 1
+            # func -> iter
+            load_helper(cg, 'call_func')  # func -> iter -> run
+            cg.rot_three()                # run -> func -> iter
+            cg.build_tuple(1)             # run -> func -> (iter,)
+            cg.build_map()                # run -> func -> (iter,) -> {}
+            cg.load_global('__scope__')   # run -> func -> iter -> {} -> scope
+            cg.call_function(4)           # res
+            seen_GET_ITER = False
+            continue
+
+        cg.code_ops.append((op, op_arg))
         seen_GET_ITER = False
 
-    code.code = new_ops
+    code.code = cg.code_ops
+    rewrite_globals_access(code, global_vars)
 
 
 def gen_child_def_node(cg, node, local_names):
@@ -757,8 +684,7 @@ def gen_operator_binding(cg, node, index, name):
 
     if has_comp:
         b_code = bp.Code.from_code(code)
-        inline_comprehensions(b_code)
-        rewrite_globals_access(b_code, global_vars)
+        run_comprehensions_in_dynamic_scope(b_code, global_vars)
         code = b_code.to_code()
 
     with cg.try_squash_raise():
@@ -880,9 +806,9 @@ def _insert_decl_function(cg, funcdef):
     # On Python 3 all comprehensions use a function call (on Python 2 only dict
     # and set). To avoid scoping issues the function call is inlined.
     if has_comp:
-        inline_comprehensions(inner)
-
-    rewrite_globals_access(inner, global_vars)
+        run_comprehensions_in_dynamic_scope(inner, global_vars)
+    else:
+        rewrite_globals_access(inner, global_vars)
 
     # inline the modified code ops into the code generator
     cg.code_ops.extend(outer_ops)
