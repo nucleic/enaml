@@ -1,0 +1,51 @@
+
+
+from enaml.core.api import Include
+from enaml.layout.api import hdocksplit, hbox, vbox, align
+from enaml.widgets.api import Window, Container, Label, DockItem, DockArea, MultilineField, Field, PushButton
+
+
+enamldef Main( Window ): main_window:
+    attr model
+    title = 'GUI Builder'
+
+    Container:
+        padding = 0
+        DockArea:
+            layout = hdocksplit( 'Code entry', 'View' )
+
+            DockItem:
+                name = 'Code entry'
+                title = name
+                Container:
+                    constraints = [
+                        vbox( *widgets() ),
+                        error_field.height <= 100
+                    ]
+                    Container:
+                        padding = 3
+                        hug_height = 'strong'
+                        constraints = [
+                            hbox(*widgets()),
+                            align( 'v_center', view_label, view_field)
+                        ]
+                        Label: view_label:
+                            text = 'Item to view:'
+                        Field: view_field:
+                            text := main_window.model.view_item
+
+                    MultilineField: input_field:
+                        text := main_window.model.input_text
+
+                    MultilineField: error_field:
+                        text := main_window.model.error_message
+
+            DockItem:
+                name = 'View'
+                title = name
+
+                Container:
+                    padding = 30
+
+                    Include:
+                        objects << [main_window.model.compiled_object]
