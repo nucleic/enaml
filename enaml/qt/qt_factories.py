@@ -360,3 +360,19 @@ QT_FACTORIES = {
     'WebView': web_view_factory,
     'Window': window_factory,
 }
+
+
+def pivot_selector_factory():
+    from .data.qt_pivot_selector import QtPivotSelector
+    return QtPivotSelector
+
+
+def histogram_slider_factory():
+    from .data.qt_histogram_slider import QtHistogramSlider
+    return QtHistogramSlider
+
+
+QT_FACTORIES.update({
+    'PivotSelector': pivot_selector_factory,
+    'HistogramSlider': histogram_slider_factory,
+})

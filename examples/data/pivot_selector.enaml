@@ -1,0 +1,40 @@
+#------------------------------------------------------------------------------
+#  Copyright (c) 2013, Nucleic Development Team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+from enaml.layout.api import align, vbox, hbox, spacer
+from enaml.stdlib.fields import IntField
+from enaml.widgets.api import (
+    Window, Container, Label
+)
+
+from enaml.stdlib.data.pivot_selector import PivotSelector
+from enaml.stdlib.data.histogram_slider import HistogramSlider
+
+
+enamldef Main(Window):
+    Container:
+        constraints = [
+            vbox(
+                hbox(min_lbl, dual_slider, max_lbl),
+                hbox(sel, spacer, sel_label),
+            ),
+            align('v_center', min_lbl, dual_slider, max_lbl),
+            align('v_center', sel, sel_label),
+        ]
+        Label: min_lbl:
+            text << str(dual_slider.minimum)
+        Label: max_lbl:
+            text << str(dual_slider.maximum)
+        HistogramSlider: dual_slider:
+            tick_interval = 10
+            minimum = 1
+            maximum = 100
+            histogram = [0.1, 0.05, 0.0, 0.05, 0.8]
+        Label: sel_label:
+            text << sel.selected_item
+        PivotSelector: sel:
+            items = ['Industry', 'Sector', 'Company']
