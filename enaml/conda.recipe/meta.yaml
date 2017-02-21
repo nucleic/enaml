@@ -1,0 +1,75 @@
+package:
+  name: gmt-enaml
+  version: "0.9.9gmt"
+
+
+build:
+  
+  script: {{environ['PYTHON']}} setup.py install
+  
+  preserve_egg_dir: True
+
+  entry_points:
+    - enaml-run = enaml.runner:main
+
+
+source:
+  
+    git_url: git@github01pr:TradingAnalytics/gmt-orc.git
+    
+
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - atom >=0.3.8
+    - kiwisolver >=0.1.2
+    - ply >=3.4
+    - pyqt
+
+  run:
+    - python
+    - atom >=0.3.8
+    - kiwisolver >=0.1.2
+    - ply >=3.4
+    - pyqt
+
+test:
+  # Python imports
+  imports:
+    - enaml
+    - enaml.applib
+    - enaml.core
+    - enaml.core.parse_tab
+    - enaml.layout
+    - enaml.qt
+    - enaml.qt.docking
+    - enaml.scintilla
+    - enaml.stdlib
+    - enaml.widgets
+    - enaml.workbench
+    - enaml.workbench.core
+    - enaml.workbench.ui
+
+  commands:
+    # You can put test commands to be run here.  Use this to test that the
+    # entry points work.
+
+    - enaml-run --help
+
+  # You can also put a file called run_test.py in the recipe that will be run
+  # at test time.
+
+  # requires:
+    # Put any additional test requirements here.  For example
+    # - nose
+
+about:
+  home: https://github.com/nucleic/enaml
+  license: UNKNOWN
+  summary: 'Declarative DSL for building rich user interfaces in Python'
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
