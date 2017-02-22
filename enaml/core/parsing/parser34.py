@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,9 +13,6 @@ from .parser3 import Python3EnamlParser
 
 class Python34EnamlParser(Python3EnamlParser):
     """Enaml parser supporting Python 3.4 syntax.
-
-    Main differences from base parser are :
-
 
     """
     parser_id = '34'

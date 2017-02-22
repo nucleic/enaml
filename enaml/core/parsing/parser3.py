@@ -19,6 +19,9 @@ class Python3EnamlParser(BaseEnamlParser):
 
     Main differences from base parser are :
 
+    - support for annotation in function declaration
+    - support for raise from syntax
+    - support for yield from syntax
 
     """
     parser_id = '3'
@@ -77,7 +80,7 @@ class Python3EnamlParser(BaseEnamlParser):
 
     def p_nonlocal_stmt2(self, p):
         ''' global_stmt : NONLOCAL NAME globals_list '''
-        nonlocal_stmt = ast.Global()
+        nonlocal_stmt = ast.NonLocal()
         nonlocal_stmt.names = [p[2]] + p[3]
         nonlocal_stmt.lineno = p.lineno(1)
         p[0] = nonlocal_stmt

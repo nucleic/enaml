@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,10 +13,18 @@ from .parser34 import Python34EnamlParser
 
 
 class Python35EnamlParser(Python34EnamlParser):
-    """Enaml parser supporting Python 3.4 syntax.
+    """Enaml parser supporting Python 3.5 syntax.
 
     Main differences from base parser are :
 
+    - support for matmult syntax
+    - support for async/await syntax
+
+    Notes
+    -----
+    Because the lexer turn await and async into names outside of async def
+    blocks we do not need to check that async for, async with and await are
+    used in the proper places. (will break for 3.7)
 
     """
     parser_id = '35'
@@ -113,8 +121,7 @@ class Python35EnamlParser(Python34EnamlParser):
         ''' async_funcdef : ASYNC funcdef '''
         async_funcdef = ast.AsyncFunctionDef()
         funcdef = p[2]
-        for attr in ('name', 'args', 'body', 'returns', 'decorator_list',
-                     'lineno'):
+        for attr in tuple(funcdef._fields) + ('lineno', 'col_offset'):
             setattr(async_funcdef, attr, getattr(funcdef, attr))
         p[0] = async_funcdef
 
@@ -122,7 +129,7 @@ class Python35EnamlParser(Python34EnamlParser):
         ''' async_for_stmt : ASYNC for_stmt '''
         async_for = ast.AsyncFor()
         for_node = p[2]
-        for attr in ('target', 'iter', 'body', 'orelse'):
+        for attr in tuple(for_node._fields) + ('lineno', 'col_offset'):
             setattr(async_for, attr, getattr(for_node, attr))
         p[0] = async_for
 
@@ -130,7 +137,7 @@ class Python35EnamlParser(Python34EnamlParser):
         ''' async_with_stmt : ASYNC with_stmt '''
         async_with = ast.AsyncWith()
         with_node = p[2]
-        for attr in ('items', 'body'):
+        for attr in tuple(with_node._fields) + ('lineno', 'col_offset'):
             setattr(async_with, attr, getattr(with_node, attr))
         p[0] = async_with
 
