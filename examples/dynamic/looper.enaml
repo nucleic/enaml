@@ -33,7 +33,7 @@ enamldef Main(Window):
         PushButton: button:
             text = 'Print Items'
             clicked ::
-                for item in looper.items:
+                for item in looper.iterable:
                     print item
         ScrollArea: scroller:
             Container:
