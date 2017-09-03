@@ -261,6 +261,14 @@ class Application(Atom):
         """
         raise NotImplementedError
 
+    def process_events(self):
+        """ Process the events received by the application.
+
+        This allows the user to manually run the application event loop.
+
+        """
+        raise NotImplementedError
+
     def deferred_call(self, callback, *args, **kwargs):
         """ Invoke a callable on the next cycle of the main event loop
         thread.

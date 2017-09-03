@@ -56,6 +56,17 @@ class QtApplication(Application):
         app.exit()
         app._in_event_loop = False
 
+    def process_events(self):
+        """ Process the events received by the application.
+
+        This allows the user to manually run the application event loop.
+
+        """
+        qapp = self._qapp
+        qapp.flush()
+        qapp.processEvents()
+        qapp.sendPostedEvents()
+
     def deferred_call(self, callback, *args, **kwargs):
         """ Invoke a callable on the next cycle of the main event loop
         thread.
