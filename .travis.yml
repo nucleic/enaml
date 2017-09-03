@@ -28,7 +28,8 @@ before_install:
   - PIP_INSTALL="pip install -q"
 
   # Install enaml dependencies and include special widgets dependencies
-  - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib vtk
+  # We do not test vtk as it segfaults on Travis
+  - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib
   - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
   - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master
 
@@ -54,7 +55,7 @@ before_script:
 script:
   # Run the enaml test suite
   - cd $TRAVIS_BUILD_DIR
-  - export QT_API=pyqt$QT_VERSION
+#  - export QT_API=pyqt$QT_VERSION
   - py.test tests --cov enaml --cov-report xml -v
 
 after_success:
