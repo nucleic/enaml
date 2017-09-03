@@ -530,7 +530,7 @@ class BorderGuide(GuideHandler):
             guides managed by the handler.
 
         """
-        return self._guides.iteritems()
+        return iter(self._guides.items())
 
     def iterboxes(self):
         """ Iterate the boxes which lie under the guides.
@@ -542,7 +542,7 @@ class BorderGuide(GuideHandler):
             to be painted under the guides.
 
         """
-        return self._boxes.itervalues()
+        return iter(self._boxes.values())
 
     def layout(self, rect):
         """ Layout the guides for the given rect.
@@ -598,7 +598,7 @@ class CompassGuide(GuideHandler):
             the relevant guides in the compass.
 
         """
-        return self._guides.iteritems()
+        return iter(self._guides.items())
 
     def iterboxes(self):
         """ Iterate the boxes which lie under the guides.
@@ -661,7 +661,7 @@ class CompassExGuide(GuideHandler):
             the relevant guides in the compass.
 
         """
-        return self._guides.iteritems()
+        return iter(self._guides.items())
 
     def iterboxes(self):
         """ Iterate the boxes which lie under the guides.

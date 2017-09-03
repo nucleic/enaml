@@ -15,6 +15,7 @@ convenience functions which are available for 1-line notifications.
 
 << autodoc-me >>
 """
+from __future__ import print_function
 import sys
 if sys.platform == 'win32':
     from enaml import winutil
@@ -28,7 +29,7 @@ from enaml.widgets.api import Container, PushButton, Window
 
 def h_result(button):
     if button is not None:
-        print "Dialog button '%s' clicked." % button.text
+        print("Dialog button '%s' clicked." % button.text)
 
 
 enamldef Main(Window):

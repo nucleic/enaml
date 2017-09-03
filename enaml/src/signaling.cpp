@@ -9,6 +9,16 @@
 #include <sstream>
 #include <vector>
 #include "pythonhelpers.h"
+#include "py23compat.h"
+
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
 
 
 using namespace PythonHelpers;
@@ -108,7 +118,7 @@ Signal_dealloc( Signal* self )
 {
     PyObject_GC_UnTrack( self );
     Signal_clear( self );
-    self->ob_type->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
 }
 
 
@@ -215,8 +225,7 @@ PyDoc_STRVAR(Signal__doc__,
 
 
 PyTypeObject Signal_Type = {
-    PyObject_HEAD_INIT( 0 )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "signaling.Signal",                     /* tp_name */
     sizeof( Signal ),                       /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -224,7 +233,13 @@ PyTypeObject Signal_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)0,                            /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */
@@ -310,7 +325,7 @@ _Disconnector_dealloc( _Disconnector* self )
 {
     PyObject_GC_UnTrack( self );
     _Disconnector_clear( self );
-    self->ob_type->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
 }
 
 
@@ -393,8 +408,7 @@ PyDoc_STRVAR(_Disconnector__doc__,
 
 
 PyTypeObject _Disconnector_Type = {
-    PyObject_HEAD_INIT( 0 )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "signaling._Disconnector",              /* tp_name */
     sizeof( _Disconnector ),                /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -402,7 +416,13 @@ PyTypeObject _Disconnector_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)0,                            /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */
@@ -506,7 +526,7 @@ BoundSignal_dealloc( BoundSignal* self )
     if( numfree < FREELIST_MAX )
         freelist[ numfree++ ] = self;
     else
-        self->ob_type->tp_free( reinterpret_cast<PyObject*>( self ) );
+        Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
 }
 
 
@@ -734,8 +754,7 @@ PyDoc_STRVAR(BoundSignal__doc__,
 
 
 PyTypeObject BoundSignal_Type = {
-    PyObject_HEAD_INIT( 0 )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "signaling.BoundSignal",                /* tp_name */
     sizeof( BoundSignal ),                  /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -743,7 +762,13 @@ PyTypeObject BoundSignal_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)0,                            /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */
@@ -819,58 +844,103 @@ _BoundSignal_New( PyObject* owner, PyObject* objref )
 /*-----------------------------------------------------------------------------
 | Signaling Module
 |----------------------------------------------------------------------------*/
+struct module_state {
+    PyObject *error;
+};
+
+
 static PyMethodDef
 signaling_methods[] = {
     { 0 } // Sentinel
 };
 
+#if PY_MAJOR_VERSION >= 3
 
-PyMODINIT_FUNC
-initsignaling( void )
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static int signaling_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int signaling_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "signaling",
+        NULL,
+        sizeof(struct module_state),
+        signaling_methods,
+        NULL,
+        signaling_traverse,
+        signaling_clear,
+        NULL
+};
+
+#else
+
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+
+#endif
+
+MOD_INIT_FUNC(signaling)
 {
+#if PY_MAJOR_VERSION >= 3
+    PyObjectPtr mod( PyModule_Create(&moduledef), true );
+#else
     PyObjectPtr mod( Py_InitModule( "signaling", signaling_methods ), true );
+#endif
     if( !mod )
-        return;
+        INITERROR;
     PyObject* mod_dict = PyModule_GetDict( mod.get() );
 
-    PyObjectPtr wm_mod( PyImport_ImportModuleEx( "weakmethod", mod_dict, 0, 0 ) );
+    PyObjectPtr wm_mod( PyImport_ImportModuleLevel( "weakmethod", mod_dict, 0, 0 , 1) );
     if( !wm_mod)
-        return;
+        INITERROR;
     PyObjectPtr wm_cls( wm_mod.get_attr( "WeakMethod" ) );
     if( !wm_cls )
-        return;
+        INITERROR;
 
-    PyObjectPtr cr_mod( PyImport_ImportModuleEx( "callableref", mod_dict, 0, 0 ) );
+    PyObjectPtr cr_mod( PyImport_ImportModuleLevel( "callableref", mod_dict, 0, 0, 1 ) );
     if( !cr_mod )
-        return;
+        INITERROR;
     PyObjectPtr cr_cls( cr_mod.get_attr( "CallableRef" ) );
     if( !cr_mod )
-        return;
+        INITERROR;
 
-    PyObjectPtr key( PyString_FromString( "_[signals]" ) );
+    PyObjectPtr key( Py23Str_FromString( "_[signals]" ) );
     if( !key )
-        return;
+        INITERROR;
 
     SignalsKey = key.release();
     WeakMethod = wm_cls.release();
     CallableRef = cr_cls.release();
 
     if( PyType_Ready( &Signal_Type ) )
-        return;
+        INITERROR;
     if( PyType_Ready( &_Disconnector_Type ) )
-        return;
+        INITERROR;
     if( PyType_Ready( &BoundSignal_Type ) )
-        return;
+        INITERROR;
 
     PyObjectPtr sig_type( reinterpret_cast<PyObject*>( &Signal_Type ), true );
     if( PyModule_AddObject( mod.get(), "Signal", sig_type.release() ) == -1 )
-        return;
+        INITERROR;
     PyObjectPtr disc_type( reinterpret_cast<PyObject*>( &_Disconnector_Type ), true );
     if( PyModule_AddObject( mod.get(), "_Disconnector", disc_type.release() ) == -1 )
-        return;
+        INITERROR;
     PyObjectPtr bsig_type( reinterpret_cast<PyObject*>( &BoundSignal_Type ), true );
     if( PyModule_AddObject( mod.get(), "BoundSignal", bsig_type.release() ) == -1 )
-        return;
+        INITERROR;
+
+#if PY_MAJOR_VERSION >= 3
+    return mod.get();
+#endif
 }
 
 } // extern "C"

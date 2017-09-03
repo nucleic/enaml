@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include "pythonhelpersex.h"
+#include "py23compat.h"
 
 
 using namespace PythonHelpers;
@@ -145,8 +146,7 @@ DFunc_getset[] = {
 
 
 PyTypeObject DFunc_Type = {
-    PyObject_HEAD_INIT( &PyType_Type )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "funchelper.DeclarativeFunction",       /* tp_name */
     sizeof( DFunc ),                        /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -154,7 +154,13 @@ PyTypeObject DFunc_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)DFunc_repr,                   /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */

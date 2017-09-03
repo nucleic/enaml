@@ -10,7 +10,7 @@ from enaml.workbench.api import Extension, PluginManifest
 from enaml.workbench.ui.api import ActionItem, MenuItem
 
 
-print 'Imported Second View!'
+print('Imported Second View!')
 
 
 enamldef SecondView(Container):

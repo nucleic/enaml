@@ -12,6 +12,7 @@ import ast
 
 from atom.api import Str, Typed
 
+from ..compat import IS_PY3
 from . import byteplay as bp
 from .code_generator import CodeGenerator
 from .enaml_ast import (
@@ -52,6 +53,16 @@ COMPILE_MODE = {
     PythonExpression: 'eval',
     PythonModule: 'exec',
 }
+
+#: Ast nodes associated with comprehensions which uses a function call that we
+#: will have to inline
+_COMP_NODES = [ast.ListComp] if IS_PY3 else []
+if hasattr(ast, 'DictComp'):
+    _COMP_NODES.append(ast.DictComp)
+if hasattr(ast, 'SetComp'):
+    _COMP_NODES.append(ast.SetComp)
+
+_COMP_NODES = tuple(_COMP_NODES)
 
 
 def unhandled_pragma(name, filename, lineno):
@@ -145,6 +156,8 @@ def count_nodes(node):
 def has_list_comp(pyast):
     """ Determine whether a Python expression has a list comprehension.
 
+    This function is only used under Python 2.
+
     Parameters
     ----------
     pyast : Expression
@@ -210,6 +223,7 @@ def load_helper(cg, name, from_globals=False):
     from_globals : bool, optional
         If True, the helpers will be loaded from the globals instead of
         the fast locals. The default is False.
+
     """
     if from_globals:
         cg.load_global(COMPILER_HELPERS)
@@ -330,8 +344,9 @@ def safe_eval_ast(cg, node, name, lineno, local_names):
 
     This method will eval the python code represented by the ast
     in the local namespace. If the code would have the side effect
-    of storing a value in the namespace, such as a list comp, then
-    the expression will be evaluated in it's own namespace.
+    of storing a value in the namespace, such as a list comp under
+    Python 2, then the expression will be evaluated in it's own
+    namespace.
 
     Parameters
     ----------
@@ -351,7 +366,7 @@ def safe_eval_ast(cg, node, name, lineno, local_names):
         The set of fast local names available to the code object.
 
     """
-    if has_list_comp(node):
+    if not IS_PY3 and has_list_comp(node):
         expr_cg = CodeGenerator()
         expr_cg.filename = cg.filename
         expr_cg.name = name
@@ -373,6 +388,88 @@ def safe_eval_ast(cg, node, name, lineno, local_names):
         expr_cg.insert_python_expr(node)
         expr_cg.rewrite_to_fast_locals(local_names)
         cg.code_ops.extend(expr_cg.code_ops)
+
+
+def analyse_globals_and_comps(pyast):
+    """Collect the explicit 'global' variable names and check for the presence
+    of comprehensions (list, dict, set).
+
+    """
+    global_vars = set()
+    has_comp = False
+    for node in ast.walk(pyast):
+        if isinstance(node, ast.Global):
+            global_vars.update(node.names)
+        elif isinstance(node, _COMP_NODES):
+            has_comp = True
+
+    return global_vars, has_comp
+
+
+def rewrite_globals_access(code, global_vars):
+    """Update the function code global loads
+
+    This will rewrite the function to convert each LOAD_GLOBAL opcode
+    into a LOAD_NAME opcode, unless the associated name is known to have been
+    made global via the 'global' keyword.
+
+    """
+    inner_ops = code.code
+    for idx, (op, op_arg) in enumerate(inner_ops):
+        if op == bp.LOAD_GLOBAL and op_arg not in global_vars:
+            inner_ops[idx] = (bp.LOAD_NAME, op_arg)
+
+
+def run_comprehensions_in_dynamic_scope(code, global_vars):
+    """Run all list/dict/set comprehensions in the proper dynamic scope.
+
+    This will also rewrite the function to convert each LOAD_GLOBAL opcode
+    into a LOAD_NAME opcode, unless the associated name is known to have been
+    made global via the 'global' keyword.
+
+    Parameters
+    ----------
+    code :
+        Code object in which comprehension should be called in their own
+        dynamic namespace.
+
+    """
+    # Code generator used to modify the bytecode
+    cg = CodeGenerator()
+    fetch_helpers(cg)
+
+    # Flag indicating that the previous opcode is GET_ITER
+    seen_GET_ITER = False
+
+    # Scan all ops to detect function call after GET_ITER
+    ops = enumerate(code.code)
+    for idx, (op, op_arg) in ops:
+        if isinstance(op_arg, bp.Code):
+            # Allow to pass the dynamic scope as locals. There is no need
+            # to copy it as internal variables are stored in fast locals
+            # and hence does not affect the scope content.
+            op_arg.newlocals = False
+            run_comprehensions_in_dynamic_scope(op_arg, global_vars)
+        elif op == bp.GET_ITER:
+            seen_GET_ITER = True
+            cg.code_ops.append((op, op_arg))
+            continue
+        elif seen_GET_ITER and op == bp.CALL_FUNCTION and op_arg == 1:
+            # func -> iter
+            load_helper(cg, 'call_func')  # func -> iter -> run
+            cg.rot_three()                # run -> func -> iter
+            cg.build_tuple(1)             # run -> func -> (iter,)
+            cg.build_map()                # run -> func -> (iter,) -> {}
+            cg.load_global('__scope__')   # run -> func -> iter -> {} -> scope
+            cg.call_function(4)           # res
+            seen_GET_ITER = False
+            continue
+
+        cg.code_ops.append((op, op_arg))
+        seen_GET_ITER = False
+
+    code.code = cg.code_ops
+    rewrite_globals_access(code, global_vars)
 
 
 def gen_child_def_node(cg, node, local_names):
@@ -405,14 +502,45 @@ def gen_child_def_node(cg, node, local_names):
     # Subclass the child class if needed
     store_types = (StorageExpr, AliasExpr, FuncDef)
     if any(isinstance(item, store_types) for item in node.body):
-        cg.load_const(node.typename)
-        cg.rot_two()
-        cg.build_tuple(1)
-        cg.build_map()
-        cg.load_global('__name__')
-        cg.load_const('__module__')
-        cg.store_map()                          # name -> bases -> dict
-        cg.build_class()                        # class
+        if not IS_PY3:
+            # On Python 2 directly build the class.
+            cg.load_const(node.typename)
+            cg.rot_two()
+            cg.build_tuple(1)
+            cg.build_map()
+            cg.load_global('__name__')
+            cg.load_const('__module__')
+            cg.store_map()                          # name -> bases -> dict
+            cg.build_class()                        # class
+
+        else:
+            # On Python 3 create the class code
+            cg.load_build_class()
+            cg.rot_two()                            # builtins.__build_class_ -> base
+
+            class_cg = CodeGenerator()
+            class_cg.filename = cg.filename
+            class_cg.name = node.typename
+            class_cg.firstlineno = node.lineno
+            class_cg.set_lineno(node.lineno)
+
+            class_cg.code_ops.append((bp.LOAD_NAME, '__name__'),)
+            class_cg.code_ops.append((bp.STORE_NAME, '__module__'),)
+            class_cg.load_const(node.typename)
+            class_cg.code_ops.append((bp.STORE_NAME, '__qualname__'),)
+            class_cg.load_const(None)
+            class_cg.return_value()
+
+            class_code = class_cg.to_code()
+            cg.load_const(class_code)
+            cg.load_const(None)
+            cg.make_function()
+
+            cg.rot_two()                            # builtins.__build_class_ -> class_func -> base
+            cg.load_const(node.typename)
+            cg.rot_two()                            # builtins.__build_class_ -> class_func -> class_name -> base
+            cg.call_function(3)                     # class
+
 
     # Build the declarative compiler node
     store_locals = should_store_locals(node)
@@ -530,7 +658,7 @@ def gen_template_inst_binding(cg, node, index):
 
 
 def gen_operator_binding(cg, node, index, name):
-    """ Generate the code for a template inst binding.
+    """ Generate the code for an operator binding.
 
     The caller should ensure that F_GLOBALS and NODE_LIST are present
     in the fast locals of the code object.
@@ -551,7 +679,14 @@ def gen_operator_binding(cg, node, index, name):
 
     """
     mode = COMPILE_MODE[type(node.value)]
+    global_vars, has_comp = analyse_globals_and_comps(node.value.ast)
     code = compile(node.value.ast, cg.filename, mode=mode)
+
+    if has_comp:
+        b_code = bp.Code.from_code(code)
+        run_comprehensions_in_dynamic_scope(b_code, global_vars)
+        code = b_code.to_code()
+
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
         load_helper(cg, 'run_operator')
@@ -642,11 +777,9 @@ def _insert_decl_function(cg, funcdef):
         The python FunctionDef ast node.
 
     """
-    # collect the explicit 'global' variable names
-    global_vars = set()
-    for node in ast.walk(funcdef):
-        if isinstance(node, ast.Global):
-            global_vars.update(node.names)
+    # collect the explicit 'global' variable names and check for the presence
+    # of comprehensions (list, dict, set).
+    global_vars, has_comp = analyse_globals_and_comps(funcdef)
 
     # generate the code object which will create the function
     mod = ast.Module(body=[funcdef])
@@ -663,13 +796,19 @@ def _insert_decl_function(cg, funcdef):
     #   MAKE_FUCTION    (num defaults)      // TOS
 
     # extract the inner code object which represents the actual
-    # function code and update its flags and global loads
-    inner = outer_ops[-2][1]
+    # function code and update its flags
+    if not IS_PY3:
+        inner = outer_ops[-2][1]  # On Python 2 there is no qualified name
+    else:
+        inner = outer_ops[-3][1]  # On Python 3 a function has a qualified name
     inner.newlocals = False
-    inner_ops = inner.code
-    for idx, (op, op_arg) in enumerate(inner_ops):
-        if op == bp.LOAD_GLOBAL and op_arg not in global_vars:
-            inner_ops[idx] = (bp.LOAD_NAME, op_arg)
+
+    # On Python 3 all comprehensions use a function call (on Python 2 only dict
+    # and set). To avoid scoping issues the function call is inlined.
+    if has_comp:
+        run_comprehensions_in_dynamic_scope(inner, global_vars)
+    else:
+        rewrite_globals_access(inner, global_vars)
 
     # inline the modified code ops into the code generator
     cg.code_ops.extend(outer_ops)

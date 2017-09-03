@@ -22,6 +22,7 @@ examples for explanations of the other widgets and language features.
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.widgets.api import Window, Container, PushButton
 
 
@@ -30,7 +31,7 @@ enamldef Main(Window): main:
     Container:
         PushButton:
             text = 'Foo'
-            clicked :: print main.central_widget()
+            clicked :: print(main.central_widget())
         PushButton:
             text = 'Bar'
         PushButton:

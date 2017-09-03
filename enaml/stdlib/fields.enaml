@@ -10,6 +10,7 @@
 This is a library of Enaml components deriving from the builtin Field.
 
 """
+from future.builtins import str
 from enaml.validator import RegexValidator, IntValidator, FloatValidator
 from enaml.widgets.field import Field
 
@@ -25,7 +26,7 @@ enamldef RegexField(Field):
 _int_converters = {
     2: bin,
     8: oct,
-    10: unicode,
+    10: str,
     16: hex
 }
 
@@ -38,7 +39,7 @@ enamldef IntField(Field):
     attr maximum = None
     attr base = 10
     attr value : int = 0
-    attr converter << _int_converters.get(base, unicode)
+    attr converter << _int_converters.get(base, str)
     text << converter(value)
     text :: self.value = int(text, base)
     validator << IntValidator(base=base, minimum=minimum, maximum=maximum)
@@ -52,7 +53,7 @@ enamldef FloatField(Field):
     attr maximum = None
     attr allow_exponent : bool = True
     attr value : float = 0.0
-    attr converter = unicode
+    attr converter = str
     text << converter(value)
     text :: self.value = float(text)
     validator << FloatValidator(

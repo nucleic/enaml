@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 import sys
 from setuptools import setup, find_packages, Extension
+from setuptools.command.build_ext import build_ext
 
 
 ext_modules = [
@@ -64,6 +65,26 @@ if sys.platform == 'win32':
     )
 
 
+class BuildExt(build_ext):
+    """ A custom build extension for adding compiler-specific options.
+
+    """
+    c_opts = {
+        'msvc': ['/EHsc']
+    }
+
+    def initialize_options(self):
+        build_ext.initialize_options(self)
+        self.debug = False
+
+    def build_extensions(self):
+        ct = self.compiler.compiler_type
+        opts = self.c_opts.get(ct, [])
+        for ext in self.extensions:
+            ext.extra_compile_args = opts
+        build_ext.build_extensions(self)
+
+
 setup(
     name='enaml',
     version='0.9.8',
@@ -73,7 +94,8 @@ setup(
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.rst').read(),
     requires=['atom', 'PyQt', 'ply', 'kiwisolver'],
-    install_requires=['distribute', 'atom >= 0.3.8', 'kiwisolver >= 0.1.2', 'ply >= 3.4'],
+    install_requires=['setuptools', 'future', 'atom >= 0.3.8',
+                      'kiwisolver >= 0.1.2', 'ply >= 3.4'],
     packages=find_packages(),
     package_data={
         'enaml.applib': ['*.enaml'],
@@ -88,4 +110,5 @@ setup(
     },
     entry_points={'console_scripts': ['enaml-run = enaml.runner:main']},
     ext_modules=ext_modules,
+    cmdclass={'build_ext': BuildExt},
 )

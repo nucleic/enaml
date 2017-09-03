@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from __future__ import print_function
+
 from atom.api import Subclass, Unicode
 
 from enaml.widgets.api import Container
@@ -12,7 +14,7 @@ from enaml.workbench.api import PluginManifest
 from enaml.workbench.ui.api import Workspace
 
 
-print 'Imported Sample Workspace!'
+print('Imported Sample Workspace!')
 
 
 class SampleWorkspace(Workspace):

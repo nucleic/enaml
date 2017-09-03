@@ -14,6 +14,7 @@ second method is by creating the menu on-demand, and then invoking it's
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.widgets.api import (
     Window, Container, PushButton, Menu, Action, Field
 )
@@ -22,19 +23,19 @@ from enaml.widgets.api import (
 enamldef PopupMenu(Menu):
     Action:
         text = 'foo'
-        triggered :: print text + ' triggered'
+        triggered :: print(text + ' triggered')
     Action:
         text = 'bar'
-        triggered :: print text + ' triggered'
+        triggered :: print(text + ' triggered')
     Action:
         text = 'baz'
-        triggered :: print text + ' triggered'
+        triggered :: print(text + ' triggered')
     Action:
         text = 'spam'
-        triggered :: print text + ' triggered'
+        triggered :: print(text + ' triggered')
     Action:
         text = 'ham'
-        triggered :: print text + ' triggered'
+        triggered :: print(text + ' triggered')
 
 
 enamldef Main(Window):

@@ -396,7 +396,7 @@ class TemplateInstanceNode(CompilerNode):
         if self.names:
             nodeiter = self.iternodes()
             for name in self.names:
-                mapping[name] = nodeiter.next()
+                mapping[name] = next(nodeiter)
         super(TemplateInstanceNode, self).update_id_nodes(mapping)
 
     def size(self):

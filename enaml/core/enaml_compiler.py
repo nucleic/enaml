@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 import sys
 
+from ..compat import IS_PY3
 from . import compiler_common as cmn
 from .enaml_ast import Module
 from .enamldef_compiler import EnamlDefCompiler
@@ -128,7 +129,9 @@ from .template_compiler import TemplateCompiler
 #     declarative method overrides.
 # 22 : Update the syntax of arrow functions - 5 May 2014
 #     This updates the arrow functions to use "=>" instead of "->".
-COMPILER_VERSION = 22
+# 23 : Support for Python 3 and inlining of comprehensions.
+# 24 : Call comprehension functions in the proper scope rather than inlining
+COMPILER_VERSION = 24
 
 
 # Code that will be executed at the top of every enaml module
@@ -166,9 +169,9 @@ class EnamlCompiler(cmn.CompilerBase):
         """
         assert isinstance(node, Module), 'invalid node'
 
-        # Protect against unicode filenames, which are incompatible
+        # On Python 2 protect against unicode filenames, which are incompatible
         # with code objects created via types.CodeType
-        if isinstance(filename, unicode):
+        if not IS_PY3 and isinstance(filename, type(u'')):
             filename = filename.encode(sys.getfilesystemencoding())
 
         # Create the compiler and generate the code.
@@ -214,6 +217,8 @@ class EnamlCompiler(cmn.CompilerBase):
         cg = self.code_generator
         code = EnamlDefCompiler.compile(node, cg.filename)
         cg.load_const(code)
+        if IS_PY3:
+            cg.load_const(None)
         cg.make_function()
         cg.call_function()
         cg.store_global(node.typename)
@@ -249,6 +254,8 @@ class EnamlCompiler(cmn.CompilerBase):
             # Generate the template code and function
             code = TemplateCompiler.compile(node, cg.filename)
             cg.load_const(code)
+            if IS_PY3:
+                cg.load_const(None)
             cg.make_function(len(node.parameters.keywords))
 
             # Load and call the helper which will build the template

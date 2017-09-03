@@ -69,6 +69,8 @@ def globalize_opcodes():
         __all__.append(name)
 globalize_opcodes()
 
+del __all__
+
 cmp_op = opcode.cmp_op
 
 hasarg = set(x for x in opcodes if x >= opcode.HAVE_ARGUMENT)

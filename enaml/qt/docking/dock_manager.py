@@ -169,7 +169,7 @@ class DockManager(Atom):
 
         """
         items = [self._dock_area] + self.floating_frames()
-        return DockLayout(*map(LayoutSaver(), items))
+        return DockLayout(*list(map(LayoutSaver(), items)))
 
     def apply_layout(self, layout):
         """ Apply a layout to the dock area.
@@ -243,7 +243,7 @@ class DockManager(Atom):
 
         """
         f = lambda w: isinstance(w, QDockContainer)
-        return filter(f, self._dock_frames)
+        return list(filter(f, self._dock_frames))
 
     def dock_windows(self):
         """ Get an iterable of QDockWindow instances.
@@ -258,7 +258,7 @@ class DockManager(Atom):
 
         """
         f = lambda w: isinstance(w, QDockWindow)
-        return filter(f, self._dock_frames)
+        return list(filter(f, self._dock_frames))
 
     def floating_frames(self):
         """ Get an iterable of floating dock frames.
@@ -273,7 +273,7 @@ class DockManager(Atom):
 
         """
         f = lambda w: w.isWindow()
-        return filter(f, self._dock_frames)
+        return list(filter(f, self._dock_frames))
 
     def add_window(self, window):
         """ Add a floating QDockWindow to the dock manager.
@@ -448,20 +448,20 @@ class DockManager(Atom):
                     o_y = o_geo.top()
                     o_right = o_x + o_geo.width()
                     o_bottom = o_y + o_geo.height()
-                    dx = filter(filt, (
+                    dx = list(filter(filt, (
                         o_x - f_x,
                         o_x - (f_x + f_w),
                         o_right - f_x,
                         o_right - (f_x + f_w),
-                    ))
+                    )))
                     if dx:
                         f_x += min(dx)
-                    dy = filter(filt, (
+                    dy = list(filter(filt, (
                         o_y - f_y,
                         o_y - (f_y + f_h),
                         o_bottom - f_y,
                         o_bottom - (f_y + f_h),
-                    ))
+                    )))
                     if dy:
                         f_y += min(dy)
             frame.move(f_x, f_y)

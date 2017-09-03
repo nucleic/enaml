@@ -57,7 +57,7 @@ class StandardReadHandler(ReadHandler, HandlerMixin):
 
         """
         func = self.func
-        f_globals = func.func_globals
+        f_globals = func.__globals__
         f_builtins = f_globals['__builtins__']
         f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)
@@ -75,7 +75,7 @@ class StandardWriteHandler(WriteHandler, HandlerMixin):
 
         """
         func = self.func
-        f_globals = func.func_globals
+        f_globals = func.__globals__
         f_builtins = f_globals['__builtins__']
         f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins, change)
@@ -93,7 +93,7 @@ class StandardTracedReadHandler(ReadHandler, HandlerMixin):
 
         """
         func = self.func
-        f_globals = func.func_globals
+        f_globals = func.__globals__
         f_builtins = f_globals['__builtins__']
         f_locals = self.get_locals(owner)
         tr = StandardTracer(owner, name)
@@ -112,7 +112,7 @@ class StandardInvertedWriteHandler(WriteHandler, HandlerMixin):
 
         """
         func = self.func
-        f_globals = func.func_globals
+        f_globals = func.__globals__
         f_builtins = f_globals['__builtins__']
         f_locals = self.get_locals(owner)
         scope = DynamicScope(owner, f_locals, f_globals, f_builtins)

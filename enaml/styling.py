@@ -8,6 +8,8 @@
 """ Declarative classes which implement style sheet styling.
 
 """
+from __future__ import unicode_literals
+
 from collections import defaultdict
 
 from atom.api import Atom, Unicode, Typed, observe
