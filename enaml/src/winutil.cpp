@@ -11,6 +11,7 @@
 #endif
 #include <windows.h>
 #include "pythonhelpersex.h"
+#include "py23compat.h"
 
 
 using namespace PythonHelpers;
@@ -39,8 +40,7 @@ typedef struct {
 
 static PyTypeObject
 WinEnum_Type = {
-    PyObject_HEAD_INIT( 0 )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "winutil.WinEnum",                      /* tp_name */
     sizeof( WinEnum ),                      /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -48,7 +48,13 @@ WinEnum_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)0,                            /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */
@@ -90,7 +96,7 @@ WinEnum_Type = {
 
 
 static PyObject*
-PyString_FromHICON( HICON icon, int& width_out, int& height_out )
+PyBytes_FromHICON( HICON icon, int& width_out, int& height_out )
 {
     HDC screen_device = GetDC( 0 );
     HDC hdc = CreateCompatibleDC( screen_device );
@@ -115,7 +121,7 @@ PyString_FromHICON( HICON icon, int& width_out, int& height_out )
     HGDIOBJ old_hdc = ( HBITMAP )SelectObject( hdc, win_bitmap );
     DrawIconEx( hdc, 0, 0, icon, w, h, 0, 0, DI_NORMAL );
 
-    PyObject* result = PyString_FromStringAndSize( ( const char* )bits, w * h * 4 );
+    PyObject* result = Py23Bytes_FromStringAndSize( ( const char* )bits, w * h * 4 );
 
     // dispose resources created by GetIconInfo
     DeleteObject( icon_info.hbmMask );
@@ -143,11 +149,15 @@ load_icon( PyObject* mod, PyObject* args )
     if( !hicon )
         return Py_BuildValue( "(s, (i, i))", "", -1, -1 );
     int width, height;
-    PyObjectPtr result( PyString_FromHICON( ( HICON )hicon, width, height ) );
+    PyObjectPtr result( PyBytes_FromHICON( ( HICON )hicon, width, height ) );
     if( !result )
         return 0;
     return Py_BuildValue( "(O, (i, i))", result.get(), width, height );
 }
+
+struct module_state {
+    PyObject *error;
+};
 
 
 static PyMethodDef
@@ -162,21 +172,58 @@ winutil_methods[] = {
     do { \
         TOKEN = PyType_GenericNew( &WinEnum_Type, 0, 0 ); \
         if( !TOKEN ) \
-            return; \
+            INITERROR; \
         reinterpret_cast<WinEnum*>( TOKEN )->value = VALUE; \
         if( PyModule_AddObject( mod, #VALUE, newref( TOKEN ) ) < 0 ) \
-            return; \
+            INITERROR; \
     } while( 0 )
 
 
-PyMODINIT_FUNC
-initwinutil( void )
+#if PY_MAJOR_VERSION >= 3
+
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static int winutil_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int winutil_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "winutil",
+        NULL,
+        sizeof(struct module_state),
+        winutil_methods,
+        NULL,
+        winutil_traverse,
+        winutil_clear,
+        NULL
+};
+
+#else
+
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+
+#endif
+
+MOD_INIT_FUNC(winutil)
 {
+#if PY_MAJOR_VERSION >= 3
+    PyObject *mod = PyModule_Create(&moduledef);
+#else
     PyObject* mod = Py_InitModule( "winutil", winutil_methods );
+#endif
     if( !mod )
-        return;
+        INITERROR;
     if( PyType_Ready( &WinEnum_Type ) )
-        return;
+        INITERROR;
     MAKE_ENUM( Py_OIC_SAMPLE, OIC_SAMPLE );
     MAKE_ENUM( Py_OIC_HAND, OIC_HAND );
     MAKE_ENUM( Py_OIC_QUES, OIC_QUES );
@@ -189,4 +236,8 @@ initwinutil( void )
     #if(WINVER >= 0x0600)
     MAKE_ENUM( Py_OIC_SHIELD, OIC_SHIELD );
     #endif
+
+#if PY_MAJOR_VERSION >= 3
+    return mod;
+#endif
 }

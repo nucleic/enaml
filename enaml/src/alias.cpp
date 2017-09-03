@@ -7,7 +7,15 @@
 |----------------------------------------------------------------------------*/
 #include <sstream>
 #include "pythonhelpersex.h"
+#include "py23compat.h"
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
 
 using namespace PythonHelpers;
 
@@ -52,7 +60,7 @@ Alias_dealloc( Alias* self )
     Py_CLEAR( self->target );
     Py_CLEAR( self->chain );
     Py_CLEAR( self->key );
-    self->ob_type->tp_free( pyobject_cast( self ) );
+    Py_TYPE(self)->tp_free( pyobject_cast( self ) );
 }
 
 
@@ -63,14 +71,14 @@ alias_load_fail( Alias* self )
     PyObjectPtr pystr( PyObject_Str( self->target ) );
     if( !pystr )
         return 0;
-    ostr << PyString_AS_STRING( pystr.get() );
+    ostr << Py23Str_AS_STRING( pystr.get() );
     Py_ssize_t size = PyTuple_GET_SIZE( self->chain );
     for( Py_ssize_t i = 0; i < size; ++i )
     {
         pystr = PyObject_Str( PyTuple_GET_ITEM( self->chain, i ) );
         if( !pystr )
             return 0;
-        ostr << "." << PyString_AS_STRING( pystr.get() );
+        ostr << "." << Py23Str_AS_STRING( pystr.get() );
     }
     PyErr_Format(
         PyExc_RuntimeError,
@@ -256,8 +264,7 @@ Alias_methods[] = {
 
 
 PyTypeObject Alias_Type = {
-    PyObject_HEAD_INIT( 0 )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "alias.Alias",                          /* tp_name */
     sizeof( Alias ),                        /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -265,7 +272,13 @@ PyTypeObject Alias_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)0,                            /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */
@@ -306,22 +319,66 @@ PyTypeObject Alias_Type = {
 };
 
 
+struct module_state {
+    PyObject *error;
+};
+
 static PyMethodDef
 alias_methods[] = {
     { 0 } // sentinel
 };
 
+#if PY_MAJOR_VERSION >= 3
 
-PyMODINIT_FUNC
-initalias( void )
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static int alias_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int alias_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "alias",
+        NULL,
+        sizeof(struct module_state),
+        alias_methods,
+        NULL,
+        alias_traverse,
+        alias_clear,
+        NULL
+};
+
+#else
+
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+
+#endif
+
+MOD_INIT_FUNC(alias)
 {
+#if PY_MAJOR_VERSION >= 3
+    PyObject *mod = PyModule_Create(&moduledef);
+#else
     PyObject* mod = Py_InitModule( "alias", alias_methods );
+#endif
     if( !mod )
-        return;
-    storage_str = PyString_FromString( "_d_storage" );
+        INITERROR;
+    storage_str = Py23Str_FromString( "_d_storage" );
     if( !storage_str )
-        return;
+        INITERROR;
     if( PyType_Ready( &Alias_Type ) < 0 )
-        return;
+        INITERROR;
     PyModule_AddObject( mod, "Alias", newref( pyobject_cast( &Alias_Type ) ) );
+
+#if PY_MAJOR_VERSION >= 3
+    return mod;
+#endif
 }
