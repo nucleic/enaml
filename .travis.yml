@@ -1,0 +1,62 @@
+sudo: false
+dist: trusty
+
+branches:
+  only:
+    - master
+
+matrix:
+  include:
+    - env: PYTHON=2.7 QT_VERSION=4
+
+before_install:
+
+  # Install Miniconda
+  - travis_retry wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b -p ~/anaconda
+  - export PATH=~/anaconda/bin:$PATH
+
+  # Setup environment
+  - travis_retry conda update --yes conda
+  - conda config --set always_yes yes
+  # Display those for debug purposes
+  - conda info -a
+  - conda create -n travisci python=$PYTHON pip
+  - source activate travisci
+  - CONDA_INSTALL="conda install -q"
+  - PIP_INSTALL="pip install -q"
+
+  # Install enaml dependencies and include special widgets dependencies
+  - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib vtk
+  - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
+  - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master
+
+  # Intall test tools
+  - $CONDA_INSTALL pytest
+  - $PIP_INSTALL pytest-cov pytest-catchlog pytest-timeout
+
+  # Install codecov report tools
+  - $PIP_INSTALL codecov
+
+install:
+
+  # Install ecpy (check that build script is not broken
+  - cd $TRAVIS_BUILD_DIR
+  - python setup.py develop
+  - cd ~
+
+before_script:
+# We need a (fake) display on Travis so I need to start a X server.
+- export DISPLAY=:99.0
+- /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render
+
+script:
+  # Run the enaml test suite
+  - cd $TRAVIS_BUILD_DIR
+  - export QT_API=pyqt$QT_VERSION
+  - py.test tests --cov enaml --cov-report xml -v
+
+after_success:
+  - cd $TRAVIS_BUILD_DIR
+  - codecov
