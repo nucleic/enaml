@@ -311,7 +311,7 @@ class LayoutBuilder(NodeVisitor):
         for item in node.items:
             self.visit(item)
             children.append(self.stack.pop())
-        children = filter(None, children)
+        children = [_f for _f in children if _f]
         if len(children) == 0:
             self.stack.append(None)
             return
@@ -339,7 +339,7 @@ class LayoutBuilder(NodeVisitor):
         for item in node.items:
             self.visit(item)
             children.append(self.stack.pop())
-        children = filter(None, children)
+        children = [_f for _f in children if _f]
         if len(children) == 0:
             self.stack.append(None)
             return

@@ -87,7 +87,7 @@ class QCustomSplitter(QSplitter):
         if old != orientation:
             super(QCustomSplitter, self).setOrientation(orientation)
             if sys.platform == 'win32':
-                for idx in xrange(self.count()):
+                for idx in range(self.count()):
                     handle = self.handle(idx)
                     handle.updateFrame()
 

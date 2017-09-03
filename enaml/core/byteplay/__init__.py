@@ -5,19 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from abc import ABCMeta
+from ...compat import IS_PY3
 
-
-from future.utils import with_metaclass
-import kiwisolver as kiwi
-
-
-class LinearSymbolic(with_metaclass(ABCMeta, object)):
-    """ An abstract base class for testing linear symbolic interfaces.
-
-    """
-
-
-LinearSymbolic.register(kiwi.Variable)
-LinearSymbolic.register(kiwi.Term)
-LinearSymbolic.register(kiwi.Expression)
+if not IS_PY3:
+    from .byteplay2 import *
+else:
+    from .byteplay3 import *

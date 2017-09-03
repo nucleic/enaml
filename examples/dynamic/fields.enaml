@@ -42,7 +42,7 @@ enamldef Main(Window):
                 # time the spin box is changed. All the old widgets
                 # will be destroyed. This is the simplest way to use
                 # the Include, albeit not the most efficient.
-                objects << [Field(text=str(i)) for i in xrange(spin1.value)]
+                objects << [Field(text=str(i)) for i in range(spin1.value)]
         VGroup: cont2:
             trailing_spacer = spacer(0)
             Label:
@@ -62,7 +62,7 @@ enamldef Main(Window):
                     cont2.request_relayout()
             Include: inc2:
                 # The Fields are initialized with the spin box value.
-                objects = [Field(text=str(i)) for i in xrange(10)]
+                objects = [Field(text=str(i)) for i in range(10)]
         VGroup: cont3:
             trailing_spacer = spacer(0)
             Label:
@@ -81,4 +81,4 @@ enamldef Main(Window):
                     if inc3.objects:
                         inc3.objects.pop()
             Include: inc3:
-                objects =  [Field(text=str(i)) for i in xrange(5)]
+                objects =  [Field(text=str(i)) for i in range(5)]

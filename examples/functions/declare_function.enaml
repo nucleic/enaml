@@ -15,15 +15,23 @@ dynamic scope which is rooted on `self`.
 
 << autodoc-me >>
 """
+from __future__ import print_function
+from collections import Mapping
 from enaml.widgets.api import Window, PushButton, SpinBox, Container
+from enaml.core.funchelper import call_func
 
 
-enamldef Main(Window):
-    attr thing = 'twelve'
-    attr thing2 = 'nine'
+enamldef Main(Window): m:
 
     func do_thing(param):
-       print thing, self.thing2, sbox.value, param
+
+        i = 0
+        a = 1
+        print({a: self for i in range(3)})
+        print({m for m in range(1)})
+        print([[i for i in range(1)] for i in range(2)])
+        print([m for i in range(3) if i == m])
+        print('Index', i)
 
     Container:
         SpinBox: sbox:
@@ -31,4 +39,11 @@ enamldef Main(Window):
             minimum = 0
         PushButton:
             text = 'Click Me'
-            clicked :: do_thing(42)
+            clicked ::
+                do_thing(1)
+                print('Bis')
+                print({a: self for i in range(3)})
+                print({m for m in range(1)})
+                print([[i for i in range(1)] for i in range(2)])
+                print([m for i in range(3) if i == m])
+                print('Index', i)

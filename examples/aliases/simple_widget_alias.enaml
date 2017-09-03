@@ -9,6 +9,7 @@
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.widgets.api import Window, Container, PushButton
 
 
@@ -33,4 +34,4 @@ enamldef Main(Window):
     title = 'Simple Widget Alias'
     Content:
         button.text = 'Aliased Button'
-        button.clicked :: print 'Aliased Button clicked!'
+        button.clicked :: print('Aliased Button clicked!')

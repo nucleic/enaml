@@ -13,7 +13,7 @@ and restored using a layout object which can be easily pickled.
 
 << autodoc-me >>
 """
-import cPickle
+import pickle
 
 from atom.api import Atom, ContainerList, Unicode
 
@@ -43,7 +43,7 @@ class LineCollector(Atom):
     text = Unicode(HEADER)
 
     #: The data for the collector. This is a list of 2-tuples of
-    #: the form (unicode, DockItemEvent.Type).
+    #: the form (str, DockItemEvent.Type).
     data = ContainerList()
 
     def _observe_data(self, change):
@@ -171,18 +171,18 @@ enamldef Main(Window):
             text = 'Save Layout'
             clicked ::
                 layout = area.save_layout()
-                parent.stored = cPickle.dumps(layout, -1)
+                parent.stored = pickle.dumps(layout, -1)
         PushButton: restore_b:
             text = 'Restore Layout'
             enabled << stored is not None
             clicked ::
-                layout = cPickle.loads(stored)
+                layout = pickle.loads(stored)
                 with area.suppress_dock_events():
                     area.apply_layout(layout)
         PushButton: add_b:
             text = 'Add Items'
             clicked ::
-                for _ in xrange(3):
+                for _ in range(3):
                     n = (len(area.children) + 1)
                     name = 'item_%d' % n
                     title = 'Item %d' % n

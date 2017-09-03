@@ -124,7 +124,7 @@ class ProxyToolkitObject(Atom):
 
 
 #: A flag indicating that the object's proxy is ready for use.
-ACTIVE_PROXY_FLAG = flag_generator.next()
+ACTIVE_PROXY_FLAG = next(flag_generator)
 
 
 class ToolkitObject(Declarative):

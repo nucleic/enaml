@@ -78,5 +78,5 @@ enamldef Main(Window):
     OkCancelPanel(SampleContent): panel:
         panel.padding = 5
         panel.content.model = SampleModel(text='Hello Templates')
-        panel.ok_clicked :: print 'Ok clicked!'
-        panel.cancel_clicked :: print 'Cancel clicked!'
+        panel.ok_clicked :: print('Ok clicked!')
+        panel.cancel_clicked :: print('Cancel clicked!')

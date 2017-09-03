@@ -76,7 +76,7 @@ enamldef DropField(MultilineField):
         if event.mime_data().has_format('text/plain'):
             event.accept_proposed_action()
     drop => (event):
-        self.text = event.mime_data().data('text/plain')
+        self.text = event.mime_data().data('text/plain').decode()
 
 
 enamldef ExampleStyleSheet(StyleSheet):

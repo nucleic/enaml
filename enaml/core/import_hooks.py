@@ -14,6 +14,8 @@ import struct
 import sys
 import types
 
+from future.utils import with_metaclass, exec_
+
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
 
@@ -75,12 +77,11 @@ class abstractclassmethod(classmethod):
 #------------------------------------------------------------------------------
 # Abstract Enaml Importer
 #------------------------------------------------------------------------------
-class AbstractEnamlImporter(object):
+class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
     """ An abstract base class which defines the api required to
     implement an Enaml importer.
 
     """
-    __metaclass__ = ABCMeta
 
     # Count the number of times an importer has been installed.
     # Only uninstall it when the count hits 0 again. This permits
@@ -143,7 +144,7 @@ class AbstractEnamlImporter(object):
         # module code of an Enaml file.
         try:
             with imports():
-                exec code in mod.__dict__
+                exec_(code, mod.__dict__)
         except Exception:
             if not pre_exists:
                 del sys.modules[fullname]

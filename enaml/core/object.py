@@ -26,7 +26,7 @@ flag_generator = flag_generator()
 
 
 #: A flag indicated that an object has been destroyed.
-DESTROYED_FLAG = flag_generator.next()
+DESTROYED_FLAG = next(flag_generator)
 
 
 def flag_property(flag):

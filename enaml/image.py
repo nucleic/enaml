@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, Enum, Str, Value, Coerced
+from atom.api import Atom, Enum, Bytes, Value, Coerced
 
 from enaml.layout.geometry import Size
 
@@ -54,7 +54,7 @@ class Image(Atom):
 
     # XXX this needs to be augmented to support arrays.
     #: The bytestring holding the data for the image.
-    data = Str()
+    data = Bytes()
 
     #: Storage space for use by a toolkit backend to use as needed.
     #: This should not typically be manipulated by user code.

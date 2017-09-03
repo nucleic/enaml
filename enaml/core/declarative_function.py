@@ -39,7 +39,7 @@ def _invoke(func, key, self, args, kwargs):
         The keyword arguments to pass to the function.
 
     """
-    f_globals = func.func_globals
+    f_globals = func.__globals__
     f_builtins = f_globals['__builtins__']
     f_locals = self._d_storage.get(key) or {}
     scope = DynamicScope(self, f_locals, f_globals, f_builtins)
@@ -52,7 +52,7 @@ class DeclarativeFunction(object):
 
     """
     # XXX move this class to C++
-    __slots__ = ('im_func', 'im_key')
+    __slots__ = ('__func__', 'im_key')
 
     def __init__(self, im_func, im_key):
         """ Initialize a DeclarativeFunction.
@@ -66,7 +66,7 @@ class DeclarativeFunction(object):
             The scope key to lookup the function locals.
 
         """
-        self.im_func = im_func
+        self.__func__ = im_func
         self.im_key = im_key
 
     @property
@@ -82,7 +82,7 @@ class DeclarativeFunction(object):
         """ Returns a nice string representation of the function.
 
         """
-        im_func = self.im_func
+        im_func = self.__func__
         args = (im_func.__module__, im_func.__name__)
         return '<declarative function %s.%s>' % args
 
@@ -104,7 +104,7 @@ class DeclarativeFunction(object):
         if im_self is None:
             return self
         return BoundDeclarativeMethod(
-            self.im_func, self.im_key, im_self, im_class)
+            self.__func__, self.im_key, im_self, im_class)
 
     def __call__(self, im_self, *args, **kwargs):
         """ Invoke the unbound declarative function.
@@ -121,7 +121,7 @@ class DeclarativeFunction(object):
             The keyword arguments to pass to the function.
 
         """
-        return _invoke(self.im_func, self.im_key, im_self, args, kwargs)
+        return _invoke(self.__func__, self.im_key, im_self, args, kwargs)
 
 
 class BoundDeclarativeMethod(object):
@@ -129,7 +129,7 @@ class BoundDeclarativeMethod(object):
 
     """
     # XXX move this class to C++
-    __slots__ = ('im_func', 'im_key', 'im_self', 'im_class')
+    __slots__ = ('__func__', 'im_key', '__self__')
 
     def __init__(self, im_func, im_key, im_self, im_class):
         """ Initialize a BoundDeclarativeMethod.
@@ -149,18 +149,18 @@ class BoundDeclarativeMethod(object):
             The type of the declarative context object.
 
         """
-        self.im_func = im_func
+        self.__func__ = im_func
         self.im_key = im_key
-        self.im_self = im_self
-        self.im_class = im_class
+        self.__self__ = im_self
+        self.__self__.__class__ = im_class
 
     def __repr__(self):
         """ Returns a nice string representation of the method.
 
         """
-        im_func = self.im_func
-        im_self = self.im_self
-        im_class = self.im_class
+        im_func = self.__func__
+        im_self = self.__self__
+        im_class = self.__self__.__class__
         args = (im_class.__name__, im_func.__name__, im_self)
         return '<bound declarative method %s.%s of %r>' % args
 
@@ -176,4 +176,4 @@ class BoundDeclarativeMethod(object):
             The keyword arguments to pass to the function.
 
         """
-        return _invoke(self.im_func, self.im_key, self.im_self, args, kwargs)
+        return _invoke(self.__func__, self.im_key, self.__self__, args, kwargs)

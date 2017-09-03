@@ -76,7 +76,7 @@ class QtComboBox(QtControl, ProxyComboBox):
             for item in items[count:]:
                 widget.addItem(item)
         elif nitems < count:
-            for idx in reversed(xrange(nitems, count)):
+            for idx in reversed(range(nitems, count)):
                 widget.removeItem(idx)
 
     def set_index(self, index):

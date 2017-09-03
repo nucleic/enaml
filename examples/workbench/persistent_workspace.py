@@ -5,7 +5,9 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-import cPickle
+from __future__ import print_function
+
+import pickle
 
 from atom.api import Unicode
 
@@ -17,7 +19,7 @@ with enaml.imports():
     from persistent_view import PersistentManifest, create_new_area
 
 
-print 'Imported Persistent Workspace!'
+print('Imported Persistent Workspace!')
 
 
 #: Storage for the pickled dock area. This would be saved
@@ -61,14 +63,14 @@ class PersistentWorkspace(Workspace):
         """
         global PICKLED_DOCK_AREA
         area = self.content.find('the_dock_area')
-        PICKLED_DOCK_AREA = cPickle.dumps(area, -1)
+        PICKLED_DOCK_AREA = pickle.dumps(area, -1)
 
     def load_area(self):
         """ Load the dock area into the workspace content.
 
         """
         if PICKLED_DOCK_AREA is not None:
-            area = cPickle.loads(PICKLED_DOCK_AREA)
+            area = pickle.loads(PICKLED_DOCK_AREA)
         else:
             area = create_new_area()
         area.set_parent(self.content)

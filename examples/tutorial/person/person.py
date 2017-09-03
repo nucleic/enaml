@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from __future__ import unicode_literals, print_function
+
 from atom.api import Atom, Unicode, Range, Bool, observe
 
 import enaml
@@ -33,7 +35,7 @@ class Person(Atom):
             s = templ.format(
                 first=self.first_name, last=self.last_name, age=self.age,
             )
-            print s
+            print(s)
 
 
 if __name__ == '__main__':

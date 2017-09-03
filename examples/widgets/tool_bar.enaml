@@ -26,6 +26,7 @@ Implementation Notes:
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.layout.api import vbox
 from enaml.widgets.api import (
     MainWindow, ToolBar, Action, ActionGroup, Container, Html
@@ -42,8 +43,8 @@ enamldef MyToolBar(ToolBar):
         Action:
             checkable = True
             text = 'Exclusive'
-            triggered :: print 'triggered'
-            toggled :: print 'toggled'
+            triggered :: print('triggered')
+            toggled :: print('toggled')
         Action:
             checkable = True
             text = 'ToolBar'

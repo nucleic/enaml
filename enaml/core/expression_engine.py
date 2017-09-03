@@ -124,7 +124,7 @@ class ExpressionEngine(Atom):
     #: A private set of guard tuples for preventing feedback loops.
     _guards = Typed(set, ())
 
-    def __nonzero__(self):
+    def __bool__(self):
         """ Get the boolean value for the engine.
 
         An expression engine will test boolean False if there are
@@ -253,7 +253,7 @@ class ExpressionEngine(Atom):
         """
         new = ExpressionEngine()
         handlers = sortedmap()
-        for key, value in self._handlers.items():
+        for key, value in list(self._handlers.items()):
             handlers[key] = value.copy()
         new._handlers = handlers
         return new

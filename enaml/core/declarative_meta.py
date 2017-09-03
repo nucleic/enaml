@@ -117,7 +117,7 @@ class DeclarativeMeta(AtomMeta):
         # the d_ members. This must done *after* the main metaclass
         # runs, or the declarative default values can get clobbered.
         cls = AtomMeta.__new__(meta, name, bases, dct)
-        for key, value in cls.__dict__.iteritems():
+        for key, value in cls.__dict__.items():
             if isinstance(value, Member):
                 metadata = value.metadata
                 if metadata is not None and metadata.get('d_member'):
