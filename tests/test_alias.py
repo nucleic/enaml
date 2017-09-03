@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from textwrap import dedent
 
-from nose.tools import raises
+import pytest
 
 from utils import compile_source
 
@@ -69,7 +69,6 @@ def test_syntax_3():
 #------------------------------------------------------------------------------
 # Bad Alias Syntax
 #------------------------------------------------------------------------------
-@raises(SyntaxError)
 def test_bad_syntax_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -84,10 +83,10 @@ def test_bad_syntax_1():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_2():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -102,10 +101,10 @@ def test_bad_syntax_2():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_3():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -120,7 +119,8 @@ def test_bad_syntax_3():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
 #------------------------------------------------------------------------------
@@ -305,7 +305,6 @@ def test_ref_8():
 #------------------------------------------------------------------------------
 # Bad Alias Reference
 #------------------------------------------------------------------------------
-@raises(TypeError)
 def test_bad_ref_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -320,10 +319,10 @@ def test_bad_ref_1():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_ref_2():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -338,10 +337,10 @@ def test_bad_ref_2():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_ref_3():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -356,10 +355,10 @@ def test_bad_ref_3():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_ref_4():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -374,10 +373,10 @@ def test_bad_ref_4():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bar_ref_5():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -397,10 +396,10 @@ def test_bar_ref_5():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_ref_6():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -420,7 +419,8 @@ def test_bad_ref_6():
             name = 'content'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
 #------------------------------------------------------------------------------
@@ -497,7 +497,6 @@ def test_bind_3():
 #------------------------------------------------------------------------------
 # Bad Alias Binding
 #------------------------------------------------------------------------------
-@raises(TypeError)
 def test_bad_bind_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -512,10 +511,10 @@ def test_bad_bind_1():
             pb = 'foo'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_bind_2():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -530,7 +529,8 @@ def test_bad_bind_2():
             txt = 'foo'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
 #------------------------------------------------------------------------------
@@ -606,7 +606,6 @@ def test_ex_bind_3():
 #------------------------------------------------------------------------------
 # Bad Alias Binding
 #------------------------------------------------------------------------------
-@raises(TypeError)
 def test_bad_ex_bind_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -621,10 +620,10 @@ def test_bad_ex_bind_1():
             pbd.text = 'foo'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_ex_bind_2():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -639,10 +638,10 @@ def test_bad_ex_bind_2():
             pb.txt = 'foo'
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_ex_bind_3():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -662,7 +661,8 @@ def test_bad_ex_bind_3():
             value.val = 50
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
 #------------------------------------------------------------------------------
@@ -688,7 +688,6 @@ def test_ordering():
 #------------------------------------------------------------------------------
 # Bad Alias Ordering
 #------------------------------------------------------------------------------
-@raises(TypeError)
 def test_bar_ordering():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -703,13 +702,13 @@ def test_bar_ordering():
             pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
 #------------------------------------------------------------------------------
 # Bad Alias Override
 #------------------------------------------------------------------------------
-@raises(TypeError)
 def test_bad_override_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -724,10 +723,10 @@ def test_bad_override_1():
             pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_override_2():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -747,10 +746,10 @@ def test_bad_override_2():
             pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_override_3():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -768,4 +767,5 @@ def test_bad_override_3():
             pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')

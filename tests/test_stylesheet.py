@@ -7,6 +7,9 @@
 #------------------------------------------------------------------------------
 from textwrap import dedent
 
+import pytest
+
+from enaml.application import Application
 from utils import compile_source
 
 
@@ -268,7 +271,6 @@ def test_specificity():
 
     """)
 
-
     main = compile_source(source, 'Main')()
     _assert_setters(main.one, (
         ('background', 'blue'),
@@ -403,72 +405,77 @@ def test_cascade():
 
     def init():
         from enaml.application import Application
-        app = Application()
+        app = (Application() if Application.instance() is None
+               else Application.instance())
         app.style_sheet = Sheet1()
         return Main()
 
     """)
-    main = compile_source(source, 'init')()
-    _assert_setters(main.one, (
-        ('background', 'red'),
-        ('background', 'green'),
-    ))
-    _assert_setters(main.two, (
-        ('background', 'red'),
-        ('background', 'yellow'),
-        ('background', 'green'),
-    ))
-    _assert_setters(main.three, (
-        ('background', 'red'),
-        ('background', 'green'),
-        ('background', 'cyan'),
-    ))
-    _assert_setters(main.four, (
-        ('background', 'red'),
-        ('background', 'green'),
-        ('background', 'blue'),
-    ))
-    _assert_setters(main.five, (
-        ('background', 'red'),
-        ('background', 'yellow'),
-        ('background', 'green'),
-        ('background', 'blue'),
-    ))
-    _assert_setters(main.six, (
-        ('background', 'red'),
-        ('background', 'green'),
-        ('background', 'cyan'),
-        ('background', 'blue'),
-    ))
-    _assert_setters(main.seven, (
-        ('background', 'red'),
-        ('background', 'green'),
-        ('background', 'blue'),
-        ('background', 'magenta'),
-    ))
-    _assert_setters(main.eight, (
-        ('background', 'red'),
-        ('background', 'green'),
-        ('background', 'blue'),
-    ))
-    _assert_setters(main.nine, (
-        ('background', 'red'),
-        ('background', 'yellow'),
-        ('background', 'green'),
-        ('background', 'blue'),
-    ))
-    _assert_setters(main.ten, (
-        ('background', 'red'),
-        ('background', 'green'),
-        ('background', 'cyan'),
-        ('background', 'blue'),
-    ))
-    _assert_setters(main.eleven, (
-        ('background', 'red'),
-        ('background', 'green'),
-        ('background', 'blue'),
-        ('background', 'magenta'),
-    ))
+    try:
+        main = compile_source(source, 'init')()
+        _assert_setters(main.one, (
+            ('background', 'red'),
+            ('background', 'green'),
+        ))
+        _assert_setters(main.two, (
+            ('background', 'red'),
+            ('background', 'yellow'),
+            ('background', 'green'),
+        ))
+        _assert_setters(main.three, (
+            ('background', 'red'),
+            ('background', 'green'),
+            ('background', 'cyan'),
+        ))
+        _assert_setters(main.four, (
+            ('background', 'red'),
+            ('background', 'green'),
+            ('background', 'blue'),
+        ))
+        _assert_setters(main.five, (
+            ('background', 'red'),
+            ('background', 'yellow'),
+            ('background', 'green'),
+            ('background', 'blue'),
+        ))
+        _assert_setters(main.six, (
+            ('background', 'red'),
+            ('background', 'green'),
+            ('background', 'cyan'),
+            ('background', 'blue'),
+        ))
+        _assert_setters(main.seven, (
+            ('background', 'red'),
+            ('background', 'green'),
+            ('background', 'blue'),
+            ('background', 'magenta'),
+        ))
+        _assert_setters(main.eight, (
+            ('background', 'red'),
+            ('background', 'green'),
+            ('background', 'blue'),
+        ))
+        _assert_setters(main.nine, (
+            ('background', 'red'),
+            ('background', 'yellow'),
+            ('background', 'green'),
+            ('background', 'blue'),
+        ))
+        _assert_setters(main.ten, (
+            ('background', 'red'),
+            ('background', 'green'),
+            ('background', 'cyan'),
+            ('background', 'blue'),
+        ))
+        _assert_setters(main.eleven, (
+            ('background', 'red'),
+            ('background', 'green'),
+            ('background', 'blue'),
+            ('background', 'magenta'),
+        ))
+    finally:
+        app = Application.instance()
+        app.style_sheet = None
 
 
 def _clear_cache():
