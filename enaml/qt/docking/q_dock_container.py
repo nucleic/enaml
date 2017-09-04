@@ -93,7 +93,7 @@ def _closestDockBar(container):
 
     tie_breakers = (3, 0, 2, 1)
     borders = (QDockBar.North, QDockBar.East, QDockBar.South, QDockBar.West)
-    values = list(zip(edge_ranks, edge_weights, tie_breakers, borders))
+    values = zip(edge_ranks, edge_weights, tie_breakers, borders)
     return sorted(values)[0][3]
 
 

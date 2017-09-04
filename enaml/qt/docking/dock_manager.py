@@ -169,7 +169,7 @@ class DockManager(Atom):
 
         """
         items = [self._dock_area] + self.floating_frames()
-        return DockLayout(*list(map(LayoutSaver(), items)))
+        return DockLayout(*map(LayoutSaver(), items))
 
     def apply_layout(self, layout):
         """ Apply a layout to the dock area.
@@ -242,8 +242,7 @@ class DockManager(Atom):
             manager.
 
         """
-        f = lambda w: isinstance(w, QDockContainer)
-        return list(filter(f, self._dock_frames))
+        return [f for f in self._dock_frames if isinstance(f, QDockContainer)]
 
     def dock_windows(self):
         """ Get an iterable of QDockWindow instances.
@@ -257,8 +256,7 @@ class DockManager(Atom):
             A list of QDockWindow instances owned by this dock manager.
 
         """
-        f = lambda w: isinstance(w, QDockWindow)
-        return list(filter(f, self._dock_frames))
+        return [f for f in self._dock_frames if isinstance(f, QDockWindow)]
 
     def floating_frames(self):
         """ Get an iterable of floating dock frames.
@@ -272,8 +270,7 @@ class DockManager(Atom):
             A list toplevel QDockFrame instances.
 
         """
-        f = lambda w: w.isWindow()
-        return list(filter(f, self._dock_frames))
+        return [f for f in self._dock_frames if f.isWindow()]
 
     def add_window(self, window):
         """ Add a floating QDockWindow to the dock manager.
