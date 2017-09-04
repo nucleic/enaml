@@ -19,6 +19,7 @@ acheive with traditional box style layouts.
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.layout.api import hbox, vbox, spacer, align
 from enaml.widgets.api import Window, Html, Container, PushButton
 
@@ -50,7 +51,7 @@ enamldef Main(Window):
             text = 'Add'
         PushButton: remove_button:
             text = 'Remove'
-            clicked :: print 'removed'
+            clicked :: print('removed')
         PushButton: change_mode_button:
             text = 'Change Mode'
         PushButton: share_button:

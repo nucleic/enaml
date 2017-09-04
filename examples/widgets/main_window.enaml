@@ -24,6 +24,7 @@ Implementation Notes:
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.layout.api import vbox
 from enaml.widgets.api import (
     MainWindow, ToolBar, DockPane, MenuBar, Menu, Action, ActionGroup,
@@ -36,60 +37,64 @@ enamldef MyMenuBar(MenuBar):
         title = '&File'
         Action:
             text = 'New File\tCtrl+N'
-            triggered :: print 'New File triggered'
+            triggered :: print('New File triggered')
         Action:
             text = 'Open File\tCtrl+O'
-            triggered :: print 'Open File triggered'
+            triggered :: print('Open File triggered')
         Action:
             text = 'Open Folder...'
-            triggered :: print 'Open Folder triggered'
+            triggered :: print('Open Folder triggered')
     Menu:
         title = '&Edit'
         Action:
             text = 'Undo\tCtrl+Z'
-            triggered :: print 'Undo triggered'
+            triggered :: print('Undo triggered')
         Action:
             text = 'Redo\tCtrl+R'
-            triggered :: print 'Redo triggered'
+            triggered :: print('Redo triggered')
         Menu:
             title = 'Undo Selection'
             Action:
                 text = 'Undo Insert\tCtrl+U'
-                triggered :: print 'Undo Insert triggered'
+                triggered :: print('Undo Insert triggered')
             Action:
                 text = 'Redo Insert\tCtrl+Shift+U'
                 enabled = False
-                triggered :: print 'Redo Insert triggered'
+                triggered :: print('Redo Insert triggered')
         Action:
             separator = True
         Action:
             text = 'Cut\tCtrl+X'
-            triggered :: print "Cut triggered"
+            triggered :: print("Cut triggered")
         Action:
             text = 'Copy\tCtrl+C'
-            triggered :: print 'Copy triggered'
+            triggered :: print('Copy triggered')
         Action:
             text = 'Paste\tCtrl+V'
-            triggered :: print 'Paste triggered'
+            triggered :: print('Paste triggered')
     Menu:
         title = '&View'
         ActionGroup:
             Action:
                 checkable = True
                 text = 'Center'
-                toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+                toggled ::
+                    print('%s toggled %s' % (text, 'on' if checked else 'off'))
             Action:
                 checkable = True
                 text = 'Left'
-                toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+                toggled ::
+                    print('%s toggled %s' % (text, 'on' if checked else 'off'))
             Action:
                 checkable = True
                 text = 'Right'
-                toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+                toggled ::
+                    print('%s toggled %s' % (text, 'on' if checked else 'off'))
             Action:
                 checkable = True
                 text = 'Justify'
-                toggled :: print '%s toggled %s' % (text, 'on' if checked else 'off')
+                toggled ::
+                    print('%s toggled %s' % (text, 'on' if checked else 'off'))
 
 
 enamldef MyStatusBar(StatusBar):
@@ -108,8 +113,8 @@ enamldef MyToolBar(ToolBar):
         Action:
             checkable = True
             text = 'Exclusive'
-            triggered :: print 'triggered'
-            toggled :: print 'toggled'
+            triggered :: print('triggered')
+            toggled :: print('toggled')
         Action:
             checkable = True
             text = 'ToolBar'

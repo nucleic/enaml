@@ -9,6 +9,8 @@
 
 << autodoc-me >>
 """
+from __future__ import unicode_literals
+
 from enaml.layout.api import hbox, align
 from enaml.widgets.api import (
     Container, Field, FileDialogEx, Label, PushButton, Window
@@ -16,7 +18,7 @@ from enaml.widgets.api import (
 
 
 enamldef Main(Window): window:
-    attr path : unicode = u""
+    attr path : str = ""
     title = 'File Chooser'
     Container:
         constraints = [

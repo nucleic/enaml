@@ -12,6 +12,7 @@ an optional bounding box and title.
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.layout.api import vbox, hbox, spacer, align
 from enaml.widgets.api import (
     Window, Container, GroupBox, Form, Label, Field, CheckBox, ComboBox,
@@ -55,8 +56,8 @@ enamldef Main(Window):
         PushButton: push:
             text = "Submit"
             clicked ::
-                print 'Submit'
-                print multiline.text
+                print('Submit')
+                print(multiline.text)
         ComboBox: combo_box:
             index = 0
             items = ['left', 'center', 'right']

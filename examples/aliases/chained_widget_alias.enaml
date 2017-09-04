@@ -52,4 +52,4 @@ enamldef Main(Window):
             value = 50
         Field:
             read_only = True
-            text << unicode(outer.box.slider.value)
+            text << str(outer.box.slider.value)

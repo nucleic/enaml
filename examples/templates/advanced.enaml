@@ -14,6 +14,7 @@ is then used to unroll a list of these controls into the body of a form.
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from atom.api import Atom, Bool, Enum, Event, Float, Int, Str, Unicode
 
 from enaml.core.api import DynamicTemplate
@@ -47,7 +48,7 @@ template FormControl(Attr, MemberType):
     """
     Field:
         read_only = True
-        text << unicode(getattr(model, Attr))
+        text << str(getattr(model, Attr))
 
 
 template FormControl(Attr, MemberType: Int):
@@ -58,17 +59,6 @@ template FormControl(Attr, MemberType: Int):
     """
     SpinBox:
         value := getattr(model, Attr)
-
-
-template FormControl(Attr, MemberType: Str):
-    """ A form control template specialization for Str members.
-
-    This control uses a Field to represent the value.
-
-    """
-    Field:
-        text << getattr(model, Attr)
-        text :: setattr(model, Attr, str(text))
 
 
 template FormControl(Attr, MemberType: Unicode):
@@ -167,7 +157,7 @@ def form_spec(obtype):
 
     """
     items = []
-    for name, member in obtype.members().iteritems():
+    for name, member in obtype.members().items():
         if not name.startswith('_'):
             items.append((name, type(member)))
     items.sort()
@@ -249,7 +239,7 @@ class BarModel(Atom):
     trigger = Event()
     choices = Enum('first', 'second', 'third')
     def _observe_trigger(self, change):
-        print 'I was triggered'
+        print('I was triggered')
 
 
 enamldef Main(Window):

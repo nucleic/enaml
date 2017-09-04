@@ -12,6 +12,7 @@ declarative function defined with the @d_func decorator.
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.core.declarative import d_func
 from enaml.widgets.api import Window, PushButton, Container
 
@@ -23,7 +24,7 @@ class MySpecialPushButton(PushButton):
     @d_func
     def say_something(self, name):
         msg = 'Hi, {}'
-        print msg.format(name)
+        print(msg.format(name))
 
 
 enamldef Main(Window):
@@ -37,4 +38,4 @@ enamldef Main(Window):
             text = 'Say Hello'
             clicked :: self.say_something(name2)
             say_something => (name):
-                print 'Hello, '+ name
+                print('Hello, '+ name)
