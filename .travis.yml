@@ -9,6 +9,8 @@ matrix:
   include:
     - env: PYTHON=2.7 QT_VERSION=4 IPY_VERSION=3
     - env: PYTHON=3.4 QT_VERSION=4 IPY_VERSION=3
+    - env: PYTHON=3.5 QT_VERSION=5 IPY_VERSION=5
+    - env: PYTHON=3.6 QT_VERSION=5 IPY_VERSION=6
 
 before_install:
 
@@ -61,7 +63,7 @@ script:
   # Run the enaml test suite
   - cd $TRAVIS_BUILD_DIR
 #  - export QT_API=pyqt$QT_VERSION
-  - py.test tests --cov enaml --cov-report xml -vx
+  - py.test tests --cov enaml --cov-report xml -v
 
 after_success:
   - cd $TRAVIS_BUILD_DIR
