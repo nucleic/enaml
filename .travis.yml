@@ -7,7 +7,8 @@ branches:
 
 matrix:
   include:
-    - env: PYTHON=2.7 QT_VERSION=4
+    - env: PYTHON=2.7 QT_VERSION=4 IPY_VERSION=3
+    - env: PYTHON=3.4 QT_VERSION=4 IPY_VERSION=3
 
 before_install:
 
@@ -30,6 +31,11 @@ before_install:
   # Install enaml dependencies and include special widgets dependencies
   # We do not test vtk as it segfaults on Travis
   - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib
+  - 'if [ $IPY_VERSION < 4 ]; then
+        $CONDA_INSTALL ipython=$IPY_VERSION ipython-qtconsole;
+     else
+        $CONDA_INSTALL ipython=$IPY_VERSION qtconsole;
+     fi'
   - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
   - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master
 
@@ -56,7 +62,7 @@ script:
   # Run the enaml test suite
   - cd $TRAVIS_BUILD_DIR
 #  - export QT_API=pyqt$QT_VERSION
-  - py.test tests --cov enaml --cov-report xml -v
+  - py.test tests --cov enaml --cov-report xml -vx
 
 after_success:
   - cd $TRAVIS_BUILD_DIR
