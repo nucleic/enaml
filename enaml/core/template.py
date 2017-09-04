@@ -44,7 +44,7 @@ class TemplateInstance(Atom):
         items = self.node(parent)
         if items and kwargs:
             for item in items:
-                for key, value in kwargs.iteritems():
+                for key, value in kwargs.items():
                     setattr(item, key, value)
         return items
 
@@ -169,8 +169,8 @@ class Template(Atom):
             n_params = len(spec.paramspec)
             if n_args < n_params:
                 continue
-            n_total = n_params + len(spec.func.func_defaults or ())
-            variadic = spec.func.func_code.co_flags & CO_VARARGS
+            n_total = n_params + len(spec.func.__defaults__ or ())
+            variadic = spec.func.__code__.co_flags & CO_VARARGS
             if n_args > n_total and not variadic:
                 continue
 
@@ -194,7 +194,7 @@ class Template(Atom):
             # any specialization which is ambiguous. The lowest score
             # wins and a tie will raise an exception.
             score = 0
-            items = zip(argspec, spec.paramspec)
+            items = list(zip(argspec, spec.paramspec))
             for (a_type, arg), (p_type, param) in items:
                 if arg == param:
                     continue

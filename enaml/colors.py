@@ -10,6 +10,7 @@
 """
 from colorsys import hls_to_rgb
 import re
+from past.builtins import basestring
 
 from atom.api import Coerced
 

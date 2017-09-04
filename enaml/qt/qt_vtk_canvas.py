@@ -86,7 +86,7 @@ class QtVTKCanvas(QtControl, ProxyVTKCanvas):
         """
         d = self.declaration
         old = self._current_renderers
-        new = set(filter(None, [d.renderer] + d.renderers))
+        new = set([_f for _f in [d.renderer] + d.renderers if _f])
         to_remove = old.difference(new)
         to_add = new.difference(old)
         window = self.vtk_widget.GetRenderWindow()

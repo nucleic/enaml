@@ -42,6 +42,6 @@ class BoxHelper(ConstraintHelper, ConstrainableMixin):
             a_attrs = b_attrs = BOUNDARY_ATTRS
             if isinstance(component, ContentsConstrainable):
                 b_attrs = CONTENT_BOUNDARY_ATTRS
-            f = lambda (a, b): getattr(self, a) == getattr(component, b)
+            f = lambda a_b: getattr(self, a_b[0]) == getattr(component, a_b[1])
             cns.extend(f(z) for z in zip(a_attrs, b_attrs))
         return cns

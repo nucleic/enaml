@@ -9,12 +9,14 @@ import linecache
 import traceback
 from types import ModuleType
 
+from future.builtins import int
+from future.utils import exec_
 from atom.api import Atom, Str, Typed, observe
 
 import enaml
 from enaml.core.object import Object
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.core.parser import parse
+from enaml.core.parsing import parse
 from enaml.widgets.widget import Widget
 
 
@@ -31,7 +33,7 @@ def _fake_linecache(text, filename):
 
     """
     size = len(text)
-    mtime = 1343290295L
+    mtime = int(1343290295)
     lines = text.splitlines()
     lines = [l + '\n' for l in lines]
     linecache.cache[filename] = size, mtime, lines, filename
@@ -176,7 +178,7 @@ class LiveEditorModel(Atom):
                 module = ModuleType(filename.rsplit('.', 1)[0])
                 module.__file__ = filename
                 namespace = module.__dict__
-                exec code in namespace
+                exec_(code, namespace)
                 model = namespace.get(self.model_item, lambda: None)()
                 self.compiled_model = model
                 self._model_module = module
@@ -209,7 +211,7 @@ class LiveEditorModel(Atom):
                 module.__file__ = filename
                 namespace = module.__dict__
                 with enaml.imports():
-                    exec code in namespace
+                    exec_(code, namespace)
                 view = namespace.get(self.view_item, lambda: None)()
                 if isinstance(view, Object) and 'model' in view.members():
                     view.model = self.compiled_model

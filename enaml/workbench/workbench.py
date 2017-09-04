@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 from collections import defaultdict
 
+from future.builtins import str
 from atom.api import Atom, Event, Typed
 
 from .plugin import Plugin
@@ -22,21 +23,21 @@ class Workbench(Atom):
     """
     #: An event fired when a plugin is added to the workbench. The
     #: payload will be the plugin id.
-    plugin_added = Event(unicode)
+    plugin_added = Event(str)
 
     #: An event fired when a plugin is removed from the workbench. The
     #: payload will be the plugin id.
-    plugin_removed = Event(unicode)
+    plugin_removed = Event(str)
 
     #: An event fired when an extension point is added to the
     #: workbench. The payload will be the fully qualified id of the
     #: extension point.
-    extension_point_added = Event(unicode)
+    extension_point_added = Event(str)
 
     #: An event fired when an extension point is removed from the
     #: workbench. The payload will be the fully qualified id of the
     #: extension point.
-    extension_point_removed = Event(unicode)
+    extension_point_removed = Event(str)
 
     def register(self, manifest):
         """ Register a plugin with the workbench.
@@ -176,7 +177,7 @@ class Workbench(Atom):
             A list of all of the extension points in the workbench.
 
         """
-        return self._extension_points.values()
+        return list(self._extension_points.values())
 
     #--------------------------------------------------------------------------
     # Private API
@@ -280,7 +281,7 @@ class Workbench(Atom):
             self._extensions[ext_id] = extension
             grouped[extension.point].add(extension)
 
-        for point_id, exts in grouped.iteritems():
+        for point_id, exts in grouped.items():
             self._contributions[point_id].update(exts)
             if point_id in self._extension_points:
                 point = self._extension_points[point_id]
@@ -304,7 +305,7 @@ class Workbench(Atom):
             del self._extensions[ext_id]
             grouped[extension.point].add(extension)
 
-        for point_id, exts in grouped.iteritems():
+        for point_id, exts in grouped.items():
             self._contributions[point_id].difference_update(exts)
             if point_id in self._extension_points:
                 point = self._extension_points[point_id]

@@ -131,7 +131,7 @@ class QDockBar(QFrame):
 
         """
         layout = self.layout()
-        for index in xrange(layout.count()):
+        for index in range(layout.count()):
             item = layout.itemAt(index)
             if item.widget() is not None:
                 return False
@@ -819,7 +819,7 @@ class QDockBarManager(QObject):
 
         """
         res = []
-        for value in self._widgets.itervalues():
+        for value in self._widgets.values():
             if isinstance(value, QDockBarItem):
                 res.append((value.widget(), value.position()))
         return res
@@ -912,7 +912,7 @@ class QDockBarManager(QObject):
         """
         if event.type() == QEvent.Resize:
             active = self._active_items
-            for item, slide_out in active.iteritems():
+            for item, slide_out in active.items():
                 start, end = self._animationGeo(item)
                 animation = item.animation()
                 if slide_out:

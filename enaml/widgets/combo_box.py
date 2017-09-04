@@ -40,7 +40,7 @@ class ComboBox(Control):
     See `ObjectCombo` for a more robust combo box control.
 
     """
-    #: The unicode strings to display in the combo box.
+    #: The strings to display in the combo box.
     items = d_(List(Unicode()))
 
     #: The integer index of the currently selected item. If the index
