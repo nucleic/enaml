@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,8 @@ from atom.api import Int, Typed
 from enaml.widgets.dual_slider import ProxyDualSlider
 
 from .QtCore import Qt, Signal
-from .QtGui import QSlider, QStyle, QStyleOptionSlider, QPainter
+from .QtGui import QPainter
+from .QtWidgets import QSlider, QStyle, QStyleOptionSlider
 
 from .qt_control import QtControl
 

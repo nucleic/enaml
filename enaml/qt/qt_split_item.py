@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,7 +9,7 @@ from atom.api import Typed
 
 from enaml.widgets.split_item import ProxySplitItem
 
-from .QtGui import QFrame, QSplitter, QLayout
+from .QtWidgets import QFrame, QSplitter, QLayout
 
 from .q_single_widget_layout import QSingleWidgetLayout
 from .qt_container import QtContainer

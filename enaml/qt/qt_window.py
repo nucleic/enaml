@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,7 +13,8 @@ from enaml.layout.geometry import Pos, Rect, Size
 from enaml.widgets.window import ProxyWindow, CloseEvent
 
 from .QtCore import Qt, QPoint, QRect, QSize
-from .QtGui import QApplication, QIcon
+from .QtGui import QIcon
+from .QtWidgets import QApplication
 
 from .q_deferred_caller import deferredCall
 from .q_resource_helpers import get_cached_qicon

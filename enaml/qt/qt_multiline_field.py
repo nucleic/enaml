@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from atom.api import Int, Typed
 from enaml.widgets.multiline_field import ProxyMultilineField
 
 from .QtCore import QTimer, Signal
-from .QtGui import QTextEdit
+from .QtWidgets import QTextEdit
 
 from .qt_control import QtControl
 

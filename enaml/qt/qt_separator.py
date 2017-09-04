@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from atom.api import Typed
 from enaml.widgets.separator import ProxySeparator
 
 from .QtCore import QSize
-from .QtGui import QFrame
+from .QtWidgets import QFrame
 
 from .qt_control import QtControl
 

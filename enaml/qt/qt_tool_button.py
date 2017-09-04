@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2014, Nucleic Development Team.
+# Copyright (c) 2014-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from atom.api import Typed
 from enaml.widgets.tool_button import ProxyToolButton
 
 from .QtCore import Qt
-from .QtGui import QToolButton, QToolBar, QSizePolicy
+from .QtWidgets import QToolButton, QToolBar, QSizePolicy
 
 from .qt_abstract_button import QtAbstractButton
 from .qt_menu import QtMenu

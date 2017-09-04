@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,7 +9,7 @@ from atom.api import Typed
 
 from enaml.widgets.push_button import ProxyPushButton
 
-from .QtGui import QPushButton
+from .QtWidgets import QPushButton
 
 from .qt_abstract_button import QtAbstractButton
 from .qt_menu import QtMenu

@@ -1,12 +1,12 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from . import QT_API
-if QT_API != 'pyqt':
+from . import QT_API, PYSIDE_API, PYQT4_API
+if QT_API in PYSIDE_API:
     msg = 'the Qt Scintilla widget is only available when using PyQt'
     raise ImportError(msg)
 
@@ -20,7 +20,11 @@ from enaml.colors import parse_color
 from enaml.fonts import parse_font
 from enaml.scintilla.scintilla import ProxyScintilla
 
-from PyQt4 import Qsci
+if QT_API in PYQT4_API:
+    from PyQt4 import Qsci
+else:
+    import QScintilla as Qsci
+
 
 from .QtGui import QColor, QFont
 

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,11 +7,18 @@
 #------------------------------------------------------------------------------
 from weakref import ref
 
+from enaml.qt import QT_API, PYQT5_API
 from enaml.qt.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent
 from enaml.qt.QtGui import (
-    QApplication, QTabBar, QTabWidget, QMouseEvent, QResizeEvent, QStyle,
-    QCursor, QStylePainter, QStyleOptionTabV3, QPixmap, QPainter
+    QMouseEvent, QResizeEvent, QCursor, QPainter, QPixmap
 )
+from enaml.qt.QtWidgets import (
+    QApplication, QTabBar, QTabWidget, QStyle, QStylePainter
+)
+if QT_API in PYQT5_API:
+    from enaml.qt.QtWidgets import QStyleOptionTab
+else:
+    from enaml.qt.QtWidgets import QStyleOptionTabV3 as QStyleOptionTab
 
 from .event_types import QDockItemEvent, DockTabSelected
 from .q_bitmap_button import QBitmapButton
@@ -175,7 +182,7 @@ class QDockTabBar(QTabBar):
         repolish(self)
 
         # Setup the style option for the control
-        opt = QStyleOptionTabV3()
+        opt = QStyleOptionTab()
         self.initStyleOption(opt, index)
         opt.rect.moveTo(0, 0)
 

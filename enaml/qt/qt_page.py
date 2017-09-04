@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,8 @@ from atom.api import Typed
 from enaml.widgets.page import ProxyPage
 
 from .QtCore import Signal
-from .QtGui import QFrame, QIcon
+from .QtGui import QIcon
+from .QtWidgets import QFrame
 
 from .q_resource_helpers import get_cached_qicon
 from .q_single_widget_layout import QSingleWidgetLayout

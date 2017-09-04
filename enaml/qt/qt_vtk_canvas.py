@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,9 +9,13 @@ from atom.api import Typed
 
 from enaml.widgets.vtk_canvas import ProxyVTKCanvas
 
-from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from . import QT_API, PYQT5_API
+if QT_API in PYQT5_API:
+    from vtk.qt5.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+else:
+    from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
-from .QtGui import QFrame, QVBoxLayout
+from .QtWidgets import QFrame, QVBoxLayout
 
 from .qt_control import QtControl
 

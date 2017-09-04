@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Atom, IntEnum, Typed, Coerced
+from atom.api import Atom, IntEnum, Typed, Coerced, Tuple, Int
 
 from .application import Application
 from .image import Image
@@ -61,6 +61,10 @@ class DragData(Atom):
     #: The image to use for the drag. If this is not provided, the
     #: toolkit will choose a suitable default value.
     image = Typed(Image)
+
+    #: The x,y position the drag image appears under the cursor.
+    #: If not provided, this is the last position of the cursor in the widget.
+    hotspot = Tuple(item=Int())
 
 
 class DropEvent(Atom):

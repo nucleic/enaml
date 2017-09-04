@@ -23,24 +23,25 @@ import shutil
 from atom.api import Atom, Unicode, Value
 import enaml
 from enaml.qt.qt_application import QtApplication
-from enaml.qt.QtGui import QApplication, QPixmap
+from enaml.qt.QtGui import QPixmap
+from enaml.qt.QtWidgets import QApplication
 from enaml.application import timed_call
 
 
 class SnapShot(Atom):
     """ Generate a snapshot of an enaml view.
-    
+
     """
-    
+
     #: The snapshot save path.
     path = Unicode()
-    
+
     #: The enaml view object.
     view = Value()
-        
+
     def _observe_view(self, change):
         """ Move window and allow it to draw before taking the snapshot.
-        
+
         """
         if change['type'] == 'create':
             self.view.initial_position = (10, 10)
@@ -49,14 +50,14 @@ class SnapShot(Atom):
 
     def snapshot(self):
         """ Take a snapshot of the window and close it.
-        
+
         """
         widget = self.view.proxy.widget
         framesize =  widget.window().frameSize()
         QPixmap.grabWindow(QApplication.desktop().winId(), widget.x(),
                            widget.y(), framesize.width(),
                            framesize.height() ).save(self.path)
-        widget.close()
+        self.view.close()
 
 
 def generate_example_doc(app, docs_path, script_path):
@@ -73,7 +74,7 @@ def generate_example_doc(app, docs_path, script_path):
     script_name = os.path.basename(script_path)
     script_name = script_name[:script_name.find('.')]
     print('generating doc for %s' % script_name)
-    
+
     script_title = script_name.replace('_', ' ').title()
     script_image_name = 'ex_' + script_name + '.png'
     image_path = os.path.join(docs_path, 'images', script_image_name)
@@ -151,7 +152,7 @@ def main():
     docs_path = os.path.dirname(__file__)
     base_path = '../../../examples'
     base_path = os.path.realpath(os.path.join(docs_path, base_path))
-    
+
     enaml_cache_dir = os.path.join(docs_path, '__enamlcache__')
 
     for dirname, dirnames, filenames in os.walk(base_path):

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,7 +9,8 @@ from atom.api import Atom, Bool, Int, Float, Typed
 
 from enaml.qt import QT_API
 from enaml.qt.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
-from enaml.qt.QtGui import QWidget, QStyle, QStyleOption, QPainter
+from enaml.qt.QtGui import QPainter
+from enaml.qt.QtWidgets import QWidget, QStyle, QStyleOption
 
 from .q_guide_rose import QGuideRose
 from .q_dock_bar import QDockBar
@@ -55,9 +56,9 @@ class DockOverlay(Atom):
     a more fluid user interaction experience.
 
     """
-    # PySide requires weakrefs for using bound methods as slots
-    if QT_API == 'pyside':
-        __slots__ = '__weakref__'
+    # PySide requires weakrefs for using bound methods as slots.
+    # PyQt doesn't, but executes unsafe code if not using weakrefs.
+    __slots__ = '__weakref__'
 
     #: The size of the rubber band when docking on the border, in px.
     border_size = Int(60)
@@ -148,7 +149,7 @@ class DockOverlay(Atom):
         """ Create the default property animator for the rubber band.
 
         """
-        p = QPropertyAnimation(self._band, 'geometry')
+        p = QPropertyAnimation(self._band, b'geometry')
         p.setDuration(self.band_geo_duration)
         return p
 
@@ -156,7 +157,7 @@ class DockOverlay(Atom):
         """ Create the default property animator for the rubber band.
 
         """
-        p = QPropertyAnimation(self._band, 'windowOpacity')
+        p = QPropertyAnimation(self._band, b'windowOpacity')
         p.setDuration(self.band_vis_duration)
         p.finished.connect(self._on_vis_finished)
         return p

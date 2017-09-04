@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,7 +9,7 @@ from atom.api import Typed
 
 from enaml.widgets.status_bar import ProxyStatusBar
 
-from .QtGui import QStatusBar
+from .QtWidgets import QStatusBar
 
 from .qt_status_item import QtStatusItem
 from .qt_widget import QtWidget

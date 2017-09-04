@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,8 @@ import sys
 from atom.api import Atom, Float, Int, Str, Typed, Value, set_default
 
 from enaml.qt.QtCore import Qt, QRect, QPoint
-from enaml.qt.QtGui import QFrame, QImage, QPainter
+from enaml.qt.QtGui import QImage, QPainter
+from enaml.qt.QtWidgets import QFrame
 
 # Make sure the resources get registered.
 from . import dock_resources

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,7 +9,8 @@ from atom.api import Typed, Bool
 from future.builtins import str
 
 from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
-from enaml.qt.QtGui import QApplication, QLayout, QIcon, QCursor
+from enaml.qt.QtGui import QIcon, QCursor
+from enaml.qt.QtWidgets import QApplication, QLayout
 
 from .event_types import QDockItemEvent, DockItemUndocked
 from .q_dock_area import QDockArea
