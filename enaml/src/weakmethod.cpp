@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include "pythonhelpers.h"
+#include "py23compat.h"
 
 
 using namespace PythonHelpers;
@@ -183,7 +184,7 @@ WeakMethod_dealloc( WeakMethod* self )
     if( self->weakreflist )
         PyObject_ClearWeakRefs( reinterpret_cast<PyObject*>( self ) );
     WeakMethod_clear( self );
-    self->ob_type->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
 }
 
 
@@ -194,7 +195,11 @@ WeakMethod_call( WeakMethod* self, PyObject* args, PyObject* kwargs )
     PyObjectPtr mself( selfref.get_object() );
     if( mself.is_None() )
         Py_RETURN_NONE;
+#if PY_MAJOR_VERSION >= 3
+    PyMethodPtr method( PyMethod_New( self->func, mself.get() ) );
+#else
     PyMethodPtr method( PyMethod_New( self->func, mself.get(), self->cls ) );
+#endif
     if( !method )
         return 0;
     PyTuplePtr argsptr( args, true );
@@ -242,8 +247,7 @@ PyDoc_STRVAR(WeakMethod__doc__,
 
 
 PyTypeObject WeakMethod_Type = {
-    PyObject_HEAD_INIT( 0 )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "weakmethod.WeakMethod",                /* tp_name */
     sizeof( WeakMethod ),                   /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -251,7 +255,13 @@ PyTypeObject WeakMethod_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)0,                            /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */
@@ -291,33 +301,76 @@ PyTypeObject WeakMethod_Type = {
     (destructor)0                           /* tp_del */
 };
 
+struct module_state {
+    PyObject *error;
+};
+
 
 static PyMethodDef
 weakmethod_methods[] = {
     { 0 } // Sentinel
 };
 
+#if PY_MAJOR_VERSION >= 3
 
-PyMODINIT_FUNC
-initweakmethod( void )
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static int weakmethod_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int weakmethod_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "weakmethod",
+        NULL,
+        sizeof(struct module_state),
+        weakmethod_methods,
+        NULL,
+        weakmethod_traverse,
+        weakmethod_clear,
+        NULL
+};
+
+#else
+
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+
+#endif
+
+MOD_INIT_FUNC(weakmethod)
 {
+#if PY_MAJOR_VERSION >= 3
+    PyObject *mod = PyModule_Create(&moduledef);
+#else
     PyObject* mod = Py_InitModule( "weakmethod", weakmethod_methods );
+#endif
     if( !mod )
-        return;
-
+        INITERROR;
     weak_methods = PyDict_New();
     if( !weak_methods )
-        return;
+        INITERROR;
 
-    remove_str = PyString_FromString( "_remove" );
+    remove_str = Py23Str_FromString( "_remove" );
     if( !remove_str )
-        return;
+        INITERROR;
 
     if( PyType_Ready( &WeakMethod_Type ) )
-        return;
+        INITERROR;
 
     PyObjectPtr wm_type( reinterpret_cast<PyObject*>( &WeakMethod_Type ), true );
     PyModule_AddObject( mod, "WeakMethod", wm_type.release() );
+
+#if PY_MAJOR_VERSION >= 3
+    return mod;
+#endif
 }
 
 } // extern "C"
