@@ -55,7 +55,7 @@ COMPILE_MODE = {
 }
 
 #: Ast nodes associated with comprehensions which uses a function call that we
-#: will have to inline
+#: will have to call in proper scope
 _COMP_NODES = [ast.ListComp] if IS_PY3 else []
 if hasattr(ast, 'DictComp'):
     _COMP_NODES.append(ast.DictComp)
@@ -804,7 +804,8 @@ def _insert_decl_function(cg, funcdef):
     inner.newlocals = False
 
     # On Python 3 all comprehensions use a function call (on Python 2 only dict
-    # and set). To avoid scoping issues the function call is inlined.
+    # and set). To avoid scoping issues the function call is run in the dynamic
+    # scope.
     if has_comp:
         run_comprehensions_in_dynamic_scope(inner, global_vars)
     else:

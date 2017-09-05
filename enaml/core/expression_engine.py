@@ -8,6 +8,8 @@
 from atom.api import Atom, List, Typed
 from atom.datastructures.api import sortedmap
 
+from ..compat import IS_PY3
+
 
 class ReadHandler(Atom):
     """ A base class for defining expression read handlers.
@@ -132,6 +134,11 @@ class ExpressionEngine(Atom):
 
         """
         return len(self._handlers) > 0
+
+    # Python 2 uses __nonzero__ instead of __bool__
+    if not IS_PY3:
+        __nonzero__ = __bool__
+        del __bool__
 
     def add_pair(self, name, pair):
         """ Add a HandlerPair to the engine.

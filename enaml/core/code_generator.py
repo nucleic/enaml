@@ -222,7 +222,7 @@ class CodeGenerator(Atom):
 
         """
         if IS_PY3:
-            # On Python 3 emaulates store_map using MAP_ADD
+            # On Python 3 emulates store_map using MAP_ADD
             # STORE_MAP was removed in Python 3.5
             self.code_ops.append(
                 (bp.MAP_ADD, 1),
