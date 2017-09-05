@@ -253,7 +253,7 @@ class ExpressionEngine(Atom):
         """
         new = ExpressionEngine()
         handlers = sortedmap()
-        for key, value in list(self._handlers.items()):
+        for key, value in self._handlers.items():
             handlers[key] = value.copy()
         new._handlers = handlers
         return new

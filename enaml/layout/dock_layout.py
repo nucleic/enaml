@@ -248,6 +248,7 @@ class DockBarLayout(LayoutNode):
         """
         return self.items[:]
 
+
 class _AreaLayoutItemMeta(type):
     def __instancecheck__(cls, instance):
         allowed = (type(None), ItemLayout, TabLayout, SplitLayout)
@@ -264,6 +265,7 @@ class _AreaLayoutItem(with_metaclass(_AreaLayoutItemMeta, object)):
     """ A private class which performs type checking for area layouts.
 
     """
+
 
 class AreaLayout(LayoutNode):
     """ A layout object for defining a dock area layout.
@@ -302,6 +304,7 @@ class AreaLayout(LayoutNode):
         base = [item] if item is not None else []
         return base + self.dock_bars
 
+
 class _DockLayoutItemMeta(type):
 
     def __instancecheck__(cls, instance):
@@ -314,6 +317,7 @@ class _DockLayoutItemMeta(type):
             return AreaLayout(item)
         msg = "cannot coerce '%s' to a 'DockLayout' item"
         raise TypeError(msg % type(item).__name__)
+
 
 class _DockLayoutItem(with_metaclass(_DockLayoutItemMeta, object)):
     """ A private class which performs type checking for dock layouts.

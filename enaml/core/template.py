@@ -194,7 +194,7 @@ class Template(Atom):
             # any specialization which is ambiguous. The lowest score
             # wins and a tie will raise an exception.
             score = 0
-            items = list(zip(argspec, spec.paramspec))
+            items = zip(argspec, spec.paramspec)
             for (a_type, arg), (p_type, param) in items:
                 if arg == param:
                     continue

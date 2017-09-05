@@ -2282,7 +2282,8 @@ class BaseEnamlParser(object):
         ''' comparison : expr comparison_list '''
         left = p[1]
         ops, comparators = list(zip(*p[2]))
-        cmpr = ast.Compare(left=left, ops=list(ops), comparators=list(comparators))
+        cmpr = ast.Compare(left=left, ops=list(ops),
+                           comparators=list(comparators))
         p[0] = cmpr
 
     def p_comparison_list1(self, p):

@@ -138,9 +138,9 @@ setup(
     url='https://github.com/nucleic/enaml',
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.rst').read(),
-    requires=['future', 'atom', 'PyQt', 'ply', 'kiwisolver', 'qtpy'],
+    requires=['future', 'atom', 'PyQt', 'ply', 'kiwisolver'],
     install_requires=['setuptools', 'future', 'atom',
-                      'kiwisolver', 'ply >= 3.4', 'qtpy'],
+                      'kiwisolver', 'ply >= 3.4'],
     packages=find_packages(),
     package_data={
         'enaml.applib': ['*.enaml'],
@@ -156,5 +156,5 @@ setup(
     entry_points={'console_scripts': ['enaml-run = enaml.runner:main']},
     ext_modules=ext_modules,
     cmdclass={'install': Install,
-              'develop': Develop,},
+              'develop': Develop},
 )

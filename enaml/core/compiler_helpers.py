@@ -605,7 +605,7 @@ def make_unpack_map(node):
         instantiation.
 
     """
-    return dict(list(zip(node.names, node.iternodes())))
+    return dict(zip(node.names, node.iternodes()))
 
 
 def type_check_expr(value, kind):
