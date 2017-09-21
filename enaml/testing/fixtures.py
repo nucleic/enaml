@@ -11,7 +11,7 @@
 from traceback import format_exc
 import pytest
 
-from .utils import close_all_windows
+from .utils import close_all_windows, close_all_popups
 
 #: Global variable linked to the --ecpy-sleep cmd line option.
 DIALOG_SLEEP = 0
@@ -67,4 +67,5 @@ def qt_app():
 @pytest.yield_fixture
 def enaml_qtbot(qt_app, qtbot):
     qtbot.enaml_app = qt_app
-    yield qtbot
+    with close_all_windows(qtbot), close_all_popups(qtbot):
+        yield qtbot

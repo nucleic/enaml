@@ -15,8 +15,7 @@ import pytest
 from enaml import imports
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.testing.utils import (close_all_windows, close_all_popups,
-                                 close_window_or_popup, get_popup,
+from enaml.testing.utils import (close_window_or_popup, get_popup,
                                  wait_for_window_displayed,
                                  wait_for_destruction,
                                  handle_dialog, handle_question)
@@ -53,18 +52,19 @@ def handle_popup_view_example(qtbot, window):
     from enaml.testing.fixtures import DIALOG_SLEEP
 
     popup_triggers = window.central_widget().widgets()
-    with close_all_popups(qtbot):
-        popup_triggers[0].clicked = True
+    # Test configuration popup
+    popup_triggers[0].clicked = True
+    popup = get_popup(qtbot)
+    qtbot.wait(DIALOG_SLEEP*1000)
+    popup.central_widget().widgets()[-1].clicked = True
+    wait_for_destruction(qtbot, popup)
+
+    # Test transient popups
+    for t in popup_triggers[1:]:
+        t.clicked = True
         popup = get_popup(qtbot)
         qtbot.wait(DIALOG_SLEEP*1000)
-        popup.central_widget().widgets()[-1].clicked = True
-        wait_for_destruction(qtbot, popup)
-
-        for t in popup_triggers[1:]:
-            t.clicked = True
-            popup = get_popup(qtbot)
-            qtbot.wait(DIALOG_SLEEP*1000)
-            close_window_or_popup(qtbot, popup)
+        close_window_or_popup(qtbot, popup)
 
 
 def handle_window_closing(qtbot, window):
@@ -192,15 +192,14 @@ def test_examples(enaml_qtbot, enaml_sleep, path, handler):
         with imports():
             exec code in ns
 
-        with close_all_windows(enaml_qtbot):
-            window = ns['Main']()
-            window.show()
-            window.send_to_front()
-            wait_for_window_displayed(enaml_qtbot, window)
-            enaml_qtbot.wait(enaml_sleep*1000)
+        window = ns['Main']()
+        window.show()
+        window.send_to_front()
+        wait_for_window_displayed(enaml_qtbot, window)
+        enaml_qtbot.wait(enaml_sleep*1000)
 
-            if handler is not None:
-                handler(enaml_qtbot, window)
+        if handler is not None:
+            handler(enaml_qtbot, window)
 
     finally:
         # Make sure we clean up the sys modification before leaving
