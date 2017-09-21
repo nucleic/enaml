@@ -16,7 +16,7 @@ from .utils import close_all_windows, close_all_popups
 #: Global variable linked to the --ecpy-sleep cmd line option.
 DIALOG_SLEEP = 0
 
-pytest_plugins = str('pytest_catchlog')
+pytest_plugins = (str('pytest_catchlog'), str('pytest-qt'))
 
 
 def pytest_addoption(parser):
