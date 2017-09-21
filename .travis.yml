@@ -35,7 +35,7 @@ before_install:
 
   # Intall test tools
   - $CONDA_INSTALL pytest
-  - $PIP_INSTALL pytest-cov pytest-catchlog pytest-timeout
+  - $PIP_INSTALL pytest-cov pytest-catchlog pytest-timeout pytest-qt
 
   # Install codecov report tools
   - $PIP_INSTALL codecov

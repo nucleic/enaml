@@ -16,6 +16,8 @@ from .utils import close_all_windows
 #: Global variable linked to the --ecpy-sleep cmd line option.
 DIALOG_SLEEP = 0
 
+pytest_plugins = str('pytest_catchlog')
+
 
 def pytest_addoption(parser):
     """Add command line options.
@@ -60,3 +62,9 @@ def qt_app():
         app.stop()
     else:
         yield app
+
+
+@pytest.yield_fixture
+def enaml_qtbot(qt_app, qtbot):
+    qtbot.enaml_app = qt_app
+    yield qtbot

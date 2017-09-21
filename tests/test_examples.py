@@ -16,6 +16,9 @@ from enaml import imports
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.testing.utils import (close_all_windows, close_all_popups,
+                                 close_window_or_popup, get_popup,
+                                 wait_for_window_displayed,
+                                 wait_for_destruction,
                                  handle_dialog, handle_question)
 from enaml.widgets.api import PopupView, Window
 
@@ -43,59 +46,38 @@ else:
     VTK_AVAILABLE = True
 
 
-# XXX add dedicated handlers for dynamics
-def handle_conditional_example():
-    """
-    """
-    pass
-
-
-def handle_fields_example():
-    """
-    """
-    pass
-
-
-def handle_looper_example():
-    """
-    """
-    pass
-
-
-def handle_notebook_pages_example():
-    """
-    """
-    pass
-
-
-def handle_popup_view_example(app, window):
+def handle_popup_view_example(qtbot, window):
     """Test showing the popups.
 
     """
-    def close_popup(app, popup):
-        popup.central_widget().widgets()[-1].clicked = True
+    from enaml.testing.fixtures import DIALOG_SLEEP
 
     popup_triggers = window.central_widget().widgets()
-    with close_all_popups(app):
-        with handle_dialog(app, handler=close_popup, skip_answer=True,
-                           cls=PopupView):
-            popup_triggers[0].clicked = True
+    with close_all_popups(qtbot):
+        popup_triggers[0].clicked = True
+        popup = get_popup(qtbot)
+        qtbot.wait(DIALOG_SLEEP*1000)
+        popup.central_widget().widgets()[-1].clicked = True
+        wait_for_destruction(qtbot, popup)
 
         for t in popup_triggers[1:]:
             t.clicked = True
-            app.process_events()
+            popup = get_popup(qtbot)
+            qtbot.wait(DIALOG_SLEEP*1000)
+            close_window_or_popup(qtbot, popup)
 
 
-def handle_window_closing(app, window):
+def handle_window_closing(qtbot, window):
     """Test answering the question to close the window.
 
     """
-    with handle_question(app, 'yes'):
+    with handle_question(qtbot, 'yes'):
         window.close()
 
-    app.process_events()
+    def check_window_closed():
+        assert not Window.windows
 
-    assert not Window.windows
+    qtbot.wait_until(check_window_closed)
 
 
 @pytest.mark.parametrize("path, handler",
@@ -165,7 +147,7 @@ def handle_window_closing(app, window):
                           ('widgets/notebook.enaml', None),
                           ('widgets/popup_menu.enaml', None),
                           ('widgets/popup_view.enaml',
-                           handle_popup_view_example),  # Requires handler
+                           handle_popup_view_example),
                           ('widgets/progress_bar.enaml', None),
                           ('widgets/scroll_area.enaml', None),
                           ('widgets/slider.enaml', None),
@@ -182,7 +164,7 @@ def handle_window_closing(app, window):
                           ('widgets/window_closing.enaml',
                            handle_window_closing),
                           ('widgets/window.enaml', None)])
-def test_examples(qt_app, enaml_sleep, path, handler):
+def test_examples(enaml_qtbot, enaml_sleep, path, handler):
     """ Test the enaml examples.
 
     """
@@ -210,18 +192,17 @@ def test_examples(qt_app, enaml_sleep, path, handler):
         with imports():
             exec code in ns
 
-        with close_all_windows(qt_app):
+        with close_all_windows(enaml_qtbot):
             window = ns['Main']()
             window.show()
             window.send_to_front()
-            qt_app.process_events()
-            sleep(enaml_sleep)
+            wait_for_window_displayed(enaml_qtbot, window)
+            enaml_qtbot.wait(enaml_sleep*1000)
 
             if handler is not None:
-                handler(qt_app, window)
+                handler(enaml_qtbot, window)
 
     finally:
-        pass
         # Make sure we clean up the sys modification before leaving
         sys.path.pop(0)
         del sys.modules['enaml_test']

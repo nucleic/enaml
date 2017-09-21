@@ -8,8 +8,9 @@
 """Generic utility functions for testing.
 
 """
-from time import sleep
 from contextlib import contextmanager
+
+from atom.api import Atom, Bool
 
 import enaml
 from ..application import timed_call
@@ -18,7 +19,23 @@ with enaml.imports():
     from ..stdlib.message_box import MessageBox
 
 
-def get_window(app, cls=Window):
+def run_pending_tasks(qtbot, timeout=1000):
+    """Run all enaml pending tasks.
+
+    WARNING: this may not run the Qt event loop if no task is pending.
+
+    Parameters
+    ----------
+    timeout : int, optional
+        Timeout after which the operation should fail in ms
+
+    """
+    def check_pending_tasks():
+        assert not qtbot.enaml_app.has_pending_tasks()
+    qtbot.wait_until(check_pending_tasks)
+
+
+def get_window(qtbot, cls=Window, timeout=1000):
     """Convenience function running the event loop and returning the first
     window found in the set of active windows.
 
@@ -27,67 +44,143 @@ def get_window(app, cls=Window):
     cls : type, optional
         Type of the window which should be returned.
 
+    timeout : int, optional
+        Timeout after which the operation should fail in ms
+
     Returns
     -------
     window : Window or None
-        Return the first window found matching the specified class or None if
-        no window was found
+        Return the first window found matching the specified class
+
+    Raises
+    ------
+    AssertionError : raised if no window is found in the given time
 
     """
-    app.process_events()
+    def check_window_presence():
+        assert [w for w in Window.windows if isinstance(w, cls)]
+
+    qtbot.wait_until(check_window_presence)
     for w in Window.windows:
         if isinstance(w, cls):
             return w
-    for w in PopupView.popup_views:
-        if isinstance(w, cls):
-            return w
+
+
+def get_popup(qtbot, cls=PopupView, timeout=1000):
+    """Convenience function running the event loop and returning the first
+    popup found in the set of active popups.
+
+    Parameters
+    ----------
+    cls : type, optional
+        Type of the window which should be returned.
+
+    timeout : int, optional
+        Timeout after which the operation should fail in ms
+
+    Returns
+    -------
+    popup : PopupView or None
+        Return the first window found matching the specified class
+
+    Raises
+    ------
+    AssertionError : raised if no popup is found in the given time
+
+    """
+    def check_popup_presence():
+        assert [p for p in PopupView.popup_views if isinstance(p, cls)]
+
+    qtbot.wait_until(check_popup_presence)
+    for p in PopupView.popup_views:
+        if isinstance(p, cls):
+            return p
+
+
+def wait_for_window_displayed(qtbot, window, timeout=1000):
+    """Wait for a window to be displayed.
+
+    This method should be called on already activated windows (the show method
+    should have been called).
+
+    """
+    if not window.proxy_is_active or not window.proxy.widget:
+        msg = 'Window must be activated before waiting for display'
+        raise RuntimeError(msg)
+    qtbot.wait_for_window_shown(window.proxy.widget)
+
+
+class EventObserver(Atom):
+    """Simple observer registering the fact it was called once.
+
+    """
+    called = Bool()
+
+    def callback(self, change):
+        self.called = True
+
+    def assert_called(self):
+        assert self.called
+
+
+def wait_for_destruction(qtbot, widget):
+    """Wait for a widget to get destroyed.
+
+    """
+    if widget.is_destroyed:
+        return
+    obs = EventObserver()
+    widget.observe('destroyed', obs.callback)
+    qtbot.wait_until(obs.assert_called)
+
+
+def close_window_or_popup(qtbot, window_or_popup):
+    """Close a window/popup and run the event loop to make sure the closing
+    complete.
+
+    """
+    if window_or_popup.is_destroyed:
+        return
+    obs = EventObserver()
+    window_or_popup.observe('destroyed', obs.callback)
+    window_or_popup.close()
+    qtbot.wait_until(obs.assert_called)
 
 
 @contextmanager
-def close_all_windows(app):
+def close_all_windows(qtbot):
     """Close all opened windows.
-
-    This should be used by all tests creating windows in a teardown step.
 
     """
     yield
-    app.process_events()
-    sleep(0.1)
+    run_pending_tasks(qtbot)
     while Window.windows:
         windows = list(Window.windows)
-        # First close non top level windows to avoid a window/popup to lose its
+        # First close non top level windows to avoid a window to lose its
         # parent and not remove itself from the set of windows.
         non_top_level_windows = [w for w in windows if w.parent is not None]
         for window in non_top_level_windows:
-            window.close()
-        app.process_events()
+            close_window_or_popup(qtbot, window)
         for window in windows:
-            window.close()
-        app.process_events()
-        sleep(0.02)
+            close_window_or_popup(qtbot, window)
 
 
 @contextmanager
-def close_all_popups(app):
+def close_all_popups(qtbot):
     """Close all opened popups.
 
     """
     yield
-    app.process_events()
-    sleep(0.1)
+    run_pending_tasks(qtbot)
     while PopupView.popup_views:
         popups = list(PopupView.popup_views)
         # First close non top level popups to avoid a up/window to lose its
         # parent and not remove itself from the set of windows.
         non_top_level_popups = [p for p in popups if p.parent is not None]
         for popup in non_top_level_popups:
-            popup.close()
-        app.process_events()
+            close_window_or_popup(qtbot, popup)
         for popup in popups:
-            popup.close()
-        app.process_events()
-        sleep(0.02)
-        app.process_events()
+            close_window_or_popup(qtbot, popup)
 
 
 class ScheduledClosing(object):
@@ -95,39 +188,39 @@ class ScheduledClosing(object):
 
     """
 
-    def __init__(self, app, cls, handler, op, skip_answer):
-        self.called = False
+    def __init__(self, bot, cls, handler, op, skip_answer):
         self.cls = cls
         self.handler = handler
         self.op = op
-        self.app = app
+        self.bot = bot
         self.skip_answer = skip_answer
+        self.called = False
 
     def __call__(self):
-        i = 0
-        while True:
-            dial = get_window(self.app, self.cls)
-            if dial is not None:
-                break
-            elif i > 10:
-                raise Exception('Dialog timeout')
-            sleep(0.1)
-            i += 1
+        self.called = True
+        from .fixtures import DIALOG_SLEEP
+        dial = get_window(self.bot, cls=self.cls)
+        wait_for_window_displayed(self.bot, dial)
+        self.bot.wait(DIALOG_SLEEP*1000)
 
         try:
-            self.handler(self.app, dial)
+            self.handler(self.bot, dial)
         finally:
-            self.app.process_events()
-            from .fixtures import DIALOG_SLEEP
-            sleep(DIALOG_SLEEP)
             if not self.skip_answer:
                 getattr(dial, self.op)()
-            self.app.process_events()
-            self.called = True
+            obs = EventObserver()
+            dial.observe('destroyed', obs.callback)
+            self.bot.wait_until(obs.assert_called)
+
+    def was_called(self):
+        """Assert the scheduler was called.
+
+        """
+        assert self.called
 
 
 @contextmanager
-def handle_dialog(app, op='accept', handler=lambda app, window: window,
+def handle_dialog(qtbot, op='accept', handler=lambda qtbot, window: window,
                   cls=Dialog, time=100, skip_answer=False):
     """Automatically close a dialog opened during the context.
 
@@ -137,8 +230,8 @@ def handle_dialog(app, op='accept', handler=lambda app, window: window,
         Whether to accept or reject the dialog.
 
     handler : callable, optional
-        Callable taking as only argument the dialog, called before accepting
-        or rejecting the dialog.
+        Callable taking as arguments the bot and the dialog, called before
+        accepting or rejecting the dialog.
 
     cls : type, optional
         Dialog class to identify.
@@ -151,15 +244,14 @@ def handle_dialog(app, op='accept', handler=lambda app, window: window,
         the answer itself.
 
     """
-    sch = ScheduledClosing(app, cls, handler, op, skip_answer)
+    sch = ScheduledClosing(qtbot, cls, handler, op, skip_answer)
     timed_call(time, sch)
     try:
         yield
     except Exception:
         raise
     else:
-        while not sch.called:
-            app.process_events()
+        qtbot.wait_until(sch.was_called)
 
 
 @contextmanager
