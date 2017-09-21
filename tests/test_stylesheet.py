@@ -405,12 +405,15 @@ def test_cascade():
 
     def init():
         from enaml.application import Application
-        app = (Application() if Application.instance() is None
-               else Application.instance())
+        app = Application()
         app.style_sheet = Sheet1()
         return Main()
 
     """)
+    old_instance = None
+    if Application.instance():
+        old_instance = Application._instance
+        Application._instance = None
     try:
         main = compile_source(source, 'init')()
         _assert_setters(main.one, (
@@ -474,8 +477,7 @@ def test_cascade():
             ('background', 'magenta'),
         ))
     finally:
-        app = Application.instance()
-        app.style_sheet = None
+        Application._instance = old_instance
 
 
 def _clear_cache():
