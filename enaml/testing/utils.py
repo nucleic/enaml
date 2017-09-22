@@ -23,7 +23,7 @@ def run_pending_tasks(qtbot, timeout=1000):
     """Run all enaml pending tasks.
 
     WARNING: this may not run the Qt event loop if no task is pending.
-    This will only deal with tasks schedule through the schedule function
+    This will only deal with tasks scheduled through the schedule function
     (or Application method)
 
     Parameters
