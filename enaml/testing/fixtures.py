@@ -39,7 +39,7 @@ def pytest_configure(config):
 
 @pytest.fixture
 def enaml_sleep():
-    """Return the time to sleep as set by the --enaml-sleep option.
+    """Return the time to sleep in s as set by the --enaml-sleep option.
 
     """
     return DIALOG_SLEEP

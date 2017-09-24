@@ -204,14 +204,14 @@ class ScheduledClosing(object):
         dial = get_window(self.bot, cls=self.cls)
         wait_for_window_displayed(self.bot, dial)
         self.bot.wait(DIALOG_SLEEP*1000)
+        obs = EventObserver()
+        dial.observe('finished', obs.callback)
 
         try:
             self.handler(self.bot, dial)
         finally:
             if not self.skip_answer:
                 getattr(dial, self.op)()
-            obs = EventObserver()
-            dial.observe('destroyed', obs.callback)
             self.bot.wait_until(obs.assert_called)
 
     def was_called(self):
