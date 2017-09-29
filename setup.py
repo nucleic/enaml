@@ -112,7 +112,16 @@ class Install(install):
             write_tables()
         except ImportError:
             pass
-        install.run(self)
+        # Follow logic used in setuptools
+        # cf https://github.com/pypa/setuptools/blob/master/setuptools/command/install.py#L58
+        if self.old_and_unmanageable or self.single_version_externally_managed:
+            install.run(self)
+
+        if not self._called_from_setup(inspect.currentframe()):
+            # Run in backward-compatibility mode to support bdist_* commands.
+            install.run(self)
+        else:
+            self.do_egg_install()
 
 
 class Develop(develop):
@@ -140,7 +149,7 @@ setup(
     long_description=open('README.rst').read(),
     requires=['future', 'atom', 'PyQt', 'ply', 'kiwisolver'],
     install_requires=['setuptools', 'future', 'atom',
-                      'kiwisolver', 'ply >= 3.4'],
+                      'kiwisolver', 'ply>=3.4'],
     packages=find_packages(),
     package_data={
         'enaml.applib': ['*.enaml'],
