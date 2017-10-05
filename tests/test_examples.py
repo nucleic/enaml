@@ -22,6 +22,13 @@ from enaml.testing.utils import (close_window_or_popup, get_popup,
 from enaml.widgets.api import PopupView, Window
 
 try:
+    import numpy
+except ImportError:
+    NUMPY_AVAILABLE = False
+else:
+    NUMPY_AVAILABLE = True
+
+try:
     import matplotlib
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
@@ -106,7 +113,11 @@ def handle_window_closing(qtbot, window):
                           ('layout/basic/linear_relations.enaml', None),
                           ('layout/basic/vbox.enaml', None),
                           ('layout/basic/vertical.enaml', None),
-                          ('layout/advanced/button_ring.enaml', None),
+                          pytest.param('layout/advanced/button_ring.enaml',
+                                       None,
+                                       marks=pytest.mark.skipif(
+                                           not NUMPY_AVAILABLE,
+                                           reason='Requires numpy')),
                           ('layout/advanced/factory_func.enaml', None),
                           ('layout/advanced/find_replace.enaml', None),
                           ('layout/advanced/fluid.enaml', None),
