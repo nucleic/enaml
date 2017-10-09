@@ -15,11 +15,11 @@ import pytest
 from enaml import imports
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.testing.utils import (close_window_or_popup, get_popup,
-                                 wait_for_window_displayed,
-                                 wait_for_destruction,
-                                 handle_dialog, handle_question)
 from enaml.widgets.api import PopupView, Window
+from utils import (close_window_or_popup, get_popup,
+                   wait_for_window_displayed,
+                   wait_for_destruction,
+                   handle_dialog, handle_question)
 
 try:
     import numpy
@@ -56,7 +56,7 @@ def handle_popup_view_example(qtbot, window):
     """Test showing the popups.
 
     """
-    from enaml.testing.fixtures import DIALOG_SLEEP
+    from conftest import DIALOG_SLEEP
 
     popup_triggers = window.central_widget().widgets()
     # Test configuration popup
