@@ -32,7 +32,7 @@ before_install:
 
   # Install enaml dependencies and include special widgets dependencies
   # We do not test vtk as it segfaults on Travis
-  - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib
+  - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib qtpy
   - 'if [ $IPY_VERSION < 4 ]; then
         $CONDA_INSTALL ipython=$IPY_VERSION ipython-qtconsole;
      else
