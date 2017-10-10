@@ -7,7 +7,6 @@
 #------------------------------------------------------------------------------
 from atom.api import Atom, Bool, Int, Float, Typed
 
-from enaml.qt import QT_API
 from enaml.qt.QtCore import Qt, QPoint, QRect, QTimer, QPropertyAnimation
 from enaml.qt.QtGui import QPainter
 from enaml.qt.QtWidgets import QWidget, QStyle, QStyleOption

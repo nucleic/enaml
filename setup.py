@@ -148,7 +148,7 @@ setup(
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.rst').read(),
     requires=['future', 'atom', 'PyQt', 'ply', 'kiwisolver', 'qtpy'],
-    install_requires=['setuptools', 'future', 'atom', 'qtpy',
+    install_requires=['setuptools', 'future', 'atom', 'qtpy>=1.3',
                       'kiwisolver', 'ply>=3.4'],
     packages=find_packages(),
     package_data={

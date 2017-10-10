@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from weakref import ref
 
-from enaml.qt import QT_API, PYQT5_API
+from enaml.qt import QT_API, PYQT5_API, PYSIDE2_API
 from enaml.qt.QtCore import Qt, QPoint, QSize, QMetaObject, QEvent
 from enaml.qt.QtGui import (
     QMouseEvent, QResizeEvent, QCursor, QPainter, QPixmap
@@ -15,7 +15,7 @@ from enaml.qt.QtGui import (
 from enaml.qt.QtWidgets import (
     QApplication, QTabBar, QTabWidget, QStyle, QStylePainter
 )
-if QT_API in PYQT5_API:
+if QT_API in PYQT5_API or QT_API in PYSIDE2_API:
     from enaml.qt.QtWidgets import QStyleOptionTab
 else:
     from enaml.qt.QtWidgets import QStyleOptionTabV3 as QStyleOptionTab
