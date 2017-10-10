@@ -147,8 +147,6 @@ MOD_INIT_FUNC(c_compat)
 #endif
     if( !mod )
         INITERROR;
-    PyObject* mod_dict = PyModule_GetDict( mod.get() );
-
 
     PyObjectPtr up( mod.getattr( "_fix_co_filename" ) );
     if( !up )
