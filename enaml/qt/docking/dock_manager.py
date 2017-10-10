@@ -445,20 +445,18 @@ class DockManager(Atom):
                     o_y = o_geo.top()
                     o_right = o_x + o_geo.width()
                     o_bottom = o_y + o_geo.height()
-                    dx = list(filter(filt, (
-                        o_x - f_x,
-                        o_x - (f_x + f_w),
-                        o_right - f_x,
-                        o_right - (f_x + f_w),
-                    )))
+                    dx = [c for c in (o_x - f_x,
+                                      o_x - (f_x + f_w),
+                                      o_right - f_x,
+                                      o_right - (f_x + f_w))
+                          if filt(c)]
                     if dx:
                         f_x += min(dx)
-                    dy = list(filter(filt, (
-                        o_y - f_y,
-                        o_y - (f_y + f_h),
-                        o_bottom - f_y,
-                        o_bottom - (f_y + f_h),
-                    )))
+                    dy = [c for c in (o_y - f_y,
+                                      o_y - (f_y + f_h),
+                                      o_bottom - f_y,
+                                      o_bottom - (f_y + f_h))
+                          if filt(c)]
                     if dy:
                         f_y += min(dy)
             frame.move(f_x, f_y)
