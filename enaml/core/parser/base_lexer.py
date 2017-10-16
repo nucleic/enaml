@@ -792,5 +792,5 @@ class BaseEnamlLexer(object):
 
     def _tables_location(self):
         _lex_dir = os.path.join(os.path.dirname(__file__), 'parse_tab')
-        _lex_module = 'enaml.core.parsing.parse_tab.lextab%s' % self.lex_id
+        _lex_module = 'enaml.core.parser.parse_tab.lextab%s' % self.lex_id
         return _lex_dir, _lex_module

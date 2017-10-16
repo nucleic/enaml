@@ -17,7 +17,7 @@ import types
 from future.utils import with_metaclass, exec_
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
-from .parsing import parse
+from .parser import parse
 from ..compat import read_source, update_code_co_filename
 
 

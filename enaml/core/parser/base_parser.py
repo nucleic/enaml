@@ -235,7 +235,7 @@ class BaseEnamlParser(object):
 
     def _tables_location(self):
         parse_dir = os.path.join(os.path.dirname(__file__), 'parse_tab')
-        parse_mod = 'enaml.core.parsing.parse_tab.parsetab%s' % self.parser_id
+        parse_mod = 'enaml.core.parser.parse_tab.parsetab%s' % self.parser_id
         return parse_dir, parse_mod
 
     def parse(self, source, filename='Enaml'):

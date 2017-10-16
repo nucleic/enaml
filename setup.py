@@ -108,7 +108,7 @@ class Install(install):
 
     def run(self):
         try:
-            from enaml.core.parsing import write_tables
+            from enaml.core.parser import write_tables
             write_tables()
         except ImportError:
             pass
@@ -132,7 +132,7 @@ class Develop(develop):
 
     def run(self):
         try:
-            from enaml.core.parsing import write_tables
+            from enaml.core.parser import write_tables
             write_tables()
         except ImportError:
             pass

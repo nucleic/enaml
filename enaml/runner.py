@@ -18,7 +18,7 @@ import types
 from future.utils import exec_
 
 from enaml import imports
-from enaml.core.parsing import parse
+from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.compat import read_source
 

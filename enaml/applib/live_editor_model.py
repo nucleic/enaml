@@ -16,7 +16,7 @@ from atom.api import Atom, Str, Typed, observe
 import enaml
 from enaml.core.object import Object
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.core.parsing import parse
+from enaml.core.parser import parse
 from enaml.widgets.widget import Widget
 
 

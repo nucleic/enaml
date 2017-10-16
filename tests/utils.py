@@ -16,7 +16,7 @@ from atom.api import Atom, Bool
 import enaml
 from enaml.application import timed_call
 from enaml.core.enaml_compiler import EnamlCompiler
-from enaml.core.parsing import parse
+from enaml.core.parser import parse
 from enaml.widgets.api import Window, Dialog, PopupView
 with enaml.imports():
     from enaml.stdlib.message_box import MessageBox
