@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from textwrap import dedent
 
-from nose.tools import raises
+import pytest
 
 from utils import compile_source
 
@@ -169,7 +169,6 @@ def test_syntax_16():
     compile_source(source, 'Main')
 
 
-
 def test_syntax_17():
     source = dedent("""\
     template Other(*Args):
@@ -245,176 +244,174 @@ def test_syntax_20():
 #------------------------------------------------------------------------------
 # Bad Template Syntax
 #------------------------------------------------------------------------------
-@raises(SyntaxError)
 def test_bad_syntax_1():
     source = dedent("""\
     template Main()
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_2():
     source = dedent("""\
     template Main() pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-
-@raises(SyntaxError)
 def test_bad_syntax_3():
     source = dedent("""\
     template Main:
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_4():
     source = dedent("""\
     template Main: pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_5():
     source = dedent("""\
     template Main():
         const value
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_6():
     source = dedent("""\
     template Main():
         const value 12
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_7():
     source = dedent("""\
     template Main():
         attr value
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_8():
     source = dedent("""\
     template Main():
         event value
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_9():
     source = dedent("""\
     template Main():
         alias value
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_10():
     source = dedent("""\
     template Main(A B):
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_11():
     source = dedent("""\
     template Main(A=None, B):
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_12():
     source = dedent("""\
     template Main(A, B=None, C):
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_13():
     source = dedent("""\
     template Main(*C, A)
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_14():
     source = dedent("""\
     template Main(*C, A=None)
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_15():
     source = dedent("""\
     template Main():
         Foo(): a
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_16():
     source = dedent("""\
     template Main():
         Foo(): a, b
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_17():
     source = dedent("""\
     template Main():
         Foo(): a, *c
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_18():
     source = dedent("""\
     template Main():
@@ -422,20 +419,20 @@ def test_bad_syntax_18():
         Foo(): a: pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_19():
     source = dedent("""\
     template Main(Arg):
         const Arg = 12
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
-@raises(SyntaxError)
 def test_bad_syntax_20():
     source = dedent("""\
     template Main(Arg):
@@ -443,7 +440,8 @@ def test_bad_syntax_20():
         Field: Args: pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(SyntaxError):
+        compile_source(source, 'Main')
 
 
 #------------------------------------------------------------------------------
@@ -767,7 +765,6 @@ def test_instantiation_18():
 #------------------------------------------------------------------------------
 # Bad Template Instantiation
 #------------------------------------------------------------------------------
-@raises(NameError)
 def test_bad_instantiation_1():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -779,10 +776,10 @@ def test_bad_instantiation_1():
         Other(): pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(NameError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_instantiation_2():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -794,10 +791,10 @@ def test_bad_instantiation_2():
         Other(): pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_instantiation_3():
     source = dedent("""\
     template Other(*A):
@@ -807,10 +804,10 @@ def test_bad_instantiation_3():
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_instantiation_4():
     source = dedent("""\
     template Other(A):
@@ -820,10 +817,10 @@ def test_bad_instantiation_4():
         pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(TypeError)
 def test_bad_instantiation_5():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -839,10 +836,10 @@ def test_bad_instantiation_5():
             pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(TypeError):
+        compile_source(source, 'Main')
 
 
-@raises(ValueError)
 def test_bad_instantiation_6():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -857,10 +854,10 @@ def test_bad_instantiation_6():
             pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(ValueError):
+        compile_source(source, 'Main')
 
 
-@raises(ValueError)
 def test_bad_instantiation_7():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -875,10 +872,10 @@ def test_bad_instantiation_7():
             pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(ValueError):
+        compile_source(source, 'Main')
 
 
-@raises(ValueError)
 def test_bad_instantiation_8():
     source = dedent("""\
     from enaml.widgets.api import *
@@ -893,4 +890,5 @@ def test_bad_instantiation_8():
             pass
 
     """)
-    compile_source(source, 'Main')
+    with pytest.raises(ValueError):
+        compile_source(source, 'Main')
