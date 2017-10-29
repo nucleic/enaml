@@ -8,7 +8,15 @@
 #include <iostream>
 #include <sstream>
 #include "pythonhelpers.h"
+#include "py23compat.h"
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
+#endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
 
 using namespace PythonHelpers;
 
@@ -64,7 +72,7 @@ CallableRef_dealloc( CallableRef* self )
 {
     PyObject_GC_UnTrack( self );
     CallableRef_clear( self );
-    self->ob_type->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
 }
 
 
@@ -129,8 +137,7 @@ PyDoc_STRVAR(CallableRef__doc__,
 
 
 PyTypeObject CallableRef_Type = {
-    PyObject_HEAD_INIT( 0 )
-    0,                                      /* ob_size */
+    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
     "callableref.CallableRef",              /* tp_name */
     sizeof( CallableRef ),                  /* tp_basicsize */
     0,                                      /* tp_itemsize */
@@ -138,7 +145,13 @@ PyTypeObject CallableRef_Type = {
     (printfunc)0,                           /* tp_print */
     (getattrfunc)0,                         /* tp_getattr */
     (setattrfunc)0,                         /* tp_setattr */
-    (cmpfunc)0,                             /* tp_compare */
+#if PY_VERSION_HEX >= 0x03050000
+	( PyAsyncMethods* )0,                   /* tp_as_async */
+#elif PY_VERSION_HEX >= 0x03000000
+	( void* ) 0,                            /* tp_reserved */
+#else
+	( cmpfunc )0,                           /* tp_compare */
+#endif
     (reprfunc)0,                            /* tp_repr */
     (PyNumberMethods*)0,                    /* tp_as_number */
     (PySequenceMethods*)0,                  /* tp_as_sequence */
@@ -186,24 +199,69 @@ CallableRef_Check( PyObject* obj )
 }
 
 
+struct module_state {
+    PyObject *error;
+};
+
+
 static PyMethodDef
 callableref_methods[] = {
     { 0 } // Sentinel
 };
 
+#if PY_MAJOR_VERSION >= 3
 
-PyMODINIT_FUNC
-initcallableref( void )
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static int callableref_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int callableref_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "callableref",
+        NULL,
+        sizeof(struct module_state),
+        callableref_methods,
+        NULL,
+        callableref_traverse,
+        callableref_clear,
+        NULL
+};
+
+#else
+
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+
+#endif
+
+MOD_INIT_FUNC(callableref)
 {
+#if PY_MAJOR_VERSION >= 3
+    PyObject *mod = PyModule_Create(&moduledef);
+#else
     PyObject* mod = Py_InitModule( "callableref", callableref_methods );
+#endif
+
     if( !mod )
-        return;
+        INITERROR;
 
     if( PyType_Ready( &CallableRef_Type ) )
-        return;
+        INITERROR;
 
     PyObjectPtr cr_type( reinterpret_cast<PyObject*>( &CallableRef_Type ), true );
     PyModule_AddObject( mod, "CallableRef", cr_type.release() );
+
+#if PY_MAJOR_VERSION >= 3
+    return mod;
+#endif
 }
 
 } // extern "C"

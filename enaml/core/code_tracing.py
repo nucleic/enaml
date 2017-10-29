@@ -1,15 +1,25 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from ..compat import IS_PY3, USE_WORDCODE
 from .byteplay import (
     LOAD_ATTR, LOAD_CONST, ROT_TWO, DUP_TOP, CALL_FUNCTION, POP_TOP, LOAD_FAST,
-    BUILD_TUPLE, ROT_THREE, UNPACK_SEQUENCE, DUP_TOPX, BINARY_SUBSCR, GET_ITER,
+    BUILD_TUPLE, ROT_THREE, UNPACK_SEQUENCE, BINARY_SUBSCR, GET_ITER,
     LOAD_NAME, RETURN_VALUE
 )
+
+
+if not IS_PY3:
+    from .byteplay import DUP_TOPX
+else:
+    from .byteplay import DUP_TOP_TWO
+
+if USE_WORDCODE:
+    from .byteplay import CALL_FUNCTION_KW
 
 
 class CodeTracer(object):
@@ -280,29 +290,46 @@ def inject_tracing(codelist):
             # kwargs. For kwargs, the number of items on the stack is
             # twice this number since the values on the stack alternate
             # name, value.
-            n_stack_args = (op_arg & 0xFF) + 2 * ((op_arg >> 8) & 0xFF)
-            code = [                                # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
-                (BUILD_TUPLE, n_stack_args),        # func -> argtuple
-                (DUP_TOPX, 2),                      # func -> argtuple -> func -> argtuple
-                (LOAD_FAST, '_[tracer]'),           # func -> argtuple -> func -> argtuple -> tracer
-                (LOAD_ATTR, 'call_function'),       # func -> argtuple -> func -> argtuple -> tracefunc
-                (ROT_THREE, None),                  # func -> argtuple -> tracefunc -> func -> argtuple
-                (LOAD_CONST, op_arg),               # func -> argtuple -> tracefunc -> func -> argtuple -> argspec
-                (CALL_FUNCTION, 0x0003),            # func -> argtuple -> retval
-                (POP_TOP, None),                    # func -> argtuple
-                (UNPACK_SEQUENCE, n_stack_args),    # func -> arg(n-1) -> arg(n-2) -> ... -> arg(0)
-                (BUILD_TUPLE, n_stack_args),        # func -> reversedargtuple
-                (UNPACK_SEQUENCE, n_stack_args),    # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
+            # From Python 3.6, CALL_FUNCTION is only used for positional
+            # arguments and the argument is directly the number of arguments
+            # on the stack.
+            if USE_WORDCODE:
+                n_stack_args = op_arg
+            else:
+                n_stack_args = (op_arg & 0xFF) + 2 * ((op_arg >> 8) & 0xFF)
+            code = [                                               # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
+                (BUILD_TUPLE, n_stack_args),                       # func -> argtuple
+                (DUP_TOP_TWO, None) if IS_PY3 else (DUP_TOPX, 2),  # func -> argtuple -> func -> argtuple
+                (LOAD_FAST, '_[tracer]'),                          # func -> argtuple -> func -> argtuple -> tracer
+                (LOAD_ATTR, 'call_function'),                      # func -> argtuple -> func -> argtuple -> tracefunc
+                (ROT_THREE, None),                                 # func -> argtuple -> tracefunc -> func -> argtuple
+                (LOAD_CONST, op_arg),                              # func -> argtuple -> tracefunc -> func -> argtuple -> argspec
+                (CALL_FUNCTION, 0x0003),                           # func -> argtuple -> retval
+                (POP_TOP, None),                                   # func -> argtuple
+                (UNPACK_SEQUENCE, n_stack_args),                   # func -> arg(n-1) -> arg(n-2) -> ... -> arg(0)
+                (BUILD_TUPLE, n_stack_args),                       # func -> reversedargtuple
+                (UNPACK_SEQUENCE, n_stack_args),                   # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
             ]
             inserts[idx] = code
+        elif USE_WORDCODE and op == CALL_FUNCTION_KW:
+            # New in Python 3.6.
+            # All positional and keywords argument are in order on the stack
+            # and the first item is a tuple containing the keywords names.
+
+            # TODO implement
+            # This is quite low priority as tracing and inverting is only used
+            # to detect getattr and setattr called without keyword arguments
+            # both in this project and in traits-enaml. So there are no use
+            # case for this at the time being.
+            pass
         elif op == BINARY_SUBSCR:
-            code = [                            # obj -> idx
-                (DUP_TOPX, 2),                  # obj -> idx -> obj -> idx
-                (LOAD_FAST, '_[tracer]'),       # obj -> idx -> obj -> idx -> tracer
-                (LOAD_ATTR, 'binary_subscr'),   # obj -> idx -> obj -> idx -> tracefunc
-                (ROT_THREE, None),              # obj -> idx -> tracefunc -> obj -> idx
-                (CALL_FUNCTION, 0x0002),        # obj -> idx -> retval
-                (POP_TOP, None),                # obj -> idx
+            code = [                                               # obj -> idx
+                (DUP_TOP_TWO, None) if IS_PY3 else (DUP_TOPX, 2),  # obj -> idx -> obj -> idx
+                (LOAD_FAST, '_[tracer]'),                          # obj -> idx -> obj -> idx -> tracer
+                (LOAD_ATTR, 'binary_subscr'),                      # obj -> idx -> obj -> idx -> tracefunc
+                (ROT_THREE, None),                                 # obj -> idx -> tracefunc -> obj -> idx
+                (CALL_FUNCTION, 0x0002),                           # obj -> idx -> retval
+                (POP_TOP, None),                                   # obj -> idx
             ]
             inserts[idx] = code
         elif op == GET_ITER:
@@ -383,7 +410,10 @@ def inject_inversion(codelist):
             (RETURN_VALUE, None),           #:
         ])
     elif opcode == CALL_FUNCTION:
-        n_stack_args = (oparg & 0xFF) + 2 * ((oparg >> 8) & 0xFF)
+        if USE_WORDCODE:
+            n_stack_args = oparg
+        else:
+            n_stack_args = (oparg & 0xFF) + 2 * ((oparg >> 8) & 0xFF)
         new_code.extend([                   #: func -> arg(0) -> arg(1) -> ... -> arg(n-1)
             (BUILD_TUPLE, n_stack_args),    #: func -> argtuple
             (LOAD_FAST, '_[inverter]'),     #: func -> argtuple -> inverter
@@ -394,6 +424,17 @@ def inject_inversion(codelist):
             (CALL_FUNCTION, 0x0004),        #: retval
             (RETURN_VALUE, None),           #:
         ])
+    elif USE_WORDCODE and opcode == CALL_FUNCTION_KW:
+            # New in Python 3.6.
+            # All positional and keywords argument are in order on the stack
+            # and the first item is a tuple containing the keywords names.
+
+            # TODO implement
+            # This is quite low priority as tracing and inverting is only used
+            # to detect getattr and setattr called without keyword arguments
+            # both in this project and in traits-enaml. So there are no use
+            # case for this at the time being.
+            pass
     elif opcode == BINARY_SUBSCR:
         new_code.extend([                   #: obj -> index
             (LOAD_FAST, '_[inverter]'),     #: obj -> index -> inverter

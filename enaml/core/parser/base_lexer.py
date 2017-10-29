@@ -8,12 +8,10 @@
 import os
 import tokenize
 
+from future.builtins import str
 import ply.lex as lex
 
-
-# Get a save directory for the lex and parse tables
-_lex_dir = os.path.join(os.path.dirname(__file__), 'parse_tab')
-_lex_module = 'enaml.core.parse_tab.lextab'
+from ...compat import IS_PY3
 
 
 #------------------------------------------------------------------------------
@@ -108,10 +106,20 @@ def indentation_error(message, token):
     _parsing_error(IndentationError, message, token)
 
 
+# Matches all string prefixes even potentially non-valid ones as those are
+# filtered later on.
+STRING_PREFIX = r"(([fF]?[uU]?[bB]?[rR]?)|([rR]?[fF]?[uU]?[bB]?))"
+
 #------------------------------------------------------------------------------
 # Enaml Lexer
 #------------------------------------------------------------------------------
-class EnamlLexer(object):
+class BaseEnamlLexer(object):
+    """Base lexer for enaml file.
+
+    """
+
+    # Identifier used to generate unique lexing tables for different subclasses
+    lex_id = '3'
 
     operators = (
         (r'@', 'AT'),
@@ -156,7 +164,7 @@ class EnamlLexer(object):
         (r'=>', 'RIGHTARROW'),
     )
 
-    tokens = (
+    delimiters = (
         'COMMA',
         'DEDENT',
         'ENDMARKER',
@@ -196,7 +204,6 @@ class EnamlLexer(object):
         'elif': 'ELIF',
         'else': 'ELSE',
         'enamldef': 'ENAMLDEF',
-        'exec': 'EXEC',
         'except': 'EXCEPT',
         'finally': 'FINALLY',
         'from': 'FROM',
@@ -210,7 +217,6 @@ class EnamlLexer(object):
         'not': 'NOT',
         'or': 'OR',
         'pass': 'PASS',
-        'print': 'PRINT',
         'raise': 'RAISE',
         'return': 'RETURN',
         'template': 'TEMPLATE',
@@ -219,10 +225,6 @@ class EnamlLexer(object):
         'with': 'WITH',
         'yield': 'YIELD',
     }
-
-    tokens = (tokens +
-              tuple(val[1] for val in operators) +
-              tuple(reserved.values()))
 
     #--------------------------------------------------------------------------
     # Lexer States
@@ -238,13 +240,18 @@ class EnamlLexer(object):
     # Default Rules
     #--------------------------------------------------------------------------
     t_COMMA = r','
-    t_NUMBER = tokenize.Number
     t_PRAGMA = r'\$pragma'
 
     # Generate the token matching rules for the operators
     for tok_pattern, tok_name in operators:
         tok_name = 't_' + tok_name
         locals()[tok_name] = tok_pattern
+
+    # Define NUMBER as a function so that it as the proper precedence over NAME
+    def t_NUMBER(self, t):
+        return t
+
+    t_NUMBER.__doc__ = tokenize.Number
 
     def t_comment(self, t):
         r'[ ]*\#[^\r\n]*'
@@ -338,13 +345,14 @@ class EnamlLexer(object):
     # TRIPLEQ1 strings
     #--------------------------------------------------------------------------
     def t_start_triple_quoted_q1_string(self, t):
-        r"[uU]?[rR]?'''"
         t.lexer.push_state("TRIPLEQ1")
         t.type = "STRING_START_TRIPLE"
         if "r" in t.value or "R" in t.value:
             self.is_raw = True
         t.value = t.value.split("'", 1)[0]
         return t
+
+    t_start_triple_quoted_q1_string.__doc__ = STRING_PREFIX + r"'''"
 
     def t_TRIPLEQ1_simple(self, t):
         r"[^'\\]+"
@@ -374,13 +382,14 @@ class EnamlLexer(object):
     # TRIPLEQ2 strings
     #--------------------------------------------------------------------------
     def t_start_triple_quoted_q2_string(self, t):
-        r'[uU]?[rR]?"""'
         t.lexer.push_state("TRIPLEQ2")
         t.type = "STRING_START_TRIPLE"
         if "r" in t.value or "R" in t.value:
             self.is_raw = True
         t.value = t.value.split('"', 1)[0]
         return t
+
+    t_start_triple_quoted_q2_string.__doc__ = STRING_PREFIX + r'"""'
 
     def t_TRIPLEQ2_simple(self, t):
         r'[^"\\]+'
@@ -410,13 +419,14 @@ class EnamlLexer(object):
     # SINGLEQ1 strings
     #--------------------------------------------------------------------------
     def t_start_single_quoted_q1_string(self, t):
-        r"[uU]?[rR]?'"
         t.lexer.push_state("SINGLEQ1")
         t.type = "STRING_START_SINGLE"
         if "r" in t.value or "R" in t.value:
             self.is_raw = True
         t.value = t.value.split("'", 1)[0]
         return t
+
+    t_start_single_quoted_q1_string.__doc__ = STRING_PREFIX + r"'"
 
     def t_SINGLEQ1_simple(self, t):
         r"[^'\\\n]+"
@@ -440,13 +450,14 @@ class EnamlLexer(object):
     # SINGLEQ2 strings
     #--------------------------------------------------------------------------
     def t_start_single_quoted_q2_string(self, t):
-        r'[uU]?[rR]?"'
         t.lexer.push_state("SINGLEQ2")
         t.type = "STRING_START_SINGLE"
         if "r" in t.value or "R" in t.value:
             self.is_raw = True
         t.value = t.value.split('"', 1)[0]
         return t
+
+    t_start_single_quoted_q2_string.__doc__ = STRING_PREFIX + r'"'
 
     def t_SINGLEQ2_simple(self, t):
         r'[^"\\\n]+'
@@ -471,9 +482,13 @@ class EnamlLexer(object):
     #--------------------------------------------------------------------------
     # This is placed after the string rules so r"" is not matched as a name.
     def t_NAME(self, t):
-        r'[a-zA-Z_][a-zA-Z0-9_]*'
         t.type = self.reserved.get(t.value, "NAME")
+        if IS_PY3 and not str.isidentifier(t.value):
+            msg = '{} is not a valid Python identifier (found in {}, line {}'
+            raise ValueError(msg.format(t.value, self.filename, t.lineno))
         return t
+
+    t_NAME.__doc__ = tokenize.Name
 
     def t_error(self, t):
         syntax_error('invalid syntax', t)
@@ -482,8 +497,16 @@ class EnamlLexer(object):
     # Normal Class Items
     #--------------------------------------------------------------------------
     def __init__(self, filename='Enaml'):
+
+        _lex_dir, _lex_module = self._tables_location()
+
+        self.tokens = (self.delimiters +
+                       tuple(val[1] for val in self.operators) +
+                       tuple(self.reserved.values()))
+
         self.lexer = lex.lex(
-            module=self, outputdir=_lex_dir, lextab=_lex_module, optimize=1,
+            module=self, outputdir=_lex_dir, lextab=_lex_module,
+            optimize=1,
         )
         self.token_stream = None
         self.filename = filename
@@ -498,9 +521,17 @@ class EnamlLexer(object):
         # that function, we add it as an attribute on both lexers.
         self.lexer.filename = filename
 
+    def write_tables(self):
+        """Write the lexer tables.
+
+        """
+        _lex_dir, _lex_module = self._tables_location()
+        lexobj = lex.lex(module=self)
+        lexobj.writetab(_lex_module, _lex_dir)
+
     def input(self, txt):
         self.lexer.input(txt)
-        self.next_token = self.make_token_stream().next
+        self.token_stream = self.make_token_stream()
 
         # State initialization
         self.paren_count = 0
@@ -509,7 +540,7 @@ class EnamlLexer(object):
 
     def token(self):
         try:
-            tok = self.next_token()
+            tok = next(self.token_stream)
             return tok
         except StopIteration:
             pass
@@ -586,31 +617,22 @@ class EnamlLexer(object):
                     msg = msg % 'single'
                 syntax_error(msg, start_tok)
 
-            # Parse the quoted string.
-            #
-            # The four combinations are:
-            #  "ur"  - raw_unicode_escape
-            #  "u"   - unicode_escape
-            #  "r"   - no need to do anything
-            #  ""    - string_escape
             s = "".join(tok.value for tok in string_toks)
             quote_type = start_tok.value.lower()
-            if quote_type == "":
-                s = s.decode("string_escape")
-            elif quote_type == "u":
-                s = s.decode("unicode_escape")
-            elif quote_type == "ur":
-                s = s.decode("raw_unicode_escape")
-            elif quote_type == "r":
-                s = s
-            else:
-                msg = 'Unknown string quote type: %r' % quote_type
-                raise AssertionError(msg)
-
-            start_tok.type = "STRING"
+            s, t = self.format_string(s, quote_type)
+            start_tok.type = t
             start_tok.value = s
 
             yield start_tok
+
+    def format_string(self, string, quote_type):
+        """Format a string according to the leading quote_type (u, r, b).
+
+        Also determine the type of the token that should be associated with the
+        string.
+
+        """
+        raise NotImplementedError()
 
     # Keep track of indentation state
     #
@@ -660,7 +682,7 @@ class EnamlLexer(object):
                 token.must_indent = False
 
             elif token.type == "WS":
-                assert token.at_line_start == True
+                assert token.at_line_start is True
                 at_line_start = True
                 token.must_indent = False
 
@@ -768,3 +790,7 @@ class EnamlLexer(object):
         end_marker.lexer = self.lexer
         yield end_marker
 
+    def _tables_location(self):
+        _lex_dir = os.path.join(os.path.dirname(__file__), 'parse_tab')
+        _lex_module = 'enaml.core.parser.parse_tab.lextab%s' % self.lex_id
+        return _lex_dir, _lex_module

@@ -160,12 +160,12 @@ public:
 
     bool has_attr( PyObjectPtr& attr )
     {
-        return PyObject_HasAttr( m_pyobj, attr.get() );
+        return PyObject_HasAttr( m_pyobj, attr.get() ) != 0;
     }
 
     bool has_attr( const char* attr )
     {
-        return PyObject_HasAttrString( m_pyobj, attr );
+        return PyObject_HasAttrString( m_pyobj, attr ) != 0;
     }
 
     bool has_attr( std::string& attr )
@@ -453,7 +453,7 @@ public:
 
     PyObjectPtr get_class() const
     {
-        return PyObjectPtr( PyMethod_GET_CLASS( m_pyobj ), true );
+        return PyObjectPtr( (PyObject *)Py_TYPE( PyMethod_GET_SELF( m_pyobj ) ) );
     }
 
 };

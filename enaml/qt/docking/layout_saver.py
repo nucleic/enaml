@@ -104,7 +104,7 @@ class LayoutSaver(NodeVisitor):
 
         """
         children = []
-        for index in xrange(tabs.count()):
+        for index in range(tabs.count()):
             self.visit(tabs.widget(index))
             children.append(self.stack.pop())
         layout = TabLayout(*children)
@@ -120,7 +120,7 @@ class LayoutSaver(NodeVisitor):
 
         """
         children = []
-        for index in xrange(splitter.count()):
+        for index in range(splitter.count()):
             self.visit(splitter.widget(index))
             children.append(self.stack.pop())
         layout = SplitLayout(*children)
@@ -144,7 +144,7 @@ class LayoutSaver(NodeVisitor):
         bar_data = defaultdict(list)
         for container, position in area.dockBarContainers():
             bar_data[position].append(container.objectName())
-        for bar_pos, names in bar_data.iteritems():
+        for bar_pos, names in bar_data.items():
             bar = DockBarLayout(*names, position=self.BAR_POSITIONS[bar_pos])
             layout.dock_bars.append(bar)
         maxed = area.maximizedWidget()

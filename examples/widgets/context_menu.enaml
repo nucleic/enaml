@@ -9,12 +9,13 @@
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.widgets.api import Window, Container, Field, Menu, Action
 
 
 enamldef SampleAction(Action):
     text = '%s action %d' % (parent.title, parent.children.index(self))
-    triggered :: print text
+    triggered :: print(text)
 
 
 enamldef SampleMenu(Menu):

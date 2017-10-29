@@ -5,10 +5,12 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from past.builtins import basestring
 from atom.api import Atom, atomref
 
 from .alias import Alias
 from .code_tracing import CodeTracer
+from ..compat import IS_PY3
 
 
 class SubscriptionObserver(object):
@@ -32,7 +34,7 @@ class SubscriptionObserver(object):
         self.ref = atomref(owner)
         self.name = name
 
-    def __nonzero__(self):
+    def __bool__(self):
         """ The notifier is valid when it has an internal owner.
 
         The atom observer mechanism will remove the observer when it
@@ -40,6 +42,10 @@ class SubscriptionObserver(object):
 
         """
         return bool(self.ref)
+
+    if not IS_PY3:
+        __nonzero__ = __bool__
+        del __bool__
 
     def __call__(self, change):
         """ The handler for the change notification.

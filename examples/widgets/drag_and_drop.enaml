@@ -46,6 +46,7 @@ declarative functions are available:
 
 << autodoc-me >>
 """
+from future.builtins import bytes
 from enaml.drag_drop import DragData, DropAction
 from enaml.layout.api import hbox, vbox, align, spacer
 from enaml.styling import StyleSheet, Style, Setter
@@ -60,7 +61,7 @@ def create_drag_data(data):
 
 
 enamldef DragLabel(Label):
-    attr data: str
+    attr data: bytes
     attr success = False
     style_class << 'success' if success else 'fail'
     features = Feature.DragEnabled
@@ -76,7 +77,7 @@ enamldef DropField(MultilineField):
         if event.mime_data().has_format('text/plain'):
             event.accept_proposed_action()
     drop => (event):
-        self.text = event.mime_data().data('text/plain')
+        self.text = event.mime_data().data('text/plain').decode('utf-8')
 
 
 enamldef ExampleStyleSheet(StyleSheet):
@@ -97,13 +98,14 @@ enamldef Main(Window):
         pass
     Container:
         constraints = [
-            hbox(vbox(lbl1, lbl2, spacer), target),
+            hbox(vbox(lbl1, lbl2), target),
         ]
         DragLabel: lbl1:
             text = 'Drag Me 1'
-            data = 'small\ndata'
+            data = b'small\ndata'
         DragLabel: lbl2:
             text = 'Drag Me 2'
-            data = '\n'.join([str(i) for i in range(100)])
+            data = b'\n'.join([bytes(str(i), 'utf-8') for i in range(100)])
         DropField: target:
+            hug_width = 'strong'
             read_only = True

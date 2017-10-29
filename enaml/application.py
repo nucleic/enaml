@@ -412,7 +412,7 @@ class Application(Atom):
         heap = self._task_heap
         with self._heap_lock:
             needs_start = len(heap) == 0
-            item = (-priority, self._counter.next(), task)
+            item = (-priority, next(self._counter), task)
             heappush(heap, item)
         if needs_start:
             if self.is_main_thread():

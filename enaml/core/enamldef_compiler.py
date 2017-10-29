@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from ..compat import IS_PY3
 from . import block_compiler as block
 from . import compiler_common as cmn
 from .enaml_ast import EnamlDef
@@ -255,6 +256,8 @@ class EnamlDefCompiler(cmn.CompilerBase):
 
         # Load and invoke the first pass code object.
         cg.load_const(first_code)
+        if IS_PY3:
+            cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         for arg in first_args:
             cg.load_fast(arg)
@@ -263,6 +266,8 @@ class EnamlDefCompiler(cmn.CompilerBase):
 
         # Load and invoke the second pass code object.
         cg.load_const(second_code)
+        if IS_PY3:
+            cg.load_const(None)  # XXX better qualified name
         cg.make_function()
         for arg in second_args:
             cg.load_fast(arg)

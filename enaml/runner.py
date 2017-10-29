@@ -8,14 +8,19 @@
 """ Command-line tool to run .enaml files.
 
 """
+from __future__ import print_function
+
 import optparse
 import os
 import sys
 import types
 
+from future.utils import exec_
+
 from enaml import imports
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
+from enaml.compat import read_source
 
 
 def main():
@@ -29,14 +34,13 @@ def main():
     options, args = parser.parse_args()
 
     if len(args) == 0:
-        print 'No .enaml file specified'
+        print('No .enaml file specified')
         sys.exit()
     else:
         enaml_file = args[0]
         script_argv = args[1:]
 
-    with open(enaml_file, 'rU') as f:
-        enaml_code = f.read()
+    enaml_code = read_source(enaml_file)
 
     # Parse and compile the Enaml source into a code object
     ast = parse(enaml_code, filename=enaml_file)
@@ -55,7 +59,7 @@ def main():
     # Bung in the command line arguments.
     sys.argv = [enaml_file] + script_argv
     with imports():
-        exec code in ns
+        exec_(code, ns)
 
     requested = options.component
     if requested in ns:
@@ -69,7 +73,7 @@ def main():
         ns['main']()
     else:
         msg = "Could not find component '%s'" % options.component
-        print msg
+        print(msg)
 
 
 if __name__ == '__main__':

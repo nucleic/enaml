@@ -15,3 +15,7 @@
 
 .gitignore~
 *.orig
+
+
+lextab*.py
+parsetab*.py

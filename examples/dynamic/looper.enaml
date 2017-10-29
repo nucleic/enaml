@@ -9,6 +9,7 @@
 
 << autodoc-me >>
 """
+from __future__ import print_function
 from enaml.core.api import Looper
 from enaml.layout.api import vbox, hbox, align
 from enaml.widgets.api import (
@@ -34,7 +35,7 @@ enamldef Main(Window):
             text = 'Print Items'
             clicked ::
                 for item in looper.items:
-                    print item
+                    print(item)
         ScrollArea: scroller:
             Container:
                 Looper: looper:
@@ -44,7 +45,7 @@ enamldef Main(Window):
                     PushButton:
                         text = 'pb %s' % loop_index
                     Slider:
-                        value :: print 'Slider %d changed' % loop_index
+                        value :: print('Slider %d changed' % loop_index)
                     Html:
                         source << '<h1><center>%s</center></h1>' % loop_item
 

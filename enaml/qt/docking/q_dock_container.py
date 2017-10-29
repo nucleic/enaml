@@ -6,6 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import Typed, Bool
+from future.builtins import str
 
 from enaml.qt.QtCore import Qt, QMargins, QPoint, QRect, QEvent, Signal
 from enaml.qt.QtGui import QApplication, QLayout, QIcon, QCursor
@@ -108,7 +109,7 @@ class QDockContainer(QDockFrame):
     topLevelChanged = Signal(bool)
 
     #: A signal emitted when the container is alerted.
-    alerted = Signal(unicode)
+    alerted = Signal(str)
 
     class FrameState(QDockFrame.FrameState):
         """ A private class for managing container drag state.

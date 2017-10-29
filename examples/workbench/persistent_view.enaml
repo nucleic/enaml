@@ -12,7 +12,7 @@ from enaml.workbench.core.api import Command
 from enaml.workbench.ui.api import ActionItem, MenuItem
 
 
-print 'Imported Persistent View!'
+print('Imported Persistent View!')
 
 
 class PickableDockItem(DockItem):

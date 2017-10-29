@@ -108,9 +108,9 @@ def iter_handles(area):
     while stack:
         widget = stack.pop()
         if isinstance(widget, QDockSplitter):
-            for index in xrange(1, widget.count()):
+            for index in range(1, widget.count()):
                 yield widget.handle(index)
-            for index in xrange(widget.count()):
+            for index in range(widget.count()):
                 stack.append(widget.widget(index))
 
 
@@ -135,7 +135,7 @@ def iter_tabs(area):
         if isinstance(widget, QDockTabWidget):
             yield widget
         elif isinstance(widget, QDockSplitter):
-            for index in xrange(widget.count()):
+            for index in range(widget.count()):
                 stack.append(widget.widget(index))
 
 
@@ -160,7 +160,7 @@ def iter_containers(area):
         if isinstance(widget, QDockContainer):
             yield widget
         elif isinstance(widget, (QDockSplitter, QDockTabWidget)):
-            for index in xrange(widget.count()):
+            for index in range(widget.count()):
                 stack.append(widget.widget(index))
 
 
@@ -240,7 +240,7 @@ def _unplug_splitter(widget, container):
 
     """
     sizes = widget.sizes()
-    for index in xrange(widget.count()):
+    for index in range(widget.count()):
         success, replace = _unplug(widget.widget(index), container)
         if success:
             if replace is not None:
@@ -265,7 +265,7 @@ def _unplug_tab_widget(widget, container):
     up the tab widget if there is only a single child remaining.
 
     """
-    for index in xrange(widget.count()):
+    for index in range(widget.count()):
         success, replace = _unplug(widget.widget(index), container)
         if success:
             assert replace is None  # tabs never hold replaceable items
@@ -315,7 +315,7 @@ def _merge_splitter(first, index, second):
         first.insertWidget(index, second)
         second.show()
     else:
-        items = [second.widget(i) for i in xrange(second.count())]
+        items = [second.widget(i) for i in range(second.count())]
         for item in reversed(items):
             first.insertWidget(index, item)
             item.show()
@@ -546,7 +546,7 @@ def _split_handle_helper(area, handle, frame):
 
     """
     splitter = handle.parent()
-    for index in xrange(1, splitter.count()):
+    for index in range(1, splitter.count()):
         if splitter.handle(index) is handle:
             _splitter_insert_frame(area, splitter, index, frame)
             return True

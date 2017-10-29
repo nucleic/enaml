@@ -242,8 +242,7 @@ class DockManager(Atom):
             manager.
 
         """
-        f = lambda w: isinstance(w, QDockContainer)
-        return filter(f, self._dock_frames)
+        return [f for f in self._dock_frames if isinstance(f, QDockContainer)]
 
     def dock_windows(self):
         """ Get an iterable of QDockWindow instances.
@@ -257,8 +256,7 @@ class DockManager(Atom):
             A list of QDockWindow instances owned by this dock manager.
 
         """
-        f = lambda w: isinstance(w, QDockWindow)
-        return filter(f, self._dock_frames)
+        return [f for f in self._dock_frames if isinstance(f, QDockWindow)]
 
     def floating_frames(self):
         """ Get an iterable of floating dock frames.
@@ -272,8 +270,7 @@ class DockManager(Atom):
             A list toplevel QDockFrame instances.
 
         """
-        f = lambda w: w.isWindow()
-        return filter(f, self._dock_frames)
+        return [f for f in self._dock_frames if f.isWindow()]
 
     def add_window(self, window):
         """ Add a floating QDockWindow to the dock manager.
@@ -448,20 +445,18 @@ class DockManager(Atom):
                     o_y = o_geo.top()
                     o_right = o_x + o_geo.width()
                     o_bottom = o_y + o_geo.height()
-                    dx = filter(filt, (
-                        o_x - f_x,
-                        o_x - (f_x + f_w),
-                        o_right - f_x,
-                        o_right - (f_x + f_w),
-                    ))
+                    dx = [c for c in (o_x - f_x,
+                                      o_x - (f_x + f_w),
+                                      o_right - f_x,
+                                      o_right - (f_x + f_w))
+                          if filt(c)]
                     if dx:
                         f_x += min(dx)
-                    dy = filter(filt, (
-                        o_y - f_y,
-                        o_y - (f_y + f_h),
-                        o_bottom - f_y,
-                        o_bottom - (f_y + f_h),
-                    ))
+                    dy = [c for c in (o_y - f_y,
+                                      o_y - (f_y + f_h),
+                                      o_bottom - f_y,
+                                      o_bottom - (f_y + f_h))
+                          if filt(c)]
                     if dy:
                         f_y += min(dy)
             frame.move(f_x, f_y)

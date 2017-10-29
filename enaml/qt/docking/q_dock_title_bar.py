@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from future.builtins import str
 from enaml.qt.QtCore import Qt, QSize, QPoint, QMargins, Signal
 from enaml.qt.QtGui import QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
 
@@ -37,7 +38,7 @@ class IDockTitleBar(QWidget):
     pinButtonToggled = Signal(bool)
 
     #: A signal emitted when the title is edited by the user.
-    titleEdited = Signal(unicode)
+    titleEdited = Signal(str)
 
     #: A signal emitted when the title bar is left double clicked.
     leftDoubleClicked = Signal(QPoint)
@@ -278,7 +279,7 @@ class QDockTitleBar(QFrame, IDockTitleBar):
     pinButtonToggled = Signal(bool)
 
     #: A signal emitted when the title is edited by the user.
-    titleEdited = Signal(unicode)
+    titleEdited = Signal(str)
 
     #: A signal emitted when the empty area is left double clicked.
     leftDoubleClicked = Signal(QPoint)

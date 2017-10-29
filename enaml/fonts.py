@@ -8,6 +8,8 @@
 """ A utility module for dealing with CSS3 font strings.
 
 """
+from past.builtins import basestring
+
 from atom.api import Coerced
 
 from .fontext import Font, FontStyle, FontCaps

@@ -1,6 +1,13 @@
 Enaml Release Notes
 ===================
 
+0.10.0 - unreleased
+-------------------
+- add support for Python 3 (3.3, 3.4, 3.5, 3.6) (f-strings are not supported)
+- refactor the parser to be based on classes
+- move every parser/lexer related module in the parser package
+- support for dict and set comprehensions in enaml files
+
 0.9.8 - 08/04/2014
 ------------------
 - Add drag and drop support. 56a2127e714c_

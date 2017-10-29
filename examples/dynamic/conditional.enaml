@@ -48,7 +48,7 @@ enamldef BazView(Container):
 
 CLASSES = [Foo, Bar, Baz]
 def generate(n):
-    return [random.choice(CLASSES)() for _ in xrange(n)]
+    return [random.choice(CLASSES)() for _ in range(n)]
 
 
 enamldef Main(Window): main:

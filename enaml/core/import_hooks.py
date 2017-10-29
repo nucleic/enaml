@@ -14,8 +14,11 @@ import struct
 import sys
 import types
 
+from future.utils import with_metaclass, exec_
+
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
+from ..compat import read_source, update_code_co_filename
 
 
 # The magic number as symbols for the current Python interpreter. These
@@ -75,12 +78,11 @@ class abstractclassmethod(classmethod):
 #------------------------------------------------------------------------------
 # Abstract Enaml Importer
 #------------------------------------------------------------------------------
-class AbstractEnamlImporter(object):
+class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
     """ An abstract base class which defines the api required to
     implement an Enaml importer.
 
     """
-    __metaclass__ = ABCMeta
 
     # Count the number of times an importer has been installed.
     # Only uninstall it when the count hits 0 again. This permits
@@ -143,7 +145,7 @@ class AbstractEnamlImporter(object):
         # module code of an Enaml file.
         try:
             with imports():
-                exec code in mod.__dict__
+                exec_(code, mod.__dict__)
         except Exception:
             if not pre_exists:
                 del sys.modules[fullname]
@@ -266,13 +268,15 @@ class EnamlImporter(AbstractEnamlImporter):
         """
         self.file_info = file_info
 
-    def _load_cache(self, file_info):
+    def _load_cache(self, file_info, set_src=False):
         """ Loads and returns the code object for the given file info.
 
         Parameters
         ----------
         file_info : EnamlFileInfo
             The file info object for the file.
+        set_src : bool
+            Should the source path of the code object be updated
 
         Returns
         -------
@@ -283,6 +287,8 @@ class EnamlImporter(AbstractEnamlImporter):
         with open(file_info.cache_path, 'rb') as cache_file:
             cache_file.read(8)
             code = marshal.load(cache_file)
+        if set_src:
+            code = update_code_co_filename(code, file_info.src_path)
         return code
 
     def _write_cache(self, code, ts, file_info):
@@ -331,6 +337,25 @@ class EnamlImporter(AbstractEnamlImporter):
             timestamp = struct.unpack('i', cache_file.read(4))[0]
         return (magic, timestamp)
 
+    def compile_code(self):
+        """ Compile the code object for the Enaml module and
+        the full path to the module for use as the __file__ attribute
+        of the module.
+
+        Returns
+        -------
+        result : (code, path)
+            The Python code object for the .enaml module, and the full
+            path to the module as a string.
+
+        """
+        file_info = self.file_info
+        src_mod_time = int(os.path.getmtime(file_info.src_path))
+        ast = parse(read_source(file_info.src_path))
+        code = EnamlCompiler.compile(ast, file_info.src_path)
+        self._write_cache(code, src_mod_time, file_info)
+        return (code, file_info.src_path)
+
     def get_code(self):
         """ Loads and returns the code object for the Enaml module and
         the full path to the module for use as the __file__ attribute
@@ -358,16 +383,11 @@ class EnamlImporter(AbstractEnamlImporter):
         if os.path.exists(file_info.cache_path):
             magic, ts = self._get_magic_info(file_info)
             if magic == MAGIC and src_mod_time <= ts:
-                code = self._load_cache(file_info)
+                code = self._load_cache(file_info, set_src=True)
                 return (code, file_info.src_path)
 
         # Otherwise, compile from source and attempt to cache
-        with open(file_info.src_path, 'rU') as src_file:
-            src = src_file.read()
-        ast = parse(src)
-        code = EnamlCompiler.compile(ast, file_info.src_path)
-        self._write_cache(code, src_mod_time, file_info)
-        return (code, file_info.src_path)
+        return self.compile_code()
 
 
 #------------------------------------------------------------------------------

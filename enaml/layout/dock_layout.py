@@ -9,6 +9,8 @@ from collections import deque
 import sys
 import warnings
 
+from future.utils import with_metaclass
+from past.builtins import basestring
 from atom.api import Atom, Int, Bool, Coerced, Enum, List, Unicode
 
 from enaml.nodevisitor import NodeVisitor
@@ -166,20 +168,22 @@ class TabLayout(LayoutNode):
         return self.items[:]
 
 
-class _SplitLayoutItem(object):
+class _SplitLayoutItemMeta(type):
+
+    def __instancecheck__(cls, instance):
+        return isinstance(instance, (ItemLayout, TabLayout, SplitLayout))
+
+    def __call__(cls, item):
+        if isinstance(item, basestring):
+            return ItemLayout(item)
+        msg = "cannot coerce '%s' to a 'SplitLayout' item"
+        raise TypeError(msg % type(item).__name__)
+
+
+class _SplitLayoutItem(with_metaclass(_SplitLayoutItemMeta, object)):
     """ A private class which performs type checking for split layouts.
 
     """
-    class __metaclass__(type):
-
-        def __instancecheck__(cls, instance):
-            return isinstance(instance, (ItemLayout, TabLayout, SplitLayout))
-
-        def __call__(cls, item):
-            if isinstance(item, basestring):
-                return ItemLayout(item)
-            msg = "cannot coerce '%s' to a 'SplitLayout' item"
-            raise TypeError(msg % type(item).__name__)
 
 
 class SplitLayout(LayoutNode):
@@ -245,21 +249,22 @@ class DockBarLayout(LayoutNode):
         return self.items[:]
 
 
-class _AreaLayoutItem(object):
+class _AreaLayoutItemMeta(type):
+    def __instancecheck__(cls, instance):
+        allowed = (type(None), ItemLayout, TabLayout, SplitLayout)
+        return isinstance(instance, allowed)
+
+    def __call__(cls, item):
+        if isinstance(item, basestring):
+            return ItemLayout(item)
+        msg = "cannot coerce '%s' to an 'AreaLayout' item"
+        raise TypeError(msg % type(item).__name__)
+
+
+class _AreaLayoutItem(with_metaclass(_AreaLayoutItemMeta, object)):
     """ A private class which performs type checking for area layouts.
 
     """
-    class __metaclass__(type):
-
-        def __instancecheck__(cls, instance):
-            allowed = (type(None), ItemLayout, TabLayout, SplitLayout)
-            return isinstance(instance, allowed)
-
-        def __call__(cls, item):
-            if isinstance(item, basestring):
-                return ItemLayout(item)
-            msg = "cannot coerce '%s' to an 'AreaLayout' item"
-            raise TypeError(msg % type(item).__name__)
 
 
 class AreaLayout(LayoutNode):
@@ -300,22 +305,24 @@ class AreaLayout(LayoutNode):
         return base + self.dock_bars
 
 
-class _DockLayoutItem(object):
+class _DockLayoutItemMeta(type):
+
+    def __instancecheck__(cls, instance):
+        return isinstance(instance, (ItemLayout, AreaLayout))
+
+    def __call__(cls, item):
+        if isinstance(item, basestring):
+            return ItemLayout(item)
+        if isinstance(item, (SplitLayout, TabLayout)):
+            return AreaLayout(item)
+        msg = "cannot coerce '%s' to a 'DockLayout' item"
+        raise TypeError(msg % type(item).__name__)
+
+
+class _DockLayoutItem(with_metaclass(_DockLayoutItemMeta, object)):
     """ A private class which performs type checking for dock layouts.
 
     """
-    class __metaclass__(type):
-
-        def __instancecheck__(cls, instance):
-            return isinstance(instance, (ItemLayout, AreaLayout))
-
-        def __call__(cls, item):
-            if isinstance(item, basestring):
-                return ItemLayout(item)
-            if isinstance(item, (SplitLayout, TabLayout)):
-                return AreaLayout(item)
-            msg = "cannot coerce '%s' to a 'DockLayout' item"
-            raise TypeError(msg % type(item).__name__)
 
 
 class DockLayout(LayoutNode):

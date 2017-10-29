@@ -11,6 +11,7 @@ import types
 from time import sleep
 
 import pytest
+from future.utils import exec_
 
 from enaml import imports
 from enaml.core.parser import parse
@@ -50,6 +51,13 @@ except ImportError:
     VTK_AVAILABLE = False
 else:
     VTK_AVAILABLE = True
+
+try:
+    import enaml.qt.qt_ipython_console
+except ImportError:
+    IPY_AVAILABLE = False
+else:
+    IPY_AVAILABLE = True
 
 
 def handle_popup_view_example(qtbot, window):
@@ -148,6 +156,11 @@ def handle_window_closing(qtbot, window):
                           ('widgets/form.enaml', None),
                           ('widgets/group_box.enaml', None),
                           ('widgets/h_group.enaml', None),
+                          pytest.param('widgets/ipython_console.enaml', None,
+                                       marks=pytest.mark.skipif(
+                                           not IPY_AVAILABLE,
+                                           reason=('Requires IPython and its '
+                                                   'qt console.'))),
                           ('widgets/image_view.enaml', None),
                           ('widgets/main_window.enaml', None),
                           ('widgets/menu_bar.enaml', None),
@@ -201,7 +214,7 @@ def test_examples(enaml_qtbot, enaml_sleep, path, handler):
         # imports can work.
         sys.path.insert(0, os.path.abspath(os.path.dirname(enaml_file)))
         with imports():
-            exec code in ns
+            exec_(code, ns)
 
         window = ns['Main']()
         window.show()

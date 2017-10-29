@@ -10,6 +10,7 @@
 """
 from contextlib import contextmanager
 
+from future.utils import exec_
 from atom.api import Atom, Bool
 
 import enaml
@@ -21,7 +22,7 @@ with enaml.imports():
     from enaml.stdlib.message_box import MessageBox
 
 
-def compile_source(source, item, filename='<test>'):
+def compile_source(source, item, filename='<test>', namespace=None):
     """ Compile Enaml source code and return the target item.
 
     Parameters
@@ -36,6 +37,9 @@ def compile_source(source, item, filename='<test>'):
         The filename to use when compiling the code. The default
         is '<test>'.
 
+    namespace : dict
+        Namespace in which to execute the code
+
     Returns
     -------
     result : object
@@ -44,8 +48,8 @@ def compile_source(source, item, filename='<test>'):
     """
     ast = parse(source, filename)
     code = EnamlCompiler.compile(ast, filename)
-    namespace = {}
-    exec code in namespace
+    namespace = namespace or {}
+    exec_(code, namespace)
     return namespace[item]
 
 

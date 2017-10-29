@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from future.builtins import str
 from atom.api import (
     Bool, Callable, List, Value, Typed, ForwardTyped, set_default, observe
 )
@@ -44,9 +45,9 @@ class ObjectCombo(Control):
     #: the first item in the list of items, or None.
     selected = d_(Value())
 
-    #: The callable to use to convert the items into unicode strings
-    #: for display. The default is the builtin 'unicode'.
-    to_string = d_(Callable(unicode))
+    #: The callable to use to convert the items into strings
+    #: for display. The default is the builtin 'str'.
+    to_string = d_(Callable(str))
 
     #: The callable to use to convert the items into icons for
     #: display. The default is a lambda which returns None.

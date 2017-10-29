@@ -112,12 +112,12 @@ def generate_example_doc(app, docs_path, script_path):
            docstring.replace('\n', '\n    '), script_image_name)
 
     with open(rst_path, 'wb') as fid:
-        fid.write(rst_template.lstrip())
+        fid.write(rst_template.lstrip().encode())
 
     temp_path = os.path.join(docs_path, os.path.basename(script_path))
 
     with open(temp_path, 'wb') as fid:
-        fid.write(script_text)
+        fid.write(script_text.encode())
 
     with enaml.imports():
         try:
@@ -157,11 +157,10 @@ def main():
     for dirname, dirnames, filenames in os.walk(base_path):
         files = [os.path.join(dirname, f)
                  for f in filenames if f.endswith('.enaml')]
-
         for fname in files:
             with open(fname, 'rb') as fid:
                 data = fid.read()
-            if '<< autodoc-me >>' in data.splitlines():
+            if b'<< autodoc-me >>' in data.splitlines():
                 try:
                     generate_example_doc(app, docs_path, fname)
                 except KeyboardInterrupt:

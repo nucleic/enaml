@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from future.builtins import str
 from atom.api import (
     Enum, Bool, Callable, List, Unicode, Typed, ForwardTyped, Event
 )
@@ -76,7 +77,7 @@ class FileDialog(ToolkitObject):
 
     #: An event fired if the dialog is accepted. The payload will be
     #: the selected path.
-    accepted = d_(Event(unicode), writable=False)
+    accepted = d_(Event(str), writable=False)
 
     #: An event fired when the dialog is rejected. It has no payload.
     rejected = d_(Event(), writable=False)
