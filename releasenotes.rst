@@ -1,12 +1,13 @@
 Enaml Release Notes
 ===================
 
-0.10.0 - unreleased
+0.10.0 - 12/11/2017
 -------------------
-- add support for Python 3 (3.3, 3.4, 3.5, 3.6) (f-strings are not supported)
-- refactor the parser to be based on classes
-- move every parser/lexer related module in the parser package
-- support for dict and set comprehensions in enaml files
+- add support for Qt5 (based on QtPy) PR #228
+- add support for Python 3 (3.3, 3.4, 3.5, 3.6) (f-strings are not supported) PR #227
+- refactor the parser to be based on classes PR #227
+- move every parser/lexer related module in the parser package PR #227
+- support for dict and set comprehensions in enaml files PR #227
 
 0.9.8 - 08/04/2014
 ------------------
