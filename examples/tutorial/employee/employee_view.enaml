@@ -5,6 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from __future__ import print_function
 from enaml.layout.api import vertical, horizontal, align, spacer, vbox
 from enaml.widgets.api import (
     Window, Label, Field, Form, DateSelector, CheckBox, GroupBox, Container,
@@ -49,7 +50,7 @@ enamldef EmployeeForm(Form):
         text = 'Password:'
     Field:
         echo_mode << 'password' if not pw_cb.checked else 'normal'
-        text :: print 'Password:', text
+        text :: print('Password:', text)
     Label:
         text = 'Show Password:'
     CheckBox: pw_cb:

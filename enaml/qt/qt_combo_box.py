@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -9,7 +9,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.combo_box import ProxyComboBox
 
-from .QtGui import QComboBox
+from .QtWidgets import QComboBox
 
 from .qt_control import QtControl
 

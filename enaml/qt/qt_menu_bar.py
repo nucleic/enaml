@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from atom.api import Typed
 
 from enaml.widgets.menu_bar import ProxyMenuBar
 
-from .QtGui import QMainWindow, QMenuBar
+from .QtWidgets import QMainWindow, QMenuBar
 
 from .qt_menu import QtMenu
 from .qt_toolkit_object import QtToolkitObject

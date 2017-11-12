@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,7 +7,9 @@
 #------------------------------------------------------------------------------
 from future.builtins import str
 from enaml.qt.QtCore import Qt, QSize, QPoint, QMargins, Signal
-from enaml.qt.QtGui import QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
+from enaml.qt.QtWidgets import (
+    QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy
+)
 
 from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton
 from .q_icon_widget import QIconWidget

@@ -9,6 +9,8 @@ matrix:
   include:
     - env: PYTHON=2.7 QT_VERSION=4 IPY_VERSION=3
     - env: PYTHON=3.4 QT_VERSION=4 IPY_VERSION=3
+    - env: PYTHON=3.5 QT_VERSION=5 IPY_VERSION=5
+    - env: PYTHON=3.6 QT_VERSION=5 IPY_VERSION=6
 
 before_install:
 
@@ -31,6 +33,8 @@ before_install:
   # Install enaml dependencies and include special widgets dependencies
   # We do not test vtk as it segfaults on Travis
   - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib
+  # Install qtpy from pip to get a recent version (>= 1.3) on python 3.4
+  - $PIP_INSTALL qtpy
   - 'if [ $IPY_VERSION < 4 ]; then
         $CONDA_INSTALL ipython=$IPY_VERSION ipython-qtconsole;
      else
@@ -61,7 +65,7 @@ script:
   # Run the enaml test suite
   - cd $TRAVIS_BUILD_DIR
 #  - export QT_API=pyqt$QT_VERSION
-  - py.test tests --cov enaml --cov-report xml -vx
+  - py.test tests --cov enaml --cov-report xml -v
 
 after_success:
   - cd $TRAVIS_BUILD_DIR

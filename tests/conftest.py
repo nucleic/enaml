@@ -12,8 +12,15 @@ import os
 from traceback import format_exc
 
 # Make sure enaml already imported qt to avoid issues with pytest
-import enaml.qt
-os.environ.setdefault('PYTEST_QT_API', 'pyqt4v2')
+from enaml.qt import QT_API, PYQT5_API, PYQT4_API, PYSIDE_API, PYSIDE2_API
+if QT_API in PYQT5_API:
+    os.environ.setdefault('PYTEST_QT_API', 'pyqt5')
+elif QT_API in PYQT4_API:
+    os.environ.setdefault('PYTEST_QT_API', 'pyqt4v2')
+elif QT_API in PYSIDE2_API:
+    os.environ.setdefault('PYTEST_QT_API', 'pyside2')
+else:
+    os.environ.setdefault('PYTEST_QT_API', 'pyside')
 
 import pytest
 from utils import close_all_windows, close_all_popups

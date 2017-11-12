@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,7 @@ from enaml.widgets.dialog import ProxyDialog
 from enaml.widgets.window import CloseEvent
 
 from .QtCore import Qt
-from .QtGui import QDialog
+from .QtWidgets import QDialog
 
 from .q_deferred_caller import deferredCall
 from .q_window_base import QWindowBase

@@ -1,12 +1,12 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from enaml.qt.QtCore import Qt, QEvent
-from enaml.qt.QtGui import QApplication
+from enaml.qt.QtWidgets import QApplication
 
 from .event_types import DockAreaContentsChanged
 from .q_dock_bar import QDockBar

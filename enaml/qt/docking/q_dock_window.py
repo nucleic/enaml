@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from atom.api import Bool, Typed
 from enaml.qt.QtCore import (
     Qt, QMetaObject, QMargins, QPoint, QRect, QSize, Signal
 )
-from enaml.qt.QtGui import QFrame, QHBoxLayout, QLayout
+from enaml.qt.QtWidgets import QFrame, QHBoxLayout, QLayout
 
 from .event_types import DockAreaContentsChanged
 from .q_bitmap_button import QBitmapButton, QCheckedBitmapButton

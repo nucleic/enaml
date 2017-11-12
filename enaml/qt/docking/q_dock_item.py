@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from future.builtins import str
 from enaml.qt.QtCore import Qt, QRect, QSize, QPoint, QTimer, Signal
-from enaml.qt.QtGui import QApplication, QFrame, QLayout
+from enaml.qt.QtWidgets import QApplication, QFrame, QLayout
 
 from .event_types import (
     QDockItemEvent, DockItemShown, DockItemHidden, DockItemClosed

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,8 @@ from atom.api import Int, Typed
 from enaml.widgets.abstract_button import ProxyAbstractButton
 
 from .QtCore import QSize
-from .QtGui import QAbstractButton, QIcon
+from .QtGui import QIcon
+from .QtWidgets import QAbstractButton
 
 from .q_resource_helpers import get_cached_qicon
 from .qt_control import QtControl

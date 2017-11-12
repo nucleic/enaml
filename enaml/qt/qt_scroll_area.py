@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,8 @@ from atom.api import Typed, Value
 from enaml.widgets.scroll_area import ProxyScrollArea
 
 from .QtCore import Qt, QEvent, QSize, QRect, QPoint, Signal
-from .QtGui import QApplication, QScrollArea, QPainter, QPalette
+from .QtGui import QPainter, QPalette
+from .QtWidgets import QApplication, QScrollArea
 
 from .qt_container import QtContainer
 from .qt_frame import QtFrame

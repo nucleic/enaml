@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,8 @@ from atom.api import Typed
 from enaml.widgets.menu import ProxyMenu
 
 from .QtCore import Qt
-from .QtGui import QMenu, QCursor
+from .QtGui import QCursor
+from .QtWidgets import QMenu
 
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup

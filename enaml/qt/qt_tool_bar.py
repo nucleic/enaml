@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -12,7 +12,7 @@ from atom.api import Int, Typed
 from enaml.widgets.tool_bar import ProxyToolBar
 
 from .QtCore import Qt, Signal
-from .QtGui import QToolBar, QMainWindow
+from .QtWidgets import QToolBar, QMainWindow
 
 from .qt_action import QtAction
 from .qt_action_group import QtActionGroup

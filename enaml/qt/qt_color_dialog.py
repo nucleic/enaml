@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,7 +11,8 @@ from enaml.colors import Color
 from enaml.widgets.color_dialog import ProxyColorDialog
 
 from .QtCore import Signal
-from .QtGui import QColor, QColorDialog
+from .QtGui import QColor
+from .QtWidgets import QColorDialog
 
 from .qt_toolkit_dialog import QtToolkitDialog
 

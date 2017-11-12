@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from atom.api import Atom, Int, Typed, List, atomref
 from enaml.layout.dock_layout import DockLayout, DockLayoutValidator
 
 from enaml.qt.QtCore import Qt, QPoint, QRect, QObject
-from enaml.qt.QtGui import QApplication
+from enaml.qt.QtWidgets import QApplication
 
 from .dock_overlay import DockOverlay
 from .layout_handling import layout_hit_test, plug_frame, iter_containers

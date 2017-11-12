@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -13,7 +13,7 @@ from enaml.widgets.main_window import ProxyMainWindow
 from enaml.widgets.window import CloseEvent
 
 from .QtCore import Qt
-from .QtGui import QMainWindow
+from .QtWidgets import QMainWindow
 
 from .q_deferred_caller import deferredCall
 from .qt_container import QtContainer

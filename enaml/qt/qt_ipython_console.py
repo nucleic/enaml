@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2014, Nucleic Development Team.
+# Copyright (c) 2014-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -25,7 +25,7 @@ except ImportError as e:
                'from IPython < 4.0 failed with: {}')
         raise ImportError(msg.format(e, e2))
 
-from .QtGui import QFrame, QVBoxLayout
+from .QtWidgets import QFrame, QVBoxLayout
 
 from . import focus_registry
 from .q_deferred_caller import deferredCall

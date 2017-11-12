@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 import os
 import sys
+import inspect
 from setuptools import find_packages, Extension, setup
 from setuptools.command.build_ext import build_ext
 from setuptools.command.install import install
@@ -147,8 +148,8 @@ setup(
     url='https://github.com/nucleic/enaml',
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.rst').read(),
-    requires=['future', 'atom', 'PyQt', 'ply', 'kiwisolver'],
-    install_requires=['setuptools', 'future', 'atom',
+    requires=['future', 'atom', 'PyQt', 'ply', 'kiwisolver', 'qtpy'],
+    install_requires=['setuptools', 'future', 'atom', 'qtpy>=1.3',
                       'kiwisolver', 'ply>=3.4'],
     packages=find_packages(),
     package_data={

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2014, Nucleic Development Team.
+# Copyright (c) 2014-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -11,8 +11,9 @@ from enaml.drag_drop import DropAction
 from enaml.styling import StyleCache
 from enaml.widgets.widget import Feature, ProxyWidget
 
-from .QtCore import Qt, QSize, QPoint
-from .QtGui import QFont, QWidget, QWidgetAction, QApplication, QDrag, QPixmap
+from .QtCore import Qt, QSize, QPoint,  __version_info__
+from .QtGui import QFont, QDrag, QPixmap, QCursor
+from .QtWidgets import QWidget, QWidgetAction, QApplication
 
 from . import focus_registry
 from .q_resource_helpers import (
@@ -343,7 +344,15 @@ class QtWidget(QtToolkitObject, ProxyWidget):
             qimg = get_cached_qimage(drag_data.image)
             qdrag.setPixmap(QPixmap.fromImage(qimg))
         else:
-            qdrag.setPixmap(QPixmap.grabWidget(widget))
+            if __version_info__ < (5, ):
+                qdrag.setPixmap(QPixmap.grabWidget(widget))
+            else:
+                qdrag.setPixmap(widget.grab())
+        if drag_data.hotspot:
+            qdrag.setHotSpot(QPoint(*drag_data.hotspot))
+        else:
+            cursor_position = widget.mapFromGlobal(QCursor.pos())
+            qdrag.setHotSpot(cursor_position)
         default = Qt.DropAction(drag_data.default_drop_action)
         supported = Qt.DropActions(drag_data.supported_actions)
         qresult = qdrag.exec_(supported, default)

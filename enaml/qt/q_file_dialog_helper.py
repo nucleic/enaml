@@ -1,29 +1,21 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from . import QT_API
-from .QtGui import QFileDialog
+from qtpy.compat import (getexistingdirectory, getopenfilename,
+                         getopenfilenames, getsavefilename)
 
 
-# A mapping from the Enaml dialog modes to the name of the static method
-# on QFileDialog which will launch the appropriate native dialog.
-if QT_API == 'pyqt':
-    _STATIC_METHOD_NAMES = {
-        'open_file': 'getOpenFileNameAndFilter',
-        'open_files': 'getOpenFileNamesAndFilter',
-        'save_file': 'getSaveFileNameAndFilter',
-        'directory': 'getExistingDirectory',
-    }
-else:
-    _STATIC_METHOD_NAMES = {
-        'open_file': 'getOpenFileName',
-        'open_files': 'getOpenFileNames',
-        'save_file': 'getSaveFileName',
-        'directory': 'getExistingDirectory',
+# A mapping from the Enaml dialog modes to the name of the qtpy compatibility
+# function which will launch the appropriate native dialog.
+_STATIC_METHOD_NAMES = {
+    'open_file': getopenfilename,
+    'open_files': getopenfilenames,
+    'save_file': getsavefilename,
+    'directory': getexistingdirectory,
     }
 
 
@@ -39,4 +31,4 @@ def get_file_dialog_exec_func(mode):
     """
     if mode not in _STATIC_METHOD_NAMES:
         raise ValueError("Unknown file dialog mode: '%s'" % mode)
-    return getattr(QFileDialog, _STATIC_METHOD_NAMES[mode])
+    return _STATIC_METHOD_NAMES[mode]

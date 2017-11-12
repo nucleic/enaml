@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from atom.api import Typed
 from enaml.widgets.label import ProxyLabel
 
 from .QtCore import Qt
-from .QtGui import QLabel
+from .QtWidgets import QLabel
 
 from .qt_control import QtControl
 

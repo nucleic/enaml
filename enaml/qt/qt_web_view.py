@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -10,7 +10,7 @@ from atom.api import Typed
 from enaml.widgets.web_view import ProxyWebView
 
 from .QtCore import QUrl
-from .QtWebKit import QWebView
+from .QtWebEngineWidgets import QWebEngineView
 
 from .qt_control import QtControl
 
@@ -20,7 +20,7 @@ class QtWebView(QtControl, ProxyWebView):
 
     """
     #: A reference to the widget created by the proxy.
-    widget = Typed(QWebView)
+    widget = Typed(QWebEngineView)
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -29,7 +29,7 @@ class QtWebView(QtControl, ProxyWebView):
         """ Create the underlying QWebView control.
 
         """
-        self.widget = QWebView(self.parent_widget())
+        self.widget = QWebEngineView(self.parent_widget())
 
     def init_widget(self):
         """ Create and initialize the underlying control.
