@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 import os
 import sys
+import inspect
 from setuptools import find_packages, Extension, setup
 from setuptools.command.build_ext import build_ext
 from setuptools.command.install import install
