@@ -116,7 +116,7 @@ class Install(install):
         # Follow logic used in setuptools
         # cf https://github.com/pypa/setuptools/blob/master/setuptools/command/install.py#L58
         if self.old_and_unmanageable or self.single_version_externally_managed:
-            install.run(self)
+            return install.run(self)
 
         if not self._called_from_setup(inspect.currentframe()):
             # Run in backward-compatibility mode to support bdist_* commands.

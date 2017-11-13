@@ -1,6 +1,10 @@
 Enaml Release Notes
 ===================
 
+0.10.1 - 13/11/2017
+-------------------
+- fix mistake in setup.py file preventing conda package building
+
 0.10.0 - 12/11/2017
 -------------------
 - add support for Qt5 (based on QtPy) PR #228
