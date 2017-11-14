@@ -20,10 +20,16 @@ from enaml.colors import parse_color
 from enaml.fonts import parse_font
 from enaml.scintilla.scintilla import ProxyScintilla
 
-if QT_API in PYQT4_API:
+try:
     from PyQt4 import Qsci
-else:
-    import QScintilla as Qsci
+except ImportError:
+    try:
+        from PyQt5 import Qsci
+    except ImportError:
+        try:
+            import QScintilla as Qsci
+        except ImportError:
+            raise ImportError("Qsci couldn't be imported from PyQt4, PyQt5, or QScintilla")
 
 
 from .QtGui import QColor, QFont

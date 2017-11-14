@@ -10,10 +10,16 @@ if QT_API in PYSIDE_API or QT_API in PYSIDE2_API:
     msg = 'the Qt Scintilla widget is only available when using PyQt'
     raise ImportError(msg)
 
-if QT_API in PYQT4_API:
+try:
     from PyQt4 import Qsci
-else:
-    import QScintilla as Qsci
+except ImportError:
+    try:
+        from PyQt5 import Qsci
+    except ImportError:
+        try:
+            import QScintilla as Qsci
+        except ImportError:
+            raise ImportError("Qsci couldn't be imported from PyQt4, PyQt5, or QScintilla")
 
 
 class PythonLexer(Qsci.QsciLexerPython):
