@@ -23,6 +23,7 @@ before_install:
   # Setup environment
   - travis_retry conda update --yes conda
   - conda config --set always_yes yes
+
   # Display those for debug purposes
   - conda info -a
   - conda create -n travisci python=$PYTHON pip
