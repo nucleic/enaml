@@ -40,7 +40,9 @@ before_install:
      else
         $CONDA_INSTALL ipython=$IPY_VERSION qtconsole;
      fi'
-  - 'if [ $QT_VERSION > 4 ]; then
+
+  # Install QScintilla (for Qt5)
+  - 'if [ $QT_VERSION -gt 4 ]; then
          $PIP_INSTALL QScintilla;
      fi'
   - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
