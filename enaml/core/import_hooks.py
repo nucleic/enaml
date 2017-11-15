@@ -501,7 +501,7 @@ class EnamlZipImporter(EnamlImporter):
                             name_list = archive.namelist()
                             if ((code_path in name_list) or
                                     (cache_path in name_list)):
-                                return cls(file_info,archive_path)
+                                return cls(file_info, archive_path)
                     except IOError:
                         return
 
@@ -571,7 +571,10 @@ class EnamlZipImporter(EnamlImporter):
         instead of the source file. The `self.archive` must be a reference
         to the current archive object.
         """
-        return self.archive.read(src_path).decode()
+        if sys.version_info.major > 2:
+            return self.archive.read(src_path).decode()
+        else:
+            return self.archive.read(src_path)
 
     def get_code(self):
         """ Loads and returns the code object for the Enaml module and
