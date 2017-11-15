@@ -47,6 +47,7 @@ The core team that coordinates development on GitHub can be found here:
 http://github.com/nucleic. The current team consists of:
 
 * Chris Colbert
+* Matthieu Dartiailh
 
 Previous contributors include:
 
@@ -87,7 +88,7 @@ With this in mind, the following banner should be used in any source code file
 to indicate the copyright and license terms:
 
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
