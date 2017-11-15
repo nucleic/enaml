@@ -11,11 +11,10 @@ import enaml
 import struct
 import marshal
 import zipfile
-from io import BytesIO
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.import_hooks import MAGIC, make_file_info
-from utils import wait_for_window_displayed, compile_source
+from utils import wait_for_window_displayed
 
 
 def generate_cache(path):
@@ -28,11 +27,17 @@ def generate_cache(path):
     code = EnamlCompiler.compile(ast, path)
 
     #: Generate cache
-    data = BytesIO()
-    data.write(MAGIC)
-    data.write(struct.pack('i', int(os.path.getmtime(path))))
-    marshal.dump(code, data)
-    return data.getvalue()
+    with open('tmp.enamlc', 'wb') as f:
+        f.write(MAGIC)
+        f.write(struct.pack('i', int(os.path.getmtime(path))))
+        marshal.dump(code, f)
+    with open('tmp.enamlc', 'rb') as f:
+        data = f.read()
+    #: Cleanup
+    if os.path.exists('tmp.enamlc'):
+        os.remove('tmp.enamlc')
+
+    return data
 
 
 def make_library(lib):
