@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from . import QT_API, PYSIDE_API, PYSIDE2_API, PYQT4_API
+from . import QT_API, PYSIDE_API, PYSIDE2_API, PYQT4_API, PYQT5_API
 if QT_API in PYSIDE_API or QT_API in PYSIDE2_API:
     msg = 'the Qt Scintilla widget is only available when using PyQt'
     raise ImportError(msg)
@@ -22,6 +22,8 @@ from enaml.scintilla.scintilla import ProxyScintilla
 
 if QT_API in PYQT4_API:
     from PyQt4 import Qsci
+elif QT_API in PYQT5_API:
+    from PyQt5 import Qsci
 else:
     import QScintilla as Qsci
 

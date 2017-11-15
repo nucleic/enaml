@@ -23,6 +23,7 @@ before_install:
   # Setup environment
   - travis_retry conda update --yes conda
   - conda config --set always_yes yes
+
   # Display those for debug purposes
   - conda info -a
   - conda create -n travisci python=$PYTHON pip
@@ -39,6 +40,11 @@ before_install:
         $CONDA_INSTALL ipython=$IPY_VERSION ipython-qtconsole;
      else
         $CONDA_INSTALL ipython=$IPY_VERSION qtconsole;
+     fi'
+
+  # Install QScintilla (for Qt5)
+  - 'if [ $QT_VERSION -gt 4 ]; then
+         $PIP_INSTALL QScintilla;
      fi'
   - $PIP_INSTALL https://github.com/nucleic/atom/tarball/master
   - $PIP_INSTALL https://github.com/nucleic/kiwi/tarball/master

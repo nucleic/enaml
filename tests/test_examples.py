@@ -38,7 +38,10 @@ else:
 
 
 try:
-    from PyQt4 import Qsci
+    try:
+        from PyQt4 import Qsci
+    except:
+        from PyQt5 import Qsci
 except ImportError:
     SCINTILLA_AVAILABLE = False
 else:
