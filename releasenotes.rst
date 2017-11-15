@@ -1,6 +1,10 @@
 Enaml Release Notes
 ===================
 
+0.10.2 - unreleased
+-------------------
+- fix import of QScintilla under PyQt5 PR #230
+
 0.10.1 - 13/11/2017
 -------------------
 - fix mistake in setup.py file preventing conda package building

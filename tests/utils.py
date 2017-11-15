@@ -21,6 +21,10 @@ from enaml.widgets.api import Window, Dialog, PopupView
 with enaml.imports():
     from enaml.stdlib.message_box import MessageBox
 
+# Timeout for qtbot wait (the value used is large due to Travis being sometimes
+# very slow).
+TIMEOUT = 2000
+
 
 def compile_source(source, item, filename='<test>', namespace=None):
     """ Compile Enaml source code and return the target item.
@@ -68,7 +72,7 @@ def run_pending_tasks(qtbot, timeout=1000):
     """
     def check_pending_tasks():
         assert not qtbot.enaml_app.has_pending_tasks()
-    qtbot.wait_until(check_pending_tasks)
+    qtbot.wait_until(check_pending_tasks, TIMEOUT)
 
 
 def get_window(qtbot, cls=Window, timeout=1000):
@@ -96,7 +100,7 @@ def get_window(qtbot, cls=Window, timeout=1000):
     def check_window_presence():
         assert [w for w in Window.windows if isinstance(w, cls)]
 
-    qtbot.wait_until(check_window_presence)
+    qtbot.wait_until(check_window_presence, TIMEOUT)
     for w in Window.windows:
         if isinstance(w, cls):
             return w
@@ -127,7 +131,7 @@ def get_popup(qtbot, cls=PopupView, timeout=1000):
     def check_popup_presence():
         assert [p for p in PopupView.popup_views if isinstance(p, cls)]
 
-    qtbot.wait_until(check_popup_presence)
+    qtbot.wait_until(check_popup_presence, TIMEOUT)
     for p in PopupView.popup_views:
         if isinstance(p, cls):
             return p
@@ -167,7 +171,7 @@ def wait_for_destruction(qtbot, widget):
         return
     obs = EventObserver()
     widget.observe('destroyed', obs.callback)
-    qtbot.wait_until(obs.assert_called)
+    qtbot.wait_until(obs.assert_called, TIMEOUT)
 
 
 def close_window_or_popup(qtbot, window_or_popup):
@@ -180,7 +184,7 @@ def close_window_or_popup(qtbot, window_or_popup):
     obs = EventObserver()
     window_or_popup.observe('destroyed', obs.callback)
     window_or_popup.close()
-    qtbot.wait_until(obs.assert_called)
+    qtbot.wait_until(obs.assert_called, TIMEOUT)
 
 
 @contextmanager
@@ -246,7 +250,7 @@ class ScheduledClosing(object):
         finally:
             if not self.skip_answer:
                 getattr(dial, self.op)()
-            self.bot.wait_until(obs.assert_called)
+            self.bot.wait_until(obs.assert_called, TIMEOUT)
 
     def was_called(self):
         """Assert the scheduler was called.
@@ -287,7 +291,7 @@ def handle_dialog(qtbot, op='accept', handler=lambda qtbot, window: window,
     except Exception:
         raise
     else:
-        qtbot.wait_until(sch.was_called)
+        qtbot.wait_until(sch.was_called, TIMEOUT)
 
 
 @contextmanager
