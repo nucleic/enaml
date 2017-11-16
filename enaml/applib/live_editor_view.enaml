@@ -56,12 +56,8 @@ enamldef EditorPanel(Container):
             "indent": 4,
             "tab_indents": True,
             "backspace_unindents": True,
-            "autocomplete_threshold": 3,
-            "autocomplete_case_sensitivity": True,
         }
         activated :: set_text(getattr(model, text_attr))
-        autocomplete = 'all'
-        autocomplete_options = ["enamldef", "func", "attr", "alias", "template"]
         text_changed :: timer.start()
         Timer: timer:
             interval = 350
