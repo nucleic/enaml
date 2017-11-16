@@ -27,9 +27,10 @@ elif QT_API in PYQT5_API:
 else:
     import QScintilla as Qsci
 
-from .QtGui import QColor, QFont, QPixmap
 
-from .q_resource_helpers import QColor_from_Color, QFont_from_Font, get_cached_qimage
+from .QtGui import QColor, QFont
+
+from .q_resource_helpers import QColor_from_Color, QFont_from_Font
 from .qt_control import QtControl
 from .scintilla_lexers import LEXERS, LEXERS_INV
 from .scintilla_tokens import TOKENS
@@ -78,19 +79,6 @@ WHITE_SPACE = {
     'invisible': Base.SCWS_INVISIBLE,
 }
 
-AUTOCOMPLETION_USE_SINGLE = {
-    'never': Qsci.QsciScintilla.AcusNever,
-    'explicit': Qsci.QsciScintilla.AcusExplicit,
-    'always': Qsci.QsciScintilla.AcusAlways,
-}
-
-AUTOCOMPLETION_SOURCE = {
-    'none': Qsci.QsciScintilla.AcsNone,
-    'all': Qsci.QsciScintilla.AcsAll,
-    'document': Qsci.QsciScintilla.AcsDocument,
-    'apis': Qsci.QsciScintilla.AcsAPIs,
-}
-
 
 def _make_color(color_str):
     """ A function which converts a color string into a QColor.
@@ -122,9 +110,6 @@ class QtScintilla(QtControl, ProxyScintilla):
     #: A reference to the widget created by the proxy.
     widget = Typed(Qsci.QsciScintilla)
 
-    #: A reference to the autocomplete API
-    qsci_api = Typed(Qsci.QsciAPIs)
-
     #: A strong reference to the QsciDocument handle.
     qsci_doc = Typed(Qsci.QsciDocument)
 
@@ -144,7 +129,6 @@ class QtScintilla(QtControl, ProxyScintilla):
         super(QtScintilla, self).init_widget()
         d = self.declaration
         self.set_document(d.document)
-        self.set_autocomplete(d.autocomplete)
         self.set_syntax(d.syntax, refresh_style=False)
         self.set_settings(d.settings)
         self.set_zoom(d.zoom)
@@ -161,8 +145,6 @@ class QtScintilla(QtControl, ProxyScintilla):
         # Clear the strong reference to the document. It must be freed
         # *before* the last widget using it is freed or PyQt segfaults.
         del self.qsci_doc
-        if self.qsci_api:
-            del self.qsci_api
         super(QtScintilla, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -271,12 +253,6 @@ class QtScintilla(QtControl, ProxyScintilla):
                 msg = "unknown token '%s' given for the '%s' syntax"
                 logger.warn(msg % (token, syntax))
 
-    def refresh_autocomplete(self):
-        """ If the lexer changes, update the API options"""
-        d = self.declaration
-        if d.autocomplete in ['api', 'all'] and d.autocomplete_options:
-            self.set_autocomplete_options(d.autocomplete_options)
-
     #--------------------------------------------------------------------------
     # ProxyScintilla API
     #--------------------------------------------------------------------------
@@ -300,7 +276,6 @@ class QtScintilla(QtControl, ProxyScintilla):
             old.deleteLater()
         lexer_cls = LEXERS.get(syntax) or (lambda w: None)
         self.widget.setLexer(lexer_cls(self.widget))
-        self.refresh_autocomplete()
         if refresh_style:
             self.refresh_style()
 
@@ -357,23 +332,15 @@ class QtScintilla(QtControl, ProxyScintilla):
         send(w.SCI_SETINDENT, pull_int('indent', 0))
         send(w.SCI_SETTABINDENTS, pull_bool('tab_indents', False))
         send(w.SCI_SETBACKSPACEUNINDENTS,
-             pull_bool('backspace_unindents', False))
+            pull_bool('backspace_unindents', False))
         send(w.SCI_SETINDENTATIONGUIDES,
-             pull_enum(INDENTATION_GUIDES, 'indentation_guides', 'none'))
+            pull_enum(INDENTATION_GUIDES, 'indentation_guides', 'none'))
 
         # White Space
         send(w.SCI_SETVIEWWS, pull_enum(WHITE_SPACE, 'view_ws', 'invisible'))
         send(w.SCI_SETWHITESPACESIZE, pull_int('white_space_size', 1))
         send(w.SCI_SETEXTRAASCENT, pull_int('extra_ascent', 0))
         send(w.SCI_SETEXTRADESCENT, pull_int('extra_descent', 0))
-
-        #: Autocompletion
-        #: See https://qscintilla.com/general-autocompletion/
-        w.setAutoCompletionThreshold(pull_int('autocompletion_threshold', 3))
-        w.setAutoCompletionCaseSensitivity(pull_bool('autocomplete_case_sensitivity', False))
-        w.setAutoCompletionReplaceWord(pull_bool('autocompletion_replace_word', False))
-        w.setAutoCompletionUseSingle(
-            pull_enum(AUTOCOMPLETION_USE_SINGLE, 'autocompletion_use_single', 'never'))
 
     def set_zoom(self, zoom):
         """ Set the zoom factor on the widget.
@@ -392,48 +359,6 @@ class QtScintilla(QtControl, ProxyScintilla):
 
         """
         self.widget.setText(text)
-
-    def set_autocomplete(self, mode):
-        """ Set the autocompletion mode
-        
-        """
-        self.widget.setAutoCompletionSource(AUTOCOMPLETION_SOURCE[mode])
-
-    def set_autocomplete_options(self, options):
-        """ Set the autocompletion options for when the autocompletion mode
-            is in 'all' or 'apis'.
-            
-            autocompletions = [
-                "test_autocompletion",
-                "autocompletion_with_image?1", # "?1" references to image nr. 1
-                "another_autocompletion"
-            ]
-            
-        """
-
-        #: Delete the old if one exists
-        if self.qsci_api:
-            #: Please note that it is not possible to add or remove entries once you’ve “prepared”
-            self.qsci_api.deleteLater()
-            self.qsci_api = None
-
-        #: Add the new options
-        api = self.qsci_api = Qsci.QsciAPIs(self.widget.lexer())
-        for option in options:
-            api.add(option)
-        api.prepare()
-
-    def set_autocomplete_image(self, images):
-        """ Set the images that can be used in autocompletion results. 
-            
-        """
-        w = self.widget
-        for i, image in enumerate(images):
-            qpixmap = None
-            if image:
-                qimage = get_cached_qimage(image)
-                qpixmap = QPixmap.fromImage(qimage)
-                w.registerImage(i, qpixmap)
 
     #--------------------------------------------------------------------------
     # Reimplementations
