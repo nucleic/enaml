@@ -80,7 +80,7 @@ def solve_ordering(nodes):
     for node in nodes:
         node_var = variables[node.id]
         flat.append((node_var.value(), node))
-    flat.sort()
+    flat.sort(key=lambda n: n[0])
 
     return [pair[1] for pair in flat]
 
