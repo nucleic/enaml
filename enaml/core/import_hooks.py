@@ -398,7 +398,7 @@ class EnamlImporter(AbstractEnamlImporter):
             return None.
         
         """
-        # If the .enaml file does not exists, just use the .enamlc file.
+        # If the .enaml file does not exist, just use the .enamlc file.
         # We can presume that the latter exists because it was already
         # checked by the loader. Should the situation ever arise that
         # it was deleted between then and now, an IOError is more
