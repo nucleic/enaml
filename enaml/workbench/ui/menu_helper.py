@@ -76,13 +76,7 @@ def solve_ordering(nodes):
         solver.addConstraint(cn)
     solver.updateVariables()
 
-    flat = []
-    for node in nodes:
-        node_var = variables[node.id]
-        flat.append((node_var.value(), node))
-    flat.sort(key=lambda n: id(n))
-
-    return [pair[1] for pair in flat]
+    return sorted(nodes, key=lambda node: (variables[node.id].value(), id(node)))
 
 
 class PathNode(Atom):
