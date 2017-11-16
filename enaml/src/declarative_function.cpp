@@ -156,7 +156,7 @@ DFunc_repr( DFunc* self )
     if( name && Py23Str_Check( name.get() ) )
         ostr << Py23Str_AS_STRING( name.get() );
     ostr << ">";
-    return Py23Str_FromFormat( ostr.str().c_str() );
+    return Py23Str_FromString( ostr.str().c_str() );
 }
 
 
