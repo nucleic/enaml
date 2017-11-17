@@ -1,18 +1,19 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2017, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from abc import ABCMeta, abstractmethod
-from collections import defaultdict, namedtuple
 import imp
 import marshal
 import os
+import io
 import struct
 import sys
 import types
+from abc import ABCMeta, abstractmethod
+from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 
 
@@ -20,7 +21,7 @@ from future.utils import with_metaclass, exec_
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
-from ..compat import read_source, update_code_co_filename
+from ..compat import read_source, detect_encoding, update_code_co_filename
 
 
 # The magic number as symbols for the current Python interpreter. These
@@ -164,7 +165,7 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
         of AbstractEnamlImporter on success.
 
         Parameters
-        ---------
+        ----------
         fullname : string
             The fully qualified name of the module.
 
@@ -218,7 +219,7 @@ class EnamlImporter(AbstractEnamlImporter):
         of this class on success.
 
         Parameters
-        ---------
+        ----------
         fullname : string
             The fully qualified name of the module.
 
@@ -341,29 +342,29 @@ class EnamlImporter(AbstractEnamlImporter):
 
     def read_source(self):
         """ Read the source code for the Enaml module.
-        
+
         Returns
         -------
         result : string or bytes
             The source code to be passed to the parser.
-        
+
         """
         return read_source(self.file_info.src_path)
 
     def get_source_modified_time(self):
-        """ Get the last modified time of the source for the Enaml module. 
-        
+        """ Get the last modified time of the source for the Enaml module.
+
         """
         return int(os.path.getmtime(self.file_info.src_path))
 
     def source_exists(self):
         """ Check if the source still exists for the Enaml module.
-        
+
         Returns
         -------
         result : boolean
             Whether or not the source for this import exists.
-        
+
         """
         return os.path.exists(self.file_info.src_path)
 
@@ -387,16 +388,16 @@ class EnamlImporter(AbstractEnamlImporter):
         return (code, file_info.src_path)
 
     def get_cached_code(self):
-        """ Loads and returns the code object for the Enaml module 
-        from the cache file. 
-        
+        """ Loads and returns the code object for the Enaml module
+        from the cache file.
+
         Returns
         -------
         result : (code, path) or None
-            If the cache exists, return the Python code object for the .enaml 
+            If the cache exists, return the Python code object for the .enaml
             module, and the full path to the module as a string, otherwise
             return None.
-        
+
         """
         # If the .enaml file does not exist, just use the .enamlc file.
         # We can presume that the latter exists because it was already
@@ -449,19 +450,19 @@ class EnamlZipImporter(EnamlImporter):
 
     @classmethod
     def locate_module(cls, fullname, path=None):
-        """ Searches for the given Enaml module within a zip and returns an 
-        instance of this class on success.  
-        
-        If cache files exist within the archive they are used, otherwise cache 
-        files are created using the standard EnamlImporter's `_write_cache` 
-        method. Subsequent loads be imported by the standard EnamlImporter.
-        
+        """ Searches for the given Enaml module within a zip and returns an
+        instance of this class on success.
+
+        If cache files exist within the archive they are used, the module are
+        compile from source and not cached. This follows the standard behavior
+        of Python.
+
         Parameters
         ---------
-        fullname : string
+        fullname : str
             The fully qualified name of the module.
 
-        path : list or None
+        path : list or None, optional
             The subpackage __path__ for submodules and subpackages
             or None if a top-level module.
 
@@ -497,7 +498,7 @@ class EnamlZipImporter(EnamlImporter):
                     # Path where code should be within the archive
                     code_path = '/'.join(pkgpath+[leaf])
                     try:
-                        with ZipFile(archive_path,'r') as archive:
+                        with ZipFile(archive_path, 'r') as archive:
                             name_list = archive.namelist()
                             if ((code_path in name_list) or
                                     (cache_path in name_list)):
@@ -520,29 +521,29 @@ class EnamlZipImporter(EnamlImporter):
                                              stem).replace("\\", "/")
                 if cls._is_supported(stem) and os.path.exists(stem):
                     try:
-                        with ZipFile(stem,'r') as archive:
+                        with ZipFile(stem, 'r') as archive:
                             name_list = archive.namelist()
                             if ((leaf in name_list) or
                                     (cache_path in name_list)):
-                                return cls(file_info,stem)
+                                return cls(file_info, stem)
                     except IOError:
                         return
 
     @classmethod
     def _is_supported(cls, archive_path):
         """ Checks if the given archive path is of one of the supported
-        archive types. 
-            
+        archive types.
+
         Parameters
         ---------
-        archive_path : string
+        archive_path : str
             The fully path to the archive.
 
         Returns
         -------
         results : bool
                 Whether the archive is supported or not.
-                
+
         """
         file_type = os.path.splitext(archive_path)[-1].lower()
         return file_type in cls.supported_archives
@@ -554,40 +555,48 @@ class EnamlZipImporter(EnamlImporter):
         ----------
         file_info : EnamlFileInfo
             An instance of EnamlFileInfo.
-            
-        archive_path : String 
+
+        archive_path : str
             File path to the archive to import from.
 
         """
         super(EnamlZipImporter, self).__init__(file_info)
         self.archive_path = archive_path
+        self.code_path = os.path.relpath(file_info.src_path,
+                                         self.archive_path).replace("\\", "/")
         self.archive = None  # Reference to opened archive
-        self.code_path = None
 
     def get_source_modified_time(self):
-        """ Overridden to read the modified time of the archive 
+        """ Overridden to read the modified time of the archive
         instead of the source file.
-        
+
         """
         return int(os.path.getmtime(self.archive_path))
 
     def source_exists(self):
         """ Overridden to check if the archive containing this import
         exists.
-        
+
         """
         return os.path.exists(self.archive_path)
 
     def read_source(self):
-        """ Overridden to read the source from the currently opened archive 
+        """ Overridden to read the source from the currently opened archive
         instead of the source file. The `self.archive` must be a reference
         to the current archive object.
-        
+
         """
-        if sys.version_info.major > 2:
-            return self.archive.read(self.code_path).decode()
-        else:
-            return self.archive.read(self.code_path)
+        with self.archive.open(self.code_path) as f:
+            enc, _ = detect_encoding(f.readline)
+
+        # Required to work with universal newlines
+        with self.archive.open(self.code_path) as f:
+            src = io.TextIOWrapper(f, enc).read()
+
+        if sys.version_info.major == 2:
+            src = src.encode('utf-8')
+
+        return src
 
     def get_code(self):
         """ Loads and returns the code object for the Enaml module and
@@ -601,12 +610,7 @@ class EnamlZipImporter(EnamlImporter):
             path to the module as a string.
 
         """
-        # Try to load from cache
-        cache = self.get_cached_code()
-        if cache:
-            return cache
-
-        # Otherwise load it from the archive
+        # Load it from the archive as no cache can exist outside
         file_info = self.file_info
         with ZipFile(self.archive_path, 'r') as archive:
             # Path within the archive that should contain the cached module
@@ -625,9 +629,6 @@ class EnamlZipImporter(EnamlImporter):
 
             # Otherwise, compile from source and attempt
             # to cache it on the system
-            self.code_path = os.path.relpath(
-                file_info.src_path,
-                self.archive_path).replace("\\", "/")
             return self.compile_code()
 
 
@@ -703,4 +704,3 @@ class imports(object):
         # operation on sys.meta_path.
         for importer in self.importers:
             importer.uninstall()
-
