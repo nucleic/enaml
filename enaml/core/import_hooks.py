@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -357,17 +357,6 @@ class EnamlImporter(AbstractEnamlImporter):
         """
         return int(os.path.getmtime(self.file_info.src_path))
 
-    def source_exists(self):
-        """ Check if the source still exists for the Enaml module.
-
-        Returns
-        -------
-        result : boolean
-            Whether or not the source for this import exists.
-
-        """
-        return os.path.exists(self.file_info.src_path)
-
     def compile_code(self):
         """ Compile the code object for the Enaml module and
         the full path to the module for use as the __file__ attribute
@@ -387,36 +376,6 @@ class EnamlImporter(AbstractEnamlImporter):
         self._write_cache(code, src_mod_time, file_info)
         return (code, file_info.src_path)
 
-    def get_cached_code(self):
-        """ Loads and returns the code object for the Enaml module
-        from the cache file.
-
-        Returns
-        -------
-        result : (code, path) or None
-            If the cache exists, return the Python code object for the .enaml
-            module, and the full path to the module as a string, otherwise
-            return None.
-
-        """
-        # If the .enaml file does not exist, just use the .enamlc file.
-        # We can presume that the latter exists because it was already
-        # checked by the loader. Should the situation ever arise that
-        # it was deleted between then and now, an IOError is more
-        # informative than an ImportError.
-        file_info = self.file_info
-        if not self.source_exists():
-            code = self._load_cache(file_info)
-            return (code, file_info.src_path)
-
-        # Use the cached file if it exists and is current
-        src_mod_time = self.get_source_modified_time()
-        if os.path.exists(file_info.cache_path):
-            magic, ts = self._get_magic_info(file_info)
-            if magic == MAGIC and src_mod_time <= ts:
-                code = self._load_cache(file_info, set_src=True)
-                return (code, file_info.src_path)
-
     def get_code(self):
         """ Loads and returns the code object for the Enaml module and
         the full path to the module for use as the __file__ attribute
@@ -429,10 +388,23 @@ class EnamlImporter(AbstractEnamlImporter):
             path to the module as a string.
 
         """
-        # Try to load from cache
-        cache = self.get_cached_code()
-        if cache:
-            return cache
+        # If the .enaml file does not exist, just use the .enamlc file.
+        # We can presume that the latter exists because it was already
+        # checked by the loader. Should the situation ever arise that
+        # it was deleted between then and now, an IOError is more
+        # informative than an ImportError.
+        file_info = self.file_info
+        if not os.path.exists(file_info.src_path):
+            code = self._load_cache(file_info)
+            return (code, file_info.src_path)
+
+        # Use the cached file if it exists and is current
+        src_mod_time = self.get_source_modified_time()
+        if os.path.exists(file_info.cache_path):
+            magic, ts = self._get_magic_info(file_info)
+            if magic == MAGIC and src_mod_time <= ts:
+                code = self._load_cache(file_info, set_src=True)
+                return (code, file_info.src_path)
 
         # Otherwise, compile from source and attempt to cache
         return self.compile_code()
@@ -535,7 +507,7 @@ class EnamlZipImporter(EnamlImporter):
         archive types.
 
         Parameters
-        ---------
+        ----------
         archive_path : str
             The fully path to the archive.
 
@@ -597,6 +569,13 @@ class EnamlZipImporter(EnamlImporter):
             src = src.encode('utf-8')
 
         return src
+
+    def _write_cache(self, code, ts, file_info):
+        """ Overridden to because cache files cannot be written into 
+        the archive.  
+        
+        """
+        pass
 
     def get_code(self):
         """ Loads and returns the code object for the Enaml module and
@@ -704,3 +683,4 @@ class imports(object):
         # operation on sys.meta_path.
         for importer in self.importers:
             importer.uninstall()
+
