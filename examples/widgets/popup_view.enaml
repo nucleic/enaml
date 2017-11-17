@@ -38,7 +38,7 @@ enamldef ConfigPopup(PopupView): popup:
     parent_anchor << POSITIONS[parent_box.selected_item]
     anchor << POSITIONS[view_box.selected_item]
     arrow_size << sizer.value
-    arrow_edge << arrow_edge.selected_item
+    arrow_edge << edge.selected_item
     offset << (offset_x.value, offset_y.value)
     Form:
         padding = 20
@@ -52,7 +52,7 @@ enamldef ConfigPopup(PopupView): popup:
         Label:
             foreground = 'white'
             text = 'Arrow Edge'
-        ComboBox: arrow_edge:
+        ComboBox: edge:
             items = ['top', 'bottom', 'left', 'right']
             index = 0
         Label:
