@@ -545,13 +545,6 @@ class EnamlZipImporter(EnamlImporter):
         """
         return int(os.path.getmtime(self.archive_path))
 
-    def source_exists(self):
-        """ Overridden to check if the archive containing this import
-        exists.
-
-        """
-        return os.path.exists(self.archive_path)
-
     def read_source(self):
         """ Overridden to read the source from the currently opened archive
         instead of the source file. The `self.archive` must be a reference
