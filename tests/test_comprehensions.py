@@ -43,7 +43,7 @@ enamldef Main(Window):
         Field: search:
             placeholder = "Search..."
         Label: lab:
-            text << '{{0}}'.format({1})
+            text << '{{}}'.format({})
 
 """
 
@@ -80,7 +80,7 @@ def test_list_comprehension_synchronization():
     """Test running a list comprehension in a traced read handler.
 
     """
-    source = SYNCHRONISATION_TEMPLATE.format('',
+    source = SYNCHRONISATION_TEMPLATE.format(
         '[c for c in colors if not search.text or search.text in c]')
     win = compile_source(source, 'Main')()
     assert win.formatted_comp == "['red', 'blue', 'yellow', 'green']"
@@ -114,7 +114,7 @@ def test_dict_comprehension_synchronisation():
     """Test running a dict comprehension in a traced read handler.
 
     """
-    source = SYNCHRONISATION_TEMPLATE.format('',
+    source = SYNCHRONISATION_TEMPLATE.format(
         '{i: search.text for i in range(3)}')
     win = compile_source(source, 'Main')()
     assert eval(win.formatted_comp) == {0: '', 1: '', 2: ''}
@@ -145,7 +145,7 @@ def test_set_comprehension_synchronization():
     """Test running a set comprehension in a traced read handler.
 
     """
-    source = SYNCHRONISATION_TEMPLATE.format('',
+    source = SYNCHRONISATION_TEMPLATE.format(
         '{search.text for i in range(3)}')
     win = compile_source(source, 'Main')()
     assert eval(win.formatted_comp) == {''}
@@ -175,7 +175,7 @@ def test_handling_nested_comprehension_synchronization():
     """Test handling nested comprehensions in a traced read.
 
     """
-    source = SYNCHRONISATION_TEMPLATE.format('',
+    source = SYNCHRONISATION_TEMPLATE.format(
         '{search.text for i in {j for j in colors}}')
     win = compile_source(source, 'Main')()
     assert eval(win.formatted_comp) == {''}
