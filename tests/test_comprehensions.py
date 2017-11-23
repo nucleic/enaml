@@ -29,6 +29,25 @@ enamldef Main(Window):
 """
 
 
+SYNCHRONISATION_TEMPLATE =\
+"""from enaml.widgets.api import Window, Container, Field, Label
+
+enamldef Main(Window):
+
+    attr colors = ['red', 'blue', 'yellow', 'green']
+    alias search_txt : search.text
+    alias formatted_comp : lab.text
+
+    Container: container:
+
+        Field: search:
+            placeholder = "Search..."
+        Label: lab:
+            text << '{{0}}'.format({1})
+
+"""
+
+
 FUNCTION_TEMPLATE =\
 """from enaml.widgets.window import Window
 
@@ -57,6 +76,21 @@ def test_list_comprehension_operator():
     assert win.called
 
 
+def test_list_comprehension_synchronization():
+    """Test running a list comprehension in a traced read handler.
+
+    """
+    source = SYNCHRONISATION_TEMPLATE.format('',
+        '[c for c in colors if not search.text or search.text in c]')
+    win = compile_source(source, 'Main')()
+    assert win.formatted_comp == "['red', 'blue', 'yellow', 'green']"
+    win.search_txt = 'red'
+    assert win.formatted_comp == "['red']"
+    win.search_txt = ''
+    win.colors = ['red', 'blue', 'yellow']
+    assert win.formatted_comp == "['red', 'blue', 'yellow']"
+
+
 def test_list_comprehension_func():
     """Test running a list comprehension in a declarative function.
 
@@ -74,6 +108,18 @@ def test_dict_comprehension_operator():
     win = compile_source(source, 'Main', namespace={'RUN_CHECK': True})()
     win.ev = True
     assert win.called
+
+
+def test_dict_comprehension_synchronisation():
+    """Test running a dict comprehension in a traced read handler.
+
+    """
+    source = SYNCHRONISATION_TEMPLATE.format('',
+        '{i: search.text for i in range(3)}')
+    win = compile_source(source, 'Main')()
+    assert eval(win.formatted_comp) == {0: '', 1: '', 2: ''}
+    win.search_txt = 'red'
+    assert eval(win.formatted_comp) == {0: 'red', 1: 'red', 2: 'red'}
 
 
 def test_dict_comprehension_func():
@@ -95,6 +141,18 @@ def test_set_comprehension_operator():
     assert win.called
 
 
+def test_set_comprehension_synchronization():
+    """Test running a set comprehension in a traced read handler.
+
+    """
+    source = SYNCHRONISATION_TEMPLATE.format('',
+        '{search.text for i in range(3)}')
+    win = compile_source(source, 'Main')()
+    assert eval(win.formatted_comp) == {''}
+    win.search_txt = 'red'
+    assert eval(win.formatted_comp) == {'red'}
+
+
 def test_set_comprehension_func():
     """Test running a set comprehension in a declarative function.
 
@@ -111,3 +169,17 @@ def test_handling_nested_comprehension():
     source = FUNCTION_TEMPLATE.format('{self for i in {j for j in range(10)}}')
     win = compile_source(source, 'Main', namespace={'RUN_CHECK': True})()
     assert win.call()
+
+
+def test_handling_nested_comprehension_synchronization():
+    """Test handling nested comprehensions in a traced read.
+
+    """
+    source = SYNCHRONISATION_TEMPLATE.format('',
+        '{search.text for i in {j for j in colors}}')
+    win = compile_source(source, 'Main')()
+    assert eval(win.formatted_comp) == {''}
+    win.search_txt = 'red'
+    assert eval(win.formatted_comp) == {'red'}
+    win.colors = []
+    assert eval(win.formatted_comp) == set()
