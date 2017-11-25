@@ -364,19 +364,6 @@ def inject_tracing(codelist, nested=False):
             # Inject tracing in nested code object.
             # This handles the case of list/dict/set comprehensions that
             # defines a nested function.
-
-            # As we cannot pass the tracer as argument to the function, get it
-            # from the dynamicscope that will find it in the fast locals and
-            # cache it. This will allow to access to it later
-            if not nested:
-                code = [
-                    (LOAD_NAME, 'locals'),      # localsfunc
-                    (CALL_FUNCTION, 0x0000),    # locals
-                    (LOAD_CONST, '_[tracer]'),  # locals -> '_[tracer]'
-                    (BINARY_SUBSCR, None),      # tracer
-                    (POP_TOP, None)             #
-                ]
-                inserts[idx] = code
             op_arg.code = inject_tracing(op_arg.code, nested=True)
 
     # Create a new code list which interleaves the generated code with
