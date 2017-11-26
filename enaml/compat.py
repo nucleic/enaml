@@ -169,7 +169,7 @@ else:
             filename = None
         bom_found = False
         encoding = None
-        default = 'utf-8'
+        default = 'ascii'
 
         def read_or_stop():
             try:
@@ -179,10 +179,8 @@ else:
 
         def find_cookie(line):
             try:
-                # Decode as UTF-8. Either the line is an encoding declaration,
-                # in which case it should be pure ASCII, or it must be UTF-8
-                # per default encoding.
-                line_string = line.decode('utf-8')
+                # Decode as ASCII, which is Python 2 default
+                line_string = line.decode('ascii')
             except UnicodeDecodeError:
                 msg = "invalid or missing encoding declaration"
                 if filename is not None:
