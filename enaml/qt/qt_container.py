@@ -350,6 +350,16 @@ class QtContainer(QtFrame, ProxyContainer):
         if cw is not None and cw.parent() != self.widget:
             cw.setParent(self.widget)
 
+    def child_removed(self, child):
+        """ Handle the child removed event.
+
+        This handler will clear the layout_parent member is applicable.
+
+        """
+        super(QtContainer, self).child_removed(child)
+        if isinstance(child, QtConstraintsWidget):
+            del child.layout_container
+
     #--------------------------------------------------------------------------
     # Layout API
     #--------------------------------------------------------------------------
