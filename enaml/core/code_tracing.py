@@ -361,10 +361,12 @@ def inject_tracing(codelist, nested=False):
             ]
             inserts[idx] = code
         elif isinstance(op_arg, bp.Code):
-            # Inject tracing in nested code object.
+            # Inject tracing in nested code object if they use their parent
+            # locals.
             # This handles the case of list/dict/set comprehensions that
             # defines a nested function.
-            op_arg.code = inject_tracing(op_arg.code, nested=True)
+            if not op_arg.newlocals:
+                op_arg.code = inject_tracing(op_arg.code, nested=True)
 
     # Create a new code list which interleaves the generated code with
     # the original code at the appropriate location.
