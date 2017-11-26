@@ -66,6 +66,16 @@ enamldef Main(Window):
 """
 
 
+def test_lambda():
+    """Test that lambda work when used in the context of tracing.
+
+    """
+    source = SYNCHRONISATION_TEMPLATE.format(
+        'sorted([1, 2, 3], key=lambda x: -x)')
+    win = compile_source(source, 'Main')()
+    assert win.formatted_comp == '[3, 2, 1]'
+
+
 def test_list_comprehension_operator():
     """Test running a list comprehension in an operator handler.
 
