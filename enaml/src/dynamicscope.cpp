@@ -635,7 +635,7 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
         return newref( pyobject_cast( self ) );
 
     // _[tracer] magic
-    if( strcmp( (char *)Py23Str_AS_STRING( key ), "_[tracer]" ) == 0 )
+    if( self->tracer && strcmp( (char *)Py23Str_AS_STRING( key ), "_[tracer]" ) == 0 )
         return newref( pyobject_cast( self->tracer ) );
 
     // value from the local scope
@@ -725,7 +725,7 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
         return 1;
 
     // _[tracer] magic
-    if( strcmp( (char *)Py23Str_AS_STRING( key ), "_[tracer]" ) == 0 )
+    if( self->tracer && strcmp( (char *)Py23Str_AS_STRING( key ), "_[tracer]" ) == 0 )
         return 1;
 
     // value from the local scope
