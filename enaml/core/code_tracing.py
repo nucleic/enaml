@@ -13,6 +13,7 @@ from .byteplay import (
 )
 
 
+from . import byteplay as bp
 if not IS_PY3:
     from .byteplay import DUP_TOPX
 else:
@@ -243,7 +244,7 @@ class CodeInverter(object):
         self.fail()
 
 
-def inject_tracing(codelist):
+def inject_tracing(codelist, nested=False):
     """ Inject tracing code into the given code list.
 
     This will inject the bytecode operations required to trace the
@@ -255,6 +256,9 @@ def inject_tracing(codelist):
     ----------
     codelist : list
         The list of byteplay code ops to modify.
+    nested : bool
+        Is the code modified defined inside an already traced code in which
+        case the tracer is in the local namespace and not the fast locals.
 
     Returns
     -------
@@ -262,6 +266,10 @@ def inject_tracing(codelist):
         A *new* list of code ops which implement the desired behavior.
 
     """
+    # If the code is nested into another already traced code, we need to use
+    # LOAD_NAME to access it rather than LOAD_FAST
+    tracer_op = LOAD_NAME if nested else LOAD_FAST
+
     # This builds a mapping of code idx to a list of ops, which are the
     # tracing bytecode instructions which will be inserted into the code
     # object being transformed. The ops assume that a tracer object is
@@ -274,7 +282,7 @@ def inject_tracing(codelist):
         if op == LOAD_ATTR:
             code = [                        # obj
                 (DUP_TOP, None),            # obj -> obj
-                (LOAD_FAST, '_[tracer]'),   # obj -> obj -> tracer
+                (tracer_op, '_[tracer]'),   # obj -> obj -> tracer
                 (LOAD_ATTR, 'load_attr'),   # obj -> obj -> tracefunc
                 (ROT_TWO, None),            # obj -> tracefunc -> obj
                 (LOAD_CONST, op_arg),       # obj -> tracefunc -> obj -> attr
@@ -300,7 +308,7 @@ def inject_tracing(codelist):
             code = [                                               # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
                 (BUILD_TUPLE, n_stack_args),                       # func -> argtuple
                 (DUP_TOP_TWO, None) if IS_PY3 else (DUP_TOPX, 2),  # func -> argtuple -> func -> argtuple
-                (LOAD_FAST, '_[tracer]'),                          # func -> argtuple -> func -> argtuple -> tracer
+                (tracer_op, '_[tracer]'),                          # func -> argtuple -> func -> argtuple -> tracer
                 (LOAD_ATTR, 'call_function'),                      # func -> argtuple -> func -> argtuple -> tracefunc
                 (ROT_THREE, None),                                 # func -> argtuple -> tracefunc -> func -> argtuple
                 (LOAD_CONST, op_arg),                              # func -> argtuple -> tracefunc -> func -> argtuple -> argspec
@@ -325,7 +333,7 @@ def inject_tracing(codelist):
         elif op == BINARY_SUBSCR:
             code = [                                               # obj -> idx
                 (DUP_TOP_TWO, None) if IS_PY3 else (DUP_TOPX, 2),  # obj -> idx -> obj -> idx
-                (LOAD_FAST, '_[tracer]'),                          # obj -> idx -> obj -> idx -> tracer
+                (tracer_op, '_[tracer]'),                          # obj -> idx -> obj -> idx -> tracer
                 (LOAD_ATTR, 'binary_subscr'),                      # obj -> idx -> obj -> idx -> tracefunc
                 (ROT_THREE, None),                                 # obj -> idx -> tracefunc -> obj -> idx
                 (CALL_FUNCTION, 0x0002),                           # obj -> idx -> retval
@@ -335,7 +343,7 @@ def inject_tracing(codelist):
         elif op == GET_ITER:
             code = [                        # obj
                 (DUP_TOP, None),            # obj -> obj
-                (LOAD_FAST, '_[tracer]'),   # obj -> obj -> tracer
+                (tracer_op, '_[tracer]'),   # obj -> obj -> tracer
                 (LOAD_ATTR, 'get_iter'),    # obj -> obj -> tracefunc
                 (ROT_TWO, None),            # obj -> tracefunc -> obj
                 (CALL_FUNCTION, 0x0001),    # obj -> retval
@@ -345,13 +353,18 @@ def inject_tracing(codelist):
         elif op == RETURN_VALUE:
             code = [
                 (DUP_TOP, None),                # obj
-                (LOAD_FAST, '_[tracer]'),       # obj -> obj -> tracer
+                (tracer_op, '_[tracer]'),       # obj -> obj -> tracer
                 (LOAD_ATTR, 'return_value'),    # obj -> obj -> tracefunc
                 (ROT_TWO, None),                # obj -> tracefunc -> obj
                 (CALL_FUNCTION, 0x0001),        # obj -> retval
                 (POP_TOP, None),                # obj
             ]
             inserts[idx] = code
+        elif isinstance(op_arg, bp.Code):
+            # Inject tracing in nested code object.
+            # This handles the case of list/dict/set comprehensions that
+            # defines a nested function.
+            op_arg.code = inject_tracing(op_arg.code, nested=True)
 
     # Create a new code list which interleaves the generated code with
     # the original code at the appropriate location.
