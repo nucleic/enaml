@@ -20,7 +20,7 @@ from enaml.layout.api import HSplitLayout, AreaLayout, DockBarLayout
 from enaml.widgets.api import Window, Container, DockArea, DockItem
 
 
-MODEL_TEXT = """\
+MODEL_TEXT = """
 from atom.api import *
 
 
@@ -30,7 +30,7 @@ class DemoModel(Atom):
 """
 
 
-VIEW_TEXT = """\
+VIEW_TEXT = """
 from enaml.widgets.api import *
 from enaml.layout.api import *
 
