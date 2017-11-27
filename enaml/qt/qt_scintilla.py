@@ -291,8 +291,8 @@ class QtScintilla(QtControl, ProxyScintilla):
         """
         w = self.widget
         # Only update it if show_line_numbers=True
-        if w.marginWidth(0) > 0:
-            w.setMarginWidth(0, "0"+str(w.lines()))
+        if w.marginWidth(1) > 0:
+            w.setMarginWidth(1, "0"+str(max(10, w.lines())))
 
     #--------------------------------------------------------------------------
     # ProxyScintilla API
@@ -462,8 +462,9 @@ class QtScintilla(QtControl, ProxyScintilla):
         
         """
         w = self.widget
-        w.setMarginType(0, QsciScintilla.NumberMargin)
-        self.widget.setMarginWidth(0, "0"+str(w.lines()) if show else "")
+        w.setMarginType(1, QsciScintilla.NumberMargin)
+        self.widget.setMarginWidth(
+            1, "0"+str(max(10, w.lines())) if show else "")
 
     #--------------------------------------------------------------------------
     # Reimplementations
