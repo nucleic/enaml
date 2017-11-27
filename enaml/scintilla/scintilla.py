@@ -8,11 +8,13 @@
 import uuid
 
 from atom.api import (
-    Atom, Int, Constant, Enum, Event, Typed, ForwardTyped, observe, set_default
+    Atom, Int, Constant, Enum, Event, Typed, Dict, List, ForwardTyped, observe,
+    Bool, set_default
 )
 
 from enaml.core.declarative import d_
 from enaml.widgets.control import Control, ProxyControl
+from future.builtins import str
 
 
 #: The available syntaxes for the Scintilla widget.
@@ -94,6 +96,12 @@ class ProxyScintilla(ProxyControl):
     def set_text(self, text):
         raise NotImplementedError
 
+    def set_autocomplete(self, source):
+        raise NotImplementedError
+
+    def set_autocompletions(self, options):
+        raise NotImplementedError
+
 
 class Scintilla(Control):
     """ A Scintilla text editing control.
@@ -104,6 +112,12 @@ class Scintilla(Control):
     on this widget. All styling is supplied via the 'theme' attribute.
 
     """
+    #: Enable autocompletion
+    autocomplete = d_(Enum('none', 'all', 'document', 'apis'))
+
+    #: Autocompletion values
+    autocompletions = d_(List(str))
+
     #: The scintilla document buffer to use in the editor. A default
     #: document will be created automatically for each editor. This
     #: value only needs to be supplied when swapping buffers or when
@@ -115,11 +129,11 @@ class Scintilla(Control):
 
     #: The theme to apply to the widget. See the './THEMES' document
     #: for how to create a theme dict for the widget.
-    theme = d_(Typed(dict, ()))
+    theme = d_(Dict())
 
     #: The settings to apply to the widget. See the './SETTINGS'
     #: document for how to create a settings dict for the widget.
-    settings = d_(Typed(dict, ()))
+    settings = d_(Dict())
 
     #: The zoom factor for the editor. The value is internally clamped
     #: to the range -10 to 20, inclusive.
@@ -167,7 +181,8 @@ class Scintilla(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe('document', 'syntax', 'theme', 'settings', 'zoom')
+    @observe('document', 'syntax', 'theme', 'settings', 'zoom',
+             'autocomplete', 'autocompletions')
     def _update_proxy(self, change):
         """ An observer which sends the document change to the proxy.
 

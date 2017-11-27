@@ -8,7 +8,7 @@
 from enaml.core.include import Include
 from enaml.layout.layout_helpers import vbox, hbox, align
 from enaml.scintilla.scintilla import Scintilla
-from enaml.scintilla.idle_theme import IDLE_THEME
+from enaml.scintilla.idle_theme import THEMES
 from enaml.widgets.container import Container
 from enaml.widgets.field import Field
 from enaml.widgets.label import Label
@@ -17,6 +17,8 @@ from enaml.widgets.mdi_window import MdiWindow
 from enaml.widgets.multiline_field import MultilineField
 from enaml.widgets.spin_box import SpinBox
 from enaml.widgets.timer import Timer
+from enaml.widgets.object_combo import ObjectCombo
+from enaml.widgets import api
 
 from .live_editor_model import LiveEditorModel
 
@@ -33,8 +35,8 @@ enamldef EditorPanel(Container):
     attr item_attr: str
     attr item_label: str
     constraints = [
-        vbox(hbox(label, field, slabel, spin), editor),
-        align('v_center', label, field, slabel, spin),
+        vbox(hbox(label, field, slabel, spin, tlabel, tcmb), editor),
+        align('v_center', label, field, slabel, spin, tlabel, tcmb),
     ]
     Label: label:
         text = item_label
@@ -47,16 +49,24 @@ enamldef EditorPanel(Container):
         minimum = -10
         maximum = 20
         value := editor.zoom
+    Label: tlabel:
+        text = "Theme"
+    ObjectCombo: tcmb:
+        items = sorted(THEMES.keys())
+        selected = 'idle'
     Scintilla: editor:
         syntax = 'enaml'
-        theme = IDLE_THEME
+        theme << THEMES[tcmb.selected]
         settings = {
             "tab_width": 4,
             "use_tabs": False,
             "indent": 4,
             "tab_indents": True,
             "backspace_unindents": True,
+            "show_line_numbers": True,
         }
+        autocomplete = 'all'
+        autocompletions = ['enamldef', 'func', 'attr', 'alias'] + dir(api)
         activated :: set_text(getattr(model, text_attr))
         text_changed :: timer.start()
         Timer: timer:
