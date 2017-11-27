@@ -94,6 +94,8 @@ AUTOCOMPLETION_SOURCE = {
 }
 
 
+NUMBER_MARGIN = 0
+
 def _make_color(color_str):
     """ A function which converts a color string into a QColor.
 
@@ -291,8 +293,8 @@ class QtScintilla(QtControl, ProxyScintilla):
         """
         w = self.widget
         # Only update it if show_line_numbers=True
-        if w.marginWidth(1) > 0:
-            w.setMarginWidth(1, "0"+str(max(10, w.lines())))
+        if w.marginWidth(NUMBER_MARGIN) > 0:
+            w.setMarginWidth(NUMBER_MARGIN, "0"+str(max(10, w.lines())))
 
     #--------------------------------------------------------------------------
     # ProxyScintilla API
@@ -462,9 +464,9 @@ class QtScintilla(QtControl, ProxyScintilla):
         
         """
         w = self.widget
-        w.setMarginType(1, QsciScintilla.NumberMargin)
+        w.setMarginType(NUMBER_MARGIN, QsciScintilla.NumberMargin)
         self.widget.setMarginWidth(
-            1, "0"+str(max(10, w.lines())) if show else "")
+            NUMBER_MARGIN, "0"+str(max(10, w.lines())) if show else "")
 
     #--------------------------------------------------------------------------
     # Reimplementations
