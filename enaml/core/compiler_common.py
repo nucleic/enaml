@@ -684,6 +684,7 @@ def gen_operator_binding(cg, node, index, name):
         code = compile(node.value.ast, cg.filename, mode=mode)
         for op, op_arg in bp.Code.from_code(code).code:
             if isinstance(op_arg, bp.Code):
+                rewrite_globals_access(op_arg, global_vars)
                 code = op_arg.to_code()
                 break
     else:
