@@ -132,7 +132,11 @@ from .template_compiler import TemplateCompiler
 # 23 : Support for Python 3 and inlining of comprehensions.
 # 24 : Call comprehension functions in the proper scope rather than inlining
 # 25 : Support for Python 3.6
-COMPILER_VERSION = 25
+# 26 : Wrap functions defined inside operators or declarative function to call
+#      them with their scope of definition. This allows to handle properly
+#      comprehensions and lambdas. Also ensure that we compile the body of the
+#      :: operator as a function to properly handle closure.
+COMPILER_VERSION = 26
 
 
 # Code that will be executed at the top of every enaml module

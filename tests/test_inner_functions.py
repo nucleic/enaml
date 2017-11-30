@@ -5,6 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+"""Test the handling of nested functions such as lambda functions and
+implicit functions used by comprehensions.
+
+"""
+import pytest
 from enaml.compat import IS_PY3
 
 from utils import compile_source
@@ -16,6 +21,7 @@ enamldef Main(Window):
     event ev
     attr called : bool = False
     ev ::
+        test = 1
         a = {}
         if RUN_CHECK:
             try:
@@ -53,6 +59,7 @@ FUNCTION_TEMPLATE =\
 
 enamldef Main(Window):
     func call():
+        test = 1
         a = {}
         if RUN_CHECK:
             try:
@@ -76,11 +83,25 @@ def test_lambda():
     assert win.formatted_comp == '[3, 2, 1]'
 
 
-def test_list_comprehension_operator():
+def test_tracing_lambda():
+    """Test that lambda can be traced.
+
+    """
+    source = SYNCHRONISATION_TEMPLATE.format(
+        'sorted([1, 2, 3], key=lambda x: colors[x-1][0])')
+    win = compile_source(source, 'Main')()
+    assert win.formatted_comp == '[2, 1, 3]'
+    win.colors = ['yellow', 'red', 'blue', 'green']
+    assert win.formatted_comp == '[3, 2, 1]'
+
+
+# Test that we can access the non local values and the closure variables
+@pytest.mark.parametrize('value', ['self', 'test'])
+def test_list_comprehension_operator(value):
     """Test running a list comprehension in an operator handler.
 
     """
-    source = OPERATOR_TEMPLATE.format('[self for i in range(10)]')
+    source = OPERATOR_TEMPLATE.format('[%s for i in range(10)]' % value)
     win = compile_source(source, 'Main', namespace={'RUN_CHECK': IS_PY3})()
     win.ev = True
     assert win.called
@@ -101,20 +122,24 @@ def test_list_comprehension_synchronization():
     assert win.formatted_comp == "['red', 'blue', 'yellow']"
 
 
-def test_list_comprehension_func():
+# Test that we can access the non local values and the closure variables
+@pytest.mark.parametrize('value', ['self', 'test'])
+def test_list_comprehension_func(value):
     """Test running a list comprehension in a declarative function.
 
     """
-    source = FUNCTION_TEMPLATE.format('[self for i in range(10)]')
+    source = FUNCTION_TEMPLATE.format('[%s for i in range(10)]' % value)
     win = compile_source(source, 'Main', namespace={'RUN_CHECK': IS_PY3})()
     assert win.call()
 
 
-def test_dict_comprehension_operator():
+# Test that we can access the non local values and the closure variables
+@pytest.mark.parametrize('value', ['self', 'test'])
+def test_dict_comprehension_operator(value):
     """Test running a dict comprehension in an operator handler.
 
     """
-    source = OPERATOR_TEMPLATE.format('{i: self for i in range(10)}')
+    source = OPERATOR_TEMPLATE.format('{i: %s for i in range(10)}' % value)
     win = compile_source(source, 'Main', namespace={'RUN_CHECK': True})()
     win.ev = True
     assert win.called
@@ -132,20 +157,24 @@ def test_dict_comprehension_synchronisation():
     assert eval(win.formatted_comp) == {0: 'red', 1: 'red', 2: 'red'}
 
 
-def test_dict_comprehension_func():
+# Test that we can access the non local values and the closure variables
+@pytest.mark.parametrize('value', ['self', 'test'])
+def test_dict_comprehension_func(value):
     """Test running a dict comprehension in a declarative function.
 
     """
-    source = FUNCTION_TEMPLATE.format('{i: self for i in range(10)}')
+    source = FUNCTION_TEMPLATE.format('{i: %s for i in range(10)}' % value)
     win = compile_source(source, 'Main', namespace={'RUN_CHECK': True})()
     assert win.call()
 
 
-def test_set_comprehension_operator():
+# Test that we can access the non local values and the closure variables
+@pytest.mark.parametrize('value', ['self', 'test'])
+def test_set_comprehension_operator(value):
     """Test running a set comprehension in an operator handler.
 
     """
-    source = OPERATOR_TEMPLATE.format('{self for i in range(10)}')
+    source = OPERATOR_TEMPLATE.format('{%s for i in range(10)}' % value)
     win = compile_source(source, 'Main', namespace={'RUN_CHECK': True})()
     win.ev = True
     assert win.called
@@ -163,11 +192,13 @@ def test_set_comprehension_synchronization():
     assert eval(win.formatted_comp) == {'red'}
 
 
-def test_set_comprehension_func():
+# Test that we can access the non local values and the closure variables
+@pytest.mark.parametrize('value', ['self', 'test'])
+def test_set_comprehension_func(value):
     """Test running a set comprehension in a declarative function.
 
     """
-    source = FUNCTION_TEMPLATE.format('{self for i in range(10)}')
+    source = FUNCTION_TEMPLATE.format('{%s for i in range(10)}' % value)
     win = compile_source(source, 'Main', namespace={'RUN_CHECK': True})()
     assert win.call()
 
