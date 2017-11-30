@@ -363,8 +363,6 @@ def inject_tracing(codelist, nested=False):
         elif isinstance(op_arg, bp.Code):
             # Inject tracing in nested code object if they use their parent
             # locals.
-            # This handles the case of list/dict/set comprehensions that
-            # defines a nested function.
             if not op_arg.newlocals:
                 op_arg.code = inject_tracing(op_arg.code, nested=True)
 
