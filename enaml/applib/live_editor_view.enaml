@@ -8,7 +8,7 @@
 from enaml.core.include import Include
 from enaml.layout.layout_helpers import vbox, hbox, align
 from enaml.scintilla.scintilla import Scintilla
-from enaml.scintilla.idle_theme import THEMES
+from enaml.scintilla.themes import THEMES
 from enaml.widgets.container import Container
 from enaml.widgets.field import Field
 from enaml.widgets.label import Label
@@ -35,7 +35,7 @@ enamldef EditorPanel(Container):
     attr item_attr: str
     attr item_label: str
     constraints = [
-        vbox(hbox(label, field, slabel, spin, tlabel, tcmb), editor),
+        vbox(hbox(label, field, slabel, spin, tlabel, tcmb), editor, clabel),
         align('v_center', label, field, slabel, spin, tlabel, tcmb),
     ]
     Label: label:
@@ -73,6 +73,9 @@ enamldef EditorPanel(Container):
             interval = 350
             single_shot = True
             timeout :: setattr(model, text_attr, str(editor.get_text()))
+    Label: clabel:
+        align = 'right'
+        text << "{}:{}".format(*editor.cursor_position)
 
 
 enamldef ModelEditorPanel(EditorPanel):

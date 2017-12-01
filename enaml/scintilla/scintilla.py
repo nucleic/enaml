@@ -8,8 +8,8 @@
 import uuid
 
 from atom.api import (
-    Atom, Int, Constant, Enum, Event, Typed, Dict, List, ForwardTyped, observe,
-    Bool, set_default
+    Atom, Int, Constant, Enum, Event, Typed, List, ForwardTyped, Tuple,
+    observe, set_default
 )
 
 from enaml.core.declarative import d_
@@ -118,6 +118,10 @@ class Scintilla(Control):
     #: Autocompletion values
     autocompletions = d_(List(str))
 
+    #: Position of the cursor within the editor in the format (line, column)
+    #: This is needed for autocompletion engines to determine the current text
+    cursor_position = d_(Tuple(int, default=(0, 0)), writable=False)
+
     #: The scintilla document buffer to use in the editor. A default
     #: document will be created automatically for each editor. This
     #: value only needs to be supplied when swapping buffers or when
@@ -129,11 +133,11 @@ class Scintilla(Control):
 
     #: The theme to apply to the widget. See the './THEMES' document
     #: for how to create a theme dict for the widget.
-    theme = d_(Dict())
+    theme = d_(Typed(dict, ()))
 
     #: The settings to apply to the widget. See the './SETTINGS'
     #: document for how to create a settings dict for the widget.
-    settings = d_(Dict())
+    settings = d_(Typed(dict, ()))
 
     #: The zoom factor for the editor. The value is internally clamped
     #: to the range -10 to 20, inclusive.

@@ -29,8 +29,8 @@ else:
 
 from .QtGui import QColor, QFont, QPixmap
 
-from .q_resource_helpers import QColor_from_Color, QFont_from_Font, \
-    get_cached_qimage
+from .q_resource_helpers import (QColor_from_Color, QFont_from_Font,
+    get_cached_qimage)
 from .qt_control import QtControl
 from .scintilla_lexers import LEXERS, LEXERS_INV
 from .scintilla_tokens import TOKENS
@@ -93,8 +93,8 @@ AUTOCOMPLETION_SOURCE = {
     'apis': QsciScintilla.AcsAPIs,
 }
 
-
 NUMBER_MARGIN = 0
+
 
 def _make_color(color_str):
     """ A function which converts a color string into a QColor.
@@ -154,6 +154,8 @@ class QtScintilla(QtControl, ProxyScintilla):
         self.set_zoom(d.zoom)
         self.refresh_style()
         self.widget.textChanged.connect(self.on_text_changed)
+        self.widget.cursorPositionChanged.connect(
+            self.on_cursor_position_changed)
 
     def destroy(self):
         """ A reimplemented destructor.
@@ -181,6 +183,14 @@ class QtScintilla(QtControl, ProxyScintilla):
             d.text_changed()
 
             self.refresh_line_number_width()
+
+    def on_cursor_position_changed(self):
+        """ Handle the 'cursorPositionChanged' signal on the widget.
+
+        """
+        d = self.declaration
+        if d is not None:
+            d.cursor_position = self.widget.getCursorPosition()
 
     #--------------------------------------------------------------------------
     # Helper Methods
