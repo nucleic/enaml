@@ -250,9 +250,21 @@ class LiveEditorModel(Atom):
             line, column = position
             script = jedi.Script(source, line+1, column)
 
-            #: Get suggestions and docstrings for functions
-            return [c.docstring() if c.type == 'function' else c.name
-                    for c in script.completions()]
+            #: Get suggestions
+            results = []
+            for c in script.completions():
+                results.append(c.name)
+
+                #: Try to get a signature if the docstring matches
+                #: something Scintilla will use (ex "func(..." or "Class(...")
+                #: Scintilla ignores docstrings without a comma in the args
+                if c.type in ['function', 'class', 'instance']:
+                    docstring = c.docstring()
+                    if docstring.startswith("{}(".format(c.name)):
+                        results.append(docstring)
+                        continue
+
+            return results
         except Exception:
             #: Autocompletion may fail for random reasons so catch all errors
             #: as we don't want the editor to crash because of this
