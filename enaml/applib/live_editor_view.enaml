@@ -63,16 +63,23 @@ enamldef EditorPanel(Container):
             "indent": 4,
             "tab_indents": True,
             "backspace_unindents": True,
+            "autocompletion_threshold": 2,
             "show_line_numbers": True,
         }
         autocomplete = 'all'
-        autocompletions = ['enamldef', 'func', 'attr', 'alias'] + dir(api)
+        autocompletions = ['enamldef']
         activated :: set_text(getattr(model, text_attr))
         text_changed :: timer.start()
         Timer: timer:
             interval = 350
             single_shot = True
-            timeout :: setattr(model, text_attr, str(editor.get_text()))
+            timeout ::
+                setattr(model, text_attr, str(editor.get_text()))
+                editor.autocompletions = model.autocomplete(
+                    getattr(model, text_attr),
+                    editor.cursor_position
+                )
+
     Label: clabel:
         align = 'right'
         text << "{}:{}".format(*editor.cursor_position)
