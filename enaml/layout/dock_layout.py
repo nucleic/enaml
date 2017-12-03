@@ -374,7 +374,7 @@ class DockLayoutValidator(NodeVisitor):
         """ Emit a dock layout warning with the given message.
 
         """
-        f_globals = self._caller.f_globals.copy()
+        f_globals = self._caller.f_globals
         f_lineno = self._caller.f_lineno
         f_mod = f_globals.get('__name__', '<string>')
         f_name = f_globals.get('__file__')
@@ -387,7 +387,8 @@ class DockLayoutValidator(NodeVisitor):
             if not f_name:
                 f_name = f_mod
         warnings.warn_explicit(
-            message, DockLayoutWarning, f_name, f_lineno, f_mod, f_globals
+            message, DockLayoutWarning, f_name, f_lineno, f_mod, None,
+            f_globals
         )
 
     def setup(self, node):
