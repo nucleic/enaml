@@ -374,7 +374,7 @@ class DockLayoutValidator(NodeVisitor):
         """ Emit a dock layout warning with the given message.
 
         """
-        f_globals = self._caller.f_globals
+        f_globals = self._caller.f_globals.copy()
         f_lineno = self._caller.f_lineno
         f_mod = f_globals.get('__name__', '<string>')
         f_name = f_globals.get('__file__')
