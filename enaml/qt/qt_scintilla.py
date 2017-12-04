@@ -27,7 +27,7 @@ elif QT_API in PYQT5_API:
 else:
     import QScintilla as Qsci
 
-from .QtGui import QColor, QFont, QPixmap
+from .QtGui import QColor, QFont
 
 from .q_resource_helpers import (QColor_from_Color, QFont_from_Font,
     get_cached_qimage)
