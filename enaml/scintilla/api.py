@@ -5,4 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .scintilla import Scintilla, ScintillaDocument
+from .scintilla import (Scintilla, ScintillaDocument, ScintillaIndicator,
+                        ScintillaMarker)
+
