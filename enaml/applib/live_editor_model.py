@@ -267,7 +267,7 @@ class LiveEditorModel(Atom):
             return results
         except Exception:
             #: Autocompletion may fail for random reasons so catch all errors
-            #: as we don't want the editor to crash because of this
+            #: as we don't want the editor to quit because of this
             return []
 
     def relink_view(self):
