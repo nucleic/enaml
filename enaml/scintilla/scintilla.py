@@ -192,9 +192,7 @@ class Scintilla(Control):
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
 
-    #: Markers to display. A tuple of (line_no, symbol_no).
-    #: The symbols are defined by passing a list of image paths as the
-    #: "marker_symbols" settings key.
+    #: Markers to display.
     markers = d_(List(ScintillaMarker))
 
     #: Indicators to display.
