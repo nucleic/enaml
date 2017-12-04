@@ -387,7 +387,8 @@ class DockLayoutValidator(NodeVisitor):
             if not f_name:
                 f_name = f_mod
         warnings.warn_explicit(
-            message, DockLayoutWarning, f_name, f_lineno, f_mod, f_globals
+            message, DockLayoutWarning, f_name, f_lineno, f_mod, None,
+            f_globals
         )
 
     def setup(self, node):
