@@ -437,6 +437,7 @@ class QtScintilla(QtControl, ProxyScintilla):
             pull_bool('backspace_unindents', False))
         send(w.SCI_SETINDENTATIONGUIDES,
             pull_enum(INDENTATION_GUIDES, 'indentation_guides', 'none'))
+        w.setAutoIndent(pull_bool('auto_indent', False))
 
         # White Space
         send(w.SCI_SETVIEWWS, pull_enum(WHITE_SPACE, 'view_ws', 'invisible'))
