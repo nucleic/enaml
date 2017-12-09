@@ -11,7 +11,6 @@ from atom.api import Event, Instance, Member
 from atom.datastructures.api import sortedmap
 
 from .alias import Alias
-from .dynamicscope import DynamicScope
 from .compiler_nodes import (
     DeclarativeNode, EnamlDefNode, TemplateNode, TemplateInstanceNode
 )

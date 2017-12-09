@@ -690,10 +690,12 @@ def gen_operator_binding(cg, node, index, name):
     else:
         code = compile(node.value.ast, cg.filename, mode=mode)
 
+    b_code = bp.Code.from_code(code)
     if has_defs:
-        b_code = bp.Code.from_code(code)
         run_in_dynamic_scope(b_code, global_vars)
-        code = b_code.to_code()
+    else:
+        rewrite_globals_access(b_code, global_vars)
+    code = b_code.to_code()
 
     with cg.try_squash_raise():
         cg.set_lineno(node.lineno)
