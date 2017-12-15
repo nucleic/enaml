@@ -43,6 +43,9 @@ class ProxyField(ProxyControl):
     def set_read_only(self, read_only):
         raise NotImplementedError
 
+    def set_text_align(self, text_align):
+        raise NotImplementedError
+
     def field_text(self):
         raise NotImplementedError
 
@@ -115,6 +118,9 @@ class Field(Control):
     #: Whether or not the field is read only. Defaults to False.
     read_only = d_(Bool(False))
 
+    #: Alignment for the text inside the field. Defaults to 'left'.
+    text_align = d_(Enum('left', 'right', 'center'))
+
     #: How strongly a component hugs it's contents' width. Fields ignore
     #: the width hug by default, so they expand freely in width.
     hug_width = set_default('ignore')
@@ -126,7 +132,7 @@ class Field(Control):
     # Observers
     #--------------------------------------------------------------------------
     @observe('text', 'mask', 'submit_triggers', 'placeholder', 'echo_mode',
-        'max_length', 'read_only')
+        'max_length', 'read_only', 'text_align')
     def _update_proxy(self, change):
         """ An observer which sends state change to the proxy.
 

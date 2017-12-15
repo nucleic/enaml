@@ -1,0 +1,43 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `Field` widget.
+
+The `Field` is the most simple and common text input widget.
+
+This example shows how to use the many properties of the `Field` widget.
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window, Field, Container, ObjectCombo, Label
+from enaml.layout.api import vbox, hbox, spacer, align
+
+
+enamldef Main(Window):
+    title = 'The Field widget'
+
+    Container:
+
+        constraints = [
+            vbox(
+                hbox(label, combo_align, spacer),
+                hbox(field, spacer),
+            ),
+            align('v_center', label, combo_align),
+            field.width == 300,
+        ]
+
+        Label: label:
+            text = 'text_align:'
+
+        ObjectCombo: combo_align:
+            items = ['left', 'right', 'center']
+            selected = 'left'
+
+        Field: field:
+            text = 'This is some text'
+            text_align << combo_align.selected

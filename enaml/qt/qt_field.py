@@ -9,7 +9,7 @@ from atom.api import Int, Typed
 
 from enaml.widgets.field import ProxyField
 
-from .QtCore import QTimer, Signal
+from .QtCore import QTimer, Signal, Qt
 from .QtWidgets import QLineEdit
 
 from .qt_control import QtControl
@@ -19,6 +19,12 @@ ECHO_MODES = {
     'normal': QLineEdit.Normal,
     'password': QLineEdit.Password,
     'silent': QLineEdit.NoEcho
+}
+
+ALIGN_OPTIONS = {
+    'left': Qt.AlignLeft,
+    'right': Qt.AlignRight,
+    'center': Qt.AlignCenter,
 }
 
 
@@ -76,6 +82,7 @@ class QtField(QtControl, ProxyField):
         self.set_max_length(d.max_length)
         self.set_read_only(d.read_only)
         self.set_submit_triggers(d.submit_triggers)
+        self.set_text_align(d.text_align)
         self.widget.textEdited.connect(self.on_text_edited)
 
     #--------------------------------------------------------------------------
@@ -231,6 +238,13 @@ class QtField(QtControl, ProxyField):
 
         """
         self.widget.setReadOnly(read_only)
+
+    def set_text_align(self, text_align):
+        """ Set the alignment for the text in the field.
+
+        """
+        qt_align = ALIGN_OPTIONS[text_align]
+        self.widget.setAlignment(qt_align)
 
     def field_text(self):
         """ Get the text stored in the widget.
