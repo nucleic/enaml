@@ -309,7 +309,7 @@ class Python3EnamlParser(BaseEnamlParser):
         defaults = [p[3]] + list_defaults
         p[0] = self._make_args(args, defaults=defaults, vararg=p[7],
                                kwonlyargs=klist_args, kw_defaults=kdefaults,
-                               kwarg=p[10])
+                               kwarg=p[11])
 
     def p_varargslist39(self, p):
         ''' varargslist : fpdef EQUAL test varargslist_list COMMA STAR kwargslist_list COMMA DOUBLESTAR fpdef '''

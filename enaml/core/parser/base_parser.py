@@ -3344,7 +3344,7 @@ class BaseEnamlParser(object):
                                kwarg=p[10])
 
     def p_varargslist18(self, p):
-        ''' varargslist : fpdef EQUAL test varargslist_list COMMA DOUBLESTAR NAME '''
+        ''' varargslist : fpdef EQUAL test varargslist_list COMMA DOUBLESTAR fpdef '''
         # def f(a=1, b=2, **kwargs): pass
         list_args, list_defaults = p[4]
         if len(list_args) != len(list_defaults):
