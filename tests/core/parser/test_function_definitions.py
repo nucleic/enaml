@@ -26,7 +26,7 @@ POS_ARG_TEMP = ['a',
                 'a=1, b=2']
 
 
-SIGNATURES = POS_ARG_TEMP.copy()
+SIGNATURES = POS_ARG_TEMP[:]
 for suffix in (',', ', *args', ', **kwargs', ', *args, **kwargs'):
     SIGNATURES.extend([s + suffix for s in POS_ARG_TEMP])
 
@@ -36,7 +36,8 @@ if sys.version_info[0] == 2:
                        '(a, b), c',
                        '(a, b), c=3',
                        '(a, b)=(1, 2), c=3']
-    SIGNATURES.extend([s + suffix for s in tuple_unpacking])
+    for suffix in (',', ', *args', ', **kwargs', ', *args, **kwargs')
+        SIGNATURES.extend([s + suffix for s in tuple_unpacking])
 
 else:
     pos = [''] + [s.replace('a', 'c').replace('b', 'd') + ', '
