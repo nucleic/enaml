@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -3142,28 +3142,6 @@ class BaseEnamlParser(object):
     def p_comp_if2(self, p):
         ''' comp_if : IF old_test comp_iter '''
         p[0] = [p[2]] + p[3]
-
-    def p_testlist_safe1(self, p):
-        ''' testlist_safe : old_test '''
-        p[0] = p[1]
-
-    def p_testlist_safe2(self, p):
-        ''' testlist_safe : old_test testlist_safe_list '''
-        values = [p[1]] + p[2]
-        p[0] = ast.Tuple(elts=values, ctx=Load)
-
-    def p_testlist_safe3(self, p):
-        ''' testlist_safe : old_test testlist_safe_list COMMA '''
-        values = [p[1]] + p[2]
-        p[0] = ast.Tuple(elts=values, ctx=Load)
-
-    def p_testlist_safe_list1(self, p):
-        ''' testlist_safe_list : COMMA old_test '''
-        p[0] = [p[2]]
-
-    def p_testlist_safe_list2(self, p):
-        ''' testlist_safe_list : testlist_safe_list COMMA old_test '''
-        p[0] = p[1] + [p[3]]
 
     def p_old_test1(self, p):
         ''' old_test : or_test '''
