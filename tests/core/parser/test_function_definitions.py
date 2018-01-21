@@ -36,7 +36,7 @@ if sys.version_info[0] == 2:
                        '(a, b), c',
                        '(a, b), c=3',
                        '(a, b)=(1, 2), c=3']
-    for suffix in (',', ', *args', ', **kwargs', ', *args, **kwargs')
+    for suffix in (',', ', *args', ', **kwargs', ', *args, **kwargs'):
         SIGNATURES.extend([s + suffix for s in tuple_unpacking])
 
 else:
