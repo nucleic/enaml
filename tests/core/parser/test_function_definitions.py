@@ -73,6 +73,7 @@ def test_func_definition_parsing(signature):
     validate_ast(py_ast, enaml_ast, True)
 
 
+@pytest.mark.skipif(sys.version_info < (3,), reason='Requires Python 3')
 def test_func_return_annotation_parsing():
     """Test that we parse properly functions with a return type annotation.
 
