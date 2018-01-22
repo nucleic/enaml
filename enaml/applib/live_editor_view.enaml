@@ -63,7 +63,7 @@ enamldef EditorPanel(Container):
             "indent": 4,
             "tab_indents": True,
             "backspace_unindents": True,
-            "autocompletion_threshold": 1,
+            "autocompletion_threshold": 3,
             "show_line_numbers": True,
         }
         autocomplete = 'all'

@@ -30,7 +30,7 @@ else:
 from .QtGui import QColor, QFont
 
 from .q_resource_helpers import (QColor_from_Color, QFont_from_Font,
-    get_cached_qimage)
+                                 get_cached_qimage)
 from .qt_control import QtControl
 from .scintilla_lexers import LEXERS, LEXERS_INV
 from .scintilla_tokens import TOKENS
@@ -490,16 +490,15 @@ class QtScintilla(QtControl, ProxyScintilla):
         is in 'all' or 'apis'.
             
         """
-
-        #: Delete the old if one exists
+        # Delete the old if one exists
         if self.qsci_api:
-            #: Please note that it is not possible to add or remove entries
-            #: once you’ve “prepared” so we have to destroy and create
-            #: a new provider every time.
+            # Please note that it is not possible to add or remove entries
+            # once you’ve “prepared” so we have to destroy and create
+            # a new provider every time.
             self.qsci_api.deleteLater()
             self.qsci_api = None
 
-        #: Add the new options
+        # Add the new options
         api = self.qsci_api = Qsci.QsciAPIs(self.widget.lexer())
         for option in options:
             api.add(option)
@@ -532,18 +531,18 @@ class QtScintilla(QtControl, ProxyScintilla):
         """
         w = self.widget
 
-        #: Clear markers
+        # Clear markers
         w.markerDeleteAll()
 
-        #: Add the new markers
+        # Add the new markers
         for m in markers:
-            #: Define a new marker with the given image if one has not already
-            #: been created.
+            # Define a new marker with the given image if one has not already
+            # been created.
             if m.image not in self._marker_images:
                 self._marker_images[m.image] = w.markerDefine(
                     get_cached_qimage(m.image))
 
-            #: Add the marker
+            # Add the marker
             w.markerAdd(m.line, self._marker_images[m.image])
 
     def set_indicators(self, indicators):
@@ -555,15 +554,15 @@ class QtScintilla(QtControl, ProxyScintilla):
         """
         w = self.widget
 
-        #: Cleanup old indicators by clearing all indicators in the document
-        #: There's no api to do this so clear the entire document range
-        #: for each style to ensure a clean state.
+        # Cleanup old indicators by clearing all indicators in the document
+        # There's no api to do this so clear the entire document range
+        # for each style to ensure a clean state.
         lines = w.lines()
         column = w.lineLength(lines)
         for style_id in self._indicator_styles.values():
             w.clearIndicatorRange(0, 0, lines, column, style_id)
 
-        #: Add new indicators
+        # Add new indicators
         for ind in indicators:
             l0, c0 = ind.start
             l1, c1 = ind.stop

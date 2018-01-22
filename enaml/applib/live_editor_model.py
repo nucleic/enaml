@@ -246,18 +246,18 @@ class LiveEditorModel(Atom):
         if not COMPLETION_AVAILABLE or not source:
             return []
         try:
-            #: Use jedi to get suggestions
+            # Use jedi to get suggestions
             line, column = position
             script = jedi.Script(source, line+1, column)
 
-            #: Get suggestions
+            # Get suggestions
             results = []
             for c in script.completions():
                 results.append(c.name)
 
-                #: Try to get a signature if the docstring matches
-                #: something Scintilla will use (ex "func(..." or "Class(...")
-                #: Scintilla ignores docstrings without a comma in the args
+                # Try to get a signature if the docstring matches
+                # something Scintilla will use (ex "func(..." or "Class(...")
+                # Scintilla ignores docstrings without a comma in the args
                 if c.type in ['function', 'class', 'instance']:
                     docstring = c.docstring()
                     if docstring.startswith("{}(".format(c.name)):
@@ -266,8 +266,8 @@ class LiveEditorModel(Atom):
 
             return results
         except Exception:
-            #: Autocompletion may fail for random reasons so catch all errors
-            #: as we don't want the editor to quit because of this
+            # Autocompletion may fail for random reasons so catch all errors
+            # as we don't want the editor to quit because of this
             return []
 
     def relink_view(self):

@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import uuid
-
+from future.builtins import str
 from atom.api import (
     Atom, Int, Constant, Enum, Event, Typed, List, ForwardTyped, Tuple,
     Unicode, observe, set_default
@@ -14,7 +14,6 @@ from atom.api import (
 from enaml.image import Image
 from enaml.core.declarative import d_
 from enaml.widgets.control import Control, ProxyControl
-from future.builtins import str
 
 
 #: The available syntaxes for the Scintilla widget.
@@ -72,7 +71,6 @@ class ScintillaIndicator(Atom):
     """ An indicator descriptor.
     
     """
-
     #: Starting cursor position of the indicator
     start = Tuple(int, default=(0, 0))
 
