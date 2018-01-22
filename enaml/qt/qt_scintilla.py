@@ -27,7 +27,7 @@ elif QT_API in PYQT5_API:
 else:
     import QScintilla as Qsci
 
-from .QtGui import QColor, QFont, QPixmap
+from .QtGui import QColor, QFont
 
 from .q_resource_helpers import (QColor_from_Color, QFont_from_Font,
     get_cached_qimage)
@@ -93,6 +93,28 @@ AUTOCOMPLETION_SOURCE = {
     'apis': QsciScintilla.AcsAPIs,
 }
 
+INDICATOR_STYLE = {
+    'plain': QsciScintilla.PlainIndicator,
+    'squiggle': QsciScintilla.SquiggleIndicator,
+    'tt': QsciScintilla.TTIndicator,
+    'diagonal': QsciScintilla.DiagonalIndicator,
+    'strike': QsciScintilla.StrikeIndicator,
+    'hidden': QsciScintilla.HiddenIndicator,
+    'box': QsciScintilla.BoxIndicator,
+    'round_box': QsciScintilla.RoundBoxIndicator,
+    'straight_box': QsciScintilla.StraightBoxIndicator,
+    'full_box': QsciScintilla.FullBoxIndicator,
+    'dashes': QsciScintilla.DashesIndicator,
+    'dots': QsciScintilla.DotsIndicator,
+    'squiggle_low': QsciScintilla.SquiggleLowIndicator,
+    'dot_box': QsciScintilla.DotBoxIndicator,
+    'thick_composition': QsciScintilla.ThickCompositionIndicator,
+    'thin_composition': QsciScintilla.ThinCompositionIndicator,
+    'text_color': QsciScintilla.TextColorIndicator,
+    'triangle': QsciScintilla.TriangleIndicator,
+    'triangle_character': QsciScintilla.TriangleCharacterIndicator,
+}
+
 NUMBER_MARGIN = 0
 
 
@@ -132,6 +154,12 @@ class QtScintilla(QtControl, ProxyScintilla):
     #: A strong reference to the QsciDocument handle.
     qsci_doc = Typed(Qsci.QsciDocument)
 
+    #: Indicator style to style ID mapping
+    _indicator_styles = Typed(dict, ())
+
+    #: Marker image to marker ID mapping
+    _marker_images = Typed(dict, ())
+
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
@@ -153,6 +181,10 @@ class QtScintilla(QtControl, ProxyScintilla):
         self.set_settings(d.settings)
         self.set_zoom(d.zoom)
         self.refresh_style()
+        if d.indicators:
+            self.set_indicators(d.indicators)
+        if d.markers:
+            self.set_markers(d.markers)
         self.widget.textChanged.connect(self.on_text_changed)
         self.widget.cursorPositionChanged.connect(
             self.on_cursor_position_changed)
@@ -306,6 +338,22 @@ class QtScintilla(QtControl, ProxyScintilla):
         if w.marginWidth(NUMBER_MARGIN) > 0:
             w.setMarginWidth(NUMBER_MARGIN, "0"+str(max(10, w.lines())))
 
+    def get_indicator_style_id(self, indicator):
+        """ Get the indicator style id for this indicator. The key
+        is simply the style and fg color. 
+          
+        If the key does not exist, define a new style.
+        
+        """
+        style = "{},{}".format(indicator.style, indicator.color)
+        if style not in self._indicator_styles:
+            w = self.widget
+            style_id = w.indicatorDefine(INDICATOR_STYLE[indicator.style])
+            w.setIndicatorForegroundColor(_make_color(indicator.color),
+                                          style_id)
+            self._indicator_styles[style] = style_id
+        return self._indicator_styles[style]
+
     #--------------------------------------------------------------------------
     # ProxyScintilla API
     #--------------------------------------------------------------------------
@@ -389,6 +437,7 @@ class QtScintilla(QtControl, ProxyScintilla):
             pull_bool('backspace_unindents', False))
         send(w.SCI_SETINDENTATIONGUIDES,
             pull_enum(INDENTATION_GUIDES, 'indentation_guides', 'none'))
+        w.setAutoIndent(pull_bool('auto_indent', False))
 
         # White Space
         send(w.SCI_SETVIEWWS, pull_enum(WHITE_SPACE, 'view_ws', 'invisible'))
@@ -461,12 +510,9 @@ class QtScintilla(QtControl, ProxyScintilla):
             
         """
         w = self.widget
+        w.clearRegisteredImages()
         for i, image in enumerate(images):
-            qpixmap = None
-            if image:
-                qimage = get_cached_qimage(image)
-                qpixmap = QPixmap.fromImage(qimage)
-                w.registerImage(i, qpixmap)
+            w.registerImage(i, get_cached_qimage(image))
 
     def set_show_line_numbers(self, show):
         """ Set whether line numbers are shown or not by setting
@@ -477,6 +523,52 @@ class QtScintilla(QtControl, ProxyScintilla):
         w.setMarginType(NUMBER_MARGIN, QsciScintilla.NumberMargin)
         self.widget.setMarginWidth(
             NUMBER_MARGIN, "0"+str(max(10, w.lines())) if show else "")
+
+    def set_markers(self, markers):
+        """ Set the markers on the left margin of the widget.
+        
+        If the image is not a defined marker, one will be created.
+        
+        """
+        w = self.widget
+
+        #: Clear markers
+        w.markerDeleteAll()
+
+        #: Add the new markers
+        for m in markers:
+            #: Define a new marker with the given image if one has not already
+            #: been created.
+            if m.image not in self._marker_images:
+                self._marker_images[m.image] = w.markerDefine(
+                    get_cached_qimage(m.image))
+
+            #: Add the marker
+            w.markerAdd(m.line, self._marker_images[m.image])
+
+    def set_indicators(self, indicators):
+        """ Set the indicators of the widget.
+        
+        This lets certain text be highlighted or underlined with a given 
+        style to indicate something (errors) within the editor.
+        
+        """
+        w = self.widget
+
+        #: Cleanup old indicators by clearing all indicators in the document
+        #: There's no api to do this so clear the entire document range
+        #: for each style to ensure a clean state.
+        lines = w.lines()
+        column = w.lineLength(lines)
+        for style_id in self._indicator_styles.values():
+            w.clearIndicatorRange(0, 0, lines, column, style_id)
+
+        #: Add new indicators
+        for ind in indicators:
+            l0, c0 = ind.start
+            l1, c1 = ind.stop
+            w.fillIndicatorRange(l0, c0, l1, c1,
+                                 self.get_indicator_style_id(ind))
 
     #--------------------------------------------------------------------------
     # Reimplementations

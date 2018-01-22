@@ -19,6 +19,12 @@ from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
 from enaml.widgets.widget import Widget
 
+try:
+    import jedi
+    COMPLETION_AVAILABLE = True
+except ImportError:
+    COMPLETION_AVAILABLE = False
+
 
 def _fake_linecache(text, filename):
     """ Inject text into the linecache for traceback purposes.
@@ -107,7 +113,7 @@ class LiveEditorModel(Atom):
     #: An optional filename to use when compiling the enaml code.
     view_filename = Str('__live_view__.enaml')
 
-    #: A string which holds the most recent tracekback.
+    #: A string which holds the most recent traceback.
     traceback = Str()
 
     #: The module created from the model text.
@@ -231,6 +237,38 @@ class LiveEditorModel(Atom):
             self.traceback = traceback.format_exc()
         else:
             self.traceback = ''
+
+    def autocomplete(self, source, position):
+        """ Obtain autocompletion suggestions for the source text 
+        using jedi if available.
+        
+        """
+        if not COMPLETION_AVAILABLE or not source:
+            return []
+        try:
+            #: Use jedi to get suggestions
+            line, column = position
+            script = jedi.Script(source, line+1, column)
+
+            #: Get suggestions
+            results = []
+            for c in script.completions():
+                results.append(c.name)
+
+                #: Try to get a signature if the docstring matches
+                #: something Scintilla will use (ex "func(..." or "Class(...")
+                #: Scintilla ignores docstrings without a comma in the args
+                if c.type in ['function', 'class', 'instance']:
+                    docstring = c.docstring()
+                    if docstring.startswith("{}(".format(c.name)):
+                        results.append(docstring)
+                        continue
+
+            return results
+        except Exception:
+            #: Autocompletion may fail for random reasons so catch all errors
+            #: as we don't want the editor to quit because of this
+            return []
 
     def relink_view(self):
         """ Relink the compiled view with the compiled model.
