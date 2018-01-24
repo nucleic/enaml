@@ -29,7 +29,7 @@ before_install:
   - conda create -n travisci python=$PYTHON pip
   - source activate travisci
   - CONDA_INSTALL="conda install -q"
-  - PIP_INSTALL="pip install -q"
+  - PIP_INSTALL="pip install"
 
   # Install enaml dependencies and include special widgets dependencies
   # We do not test vtk as it segfaults on Travis
