@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -191,14 +191,14 @@ class Python3EnamlParser(BaseEnamlParser):
         # def f(a, *args, e, b=1, **kwargs): pass
         klist_args, kdefaults = p[5]
         p[0] = self._make_args([p[1]], vararg=p[4], kwonlyargs=klist_args,
-                               kw_defaults=kdefaults, kwargs=p[8])
+                               kw_defaults=kdefaults, kwarg=p[8])
 
     def p_varargslist27(self, p):
         ''' varargslist : fpdef COMMA STAR kwargslist_list COMMA DOUBLESTAR fpdef '''
         # def f(a, *, e, b=1, **kwargs): pass
         klist_args, kdefaults = p[4]
         p[0] = self._make_args([p[1]], kwonlyargs=klist_args,
-                               kw_defaults=kdefaults,  kwargs=p[7])
+                               kw_defaults=kdefaults,  kwarg=p[7])
 
     def p_varargslist28(self, p):
         ''' varargslist : fpdef varargslist_list COMMA STAR fpdef kwargslist_list '''
@@ -309,7 +309,7 @@ class Python3EnamlParser(BaseEnamlParser):
         defaults = [p[3]] + list_defaults
         p[0] = self._make_args(args, defaults=defaults, vararg=p[7],
                                kwonlyargs=klist_args, kw_defaults=kdefaults,
-                               kwarg=p[10])
+                               kwarg=p[11])
 
     def p_varargslist39(self, p):
         ''' varargslist : fpdef EQUAL test varargslist_list COMMA STAR kwargslist_list COMMA DOUBLESTAR fpdef '''
@@ -324,7 +324,7 @@ class Python3EnamlParser(BaseEnamlParser):
         defaults = [p[3]] + list_defaults
         p[0] = self._make_args(args, defaults=defaults,
                                kwonlyargs=klist_args, kw_defaults=kdefaults,
-                               kwarg=p[9])
+                               kwarg=p[10])
 
     def p_varargslist40(self, p):
         ''' varargslist : STAR fpdef kwargslist_list '''
@@ -342,14 +342,14 @@ class Python3EnamlParser(BaseEnamlParser):
 
     def p_varargslist42(self, p):
         ''' varargslist : STAR fpdef kwargslist_list COMMA DOUBLESTAR fpdef '''
-        # def f(*args, **kwargs): pass
+        # def f(*args, e, b=1, **kwargs): pass
         klist_args, kdefaults = p[3]
         p[0] = self._make_args(args=[], vararg=p[2], kwarg=p[6],
                                kwonlyargs=klist_args, kw_defaults=kdefaults)
 
     def p_varargslist43(self, p):
         ''' varargslist : STAR kwargslist_list COMMA DOUBLESTAR fpdef '''
-        # def f(*args, **kwargs): pass
+        # def f(*, e, b=1,  **kwargs): pass
         klist_args, kdefaults = p[2]
         p[0] = self._make_args(args=[], kwarg=p[5],
                                kwonlyargs=klist_args, kw_defaults=kdefaults)
@@ -387,22 +387,27 @@ class Python3EnamlParser(BaseEnamlParser):
 
     def p_tfpdef2(self, p):
         ''' tfpdef : NAME COLON test'''
-        p[0] = ast.arg(arg=p[1], annotations=p[3])
+        p[0] = ast.arg(arg=p[1], annotation=p[3])
 
 
-def _make_typedarg_rule(f, name):
+def _make_typedarg_rule(f, f_name):
     """Copy a rule and allow for annotations.
 
     """
-    rule = FunctionType(f.__code__, f.__globals__, name,
+    rule = FunctionType(f.__code__, f.__globals__, f_name,
                         f.__defaults__, f.__closure__)
 
     new_doc = f.__doc__.replace('fpdef', 'tfpdef')
-    rule.__doc__ = new_doc.replace('varargslist', 'typedargslist')
+    new_doc = new_doc.replace('varargslist', 'typedargslist')
+    rule.__doc__ = new_doc.replace('kwargslist', 'typedkwargslist')
     return rule
 
 
-for f in (x for x in dir(Python3EnamlParser) if 'varargslist' in x):
-    name = f.replace('varargslist', 'typedargslist')
+for f in (x for x in dir(Python3EnamlParser)
+          if ('varargslist' in x) | ('kwargslist' in x)):
+    if 'varargslist' in f:
+        name = f.replace('varargslist', 'typedargslist')
+    else:
+        name = f.replace('kwargslist', 'typedkwargslist')
     setattr(Python3EnamlParser, name,
             _make_typedarg_rule(getattr(Python3EnamlParser, f), name))
