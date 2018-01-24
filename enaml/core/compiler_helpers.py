@@ -5,6 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+from functools import update_wrapper
+
 from atom.api import Event, Instance, Member
 from atom.datastructures.api import sortedmap
 
@@ -736,6 +738,26 @@ def add_decl_function(node, func, is_override):
     setattr(klass, name, d_func)
 
 
+def wrap_function(func, scope):
+    """Wrap a function to call it with the dynamicscope in which it was defined
+
+    Parameters
+    ----------
+    func : FunctionType
+        Function for which a new scope need to be built
+
+    scope : DynamicScope
+        Scope in which the function was defined.
+
+    """
+    def wrapper(*args, **kwargs):
+        return call_func(func, args, kwargs, scope)
+
+    update_wrapper(wrapper, func)
+
+    return wrapper
+
+
 __compiler_helpers = {
     'add_alias': add_alias,
     'add_decl_function': add_decl_function,
@@ -755,5 +777,5 @@ __compiler_helpers = {
     'validate_spec': validate_spec,
     'validate_template': validate_template,
     'validate_unpack_size': validate_unpack_size,
-    'call_func': call_func,
+    'wrap_func': wrap_function,
 }
