@@ -85,7 +85,9 @@ _Invoke( PyObject* func, PyObject* key, PyObject* self, PyObject* args,
                                       f_globals.get(),
                                       f_builtins.get(), 0 )
         );
-    if( PyMapping_SetItemString( scope.get(), "super", newref( super_disallowed ) ) == -1 )
+    // For some obscure reason PyMapping_SetItemString leads to a spurious print
+    // We use PyObject_SetItem instead
+    if( PyObject_SetItem( scope.get(), Py23Str_FromString("super"), newref( super_disallowed ) ) == -1 )
         return py_bad_internal_call("Failed to set key super in dynamic scope");
 
     PyObjectPtr pkw( xnewref( kwargs ) );
