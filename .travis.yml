@@ -47,7 +47,7 @@ before_install:
   # This will force qt to the last available version on PyPI so we first
   # uninstall the previously installed version
   - 'if [ $QT_VERSION -gt 4 ] && [ $QSCINTILLA -eq 1 ]; then
-         conda remove pyqt --yes
+         conda remove pyqt --yes;
          $PIP_INSTALL QScintilla;
      fi'
 
