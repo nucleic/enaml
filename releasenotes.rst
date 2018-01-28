@@ -1,9 +1,18 @@
 Enaml Release Notes
 ===================
 
-0.10.2 - unreleased
+0.10.2 - 28/01/2018
 -------------------
 - fix import of QScintilla under PyQt5 PR #230
+- add support for importing enaml files from zip archives #232
+- fix menu item ordering under Python 3 #233
+- fix repr of declarative function objects #235
+- properly reset layout_container member in qt backend after a widget has been
+  reparented #240
+- fix calls to explicit_warn which could lead to global vars corruption #247
+- add a text align member to Field to control text alignment #249
+- fix the parsing rules for function definitions #252
+- several improvements to the handling of comprehensions and lambdas #242 #245
 
 0.10.1 - 13/11/2017
 -------------------

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -25,7 +25,7 @@ MINOR = 10
 MICRO = 2
 
 # The status indicate if this is a development or pre-release version
-STATUS = 'dev'
+STATUS = ''
 
 #: A namedtuple of the version info for the current release.
 version_info = namedtuple('version_info', 'major minor micro status')

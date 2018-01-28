@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -149,7 +149,7 @@ setup(
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.rst').read(),
     requires=['future', 'atom', 'PyQt', 'ply', 'kiwisolver', 'qtpy'],
-    install_requires=['setuptools', 'future', 'atom>=0.4.0', 'qtpy>=1.3',
+    install_requires=['setuptools', 'future', 'atom>=0.4.1', 'qtpy>=1.3',
                       'kiwisolver>=1.0.0', 'ply>=3.4'],
     packages=find_packages(),
     package_data={
