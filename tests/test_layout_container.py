@@ -5,8 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from utils import compile_source, wait_for_window_displayed
+import pytest
+from utils import compile_source, wait_for_window_displayed,is_qt_available
 
+pytestmark = pytest.mark.skipif(not is_qt_available(),
+                                reason='Requires a Qt binding')
 
 MANUAL_REPARENTING = \
 """from enaml.core.api import Conditional

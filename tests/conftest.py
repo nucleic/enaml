@@ -12,23 +12,27 @@ import os
 from traceback import format_exc
 
 # Make sure enaml already imported qt to avoid issues with pytest
-from enaml.qt import QT_API, PYQT5_API, PYQT4_API, PYSIDE_API, PYSIDE2_API
-if QT_API in PYQT5_API:
-    os.environ.setdefault('PYTEST_QT_API', 'pyqt5')
-elif QT_API in PYQT4_API:
-    os.environ.setdefault('PYTEST_QT_API', 'pyqt4v2')
-elif QT_API in PYSIDE2_API:
-    os.environ.setdefault('PYTEST_QT_API', 'pyside2')
-else:
-    os.environ.setdefault('PYTEST_QT_API', 'pyside')
+try:
+    from enaml.qt import QT_API, PYQT5_API, PYQT4_API, PYSIDE_API, PYSIDE2_API
+    if QT_API in PYQT5_API:
+        os.environ.setdefault('PYTEST_QT_API', 'pyqt5')
+    elif QT_API in PYQT4_API:
+        os.environ.setdefault('PYTEST_QT_API', 'pyqt4v2')
+    elif QT_API in PYSIDE2_API:
+        os.environ.setdefault('PYTEST_QT_API', 'pyside2')
+    else:
+        os.environ.setdefault('PYTEST_QT_API', 'pyside')
+
+    pytest_plugins = (str('pytest-qt'),)
+
+except Exception:
+    pass
 
 import pytest
 from utils import close_all_windows, close_all_popups
 
-#: Global variable linked to the --ecpy-sleep cmd line option.
+#: Global variable linked to the --enaml-sleep cmd line option.
 DIALOG_SLEEP = 0
-
-pytest_plugins = (str('pytest-qt'),)
 
 
 def pytest_addoption(parser):

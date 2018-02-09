@@ -13,10 +13,15 @@ import marshal
 import zipfile
 
 import pytest
+
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.import_hooks import MAGIC, make_file_info
-from utils import wait_for_window_displayed
+from utils import wait_for_window_displayed, is_qt_available
+
+
+pytestmark = pytest.mark.skipif(not is_qt_available(),
+                                reason='Requires a Qt binding')
 
 
 def generate_cache(path):

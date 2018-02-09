@@ -26,6 +26,17 @@ with enaml.imports():
 TIMEOUT = 2000
 
 
+def is_qt_available():
+    """Check if Qt is installed.
+
+    """
+    try:
+        import enaml.qt
+    except Exception:
+        return False
+    return True
+
+
 def compile_source(source, item, filename='<test>', namespace=None):
     """ Compile Enaml source code and return the target item.
 

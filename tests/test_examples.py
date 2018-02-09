@@ -11,6 +11,7 @@ import types
 from time import sleep
 
 import pytest
+
 from future.utils import exec_
 
 from enaml import imports
@@ -20,7 +21,8 @@ from enaml.widgets.api import PopupView, Window
 from utils import (close_window_or_popup, get_popup,
                    wait_for_window_displayed,
                    wait_for_destruction,
-                   handle_dialog, handle_question)
+                   handle_dialog, handle_question,
+                   is_qt_available)
 
 try:
     import numpy
@@ -55,12 +57,15 @@ except ImportError:
 else:
     VTK_AVAILABLE = True
 
-try:
-    import enaml.qt.qt_ipython_console
-except ImportError:
-    IPY_AVAILABLE = False
+if is_qt_available():
+    try:
+        import enaml.qt.qt_ipython_console
+    except ImportError:
+        IPY_AVAILABLE = False
+    else:
+        IPY_AVAILABLE = True
 else:
-    IPY_AVAILABLE = True
+    IPY_AVAILABLE = False
 
 
 def handle_popup_view_example(qtbot, window):
@@ -97,7 +102,7 @@ def handle_window_closing(qtbot, window):
 
     qtbot.wait_until(check_window_closed)
 
-
+@pytest.mark.skipif(not is_qt_available(), reason='Requires a Qt binding')
 @pytest.mark.parametrize("path, handler",
                          [('aliases/chained_attribute_alias.enaml', None),
                           ('aliases/chained_widget_alias.enaml', None),
@@ -127,8 +132,9 @@ def handle_window_closing(qtbot, window):
                           pytest.param('layout/advanced/button_ring.enaml',
                                        None,
                                        marks=pytest.mark.skipif(
-                                           not NUMPY_AVAILABLE,
-                                           reason='Requires numpy')),
+                                           not (NUMPY_AVAILABLE and
+                                                is_qt_available()),
+                                           reason='Requires numpy and Qt'),),
                           ('layout/advanced/factory_func.enaml', None),
                           ('layout/advanced/find_replace.enaml', None),
                           ('layout/advanced/fluid.enaml', None),
