@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -17,7 +17,6 @@ Generate an rst file, then open the app and take a snapshot.
 """
 from __future__ import print_function
 import os
-os.environ['QT_API'] = 'pyqt'
 import shutil
 
 from atom.api import Atom, Unicode, Value
@@ -53,10 +52,10 @@ class SnapShot(Atom):
 
         """
         widget = self.view.proxy.widget
-        framesize =  widget.window().frameSize()
+        framesize = widget.window().frameSize()
         QPixmap.grabWindow(QApplication.desktop().winId(), widget.x(),
                            widget.y(), framesize.width(),
-                           framesize.height() ).save(self.path)
+                           framesize.height()).save(self.path)
         self.view.close()
 
 
@@ -130,7 +129,7 @@ def generate_example_doc(app, docs_path, script_path):
             return
     try:
         view = mod.Main()
-        snapshot = SnapShot(path=image_path, view=view)
+        SnapShot(path=image_path, view=view)
         view.show()
         app.start()
     except Exception as err:
