@@ -50,13 +50,18 @@ def generate_cache(path):
 def make_library(lib):
     # Create a library.zip with the examples.
 
+    root = os.path.normpath(os.path.join(os.path.dirname(__file__), '..',
+                            'examples', 'widgets'))
+
     with zipfile.ZipFile(lib, 'w') as zf:
         for src, dst in [
-                         ('examples/widgets/buttons.enaml', 'buttons.enaml'),
+                         (os.path.join(root, 'buttons.enaml'),
+                          'buttons.enaml'),
                          (None, 'package/__init__.py'),
-                         ('examples/widgets/form.enaml', 'package/form.enaml'),
+                         (os.path.join(root, 'form.enaml'),
+                          'package/form.enaml'),
                          (None, 'package/subpackage/__init__.py'),
-                         ('examples/widgets/slider.enaml',
+                         (os.path.join(root, 'slider.enaml'),
                           'package/subpackage/slider.enaml'),
                          ]:
             if src:
@@ -67,9 +72,9 @@ def make_library(lib):
 
         #: Generate cache for splitter and notebook
         for src, dst in [
-                ('examples/widgets/splitter.enaml',
+                (os.path.join(root, 'splitter.enaml'),
                  make_file_info('splitter.enaml').cache_path),
-                ('examples/widgets/notebook.enaml',
+                (os.path.join(root, 'notebook.enaml'),
                  make_file_info('package/subpackage/'
                                 'notebook.enaml').cache_path)
                 ]:
