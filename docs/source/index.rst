@@ -27,46 +27,49 @@ A few highlights of the framework:
     API Reference <api_ref/index>
 
 
-.. list-table::
-    :class: borderless
+:doc:`get_started/index`
+------------------------
 
-    * - :doc:`get_started/index`
+    The first stop for all those new to Enaml. This section includes
+    an introduction to Enaml, installation instructions, and all the
+    information needed to write your first Enaml application.
 
-        The first stop for all those new to Enaml. This section includes
-        an introduction to Enaml, installation instructions, and all the
-        information needed to write your first Enaml application.
+:doc:`dev_guides/index`
+-----------------------
 
-      - :doc:`dev_guides/index`
-
-        The stuff that wasn't covered in :doc:`get_started/index`. This
-        section provides in-depth documentation on a wide range of topics
-        you are likely to encounter when developing production applications
-        with Enaml. Look here for details on Enaml's scoping rules, aliases,
-        templates, best practices, and more.
+    The stuff that wasn't covered in :doc:`get_started/index`. This
+    section provides in-depth documentation on a wide range of topics
+    you are likely to encounter when developing production applications
+    with Enaml. Look here for details on Enaml's scoping rules, aliases,
+    templates, best practices, and more.
 
 
-    * - :doc:`arch_ref/index`
+:doc:`arch_ref/index`
+---------------------
 
-        Hackers welcome! This section offers a collection of topics covering
-        the low level details of Enaml's architecture and implementation.
-        Look here if you want to understand how Enaml works internally, or
-        if you are interested in extending Enaml for your own custom needs.
+    Hackers welcome! This section offers a collection of topics covering
+    the low level details of Enaml's architecture and implementation.
+    Look here if you want to understand how Enaml works internally, or
+    if you are interested in extending Enaml for your own custom needs.
 
-      - :doc:`examples/index`
+:doc:`examples/index`
+---------------------
 
-        "Just show me the code!" This section provides an easy-to-browse
-        alternative to running Enaml's examples from the command line. We've
-        even included screenshots!
+    "Just show me the code!" This section provides an easy-to-browse
+    alternative to running Enaml's examples from the command line. We've
+    even included screenshots!
 
-    * - :doc:`faqs/index`
+:doc:`faqs/index`
+-----------------
 
-        If you think you may not be the only one to have thought a thought,
-        you are probably right. Look here to see if your if your question has
-        already been asked, then take solace in the realization that you are
-        not alone.
+    If you think you may not be the only one to have thought a thought,
+    you are probably right. Look here to see if your if your question has
+    already been asked, then take solace in the realization that you are
+    not alone.
 
-      - :doc:`api_ref/index`
+:doc:`api_ref/index`
+--------------------
 
-        "Use the source, Luke." When all else fails, consult the API docs to
-        find the answer you need. The API docs also include convenient links
-        to the most definitive Enaml documentation: the source.
+    "Use the source, Luke." When all else fails, consult the API docs to
+    find the answer you need. The API docs also include convenient links
+    to the most definitive Enaml documentation: the source.

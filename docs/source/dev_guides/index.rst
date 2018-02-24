@@ -16,11 +16,10 @@ the framework see the :ref:`arch_ref`.
     stylesheets
 
 
-.. list-table::
+:doc:`stylesheets`
+------------------
 
-    * - :doc:`stylesheets`
-
-        Styles sheets are a powerful feature which allow the developer to
-        customize the visual appearance of a view independent from the
-        view's structural definition. Inspired by CSS, but with all the
-        dynamism provided by the Enaml language.
+    Styles sheets are a powerful feature which allow the developer to
+    customize the visual appearance of a view independent from the
+    view's structural definition. Inspired by CSS, but with all the
+    dynamism provided by the Enaml language.
