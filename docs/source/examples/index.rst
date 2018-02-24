@@ -53,7 +53,6 @@ Widgets Examples
     ex_vtk_canvas
     ex_window
     ex_window_children
-    ex_window_closing
 
 
 Layout Examples

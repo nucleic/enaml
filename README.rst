@@ -7,6 +7,10 @@ Welcome to Enaml
 .. image:: https://codecov.io/gh/nucleic/enaml/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/nucleic/enaml
 
+.. image:: https://readthedocs.org/projects/enaml/badge/?version=latest
+  :target: http://enaml.readthedocs.io/en/latest/?badge=latest
+  :alt: Documentation Status
+
 
 Enaml is a programming language and framework for creating professional quality
 user interfaces with minimal effort. Enaml combines a domain specific declarative language with a constraints based layout system to allow users to easily define
@@ -15,7 +19,7 @@ platform which supports Python and Qt.
 
 .. image:: https://img.youtube.com/vi/ycFEwz_hAxk/0.jpg
   :target: https://youtu.be/ycFEwz_hAxk
-  
+
 Highlights of the framework
 ===========================
 

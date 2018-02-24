@@ -1,0 +1,22 @@
+Simple Attribute Alias Example
+===============================================================================
+
+:download:`simple_attribute_alias <../../../examples/aliases/simple_attribute_alias.enaml>`
+
+::
+
+    An example of using an Enaml alias to expose an internal attribute.
+    
+    This example is similar to 'simple_widget_alias.enaml', but it shows
+    how the developer can exert more control over a widget by exposing
+    individual attributes instead of entire widgets.
+
+::
+
+ $ enaml-run simple_attribute_alias
+
+.. image:: images/ex_simple_attribute_alias.png
+
+.. literalinclude:: ../../../examples/aliases/simple_attribute_alias.enaml
+    :language: enaml
+
