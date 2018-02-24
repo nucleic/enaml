@@ -22,8 +22,6 @@ import sys, os
 
 from enaml.version import version_info
 
-import sphinx_bootstrap_theme
-
 from enaml.core.import_hooks import EnamlImporter
 EnamlImporter.install()
 
@@ -37,7 +35,7 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.0.7'
+needs_sphinx = '1.4'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -47,18 +45,14 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.pngmath',
+    'sphinx.ext.imgmath',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.autosummary',
-    #'enamldoc'
-    'numpydoc'
+    'sphinx.ext.napoleon'
     ]
-
-# Disable numpy auto-gen class members.
-numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -74,7 +68,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Enaml'
-copyright = u'2013, Nucleic Development Team'
+copyright = u'2013-2018, Nucleic Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -143,7 +137,11 @@ inheritance_graph_attrs = dict(
 
 autosummary_generate = True
 
-# -- Options for HTML output ---------------------------------------------------
+# Napoleon config
+napoleon_include_special_with_doc = False
+
+
+# -- Options for HTML output  -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -151,25 +149,21 @@ autosummary_generate = True
 #'default'
 #'agogo'
 #
-html_theme = 'bootstrap'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-## html_theme_options = {
-##     'pagewidth' : '70em',
-##     'sidebarwidth' : '20em'
-##     }
-html_theme_options = {
-    #'navbar_class': 'navbar-inverse',
-    'navbar_sidebarrel': False,
-    'bootswatch_theme': 'cosmo',
-    'bootstrap_version': '3',
-}
+#html_theme_options = {
+#    #'navbar_class': 'navbar-inverse',
+#    'navbar_sidebarrel': False,
+#    'bootswatch_theme': 'cosmo',
+#    'bootstrap_version': '3',
+#}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = ['./']
-html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+#html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

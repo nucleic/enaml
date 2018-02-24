@@ -22,8 +22,8 @@ import shutil
 from atom.api import Atom, Unicode, Value
 import enaml
 from enaml.qt.qt_application import QtApplication
-from enaml.qt.QtGui import QPixmap
 from enaml.qt.QtWidgets import QApplication
+from enaml.qt.QtTest import QTest
 from enaml.application import timed_call
 
 
@@ -45,7 +45,6 @@ class SnapShot(Atom):
         if change['type'] == 'create':
             self.view.initial_position = (10, 10)
             self.view.always_on_top = True
-            timed_call(1500, self.snapshot)
 
     def snapshot(self):
         """ Take a snapshot of the window and close it.
@@ -53,9 +52,10 @@ class SnapShot(Atom):
         """
         widget = self.view.proxy.widget
         framesize = widget.window().frameSize()
-        QPixmap.grabWindow(QApplication.desktop().winId(), widget.x(),
-                           widget.y(), framesize.width(),
-                           framesize.height()).save(self.path)
+        screen = QApplication.primaryScreen()
+        screen.grabWindow(QApplication.desktop().winId(), widget.x(),
+                          widget.y(), framesize.width(),
+                          framesize.height()).save(self.path)
         self.view.close()
 
 
@@ -85,6 +85,38 @@ def generate_example_doc(app, docs_path, script_path):
     with open(os.path.join(script_path)) as fid:
         script_text = fid.read()
 
+    temp_path = os.path.join(docs_path, os.path.basename(script_path))
+
+    with open(temp_path, 'wb') as fid:
+        fid.write(script_text.encode())
+
+    snapshot_success = True
+    mod = None
+    with enaml.imports():
+        try:
+            mod = __import__(script_name)
+        except Exception as err:
+            print('Could not create: %s' % script_name)
+            print('    %s' % err)
+            os.remove(temp_path)
+            snapshot_success = False
+
+    if mod:
+        try:
+            view = mod.Main()
+            snapshot = SnapShot(path=image_path, view=view)
+            view.show()
+            QTest.qWaitForWindowExposed(view.proxy.widget)
+            QTest.qWait(500)
+            snapshot.snapshot()
+            QTest.qWait(100)
+        except Exception as err:
+            print('Could not create: %s' % script_name)
+            print('    %s' % err)
+            snapshot_success = False
+        finally:
+            os.remove(temp_path)
+
     docstring = script_text[script_text.find('"""') + 3:]
     docstring = docstring[: docstring.find('"""')]
     docstring = docstring.replace('<< autodoc-me >>\n', '').strip()
@@ -102,41 +134,17 @@ def generate_example_doc(app, docs_path, script_path):
 ::
 
  $ enaml-run {1}
-
-.. image:: images/{4}
-
+{4}
 .. literalinclude:: ../../../{2}
     :language: enaml
 
 """.format(script_title, script_name, relative_script_path,
-           docstring.replace('\n', '\n    '), script_image_name)
+           docstring.replace('\n', '\n    '),
+           ('\n.. image:: images/%s\n' % script_image_name if snapshot_success
+            else ''))
 
     with open(rst_path, 'wb') as fid:
         fid.write(rst_template.lstrip().encode())
-
-    temp_path = os.path.join(docs_path, os.path.basename(script_path))
-
-    with open(temp_path, 'wb') as fid:
-        fid.write(script_text.encode())
-
-    with enaml.imports():
-        try:
-            mod = __import__(script_name)
-        except Exception as err:
-            print('Could not create: %s' % script_name)
-            print('    %s' % err)
-            os.remove(temp_path)
-            return
-    try:
-        view = mod.Main()
-        SnapShot(path=image_path, view=view)
-        view.show()
-        app.start()
-    except Exception as err:
-        print('Could not create: %s' % script_name)
-        print('    %s' % err)
-    finally:
-        os.remove(temp_path)
 
 
 def main():

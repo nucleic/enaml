@@ -13,10 +13,10 @@ Tutorial Examples
     tut_hello_world
     tut_person
     tut_employee
-    
-   
+
+
 Widgets Examples
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 .. toctree::
 
@@ -24,12 +24,18 @@ Widgets Examples
     ex_context_menu
     ex_dock_area
     ex_dock_pane
+    ex_drag_and_drop
     ex_dual_slider
+    ex_field
     ex_file_dialog
     ex_flow_area
+    ex_focus_traversal
+    ex_form_spacing
     ex_form
     ex_group_box
+    ex_h_group
     ex_image_view
+    ex_ipython_console
     ex_main_window
     ex_menu_bar
     ex_mpl_canvas
@@ -42,6 +48,8 @@ Widgets Examples
     ex_spin_box
     ex_splitter
     ex_tool_bar
+    ex_tool_buttons
+    ex_v_group
     ex_vtk_canvas
     ex_window
     ex_window_children
@@ -49,10 +57,10 @@ Widgets Examples
 
 
 Layout Examples
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 Basic
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. toctree::
 
@@ -66,23 +74,25 @@ Basic
     ex_linear_relations
     ex_vbox
     ex_vertical
-    
+
 Advanced
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. toctree::
 
     ex_button_ring
+    ex_factory_func
     ex_find_replace
     ex_fluid
     ex_manual_hbox
     ex_manual_vbox
     ex_nested_boxes
     ex_nested_containers
+    ex_override_layout_constraints
 
 
 Stdlib Examples
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 .. toctree::
 
@@ -92,7 +102,7 @@ Stdlib Examples
 
 
 Dynamic Examples
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 .. toctree::
 
@@ -100,10 +110,10 @@ Dynamic Examples
     ex_fields
     ex_looper
     ex_notebook_pages
-    
-    
+
+
 Aliases Examples
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 .. toctree::
 
@@ -113,8 +123,18 @@ Aliases Examples
     ex_simple_widget_alias
 
 
+Functions Examples
+-------------------------------------------------------------------------------
+
+.. toctree::
+
+    ex_declare_function
+    ex_observe_model_signal
+    ex_override_function
+
+
 Styling Examples
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 .. toctree::
 
@@ -124,7 +144,7 @@ Styling Examples
 
 
 Templates Examples
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 .. toctree::
 
@@ -132,10 +152,8 @@ Templates Examples
     ex_basic
 
 
-
-
 Applib Examples
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 .. toctree::
 

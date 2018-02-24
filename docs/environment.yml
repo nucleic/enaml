@@ -1,5 +1,6 @@
 channels:
 - conda-forge
+- exopy
 - defaults
 
 dependencies:
@@ -11,3 +12,4 @@ dependencies:
 - ipython
 - sphinx
 - sphinx_rtd_theme
+- enaml-pygments

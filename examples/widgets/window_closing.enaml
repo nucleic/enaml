@@ -9,7 +9,8 @@
 
 This example shows how to customize the closing of a window.
 
-<< autodoc-me >>
+We do not autodocument this example this is requires a more complex workflow.
+
 """
 from enaml.widgets.api import Window
 from enaml.stdlib.message_box import question
