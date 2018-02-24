@@ -263,3 +263,11 @@ class QtImageView(QtControl, ProxyImageView):
 
         """
         self.widget.setPreserveAspectRatio(preserve)
+
+    def get_aspect_ratio(self):
+        """Get the image aspect ratio from the pixmap.
+
+        """
+        pixmap = self.widget.pixmap()
+        pm_size = pixmap.size()
+        return pm_size.width()/pm_size.height()
