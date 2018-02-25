@@ -69,7 +69,7 @@ class ScintillaDocument(Atom):
 
 class ScintillaIndicator(Atom):
     """ An indicator descriptor.
-    
+
     """
     #: Starting cursor position of the indicator
     start = Tuple(int, default=(0, 0))
@@ -90,7 +90,7 @@ class ScintillaIndicator(Atom):
 
 class ScintillaMarker(Atom):
     """ A marker descriptor
-    
+
     """
     #: Line of the marker
     line = Int()

@@ -26,6 +26,10 @@ except ImportError:
     COMPLETION_AVAILABLE = False
 
 
+ENAML_KEYWORDS = ['enamldef', 'attr', 'alias', 'func', 'template', 'class',
+                  'with', 'else', 'while']
+
+
 def _fake_linecache(text, filename):
     """ Inject text into the linecache for traceback purposes.
 
@@ -239,12 +243,12 @@ class LiveEditorModel(Atom):
             self.traceback = ''
 
     def autocomplete(self, source, position):
-        """ Obtain autocompletion suggestions for the source text 
-        using jedi if available.
-        
+        """ Obtain autocompletion suggestions for the source text using jedi .
+        if available.
+
         """
         if not COMPLETION_AVAILABLE or not source:
-            return []
+            return ENAML_KEYWORDS
         try:
             # Use jedi to get suggestions
             line, column = position
@@ -264,11 +268,11 @@ class LiveEditorModel(Atom):
                         results.append(docstring)
                         continue
 
-            return results
+            return results + ENAML_KEYWORDS
         except Exception:
             # Autocompletion may fail for random reasons so catch all errors
             # as we don't want the editor to quit because of this
-            return []
+            return ENAML_KEYWORDS
 
     def relink_view(self):
         """ Relink the compiled view with the compiled model.
