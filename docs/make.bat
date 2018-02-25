@@ -40,8 +40,11 @@ if "%1" == "clean" (
 	goto end
 )
 
+if "%1" == "examples" (
+   python source\examples\example_doc_generator.py
+)
+
 if "%1" == "html" (
-    python source\examples\example_doc_generator.py
 	%SPHINXBUILD% -b html %ALLSPHINXOPTS% %BUILDDIR%/html
 	if errorlevel 1 exit /b 1
 	echo.

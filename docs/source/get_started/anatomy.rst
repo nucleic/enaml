@@ -13,7 +13,7 @@ application.
 
     - For the motivations and background on Enaml, see the :doc:`introduction`.
 
-    - For connecting data models to the UI, see :doc:`models`.
+    - For connecting data models to the UI, see :doc:`syntax`.
 
     - For advanced articles on the Enaml language and framework,
       see the :doc:`/dev_guides/index`.
@@ -63,7 +63,7 @@ Elements are customized by binding data to their attributes. In the example,
 the ``text`` attributes of the ``Label`` elements and the ``title`` attribute
 of the ``PersonView`` element are assigned static string values, and the
 ``text`` attributes of the ``Field`` elements are bound to data in a data
-model. The specifics of data model binding are covered in :doc:`models`.
+model. The specifics of data model binding are covered in :doc:`syntax`.
 
 Changing the value of an element's attributes will change the visual appearance
 of the widget in the view. The Enaml compiler ensures that a developer does not
@@ -125,7 +125,7 @@ Model Files
 The application data models, business logic, and other support code live in
 ``.py`` files. While Enaml has the capability to interface with nearly any
 data model framework, it supports the `Atom`_ model framework out of the box.
-The full discussion of working with data models is given in the :doc:`models`
+The full discussion of working with data models is given in the :doc:`syntax`
 article. For now, the simple model given below is sufficient for the current
 example, and should be fairly self-explanatory.
 

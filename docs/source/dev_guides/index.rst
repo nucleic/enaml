@@ -16,8 +16,7 @@ the framework see the :ref:`arch_ref`.
     stylesheets
 
 
-:doc:`stylesheets`
-------------------
+.. rubric::`stylesheets`
 
     Styles sheets are a powerful feature which allow the developer to
     customize the visual appearance of a view independent from the

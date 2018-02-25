@@ -31,7 +31,7 @@ Highlights of the framework
 
 Docs and Examples
 =================
-See `the docs <http://nucleic.github.io/enaml/docs>`_ and `examples <http://nucleic.github.io/enaml/docs/examples/index.html>`_ for more information.
+See `the docs <http://enaml.readthedocs.io/en/latest/index.html>`_ and `examples <http://enaml.readthedocs.io/en/latest/examples/index.html>`_ for more information.
 
 
 Also several talks on Enaml:

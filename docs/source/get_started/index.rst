@@ -12,48 +12,46 @@ When you are comfortable with the topics here, have a look at the
 
 
 .. toctree::
+    :titlesonly:
     :hidden:
 
     introduction
     installation
     anatomy
-    models
+    syntax
     layout
 
 
-:doc:`introduction`
--------------------
+.. rubric::`introduction`
 
     The introduction to Enaml explains the motivations behind the project
     and what it seeks to achieve in the context of the larger Python
     ecosystem. It presents the challenges inherent to UI development and
     how the declarative programming model is used to address them.
 
-:doc:`installation`
--------------------
+.. rubric::`installation`
 
     The installation instructions present the steps needed to install
     Enaml and its dependencies.
 
-:doc:`anatomy`
---------------
+.. rubric::`anatomy`
 
     The building blocks of an Enaml application are presented in the
     form of a runnable example. The example shows how the various
     syntactic constructs and framework components combine to create a
     simple user interface application.
 
-:doc:`models`
--------------
+.. rubric::`syntax`
 
-    One of the great features of Enaml is its ability to automatically bind
-    to data models through a rich set of operators. This section describes
-    how those operators are used to connect user defined data models to
-    Enaml views and how they automatically keep the views up-to-date when
-    the data in the models change at runtime.
+    Enaml defines a superset of Python that allows to define the UI in a 
+    declarative way. One of the great features of Enaml is its ability to 
+    automatically bind to data models through a rich set of operators. This 
+    section describes the Enaml specific part of the syntax and how those 
+    operators are used to connect user defined data models to Enaml views and 
+    how they automatically keep the views up-to-date when the data in the 
+    models change at runtime.
 
-:doc:`layout`
--------------
+.. rubric::`layout`
 
     The layout systems of typical user interface frameworks can quickly
     become tedious for all but the simplest of cases. Enaml sheds the
