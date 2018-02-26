@@ -32,6 +32,9 @@ class ProxyImageView(ProxyControl):
     def set_preserve_aspect_ratio(self, preserve):
         raise NotImplementedError
 
+    def get_aspect_ratio(self):
+        raise NotImplementedError
+
 
 class ImageView(Control):
     """ A widget which can display an Image with optional scaling.
@@ -57,6 +60,15 @@ class ImageView(Control):
 
     #: A reference to the ProxyImageView object.
     proxy = Typed(ProxyImageView)
+
+    def layout_constraints(self):
+        """Add constraints to preserve the aspect ratio.
+
+        """
+        if self.proxy_is_active and self.preserve_aspect_ratio:
+            ratio = self.proxy.get_aspect_ratio()
+            return self.constraints + [self.width == ratio*self.height]
+        return self.constraints
 
     #--------------------------------------------------------------------------
     # Observers
