@@ -61,7 +61,7 @@ class EnamlLexer(PythonLexer):
     """ A custom Python lexer which adds Enaml keywords.
 
     """
-    enaml_kwds = " enamldef attr event"
+    enaml_kwds = " enamldef attr event alias template func"
 
     def keywords(self, kwset):
         kwds = super(EnamlLexer, self).keywords(kwset)

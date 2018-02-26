@@ -27,10 +27,10 @@ elif QT_API in PYQT5_API:
 else:
     import QScintilla as Qsci
 
-
 from .QtGui import QColor, QFont
 
-from .q_resource_helpers import QColor_from_Color, QFont_from_Font
+from .q_resource_helpers import (QColor_from_Color, QFont_from_Font,
+                                 get_cached_qimage)
 from .qt_control import QtControl
 from .scintilla_lexers import LEXERS, LEXERS_INV
 from .scintilla_tokens import TOKENS
@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 Base = Qsci.QsciScintillaBase
+QsciScintilla = Qsci.QsciScintilla
 
 
 if sys.platform == 'win32':
@@ -79,6 +80,43 @@ WHITE_SPACE = {
     'invisible': Base.SCWS_INVISIBLE,
 }
 
+AUTOCOMPLETION_USE_SINGLE = {
+    'never': QsciScintilla.AcusNever,
+    'explicit': QsciScintilla.AcusExplicit,
+    'always': QsciScintilla.AcusAlways,
+}
+
+AUTOCOMPLETION_SOURCE = {
+    'none': QsciScintilla.AcsNone,
+    'all': QsciScintilla.AcsAll,
+    'document': QsciScintilla.AcsDocument,
+    'apis': QsciScintilla.AcsAPIs,
+}
+
+INDICATOR_STYLE = {
+    'plain': QsciScintilla.PlainIndicator,
+    'squiggle': QsciScintilla.SquiggleIndicator,
+    'tt': QsciScintilla.TTIndicator,
+    'diagonal': QsciScintilla.DiagonalIndicator,
+    'strike': QsciScintilla.StrikeIndicator,
+    'hidden': QsciScintilla.HiddenIndicator,
+    'box': QsciScintilla.BoxIndicator,
+    'round_box': QsciScintilla.RoundBoxIndicator,
+    'straight_box': QsciScintilla.StraightBoxIndicator,
+    'full_box': QsciScintilla.FullBoxIndicator,
+    'dashes': QsciScintilla.DashesIndicator,
+    'dots': QsciScintilla.DotsIndicator,
+    'squiggle_low': QsciScintilla.SquiggleLowIndicator,
+    'dot_box': QsciScintilla.DotBoxIndicator,
+    'thick_composition': QsciScintilla.ThickCompositionIndicator,
+    'thin_composition': QsciScintilla.ThinCompositionIndicator,
+    'text_color': QsciScintilla.TextColorIndicator,
+    'triangle': QsciScintilla.TriangleIndicator,
+    'triangle_character': QsciScintilla.TriangleCharacterIndicator,
+}
+
+NUMBER_MARGIN = 0
+
 
 def _make_color(color_str):
     """ A function which converts a color string into a QColor.
@@ -108,10 +146,19 @@ class QtScintilla(QtControl, ProxyScintilla):
     qsci_doc_cache = weakref.WeakValueDictionary()
 
     #: A reference to the widget created by the proxy.
-    widget = Typed(Qsci.QsciScintilla)
+    widget = Typed(QsciScintilla)
+
+    #: A reference to the autocomplete API
+    qsci_api = Typed(Qsci.QsciAPIs)
 
     #: A strong reference to the QsciDocument handle.
     qsci_doc = Typed(Qsci.QsciDocument)
+
+    #: Indicator style to style ID mapping
+    _indicator_styles = Typed(dict, ())
+
+    #: Marker image to marker ID mapping
+    _marker_images = Typed(dict, ())
 
     #--------------------------------------------------------------------------
     # Initialization API
@@ -120,7 +167,7 @@ class QtScintilla(QtControl, ProxyScintilla):
         """ Create the underlying label widget.
 
         """
-        self.widget = Qsci.QsciScintilla(self.parent_widget())
+        self.widget = QsciScintilla(self.parent_widget())
 
     def init_widget(self):
         """ Initialize the underlying widget.
@@ -129,11 +176,18 @@ class QtScintilla(QtControl, ProxyScintilla):
         super(QtScintilla, self).init_widget()
         d = self.declaration
         self.set_document(d.document)
+        self.set_autocomplete(d.autocomplete)
         self.set_syntax(d.syntax, refresh_style=False)
         self.set_settings(d.settings)
         self.set_zoom(d.zoom)
         self.refresh_style()
+        if d.indicators:
+            self.set_indicators(d.indicators)
+        if d.markers:
+            self.set_markers(d.markers)
         self.widget.textChanged.connect(self.on_text_changed)
+        self.widget.cursorPositionChanged.connect(
+            self.on_cursor_position_changed)
 
     def destroy(self):
         """ A reimplemented destructor.
@@ -145,6 +199,8 @@ class QtScintilla(QtControl, ProxyScintilla):
         # Clear the strong reference to the document. It must be freed
         # *before* the last widget using it is freed or PyQt segfaults.
         del self.qsci_doc
+        if self.qsci_api:
+            del self.qsci_api
         super(QtScintilla, self).destroy()
 
     #--------------------------------------------------------------------------
@@ -157,6 +213,16 @@ class QtScintilla(QtControl, ProxyScintilla):
         d = self.declaration
         if d is not None:
             d.text_changed()
+
+            self.refresh_line_number_width()
+
+    def on_cursor_position_changed(self):
+        """ Handle the 'cursorPositionChanged' signal on the widget.
+
+        """
+        d = self.declaration
+        if d is not None:
+            d.cursor_position = self.widget.getCursorPosition()
 
     #--------------------------------------------------------------------------
     # Helper Methods
@@ -253,6 +319,41 @@ class QtScintilla(QtControl, ProxyScintilla):
                 msg = "unknown token '%s' given for the '%s' syntax"
                 logger.warn(msg % (token, syntax))
 
+    def refresh_autocomplete(self):
+        """ If the lexer changes, update the API options as these depend
+        on the lexer.
+        
+        """
+        d = self.declaration
+        if d.autocomplete in ['api', 'all'] and d.autocompletions:
+            self.set_autocompletions(d.autocompletions)
+
+    def refresh_line_number_width(self):
+        """ When the number of lines changes update the width accordingly.
+        Always shows one more than the width of the number of lines.
+        
+        """
+        w = self.widget
+        # Only update it if show_line_numbers=True
+        if w.marginWidth(NUMBER_MARGIN) > 0:
+            w.setMarginWidth(NUMBER_MARGIN, "0"+str(max(10, w.lines())))
+
+    def get_indicator_style_id(self, indicator):
+        """ Get the indicator style id for this indicator. The key
+        is simply the style and fg color. 
+          
+        If the key does not exist, define a new style.
+        
+        """
+        style = "{},{}".format(indicator.style, indicator.color)
+        if style not in self._indicator_styles:
+            w = self.widget
+            style_id = w.indicatorDefine(INDICATOR_STYLE[indicator.style])
+            w.setIndicatorForegroundColor(_make_color(indicator.color),
+                                          style_id)
+            self._indicator_styles[style] = style_id
+        return self._indicator_styles[style]
+
     #--------------------------------------------------------------------------
     # ProxyScintilla API
     #--------------------------------------------------------------------------
@@ -276,6 +377,7 @@ class QtScintilla(QtControl, ProxyScintilla):
             old.deleteLater()
         lexer_cls = LEXERS.get(syntax) or (lambda w: None)
         self.widget.setLexer(lexer_cls(self.widget))
+        self.refresh_autocomplete()
         if refresh_style:
             self.refresh_style()
 
@@ -335,12 +437,29 @@ class QtScintilla(QtControl, ProxyScintilla):
             pull_bool('backspace_unindents', False))
         send(w.SCI_SETINDENTATIONGUIDES,
             pull_enum(INDENTATION_GUIDES, 'indentation_guides', 'none'))
+        w.setAutoIndent(pull_bool('auto_indent', False))
 
         # White Space
         send(w.SCI_SETVIEWWS, pull_enum(WHITE_SPACE, 'view_ws', 'invisible'))
         send(w.SCI_SETWHITESPACESIZE, pull_int('white_space_size', 1))
         send(w.SCI_SETEXTRAASCENT, pull_int('extra_ascent', 0))
         send(w.SCI_SETEXTRADESCENT, pull_int('extra_descent', 0))
+
+        # Autocompletion
+        # See https://qscintilla.com/general-autocompletion/
+        w.setAutoCompletionThreshold(pull_int('autocompletion_threshold', 3))
+        w.setAutoCompletionCaseSensitivity(
+            pull_bool('autocompletion_case_sensitive', False))
+        w.setAutoCompletionReplaceWord(
+            pull_bool('autocompletion_replace_word', False))
+        w.setAutoCompletionUseSingle(
+            pull_enum(AUTOCOMPLETION_USE_SINGLE,
+                      'autocompletion_use_single', 'never'))
+        self.set_autocompletion_images(
+            settings.get('autocompletion_images', []))
+
+        # Line numbers
+        self.set_show_line_numbers(pull_bool('show_line_numbers', False))
 
     def set_zoom(self, zoom):
         """ Set the zoom factor on the widget.
@@ -359,6 +478,96 @@ class QtScintilla(QtControl, ProxyScintilla):
 
         """
         self.widget.setText(text)
+
+    def set_autocomplete(self, mode):
+        """ Set the autocompletion mode
+        
+        """
+        self.widget.setAutoCompletionSource(AUTOCOMPLETION_SOURCE[mode])
+
+    def set_autocompletions(self, options):
+        """ Set the autocompletion options for when the autocompletion mode
+        is in 'all' or 'apis'.
+            
+        """
+        # Delete the old if one exists
+        if self.qsci_api:
+            # Please note that it is not possible to add or remove entries
+            # once you’ve “prepared” so we have to destroy and create
+            # a new provider every time.
+            self.qsci_api.deleteLater()
+            self.qsci_api = None
+
+        # Add the new options
+        api = self.qsci_api = Qsci.QsciAPIs(self.widget.lexer())
+        for option in options:
+            api.add(option)
+        api.prepare()
+
+    def set_autocompletion_images(self, images):
+        """ Set the images that can be used in autocompletion results. 
+            
+        """
+        w = self.widget
+        w.clearRegisteredImages()
+        for i, image in enumerate(images):
+            w.registerImage(i, get_cached_qimage(image))
+
+    def set_show_line_numbers(self, show):
+        """ Set whether line numbers are shown or not by setting
+        the margin width of the LineNumber margin. 
+        
+        """
+        w = self.widget
+        w.setMarginType(NUMBER_MARGIN, QsciScintilla.NumberMargin)
+        self.widget.setMarginWidth(
+            NUMBER_MARGIN, "0"+str(max(10, w.lines())) if show else "")
+
+    def set_markers(self, markers):
+        """ Set the markers on the left margin of the widget.
+        
+        If the image is not a defined marker, one will be created.
+        
+        """
+        w = self.widget
+
+        # Clear markers
+        w.markerDeleteAll()
+
+        # Add the new markers
+        for m in markers:
+            # Define a new marker with the given image if one has not already
+            # been created.
+            if m.image not in self._marker_images:
+                self._marker_images[m.image] = w.markerDefine(
+                    get_cached_qimage(m.image))
+
+            # Add the marker
+            w.markerAdd(m.line, self._marker_images[m.image])
+
+    def set_indicators(self, indicators):
+        """ Set the indicators of the widget.
+        
+        This lets certain text be highlighted or underlined with a given 
+        style to indicate something (errors) within the editor.
+        
+        """
+        w = self.widget
+
+        # Cleanup old indicators by clearing all indicators in the document
+        # There's no api to do this so clear the entire document range
+        # for each style to ensure a clean state.
+        lines = w.lines()
+        column = w.lineLength(lines)
+        for style_id in self._indicator_styles.values():
+            w.clearIndicatorRange(0, 0, lines, column, style_id)
+
+        # Add new indicators
+        for ind in indicators:
+            l0, c0 = ind.start
+            l1, c1 = ind.stop
+            w.fillIndicatorRange(l0, c0, l1, c1,
+                                 self.get_indicator_style_id(ind))
 
     #--------------------------------------------------------------------------
     # Reimplementations

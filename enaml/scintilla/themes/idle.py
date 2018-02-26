@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from .mono_font import MONO_FONT
+from ..mono_font import MONO_FONT
 
 
 # TODO add many more syntaxes to this theme.

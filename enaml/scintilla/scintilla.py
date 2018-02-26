@@ -6,11 +6,12 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import uuid
-
+from future.builtins import str
 from atom.api import (
-    Atom, Int, Constant, Enum, Event, Typed, ForwardTyped, observe, set_default
+    Atom, Int, Constant, Enum, Event, Typed, List, ForwardTyped, Tuple,
+    Unicode, observe, set_default
 )
-
+from enaml.image import Image
 from enaml.core.declarative import d_
 from enaml.widgets.control import Control, ProxyControl
 
@@ -66,6 +67,38 @@ class ScintillaDocument(Atom):
     uuid = Constant(factory=lambda: uuid.uuid4().hex)
 
 
+class ScintillaIndicator(Atom):
+    """ An indicator descriptor.
+
+    """
+    #: Starting cursor position of the indicator
+    start = Tuple(int, default=(0, 0))
+
+    #: Stop cursor position of the indicator
+    stop = Tuple(int, default=(0, 0))
+
+    #: Indicator style
+    style = Enum('squiggle', 'plain', 'tt', 'diagonal', 'strike', 'hidden',
+                 'box', 'round_box', 'straight_box', 'full_box', 'dashes',
+                 'dots', 'squiggle_low', 'dot_box', 'thick_composition',
+                 'thin_composition', 'text_color', 'triangle',
+                 'triangle_character')
+
+    #: Indicator foreground color
+    color = Unicode("#000000")
+
+
+class ScintillaMarker(Atom):
+    """ A marker descriptor
+
+    """
+    #: Line of the marker
+    line = Int()
+
+    #: Image to use
+    image = Typed(Image)
+
+
 class ProxyScintilla(ProxyControl):
     """ The abstract definition of a proxy Scintilla object.
 
@@ -94,6 +127,18 @@ class ProxyScintilla(ProxyControl):
     def set_text(self, text):
         raise NotImplementedError
 
+    def set_autocomplete(self, source):
+        raise NotImplementedError
+
+    def set_autocompletions(self, options):
+        raise NotImplementedError
+
+    def set_indicators(self, indicators):
+        raise NotImplementedError
+
+    def set_markers(self, markers):
+        raise NotImplementedError
+
 
 class Scintilla(Control):
     """ A Scintilla text editing control.
@@ -104,6 +149,19 @@ class Scintilla(Control):
     on this widget. All styling is supplied via the 'theme' attribute.
 
     """
+    #: Enable autocompletion
+    autocomplete = d_(Enum('none', 'all', 'document', 'apis'))
+
+    #: Autocompletion values and call signatures.
+    #: Images can be used by appending "?<image_no>" to the completion value.
+    #: The images are defined by passing a list of image paths as the
+    #: "autocompletion_images" settings key.
+    autocompletions = d_(List(str))
+
+    #: Position of the cursor within the editor in the format (line, column)
+    #: This is needed for autocompletion engines to determine the current text
+    cursor_position = d_(Tuple(int, default=(0, 0)), writable=False)
+
     #: The scintilla document buffer to use in the editor. A default
     #: document will be created automatically for each editor. This
     #: value only needs to be supplied when swapping buffers or when
@@ -131,6 +189,12 @@ class Scintilla(Control):
     #: Text Editors expand freely in height and width by default.
     hug_width = set_default('ignore')
     hug_height = set_default('ignore')
+
+    #: Markers to display.
+    markers = d_(List(ScintillaMarker))
+
+    #: Indicators to display.
+    indicators = d_(List(ScintillaIndicator))
 
     #: A reference to the ProxyScintilla object.
     proxy = Typed(ProxyScintilla)
@@ -167,7 +231,8 @@ class Scintilla(Control):
     #--------------------------------------------------------------------------
     # Observers
     #--------------------------------------------------------------------------
-    @observe('document', 'syntax', 'theme', 'settings', 'zoom')
+    @observe('document', 'syntax', 'theme', 'settings', 'zoom',
+             'autocomplete', 'autocompletions', 'indicators', 'markers')
     def _update_proxy(self, change):
         """ An observer which sends the document change to the proxy.
 

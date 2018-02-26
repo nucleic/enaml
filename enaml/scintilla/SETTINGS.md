@@ -106,3 +106,37 @@ White Space
 - **extra_ascent** (int) - Extra space above a line. The default is 0.
 
 - **extra_descent** (int) - Extra space below a line. The default is 0.
+
+
+Line Numbers
+------------
+- **show_line_numbers** (bool) - Whether line numbers should be shown or hidden. 
+The default is false.
+
+
+Autocompletion
+--------------
+- **autocompletion_threshold** (int) - The number of characters that must match before
+completion results are shown. The default is 3.
+
+- **autocompletion_case_sensitive** (bool) - Whether autocompletion results must match the case. 
+The default is False. 
+
+- **autocompletion_replace_word** (bool) - Whether the selected autocompletion result will replace 
+the current word. The default is False.
+
+- **autocompletion_use_single** (string) - The mode when there is only one autocompletion
+result is available. The default is never.
+
+    - **never** - the default mode where the autocompletion window is displayed 
+    
+    - **explicit** - the entry is automatically used only if the autocomplete function is 
+    explicitly called
+    
+    - **always** - the entry is always used automatically 
+
+- **autocompletion_images** (list of strings) - A list of images to add within autocompletion 
+results. Each string must be a valid path to an Image.  Once a list of images is given, they may be 
+used in results by appending `?<index>` to the result in the autocompletions list. 
+
+
