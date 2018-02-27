@@ -1,6 +1,11 @@
 Enaml Release Notes
 ===================
 
+0.10.3 - unreleased
+-------------------
+- add constraints to enforce image aspect ratio in ImageView PR #254
+- improvements to the scintilla widget and live editor PR #243
+
 0.10.2 - 28/01/2018
 -------------------
 - fix import of QScintilla under PyQt5 PR #230
