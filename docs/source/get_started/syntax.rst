@@ -58,6 +58,12 @@ type validation using the following syntax.
     One can specify a default value using `=` even if not type validation is
     specified.
     
+One can also define the equivalent of atom.Event, that is to say an attribute
+that does not store the value it is assigned but simply fire a notification
+each time it is assigned a value. To do so, simply replace the `attr` keyword
+by the `event` keyword. Type validation works in the same way as for regular
+`attr` defined attributes. 
+    
 Additionally, one can define an attribute that simply allow to access in a 
 transparent way a child widget or a child widget attribute using the `alias`
 keyword whose syntax is presented below.
