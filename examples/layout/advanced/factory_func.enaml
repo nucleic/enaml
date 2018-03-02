@@ -15,9 +15,11 @@ that a relayout is necessary.
 
 << autodoc-me >>
 """
-from future import standard_library
-standard_library.install_aliases()
-from itertools import zip_longest
+from enaml.compat import IS_PY3
+if IS_PY3:
+    from itertools import zip_longest
+else:
+    from itertools import izip_longest as zip_longest
 
 from enaml.core.api import Include
 from enaml.layout.api import align, grid, factory

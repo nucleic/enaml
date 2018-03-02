@@ -5,14 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from future.utils import with_metaclass
-
 from atom.api import Event, Typed, Unicode
 from atom.datastructures.api import sortedmap
 
 from .declarative_meta import DeclarativeMeta
 from .expression_engine import ExpressionEngine
 from .object import Object, flag_generator, flag_property
+from enaml.compat import with_metaclass
 
 
 def d_(member, readable=True, writable=True, final=True):

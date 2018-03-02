@@ -14,10 +14,9 @@ developer is free to define their own styles completely from scratch, and
 ignore these styles in their entirety.
 
 """
-from future.builtins import str
-from past.builtins import basestring
 from atom.api import Atom, Typed, Unicode
 from enaml.core.template_ import Template
+from enaml.compat import str, basestring
 from enaml.styling import StyleSheet, Style, Setter
 
 

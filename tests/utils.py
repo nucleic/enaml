@@ -10,10 +10,10 @@
 """
 from contextlib import contextmanager
 
-from future.utils import exec_
 from atom.api import Atom, Bool
 
 import enaml
+from enaml.compat import exec_
 from enaml.application import timed_call
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse

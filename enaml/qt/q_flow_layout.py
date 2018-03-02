@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 from abc import ABCMeta, abstractmethod
 
-from future.utils import with_metaclass
+from enaml.compat import with_metaclass
 
 from .QtCore import Qt, QSize, QRect
 from .QtWidgets import QLayout, QWidgetItem

@@ -5,12 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from past.builtins import basestring
 from atom.api import Atom, atomref
 
 from .alias import Alias
 from .code_tracing import CodeTracer
-from ..compat import IS_PY3
+from ..compat import IS_PY3, basestring
 
 
 class SubscriptionObserver(object):

@@ -6,7 +6,6 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 from atom.api import Typed
-from future.utils import raise_from
 
 from enaml.widgets.ipython_console import ProxyIPythonConsole
 

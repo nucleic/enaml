@@ -5,7 +5,6 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from future.builtins import int
 from atom.api import Validate, Value
 
 

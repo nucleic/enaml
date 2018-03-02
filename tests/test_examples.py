@@ -8,11 +8,10 @@
 import os
 import sys
 import types
-from time import sleep
 
 import pytest
 
-from future.utils import exec_
+from enaml.compat import exec_
 
 from enaml import imports
 from enaml.core.parser import parse

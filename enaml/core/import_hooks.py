@@ -17,11 +17,10 @@ from collections import defaultdict, namedtuple
 from zipfile import ZipFile
 
 
-from future.utils import with_metaclass, exec_
-
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
-from ..compat import read_source, detect_encoding, update_code_co_filename
+from ..compat import (read_source, detect_encoding, update_code_co_filename,
+                      with_metaclass, exec_)
 
 
 # The magic number as symbols for the current Python interpreter. These

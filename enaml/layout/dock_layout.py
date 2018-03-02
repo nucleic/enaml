@@ -9,11 +9,10 @@ from collections import deque
 import sys
 import warnings
 
-from future.utils import with_metaclass
-from past.builtins import basestring
 from atom.api import Atom, Int, Bool, Coerced, Enum, List, Unicode
 
 from enaml.nodevisitor import NodeVisitor
+from enaml.compat import with_metaclass, basestring
 
 from .geometry import Rect
 

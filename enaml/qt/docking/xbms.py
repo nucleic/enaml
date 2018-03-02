@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from future.builtins import bytes
+from enaml.compat import bytes
 from atom.api import Atom, Int, Bytes
 
 from enaml.qt.QtCore import QSize

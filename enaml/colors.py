@@ -10,12 +10,12 @@
 """
 from colorsys import hls_to_rgb
 import re
-from past.builtins import basestring
+
 
 from atom.api import Coerced
 
 from .colorext import Color
-
+from enaml.compat import basestring
 
 #: Regex sub-expressions used for building more complex expression.
 _int = r'\s*((?:\+|\-)?[0-9]+)\s*'
