@@ -5,10 +5,8 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from future.builtins import bytes
-
 from .base_lexer import BaseEnamlLexer
-from ...compat import decode_escapes, encode_escapes
+from ...compat import decode_escapes, encode_escapes, bytes
 
 
 class Python3EnamlLexer(BaseEnamlLexer):

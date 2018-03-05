@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from future.builtins import str
+from enaml.compat import str
 
 #: The global dict of registered stylesheets. This dict should never be
 #: modified directly. Use the functions 'register_style_sheet' and

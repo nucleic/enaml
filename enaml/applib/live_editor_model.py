@@ -9,14 +9,13 @@ import linecache
 import traceback
 from types import ModuleType
 
-from future.builtins import int
-from future.utils import exec_
 from atom.api import Atom, Str, Typed, observe
 
 import enaml
 from enaml.core.object import Object
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
+from enaml.compat import exec_
 from enaml.widgets.widget import Widget
 
 try:

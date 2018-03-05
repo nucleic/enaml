@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from future.builtins import str
+from enaml.compat import str
 from enaml.qt.QtCore import Qt, QSize, QPoint, QMargins, Signal
 from enaml.qt.QtWidgets import (
     QWidget, QFrame, QLineEdit, QHBoxLayout, QSizePolicy

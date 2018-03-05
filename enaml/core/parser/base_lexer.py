@@ -8,10 +8,9 @@
 import os
 import tokenize
 
-from future.builtins import str
 import ply.lex as lex
 
-from ...compat import IS_PY3
+from ...compat import IS_PY3, str
 
 
 #------------------------------------------------------------------------------

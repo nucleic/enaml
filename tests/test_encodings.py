@@ -8,10 +8,9 @@
 #------------------------------------------------------------------------------
 from ast import literal_eval
 from textwrap import dedent
-from future.utils import exec_
 
 from utils import compile_source
-from enaml.compat import IS_PY3
+from enaml.compat import IS_PY3, exec_
 
 
 def test_unicode_literal():

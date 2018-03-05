@@ -8,11 +8,11 @@
 """ A utility module for dealing with CSS3 font strings.
 
 """
-from past.builtins import basestring
 
 from atom.api import Coerced
 
 from .fontext import Font, FontStyle, FontCaps
+from enaml.compat import basestring
 
 
 #: A mapping from CSS font style keyword to style enum

@@ -7,8 +7,8 @@
 #------------------------------------------------------------------------------
 from abc import ABCMeta
 
-from future.utils import with_metaclass
 from atom.api import Atom, Constant, DefaultValue, Enum
+from enaml.compat import with_metaclass
 
 import kiwisolver as kiwi
 

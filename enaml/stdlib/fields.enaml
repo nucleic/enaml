@@ -10,7 +10,7 @@
 This is a library of Enaml components deriving from the builtin Field.
 
 """
-from future.builtins import str
+from enaml.compat import str
 from enaml.validator import RegexValidator, IntValidator, FloatValidator
 from enaml.widgets.field import Field
 

@@ -5,13 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from future.builtins import str
 from atom.api import (
     Enum, Bool, Callable, List, Unicode, Typed, ForwardTyped, Event
 )
 
 from enaml.application import deferred_call
 from enaml.core.declarative import d_
+from enaml.compat import str
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 

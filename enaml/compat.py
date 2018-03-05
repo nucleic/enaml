@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,8 +8,7 @@
 import sys
 import re
 import codecs
-
-IS_PY3 = sys.version_info >= (3,)
+from atom.compat import *
 
 USE_WORDCODE = sys.version_info >= (3, 6)
 
@@ -111,8 +110,8 @@ else:
                                 code.co_cellvars)
         return updated_code
 
-# Source file reading and encoding detection
 
+# Source file reading and encoding detection
 if IS_PY3:
     import tokenize
 
@@ -249,3 +248,21 @@ else:
         with open(filename, 'rU') as f:
             src = f.read()
         return src.decode(enc).encode('utf-8')
+
+
+if IS_PY3:
+    import builtins
+    exec_ = getattr(builtins, "exec")
+
+else:
+    def exec_(code, globs=None, locs=None):
+        """Execute code in a namespace."""
+        if globs is None:
+            frame = sys._getframe(1)
+            globs = frame.f_globals
+            if locs is None:
+                locs = frame.f_locals
+            del frame
+        elif locs is None:
+            locs = globs
+        exec("""exec code in globs, locs""")

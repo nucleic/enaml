@@ -7,8 +7,8 @@
 #------------------------------------------------------------------------------
 from collections import defaultdict
 
-from future.builtins import str
 from atom.api import Atom, Event, Typed
+from enaml.compat import str
 
 from .plugin import Plugin
 

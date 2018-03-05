@@ -6,8 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import sys
-from past.builtins import basestring
-
+from enaml.compat import basestring
 from enaml.core.dynamic_template import DynamicTemplate
 from enaml.image import Image
 from enaml.layout.layout_helpers import align, hbox, spacer
