@@ -41,7 +41,7 @@ else:
 try:
     try:
         from PyQt4 import Qsci
-    except:
+    except Exception:
         from PyQt5 import Qsci
 except ImportError:
     SCINTILLA_AVAILABLE = False
