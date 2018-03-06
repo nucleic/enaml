@@ -13,8 +13,8 @@ The resulting GUI looks like this (on Ubuntu):
 
 .. image:: images/wb_main.png
 
-There are three workbenches available in the dropdown menu, which
-are loaded just prior to display.
+There are three workspaces available in the dropdown menu, which are loaded 
+just prior to display.
 
 .. image:: images/wb_first.png
 
