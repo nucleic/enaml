@@ -114,15 +114,15 @@ def parse_font(font):
     optionals = []
     for token in tokens:
         if token in _STYLES or token in _VARIANTS or token in _WEIGHTS:
-            if len(sizes) > 0 or len(families) > 0:
-                return None
             optionals.append(token)
         elif token in _SIZES or token[-2:] in _UNITS:
-            if len(families) > 0:
-                return None
             sizes.append(token)
         else:
-            families.append(token)
+            try:
+                int(token)
+                optionals.append(token + 'pt')
+            except ValueError:
+                families.append(token)
 
     if len(optionals) > 3:
         return None
