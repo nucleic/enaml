@@ -157,3 +157,11 @@ Applib Examples
 .. toctree::
 
     ex_live_editor
+
+
+Workbench Examples
+--------------------------------------------------------------------------------
+
+.. toctree::
+
+    wb_sample
