@@ -16,17 +16,19 @@ the framework see the :ref:`arch_ref`.
     stylesheets
     workbenches
 
+.. This simply prevents the :doc: to create entries in the sidebar
+.. container::
 
-.. rubric::`stylesheets`
+    .. rubric:: :doc:`stylesheets`
 
     Styles sheets are a powerful feature which allow the developer to
     customize the visual appearance of a view independent from the
     view's structural definition. Inspired by CSS, but with all the
     dynamism provided by the Enaml language.
 
-.. rubric::`workbenches`
+    .. rubric:: :doc:`workbenches`
 
     Enaml Workbenches provide a set of low-level components which can
     be used to develop high-level plugin applications.  Workbenches 
     enable the developer to write large UI applications which can be 
-    *safetly extended at runtime* by other developers.
+    *safely extended at runtime* by other developers.
