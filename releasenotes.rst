@@ -3,6 +3,9 @@ Enaml Release Notes
 
 0.10.3 - unreleased
 -------------------
+- add minimal workbench documentation PR # 258
+- allow more flexibility in font parsing PR # 258
+- remove dependency on future to reduce import time PR #255
 - add constraints to enforce image aspect ratio in ImageView PR #254
 - improvements to the scintilla widget and live editor PR #243
 
