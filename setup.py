@@ -148,6 +148,7 @@ setup(
     url='https://github.com/nucleic/enaml',
     description='Declarative DSL for building rich user interfaces in Python',
     long_description=open('README.rst').read(),
+    license='BSD',
     requires=['atom', 'PyQt', 'ply', 'kiwisolver', 'qtpy'],
     install_requires=['setuptools', 'atom>=0.4.2.dev', 'qtpy>=1.3',
                       'kiwisolver>=1.0.0', 'ply>=3.4'],
