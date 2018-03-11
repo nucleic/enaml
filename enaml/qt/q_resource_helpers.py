@@ -1,15 +1,14 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013-2017, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from enaml.fontext import FontStyle, FontCaps
+from enaml.fontext import FontStyle, FontCaps, FontStretch
 
 from .QtCore import Qt, QSize
 from .QtGui import QColor, QFont, QImage, QIcon, QPixmap
-
 
 FONT_STYLES = {
     FontStyle.Normal: QFont.StyleNormal,
@@ -25,6 +24,18 @@ FONT_CAPS = {
     FontCaps.SmallCaps: QFont.SmallCaps,
     FontCaps.Capitalize: QFont.Capitalize,
 }
+
+
+FONT_STRETCH = {
+    FontStretch.UltraCondensed: QFont.UltraCondensed,
+    FontStretch.ExtraCondensed: QFont.ExtraCondensed,
+    FontStretch.Condensed: QFont.Condensed,
+    FontStretch.SemiCondensed: QFont.SemiCondensed,
+    FontStretch.Unstretched: QFont.Unstretched,
+    FontStretch.SemiExpanded: QFont.SemiExpanded,
+    FontStretch.Expanded: QFont.Expanded,
+    FontStretch.ExtraExpanded: QFont.ExtraExpanded,
+    FontStretch.UltraExpanded: QFont.UltraExpanded}
 
 
 ASPECT_RATIO_MODE = {
@@ -209,6 +220,7 @@ def QFont_from_Font(font):
     qfont = QFont(font.family, font.pointsize, font.weight)
     qfont.setStyle(FONT_STYLES[font.style])
     qfont.setCapitalization(FONT_CAPS[font.caps])
+    qfont.setStretch(FONT_STRETCH[font.stretch])
     return qfont
 
 

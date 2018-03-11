@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 """ A simple example plugin application.
 
-This example serves to demostrates the concepts described the accompanying
+This example serves to demonstrate the concepts described the accompanying
 developer crash source document.
 
 """

@@ -31,6 +31,20 @@ enum FontStyle
 };
 
 
+enum FontStretch
+{
+    UltraCondensed,
+    ExtraCondensed,
+    Condensed,
+    SemiCondensed,
+    Unstretched,
+    SemiExpanded,
+    Expanded,
+    ExtraExpanded,
+    UltraExpanded
+};
+
+
 enum FontCaps
 {
     MixedCase,
@@ -49,6 +63,7 @@ typedef struct {
     int32_t weight;
     FontStyle style;
     FontCaps caps;
+    FontStretch stretch;
 } Font;
 
 
@@ -60,14 +75,15 @@ Font_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     int32_t weight = -1;
     FontStyle style = Normal;
     FontCaps caps = MixedCase;
-    static char* kwlist[] = { "family", "size", "weight", "style", "caps", 0 };
+    FontStretch stretch = Unstretched;
+    static char* kwlist[] = { "family", "size", "weight", "style", "caps", "stretch", 0 };
 #if PY_MAJOR_VERSION >= 3
     if( !PyArg_ParseTupleAndKeywords(
-        args, kwargs, "U|iiii", kwlist, &family, &pointsize, &weight, &style, &caps ) )
+        args, kwargs, "U|iiiii", kwlist, &family, &pointsize, &weight, &style, &caps, &stretch ) )
         return 0;
 #else
     if( !PyArg_ParseTupleAndKeywords(
-        args, kwargs, "S|iiii", kwlist, &family, &pointsize, &weight, &style, &caps ) )
+        args, kwargs, "S|iiiii", kwlist, &family, &pointsize, &weight, &style, &caps, &stretch ) )
         return 0;
 #endif
     PyObjectPtr fontptr( PyType_GenericNew( type, args, kwargs ) );
@@ -80,6 +96,7 @@ Font_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     font->weight = std::max( -1, std::min( weight, 99 ) );
     font->style = ( style < Normal || style > Oblique ) ? Normal : style;
     font->caps = ( caps < MixedCase || caps > Capitalize ) ? MixedCase : caps;
+    font->stretch = ( stretch < UltraCondensed || stretch > UltraExpanded ) ? Unstretched : stretch;
     return fontptr.release();
 }
 
@@ -102,17 +119,28 @@ Font_repr( Font* self )
         "style=Oblique, "
     };
     static const char* caps_reprs[] = {
-        "caps=MixedCase)",
-        "caps=AllUppercase)",
-        "caps=AllLowercase)",
-        "caps=SmallCaps)",
-        "caps=Capitalize)"
+        "caps=MixedCase",
+        "caps=AllUppercase",
+        "caps=AllLowercase",
+        "caps=SmallCaps",
+        "caps=Capitalize"
+    };
+    static const char* stretch_reprs[] = {
+        "stretch=UltraCondensed)",
+        "stretch=ExtraCondensed)",
+        "stretch=Condensed)",
+        "stretch=SemiCondensed)",
+        "stretch=Unstretched)",
+        "stretch=SemiExpanded)",
+        "stretch=Expanded)",
+        "stretch=ExtraExpanded)",
+        "stretch=UltraExpanded)"
     };
     std::ostringstream ostr;
     ostr << "Font(family=\"" << Py23Str_AS_STRING( self->family ) << "\", ";
     ostr << "pointsize=" << self->pointsize << ", ";
     ostr << "weight=" << self->weight << ", ";
-    ostr << style_reprs[self->style] << caps_reprs[self->caps];
+    ostr << style_reprs[self->style] << caps_reprs[self->caps] << stretch_reprs[self->stretch];
     return Py23Str_FromString(ostr.str().c_str());
 };
 
@@ -152,6 +180,12 @@ Font_get_caps( Font* self, void* context )
     return PyLong_FromLong( static_cast<long>( self->caps ) );
 }
 
+static PyObject*
+Font_get_stretch( Font* self, void* context )
+{
+    return PyLong_FromLong( static_cast<long>( self->stretch ) );
+}
+
 
 static PyObject*
 Font_get_tkdata( Font* self, void* context )
@@ -189,6 +223,8 @@ Font_getset[] = {
       "Get the style enum for the font." },
     { "caps", ( getter )Font_get_caps, 0,
       "Get the caps enum for the font." },
+    { "stretch", ( getter )Font_get_stretch, 0,
+      "Get the stretch enum for the font." },
     { "_tkdata", ( getter )Font_get_tkdata, ( setter )Font_set_tkdata,
       "Get and set the toolkit specific font representation." },
     { 0 } // sentinel
@@ -352,6 +388,9 @@ MOD_INIT_FUNC(fontext)
     PyObject* PyFontCaps = new_enum_class( "FontCaps" );
     if( !PyFontCaps )
         INITERROR;
+    PyObject* PyFontStretch = new_enum_class( "FontStretch" );
+    if( !PyFontCaps )
+        INITERROR;
 
 #define AddEnum( cls, e ) \
     do { \
@@ -369,10 +408,21 @@ MOD_INIT_FUNC(fontext)
     AddEnum( PyFontCaps, SmallCaps );
     AddEnum( PyFontCaps, Capitalize );
 
+    AddEnum( PyFontStretch, UltraCondensed );
+    AddEnum( PyFontStretch, ExtraCondensed );
+    AddEnum( PyFontStretch, Condensed );
+    AddEnum( PyFontStretch, SemiCondensed );
+    AddEnum( PyFontStretch, Unstretched );
+    AddEnum( PyFontStretch, SemiExpanded );
+    AddEnum( PyFontStretch, Expanded );
+    AddEnum( PyFontStretch, ExtraExpanded );
+    AddEnum( PyFontStretch, UltraExpanded );
+
     Py_INCREF( ( PyObject* )( &Font_Type ) );
     PyModule_AddObject( mod, "Font", ( PyObject* )( &Font_Type ) );
     PyModule_AddObject( mod, "FontStyle", PyFontStyle );
     PyModule_AddObject( mod, "FontCaps", PyFontCaps );
+    PyModule_AddObject( mod, "FontStretch", PyFontStretch );
 
 #if PY_MAJOR_VERSION >= 3
     return mod;
