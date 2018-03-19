@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -17,6 +17,12 @@ class ProxyMdiArea(ProxyConstraintsWidget):
     """
     #: A reference to the MdiArea declaration.
     declaration = ForwardTyped(lambda: MdiArea)
+
+    def tile_mdi_windows(self):
+        raise NotImplementedError
+
+    def cascade_mdi_windows(self):
+        raise NotImplementedError
 
 
 class MdiArea(ConstraintsWidget):
@@ -44,3 +50,35 @@ class MdiArea(ConstraintsWidget):
 
         """
         return [c for c in self.children if isinstance(c, MdiWindow)]
+
+    def tile_mdi_windows(self):
+        """ Tile the mdi windows of this area.
+
+        Notes
+        -----
+        For the time being the ordering is left to the backend. In the future,
+        a way to influence it may be added.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.tile_mdi_windows()
+
+    def cascade_mdi_windows(self):
+        """ Cascade the mdi windows of this area.
+
+        Notes
+        -----
+        For the time being the ordering is left to the backend. In the future,
+        a way to influence it may be added.
+
+        """
+        if self.proxy_is_active:
+            self.proxy.cascade_mdi_windows()
+
+    def child_added(self, child):
+        """ Ensure that added children are visible if they are supposed to.
+
+        """
+        super(MdiArea, self).child_added(child)
+        if isinstance(child, MdiWindow) and child.visible:
+            child.show()

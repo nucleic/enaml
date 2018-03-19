@@ -3,6 +3,8 @@ Enaml Release Notes
 
 0.10.3 - unreleased
 -------------------
+- add support for tiling and cascading to MdiArea PR # 259
+- fix issue # 174 (MdiWindow not automatically shown when added) PR # 259
 - add minimal workbench documentation PR # 258
 - add support for font-stretch PR # 258
 - remove dependency on future to reduce import time PR #255

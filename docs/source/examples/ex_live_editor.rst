@@ -14,6 +14,8 @@ Live Editor Example
 
  $ enaml-run live_editor
 
+.. image:: images/ex_live_editor.png
+
 .. literalinclude:: ../../../examples/applib/live_editor.enaml
     :language: enaml
 
