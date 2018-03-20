@@ -53,6 +53,30 @@ class QtMdiArea(QtConstraintsWidget, ProxyMdiArea):
             if widget:
                 yield widget
 
+    def tile_mdi_windows(self):
+        """ Tile the subwindows.
+
+        Notes
+        -----
+        For the time being the ordering is the insertion order (Qt default). In
+        the future, a way to modify the order may be added.
+
+        """
+        if self.widget:
+            self.widget.tileSubWindows()
+
+    def cascade_mdi_windows(self):
+        """ Cascade the subwindows.
+
+        Notes
+        -----
+        For the time being the ordering is the insertion order (Qt default). In
+        the future, a way to modify the order may be added.
+
+        """
+        if self.widget:
+            self.widget.cascadeSubWindows()
+
     #--------------------------------------------------------------------------
     # Signal Handlers
     #--------------------------------------------------------------------------

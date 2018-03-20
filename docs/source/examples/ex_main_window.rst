@@ -15,12 +15,6 @@ Main Window Example
     of `DockPane` and `ToolBar` children, and at most one `MenuBar`.
     
     Support for a `StatusBar` will be added in the future.
-    
-    Implementation Notes:
-    
-        The main window facilities in Wx are very weak. If these features
-        are required for a particular application, strongly prefer the Qt
-        backend over Wx (this is generally a good life-rule).
 
 ::
 

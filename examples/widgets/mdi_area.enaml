@@ -1,0 +1,85 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2013-2018, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" An example of the `MdiArea` and `MdiWindow` widget.
+
+Demonstrate how to use the MdiArea which provides an area in which multiple
+subwindows can be displayed (MdiWindow instances). Sub windows can be
+ automatically tiled or cascaded.
+
+<< autodoc-me >>
+"""
+from __future__ import print_function
+from enaml.widgets.api import (
+    Window, Container, MdiArea, MdiWindow,
+    PushButton, CheckBox, Field, Html, GroupBox
+    )
+from enaml.core.api import Include
+from enaml.layout.api import vbox, hbox, align, spacer
+
+
+enamldef MdiContent(MdiWindow):
+    attr num: int
+    title = 'Window %d' % num
+    Container:
+        constraints = [
+            vbox(
+                hbox(pb, cb, fld),
+                html,
+            ),
+            align('v_center', pb, cb, fld),
+        ]
+        PushButton: pb:
+            text = 'Button'
+        CheckBox: cb:
+            text = 'Activate'
+        Field: fld:
+            pass
+        Html: html:
+            source = '<h1>New window %d</h1>'%num
+
+
+enamldef Main(Window): main:
+    attr count: int = 1
+    attr mdi_visible = True
+    Container:
+        constraints = [
+            vbox(hbox(add_btn, vis, tile, cascade, spacer),
+                 mdi
+            )]
+        PushButton: add_btn:
+            text = 'Add New MDI Window'
+            clicked ::
+                win = MdiContent(num=count, visible=mdi_visible)
+                dyn_win.objects.append(win)
+                main.count += 1
+
+        PushButton: vis:
+            text << 'Hide all' if mdi_visible else 'Show all'
+            clicked ::
+                for w in mdi.mdi_windows():
+                    if mdi_visible:
+                        w.hide()
+                    else:
+                        w.show()
+                main.mdi_visible = not mdi_visible
+
+        PushButton: tile:
+            text << 'Tile subwindows'
+            clicked ::
+                mdi.tile_mdi_windows()
+
+        PushButton: cascade:
+            text << 'Cascade subwindows'
+            clicked ::
+                mdi.cascade_mdi_windows()
+
+        MdiArea: mdi:
+            MdiContent:
+                num = 0
+            Include: dyn_win:
+                pass
