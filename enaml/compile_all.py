@@ -22,7 +22,7 @@ compile_py_file = compileall.compile_file
 
 def compile_enaml_file(fullname, ddir=None, force=0, rx=None, quiet=0,
                        *args, **kwargs):
-    """Byte-compile one file. Invokes the enaml.
+    """Byte-compile one file using the EnamlImporter.
     
     """
     importer = EnamlImporter(make_file_info(fullname))
