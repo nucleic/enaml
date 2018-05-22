@@ -77,10 +77,10 @@ def hash_cache(path):
     'hello_world',
     'person'
 ])
-def test_tutorials(tutorial):
+def test_tutorials(tempdir, tutorial):
     # Run normally to generate cache files
     source = os.path.join('examples', 'tutorial', tutorial)
-    example = os.path.join('tests', 'tmp', tutorial)
+    example = os.path.join(tempdir.strpath, tutorial)
 
     # Copy to a tmp dir
     shutil.copytree(source, example)
