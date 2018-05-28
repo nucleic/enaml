@@ -45,7 +45,7 @@ enamldef Main(Window):
             text = 'Radio Two'
             toggled :: print('Radio Two toggled')
         Container:
-            # Note: RadioButton widgets are exclusive amongst sibilings
+            # Note: RadioButton widgets are exclusive amongst siblings
             RadioButton:
                 text = 'Radio One b'
                 clicked :: print('Radio One b clicked')
