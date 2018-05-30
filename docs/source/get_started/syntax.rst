@@ -138,14 +138,14 @@ uses a set of four operators:
 Declarative function definition and overriding
 ----------------------------------------------
 
-Inside an `enamldef` declaration, one can in addition of defining attributes,
+In addition to defining attributes inside an `enamldef` declaration, one can 
 define the equivalent of methods, or override them. In the context of
 `enamldef` objects, we will refer to them as declarative functions.
 
 Such functions are defined using the `func` keyword, and obey the scoping rules
 described in the next section. In particular, `self` can be used to access the
 instance of the widget on which they are defined but does not need to be listed
-explicitely in the arguments (and should not be).
+explicitly in the arguments (and should not be).
 
 Such functions can be overridden using a slightly different syntax, as
 illustrated below:
@@ -175,7 +175,7 @@ Scoping Rules
   includes all elements that have a declared identifier.
 - Each expression has its local namespace that is the union of the block
   locals and the attribute namespace of the object to which the expression
-  is bound. In otherwords `self` is implicit. However, a `self` exists in
+  is bound. In other words, `self` is implicit. However, a `self` exists in
   this local namespace in order to break naming conflicts between block
   locals and attribute names. To any C++ or Java developers, this will seem
   natural.
