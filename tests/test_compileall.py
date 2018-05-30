@@ -11,6 +11,7 @@ import sys
 import shutil
 import pytest
 import importlib
+from enaml.application import Application
 from enaml.qt.qt_application import QtApplication
 from enaml.widgets.window import Window
 from enaml.compile_all import compileall
@@ -61,9 +62,9 @@ def clean_source(path):
 @pytest.fixture
 def enaml_run(qtbot):
     """ Patch the start method to use the qtbot """
-    app = QtApplication.instance()
+    app = Application.instance()
     if app:
-        app.destroy()
+        Application._instance = None
     _start = QtApplication.start
 
     def start(self):
@@ -78,6 +79,7 @@ def enaml_run(qtbot):
         yield
     finally:
         QtApplication.start = _start
+        Application._instance = app
 
 
 @pytest.mark.parametrize("tutorial", [
