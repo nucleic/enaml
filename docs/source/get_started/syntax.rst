@@ -55,7 +55,7 @@ type validation using the following syntax.
 
 .. note::
 
-    One can specify a default value using `=` even if not type validation is
+    One can specify a default value using `=` even if no type validation is
     specified.
 
 One can also define the equivalent of atom.Event, that is to say an attribute
