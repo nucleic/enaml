@@ -25,6 +25,7 @@ def compile_enaml_file(fullname, ddir=None, force=0, rx=None, quiet=0,
     """Byte-compile one file using the EnamlImporter.
     
     """
+    fullname = os.path.abspath(fullname)
     importer = EnamlImporter(make_file_info(fullname))
     if not quiet:
         print('Compiling {}...'.format(fullname))
