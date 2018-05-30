@@ -8,7 +8,7 @@ Focus Traversal Example
     An example of using the FocusTraversal advanced widget feature.
     
     The FocusTraversal is an advanced widget feature for controlling the
-    order in which widgets receive focus during Tab and Shit+Tab keyboard
+    order in which widgets receive focus during Tab and Shift+Tab keyboard
     events. It enables two methods which can be implemented as declarative
     Enaml functions which will compute the next/previous focus widgets on
     demand.
@@ -26,4 +26,4 @@ Focus Traversal Example
 
 .. literalinclude:: ../../../examples/widgets/focus_traversal.enaml
     :language: enaml
-
+    
