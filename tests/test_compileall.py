@@ -7,13 +7,15 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import os
-import time
+import sys
 import shutil
 import pytest
-import hashlib
-import subprocess
-from enaml.compat import IS_PY3
+import importlib
+from enaml.qt.qt_application import QtApplication
+from enaml.widgets.window import Window
+from enaml.compile_all import compileall
 from contextlib import contextmanager
+from enaml.compat import IS_PY3
 
 
 @contextmanager
@@ -43,33 +45,39 @@ def clean_cache(path):
                 os.remove(f)
 
 
-def sha256sum(path):
-    with open(path, 'rb') as f:
-        h = hashlib.sha256()
-        h.update(f.read())
-        return h.digest()
-
-
-def hash_cache(path):
-    """ Compute the sha256 sum of all .pyc and .enamlc files in the
-    given path.
+def clean_source(path):
+    """ Clean the source files in the path 
     
     """
-    # Hash each cache file
-    hashes = {}
     with cd(path):
-        for f in os.listdir('__enamlcache__'):
-            hashes[f] = sha256sum(os.path.join('__enamlcache__', f))
+        for f in os.listdir('.'):
+            if os.path.splitext(f)[-1] in (
+                        '.py',
+                        '.enaml',
+                    ):
+                os.remove(f)
 
-        if IS_PY3:
-            for f in os.listdir('__pycache__'):
-                hashes[f] = sha256sum(os.path.join('__pycache__', f))
-        else:
-            for f in os.listdir('.'):
-                if f.endswith('.pyc'):
-                    hashes[f] = sha256sum(f)
-    return hashes
 
+@pytest.fixture
+def enaml_run(qtbot):
+    """ Patch the start method to use the qtbot """
+    app = QtApplication.instance()
+    if app:
+        app.destroy()
+    _start = QtApplication.start
+
+    def start(self):
+        for window in Window.windows:
+            qtbot.wait_for_window_shown(window.proxy.widget)
+            qtbot.wait(1000)
+            window.close()
+            break
+
+    QtApplication.start = start
+    try:
+        yield
+    finally:
+        QtApplication.start = _start
 
 
 @pytest.mark.parametrize("tutorial", [
@@ -77,44 +85,37 @@ def hash_cache(path):
     'hello_world',
     'person'
 ])
-def test_tutorials(tempdir, tutorial):
+def test_tutorials(enaml_run, tempdir, tutorial):
     # Run normally to generate cache files
     source = os.path.join('examples', 'tutorial', tutorial)
     example = os.path.join(tempdir.strpath, tutorial)
 
     # Copy to a tmp dir
     shutil.copytree(source, example)
+    clean_cache(example)  # To be safe
+
+    # Run compileall
+    compileall.compile_dir(example)
+
+    # Remove source files
+    clean_source(example)
+
+    # Add to example folder to the sys path or we get an import error
+    sys.path.append(example)
     try:
-        clean_cache(example)
         with cd(example):
-            p = subprocess.Popen('python {}.py'.format(tutorial).split())
-            time.sleep(1)
-            p.kill()
-            p.wait()
+            if IS_PY3:
+                # PY3 only uses pyc files if copied from the pycache folder
+                for f in os.listdir('__pycache__'):
+                    cf = ".".join(f.split(".")[:-2]) + ".pyc"
+                    shutil.copy(os.path.join('__pycache__', f), cf)
 
-        # Since we terminate the process it doesn't generate the pyc file,
-        # so also run compileall to generate the .pyc file
-        subprocess.check_call(
-            'python -m compileall {}'.format(example).split())
+            # Verify it's clean
+            assert not os.path.exists(tutorial+".py")
+            assert not os.path.exists(tutorial+"_view.enaml")
 
-        # Compute the hashes fo each cache file
-        expected_hashes = hash_cache(example)
-        clean_cache(example)
-
-        # Run compileall
-        subprocess.check_call('enaml-compileall {}'.format(example).split())
-        compileall_hashes = hash_cache(example)
-
-        # Validate
-        mismatches = []
-        for f, expected_hash in expected_hashes.items():
-            hash = compileall_hashes.get(f)
-            if hash != expected_hash:
-                mismatches.append(f)
-                print("{} hashes don't match: {} != {}".format(
-                    f, repr(hash), repr(expected_hash)))
-            else:
-                print("{} hashes match".format(f))
-        assert not mismatches
+            # Now run from cache
+            mod = importlib.import_module(tutorial)
+            mod.main()
     finally:
-        shutil.rmtree(os.path.join('tests', 'tmp'))
+        sys.path.remove(example)

@@ -38,7 +38,7 @@ class Person(Atom):
             print(s)
 
 
-if __name__ == '__main__':
+def main():
     with enaml.imports():
         from person_view import PersonView
 
@@ -50,3 +50,6 @@ if __name__ == '__main__':
     view.show()
 
     app.start()
+
+if __name__ == '__main__':
+    main()

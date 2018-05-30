@@ -74,9 +74,12 @@ def compile_file(fullname, ddir=None, force=0, rx=None, quiet=0,
     return True if IS_PY3 else 1
 
 
-def main():
+if compileall.compile_file != compile_file:
     # Patch to use enaml
     compileall.compile_file = compile_file
+
+
+def main():
     exit_status = int(not compileall.main())
     sys.exit(exit_status)
 
