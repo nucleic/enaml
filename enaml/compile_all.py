@@ -54,12 +54,12 @@ def compile_file(fullname, ddir=None, force=0, rx=None, quiet=0,
         the file to byte-compile
     ddir: String     
         if given, the directory name compiled in to the
-               byte-code file.
+        byte-code file.
     force: Bool     
         if True, force compilation, even if timestamps are up-to-date
     quiet: Bool     
         full output with False or 0, errors only with 1,
-               no output with 2
+        no output with 2
     
     """
     name = os.path.basename(fullname)

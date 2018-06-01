@@ -56,7 +56,7 @@ before_install:
 
   # Intall test tools (we require pytest > 3.3 to get the builtin logging
   # features)
-  - $PIP_INSTALL pytest pytest-cov pytest-qt pytest-tempdir
+  - $PIP_INSTALL pytest pytest-cov pytest-qt
 
   # Install codecov report tools
   - $PIP_INSTALL codecov

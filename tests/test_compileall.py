@@ -87,10 +87,10 @@ def enaml_run(qtbot):
     'hello_world',
     'person'
 ])
-def test_tutorials(enaml_run, tempdir, tutorial):
+def test_tutorials(enaml_run, tmpdir, tutorial):
     # Run normally to generate cache files
     source = os.path.join('examples', 'tutorial', tutorial)
-    example = os.path.join(tempdir.strpath, tutorial)
+    example = os.path.join(tmpdir.strpath, tutorial)
 
     # Copy to a tmp dir
     shutil.copytree(source, example)
