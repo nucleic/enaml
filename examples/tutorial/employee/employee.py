@@ -81,7 +81,7 @@ class Employee(Person):
         print('received new phone number for %s: %s' % (self.first_name, val))
 
 
-if __name__ == '__main__':
+def main():
     # Create an employee with a boss
     boss_john = Employer(
         first_name='John', last_name='Paw', company_name="Packrat's Cats",
@@ -101,3 +101,6 @@ if __name__ == '__main__':
     view.show()
 
     app.start()
+
+if __name__ == '__main__':
+    main()

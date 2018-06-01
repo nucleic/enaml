@@ -164,7 +164,10 @@ setup(
             'enaml_dock_resources.qrc'
         ],
     },
-    entry_points={'console_scripts': ['enaml-run = enaml.runner:main']},
+    entry_points={'console_scripts': [
+        'enaml-run = enaml.runner:main',
+        'enaml-compileall = enaml.compile_all:main',
+    ]},
     ext_modules=ext_modules,
     cmdclass={'install': Install,
               'develop': Develop},
