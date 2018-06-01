@@ -5,8 +5,8 @@ Enaml syntax and Data Models
 ============================
 
 
-Enaml define a superset of the Python language, which means that any valid
-Python code is valid in an enaml file, including function and class definition.
+Enaml defines a superset of the Python language, which means that any valid
+Python code is valid in an enaml file, including function and class definitions.
 The following sections present the extension provided by Enaml to declare views
 and bind it to a model.
 
@@ -26,8 +26,8 @@ the `class` keyword in a normal Python file. Your widget must inherit from
 a widget, either a builtin one or one defined using an `enamldef` and cannot
 inherit from several widgets.
 
-In the body of the declaration, you add widget by simply declaring them and
-the parent/child is directly encoded in the indentation. Furthermore, you can
+In the body of the declaration, you add widget by simply declaring it. The 
+parent/child is directly encoded in the indentation. Furthermore, you can
 add to each widget an id which must unique inside the declaration. This id
 can be used to reference it in the layout (see :ref:`layout`), or to access
 one of its attribute.
@@ -55,18 +55,18 @@ type validation using the following syntax.
 
 .. note::
 
-    One can specify a default value using `=` even if not type validation is
+    One can specify a default value using `=` even if no type validation is
     specified.
 
 One can also define the equivalent of atom.Event, that is to say an attribute
-that does not store the value it is assigned but simply fire a notification
+that does not store the value it is assigned but simply fires a notification
 each time it is assigned a value. To do so, simply replace the `attr` keyword
-by the `event` keyword. Type validation works in the same way as for regular
+with the `event` keyword. Type validation works in the same way as for regular
 `attr` defined attributes.
 
-Additionally, one can define an attribute that simply allow to access in a
-transparent way a child widget or a child widget attribute using the `alias`
-keyword whose syntax is presented below.
+Additionally, one can define an attribute that simply allows access to a child widget
+or a child widget attribute in a transparent way using the `alias`
+keyword. The syntax is presented below.
 
 .. code-block:: enaml
 
@@ -83,9 +83,9 @@ keyword whose syntax is presented below.
 .. note::
 
     To avoid clashes between the ids attributed to child widgets in different
-    widgets one cannot access to a widget by its id outside of the declaration.
-    This means that the following does not work and raises an `AttributeError`,
-    and why you need an alias if you need to access to the inner widget.
+    widgets, one cannot access a widget by its id outside of the declaration.
+    This means that the following does not work and raises an `AttributeError`.
+    This is why you need an alias if you need to access to the inner widget.
 
     .. code-block:: enaml
 
@@ -138,14 +138,14 @@ uses a set of four operators:
 Declarative function definition and overriding
 ----------------------------------------------
 
-Inside an `enamldef` declaration, one can in addition of defining attributes,
+In addition to defining attributes inside an `enamldef` declaration, one can 
 define the equivalent of methods, or override them. In the context of
 `enamldef` objects, we will refer to them as declarative functions.
 
 Such functions are defined using the `func` keyword, and obey the scoping rules
 described in the next section. In particular, `self` can be used to access the
 instance of the widget on which they are defined but does not need to be listed
-explicitely in the arguments (and should not be).
+explicitly in the arguments (and should not be).
 
 Such functions can be overridden using a slightly different syntax, as
 illustrated below:
@@ -175,7 +175,7 @@ Scoping Rules
   includes all elements that have a declared identifier.
 - Each expression has its local namespace that is the union of the block
   locals and the attribute namespace of the object to which the expression
-  is bound. In otherwords `self` is implicit. However, a `self` exists in
+  is bound. In other words, `self` is implicit. However, a `self` exists in
   this local namespace in order to break naming conflicts between block
   locals and attribute names. To any C++ or Java developers, this will seem
   natural.
