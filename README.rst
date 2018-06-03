@@ -50,9 +50,9 @@ Screenshots
 
 From the examples in the docs
 
-.. image:: http://nucleic.github.io/enaml/docs/_images/ex_dock_item_alerts.png
-.. image:: http://nucleic.github.io/enaml/docs/_images/tut_employee_layout.png
-.. image:: http://nucleic.github.io/enaml/docs/_images/ex_button_ring.png
+.. image:: http://enaml.readthedocs.io/en/latest/_images/ex_dock_item_alerts.png
+.. image:: http://enaml.readthedocs.io/en/latest/_images/tut_employee_layout.png
+.. image:: http://enaml.readthedocs.io/en/latest/_images/ex_button_ring.png
 
 
 
