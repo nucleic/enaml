@@ -43,7 +43,8 @@ Enaml is licensed under the `Modified BSD License <https://github.com/nucleic/en
 
 Learn More
 =================
-See `the docs <http://enaml.readthedocs.io/en/latest/index.html>`_ and `examples <http://enaml.readthedocs.io/en/latest/examples/index.html>`_ for more information.
+
+The `Getting Started <http://enaml.readthedocs.io/en/latest/get_started/index.html>`_ chapter is a good first step to learn more. It includes `installation instructions <http://enaml.readthedocs.io/en/latest/get_started/installation.html>`_.
 
 Watch some introductory talks about Enaml and what it can do:
 
@@ -57,11 +58,11 @@ Watch some introductory talks about Enaml and what it can do:
 
 `Tom Stordy-Allison (@tstordyallison) presents at Pycon UK 2016. <https://www.youtube.com/watch?v=G5ZYUGL7uTo>`_
 
-Help
-================
-`Ask questions <http://groups.google.com/d/forum/enaml>`_ on the Q&A forum.
+The `Enaml documentation <http://enaml.readthedocs.io/en/latest>`_ includes all the details, including `useful examples <http://enaml.readthedocs.io/en/latest/examples>`_.
 
-For version information, see `the Revision History <https://github.com/nucleic/enaml/blob/master/releasenotes.rst>`_.
+You can ask questions on the `Q&A forum <http://groups.google.com/d/forum/enaml>`_.
+
+For version information, see the  `release notes <https://github.com/nucleic/enaml/blob/master/releasenotes.rst>`_.
 
 Examples
 =================
