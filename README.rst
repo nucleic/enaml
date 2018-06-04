@@ -16,6 +16,11 @@ Welcome to Enaml
 .. image:: https://codecov.io/gh/nucleic/enaml/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/nucleic/enaml
     :alt: Code Coverage Status
+    
+.. image:: https://img.shields.io/stackexchange/stackoverflow/t/enaml.svg   
+    :target: https://stackoverflow.com/questions/tagged/enaml
+    :alt: StackOverflow Q&A
+
 
 Enaml is a programming language and framework for creating professional-quality
 user interfaces with minimal effort. 
@@ -30,7 +35,7 @@ What you get
 * A well-documented and easy-to-follow code base, plus documentation with plenty of worked examples.
 * Language definitions for a number of popular editors.
 
-What it can do for you.
+What it can do for you
 ===========================
 
 * Build native GUI applications for a range of platforms
@@ -95,7 +100,8 @@ Watch some introductory talks about Enaml and what it can do:
 
 The `Enaml documentation <http://enaml.readthedocs.io/en/latest>`_ includes all the details, including `useful examples <http://enaml.readthedocs.io/en/latest/examples>`_.
 
-You can ask questions on the `Q&A forum <http://groups.google.com/d/forum/enaml>`_.
+You can ask questions on the `Enaml Google Group <http://groups.google.com/d/forum/enaml>`_ 
+or with the `Enaml tag on StackOverflow <https://stackoverflow.com/questions/tagged/enaml>`_.
 
 For version information, see the  `release notes <https://github.com/nucleic/enaml/blob/master/releasenotes.rst>`_.
 
