@@ -16,18 +16,12 @@ Welcome to Enaml
 .. image:: https://codecov.io/gh/nucleic/enaml/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/nucleic/enaml
     :alt: Code Coverage Status
-    
-
-
 
 Enaml is a programming language and framework for creating professional quality
 user interfaces with minimal effort. Enaml combines a domain-specific declarative language
 with a constraints-based layout system to allow users to easily define 
 rich UIs with complex and flexible layouts. Enaml applications can be run on any
 platform which supports Python and Qt.
-
-.. image:: https://img.youtube.com/vi/ycFEwz_hAxk/0.jpg
-  :target: https://youtu.be/ycFEwz_hAxk
 
 Highlights of the framework
 ===========================
@@ -38,14 +32,21 @@ Highlights of the framework
 * A design which encourages model-view separation
 * A well-documented and easy-to-follow code base
 
-Docs and Examples
+Learn More
 =================
 See `the docs <http://enaml.readthedocs.io/en/latest/index.html>`_ and `examples <http://enaml.readthedocs.io/en/latest/examples/index.html>`_ for more information.
 
-There are several videos of talks on Enaml:
+Watch some introductory talks about Enaml and what it can do:
 
-* `Enthought 2012 <https://www.youtube.com/watch?v=ycFEwz_hAxk>`_  by @sccolbert
-* `Pycon UK 2016 <https://www.youtube.com/watch?v=G5ZYUGL7uTo>`_  by @tstordyallison
+.. image:: https://img.youtube.com/vi/ycFEwz_hAxk/2.jpg
+  :target: https://youtu.be/ycFEwz_hAxk
+
+`S. Chris Colbert (@sccolbert) presents at Enthought 2012. <https://www.youtube.com/watch?v=ycFEwz_hAxk>`_
+
+.. image:: https://img.youtube.com/vi/G5ZYUGL7uTo/1.jpg
+  :target: https://www.youtube.com/watch?v=G5ZYUGL7uTo
+
+`Tom Stordy-Allison (@tstordyallison) presents at Pycon UK 2016. <https://www.youtube.com/watch?v=G5ZYUGL7uTo>`_
 
 Help
 ================
@@ -61,6 +62,3 @@ From the examples in the docs
 .. image:: http://enaml.readthedocs.io/en/latest/_images/ex_dock_item_alerts.png
 .. image:: http://enaml.readthedocs.io/en/latest/_images/tut_employee_layout.png
 .. image:: http://enaml.readthedocs.io/en/latest/_images/ex_button_ring.png
-
-
-
