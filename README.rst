@@ -35,21 +35,27 @@ What it can do for you.
 * Build native GUI applications for a range of platforms
 
  - Quick and simple or complex and specialised.
+ 
  - See the structure of your GUI at a glance.
    
 * Let you rapidly protoype new GUIs interfaces.
 
-* Intelligently layout your GUI, using symbolic constraints. 
+ - Intelligently layout your GUI, using symbolic constraints. 
 
  - It automatically adapts for different platforms, different window sizes.
+ 
  - Tell the layout engine what your priorities are for layout, without having to count pixels.
     
 * Encourages easy-to-maintain code:
 
  - The GUI can detect updates in the model, and refresh its widgets automatically, without low-level code.
+ 
  - Clean separation between your model and view, while keeping your controller code simple.
+ 
   + You can incorporate Python code directly in the view layer.
+  
   + As your GUI design evolves, the constraints engine can adapt the layout.        
+  
  - Object-Oriented design allows you to reuse parts of your GUI in other parts of your projects.
 
 * Let you customise a GUI for your particular needs.
