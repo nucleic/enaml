@@ -23,11 +23,12 @@ user interfaces with minimal effort.
 What you get
 ===========================
 * A declarative programming language, with a Pythonic flavour.
-* Dozens of widgets, ready to go out-of-the-box (built on QT).
-* A constraints-based layout engine (built on Cassowary).
-* Integration with a data model tool (built on Atom).
+* Dozens of widgets, ready to go out-of-the-box (built on `QT <https://www.qt.io/>`_).
+* A constraints-based layout engine (built on `Kiwi <https://github.com/nucleic/kiwi>`_).
+* Integration with a data model tool (built on `Atom <https://github.com/nucleic/atom>`_).
 * An (optional) editor to allow you to see what the results will look like, as you type your code.
 * A well-documented and easy-to-follow code base, plus documentation with plenty of worked examples.
+* Language definitions for a number of popular editors.
 
 What it can do for you.
 ===========================
