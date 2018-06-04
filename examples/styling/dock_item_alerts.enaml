@@ -11,7 +11,7 @@ The DockItem widget and related bits in the DockArea support a style
 sheet pseudo-class named 'alert'. This pseudo-class is very powerful in
 that it allows the developer to provide their own arbitrary token to the
 pseudo-class as an argument, and then apply that token to a dock item at
-runtime. This gives the developer complete freed over the how they style
+runtime. This gives the developer complete freedom over the how they style
 their alerts, and does not force them in to a pre-defined hierarchy of
 alert levels.
 
