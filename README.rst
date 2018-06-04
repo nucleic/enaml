@@ -3,13 +3,21 @@ Welcome to Enaml
 
 .. image:: https://travis-ci.org/nucleic/enaml.svg?branch=master
     :target: https://travis-ci.org/nucleic/enaml
-
-.. image:: https://codecov.io/gh/nucleic/enaml/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/nucleic/enaml
+    :alt: Build Status
 
 .. image:: https://readthedocs.org/projects/enaml/badge/?version=latest
-  :target: http://enaml.readthedocs.io/en/latest/?badge=latest
-  :alt: Documentation Status
+    :target: http://enaml.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+.. image:: https://img.shields.io/pypi/v/nine.svg
+    :target: https://pypi.org/project/enaml/ 
+    :alt: PyPI version  
+
+.. image:: https://codecov.io/gh/nucleic/enaml/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/nucleic/enaml
+    :alt: Code Coverage Status
+    
+
 
 
 Enaml is a programming language and framework for creating professional quality
