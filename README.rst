@@ -38,6 +38,9 @@ Enaml applications can be run on any platform which supports Python (2.7, 3.4, 3
 
 This includes Linux, Windows, macOs, Android and iOS. (Automated testing of Enaml runs on Linux.)
 
+Enaml is licensed under the `Modified BSD License <https://github.com/nucleic/enaml/blob/master/LICENSE>`_.
+
+
 Learn More
 =================
 See `the docs <http://enaml.readthedocs.io/en/latest/index.html>`_ and `examples <http://enaml.readthedocs.io/en/latest/examples/index.html>`_ for more information.
