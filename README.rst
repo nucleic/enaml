@@ -63,11 +63,26 @@ Help
 
 For version information, see `the Revision History <https://github.com/nucleic/enaml/blob/master/releasenotes.rst>`_.
 
-Screenshots
+Examples
 =================
 
-From the examples in the docs
+The `Enaml documentation <http://enaml.readthedocs.io/en/latest>`_ includes many  `fully-functioning code samples <http://enaml.readthedocs.io/en/latest/examples/index.html>`_ of how to use Enaml. They range from `simple demonstrations of how a widget is used <http://enaml.readthedocs.io/en/latest/examples/ex_progress_bar.html>`_, to advanced explorations of the customisability of Enaml GUIs.
+
+
+The `Employee Tutorial <http://enaml.readthedocs.io/en/latest/examples/tut_employee.html>`_ shows how constraints and validators can be used to create easy-to-use and professional-looking applications:
+
+.. image:: http://enaml.readthedocs.io/en/latest/_images/tut_employee_layout.png
+    :target: http://enaml.readthedocs.io/en/latest/examples/tut_employee.html
+    
+The `Dock Item Alerts Example <https://enaml.readthedocs.io/en/latest/examples/ex_dock_item_alerts.html>`_ shows some of the customisability of the appearances of an Enaml application. This application is based on Visual Studio 2010 style, with dockable items, but has some customisations based on the importance of the alerts being shown.
 
 .. image:: http://enaml.readthedocs.io/en/latest/_images/ex_dock_item_alerts.png
-.. image:: http://enaml.readthedocs.io/en/latest/_images/tut_employee_layout.png
+    :target: https://enaml.readthedocs.io/en/latest/examples/ex_dock_item_alerts.html
+    
+The `Button Ring Example <https://enaml.readthedocs.io/en/latest/examples/ex_button_ring.htm>`_ goes the other way. The result is neither professional-looking nor easy-to-use, but it shows the power and  flexibility of constraints-based layout - it might be silly, but this could not be achieved with typical layout systems.
+
+
 .. image:: http://enaml.readthedocs.io/en/latest/_images/ex_button_ring.png
+    :target: https://enaml.readthedocs.io/en/latest/examples/ex_button_ring.htm
+    
+Check out the documentation for more.
