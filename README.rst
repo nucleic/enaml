@@ -1,6 +1,6 @@
 Welcome to Enaml
 ================
-
+   
 .. image:: https://travis-ci.org/nucleic/enaml.svg?branch=master
     :target: https://travis-ci.org/nucleic/enaml
     :alt: Build Status
@@ -8,11 +8,11 @@ Welcome to Enaml
 .. image:: https://readthedocs.org/projects/enaml/badge/?version=latest
     :target: http://enaml.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
-
-.. image:: https://img.shields.io/pypi/v/nine.svg
+   
+.. image:: https://img.shields.io/pypi/v/enaml.svg
     :target: https://pypi.org/project/enaml/ 
     :alt: PyPI version  
-
+   
 .. image:: https://codecov.io/gh/nucleic/enaml/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/nucleic/enaml
     :alt: Code Coverage Status
