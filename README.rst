@@ -17,19 +17,47 @@ Welcome to Enaml
     :target: https://codecov.io/gh/nucleic/enaml
     :alt: Code Coverage Status
 
-Enaml is a programming language and framework for creating professional quality
-user interfaces with minimal effort. Enaml combines a domain-specific declarative language
-with a constraints-based layout system to allow users to easily define 
-rich UIs with complex and flexible layouts.
+Enaml is a programming language and framework for creating professional-quality
+user interfaces with minimal effort. 
 
-Highlights of the framework
+What you get
+===========================
+* A declarative programming language, with a Pythonic flavour.
+* Dozens of widgets, ready to go out-of-the-box (built on QT).
+* A constraints-based layout engine (built on Cassowary).
+* Integration with a data model tool (built on Atom).
+* An (optional) editor to allow you to see what the results will look like, as you type your code.
+* A well-documented and easy-to-follow code base, plus documentation with plenty of worked examples.
+
+What it can do for you.
 ===========================
 
-* A declarative language which extends the grammar of Python
-* A set of operators which automatically track runtime dependencies
-* A layout system which uses symbolic constraint declarations
-* A design which encourages model-view separation
-* A well-documented and easy-to-follow code base
+* Build native GUI applications for a range of platforms
+
+ - Quick and simple or complex and specialised.
+ - See the structure of your GUI at a glance.
+   
+* Let you rapidly protoype new GUIs interfaces.
+
+* Intelligently layout your GUI, using symbolic constraints. 
+
+ - It automatically adapts for different platforms, different window sizes.
+ - Tell the layout engine what your priorities are for layout, without having to count pixels.
+    
+* Encourages easy-to-maintain code:
+
+ - The GUI can detect updates in the model, and refresh its widgets automatically, without low-level code.
+ - Clean separation between your model and view, while keeping your controller code simple.
+  + You can incorporate Python code directly in the view layer.
+  + As your GUI design evolves, the constraints engine can adapt the layout.        
+ - Object-Oriented design allows you to reuse parts of your GUI in other parts of your projects.
+
+* Let you customise a GUI for your particular needs.
+
+ - Integrates with your Python code.
+ - Include style-sheets to change the appearance across all, or part, of your application quickly.
+ - Extend the available widgets or build your own.
+
 
 Supported Versions
 ===========================
