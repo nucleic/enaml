@@ -17,11 +17,6 @@ Welcome to Enaml
     :target: https://codecov.io/gh/nucleic/enaml
     :alt: Code Coverage Status
     
-.. image:: https://img.shields.io/stackexchange/stackoverflow/t/enaml.svg   
-    :target: https://stackoverflow.com/questions/tagged/enaml
-    :alt: StackOverflow Q&A
-
-
 Enaml is a programming language and framework for creating professional-quality
 user interfaces with minimal effort. 
 
