@@ -96,7 +96,7 @@ The `Employee Tutorial <http://enaml.readthedocs.io/en/latest/examples/tut_emplo
     
 Button Ring
 ~~~~~~~~~~~
-The `Button Ring Example <https://enaml.readthedocs.io/en/latest/examples/ex_button_ring.htm>`_ goes the other way. The result is neither professional-looking nor easy-to-use, but it shows the power and  flexibility of constraints-based layout - it might be silly, but this could not be achieved with typical layout systems.
+The `Button Ring Example <https://enaml.readthedocs.io/en/latest/examples/ex_button_ring.html>`_ goes the other way. The result is neither professional-looking nor easy-to-use, but it shows the power and  flexibility of constraints-based layout - it might be silly, but this could not be achieved with typical layout systems.
 
 .. image:: http://enaml.readthedocs.io/en/latest/_images/ex_button_ring.png
     :target: https://enaml.readthedocs.io/en/latest/examples/ex_button_ring.htm
