@@ -19,9 +19,11 @@ environment:
         #    Test each 64-bit Python version, but only the latest known patch.
         #    Test the oldest and the latest 32-bit Python versions release. 
         #    Test with PyQt4 where available, otherwise PyQT5 in each version.
-        #    Test Pyside1 in latest Python version it runs on.
-        #    Test Pyside2 in latest Python version available.
         #    Test QScintilla on latest Python version available.
+        #    Test Pyside1 in latest Python version it runs on.
+        #        - Failure is allowed and won't block PRs.
+        #    Test Pyside2 in latest Python version available
+        #        - Failure is allowed and won't block PRs.
         #    Only test single toolkit installs (e.g. not QT4 and QT5 on same install)
         
         # VARIABLES
@@ -89,27 +91,6 @@ environment:
           MINICONDA: C:\Miniconda
           PYQT_VERSION: "4"
 
-        # PySide versions
-
-# Does not pass tests!  
-#
-#        - NAME: "PySide"
-#          # Wheels only available up to Python 3.4, win32.
-#          PYTHON: "C:\\Python34-x64"
-#          PYTHON_VERSION: "3.4.8"
-#          PYTHON_ARCH: "32"
-#          MINICONDA: C:\Miniconda34
-#          PYQT_VERSION: "None"
-#          QT_API: "pyside"
-#
-#        - NAME: "PySide2"
-#          PYTHON: "C:\\Python36-x64"
-#          PYTHON_VERSION: "3.6.3"
-#          PYTHON_ARCH: "64"
-#          MINICONDA: C:\Miniconda36-x64
-#          PYQT_VERSION: "None"
-#          QT_API: "pyside2"
-
         # QScintilla
 
         - NAME: "QScintilla"
@@ -120,7 +101,34 @@ environment:
           PYQT_VERSION: "5"
           QSCINTILLA: "Yes"
 
+        # PySide versions
+        # See "allow_failures" section below.
 
+        - NAME: "PySide"
+          # Wheels only available up to Python 3.4, win32.
+          PYTHON: "C:\\Python34-x64"
+          PYTHON_VERSION: "3.4.8"
+          PYTHON_ARCH: "32"
+          MINICONDA: C:\Miniconda34
+          PYQT_VERSION: "None"
+          QT_API: "pyside"
+
+        - NAME: "PySide2"
+          PYTHON: "C:\\Python36-x64"
+          PYTHON_VERSION: "3.6.3"
+          PYTHON_ARCH: "64"
+          MINICONDA: C:\Miniconda36-x64
+          PYQT_VERSION: "None"
+          QT_API: "pyside2"
+
+
+matrix:
+  allow_failures:
+     # PySide is not fully supported.
+     # Errors are monitored, but should not stop PRs being delivered.
+     - QT_API: "pyside"
+     - QT_API: "pyside2"
+        
 
 install:
   # If there is a newer build queued for the same PR, cancel this one.
