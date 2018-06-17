@@ -1,0 +1,225 @@
+# This file is used to configure the AppVeyor CI system, for testing on Windows machines.
+#
+# Code loosely based on https://github.com/ogrisel/python-appveyor-demo
+# 
+# To test with AppVeyor:
+#    Register on appveyor.com with your GitHub account.
+#    Create a new appveyor project, using the GitHub details.
+#    Ideally, configure notifications to post back to GitHub. (Untested)
+
+environment:
+    matrix:
+        # Version Restrictions
+        #    Enaml supports Python 2.7 and also 3.4 onwards.
+        #    PyQt4 only available for Python <3.6.
+        #    PyQt5 only available for Python >=3.5.
+        #    PySide1 only available for 2.6 <= Python <=3.4. Wheels only for 32-bit.
+        
+        # Strategy:
+        #    Test each 64-bit Python version, but only the latest known patch.
+        #    Test the oldest and the latest 32-bit Python versions release. 
+        #    Test with PyQt4 where available, otherwise PyQT5 in each version.
+        #    Test QScintilla on latest Python version available.
+        #    Test Pyside1 in latest Python version it runs on.
+        #        - Failure is allowed and won't block PRs.
+        #    Test Pyside2 in latest Python version available
+        #        - Failure is allowed and won't block PRs.
+        #    Only test single toolkit installs (e.g. not QT4 and QT5 on same install)
+        
+        # VARIABLES
+        #    NAME: just a comment for distinguishing builds in Appveyor.
+        #    PYQT_VERSION: Determines PyQt versions installation
+        #    PY_QT: Determines Pyside version installation (if present), and is used by 
+        #           Enaml.
+        #    PYTEST_QT_API: In Python 3.4, pytest-qt needs a hint about the right interface.
+        #    QSCINTILLA: Set to "Yes" to install it.
+        
+
+        # 64-bit versions, PyQT, latest to oldest.
+        
+        - NAME: "Py 3.6"
+          PYTHON: "C:\\Python36-x64"
+          PYTHON_VERSION: "3.6.3"
+          PYTHON_ARCH: "64"
+          MINICONDA: C:\Miniconda36-x64
+          PYQT_VERSION: "5"
+
+        - NAME: "Py 3.5"
+          PYTHON: "C:\\Python35-x64"
+          PYTHON_VERSION: "3.5.5"
+          PYTHON_ARCH: "64"
+          MINICONDA: C:\Miniconda35-x64
+          PYQT_VERSION: "5"
+
+# Does not pass tests!
+#        - NAME: "Py 3.4 PyQt 4 v2"
+#          PYTHON: "C:\\Python34-x64"
+#          PYTHON_VERSION: "3.4.8"
+#          PYTHON_ARCH: "64"
+#          MINICONDA: C:\Miniconda34-x64
+#          PYQT_VERSION: "4"
+#          PYTEST_QT_API: "pyqt4v2"
+#
+#        - NAME: "Py 3.4 PyQt 4 v1"
+#          PYTHON: "C:\\Python34-x64"
+#          PYTHON_VERSION: "3.4.8"
+#          PYTHON_ARCH: "64"
+#          MINICONDA: C:\Miniconda34-x64
+#          PYQT_VERSION: "4"
+#          PYTEST_QT_API: "pyqt4"
+
+        - NAME: "Py 2.7"
+          PYTHON: "C:\\Python27-x64"
+          PYTHON_VERSION: "2.7.15"
+          PYTHON_ARCH: "64"
+          MINICONDA: C:\Miniconda-x64
+          PYQT_VERSION: "4"
+
+        # 32-bit versions, PyQT, latest to oldest.
+        
+        - NAME: "32-bit, Latest "
+          PYTHON: "C:\\Python36"
+          PYTHON_VERSION: "3.6.3"
+          PYTHON_ARCH: "32"
+          MINICONDA: C:\Miniconda36
+          PYQT_VERSION: "5"
+
+        - NAME: "32-bit, Oldest"
+          PYTHON: "C:\\Python27"
+          PYTHON_VERSION: "2.7.15"
+          PYTHON_ARCH: "32"
+          MINICONDA: C:\Miniconda
+          PYQT_VERSION: "4"
+
+        # QScintilla
+
+        - NAME: "QScintilla"
+          PYTHON: "C:\\Python36-x64"
+          PYTHON_VERSION: "3.6.3"
+          PYTHON_ARCH: "64"
+          MINICONDA: C:\Miniconda36-x64
+          PYQT_VERSION: "5"
+          QSCINTILLA: "Yes"
+
+        # PySide versions
+        # See "allow_failures" section below.
+
+        - NAME: "PySide"
+          # Wheels only available up to Python 3.4, win32.
+          PYTHON: "C:\\Python34-x64"
+          PYTHON_VERSION: "3.4.8"
+          PYTHON_ARCH: "32"
+          MINICONDA: C:\Miniconda34
+          PYQT_VERSION: "None"
+          QT_API: "pyside"
+
+        - NAME: "PySide2"
+          PYTHON: "C:\\Python36-x64"
+          PYTHON_VERSION: "3.6.3"
+          PYTHON_ARCH: "64"
+          MINICONDA: C:\Miniconda36-x64
+          PYQT_VERSION: "None"
+          QT_API: "pyside2"
+
+
+matrix:
+  allow_failures:
+     # PySide is not fully supported.
+     # Errors are monitored, but should not stop PRs being delivered.
+     - QT_API: "pyside"
+     - QT_API: "pyside2"
+        
+
+install:
+  # If there is a newer build queued for the same PR, cancel this one.
+  # The AppVeyor 'rollout builds' option is supposed to serve the same
+  # purpose but it is problematic because it tends to cancel builds pushed
+  # directly to master instead of just PR builds (or the converse).
+  # credits: JuliaLang developers.
+  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
+        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
+        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
+          throw "There are newer queued builds for this pull request, failing early." }
+  
+  # Dump some debugging information about the machine.
+  - ECHO "Filesystem root:"
+  - ps: "ls \"C:/\""
+  
+  # - ECHO "Installed SDKs:"
+  # - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
+  #
+  - ECHO "Installed projects:"
+  - ps: "ls \"C:\\projects\""
+  - ps: "ls \"C:\\projects\\enaml\""
+  
+  # - ECHO "Environment Variables"
+  - set
+
+  # Prepend desired Python to the PATH of this build (this cannot be
+  # done from inside the powershell script as it would require to restart
+  # the parent CMD process).
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+
+  # Prepare Miniconda.
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+
+  # Avoid warning from conda info.
+  - conda install -q -n root _license
+  # Dump the setup for debugging.
+  - conda info -a
+
+  # Upgrade to the latest version of pip to avoid it displaying warnings
+  # about it being out of date.
+  - conda upgrade -q pip setuptools
+  # Conda on Py3.4 doesn't upgrade it. Try to push the point.
+  - python -m pip install -U pip
+  
+  # Allow the building of wheels.
+  - conda install -q wheel
+
+  # Check that we have the expected set-up.
+  - "ECHO We specified %PYTHON_VERSION% win%PYTHON_ARCH%"
+  - "python --version"
+  - "python -c \"import struct; print('Architecture is win'+str(struct.calcsize('P') * 8))\""
+  - pip --version
+  
+  # At the time of writing, the setup.py says Enaml depends on a dev version
+  # of Atom which is not on PyPI. Install straight from GitHub.
+  - pip install https://github.com/nucleic/atom/tarball/master
+
+  # We need a library for Qt.
+  # PyQT4 won't pip install, so resort to conda.
+  - if %PYQT_VERSION%==4 conda install -q pyqt=4
+  - if %PYQT_VERSION%==5 pip install pyqt5
+  - ps: if ($env:QT_API -eq "pyside") {pip install PySide}  
+  # Pyside2 won't pip install, so resort to conda.
+  - ps: if ($env:QT_API -eq "pyside2") {conda config --add channels conda-forge; conda install -q pyside2}
+  - if "%QSCINTILLA%"=="Yes" pip install QScintilla
+  
+  # We should be able to install the test dependencies via setup.py, but in the meantime, do it manually:
+  - pip install pytest pytest-cov pytest-qt
+  
+build_script:
+
+  - cd %APPVEYOR_BUILD_DIR%  
+  - pip install .
+
+test_script:
+  # Run the project tests
+  - cd %APPVEYOR_BUILD_DIR%
+  - py.test tests -v
+
+after_test:
+  # Create wheels and installers ready to try on other platforms.
+  - cd %APPVEYOR_BUILD_DIR%
+  - python setup.py bdist_wheel bdist_wininst 
+  - ps: "ls dist"
+
+artifacts:
+  # Archive (short-term) the generated packages in the ci.appveyor.com build report.
+  - path: dist\*
+
+# on_success:
+#   - TODO: upload the content of dist/*.whl to a public wheelhouse
