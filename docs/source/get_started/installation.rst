@@ -119,15 +119,6 @@ instructions for adding the package to your system.
 .. _Setuptools Install: https://pypi.python.org/pypi/setuptools/1.1.6
 .. _Pip Install: https://pip.pypa.io/en/stable/installing/
 
-`Future`_
-~~~~~~~~~
-
-Enaml supports both Python 2 and 3 and uses the future library as a 
-compatibility layer. Future can be installed with the ``pip install`` command 
-of `Pip`_::
-
-    $ pip install future
-
 `Ply`_
 ~~~~~~
 
