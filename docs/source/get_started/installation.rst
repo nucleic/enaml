@@ -10,12 +10,13 @@ choose from.
 Anaconda: The Easiest Way
 -------------------------
 
-If you use the `Anaconda`_ Python distribution platform, you the latest 
+If you use the `Anaconda`_ Python distribution platform (or `Miniconda`_, its lighter-weight companion), the latest 
 release of Enaml can be installed using conda from the conda-forge channel::
     
     $ conda install enaml -c conda-forge
 
 .. _Anaconda: https://store.continuum.io/cshop/anaconda
+.. _Miniconda: https://conda.io/miniconda.html
 
 Wheels: The Pretty Easy Way
 ---------------------------
@@ -33,7 +34,7 @@ Python
 ~~~~~~
 
 Enaml is a Python framework and requires a supported Python runtime. Enaml
-currently supports **Python 2.7**, **Python 3.4**, **Python 3.5**,
+currently supports **Python 2.7**, **Python 3.4**, **Python 3.5**, and
 **Python 3.6**.
 
 The most recent Python releases are available on the `Python Downloads`_ pages.
@@ -59,9 +60,6 @@ Enaml's declarative widgets provide a layer of abstraction on top of the
 widgets of a toolkit rendering library. You will need to install this
 dependency separately.
 
-Enaml supports using either PyQt4 or PyQt5 and uses the `QtPy`_ library
-as compatibility layer.
-
 The recommended library is `PyQt5`_,  a robust set of Python bindings to the
 Qt 5 toolkit.  (It includes the necessary parts of Qt 5.)
 
@@ -69,25 +67,39 @@ On 32 and 64-bit Windows, 64-bit OS X and 64-bit Linux, with Python
 versions >=3.5, it can be installed via pip::
 
     $ pip install pyqt5
+    
+.. note::
+    There is no pyqt5 wheel available for 32-bit Linux.
 
-An alternative is _PyQt_, which is a robust set of Python bindings to the 
-Qt 4 toolkit. It is no longer a supported project, but can still be installed
-and used with Enaml. The `PyQt Downloads`_ page contains Windows installers
-- which also the necessary parts of Qt 4. OSX users can install PyQt4 via
-`Homebrew`_. Linux users should install via the system package manager.
+Alternatives
+++++++++++++
 
-Another alternative is `PySide`_ bindings to Qt. This is not recommended. The
-PySide bindings are not nearly as stable as PyQt. They contain several bugs
-which can and will cause applications to crash. There are also some API
-differences between the two libraries. So while some effort is made to
-support the use of PySide in Enaml, it is "use at your own risk".
+Enaml uses the `QtPy`_ library as compatibility layer to support some other QT-based libraries.
 
-To activate PySide support, install PySide or PySide2 separately and set the
-environment variable ``QT_API=pyside`` (``QT_API=pyside2`` for PySide2)
-before starting the Enaml application.
+* `PyQt`_, which is a robust set of Python bindings to the Qt 4 toolkit. It is no longer a 
+  supported project, but can still be installed and used with Enaml. The 
+  `PyQt Downloads`_ page contains Windows installers - which also the necessary parts of Qt 4.
+  OSX users can install PyQt4 via `Homebrew`_. Linux users should install via the system
+  package manager.
 
-While Enaml is architected to be toolkit agnostic, the use of anything but
-`Qt`_-based toolkit libraries is not recommended.
+* `PySide2`_ (a.k.a. Qt for Python) is a set of Python bindings to the Qt 5 toolkit.
+  This is not recommended. These bindings are not nearly as stable as PyQt. They contain
+  several bugs which can and will cause applications to crash. There are also some API
+  differences between the two libraries.  While some effort is made to support the use of
+  PySide2 in Enaml, it is "use at your own risk". Patches to improve support are welcomed.
+
+  To activate PySide2 support, install `PySide2`_ separately and set the environment 
+  variable ``QT_API=pyside2`` before starting the Enaml application.
+
+* `PySide`_ is a set of Python bindings to the Qt 4 toolkit which are no longer being
+  maintained. These bindings are not recommended, and not supported, but you may find they
+  work anyway. Use at your own risk.
+
+  To activate PySide support, install `PySide`_ separately and set the environment 
+  variable ``QT_API=pyside`` before starting the Enaml application.
+
+* While Enaml is architected to be toolkit agnostic, only Qt-based toolkit libraries are
+  supported. There are third-party projects that provide support for other back-ends.
 
 Compiling it yourself: The Hard Way
 -----------------------------------
@@ -99,7 +111,6 @@ assume that the user's system has a C++ compiler and the `Git`_ command line
 tools installed and available on the system path.
 
 .. _Git: http://git-scm.com
-
 
 `Setuptools`_ and `Pip`_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,6 +161,7 @@ QtPy can be installed with the ``pip install`` command of `Pip`_::
 .. _PyQt Downloads: http://www.riverbankcomputing.com/software/pyqt/download
 .. _Homebrew: http://brew.sh
 .. _PySide: http://qt-project.org/wiki/PySide
+.. _Pyside2: http://wiki.qt.io/Qt_for_Python
 
 `Kiwisolver`_
 ~~~~~~~~~~~~~
@@ -159,7 +171,7 @@ optimizer. This is the same algorithm used by the Cocoa Autolayout engine in
 OSX. Kiwisolver provides Python bindings to a C++ implementation of the
 Cassowary algorithm.
 
-The simplest way to install Kiwisolver is with ``pip``::
+Kiwisolver can be installed with the ``pip install`` command of `Pip`_::
 
     $ pip install kiwisolver
 
