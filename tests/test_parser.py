@@ -5,7 +5,11 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
+import os
+import sys
+import enaml
 import pytest
+import traceback
 from textwrap import dedent
 from enaml.compat import IS_PY3, exec_
 from utils import compile_source as compile_enaml
@@ -28,7 +32,8 @@ def run_async(task):
 
 
 @pytest.mark.skipif(not IS_PY3, reason="Async is python 3 only")
-def test_async_await_before_if():
+@pytest.mark.parametrize('compile_fn', [compile_py, compile_enaml])
+def test_async_await_before_if(compile_fn):
     """Async function with if statement
 
     """
@@ -45,15 +50,15 @@ def test_async_await_before_if():
 
     """)
     # Ensure it's valid 
-    for compile_fn in (compile_py, compile_enaml):
-        f = compile_fn(source, 'function')
-        query = {'some': 'object'}
-        r = run_async(f(query))
-        assert r == query
+    f = compile_fn(source, 'function')
+    query = {'some': 'object'}
+    r = run_async(f(query))
+    assert r == query
 
 
 @pytest.mark.skipif(not IS_PY3, reason="Async is python 3 only")
-def test_async_await_after_if():
+@pytest.mark.parametrize('compile_fn', [compile_py, compile_enaml])
+def test_async_await_after_if(compile_fn):
     """Async function with await after if statement
 
     """
@@ -71,9 +76,49 @@ def test_async_await_after_if():
     """)
     # Ensure it's valid
     
-    for compile_fn in (compile_py, compile_enaml):
-        f = compile_fn(source, 'function')
-        loop = asyncio.get_event_loop()
-        query = {'some': 'object'}
-        r = run_async(f(query))
-        assert r == query
+    f = compile_fn(source, 'function')
+    loop = asyncio.get_event_loop()
+    query = {'some': 'object'}
+    r = run_async(f(query))
+    assert r == query
+
+
+def test_syntax_error(tmpdir):
+    """ Test that a syntax error retains the path to the file
+    
+    """
+    test_module_path = os.path.join(tmpdir, 'view.enaml')
+    
+    with open(os.path.join(tmpdir, 'test_main.enaml'), 'w') as f:
+        f.write(dedent("""
+        from enaml.widgets.api import Window, Container, Label
+        from view import CustomView
+
+        enamldef MyWindow(Window): main:
+            CustomView:
+                pass
+
+        """))
+    
+    with open(test_module_path, 'w') as f:
+        f.write(dedent("""
+        from enaml.widgets.api import Container, Label
+
+        enamldef CustomLabel(Container):
+            Label # : missing intentionally
+                text = "Hello world"
+
+        """))
+    
+    try:
+        sys.path.append(tmpdir)
+        with enaml.imports():
+            from test_main import MyWindow
+        assert False, "Should raise a syntax error"
+    except Exception as e:
+        tb = traceback.format_exc()
+        print(tb)
+        lines = tb.strip().split("\n")
+        assert 'File "{}", line 5'.format(test_module_path) in lines[-4]
+    finally:
+        sys.path.remove(tmpdir)
