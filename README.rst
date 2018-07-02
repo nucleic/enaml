@@ -3,6 +3,9 @@ Welcome to Enaml
 .. image:: https://travis-ci.org/nucleic/enaml.svg?branch=master
     :target: https://travis-ci.org/nucleic/enaml
     :alt: Build Status
+.. image:: https://ci.appveyor.com/api/projects/status/p2bapt3y6n7xixcl?svg=true
+    :target: https://ci.appveyor.com/project/nucleic/enaml
+    :alt: Appveyor Build Status
 .. image:: https://readthedocs.org/projects/enaml/badge/?version=latest
     :target: http://enaml.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
