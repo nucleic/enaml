@@ -111,7 +111,7 @@ TEST_SOURCE = {
     """,
 }
 
-if sys.version_info.major >= 6:
+if sys.version_info >= (3, 6):
     TEST_SOURCE.update({
         'async for list comp': """
         async def function(queries):
@@ -125,7 +125,7 @@ if sys.version_info.major >= 6:
         """,
     })
 
-if sys.version_info.minor < 7:
+if sys.version_info < (3, 7):
     TEST_SOURCE.update({
         'async not keyword': """
         def function(queries):
@@ -152,4 +152,3 @@ def test_async(desc):
     validate_ast(py_ast.body[0], enaml_ast.body[0], True)
     validate_ast(py_ast.body[1], enaml_ast.body[1], True)
     validate_ast(py_ast.body[2], enaml_ast.body[2], True)
-
