@@ -17,6 +17,8 @@ from .test_parser import validate_ast
 
 FUNC_TEMPLATE =\
 """
+import asyncio
+
 async def fetch(query):
     return query
 
@@ -73,32 +75,39 @@ TEST_SOURCE = {
         result = {i:await fetch(q) for i, q in enumerate(queries)}
         return result
     """,
-    'await for': """
+    'async for': """
     async def function(queries):
         results = []
         async for r in fetch(queries):
             results.append(r)
         return result
     """,
-    'await for or': """
+    'async for or': """
     async def function(queries):
         results = []
         async for r in queries or fetch(queries):
             results.append(r)
         return result
     """,
-    'await for comp': """
+    'async for comp': """
     async def function(queries):
         results = []
         async for r in [f for f in fetch(queries)]:
             results.append(r)
         return result
     """,
-    'await for or comp': """
+    'async for or comp': """
     async def function(queries):
         results = []
         async for r in queries or [f for f in fetch(queries)]:
             results.append(r)
+        return result
+    """,
+    'async with': """
+    async def function(query):
+        lock = asyncio.lock()
+        async with lock:
+            result = await fetch(query)
         return result
     """,
 }
@@ -115,4 +124,5 @@ def test_async(desc):
     enaml_ast = parse(src).body[0].ast
     validate_ast(py_ast.body[0], enaml_ast.body[0], True)
     validate_ast(py_ast.body[1], enaml_ast.body[1], True)
+    validate_ast(py_ast.body[2], enaml_ast.body[2], True)
 
