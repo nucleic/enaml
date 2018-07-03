@@ -1,4 +1,3 @@
-
 #------------------------------------------------------------------------------
 # Copyright (c) 2018, Nucleic Development Team.
 #
@@ -111,6 +110,34 @@ TEST_SOURCE = {
         return result
     """,
 }
+
+if sys.version_info.major >= 6:
+    TEST_SOURCE.update({
+        'async for list comp': """
+        async def function(queries):
+            result = [r async for r in fetch(q)]
+            return result
+        """,
+        'async for if list comp': """
+        async def function(queries):
+            result = [r async for r in fetch(queries) if r]
+            return result
+        """,
+    })
+
+if sys.version_info.minor < 7:
+    TEST_SOURCE.update({
+        'async not keyword': """
+        def function(queries):
+            async = False
+            return queries
+        """,
+        'await not keyword': """
+        def function(queries):
+            await = False
+            return queries
+        """,
+    })
 
 
 @pytest.mark.skipif(sys.version_info < (3, 5), reason='Requires Python 3.5')
