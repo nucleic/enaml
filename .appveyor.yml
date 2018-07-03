@@ -13,6 +13,7 @@ environment:
         #    Enaml supports Python 2.7 and also 3.4 onwards.
         #    PyQt4 only available for Python <3.6.
         #    PyQt5 only available for Python >=3.5.
+        #       PyQt5 version 5.11.2 doesn't run on Python 3.5.
         #    PySide1 only available for 2.6 <= Python <=3.4. Wheels only for 32-bit.
         
         # Strategy:
@@ -145,14 +146,10 @@ install:
   - ECHO "Filesystem root:"
   - ps: "ls \"C:/\""
   
-  # - ECHO "Installed SDKs:"
-  # - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
-  #
-  - ECHO "Installed projects:"
-  - ps: "ls \"C:\\projects\""
-  - ps: "ls \"C:\\projects\\enaml\""
+  - ECHO "Build Folder:"
+  - ps: ls $env:APPVEYOR_BUILD_FOLDER
   
-  # - ECHO "Environment Variables"
+  - ECHO "Environment Variables"
   - set
 
   # Prepend desired Python to the PATH of this build (this cannot be
@@ -180,7 +177,7 @@ install:
   - conda install -q wheel
 
   # Check that we have the expected set-up.
-  - "ECHO We specified %PYTHON_VERSION% win%PYTHON_ARCH%"
+  - ECHO "We specified %PYTHON_VERSION% win%PYTHON_ARCH%"
   - "python --version"
   - "python -c \"import struct; print('Architecture is win'+str(struct.calcsize('P') * 8))\""
   - pip --version
@@ -192,7 +189,9 @@ install:
   # We need a library for Qt.
   # PyQT4 won't pip install, so resort to conda.
   - if %PYQT_VERSION%==4 conda install -q pyqt=4
-  - if %PYQT_VERSION%==5 pip install pyqt5
+  # Pyqt5 5.11.2 doesn't work on Python 3.5 (although it does on other versions)
+  # Avoid using it for now, but optimistically assume that they will fix in next release.
+  - if %PYQT_VERSION%==5 pip install pyqt5!=5.11.2
   - ps: if ($env:QT_API -eq "pyside") {pip install PySide}  
   # Pyside2 won't pip install, so resort to conda.
   - ps: if ($env:QT_API -eq "pyside2") {conda config --add channels conda-forge; conda install -q pyside2}
@@ -200,13 +199,17 @@ install:
   
   # We should be able to install the test dependencies via setup.py, but in the meantime, do it manually:
   - pip install pytest pytest-cov pytest-qt
-  
+
+  # What is now installed?
+  - conda list
+
 build_script:
 
   - cd %APPVEYOR_BUILD_DIR%  
   - pip install .
 
 test_script:
+  
   # Run the project tests
   - cd %APPVEYOR_BUILD_DIR%
   - py.test tests -v
