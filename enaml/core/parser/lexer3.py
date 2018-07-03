@@ -81,7 +81,7 @@ class Python35EnamlLexer(Python34EnamlLexer):
 
         """
         token_stream = super(Python35EnamlLexer, self).make_token_stream()
-        token_stream = self.analyse_async(token_stream)
+        #token_stream = self.analyse_async(token_stream)
         return token_stream
 
     def analyse_async(self, token_stream):
