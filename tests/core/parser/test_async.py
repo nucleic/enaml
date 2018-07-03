@@ -59,6 +59,34 @@ TEST_SOURCE = {
         result = {i:await fetch(q) for i, q in enumerate(queries)}
         return result
     """,
+    'await for': """
+    async def function(queries):
+        results = []
+        async for r in fetch(queries):
+            results.append(r)
+        return result
+    """,
+    'await for or': """
+    async def function(queries):
+        results = []
+        async for r in queries or fetch(quieries):
+            results.append(r)
+        return result
+    """,
+    'await for comp': """
+    async def function(queries):
+        results = []
+        async for r in [f for f in fetch(quieries)]:
+            results.append(r)
+        return result
+    """,
+    'await for or comp': """
+    async def function(queries):
+        results = []
+        async for r in queries or [f for f in fetch(quieries)]:
+            results.append(r)
+        return result
+    """,
 }
 
 
