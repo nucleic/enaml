@@ -43,10 +43,24 @@ TEST_SOURCE = {
         result = await fetch(query)
         return result
     """,
-    'await multiple': """
+    'await future': """
     async def function(query):
-        result = await fetch(query)
-        result = await fetch(query)
+        f = fetch(query)
+        await f
+        return result
+    """,
+    'await subscript': """
+    async def function(query):
+        tasks = [fetch(query)]
+        await tasks[0]
+        return result
+    """,
+    'await attr': """
+    async def function(query):
+        class API:
+            search = fetch
+        api = API()
+        await api.fetch(query)
         return result
     """,
     'await list comp': """
@@ -69,21 +83,21 @@ TEST_SOURCE = {
     'await for or': """
     async def function(queries):
         results = []
-        async for r in queries or fetch(quieries):
+        async for r in queries or fetch(queries):
             results.append(r)
         return result
     """,
     'await for comp': """
     async def function(queries):
         results = []
-        async for r in [f for f in fetch(quieries)]:
+        async for r in [f for f in fetch(queries)]:
             results.append(r)
         return result
     """,
     'await for or comp': """
     async def function(queries):
         results = []
-        async for r in queries or [f for f in fetch(quieries)]:
+        async for r in queries or [f for f in fetch(queries)]:
             results.append(r)
         return result
     """,
