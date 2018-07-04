@@ -181,9 +181,18 @@ def test_decl_async_func():
         async func search(query):
             result = await fetch(query)
             return result
+
+    enamldef CustomWindow(MainWindow):
+        async search => (query):
+            result = await fetch(query)
+            return result
     
     """)
     py_ast = ast.parse(py_src)
     enaml_ast = parse(enaml_src)
     validate_ast(py_ast.body[3].body[0], 
                  enaml_ast.body[1].body[0].funcdef, True)
+    
+    # Check override syntax
+    validate_ast(py_ast.body[3].body[0], 
+                 enaml_ast.body[2].body[0].funcdef, True)
