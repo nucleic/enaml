@@ -92,7 +92,7 @@ class Python35EnamlLexer(Python34EnamlLexer):
 
             if tok.type == 'ASYNC':
                 next_token = next(token_stream)
-                if next_token.type not in ('DEF', 'WITH', 'FOR'):
+                if next_token.type not in ('DEF', 'WITH', 'FOR', 'NAME'):
                     tok.type = 'NAME'
                 yield tok
                 yield next_token

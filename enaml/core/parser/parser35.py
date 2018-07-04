@@ -8,7 +8,7 @@
 import ast
 
 from .lexer3 import Python35EnamlLexer
-from .base_parser import Load
+from .base_parser import Load, enaml_ast
 from .parser34 import Python34EnamlParser
 
 
@@ -159,3 +159,34 @@ class Python35EnamlParser(Python34EnamlParser):
                 raise TypeError('Unexpected trailer node: %s' % node)
             root = node
         p[0] = ast.Await(value=node)
+
+    def p_enamldef_suite_item(self, p):
+        ''' enamldef_suite_item : enamldef_simple_item
+                                | decl_funcdef
+                                | async_decl_funcdef
+                                | child_def
+                                | template_inst '''
+        p[0] = p[1]
+    
+    def p_child_def_suite_item(self, p):
+        ''' child_def_suite_item : child_def_simple_item
+                                 | decl_funcdef
+                                 | async_decl_funcdef
+                                 | child_def
+                                 | template_inst '''
+        p[0] = p[1]
+    
+    def p_async_decl_funcdef(self, p):
+        ''' async_decl_funcdef : ASYNC decl_funcdef '''
+        decl_funcdef = p[2]
+        funcdef = decl_funcdef.funcdef
+        async_funcdef = ast.AsyncFunctionDef()
+        for attr in tuple(funcdef._fields) + ('lineno', 'col_offset'):
+            setattr(async_funcdef, attr, getattr(funcdef, attr))
+        ast.fix_missing_locations(async_funcdef)
+        # Skip validate because the original function was already validated
+        async_decl_funcdef = enaml_ast.AsyncFuncDef()
+        async_decl_funcdef.funcdef = async_funcdef
+        async_decl_funcdef.lineno = decl_funcdef.lineno
+        async_decl_funcdef.is_override = decl_funcdef.is_override
+        p[0] = async_decl_funcdef
