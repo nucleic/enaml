@@ -88,40 +88,24 @@ class Python35EnamlLexer(Python34EnamlLexer):
         """Transform ASYNC/AWAIT tokens to NAME outside async function.
 
         """
-        seen_async_def = False
-        async_depth = 0
-
         for tok in token_stream:
 
-            if seen_async_def and tok.type == 'INDENT':
-                async_depth += 1
-                seen_async_def = False
-
-            elif tok.type == 'ASYNC':
+            if tok.type == 'ASYNC':
                 next_token = next(token_stream)
-                if next_token.type == 'DEF':
-                    seen_async_def = True
-                else:
-                    self.handle_async_token(tok, async_depth)
+                if next_token.type not in ('DEF', 'WITH', 'FOR'):
+                    tok.type = 'NAME'
+                yield tok
+                yield next_token
+                continue
+            elif tok.type == 'AWAIT':
+                next_token = next(token_stream)
+                if next_token.type != 'NAME':
+                    tok.type = 'NAME'
                 yield tok
                 yield next_token
                 continue
 
-            elif tok.type == 'AWAIT':
-                self.handle_async_token(tok, async_depth)
-
-            elif async_depth and tok.type == 'DEDENT':
-                async_depth -= 1
-
             yield tok
-
-    def handle_async_token(self, tok, async_depth):
-        """Handle an ASYNC/AWAIT token depending on whether or not we are
-        inside a coroutine definition.
-
-        """
-        if not async_depth:
-            tok.type = 'NAME'
 
 
 class Python36EnamlLexer(Python35EnamlLexer):
@@ -133,3 +117,16 @@ class Python36EnamlLexer(Python35EnamlLexer):
 
     """
     lex_id = '36'
+
+
+class Python37EnamlLexer(Python36EnamlLexer):
+    """Lexer specialized for Python 3.7.
+
+    Make async and await keywords
+
+    """
+    lex_id = '37'
+    
+    def analyse_async(self, token_stream):
+        for tok in token_stream:
+            yield tok

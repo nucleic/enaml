@@ -32,20 +32,20 @@ class Python36EnamlParser(Python35EnamlParser):
     def p_comp_for1(self, p):
         ''' comp_for : FOR exprlist IN or_test '''
         super(Python36EnamlParser, self).p_comp_for1(p)
-        p[0][0].is_async = False
+        p[0][0].is_async = 0
 
     def p_comp_for2(self, p):
         ''' comp_for : FOR exprlist IN or_test comp_iter '''
         super(Python36EnamlParser, self).p_comp_for2(p)
         for g in p[0]:
-            g.is_async = False
+            g.is_async = 0
 
     def p_comp_async_for1(self, p):
         ''' comp_for : ASYNC FOR exprlist IN or_test '''
         target = p[3]
         self.set_context(target, Store, p)
         p[0] = [ast.comprehension(target=target, iter=p[5], ifs=[],
-                                  is_async=True)]
+                                  is_async=1)]
 
     def p_comp_async_for2(self, p):
         ''' comp_for : ASYNC FOR exprlist IN or_test comp_iter '''
@@ -53,7 +53,7 @@ class Python36EnamlParser(Python35EnamlParser):
         self.set_context(target, Store, p)
         gens = []
         gens.append(ast.comprehension(target=target, iter=p[5], ifs=[],
-                                      is_async=True))
+                                      is_async=1))
         for item in p[6]:
             if isinstance(item, ast.comprehension):
                 gens.append(item)

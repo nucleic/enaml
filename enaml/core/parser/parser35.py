@@ -143,7 +143,7 @@ class Python35EnamlParser(Python34EnamlParser):
 
     def p_atom_expr3(self, p):
         ''' atom_expr : AWAIT atom '''
-        p[0] = ast.Await(value=p[1])
+        p[0] = ast.Await(value=p[2])
 
     def p_atom_expr4(self, p):
         ''' atom_expr : AWAIT atom trailer_list '''
