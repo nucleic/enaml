@@ -12,6 +12,12 @@
 /docs/build
 /tools/pygments/build
 /tools/pygments/dist
+/.mypy_cache
+/.spyproject
+/.pytest_cache
+/.vscode
+/.eggs
+/.cache
 
 .gitignore~
 *.orig
