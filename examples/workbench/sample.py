@@ -11,14 +11,18 @@ This example serves to demonstrate the concepts described the accompanying
 developer crash source document.
 
 """
+import enaml
 from enaml.workbench.ui.api import UIWorkbench
 
 
-if __name__ == '__main__':
-    import enaml
+def main():
     with enaml.imports():
         from sample_plugin import SampleManifest
 
     workbench = UIWorkbench()
     workbench.register(SampleManifest())
     workbench.run()
+
+
+if __name__ == '__main__':
+    main()

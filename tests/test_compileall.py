@@ -11,25 +11,9 @@ import sys
 import shutil
 import pytest
 import importlib
-from enaml.application import Application
-from enaml.qt.qt_application import QtApplication
-from enaml.widgets.window import Window
 from enaml.compile_all import compileall
-from contextlib import contextmanager
 from enaml.compat import IS_PY3
-
-
-@contextmanager
-def cd(path):
-    """ cd to the directory then return to the cwd 
-    
-    """
-    cwd = os.getcwd()
-    try:
-        os.chdir(path)
-        yield
-    finally:
-        os.chdir(cwd)
+from utils import cd, enaml_run
 
 
 def clean_cache(path):
@@ -59,29 +43,6 @@ def clean_source(path):
                 os.remove(f)
 
 
-@pytest.fixture
-def enaml_run(qtbot):
-    """ Patch the start method to use the qtbot """
-    app = Application.instance()
-    if app:
-        Application._instance = None
-    _start = QtApplication.start
-
-    def start(self):
-        for window in Window.windows:
-            qtbot.wait_for_window_shown(window.proxy.widget)
-            qtbot.wait(1000)
-            window.close()
-            break
-
-    QtApplication.start = start
-    try:
-        yield
-    finally:
-        QtApplication.start = _start
-        Application._instance = app
-
-
 @pytest.mark.parametrize("tutorial", [
     'employee',
     'hello_world',
@@ -103,21 +64,17 @@ def test_tutorials(enaml_run, tmpdir, tutorial):
     clean_source(example)
 
     # Add to example folder to the sys path or we get an import error
-    sys.path.append(example)
-    try:
-        with cd(example):
-            if IS_PY3:
-                # PY3 only uses pyc files if copied from the pycache folder
-                for f in os.listdir('__pycache__'):
-                    cf = ".".join(f.split(".")[:-2]) + ".pyc"
-                    shutil.copy(os.path.join('__pycache__', f), cf)
+    with cd(example, add_to_sys_path=True):
+        if IS_PY3:
+            # PY3 only uses pyc files if copied from the pycache folder
+            for f in os.listdir('__pycache__'):
+                cf = ".".join(f.split(".")[:-2]) + ".pyc"
+                shutil.copy(os.path.join('__pycache__', f), cf)
 
-            # Verify it's clean
-            assert not os.path.exists(tutorial+".py")
-            assert not os.path.exists(tutorial+"_view.enaml")
+        # Verify it's clean
+        assert not os.path.exists(tutorial+".py")
+        assert not os.path.exists(tutorial+"_view.enaml")
 
-            # Now run from cache
-            mod = importlib.import_module(tutorial)
-            mod.main()
-    finally:
-        sys.path.remove(example)
+        # Now run from cache
+        mod = importlib.import_module(tutorial)
+        mod.main()
