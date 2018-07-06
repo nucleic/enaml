@@ -21,9 +21,6 @@ class Python36EnamlParser(Python35EnamlParser):
     - support for variables annotations (names surrounded by parenthesis are
       considered simple name and not expression as the Python parser does).
 
-    f-strings as added by PEP 498 are not supported in enaml file for the time
-    being.
-
     """
     parser_id = '36'
 
@@ -91,3 +88,30 @@ class Python36EnamlParser(Python35EnamlParser):
     def p_annassign(self, p):
         ''' annassign : COLON test EQUAL test '''
         p[0] = (p[2], p[4])
+
+    # To avoid re-inventing the parsing of f-strings, we build a list of the
+    # multiple strings making the complete string and then re-create pseudo
+    # source code that we parse using the ast.parse function of the stdlib.
+    # We need to join the different string using spaces to respect the fact
+    # that in "(f'{a}' '{r}')" we must not format r.
+    def p_atom10(self, p):
+        ''' atom : atom_string_list '''
+        m = ast.parse('(' + ' '.join(p[1]) + ')')
+        p[0] = m.body[0].value
+
+    def p_atom_string_list1(self, p):
+        ''' atom_string_list : STRING '''
+        p[0] = [repr(p[1])]
+
+    def p_atom_string_list2(self, p):
+        ''' atom_string_list : atom_string_list STRING '''
+        p[0] = p[1] + [repr(p[2])]
+
+    def p_atom_string_list3(self, p):
+        ''' atom_string_list : FSTRING '''
+        p[0] = ['f' + repr(p[1])]
+        print('parser')
+
+    def p_atom_string_list4(self, p):
+        ''' atom_string_list : atom_string_list FSTRING '''
+        p[0] = p[1] + ['f' + repr(p[2])]

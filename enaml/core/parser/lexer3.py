@@ -27,7 +27,6 @@ class Python3EnamlLexer(BaseEnamlLexer):
     def format_string(self, string, quote_type):
         """Python support u, r and b as quote type.
 
-
         """
         if quote_type == "" or quote_type == "u":
             # Turn escaped characters into what they should be.
@@ -113,10 +112,21 @@ class Python36EnamlLexer(Python35EnamlLexer):
 
     Support for _ in numeric literals (comes from stdlib tokenize.NUMBER)
 
-    TODO Add support for f-strings
-
     """
     lex_id = '36'
+
+    delimiters = Python35EnamlLexer.delimiters + ('FSTRING',)
+
+    def format_string(self, string, quote_type):
+        """Python support u, r and b as quote type.
+
+        """
+        if 'f' in quote_type.lower():
+            if 'r' not in quote_type.lower():
+                string =  decode_escapes(string)
+            return string, 'FSTRING'
+        return super(Python36EnamlLexer, self).format_string(string,
+                                                             quote_type)
 
 
 class Python37EnamlLexer(Python36EnamlLexer):
@@ -126,7 +136,7 @@ class Python37EnamlLexer(Python36EnamlLexer):
 
     """
     lex_id = '37'
-    
+
     def analyse_async(self, token_stream):
         for tok in token_stream:
             yield tok
