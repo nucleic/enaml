@@ -48,7 +48,7 @@ before_install:
   # This will force qt to the last available version on PyPI and means that
   # we will have two versions of qt at the same time but it seems to work fine
   - 'if [ $QT_VERSION -gt 4 ] && [ $QSCINTILLA -eq 1 ]; then
-         $PIP_INSTALL QScintilla pyqt5==5.10.1;
+         $PIP_INSTALL Cython QScintilla;
      fi'
 
   # Install the dev version of the other nucleic projects
