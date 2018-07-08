@@ -24,52 +24,6 @@ Load = ast.Load()
 Del = ast.Del()
 
 
-# Python 2.6 compatibility. Transform set comprehension into set(generator)
-try:
-    SetComp = ast.SetComp
-except AttributeError:
-    def SetComp(elt, generators):
-        gen = ast.GeneratorExp(elt=elt, generators=generators)
-        call = ast.Call()
-        call.func = ast.Name(id='set', ctx=Load)
-        call.args = [gen]
-        call.keywords = []
-        call.starargs = None
-        call.kwargs = None
-        return call
-
-
-# Python 2.6 compatibility. Transform dict comprehension into dict(generator)
-try:
-    DictComp = ast.DictComp
-except AttributeError:
-    def DictComp(key, value, generators):
-        elt = ast.Tuple(elts=[key, value], ctx=Load)
-        gen = ast.GeneratorExp(elt=elt, generators=generators)
-        call = ast.Call()
-        call.func = ast.Name(id='dict', ctx=Load)
-        call.args = [gen]
-        call.keywords = []
-        call.starargs = None
-        call.kwargs = None
-        return call
-
-
-# Python 2.6 compatibility. Transform set literal in set(list_literal)
-try:
-    Set = ast.Set
-except AttributeError:
-    def Set(elts):
-        lst = ast.List(elts=elts, ctx=Load)
-        call = ast.Call()
-        call.func = ast.Name(id='set', ctx=Load)
-        call.args = [lst]
-        call.keywords = []
-        call.starargs = None
-        call.kwargs = None
-        return call
-
-
 class FakeToken(object):
     """ A fake token used to store the lexer before calling the
     syntax error functions.
@@ -167,10 +121,10 @@ class BaseEnamlParser(object):
         ast.GeneratorExp: 'generator expression',
         ast.Yield: 'yield expression',
         ast.ListComp: 'list comprehension',
-        SetComp: 'set comprehension',
-        DictComp: 'dict comprehension',
+        ast.SetComp: 'set comprehension',
+        ast.DictComp: 'dict comprehension',
         ast.Dict: 'literal',
-        Set: 'literal',
+        ast.Set: 'literal',
         ast.Num: 'literal',
         ast.Str: 'literal',
         ast.Ellipsis: 'Ellipsis',
@@ -2601,15 +2555,15 @@ class BaseEnamlParser(object):
             if isinstance(info.elt, tuple):
                 key, value = info.elt
                 generators = info.generators
-                node = DictComp(key=key, value=value, generators=generators)
+                node = ast.DictComp(key=key, value=value, generators=generators)
             else:
-                node = SetComp(elt=info.elt, generators=info.generators)
+                node = ast.SetComp(elt=info.elt, generators=info.generators)
         elif isinstance(info, CommaSeparatedList):
             if isinstance(info.values[0], tuple):
                 keys, values = list(zip(*info.values))
                 node = ast.Dict(keys=list(keys), values=list(values))
             else:
-                node = Set(elts=info.values)
+                node = ast.Set(elts=info.values)
         else:
             raise TypeError('Unexpected node for dictorsetmaker: %s' % info)
         p[0] = node
