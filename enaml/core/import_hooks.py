@@ -370,7 +370,7 @@ class EnamlImporter(AbstractEnamlImporter):
         """
         file_info = self.file_info
         src_mod_time = self.get_source_modified_time()
-        ast = parse(self.read_source())
+        ast = parse(self.read_source(), file_info.src_path)
         code = EnamlCompiler.compile(ast, file_info.src_path)
         self._write_cache(code, src_mod_time, file_info)
         return (code, file_info.src_path)
