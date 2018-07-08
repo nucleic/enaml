@@ -29,7 +29,7 @@ before_install:
   - conda info -a
   - conda create -n travisci python=$PYTHON pip
   - source activate travisci
-  - echo "python==$PYTHON" >> ~/anaconda/envs/travisci/conda-meta/pinned
+  - echo "python==$PYTHON.*" >> ~/anaconda/envs/travisci/conda-meta/pinned
   - CONDA_INSTALL="conda install -q"
   - PIP_INSTALL="pip install"
 
