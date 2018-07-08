@@ -7,7 +7,6 @@
 #------------------------------------------------------------------------------
 import sys
 import ast
-from textwrap import dedent
 import pytest
 
 from enaml.core.parser import parse
@@ -21,8 +20,11 @@ TEST_SOURCE = {
     'f-string multiple values': r"""
     a = f'test {a:g}, {b}'
     """,
-    'f-string split': r"""
+    'f-string split 1': r"""
     a = (f'{r}' '{t:s}')
+    """,
+    'f-string split 2': r"""
+    a = ('{r}' f'{t:s}')
     """,
     'f-string raw string': r"""
     a = rf'{a}\n'

@@ -110,7 +110,6 @@ class Python36EnamlParser(Python35EnamlParser):
     def p_atom_string_list3(self, p):
         ''' atom_string_list : FSTRING '''
         p[0] = ['f' + repr(p[1])]
-        print('parser')
 
     def p_atom_string_list4(self, p):
         ''' atom_string_list : atom_string_list FSTRING '''
