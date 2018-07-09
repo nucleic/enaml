@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import ast
-
+import sys
 from atom.api import Atom, Bool, Enum, Int, List, Str, Instance, Tuple, Typed
 
 
@@ -144,6 +144,14 @@ class FuncDef(ASTNode):
 
     #: Whether the function is an override or a 'func' declaration.
     is_override = Bool(False)
+
+
+if sys.version_info >= (3, 5):
+    
+    class AsyncFuncDef(FuncDef):
+        
+        #: The Python function definition.
+        funcdef = Typed(ast.AsyncFunctionDef)
 
 
 class OperatorExpr(ASTNode):

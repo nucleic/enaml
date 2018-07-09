@@ -10,6 +10,7 @@ import ast
 from textwrap import dedent
 import pytest
 
+from utils import compile_source
 from enaml.core.parser import parse
 
 from .test_parser import validate_ast
@@ -152,3 +153,50 @@ def test_async(desc):
     validate_ast(py_ast.body[0], enaml_ast.body[0], True)
     validate_ast(py_ast.body[1], enaml_ast.body[1], True)
     validate_ast(py_ast.body[2], enaml_ast.body[2], True)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 5), reason='Requires Python 3.5')
+def test_decl_async_func():
+    py_src = dedent("""
+    from enaml.core.declarative import d_func
+    from enaml.widgets.api import Window, Label
+    
+    async def fetch(query):
+        return query
+    
+    class MainWindow(Window):
+        @d_func
+        async def search(self, query):
+            result = await fetch(query)
+            return result
+    """)
+    
+    enaml_src = dedent("""
+    from enaml.core.declarative import d_func
+    from enaml.widgets.api import Window, Label
+    
+    async def fetch(query):
+        return query
+        
+    enamldef MainWindow(Window):
+        async func search(query):
+            result = await fetch(query)
+            return result
+
+    enamldef CustomWindow(MainWindow):
+        async search => (query):
+            result = await fetch(query)
+            return result
+    
+    """)
+    py_ast = ast.parse(py_src)
+    enaml_ast = parse(enaml_src)
+    validate_ast(py_ast.body[3].body[0], 
+                 enaml_ast.body[1].body[0].funcdef, True)
+    
+    # Check override syntax
+    validate_ast(py_ast.body[3].body[0], 
+                 enaml_ast.body[2].body[0].funcdef, True)
+    
+    # Make sure it compiles
+    CustomWindow = compile_source(enaml_src, 'CustomWindow')
