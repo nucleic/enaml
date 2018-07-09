@@ -10,6 +10,7 @@ import ast
 from textwrap import dedent
 import pytest
 
+from utils import compile_source
 from enaml.core.parser import parse
 
 from .test_parser import validate_ast
@@ -196,3 +197,6 @@ def test_decl_async_func():
     # Check override syntax
     validate_ast(py_ast.body[3].body[0], 
                  enaml_ast.body[2].body[0].funcdef, True)
+    
+    # Make sure it compiles
+    CustomWindow = compile_source(enaml_src, 'CustomWindow')
