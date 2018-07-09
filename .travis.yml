@@ -37,7 +37,7 @@ before_install:
   # We do not test vtk as it segfaults on Travis
   - $CONDA_INSTALL pyqt=$QT_VERSION ply
   - 'if [ $MATPLOTLIB -eq 1]; then
-        $CONDA_INSTALL matplotlib
+        $CONDA_INSTALL matplotlib;
      fi'
 
   # Install qtpy from pip to get a recent version (>= 1.3) on python 3.4
