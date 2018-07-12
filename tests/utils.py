@@ -8,13 +8,16 @@
 """Generic utility functions for testing.
 
 """
+import os
+import sys
+import pytest
 from contextlib import contextmanager
 
 from atom.api import Atom, Bool
 
 import enaml
 from enaml.compat import exec_
-from enaml.application import timed_call
+from enaml.application import Application, timed_call
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
 from enaml.widgets.api import Window, Dialog, PopupView
@@ -319,3 +322,66 @@ def handle_question(app, answer):
     with handle_dialog(app, 'accept' if answer == 'yes' else 'reject',
                        handler=answer_question, cls=MessageBox):
         yield
+
+
+@contextmanager
+def cd(path, add_to_sys_path=False):
+    """ cd to the directory then return to the cwd 
+    
+    """
+    cwd = os.getcwd()
+    if add_to_sys_path:
+        abspath = os.path.abspath(path)
+        sys.path.append(abspath)
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(cwd)
+        if add_to_sys_path:
+            sys.path.remove(abspath)
+
+
+@pytest.fixture
+def enaml_run(qtbot, monkeypatch):
+    """ Patches the QtApplication to allow using the qtbot when the 
+    enaml application is started. It also patches QApplication.exit as
+    recommended in the pytest-qt docs.
+    
+    Yields
+    -------
+    handler: object 
+        an object with a `run` attribute that can be set to a callback that 
+        will be invoked with the application and first window shown.
+    
+    References
+    ----------
+    1. https://pytest-qt.readthedocs.io/en/latest/app_exit.html
+    
+    """
+    from enaml.qt.qt_application import QtApplication, QApplication
+    
+    app = Application.instance()
+    if app:
+        Application._instance = None
+    
+    class Runner:
+        # Set this to a callback
+        run = None
+    runner = Runner()
+    
+    def start(self):
+        for window in Window.windows:
+            wait_for_window_displayed(qtbot, window)
+            if callable(runner.run):
+                runner.run(self, window)
+            else:
+                close_window_or_popup(qtbot, window)
+            break
+    try:
+        with monkeypatch.context() as m:
+            m.setattr(QtApplication, 'start', start)
+            m.setattr(QApplication, 'exit', lambda self: None)
+            yield runner
+    finally:
+        Application._instance = app
