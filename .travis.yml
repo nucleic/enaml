@@ -7,11 +7,11 @@ branches:
 
 matrix:
   include:
-    - env: PYTHON=2.7 QT_VERSION=4 IPY_VERSION=3
-    - env: PYTHON=3.4 QT_VERSION=4 IPY_VERSION=3
-    - env: PYTHON=3.5 QT_VERSION=5 IPY_VERSION=5 QSCINTILLA=0
-    - env: PYTHON=3.6 QT_VERSION=5 IPY_VERSION=6 QSCINTILLA=1
-    - env: PYTHON=3.7 QT_VERSION=5 IPY_VERSION=6 QSCINTILLA=1
+    - env: PYTHON=2.7 QT_VERSION=4 MATPLOTLIB=1 IPY_VERSION=3
+    - env: PYTHON=3.4 QT_VERSION=4 MATPLOTLIB=1 IPY_VERSION=3
+    - env: PYTHON=3.5 QT_VERSION=5 MATPLOTLIB=1 IPY_VERSION=5 QSCINTILLA=0
+    - env: PYTHON=3.6 QT_VERSION=5 MATPLOTLIB=1 IPY_VERSION=6 QSCINTILLA=1
+    - env: PYTHON=3.7 QT_VERSION=5 MATPLOTLIB=0 IPY_VERSION=0 QSCINTILLA=1
 
 before_install:
 
@@ -29,16 +29,22 @@ before_install:
   - conda info -a
   - conda create -n travisci python=$PYTHON pip
   - source activate travisci
+  - echo "python==$PYTHON.*" >> ~/anaconda/envs/travisci/conda-meta/pinned
   - CONDA_INSTALL="conda install -q"
   - PIP_INSTALL="pip install"
 
   # Install enaml dependencies and include special widgets dependencies
   # We do not test vtk as it segfaults on Travis
-  - $CONDA_INSTALL pyqt=$QT_VERSION ply matplotlib
+  - $CONDA_INSTALL pyqt=$QT_VERSION ply
+  - 'if [ $MATPLOTLIB -eq 1]; then
+        $CONDA_INSTALL matplotlib;
+     fi'
 
   # Install qtpy from pip to get a recent version (>= 1.3) on python 3.4
   - $PIP_INSTALL qtpy
-  - 'if [ $IPY_VERSION < 4 ]; then
+  - 'if [ $IPY_VERSION -eq 0 ]; then
+        echo "Skip IPython";
+     elif [ $IPY_VERSION < 4 ]; then
         $CONDA_INSTALL ipython=$IPY_VERSION ipython-qtconsole;
      else
         $CONDA_INSTALL ipython=$IPY_VERSION qtconsole;
