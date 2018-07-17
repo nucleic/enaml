@@ -75,10 +75,12 @@ def test_validation_dock_layout2(enaml_qtbot, enaml_sleep):
 def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
     """Test interations with the dock area.
 
-    14013 lines
-
     """
-    from enaml.qt.QtCore import Qt
+    # Since timers are used the sleep must be greater than the default
+    enaml_sleep = 300
+    from enaml.qt.QtCore import Qt, QPoint
+    from enaml.qt.QtWidgets import QWidget
+    from enaml.layout.api import FloatItem, InsertTab
     with open(os.path.join('examples', 'widgets', 'dock_area.enaml')) as f:
         source = f.read()
     
@@ -92,8 +94,6 @@ def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
         
     # Enable dock events
     enaml_qtbot.mouseClick(cbx_evts.proxy.widget, Qt.LeftButton)
-    
-    enaml_sleep = 1000
     enaml_qtbot.wait(enaml_sleep)
     
     with pytest.warns(DockLayoutWarning):
@@ -138,6 +138,47 @@ def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
         
         # Unpin
         enaml_qtbot.mouseClick(tb._pin_button, Qt.LeftButton)
+        enaml_qtbot.wait(enaml_sleep)
+        
+        # Note the location of the dock item title
+        title = tb._title_label
+        ref = win.proxy.widget
+        
+        # Maximize and minimize it by double clicking
+        pos = title.mapTo(tb, title.pos())
+        enaml_qtbot.mouseDClick(tb, Qt.LeftButton, pos=pos)
+        enaml_qtbot.wait(enaml_sleep)
+        enaml_qtbot.mouseDClick(tb, Qt.LeftButton, pos=pos)
+        enaml_qtbot.wait(enaml_sleep)
+        
+        # Float it
+        op = FloatItem(item=di.name)
+        dock.update_layout(op)
+        enaml_qtbot.wait(enaml_sleep)
+        
+        # Link it
+        enaml_qtbot.mouseClick(tb._link_button, Qt.LeftButton)
+        enaml_qtbot.wait(enaml_sleep)
+        
+        # Unlink it
+        enaml_qtbot.mouseClick(tb._link_button, Qt.LeftButton)
+        enaml_qtbot.wait(enaml_sleep)
+        
+        # Restore it
+        op = InsertTab(item=di.name, target='item_1')
+        dock.update_layout(op)
+        enaml_qtbot.wait(enaml_sleep)
+        
+        # Drag it around
+        # TODO: this doesn't currently drag the window. It seems like QTest
+        # doesn't propagate events like "normal" mouse input does.
+        pos = title.mapTo(tb, title.pos())
+        enaml_qtbot.mousePress(tb, Qt.LeftButton, pos=pos)
+        for i in range(0, dock_area.size().width(), 100):
+            for j in range(0, dock_area.size().height(), 100):
+               pos = QPoint(i, j)
+               enaml_qtbot.mouseMove(ref, pos)
+               enaml_qtbot.wait(int(enaml_sleep/10))
         enaml_qtbot.wait(enaml_sleep)
         
         # Add items
