@@ -1,0 +1,27 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2018, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" 
+
+This example shows how to use a WebView. 
+
+<< autodoc-me >>
+"""
+from enaml.widgets.api import Window, Container, WebView
+
+
+# Note: QtWebEngineWidgets must be imported before the QtApplication is started
+# or it will throw an import error
+from enaml.qt import QtWebEngineWidgets
+
+
+enamldef Main(Window):
+    initial_size = (480, 960)
+    Container:
+        padding = 0
+        WebView:
+            url = 'https://enaml.readthedocs.org'
