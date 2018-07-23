@@ -22,6 +22,7 @@ Widgets Examples
 
     ex_buttons
     ex_context_menu
+    ex_dates
     ex_dock_area
     ex_dock_pane
     ex_drag_and_drop
