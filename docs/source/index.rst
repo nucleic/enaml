@@ -63,7 +63,7 @@ A few highlights of the framework:
 -----------------
 
     If you think you may not be the only one to have thought a thought,
-    you are probably right. Look here to see if your if your question has
+    you are probably right. Look here to see if your question has
     already been asked, then take solace in the realization that you are
     not alone.
 
