@@ -39,6 +39,7 @@ Widgets Examples
     ex_ipython_console
     ex_main_window
     ex_menu_bar
+    ex_mdi_area
     ex_mpl_canvas
     ex_notebook
     ex_popup_menu
