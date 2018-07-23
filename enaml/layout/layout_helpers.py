@@ -21,10 +21,10 @@ def horizontal(*items, **config):
 
     Parameters
     ----------
-    *items
+    items
         The constraint items to pass to the helper.
 
-    **config
+    config
         Additional keyword arguments to pass to the helper.
 
     """
@@ -36,10 +36,10 @@ def vertical(*items, **config):
 
     Parameters
     ----------
-    *items
+    items
         The constraint items to pass to the helper.
 
-    **config
+    config
         Additional keyword arguments to pass to the helper.
 
     """
@@ -51,10 +51,10 @@ def hbox(*items, **config):
 
     Parameters
     ----------
-    *items
+    items
         The constraint items to pass to the helper.
 
-    **config
+    config
         Additional keyword arguments to pass to the helper.
 
     """
@@ -66,10 +66,10 @@ def vbox(*items, **config):
 
     Parameters
     ----------
-    *items
+    items
         The constraint items to pass to the helper.
 
-    **config
+    config
         Additional keyword arguments to pass to the helper.
 
     """
@@ -84,10 +84,10 @@ def align(anchor, *items, **config):
     anchor : str
         The name of the target anchor on the constrainable object.
 
-    *items
+    items
         The constraint items to pass to the helper.
 
-    **config
+    config
         Additional keyword arguments to pass to the helper.
 
     """
@@ -104,10 +104,10 @@ def factory(func, *args, **kwargs):
         The callable which will generate the list of constraints.
         The owner widget will be passed as the first argument.
 
-    *args
+    args
         Additional positional arguments to pass to the factory.
 
-    **kwargs
+    kwargs
         Additional keyword arguments to pass to the factory.
 
     """
@@ -119,10 +119,10 @@ def grid(*rows, **config):
 
     Parameters
     ----------
-    *rows
+    rows
 
 
-    **config
+    config
         Additional keyword arguments to pass to the helper.
 
     """
