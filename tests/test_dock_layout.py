@@ -77,7 +77,7 @@ def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
 
     """
     # Since timers are used the sleep must be greater than the default
-    enaml_sleep = 300
+    enaml_sleep = max(300, enaml_sleep)
     from enaml.qt.QtCore import Qt, QPoint
     from enaml.qt.QtWidgets import QWidget
     from enaml.layout.api import FloatItem, InsertTab
@@ -169,17 +169,7 @@ def test_dock_area_interactions(enaml_qtbot, enaml_sleep):
         dock.update_layout(op)
         enaml_qtbot.wait(enaml_sleep)
         
-        # Drag it around
-        # TODO: this doesn't currently drag the window. It seems like QTest
-        # doesn't propagate events like "normal" mouse input does.
-        pos = title.mapTo(tb, title.pos())
-        enaml_qtbot.mousePress(tb, Qt.LeftButton, pos=pos)
-        for i in range(0, dock_area.size().width(), 100):
-            for j in range(0, dock_area.size().height(), 100):
-               pos = QPoint(i, j)
-               enaml_qtbot.mouseMove(ref, pos)
-               enaml_qtbot.wait(int(enaml_sleep/10))
-        enaml_qtbot.wait(enaml_sleep)
+        # TODO: Drag it around
         
         # Add items
         enaml_qtbot.mouseClick(btn_add.proxy.widget, Qt.LeftButton)
