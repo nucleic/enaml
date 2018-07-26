@@ -9,13 +9,14 @@
 
 This example shows how to use a WebView. 
 
+Note: QtWebEngineWidgets must be imported before the QtApplication is started 
+on Qt 5.10+ or an ImportError will be thrown.
+
 << autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, WebView
 
-
-# Note: QtWebEngineWidgets must be imported before the QtApplication is started
-# or it will throw an import error
+# Only needed for Qt 5.10+
 from enaml.qt import QtWebEngineWidgets
 
 
