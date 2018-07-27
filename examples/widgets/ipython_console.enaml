@@ -7,6 +7,8 @@
 #------------------------------------------------------------------------------
 """ An example of the `IPythonConsole` widget.
 
+Requires qtconsole to be installed.
+
 << autodoc-me >>
 """
 from enaml.widgets.api import Window, Container, IPythonConsole
