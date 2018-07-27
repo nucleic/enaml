@@ -56,6 +56,14 @@ except ImportError:
 else:
     VTK_AVAILABLE = True
 
+
+try:
+    from enaml.qt import QtWebEngineWidgets
+    WEBVIEW_AVAILABLE = True
+except ImportError:
+    WEBVIEW_AVAILABLE = False
+
+
 if is_qt_available():
     try:
         import enaml.qt.qt_ipython_console
@@ -192,6 +200,10 @@ def handle_window_closing(qtbot, window):
                                        marks=pytest.mark.skipif(
                                            not VTK_AVAILABLE,
                                            reason='Requires vtk')),
+                          pytest.param('widgets/web_view.enaml', None,
+                                       marks=pytest.mark.skipif(
+                                           not WEBVIEW_AVAILABLE,
+                                           reason='Requires webview')),
                           ('widgets/window_children.enaml', None),
                           ('widgets/window_closing.enaml',
                            handle_window_closing),
