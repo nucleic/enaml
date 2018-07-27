@@ -5,11 +5,13 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-""" Example demonstrating a datetime_selector, date_selector, time_selector
-    and calendar.
+""" Example demonstrating a number of date-related widgets.
 
-    Asks the user some date-related questions, and gives a glib assessment of
-    their personality.
+Widgets include: `datetime_selector`, `date_selector`, `time_selector` and
+`calendar`.
+
+Asks the user some date-related questions, and gives a glib assessment of
+their personality.
 
 << autodoc-me >>
 """
