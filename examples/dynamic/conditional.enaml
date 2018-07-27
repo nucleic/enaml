@@ -19,7 +19,6 @@ from enaml.widgets.api import (
     Window, Container, Field, PushButton, CheckBox, Separator, ScrollArea
 )
 
-
 class Foo(object): pass
 class Bar(object): pass
 class Baz(object): pass
@@ -27,23 +26,23 @@ class Baz(object): pass
 
 enamldef FooView(Container):
     attr model: Foo
-    PushButton: text = str(model)
-    PushButton: text = str(model)
-    PushButton: text = str(model)
+    PushButton: text = model.__class__.__name__
+    PushButton: text = model.__class__.__name__
+    PushButton: text = model.__class__.__name__
 
 
 enamldef BarView(Container):
     attr model: Bar
-    Field: text = str(model)
-    Field: text = str(model)
-    Field: text = str(model)
+    Field: text = model.__class__.__name__
+    Field: text = model.__class__.__name__
+    Field: text = model.__class__.__name__
 
 
 enamldef BazView(Container):
     attr model: Baz
-    CheckBox: text = str(model)
-    CheckBox: text = str(model)
-    CheckBox: text = str(model)
+    CheckBox: text = model.__class__.__name__
+    CheckBox: text = model.__class__.__name__
+    CheckBox: text = model.__class__.__name__
 
 
 CLASSES = [Foo, Bar, Baz]
