@@ -9,7 +9,7 @@
 
 Demonstrate how to use the MdiArea which provides an area in which multiple
 subwindows can be displayed (MdiWindow instances). Sub windows can be
- automatically tiled or cascaded.
+automatically tiled or cascaded.
 
 << autodoc-me >>
 """
