@@ -315,9 +315,26 @@ List of Field Types
 
 The following table describes the syntax and meaning of the style field types.
 
-.. raw:: html
-    :file: html/field_type_table.html
+**Their meanings generally correspond to CSS, so w3schools's [CSS reference](https://www.w3schools.com/cssref/default.asp) comes in handy.**
 
+| Style Type | Data Type | Literals / Choices | Example |
+| ---- | -------- | ------------------ | ------- |
+| Alignment | `str` | `top` / `bottom` / `left` / `right` / `center` |  |
+| Background | [Brush](#brush) /[Alignment](#alignment) |  |  |
+| Border | [Border Style](#border-style) / [Length](#length) / [Brush](#brush) |  |  |
+| Border Style | `str` | `dashed` / `dot-dash` / `dot-dot-dash` / `dotted` / `double` / `groove` / `inset` / `outset` / `ridge` / `solid` / `none` |  |
+| Box Colors | [Brush](#brush) | 1 - 4 space separated values |  |
+| Box Lengths | [Length](#length) | 1 - 4 space separated values <br> `dfef|  |
+| Brush | [Color](#color) / [Gradient](#gradient) |  |  |
+| Color | `str` | `rgb(r, g, b)` / `rgba(r, g, b, a)` / `hsv(h, s, v)` / `hsva(h, s, v, a)` / `#rrggbb` / `CSS Color Name` |  |
+| Font | [Font Style](#font-style) / [Font Weight](#font-weight) / [Font Size](#font-size) | 0 - 2 space separated values | ` |
+| Font Size | [Length](#length) |  |  |
+| Font Style | `str` | `normal` / `italic` / `oblique` |  |
+| Font Weight | `str` | `normal` / `bold` / `100` / `200` ... `900` |  |
+| Gradient | `str` | `lineargradient` / `radialgradient` |  |
+| Length | `str` | `<int/float> px`/ `<int/float> pt` / `<int/float> em` / `<int/float> ex` | `15 px` |
+| Origin | `str` | `margin` / `border` / `padding` / `content` | `border` |
+| Radius | [Length](#length) | 1-2 space separated values | `10px 5px` / `10px` |
 
 .. _list_of_pseudo_classes:
 
