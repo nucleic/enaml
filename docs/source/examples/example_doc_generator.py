@@ -170,11 +170,7 @@ Screenshot
 Example Enaml Code
 -------------------------------------------------------------------------------
 .. literalinclude:: ../../../{2}
-    :language: python
-
-..
-   The language, above, should ideally be enaml, not python, but no such 
-   Pygments lexer has been defined yet.
+    :language: enaml
 """.format(script_title, script_name, relative_script_path,
            docstring,
            screenshot_rst)
