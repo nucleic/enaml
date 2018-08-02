@@ -581,7 +581,30 @@ class BaseEnamlLexer(object):
         token_stream = self.annotate_indentation_state(token_stream)
         token_stream = self.synthesize_indentation_tokens(token_stream)
         token_stream = self.add_endmarker(token_stream)
+        token_stream = self.annotate_enamldef_state(token_stream)
         return token_stream
+
+    def annotate_enamldef_state(self, token_stream):
+        """ Transform DEF tokens to NAME within enamldef blocks.
+
+        """
+        in_enamldef = False
+        depth = 0
+        for tok in token_stream:
+            if tok.type == 'ENAMLDEF':
+                in_enamldef = True
+            elif tok.type == 'INDENT':
+                depth += 1
+            elif in_enamldef and tok.type == 'DEF':
+                # Since functions are not allowed on the RHS we can
+                # transform the token type to a NAME so it's picked up by the
+                # parser as a decl_funcdef instead of funcdef
+                tok.type = 'NAME'
+            elif tok.type == 'DEDENT':
+                depth -= 1
+                if depth == 0:
+                    in_enamldef = False
+            yield tok
 
     def ensure_token_lexer(self, token_stream):
         # PLY only assigns the lexer to tokens which are passed

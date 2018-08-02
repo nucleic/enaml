@@ -779,7 +779,7 @@ class BaseEnamlParser(object):
     def p_decl_funcdef1(self, p):
         ''' decl_funcdef : NAME NAME parameters COLON suite '''
         lineno = p.lineno(1)
-        if p[1] != 'func':
+        if p[1] not in ('func', 'def'):
             syntax_error('invalid syntax', FakeToken(p.lexer.lexer, lineno))
         funcdef = ast.FunctionDef()
         funcdef.name = p[2]
