@@ -9,11 +9,7 @@ from atom.api import Typed
 
 from enaml.widgets.vtk_canvas import ProxyVTKCanvas
 
-from . import QT_API, PYQT5_API, PYSIDE2_API
-if QT_API in PYQT5_API or QT_API in PYSIDE2_API:
-    from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-else:
-    from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .QtWidgets import QFrame, QVBoxLayout
 
