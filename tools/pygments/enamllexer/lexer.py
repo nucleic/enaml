@@ -1,12 +1,12 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from pygments.lexer import RegexLexer, bygroups
-from pygments.lexers.agile import PythonLexer
+from pygments.lexer import ExtendedRegexLexer, bygroups
+from pygments.lexers.agile import Python3Lexer
 
 from pygments.token import Text, Keyword, Name, Punctuation, Operator
 
@@ -54,10 +54,32 @@ TEMPLATE_END = (
 )
 
 
+def template_inst_start_callback(lexer, match, ctx):
+    """Look ahead to disambiguate a function call for a template instantiation.
+
+    """
+    start, stop = match.start(), match.end()
+    # If line ends with a colon this is a template instantiation
+    line = ctx.text[start:].split('\n', 1)[0]
+    if line.rstrip().endswith(':'):
+
+        yield start, Text, match.group(1)
+        yield match.start(2), Name.Tag, match.group(2)
+        yield match.start(3), Text, match.group(3)
+        yield match.start(4), Punctuation, match.group(4)
+        ctx.stack.append('templateinst_end')
+
+    # Use a standard Python lexer to lex the function call that may be a builtin
+    else:
+        it = Python3Lexer().get_tokens_unprocessed(match.string[start:stop])
+        for token in it:
+            yield token
+    ctx.pos = stop
+
+
 TEMPLATEINST_START = (
     r'^([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(\()',
-    bygroups(Text, Name.Tag, Text, Punctuation),
-    'templateinst_end',
+    template_inst_start_callback
 )
 
 
@@ -103,10 +125,27 @@ TEMPLATEINST_ID_END = (
 )
 
 
+def child_def_start_callback(lexer, match, ctx):
+    """Look ahead to disambiguate an id and one line declaration.
+
+    """
+    start, stop = match.start(), match.end()
+    yield start, Text, match.group(1)
+    yield match.start(2), Name.Tag, match.group(2)
+    yield match.start(3), Text, match.group(3)
+    yield match.start(4), Punctuation, match.group(4)
+
+    # If the line ends with a colon there is an id
+    line = ctx.text[start:].split('\n', 1)[0]
+    if line.rstrip().endswith(':'):
+        ctx.stack.append('childdef_end')
+
+    ctx.pos = stop
+
+
 CHILDDEF_START = (
     r'^([ \t]+)([a-zA-Z_][a-zA-Z0-9_]*)([ \t]*)(:)(?=[ \t]*[a-zA-Z_\n])',
-    bygroups(Text, Name.Tag, Text, Punctuation),
-    'childdef_end',
+    child_def_start_callback
 )
 
 
@@ -122,7 +161,7 @@ CHILDDEF_END_ID = (
 )
 
 
-ENAML_TOKENS = PythonLexer.tokens.copy()
+ENAML_TOKENS = Python3Lexer.tokens.copy()
 ENAML_TOKENS['root'] = [
     ENAMLDEF_START,
     TEMPLATE_START,
@@ -170,7 +209,7 @@ ENAML_TOKENS['childdef_end'] = [
 ]
 
 
-class EnamlLexer(RegexLexer):
+class EnamlLexer(ExtendedRegexLexer):
     """ For `Enaml <http://www.github.com/nucleic/enaml>`_ source code.
 
     """
