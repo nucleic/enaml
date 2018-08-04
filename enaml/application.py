@@ -462,7 +462,7 @@ def deferred_call(callback, *args, **kwargs):
     callback : callable
         The callable object to execute at some point in the future.
 
-    *args, **kwargs
+    args, kwargs
         Any additional positional and keyword arguments to pass to
         the callback.
 
@@ -490,7 +490,7 @@ def timed_call(ms, callback, *args, **kwargs):
     callback : callable
         The callable object to execute at some point in the future.
 
-    *args, **kwargs
+    args, kwargs
         Any additional positional and keyword arguments to pass to
         the callback.
 

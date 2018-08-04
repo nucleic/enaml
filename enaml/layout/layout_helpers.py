@@ -120,7 +120,7 @@ def grid(*rows, **config):
     Parameters
     ----------
     rows
-
+        Rows of identifier to use to build a grid.
 
     config
         Additional keyword arguments to pass to the helper.
