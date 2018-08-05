@@ -1,0 +1,121 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2018, Nucleic Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#------------------------------------------------------------------------------
+""" Example demonstrating a number of date-related widgets.
+
+Widgets include: `datetime_selector`, `date_selector`, `time_selector` and
+`calendar`.
+
+Asks the user some date-related questions, and gives a glib assessment of
+their personality.
+
+<< autodoc-me >>
+"""
+
+# Rename to avoid name clash with attributes
+from datetime import (
+    time as python_time,
+    datetime as python_datetime,
+    date as python_date,
+    timedelta)
+
+from enaml.layout.api import vbox
+from enaml.widgets.api import (
+    Window, Container, GroupBox, Form, DateSelector, TimeSelector,
+    DatetimeSelector, Label, Field, PushButton, Calendar)
+
+# Some functions to help assess the user.
+
+def is_morning_person(time):
+    return time.hour < 8
+
+def is_leo(date):
+    return (
+        (date.month == 7 and date.day >= 23)
+        or (date.month == 8 and date.day <= 22)
+        )
+
+def is_recent_peak(datetime):
+    return (python_datetime.now() - datetime) < timedelta(days=28)
+
+def is_recent_backup(date):
+    return (python_date.today() - date) < timedelta(days=3)
+
+enamldef Main(Window): window:
+    title = 'Personality Survey'
+
+    attr wake_up_time: python_time
+    attr birthday: python_date
+    attr best_moment: python_datetime
+    attr last_backup: python_date
+
+    Container:
+        constraints = [
+            vbox(questions, results)
+        ]
+        GroupBox: questions:
+            title = "Questions"
+            constraints = [
+                vbox(form, cal)
+            ]
+
+            Form: form:
+                Label:
+                    text = "When do you like to wake up?"
+                TimeSelector:
+                    time >> wake_up_time
+                Label:
+                    text = "When's your birthday?"
+                DateSelector:
+                    date >> birthday
+                    minimum = python_date.today() - timedelta(days=125*365)
+                    maximum = python_date.today() - timedelta(days=5*365)
+                Label:
+                    text = "When was the best moment of your life?"
+                DatetimeSelector:
+                    datetime >> best_moment
+                    maximum = python_datetime.now()
+                Label:
+                    text = "When did you last backup your data?"
+            Calendar: cal:
+                date >> last_backup
+                maximum = python_date.today()
+
+        GroupBox: results:
+            title = "Survey Results"
+            Label:
+                text << (
+                    "" if wake_up_time is None
+                    else "You are a " + (
+                        "morning person"
+                        if is_morning_person(wake_up_time)
+                        else "night owl"))
+            Label:
+                text << (
+                    "" if birthday is None
+                    else (
+                        "You are a Leo!"
+                        if is_leo(birthday)
+                        else "You don't believe in astrology."))
+            Label:
+                text << (
+                    "" if best_moment is None
+                    else (
+                        "Congratulations! You are at your peak."
+                        if is_recent_peak(best_moment)
+                        else "You are past your peak."
+                    )
+                )
+            Label:
+                text << (
+                    "" if last_backup is None
+                    else (
+                        "You are a stickler."
+                        if is_recent_backup(last_backup)
+                        else "You are careless."
+                    )
+                )

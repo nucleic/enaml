@@ -7,7 +7,6 @@ enaml.scintilla
 .. toctree::
     :hidden:
 
-    idle_theme <idle_theme>
     scintilla <scintilla>
 
 
@@ -16,5 +15,4 @@ enaml.scintilla
 .. autosummary::
     :nosignatures:
 
-    idle_theme
     scintilla

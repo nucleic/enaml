@@ -19,6 +19,8 @@ Note that this example also demonstrates that constraints may be defined
 on any subclass of `ConstraintsWidget`. They need not be confined to a
 `Container`.
 
+Requires numpy to be installed.
+
 << autodoc-me >>
 """
 from __future__ import print_function

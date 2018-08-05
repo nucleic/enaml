@@ -19,9 +19,11 @@ Widgets Examples
 -------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     ex_buttons
     ex_context_menu
+    ex_dates
     ex_dock_area
     ex_dock_pane
     ex_drag_and_drop
@@ -38,6 +40,7 @@ Widgets Examples
     ex_ipython_console
     ex_main_window
     ex_menu_bar
+    ex_mdi_area
     ex_mpl_canvas
     ex_notebook
     ex_popup_menu
@@ -62,6 +65,7 @@ Basic
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. toctree::
+    :maxdepth: 1
 
     ex_align
     ex_align_offset
@@ -78,6 +82,7 @@ Advanced
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. toctree::
+    :maxdepth: 1
 
     ex_button_ring
     ex_factory_func
@@ -94,6 +99,7 @@ Stdlib Examples
 -------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     ex_mapped_view
     ex_message_box
@@ -104,6 +110,7 @@ Dynamic Examples
 -------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     ex_conditional
     ex_fields
@@ -115,6 +122,7 @@ Aliases Examples
 -------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     ex_chained_attribute_alias
     ex_chained_widget_alias
@@ -126,6 +134,7 @@ Functions Examples
 -------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     ex_declare_function
     ex_observe_model_signal
@@ -136,6 +145,7 @@ Styling Examples
 -------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     ex_banner
     ex_dock_item_alerts
@@ -146,6 +156,7 @@ Templates Examples
 -------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     ex_advanced
     ex_basic
@@ -155,6 +166,7 @@ Applib Examples
 -------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     ex_live_editor
 
@@ -163,5 +175,6 @@ Workbench Examples
 --------------------------------------------------------------------------------
 
 .. toctree::
+    :maxdepth: 1
 
     wb_sample

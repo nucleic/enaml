@@ -65,7 +65,7 @@ class QtApplication(Application):
         callback : callable
             The callable object to execute at some point in the future.
 
-        *args, **kwargs
+        args, kwargs
             Any additional positional and keyword arguments to pass to
             the callback.
 
@@ -85,7 +85,7 @@ class QtApplication(Application):
         callback : callable
             The callable object to execute at some point in the future.
 
-        *args, **kwargs
+        args, kwargs
             Any additional positional and keyword arguments to pass to
             the callback.
 

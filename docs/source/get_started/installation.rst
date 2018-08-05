@@ -144,7 +144,7 @@ Ply can be installed with the ``pip install`` command of `Pip`_::
     $ pip install ply
 
 `QtPy`_
-~~~~~~
+~~~~~~~
 
 The Enaml framework uses the `QtPy`_ library as a compatibility shim between
 the various toolkit rendering libraries.

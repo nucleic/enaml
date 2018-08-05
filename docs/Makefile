@@ -37,7 +37,8 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 examples:
-   python source/examples/example_doc_generator.py
+	python source/examples/example_doc_generator.py
+	@echo
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

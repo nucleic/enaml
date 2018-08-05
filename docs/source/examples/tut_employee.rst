@@ -1,6 +1,8 @@
 .. _tut_employee:
 
 
+.. highlight:: enaml
+
 Employee tutorial
 ==============================================================================
 
@@ -13,7 +15,7 @@ Here is the Enaml file (:download:`download here
 <../../../examples/tutorial/employee/employee_view.enaml>`):
 
 .. literalinclude:: ../../../examples/tutorial/employee/employee_view.enaml
-    :language: python
+    :language: enaml
 
 
 Here is the Python code (:download:`download here
@@ -240,6 +242,6 @@ following set of changes:
             text = "Allow Editing:"
         CheckBox: en_cb:
             checked = True
-            
+
 .. image:: images/tut_employee_layout_nested_container.png
 

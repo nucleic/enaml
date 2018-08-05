@@ -57,8 +57,8 @@ class Field(Control):
     #: The unicode text to display in the field.
     text = d_(Unicode())
 
-    #: The mask to use for text input:
-    #:  http://qt-project.org/doc/qt-4.8/qlineedit.html#inputMask-prop
+    #: The mask to use for text input
+    #: http://qt-project.org/doc/qt-4.8/qlineedit.html#inputMask-prop
     #:
     #: The summary of the mask grammar is as follows:
     #: A   ASCII alphabetic character required. A-Z, a-z.

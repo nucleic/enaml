@@ -15,7 +15,7 @@ Here is our minimalist .enaml file describing a message-displaying GUI
 (:download:`download here <../../../examples/tutorial/hello_world/hello_world_view.enaml>`):
 
 .. literalinclude:: ../../../examples/tutorial/hello_world/hello_world_view.enaml
-    :language: python
+    :language: enaml
 
 Use the ``enaml-run`` utility to run it from the command line with ::
 
@@ -26,6 +26,8 @@ The resulting GUI looks like this (on Windows 7):
 .. image:: images/tut_hello_world.png
 
 Let's take a closer look at the Enaml file.
+
+.. highlight:: enaml
 
 Enaml Definitions
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -94,21 +96,21 @@ the Enaml view::
 Enaml is an inherently asynchronous toolkit, with a server running an
 application which offers UI sessions that a client may view.  For this simple
 example, we'll be working with the client and server both running locally and
-in the same process. 
+in the same process.
 
-Next we need to create a toolkit specific application.  This is typically the only 
+Next we need to create a toolkit specific application.  This is typically the only
 toolkit-specific code in an Enaml application::
 
     from enaml.qt.qt_application import QtApplication
-    
+
     app = QtApplication()
 
 Then we create a view object, and call its show method::
 
     view = Main(message="Hello World, from Python!")
     view.show()
-    
-Finally, we start the event loop:: 
+
+Finally, we start the event loop::
 
     # Start the application event loop
     app.start()
