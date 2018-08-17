@@ -19,26 +19,26 @@ for the framework.
 What is Enaml?
 --------------
 
-*Fundamentally*
+*Fundamentally:*
 
-    Enaml is a declarative extension to the Python language grammar which
-    enables a developer to concisely define a hierarchical tree of objects
-    which automatically react to changes in a data model.
+Enaml is a declarative extension to the Python language grammar which
+enables a developer to concisely define a hierarchical tree of objects
+which automatically react to changes in a data model.
 
-*Practically*
+*Practically:*
 
-    Enaml is one of the easiest and most powerful ways to build professional
-    quality user interfaces with Python.
+Enaml is one of the easiest and most powerful ways to build
+professional-quality user interfaces with Python.
 
 
 Traditional UIs
 ---------------
 
 Traditional user interface frameworks are typically implemented in a low level
-language like C or C++. This is because the frameworks utilize the libraries
+language like C or C++. The frameworks utilize the libraries
 and services provided by the underlying operating system in order to draw
 pixels on the screen. These low-level drawing operations are abstracted from
-the developer with high level easy-to-use APIs. Some UI frameworks can be used
+the developer with high-level easy-to-use APIs. Some UI frameworks can be used
 from Python with the help of wrappers which expose the high level toolkit APIs
 to the Python runtime. The most common of these frameworks and their Python
 wrappers include:
@@ -58,12 +58,8 @@ wrappers include:
 .. _Tk: http://www.tcl.tk
 .. _TkInter: https://wiki.python.org/moin/TkInter
 
-All of these frameworks share a common theme which is:
-
-.. highlights::
-
-    A user interface is constructed as a tree of graphical objects with
-    some associated state.
+All of these frameworks share a common theme: *A user interface is constructed
+as a tree of graphical objects with some associated state.*
 
 Consider a hypothetical abstract object hierarchy, and what it might look like
 if converted into a typical UI window:
@@ -77,7 +73,7 @@ if converted into a typical UI window:
         :align: center
 
 In order to create such a window, most frameworks require the developer to
-write imperative code to setup up the window's object hierachy. This leads to
+write imperative code to set up the window's object hierarchy. This leads to
 code which looks similar to the following Python snippet:
 
 .. code-block:: python
@@ -112,10 +108,8 @@ The problem with code like this is that its structure does not map well to
 the objects which it is producing. The code is tedious to read, write, and
 understand; which makes it error-prone and difficult to maintain.
 
-.. highlights::
-
-    Imperative programming constructs are simply not well suited for defining
-    nested object hierarchies.
+**Imperative programming constructs are simply not well suited for defining
+nested object hierarchies.**
 
 Programming against these frameworks is a fairly low level task and procedural
 task. A developer is responsible for:
@@ -140,8 +134,8 @@ Relatively recently, there has been a shift in the UI development paradigm
 which places an emphasis on the declarative specification of the object
 hierarchy. The developer provides a declarative representation of the UI and
 defines how the visual elements of the UI should bind to data in data models;
-the framework then takes responsibity for updating the UI when the data in the
-data models change, and vice versa.
+the framework then takes responsibility for updating the UI when the data in
+the data models change, and vice versa.
 
 This paradigm solves the primary problems with the imperative model:
 

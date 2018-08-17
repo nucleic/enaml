@@ -14,6 +14,7 @@ the framework see the :ref:`arch_ref`.
     :hidden:
 
     stylesheets
+    languagebasedtools
     workbenches
 
 .. This simply prevents the :doc: to create entries in the sidebar
@@ -25,6 +26,12 @@ the framework see the :ref:`arch_ref`.
     customize the visual appearance of a view independent from the
     view's structural definition. Inspired by CSS, but with all the
     dynamism provided by the Enaml language.
+
+    .. rubric:: :doc:`languagebasedtools`
+
+    Enaml introduces a new syntax. Language-based tools can be
+    configured to recognise this syntax. Several such configurations and
+    plug-ins are provided.
 
     .. rubric:: :doc:`workbenches`
 
