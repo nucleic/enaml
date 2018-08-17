@@ -78,8 +78,17 @@ Visual Studio can also use the TextMate language definition at
 For installation instructions, see the
 `Visual Studio manual`_.
 
+Alternatively, there is a third-party Visual Studio extension, `enaml-vs`_ available
+free from the Visual Studio Marketplace, which offers simpler installation of the 
+same definitions.
+
 .. _Visual Studio: https://visualstudio.microsoft.com/
 .. _Visual Studio manual: https://code.visualstudio.com/docs/extensions/themes-snippets-colorizers
+.. _enaml-vs: https://marketplace.visualstudio.com/items?itemName=mdartiailh.enaml-vs
+
+.. warning::
+    Third-party plugins are not supported by the Enaml team.
+
 
 `PyCharm`_
 ----------------
@@ -100,7 +109,7 @@ support for Enaml:
 * `pycharm-enaml-keywords`_
 
 .. warning::
-    These third-party plugins are not supported by the Enaml team.
+    Third-party plugins are not supported by the Enaml team.
 
 .. _PyCharm: https://www.jetbrains.com/pycharm/
 .. _TextMate Bundles support plugin: https://www.jetbrains.com/help/pycharm/2018.1/tutorial-using-textmate-bundles.html
