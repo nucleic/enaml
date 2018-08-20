@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from atom.api import Int, Typed
+from atom.api import Int, Typed, atomref
 
 from enaml.styling import StyleCache
 from enaml.widgets.close_event import CloseEvent
@@ -29,15 +29,32 @@ class QCustomDockItem(QDockItem):
     #: before the close event handler returns.
     closed = Signal()
 
+    def __init__(self, proxy, parent=None):
+        """ Initialize a QCustomDockItem.
+
+        Parameters
+        ----------
+        proxy : QtDockItem
+            The proxy object which owns this dock item. Only an atomref
+            will be maintained to this object.
+
+        parent : QWidget, optional
+            The parent of the window.
+        """
+        super(QCustomDockItem, self).__init__(parent)
+        self._proxy_ref = atomref(proxy)
+
     def closeEvent(self, event):
         """ Handle the close event for the dock item.
         """
-        d_event = CloseEvent()
-        d = self._proxy_ref.declaration
-        d.closing(d_event)
-        if not d_event.is_accepted():
-            event.ignore()
-            return
+        if self._proxy_ref:
+            proxy = self._proxy_ref()
+            d = proxy.declaration
+            d_event = CloseEvent()
+            d.closing(d_event)
+            if not d_event.is_accepted():
+                event.ignore()
+                return
 
         super(QCustomDockItem, self).closeEvent(event)
         if event.isAccepted():
@@ -65,8 +82,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
         """ Create the underlying QDockItem widget.
 
         """
-        self.widget = QCustomDockItem(self.parent_widget())
-        self.widget._proxy_ref = self
+        self.widget = QCustomDockItem(self, self.parent_widget())
 
     def init_widget(self):
         """ Initialize the state of the underlying widget.
