@@ -10,7 +10,7 @@ import sys
 from atom.api import Typed, atomref
 
 from enaml.widgets.main_window import ProxyMainWindow
-from enaml.widgets.window import CloseEvent
+from enaml.widgets.close_event import CloseEvent
 
 from .QtCore import Qt
 from .QtWidgets import QMainWindow

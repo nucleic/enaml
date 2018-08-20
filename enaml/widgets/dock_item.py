@@ -14,6 +14,7 @@ from enaml.core.declarative import d_
 from enaml.icon import Icon
 from enaml.layout.geometry import Size
 
+from .close_event import CloseEvent
 from .container import Container
 from .widget import Widget, ProxyWidget
 
@@ -80,6 +81,13 @@ class DockItem(Widget):
 
     #: An event emitted when the title bar is right clicked.
     title_bar_right_clicked = d_(Event(), writable=False)
+
+    #: An event fired when the user request the dock item to be closed.
+    #: This will happen when the user clicks on the "X" button in the
+    #: title bar button, or when the 'close' method is called. The
+    #: payload will be a CloseEvent object which will allow code to
+    #: veto the close event and prevent the item from closing.
+    closing = d_(Event(CloseEvent), writable=False)
 
     #: An event emitted when the dock item is closed. The item will be
     #: destroyed after this event has completed.

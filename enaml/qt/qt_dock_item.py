@@ -8,6 +8,7 @@
 from atom.api import Int, Typed
 
 from enaml.styling import StyleCache
+from enaml.widgets.close_event import CloseEvent
 from enaml.widgets.dock_item import ProxyDockItem
 
 from .QtCore import Qt, QSize, Signal
@@ -30,8 +31,14 @@ class QCustomDockItem(QDockItem):
 
     def closeEvent(self, event):
         """ Handle the close event for the dock item.
-
         """
+        d_event = CloseEvent()
+        d = self._proxy_ref.declaration
+        d.closing(d_event)
+        if not d_event.is_accepted():
+            event.ignore()
+            return
+
         super(QCustomDockItem, self).closeEvent(event)
         if event.isAccepted():
             self.closed.emit()
@@ -59,6 +66,7 @@ class QtDockItem(QtWidget, ProxyDockItem):
 
         """
         self.widget = QCustomDockItem(self.parent_widget())
+        self.widget._proxy_ref = self
 
     def init_widget(self):
         """ Initialize the state of the underlying widget.

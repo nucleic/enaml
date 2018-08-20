@@ -10,7 +10,8 @@ import sys
 from atom.api import Typed, atomref
 
 from enaml.layout.geometry import Pos, Rect, Size
-from enaml.widgets.window import ProxyWindow, CloseEvent
+from enaml.widgets.window import ProxyWindow
+from enaml.widgets.close_event import CloseEvent
 
 from .QtCore import Qt, QPoint, QRect, QSize
 from .QtGui import QIcon

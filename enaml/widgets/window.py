@@ -15,6 +15,7 @@ from enaml.icon import Icon
 from enaml.layout.geometry import Pos, Rect, Size
 
 from .container import Container
+from .close_event import CloseEvent
 from .widget import Widget, ProxyWidget
 
 
@@ -87,40 +88,6 @@ class ProxyWindow(ProxyWidget):
 
     def close(self):
         raise NotImplementedError
-
-
-class CloseEvent(Atom):
-    """ An payload object carried by a window 'closing' event.
-
-    User code can manipulate this object to veto a close event.
-
-    """
-    #: The internal accepted state.
-    _accepted = Bool(True)
-
-    def is_accepted(self):
-        """ Get whether or not the event is accepted.
-
-        Returns
-        -------
-        result : bool
-            True if the event is accepted, False otherwise. The
-            default is True.
-
-        """
-        return self._accepted
-
-    def accept(self):
-        """ Accept the close event and allow the window to be closed.
-
-        """
-        self._accepted = True
-
-    def ignore(self):
-        """ Reject the close event and prevent the window from closing.
-
-        """
-        self._accepted = False
 
 
 class Window(Widget):

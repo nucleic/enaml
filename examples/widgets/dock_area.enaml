@@ -21,6 +21,7 @@ from enaml.layout.api import (
     HSplitLayout, VSplitLayout, TabLayout, InsertItem, hbox, vbox, spacer
 )
 from enaml.stdlib.dock_area_styles import available_styles
+from enaml.stdlib.message_box import question
 from enaml.widgets.api import (
     Window, Container, DockArea, DockItem, PushButton, Field, Html, Slider,
     ObjectCombo, CheckBox, MultilineField
@@ -29,6 +30,16 @@ from enaml.widgets.api import (
 
 def cap_case(name):
     return ' '.join(s.capitalize() for s in name.split('-'))
+
+
+def confirm_close(window, event):
+    button = question(
+        window, 'Dock item closing', 'Are you sure you want to close this dock item?'
+    )
+    if button and button.action == 'accept':
+        event.accept()
+    else:
+        event.ignore()
 
 
 class LineCollector(Atom):
@@ -87,6 +98,8 @@ enamldef MyDockArea(DockArea):
             Field: pass
             Field: pass
             Field: pass
+        closing ::
+            confirm_close(self, change['value'])
     DockItem:
         name = 'item_2'
         title = 'Item 2'
