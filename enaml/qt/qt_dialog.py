@@ -7,8 +7,8 @@
 #------------------------------------------------------------------------------
 from atom.api import Typed, atomref
 
-from enaml.widgets.dialog import ProxyDialog
 from enaml.widgets.close_event import CloseEvent
+from enaml.widgets.dialog import ProxyDialog
 
 from .QtCore import Qt
 from .QtWidgets import QDialog
