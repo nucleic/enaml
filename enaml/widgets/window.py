@@ -14,8 +14,8 @@ from enaml.core.declarative import d_
 from enaml.icon import Icon
 from enaml.layout.geometry import Pos, Rect, Size
 
-from .container import Container
 from .close_event import CloseEvent
+from .container import Container
 from .widget import Widget, ProxyWidget
 
 
