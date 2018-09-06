@@ -7,11 +7,12 @@ branches:
 
 matrix:
   include:
-    - env: PYTHON=2.7 QT_VERSION=4 IPY_VERSION=3
-    - env: PYTHON=3.4 QT_VERSION=4 IPY_VERSION=3
-    - env: PYTHON=3.5 QT_VERSION=5 IPY_VERSION=5 QSCINTILLA=0
-    - env: PYTHON=3.6 QT_VERSION=5 IPY_VERSION=6 QSCINTILLA=1
-    - env: PYTHON=3.7 QT_VERSION=5 IPY_VERSION=6 QSCINTILLA=1
+    - env: PYTHON=2.7 QT_VERSION=4 IPY_VERSION=3 SPHINX=0
+    - env: PYTHON=3.4 QT_VERSION=4 IPY_VERSION=3 SPHINX=0
+    - env: PYTHON=3.5 QT_VERSION=5 IPY_VERSION=5 QSCINTILLA=0 SPHINX=0
+    - env: PYTHON=3.6 QT_VERSION=5 IPY_VERSION=6 QSCINTILLA=1 SPHINX=0
+    - env: PYTHON=3.7 QT_VERSION=5 IPY_VERSION=6 QSCINTILLA=1 SPHINX=0
+    - env: PYTHON=3.6 QT_VERSION=5 SPHINX=1
 
 before_install:
 
@@ -57,7 +58,15 @@ before_install:
 
   # Intall test tools (we require pytest > 3.3 to get the builtin logging
   # features)
-  - $PIP_INSTALL pytest pytest-cov pytest-qt
+  - 'if [ $SPHINX -eq 0 ]; then
+         $PIP_INSTALL pytest pytest-cov pytest-qt
+     fi'
+  - 'if [ $SPHINX -eq 1 ]; then
+         $PIP_INSTALL sphinx;
+         cd $TRAVIS_BUILD_DIR;
+         cd tools/pygments;
+         python setup.py install
+     fi'
 
   # Install codecov report tools
   - $PIP_INSTALL codecov
@@ -77,8 +86,17 @@ before_script:
 script:
   # Run the enaml test suite
   - cd $TRAVIS_BUILD_DIR
-  - py.test tests --cov enaml --cov-report xml -v
+  - 'if [ $SPHINX -eq 0 ]; then
+         pytest tests --cov enaml --cov-report xml -v
+     fi'
+  - 'if [ $SPHINX -eq 1 ]; then
+         cd docs
+         sphinx-build -nW -b html
+     fi'
+  -
 
 after_success:
   - cd $TRAVIS_BUILD_DIR
-  - codecov
+  - 'if [ $SPHINX -eq 0 ]; then
+         codecov;
+    fi'
