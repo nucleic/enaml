@@ -59,7 +59,7 @@ before_install:
   # Intall test tools (we require pytest > 3.3 to get the builtin logging
   # features)
   - 'if [ $SPHINX -eq 0 ]; then
-         $PIP_INSTALL pytest pytest-cov pytest-qt
+         $PIP_INSTALL pytest pytest-cov pytest-qt;
      fi'
   - 'if [ $SPHINX -eq 1 ]; then
          $PIP_INSTALL sphinx;

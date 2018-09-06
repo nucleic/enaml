@@ -22,9 +22,9 @@ environment:
         #    Test the oldest and the latest 32-bit Python versions release.
         #    Test with PyQt4 where available, otherwise PyQt5 in each version.
         #    Test QScintilla on latest Python version available.
-        #    Test Pyside1 in latest Python version it runs on.
+        #    Test PySide1 in latest Python version it runs on.
         #        - Failure is allowed and won't block PRs.
-        #    Test Pyside2 in latest Python version available
+        #    Test PySide2 in latest Python version available
         #        - Failure is allowed and won't block PRs.
         #    Only test single toolkit installs (e.g. not QT4 and QT5 on same install)
 
@@ -168,9 +168,7 @@ install:
   # We need a library for Qt.
   # PyQT4 won't pip install, so resort to conda.
   - if %PYQT_VERSION%==4 pip install pyqt4
-  # Pyqt5 5.11.2 doesn't work on Python 3.5 (although it does on other versions)
-  # Avoid using it for now, but optimistically assume that they will fix in next release.
-  - if %PYQT_VERSION%==5 pip install pyqt5!=5.11.2
+  - if %PYQT_VERSION%==5 pip install pyqt5
   - ps: if ($env:QT_API -eq "pyside") {pip install PySide}
   # Pyside2 won't pip install, so resort to conda.
   - ps: if ($env:QT_API -eq "pyside2") {pip install pyside2}
