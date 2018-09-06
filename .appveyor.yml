@@ -100,7 +100,7 @@ environment:
 
         - NAME: "PySide"
           # Wheels only available up to Python 3.4, win32.
-          PYTHON: "C:\\Python34-x64"
+          PYTHON: "C:\\Python34"
           PYTHON_VERSION: "3.4.8"
           PYTHON_ARCH: "32"
           PYQT_VERSION: "None"
@@ -167,10 +167,9 @@ install:
 
   # We need a library for Qt.
   # PyQT4 won't pip install, so resort to conda.
-  - if %PYQT_VERSION%==4 pip install pyqt4
-  - if %PYQT_VERSION%==5 pip install pyqt5
+  - if %PYQT_VERSION%==4 pip install PyQt4
+  - if %PYQT_VERSION%==5 pip install PyQt5
   - ps: if ($env:QT_API -eq "pyside") {pip install PySide}
-  # Pyside2 won't pip install, so resort to conda.
   - ps: if ($env:QT_API -eq "pyside2") {pip install pyside2}
   - if "%QSCINTILLA%"=="Yes" pip install QScintilla
 
@@ -186,7 +185,7 @@ test_script:
 
   # Run the project tests
   - cd %APPVEYOR_BUILD_DIR%
-  - py.test tests -v
+  - pytest tests -v
 
 after_test:
   # Create wheels and installers ready to try on other platforms.
