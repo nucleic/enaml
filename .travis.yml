@@ -65,7 +65,7 @@ before_install:
          $PIP_INSTALL sphinx;
          cd $TRAVIS_BUILD_DIR;
          cd tools/pygments;
-         python setup.py install
+         python setup.py install;
      fi'
 
   # Install codecov report tools
@@ -87,11 +87,11 @@ script:
   # Run the enaml test suite
   - cd $TRAVIS_BUILD_DIR
   - 'if [ $SPHINX -eq 0 ]; then
-         pytest tests --cov enaml --cov-report xml -v
+         pytest tests --cov enaml --cov-report xml -v;
      fi'
   - 'if [ $SPHINX -eq 1 ]; then
-         cd docs
-         sphinx-build -nW -b html
+         cd docs;
+         sphinx-build -nW -b html;
      fi'
   -
 
