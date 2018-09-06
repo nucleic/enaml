@@ -1,7 +1,7 @@
 # This file is used to configure the AppVeyor CI system, for testing on Windows machines.
 #
 # Code loosely based on https://github.com/ogrisel/python-appveyor-demo
-# 
+#
 # To test with AppVeyor:
 #    Register on appveyor.com with your GitHub account.
 #    Create a new appveyor project, using the GitHub details.
@@ -15,41 +15,46 @@ environment:
         #    PyQt5 only available for Python >=3.5.
         #       PyQt5 version 5.11.2 doesn't run on Python 3.5.
         #    PySide1 only available for 2.6 <= Python <=3.4. Wheels only for 32-bit.
-        
+
         # Strategy:
+        #    Run all tests using only pip (Travis uses conda)
         #    Test each 64-bit Python version, but only the latest known patch.
-        #    Test the oldest and the latest 32-bit Python versions release. 
-        #    Test with PyQt4 where available, otherwise PyQT5 in each version.
+        #    Test the oldest and the latest 32-bit Python versions release.
+        #    Test with PyQt4 where available, otherwise PyQt5 in each version.
         #    Test QScintilla on latest Python version available.
         #    Test Pyside1 in latest Python version it runs on.
         #        - Failure is allowed and won't block PRs.
         #    Test Pyside2 in latest Python version available
         #        - Failure is allowed and won't block PRs.
         #    Only test single toolkit installs (e.g. not QT4 and QT5 on same install)
-        
+
         # VARIABLES
         #    NAME: just a comment for distinguishing builds in Appveyor.
         #    PYQT_VERSION: Determines PyQt versions installation
-        #    PY_QT: Determines Pyside version installation (if present), and is used by 
+        #    PY_QT: Determines Pyside version installation (if present), and is used by
         #           Enaml.
         #    PYTEST_QT_API: In Python 3.4, pytest-qt needs a hint about the right interface.
         #    QSCINTILLA: Set to "Yes" to install it.
-        
+
 
         # 64-bit versions, PyQT, latest to oldest.
-        
+
+        - NAME: "Py 3.7"
+          PYTHON: "C:\\Python37-x64"
+          PYTHON_VERSION: "3.7.0"
+          PYTHON_ARCH: "64"
+          PYQT_VERSION: "5"
+
         - NAME: "Py 3.6"
           PYTHON: "C:\\Python36-x64"
           PYTHON_VERSION: "3.6.3"
           PYTHON_ARCH: "64"
-          MINICONDA: C:\Miniconda36-x64
           PYQT_VERSION: "5"
 
         - NAME: "Py 3.5"
           PYTHON: "C:\\Python35-x64"
           PYTHON_VERSION: "3.5.5"
           PYTHON_ARCH: "64"
-          MINICONDA: C:\Miniconda35-x64
           PYQT_VERSION: "5"
 
 # Does not pass tests!
@@ -60,45 +65,33 @@ environment:
 #          MINICONDA: C:\Miniconda34-x64
 #          PYQT_VERSION: "4"
 #          PYTEST_QT_API: "pyqt4v2"
-#
-#        - NAME: "Py 3.4 PyQt 4 v1"
-#          PYTHON: "C:\\Python34-x64"
-#          PYTHON_VERSION: "3.4.8"
-#          PYTHON_ARCH: "64"
-#          MINICONDA: C:\Miniconda34-x64
-#          PYQT_VERSION: "4"
-#          PYTEST_QT_API: "pyqt4"
 
         - NAME: "Py 2.7"
           PYTHON: "C:\\Python27-x64"
           PYTHON_VERSION: "2.7.15"
           PYTHON_ARCH: "64"
-          MINICONDA: C:\Miniconda-x64
           PYQT_VERSION: "4"
 
-        # 32-bit versions, PyQT, latest to oldest.
-        
+        # 32-bit versions, PyQt, latest to oldest.
+
         - NAME: "32-bit, Latest "
-          PYTHON: "C:\\Python36"
-          PYTHON_VERSION: "3.6.3"
+          PYTHON: "C:\\Python37"
+          PYTHON_VERSION: "3.7.0"
           PYTHON_ARCH: "32"
-          MINICONDA: C:\Miniconda36
           PYQT_VERSION: "5"
 
         - NAME: "32-bit, Oldest"
           PYTHON: "C:\\Python27"
           PYTHON_VERSION: "2.7.15"
           PYTHON_ARCH: "32"
-          MINICONDA: C:\Miniconda
           PYQT_VERSION: "4"
 
         # QScintilla
 
         - NAME: "QScintilla"
-          PYTHON: "C:\\Python36-x64"
-          PYTHON_VERSION: "3.6.3"
+          PYTHON: "C:\\Python37-x64"
+          PYTHON_VERSION: "3.7.0"
           PYTHON_ARCH: "64"
-          MINICONDA: C:\Miniconda36-x64
           PYQT_VERSION: "5"
           QSCINTILLA: "Yes"
 
@@ -110,15 +103,13 @@ environment:
           PYTHON: "C:\\Python34-x64"
           PYTHON_VERSION: "3.4.8"
           PYTHON_ARCH: "32"
-          MINICONDA: C:\Miniconda34
           PYQT_VERSION: "None"
           QT_API: "pyside"
 
         - NAME: "PySide2"
-          PYTHON: "C:\\Python36-x64"
-          PYTHON_VERSION: "3.6.3"
+          PYTHON: "C:\\Python37-x64"
+          PYTHON_VERSION: "3.7.3"
           PYTHON_ARCH: "64"
-          MINICONDA: C:\Miniconda36-x64
           PYQT_VERSION: "None"
           QT_API: "pyside2"
 
@@ -129,7 +120,7 @@ matrix:
      # Errors are monitored, but should not stop PRs being delivered.
      - QT_API: "pyside"
      - QT_API: "pyside2"
-        
+
 
 install:
   # If there is a newer build queued for the same PR, cancel this one.
@@ -141,14 +132,14 @@ install:
         https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
         Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
           throw "There are newer queued builds for this pull request, failing early." }
-  
+
   # Dump some debugging information about the machine.
   - ECHO "Filesystem root:"
   - ps: "ls \"C:/\""
-  
+
   - ECHO "Build Folder:"
   - ps: ls $env:APPVEYOR_BUILD_FOLDER
-  
+
   - ECHO "Environment Variables"
   - set
 
@@ -157,59 +148,44 @@ install:
   # the parent CMD process).
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
-  # Prepare Miniconda.
-  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-
-  # Avoid warning from conda info.
-  - conda install -q -n root _license
-  # Dump the setup for debugging.
-  - conda info -a
-
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
-  - conda upgrade -q pip setuptools
-  # Conda on Py3.4 doesn't upgrade it. Try to push the point.
   - python -m pip install -U pip
-  
+
   # Allow the building of wheels.
-  - conda install -q wheel
+  - pip install wheel
 
   # Check that we have the expected set-up.
   - ECHO "We specified %PYTHON_VERSION% win%PYTHON_ARCH%"
   - "python --version"
   - "python -c \"import struct; print('Architecture is win'+str(struct.calcsize('P') * 8))\""
   - pip --version
-  
+
   # At the time of writing, the setup.py says Enaml depends on a dev version
   # of Atom which is not on PyPI. Install straight from GitHub.
   - pip install https://github.com/nucleic/atom/tarball/master
 
   # We need a library for Qt.
   # PyQT4 won't pip install, so resort to conda.
-  - if %PYQT_VERSION%==4 conda install -q pyqt=4
+  - if %PYQT_VERSION%==4 pip install pyqt4
   # Pyqt5 5.11.2 doesn't work on Python 3.5 (although it does on other versions)
   # Avoid using it for now, but optimistically assume that they will fix in next release.
   - if %PYQT_VERSION%==5 pip install pyqt5!=5.11.2
-  - ps: if ($env:QT_API -eq "pyside") {pip install PySide}  
+  - ps: if ($env:QT_API -eq "pyside") {pip install PySide}
   # Pyside2 won't pip install, so resort to conda.
-  - ps: if ($env:QT_API -eq "pyside2") {conda config --add channels conda-forge; conda install -q pyside2}
+  - ps: if ($env:QT_API -eq "pyside2") {pip install pyside2}
   - if "%QSCINTILLA%"=="Yes" pip install QScintilla
-  
+
   # We should be able to install the test dependencies via setup.py, but in the meantime, do it manually:
   - pip install pytest pytest-cov pytest-qt
 
-  # What is now installed?
-  - conda list
-
 build_script:
 
-  - cd %APPVEYOR_BUILD_DIR%  
+  - cd %APPVEYOR_BUILD_DIR%
   - pip install .
 
 test_script:
-  
+
   # Run the project tests
   - cd %APPVEYOR_BUILD_DIR%
   - py.test tests -v
@@ -217,7 +193,7 @@ test_script:
 after_test:
   # Create wheels and installers ready to try on other platforms.
   - cd %APPVEYOR_BUILD_DIR%
-  - python setup.py bdist_wheel bdist_wininst 
+  - python setup.py bdist_wheel bdist_wininst
   - ps: "ls dist"
 
 artifacts:
