@@ -90,8 +90,7 @@ script:
          pytest tests --cov enaml --cov-report xml -v;
      fi'
   - 'if [ $SPHINX -eq 1 ]; then
-         cd docs;
-         sphinx-build -nW -b html;
+         sphinx-build docs $TRAVIS_BUILD_DIR -nW -b html;
      fi'
   -
 
