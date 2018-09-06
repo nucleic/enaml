@@ -11,7 +11,7 @@ environment:
     matrix:
         # Version Restrictions
         #    Enaml supports Python 2.7 and also 3.4 onwards.
-        #    PyQt4 only available for Python <3.6.
+        #    PyQt4 only available for Python <3.6, tested only on Python 2
         #    PyQt5 only available for Python >=3.5.
         #       PyQt5 version 5.11.2 doesn't run on Python 3.5.
         #    PySide1 only available for 2.6 <= Python <=3.4. Wheels only for 32-bit.
@@ -67,10 +67,10 @@ environment:
 #          PYTEST_QT_API: "pyqt4v2"
 
         - NAME: "Py 2.7"
-          PYTHON: "C:\\Python27-x64"
           PYTHON_VERSION: "2.7.15"
           PYTHON_ARCH: "64"
           PYQT_VERSION: "4"
+          MINICONDA: C:\Miniconda-x64
 
         # 32-bit versions, PyQt, latest to oldest.
 
@@ -81,7 +81,7 @@ environment:
           PYQT_VERSION: "5"
 
         - NAME: "32-bit, Oldest"
-          PYTHON: "C:\\Python27"
+          MINICONDA: C:\Miniconda
           PYTHON_VERSION: "2.7.15"
           PYTHON_ARCH: "32"
           PYQT_VERSION: "4"
@@ -143,14 +143,27 @@ install:
   - ECHO "Environment Variables"
   - set
 
+  # Python 2
+  # Prepare Miniconda
+  # - Avoid warning from conda info.
+  # - Dump the setup for debugging.
+  # - Upgrade to the latest version of pip to avoid it displaying warnings
+  #   about it being out of date.
+  - "if %PYTHON_VERSION%==2.7.15 set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - if %PYTHON_VERSION%==2.7.15 conda config --set always_yes yes --set changeps1 no
+  - if %PYTHON_VERSION%==2.7.15 conda update -q conda
+  - if %PYTHON_VERSION%==2.7.15 conda install -q -n root _license
+  - if %PYTHON_VERSION%==2.7.15 conda info -a
+  - if %PYTHON_VERSION%==2.7.15 conda upgrade -q pip setuptools
+
+  # Python 3
   # Prepend desired Python to the PATH of this build (this cannot be
   # done from inside the powershell script as it would require to restart
   # the parent CMD process).
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
-  - python -m pip install -U pip
+  - "if not %PYTHON_VERSION%==2.7.15SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - if not %PYTHON_VERSION%==2.7.15 python -m pip install -U pip
 
   # Allow the building of wheels.
   - pip install wheel
@@ -167,8 +180,10 @@ install:
 
   # We need a library for Qt.
   # PyQT4 won't pip install, so resort to conda.
-  - if %PYQT_VERSION%==4 pip install PyQt4
-  - if %PYQT_VERSION%==5 pip install PyQt5
+  - if %PYQT_VERSION%==4 conda install -q PyQt4
+  # Pyqt5 5.11.2 doesn't work on Python 3.5 (although it does on other versions)
+  # Avoid using it for now, but optimistically assume that they will fix in next release.
+  - if %PYQT_VERSION%==5 pip install pyqt5!=5.11.2
   - ps: if ($env:QT_API -eq "pyside") {pip install PySide}
   - ps: if ($env:QT_API -eq "pyside2") {pip install pyside2}
   - if "%QSCINTILLA%"=="Yes" pip install QScintilla
