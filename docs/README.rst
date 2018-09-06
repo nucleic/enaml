@@ -4,7 +4,7 @@ Building the docs
 Building the docs involve the following steps:
 
 - install enaml and its required dependencies: ply, qtpy, atom, kwisolver
-- install sphinx
+- install sphinx and sphinx_rtd_theme
 - install the enamllexer for pygments by going to tools/pygments and running
   python setup.py install
 - cd into the docs folder and run `make html`

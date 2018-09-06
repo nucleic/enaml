@@ -62,7 +62,7 @@ before_install:
          $PIP_INSTALL pytest pytest-cov pytest-qt;
      fi'
   - 'if [ $SPHINX -eq 1 ]; then
-         $PIP_INSTALL sphinx;
+         $PIP_INSTALL sphinx sphinx_rtd_theme;
          cd $TRAVIS_BUILD_DIR;
          cd tools/pygments;
          python setup.py install;
