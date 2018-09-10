@@ -31,6 +31,9 @@ class Looper(Pattern):
     will only create and destroy children for the items in the iterable
     which have changed.
 
+    The Looper works under the assumptions that the values stored in the
+    iterable are unique.
+
     """
     #: The iterable to use when creating the items for the looper.
     #: The items in the iterable must be unique. This allows the

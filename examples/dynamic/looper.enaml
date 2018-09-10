@@ -38,6 +38,8 @@ enamldef Main(Window):
                     print(item)
         ScrollArea: scroller:
             Container:
+                # Note that a Looper expects to iterate over unique values.
+                # Passing duplicate values can lead to crashes.
                 Looper: looper:
                     iterable << field.text.split()
                     Field:

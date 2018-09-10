@@ -14,9 +14,16 @@ example is reordering the elements in a list.
 
 << autodoc-me >>
 """
-from atom.api import Atom, List, Signal
+from atom.api import Atom, List, Signal, Str
 from enaml.core.api import Looper
 from enaml.widgets.api import Window, Form, PushButton, Field, Menu, Action
+
+
+class Item(Atom):
+    """Object to store in a list and display.
+
+    """
+    text = Str()
 
 
 class Model(Atom):
@@ -27,7 +34,7 @@ class Model(Atom):
     when an in-place change occurs in the list.
 
     """
-    values = List(default=['val'])
+    values = List(default=[Item(text='val')])
 
     values_changed = Signal()
 
@@ -65,10 +72,12 @@ enamldef EditMenu(Menu):
     attr index: int
     Action:
         text = 'Add before'
-        triggered :: model.add_value(index, 'item %d' % len(model.values))
+        triggered :: model.add_value(index,
+                                     Item(text='item %d' % len(model.values)))
     Action:
         text = 'Add after'
-        triggered :: model.add_value(index + 1, 'item %d' % len(model.values))
+        triggered :: model.add_value(index + 1,
+                                     Item(text='item %d' % len(model.values)))
     Action:
         separator = True
     Action:
@@ -104,6 +113,8 @@ enamldef Main(Window):
         EditMenu(model=model, index=_values.index(item)).popup()
 
     Form:
+        # Note that a Looper expects to iterate over unique values. Passing
+        # duplicate values can lead to crashes.
         Looper:
             iterable << _values
             PushButton:
@@ -113,4 +124,4 @@ enamldef Main(Window):
                 clicked :: open_menu(loop_item)
             Field:
                 read_only = True
-                text = loop_item
+                text = loop_item.text
