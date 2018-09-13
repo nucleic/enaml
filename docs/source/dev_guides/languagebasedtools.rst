@@ -138,6 +138,8 @@ An Enaml lexer for Pygments is available at ``tools/pygments``.
 To install, change into the ``./tools/pygments`` directory, and run
 ``python setup.py install``.
 
+Alternatively, it can be installed directly from `PyPi`_: ``pip install pygments-enaml``
+
 Once this is installed, it will be automatically used by Sphinx to format
 Enaml code blocks (i.e. `code directives`_, with `enaml` as the language
 argument.)
@@ -145,3 +147,4 @@ argument.)
 .. _Pygments: http://pygments.org/
 .. _Sphinx: http://www.sphinx-doc.org/
 .. _code directives: http://docutils.sourceforge.net/docs/ref/rst/directives.html#Code
+..  _PyPi: https://pypi.org/project/pygments-enaml/
