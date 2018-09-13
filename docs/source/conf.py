@@ -116,7 +116,7 @@ pygments_style = 'trac'
 todo_include_todos = True
 
 autodoc_member_order = 'bysource'
-# None is read as makimg the option True (cf autodoc documentation)
+# None is read as making the option True (cf autodoc documentation)
 autodoc_default_options = {
     'members': None,
     'special-members': None,
