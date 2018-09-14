@@ -123,7 +123,7 @@ class Python36EnamlLexer(Python35EnamlLexer):
         """
         if 'f' in quote_type.lower():
             if 'r' not in quote_type.lower():
-                string =  decode_escapes(string)
+                string = decode_escapes(string)
             return string, 'FSTRING'
         return super(Python36EnamlLexer, self).format_string(string,
                                                              quote_type)
