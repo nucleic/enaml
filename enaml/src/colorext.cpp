@@ -163,14 +163,12 @@ Color_getset[] = {
 static PyObject*
 Color__reduce__( Color* self, void* context )
 {
-    PyObject* cls = PyObject_Type(reinterpret_cast<PyObject*>( self ));
-    if ( !cls )
-        return 0;
+    PyObject* obj = reinterpret_cast<PyObject*>( self );
     uint32_t a = ( self->argb >> 24 ) & 0xFF;
     uint32_t r = ( self->argb >> 16 ) & 0xFF;
     uint32_t g = ( self->argb >> 8 ) & 0xFF;
     uint32_t b = self->argb & 0xFF;
-    return Py_BuildValue("O (iiii)", cls, r, g, b, a);
+    return Py_BuildValue( "O (iiii)", obj->ob_type, r, g, b, a );
 }
 
 
