@@ -160,9 +160,30 @@ Color_getset[] = {
 };
 
 
+static PyObject*
+Color__reduce__( Color* self, void* context )
+{
+    PyObject* cls = PyObject_Type(reinterpret_cast<PyObject*>( self ));
+    if ( !cls )
+        return 0;
+    uint32_t a = ( self->argb >> 24 ) & 255;
+    uint32_t r = ( self->argb >> 16 ) & 255;
+    uint32_t g = ( self->argb >> 8 ) & 255;
+    uint32_t b = self->argb & 255;
+    return Py_BuildValue("O (iiii)", cls, r, g, b, a);
+}
+
+
+static PyMethodDef
+colorext_methods[] = {
+    { "__reduce__", ( PyCFunction )Color__reduce__, METH_NOARGS, "" },
+    { 0 } // Sentinel
+};
+
+
 PyTypeObject Color_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "colorext.Color",                       /* tp_name */
+    "enaml.colorext.Color",                 /* tp_name */
     sizeof( Color ),                        /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)Color_dealloc,              /* tp_dealloc */
@@ -194,7 +215,7 @@ PyTypeObject Color_Type = {
     0,                                      /* tp_weaklistoffset */
     (getiterfunc)0,                         /* tp_iter */
     (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)0,                 /* tp_methods */
+    colorext_methods,                       /* tp_methods */
     (struct PyMemberDef*)0,                 /* tp_members */
     Color_getset,                           /* tp_getset */
     0,                                      /* tp_base */
@@ -219,11 +240,6 @@ struct module_state {
     PyObject *error;
 };
 
-
-static PyMethodDef
-colorext_methods[] = {
-    { 0 } // Sentinel
-};
 
 #if PY_MAJOR_VERSION >= 3
 
