@@ -175,7 +175,7 @@ Color__reduce__( Color* self, void* context )
 
 
 static PyMethodDef
-colorext_methods[] = {
+Color_methods[] = {
     { "__reduce__", ( PyCFunction )Color__reduce__, METH_NOARGS, "" },
     { 0 } // Sentinel
 };
@@ -215,7 +215,7 @@ PyTypeObject Color_Type = {
     0,                                      /* tp_weaklistoffset */
     (getiterfunc)0,                         /* tp_iter */
     (iternextfunc)0,                        /* tp_iternext */
-    colorext_methods,                       /* tp_methods */
+    Color_methods,                          /* tp_methods */
     (struct PyMemberDef*)0,                 /* tp_members */
     Color_getset,                           /* tp_getset */
     0,                                      /* tp_base */
@@ -240,6 +240,11 @@ struct module_state {
     PyObject *error;
 };
 
+
+static PyMethodDef
+colorext_methods[] = {
+    { 0 } // Sentinel
+};
 
 #if PY_MAJOR_VERSION >= 3
 
