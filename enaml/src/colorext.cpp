@@ -160,9 +160,28 @@ Color_getset[] = {
 };
 
 
+static PyObject*
+Color__reduce__( Color* self, void* context )
+{
+    PyObject* obj = reinterpret_cast<PyObject*>( self );
+    uint32_t a = ( self->argb >> 24 ) & 0xFF;
+    uint32_t r = ( self->argb >> 16 ) & 0xFF;
+    uint32_t g = ( self->argb >> 8 ) & 0xFF;
+    uint32_t b = self->argb & 0xFF;
+    return Py_BuildValue( "O (iiii)", obj->ob_type, r, g, b, a );
+}
+
+
+static PyMethodDef
+Color_methods[] = {
+    { "__reduce__", ( PyCFunction )Color__reduce__, METH_NOARGS, "" },
+    { 0 } // Sentinel
+};
+
+
 PyTypeObject Color_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "colorext.Color",                       /* tp_name */
+    "enaml.colorext.Color",                 /* tp_name */
     sizeof( Color ),                        /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)Color_dealloc,              /* tp_dealloc */
@@ -194,7 +213,7 @@ PyTypeObject Color_Type = {
     0,                                      /* tp_weaklistoffset */
     (getiterfunc)0,                         /* tp_iter */
     (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)0,                 /* tp_methods */
+    Color_methods,                          /* tp_methods */
     (struct PyMemberDef*)0,                 /* tp_members */
     Color_getset,                           /* tp_getset */
     0,                                      /* tp_base */
