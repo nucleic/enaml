@@ -409,7 +409,7 @@ PyDoc_STRVAR(_Disconnector__doc__,
 
 PyTypeObject _Disconnector_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "signaling._Disconnector",              /* tp_name */
+    "enaml.signaling._Disconnector",              /* tp_name */
     sizeof( _Disconnector ),                /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)_Disconnector_dealloc,      /* tp_dealloc */
