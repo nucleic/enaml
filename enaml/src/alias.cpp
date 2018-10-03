@@ -265,7 +265,7 @@ Alias_methods[] = {
 
 PyTypeObject Alias_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "alias.Alias",                          /* tp_name */
+    "enaml.alias.Alias",                    /* tp_name */
     sizeof( Alias ),                        /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)Alias_dealloc,              /* tp_dealloc */

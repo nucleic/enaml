@@ -41,7 +41,7 @@ typedef struct {
 static PyTypeObject
 WinEnum_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "winutil.WinEnum",                      /* tp_name */
+    "enaml.winutil.WinEnum",                /* tp_name */
     sizeof( WinEnum ),                      /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)PyObject_Del,               /* tp_dealloc */

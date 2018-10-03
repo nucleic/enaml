@@ -459,57 +459,57 @@ Nonlocals_as_sequence = {
 
 PyTypeObject Nonlocals_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "dynamicscope.Nonlocals",               /* tp_name */
-    sizeof( Nonlocals ),                    /* tp_basicsize */
-    0,                                      /* tp_itemsize */
-    (destructor)Nonlocals_dealloc,          /* tp_dealloc */
-    (printfunc)0,                           /* tp_print */
-    (getattrfunc)0,                         /* tp_getattr */
-    (setattrfunc)0,                         /* tp_setattr */
+    "enaml.dynamicscope.Nonlocals",             /* tp_name */
+    sizeof( Nonlocals ),                        /* tp_basicsize */
+    0,                                          /* tp_itemsize */
+    (destructor)Nonlocals_dealloc,              /* tp_dealloc */
+    (printfunc)0,                               /* tp_print */
+    (getattrfunc)0,                             /* tp_getattr */
+    (setattrfunc)0,                             /* tp_setattr */
 #if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                   /* tp_as_async */
+	( PyAsyncMethods* )0,                       /* tp_as_async */
 #elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                            /* tp_reserved */
+	( void* ) 0,                                /* tp_reserved */
 #else
-	( cmpfunc )0,                           /* tp_compare */
+	( cmpfunc )0,                               /* tp_compare */
 #endif
-    (reprfunc)Nonlocals_repr,               /* tp_repr */
-    (PyNumberMethods*)0,                    /* tp_as_number */
+    (reprfunc)Nonlocals_repr,                   /* tp_repr */
+    (PyNumberMethods*)0,                        /* tp_as_number */
     (PySequenceMethods*)&Nonlocals_as_sequence, /* tp_as_sequence */
-    (PyMappingMethods*)&Nonlocals_as_mapping, /* tp_as_mapping */
-    (hashfunc)0,                            /* tp_hash */
-    (ternaryfunc)Nonlocals_call,            /* tp_call */
-    (reprfunc)0,                            /* tp_str */
-    (getattrofunc)Nonlocals_getattro,       /* tp_getattro */
-    (setattrofunc)Nonlocals_setattro,       /* tp_setattro */
-    (PyBufferProcs*)0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,  /* tp_flags */
-    0,                                      /* Documentation string */
-    (traverseproc)Nonlocals_traverse,       /* tp_traverse */
-    (inquiry)Nonlocals_clear,               /* tp_clear */
-    (richcmpfunc)0,                         /* tp_richcompare */
-    0,                                      /* tp_weaklistoffset */
-    (getiterfunc)0,                         /* tp_iter */
-    (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)0,                 /* tp_methods */
-    (struct PyMemberDef*)0,                 /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    (descrgetfunc)0,                        /* tp_descr_get */
-    (descrsetfunc)0,                        /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)0,                            /* tp_init */
-    (allocfunc)PyType_GenericAlloc,         /* tp_alloc */
-    (newfunc)0,                             /* tp_new */
-    (freefunc)PyObject_GC_Del,              /* tp_free */
-    (inquiry)0,                             /* tp_is_gc */
-    0,                                      /* tp_bases */
-    0,                                      /* tp_mro */
-    0,                                      /* tp_cache */
-    0,                                      /* tp_subclasses */
-    0,                                      /* tp_weaklist */
-    (destructor)0                           /* tp_del */
+    (PyMappingMethods*)&Nonlocals_as_mapping,   /* tp_as_mapping */
+    (hashfunc)0,                                /* tp_hash */
+    (ternaryfunc)Nonlocals_call,                /* tp_call */
+    (reprfunc)0,                                /* tp_str */
+    (getattrofunc)Nonlocals_getattro,           /* tp_getattro */
+    (setattrofunc)Nonlocals_setattro,           /* tp_setattro */
+    (PyBufferProcs*)0,                          /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,      /* tp_flags */
+    0,                                          /* Documentation string */
+    (traverseproc)Nonlocals_traverse,           /* tp_traverse */
+    (inquiry)Nonlocals_clear,                   /* tp_clear */
+    (richcmpfunc)0,                             /* tp_richcompare */
+    0,                                          /* tp_weaklistoffset */
+    (getiterfunc)0,                             /* tp_iter */
+    (iternextfunc)0,                            /* tp_iternext */
+    (struct PyMethodDef*)0,                     /* tp_methods */
+    (struct PyMemberDef*)0,                     /* tp_members */
+    0,                                          /* tp_getset */
+    0,                                          /* tp_base */
+    0,                                          /* tp_dict */
+    (descrgetfunc)0,                            /* tp_descr_get */
+    (descrsetfunc)0,                            /* tp_descr_set */
+    0,                                          /* tp_dictoffset */
+    (initproc)0,                                /* tp_init */
+    (allocfunc)PyType_GenericAlloc,             /* tp_alloc */
+    (newfunc)0,                                 /* tp_new */
+    (freefunc)PyObject_GC_Del,                  /* tp_free */
+    (inquiry)0,                                 /* tp_is_gc */
+    0,                                          /* tp_bases */
+    0,                                          /* tp_mro */
+    0,                                          /* tp_cache */
+    0,                                          /* tp_subclasses */
+    0,                                          /* tp_weaklist */
+    (destructor)0                               /* tp_del */
 };
 
 
@@ -776,57 +776,57 @@ DynamicScope_as_sequence = {
 
 PyTypeObject DynamicScope_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "dynamicscope.DynamicScope",            /* tp_name */
-    sizeof( DynamicScope ),                 /* tp_basicsize */
-    0,                                      /* tp_itemsize */
-    (destructor)DynamicScope_dealloc,       /* tp_dealloc */
-    (printfunc)0,                           /* tp_print */
-    (getattrfunc)0,                         /* tp_getattr */
-    (setattrfunc)0,                         /* tp_setattr */
+    "enaml.dynamicscope.DynamicScope",             /* tp_name */
+    sizeof( DynamicScope ),                        /* tp_basicsize */
+    0,                                             /* tp_itemsize */
+    (destructor)DynamicScope_dealloc,              /* tp_dealloc */
+    (printfunc)0,                                  /* tp_print */
+    (getattrfunc)0,                                /* tp_getattr */
+    (setattrfunc)0,                                /* tp_setattr */
 #if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                   /* tp_as_async */
+	( PyAsyncMethods* )0,                          /* tp_as_async */
 #elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                            /* tp_reserved */
+	( void* ) 0,                                   /* tp_reserved */
 #else
-	( cmpfunc )0,                           /* tp_compare */
+	( cmpfunc )0,                                  /* tp_compare */
 #endif
-    (reprfunc)0,                            /* tp_repr */
-    (PyNumberMethods*)0,                    /* tp_as_number */
+    (reprfunc)0,                                   /* tp_repr */
+    (PyNumberMethods*)0,                           /* tp_as_number */
     (PySequenceMethods*)&DynamicScope_as_sequence, /* tp_as_sequence */
-    (PyMappingMethods*)&DynamicScope_as_mapping, /* tp_as_mapping */
-    (hashfunc)0,                            /* tp_hash */
-    (ternaryfunc)0,                         /* tp_call */
-    (reprfunc)0,                            /* tp_str */
-    (getattrofunc)0,                        /* tp_getattro */
-    (setattrofunc)0,                        /* tp_setattro */
-    (PyBufferProcs*)0,                      /* tp_as_buffer */
+    (PyMappingMethods*)&DynamicScope_as_mapping,   /* tp_as_mapping */
+    (hashfunc)0,                                   /* tp_hash */
+    (ternaryfunc)0,                                /* tp_call */
+    (reprfunc)0,                                   /* tp_str */
+    (getattrofunc)0,                               /* tp_getattro */
+    (setattrofunc)0,                               /* tp_setattro */
+    (PyBufferProcs*)0,                             /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC|Py_TPFLAGS_DICT_SUBCLASS, /* tp_flags */
-    0,                                      /* Documentation string */
-    (traverseproc)DynamicScope_traverse,    /* tp_traverse */
-    (inquiry)DynamicScope_clear,            /* tp_clear */
-    (richcmpfunc)0,                         /* tp_richcompare */
-    0,                                      /* tp_weaklistoffset */
-    (getiterfunc)0,                         /* tp_iter */
-    (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)0,                 /* tp_methods */
-    (struct PyMemberDef*)0,                 /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    (descrgetfunc)0,                        /* tp_descr_get */
-    (descrsetfunc)0,                        /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)0,                            /* tp_init */
-    (allocfunc)PyType_GenericAlloc,         /* tp_alloc */
-    (newfunc)DynamicScope_new,              /* tp_new */
-    (freefunc)PyObject_GC_Del,              /* tp_free */
-    (inquiry)0,                             /* tp_is_gc */
-    0,                                      /* tp_bases */
-    0,                                      /* tp_mro */
-    0,                                      /* tp_cache */
-    0,                                      /* tp_subclasses */
-    0,                                      /* tp_weaklist */
-    (destructor)0                           /* tp_del */
+    0,                                             /* Documentation string */
+    (traverseproc)DynamicScope_traverse,           /* tp_traverse */
+    (inquiry)DynamicScope_clear,                   /* tp_clear */
+    (richcmpfunc)0,                                /* tp_richcompare */
+    0,                                             /* tp_weaklistoffset */
+    (getiterfunc)0,                                /* tp_iter */
+    (iternextfunc)0,                               /* tp_iternext */
+    (struct PyMethodDef*)0,                        /* tp_methods */
+    (struct PyMemberDef*)0,                        /* tp_members */
+    0,                                             /* tp_getset */
+    0,                                             /* tp_base */
+    0,                                             /* tp_dict */
+    (descrgetfunc)0,                               /* tp_descr_get */
+    (descrsetfunc)0,                               /* tp_descr_set */
+    0,                                             /* tp_dictoffset */
+    (initproc)0,                                   /* tp_init */
+    (allocfunc)PyType_GenericAlloc,                /* tp_alloc */
+    (newfunc)DynamicScope_new,                     /* tp_new */
+    (freefunc)PyObject_GC_Del,                     /* tp_free */
+    (inquiry)0,                                    /* tp_is_gc */
+    0,                                             /* tp_bases */
+    0,                                             /* tp_mro */
+    0,                                             /* tp_cache */
+    0,                                             /* tp_subclasses */
+    0,                                             /* tp_weaklist */
+    (destructor)0                                  /* tp_del */
 };
 
 struct module_state {

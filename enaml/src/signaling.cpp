@@ -226,7 +226,7 @@ PyDoc_STRVAR(Signal__doc__,
 
 PyTypeObject Signal_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "signaling.Signal",                     /* tp_name */
+    "enaml.signaling.Signal",               /* tp_name */
     sizeof( Signal ),                       /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)Signal_dealloc,             /* tp_dealloc */

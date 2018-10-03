@@ -233,7 +233,7 @@ Font_getset[] = {
 
 PyTypeObject Font_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "fontext.Font",                         /* tp_name */
+    "enaml.fontext.Font",                   /* tp_name */
     sizeof( Font ),                         /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)Font_dealloc,               /* tp_dealloc */
