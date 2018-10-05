@@ -755,7 +755,7 @@ PyDoc_STRVAR(BoundSignal__doc__,
 
 PyTypeObject BoundSignal_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "signaling.BoundSignal",                /* tp_name */
+    "enaml.signaling.BoundSignal",                /* tp_name */
     sizeof( BoundSignal ),                  /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)BoundSignal_dealloc,        /* tp_dealloc */
