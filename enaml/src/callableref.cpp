@@ -138,7 +138,7 @@ PyDoc_STRVAR(CallableRef__doc__,
 
 PyTypeObject CallableRef_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "callableref.CallableRef",              /* tp_name */
+    "enaml.callableref.CallableRef",        /* tp_name */
     sizeof( CallableRef ),                  /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)CallableRef_dealloc,        /* tp_dealloc */

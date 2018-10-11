@@ -248,7 +248,7 @@ PyDoc_STRVAR(WeakMethod__doc__,
 
 PyTypeObject WeakMethod_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "weakmethod.WeakMethod",                /* tp_name */
+    "enaml.weakmethod.WeakMethod",          /* tp_name */
     sizeof( WeakMethod ),                   /* tp_basicsize */
     0,                                      /* tp_itemsize */
     (destructor)WeakMethod_dealloc,         /* tp_dealloc */

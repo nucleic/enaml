@@ -3,6 +3,7 @@ Enaml Release Notes
 
 0.10.3 - unreleased
 -------------------
+- fix the tp_name value of all C extensions #318
 - add pickle support for enaml's Color - #316
 - add support for tiling and cascading to MdiArea PR # 259
 - fix issue # 174 (MdiWindow not automatically shown when added) PR # 259
