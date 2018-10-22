@@ -22,7 +22,7 @@ application.
 Enaml Syntax
 ------------
 
-The Enaml syntax has been designed expressly for the easy of reading, writing,
+The Enaml syntax has been designed expressly for the ease of reading, writing,
 and visualizing user interfaces. The simplest way to become familiar with the
 syntax is to look at a code sample and break it down piece by piece. The
 snippet below is the code that will be used for the example in this article.
