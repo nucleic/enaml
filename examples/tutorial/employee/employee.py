@@ -51,8 +51,9 @@ class Person(Atom):
         age = now.year - self.dob.year
         # check to see if the current date is before their birthday and
         # subtract a year from their age if it is
-        if now.month >= self.dob.month and now.day > self.dob.day:
-            age -= 1
+        if ((now.month == self.dob.month and now.day < self.dob.day)
+            or now.month < self.dob.month):
+                age -= 1
         # set the persons age
         self.age = age
 
