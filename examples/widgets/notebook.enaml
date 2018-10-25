@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -39,10 +39,22 @@ enamldef Main(Window):
                 Container:
                     PushButton:
                         text = 'Open Bar Page'
+                        enabled << not bar.visible
                         clicked :: bar.open()
                     PushButton:
                         text = 'Open Baz Page'
+                        enabled << not baz.visible
                         clicked :: baz.open()
+                    PushButton:
+                        text = 'Go to Bar Page'
+                        enabled << bar.visible
+                        clicked :: 
+                            nbook.selected_tab = 'bar_page'
+                    PushButton:
+                        text = 'Go to Baz Page'
+                        enabled << baz.visible
+                        clicked :: 
+                            nbook.selected_tab = 'baz_page'
                     CheckBox:
                         text = 'Tabs Closable'
                         checked := nbook.tabs_closable
@@ -59,6 +71,7 @@ enamldef Main(Window):
                                 nbook.tab_style = 'preferences'
             Page: bar:
                 title = 'Bar Page'
+                name = 'bar_page'
                 Container:
                     Field:
                         pass
@@ -68,6 +81,7 @@ enamldef Main(Window):
                         pass
             Page: baz:
                 title = 'Baz Page'
+                name = 'baz_page'
                 Container:
                     padding = 0
                     Html:
