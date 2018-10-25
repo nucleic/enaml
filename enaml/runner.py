@@ -12,6 +12,7 @@ from __future__ import print_function
 
 import optparse
 import os
+import signal
 import sys
 import types
 
@@ -58,6 +59,9 @@ def main():
     sys.argv = [enaml_file] + script_argv
     with imports():
         exec_(code, ns)
+
+    # Make sure ^C keeps working
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     requested = options.component
     if requested in ns:
