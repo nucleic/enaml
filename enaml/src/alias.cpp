@@ -1,13 +1,12 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013, Nucleic Development Team.
+| Copyright (c) 2013-2018, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
 | The full license is in the file COPYING.txt, distributed with this software.
 |----------------------------------------------------------------------------*/
 #include <sstream>
-#include "pythonhelpersex.h"
-#include "py23compat.h"
+#include <cppy/cppy.h>
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
@@ -16,8 +15,6 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
-
-using namespace PythonHelpers;
 
 
 static PyObject* storage_str;
@@ -41,7 +38,7 @@ Alias_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     if( !PyArg_ParseTuple( args, "OOO", &target, &chain, &key ) )
         return 0;
     if( !PyTuple_CheckExact( chain ) )
-        return py_type_fail( "argument 2 must be a tuple" );
+        return cppy::type_error( "argument 2 must be a tuple" );
     PyObject* self = PyType_GenericNew( type, 0, 0 );
     if( !self )
         return 0;
@@ -68,17 +65,17 @@ static PyObject*
 alias_load_fail( Alias* self )
 {
     std::ostringstream ostr;
-    PyObjectPtr pystr( PyObject_Str( self->target ) );
+    cppy::ptr pystr( PyObject_Str( self->target ) );
     if( !pystr )
         return 0;
-    ostr << Py23Str_AS_STRING( pystr.get() );
+    ostr << PyUnicode_AsUTF8( pystr.get() );
     Py_ssize_t size = PyTuple_GET_SIZE( self->chain );
     for( Py_ssize_t i = 0; i < size; ++i )
     {
         pystr = PyObject_Str( PyTuple_GET_ITEM( self->chain, i ) );
         if( !pystr )
             return 0;
-        ostr << "." << Py23Str_AS_STRING( pystr.get() );
+        ostr << "." << PyUnicode_AsUTF8( pystr.get() );
     }
     PyErr_Format(
         PyExc_RuntimeError,
@@ -102,13 +99,13 @@ Alias__get__( Alias* self, PyObject* object, PyObject* type )
 {
     if( !object )
         return newref( pyobject_cast( self ) );
-    PyObjectPtr storage( PyObject_GetAttr( object, storage_str ) );
+    cppy::ptr storage( PyObject_GetAttr( object, storage_str ) );
     if( !storage )
         return 0;
-    PyObjectPtr f_locals( PyObject_GetItem( storage.get(), self->key ) );
+    cppy::ptr f_locals( PyObject_GetItem( storage.get(), self->key ) );
     if( !f_locals )
         return 0;
-    PyObjectPtr target( PyObject_GetItem( f_locals.get(), self->target ) );
+    cppy::ptr target( PyObject_GetItem( f_locals.get(), self->target ) );
     if( !target )
     {
         if( PyErr_ExceptionMatches( PyExc_KeyError ) )
@@ -138,13 +135,13 @@ Alias__set__( Alias* self, PyObject* object, PyObject* value )
         );
         return -1;
     }
-    PyObjectPtr storage( PyObject_GetAttr( object, storage_str ) );
+    cppy::ptr storage( PyObject_GetAttr( object, storage_str ) );
     if( !storage )
         return -1;
-    PyObjectPtr f_locals( PyObject_GetItem( storage.get(), self->key ) );
+    cppy::ptr f_locals( PyObject_GetItem( storage.get(), self->key ) );
     if( !f_locals )
         return -1;
-    PyObjectPtr target( PyObject_GetItem( f_locals.get(), self->target ) );
+    cppy::ptr target( PyObject_GetItem( f_locals.get(), self->target ) );
     if( !target )
     {
         if( PyErr_ExceptionMatches( PyExc_KeyError ) )
@@ -168,13 +165,13 @@ Alias__set__( Alias* self, PyObject* object, PyObject* value )
 static PyObject*
 Alias_resolve( Alias* self, PyObject* object )
 {
-    PyObjectPtr storage( PyObject_GetAttr( object, storage_str ) );
+    cppy::ptr storage( PyObject_GetAttr( object, storage_str ) );
     if( !storage )
         return 0;
-    PyObjectPtr f_locals( PyObject_GetItem( storage.get(), self->key ) );
+    cppy::ptr f_locals( PyObject_GetItem( storage.get(), self->key ) );
     if( !f_locals )
         return 0;
-    PyObjectPtr target( PyObject_GetItem( f_locals.get(), self->target ) );
+    cppy::ptr target( PyObject_GetItem( f_locals.get(), self->target ) );
     if( !target )
     {
         if( PyErr_ExceptionMatches( PyExc_KeyError ) )
@@ -203,28 +200,28 @@ Alias_resolve( Alias* self, PyObject* object )
 static PyObject*
 Alias_get_target( Alias* self, void* ctxt )
 {
-    return newref( self->target );
+    return cppy::incref( self->target );
 }
 
 
 static PyObject*
 Alias_get_chain( Alias* self, void* ctxt )
 {
-    return newref( self->chain );
+    return cppy::incref( self->chain );
 }
 
 
 static PyObject*
 Alias_get_key( Alias* self, void* ctxt )
 {
-    return newref( self->key );
+    return cppy::incref( self->key );
 }
 
 
 static PyObject*
 Alias_get_canset( Alias* self, void* ctxt )
 {
-    return newref( self->canset ? Py_True : Py_False );
+    return cppy::incref( self->canset ? Py_True : Py_False );
 }
 
 
@@ -233,7 +230,7 @@ Alias_set_canset( Alias* self, PyObject* value, void* ctxt )
 {
     if( !PyBool_Check( value ) )
     {
-        py_expected_type_fail( value, "bool" );
+        cppy::type_error( value, "bool" );
         return -1;
     }
     self->canset = value == Py_True ? true : false;
@@ -265,57 +262,51 @@ Alias_methods[] = {
 
 PyTypeObject Alias_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.alias.Alias",                    /* tp_name */
-    sizeof( Alias ),                        /* tp_basicsize */
-    0,                                      /* tp_itemsize */
-    (destructor)Alias_dealloc,              /* tp_dealloc */
-    (printfunc)0,                           /* tp_print */
-    (getattrfunc)0,                         /* tp_getattr */
-    (setattrfunc)0,                         /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                   /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                            /* tp_reserved */
-#else
-	( cmpfunc )0,                           /* tp_compare */
-#endif
-    (reprfunc)0,                            /* tp_repr */
-    (PyNumberMethods*)0,                    /* tp_as_number */
-    (PySequenceMethods*)0,                  /* tp_as_sequence */
-    (PyMappingMethods*)0,                   /* tp_as_mapping */
-    (hashfunc)0,                            /* tp_hash */
-    (ternaryfunc)0,                         /* tp_call */
-    (reprfunc)0,                            /* tp_str */
-    (getattrofunc)0,                        /* tp_getattro */
-    (setattrofunc)0,                        /* tp_setattro */
-    (PyBufferProcs*)0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,                     /* tp_flags */
-    0,                                      /* Documentation string */
-    (traverseproc)0,                        /* tp_traverse */
-    (inquiry)0,                             /* tp_clear */
-    (richcmpfunc)0,                         /* tp_richcompare */
-    0,                                      /* tp_weaklistoffset */
-    (getiterfunc)0,                         /* tp_iter */
-    (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)Alias_methods,     /* tp_methods */
-    (struct PyMemberDef*)0,                 /* tp_members */
-    Alias_getset,                           /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    (descrgetfunc)Alias__get__,             /* tp_descr_get */
-    (descrsetfunc)Alias__set__,             /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)0,                            /* tp_init */
-    (allocfunc)PyType_GenericAlloc,         /* tp_alloc */
-    (newfunc)Alias_new,                     /* tp_new */
-    (freefunc)PyObject_Del,                 /* tp_free */
-    (inquiry)0,                             /* tp_is_gc */
-    0,                                      /* tp_bases */
-    0,                                      /* tp_mro */
-    0,                                      /* tp_cache */
-    0,                                      /* tp_subclasses */
-    0,                                      /* tp_weaklist */
-    (destructor)0                           /* tp_del */
+    "enaml.alias.Alias",                      /* tp_name */
+    sizeof( Alias ),                          /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    ( destructor )Alias_dealloc,              /* tp_dealloc */
+    ( printfunc )0,                           /* tp_print */
+    ( getattrfunc )0,                         /* tp_getattr */
+    ( setattrfunc )0,                         /* tp_setattr */
+	( PyAsyncMethods* )0,                     /* tp_as_async */
+    ( reprfunc )0,                            /* tp_repr */
+    ( PyNumberMethods* )0,                    /* tp_as_number */
+    ( PySequenceMethods* )0,                  /* tp_as_sequence */
+    ( PyMappingMethods* )0,                   /* tp_as_mapping */
+    ( hashfunc )0,                            /* tp_hash */
+    ( ternaryfunc )0,                         /* tp_call */
+    ( reprfunc )0,                            /* tp_str */
+    ( getattrofunc )0,                        /* tp_getattro */
+    ( setattrofunc )0,                        /* tp_setattro */
+    ( PyBufferProcs* )0,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,                       /* tp_flags */
+    0,                                        /* Documentation string */
+    ( traverseproc )0,                        /* tp_traverse */
+    ( inquiry )0,                             /* tp_clear */
+    ( richcmpfunc )0,                         /* tp_richcompare */
+    0,                                        /* tp_weaklistoffset */
+    ( getiterfunc )0,                         /* tp_iter */
+    ( iternextfunc )0,                        /* tp_iternext */
+    ( struct PyMethodDef* )Alias_methods,     /* tp_methods */
+    ( struct PyMemberDef* )0,                 /* tp_members */
+    Alias_getset,                             /* tp_getset */
+    0,                                        /* tp_base */
+    0,                                        /* tp_dict */
+    ( descrgetfunc )Alias__get__,             /* tp_descr_get */
+    ( descrsetfunc )Alias__set__,             /* tp_descr_set */
+    0,                                        /* tp_dictoffset */
+    ( initproc )0,                            /* tp_init */
+    ( allocfunc )PyType_GenericAlloc,         /* tp_alloc */
+    ( newfunc )Alias_new,                     /* tp_new */
+    ( freefunc )PyObject_Del,                 /* tp_free */
+    ( inquiry )0,                             /* tp_is_gc */
+    0,                                        /* tp_bases */
+    0,                                        /* tp_mro */
+    0,                                        /* tp_cache */
+    0,                                        /* tp_subclasses */
+    0,                                        /* tp_weaklist */
+    ( destructor )0                           /* tp_del */
 };
 
 
@@ -328,7 +319,6 @@ alias_methods[] = {
     { 0 } // sentinel
 };
 
-#if PY_MAJOR_VERSION >= 3
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
@@ -355,30 +345,18 @@ static struct PyModuleDef moduledef = {
         NULL
 };
 
-#else
 
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
-
-#endif
-
-MOD_INIT_FUNC(alias)
+PyMODINIT_FUNC PyInit_alias( void )
 {
-#if PY_MAJOR_VERSION >= 3
-    PyObject *mod = PyModule_Create(&moduledef);
-#else
-    PyObject* mod = Py_InitModule( "alias", alias_methods );
-#endif
+    cppy::ptr mod( PyModule_Create(&moduledef) );
     if( !mod )
-        INITERROR;
-    storage_str = Py23Str_FromString( "_d_storage" );
+        return NULL;
+    storage_str = PyUnicode_FromString( "_d_storage" );
     if( !storage_str )
-        INITERROR;
+        return NULL;
     if( PyType_Ready( &Alias_Type ) < 0 )
-        INITERROR;
-    PyModule_AddObject( mod, "Alias", newref( pyobject_cast( &Alias_Type ) ) );
+        return NULL;
+    PyModule_AddObject( mod.get(), "Alias", cppy::incref( pyobject_cast( &Alias_Type ) ) );
 
-#if PY_MAJOR_VERSION >= 3
-    return mod;
-#endif
+    return mod.release();
 }

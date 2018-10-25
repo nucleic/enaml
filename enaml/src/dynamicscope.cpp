@@ -1,12 +1,11 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013, Nucleic Development Team.
+| Copyright (c) 2013-2018, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
 | The full license is in the file COPYING.txt, distributed with this software.
 |----------------------------------------------------------------------------*/
-#include "pythonhelpersex.h"
-#include "py23compat.h"
+#include <cppy/cppy.h>
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
@@ -15,8 +14,6 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
-
-using namespace PythonHelpers;
 
 
 static PyObject* parent_str;
@@ -52,9 +49,9 @@ test_dynamic_attr( PyObject* obj, PyObject* name )
 {
     PyTypeObject* tp;
     PyObject** dictptr;
-    PyObjectPtr descr;
+    cppy::ptr descr;
     descrgetfunc descr_f;
-    PyObjectPtr objptr( newref( obj ) );
+    cppy::ptr objptr( cppy::incref( obj ) );
 
     // The body of this loop is PyObject_GenericGetAttr, modified to
     // use smart pointers and _PyObject_GetDictPtr, and only test for
@@ -65,7 +62,7 @@ test_dynamic_attr( PyObject* obj, PyObject* name )
 
         // Data descriptor
         descr_f = 0;
-        descr = xnewref( _PyType_Lookup( tp, name ) );
+        descr = cppy::xincref( _PyType_Lookup( tp, name ) );
         if( descr )
         {
             descr_f = descr.get()->ob_type->tp_descr_get;
@@ -110,7 +107,7 @@ maybe_translate_key_error()
         PyObject* pvalue;
         PyObject* ptraceback;
         PyErr_Fetch( &ptype, &pvalue, &ptraceback );
-        PyErr_Restore( newref( UserKeyError ), pvalue, ptraceback );
+        PyErr_Restore( cppy::incref( UserKeyError ), pvalue, ptraceback );
         Py_DECREF( ptype );
     }
 }
@@ -119,16 +116,16 @@ maybe_translate_key_error()
 static inline bool
 run_tracer( PyObject* tracer, PyObject* owner, PyObject* name, PyObject* value )
 {
-    PyObjectPtr handler( PyObject_GetAttr( tracer, dynamic_load_str ) );
+    cppy::ptr handler( PyObject_GetAttr( tracer, dynamic_load_str ) );
     if( !handler )
         return false;
-    PyTuplePtr args( PyTuple_New( 3 ) );
+    cppy::ptr args( PyTuple_New( 3 ) );
     if( !args )
         return false;
-    args.initialize( 0, newref( owner ) );
-    args.initialize( 1, newref( name ) );
-    args.initialize( 2, newref( value ) );
-    PyObjectPtr res( handler( args ) );
+    PyTuple_SET_ITEM( args.get(), 0, cppy::incref( owner ) );
+    PyTuple_SET_ITEM( args.get(), 1, cppy::incref( name ) );
+    PyTuple_SET_ITEM( args.get(), 2, cppy::incref( value ) );
+    cppy::ptr res( handler.call( args ) );
     if( !res )
         return false;
     return true;
@@ -140,9 +137,9 @@ load_dynamic_attr( PyObject* obj, PyObject* name, PyObject* tracer=0 )
 {
     PyTypeObject* tp;
     PyObject** dictptr;
-    PyObjectPtr descr;
+    cppy::ptr descr;
     descrgetfunc descr_f;
-    PyObjectPtr objptr( newref( obj ) );
+    cppy::ptr objptr( cppy::incref( obj ) );
 
     // The body of this loop is PyObject_GenericGetAttr, modified to
     // use smart pointers and _PyObject_GetDictPtr, and run a tracer.
@@ -152,13 +149,13 @@ load_dynamic_attr( PyObject* obj, PyObject* name, PyObject* tracer=0 )
 
         // Data descriptor
         descr_f = 0;
-        descr = xnewref( _PyType_Lookup( tp, name ) );
+        descr = cppy::xincref( _PyType_Lookup( tp, name ) );
         if( descr )
         {
             descr_f = descr.get()->ob_type->tp_descr_get;
             if( descr_f && PyDescr_IsData( descr.get() ) )
             {
-                PyObjectPtr res(
+                cppy::ptr res(
                     descr_f( descr.get(), objptr.get(), pyobject_cast( tp ) )
                 );
                 if( !res )
@@ -185,7 +182,7 @@ load_dynamic_attr( PyObject* obj, PyObject* name, PyObject* tracer=0 )
         // Non-data descriptor
         if( descr_f )
         {
-            PyObjectPtr res(
+            cppy::ptr res(
                 descr_f( descr.get(), objptr.get(), pyobject_cast( tp ) )
             );
             if( !res )
@@ -219,9 +216,9 @@ set_dynamic_attr( PyObject* obj, PyObject* name, PyObject* value )
     PyTypeObject* tp;
     PyObject* dict;
     PyObject** dictptr;
-    PyObjectPtr descr;
+    cppy::ptr descr;
     descrsetfunc descr_f;
-    PyObjectPtr objptr( newref( obj ) );
+    cpp::ptr objptr( cppy::incref( obj ) );
 
     // The body of this loop is PyObject_GenericGetAttr, modified to
     // use smart pointers.
@@ -231,7 +228,7 @@ set_dynamic_attr( PyObject* obj, PyObject* name, PyObject* value )
 
         // Data desciptor
         descr_f = 0;
-        descr = xnewref( _PyType_Lookup( tp, name ) );
+        descr = cppy::xincref( _PyType_Lookup( tp, name ) );
         if( descr )
         {
             descr_f = descr.get()->ob_type->tp_descr_set;
@@ -273,7 +270,7 @@ set_dynamic_attr( PyObject* obj, PyObject* name, PyObject* value )
             PyErr_Format(
                 PyExc_AttributeError,
                 "'%.50s' object attribute '%.400s' is read-only",
-                tp->tp_name, Py23Str_AS_STRING( name )
+                tp->tp_name, PyUnicode_AsUTF8( name )
             );
 
         // Step up to the parent object
@@ -318,13 +315,13 @@ Nonlocals_dealloc( Nonlocals* self )
 static PyObject*
 Nonlocals_repr( Nonlocals* self )
 {
-    PyObjectPtr pystr( PyObject_Str( self->owner ) );
+    cppy::ptr pystr( PyObject_Str( self->owner ) );
     if( !pystr )
         return 0;
     return Py23Str_FromFormat(
         "%s[%s]",
         Py_TYPE(self)->tp_name,
-        Py23Str_AS_STRING( pystr.get() )
+        PyUnicode_AsUTF8( pystr.get() )
     );
 }
 
@@ -337,8 +334,8 @@ Nonlocals_call( Nonlocals* self, PyObject* args, PyObject* kwargs )
     if( !PyArg_ParseTupleAndKeywords( args, kwargs, "I", kwlist, &level ) )
         return 0;
     unsigned int offset = 0;
-    PyObjectPtr parentptr;
-    PyObjectPtr objptr( newref( self->owner ) );
+    cppy::ptr parentptr;
+    cppy::ptr objptr( cppy::incref( self->owner ) );
     while( offset != level )
     {
         parentptr = PyObject_GetAttr( objptr.get(), parent_str );
@@ -358,8 +355,8 @@ Nonlocals_call( Nonlocals* self, PyObject* args, PyObject* kwargs )
     if( res )
     {
         Nonlocals* nl = reinterpret_cast<Nonlocals*>( res );
-        nl->owner = objptr.newref();
-        nl->tracer = xnewref( self->tracer );
+        nl->owner = cppy::incref( objptr.get() );
+        nl->tracer = cppy::xincref( self->tracer );
     }
     return res;
 }
@@ -374,7 +371,7 @@ Nonlocals_getattro( Nonlocals* self, PyObject* name )
             PyExc_AttributeError,
             "'%.50s' object has no attribute '%.400s'",
             Py_TYPE(self)->tp_name,
-            Py23Str_AS_STRING( name )
+            PyUnicode_AsUTF8( name )
         );
     return res;
 }
@@ -389,7 +386,7 @@ Nonlocals_setattro( Nonlocals* self, PyObject* name, PyObject* value )
             PyExc_AttributeError,
             "'%.50s' object has no attribute '%.400s'",
             Py_TYPE(self)->tp_name,
-            Py23Str_AS_STRING( name )
+            PyUnicode_AsUTF8( name )
         );
     return res;
 }
@@ -398,8 +395,8 @@ Nonlocals_setattro( Nonlocals* self, PyObject* name, PyObject* value )
 static PyObject*
 Nonlocals_getitem( Nonlocals* self, PyObject* key )
 {
-    if( !Py23Str_CheckExact( key ) )
-        return py_expected_type_fail( key, "str" );
+    if( !PyUnicode_CheckExact( key ) )
+        return cppy::type_error( key, "str" );
     PyObject* res = load_dynamic_attr( self->owner, key, self->tracer );
     if( !res && !PyErr_Occurred() )
         PyErr_SetObject( PyExc_KeyError, key );
@@ -410,7 +407,7 @@ Nonlocals_getitem( Nonlocals* self, PyObject* key )
 static int
 Nonlocals_setitem( Nonlocals* self, PyObject* key, PyObject* value )
 {
-    if( !Py23Str_CheckExact( key ) )
+    if( !PyUnicode_CheckExact( key ) )
     {
         py_expected_type_fail( key, "str" );
         return -1;
@@ -425,9 +422,9 @@ Nonlocals_setitem( Nonlocals* self, PyObject* key, PyObject* value )
 static int
 Nonlocals_contains( Nonlocals* self, PyObject* key )
 {
-    if( !Py23Str_CheckExact( key ) )
+    if( !PyUnicode_CheckExact( key ) )
     {
-        py_expected_type_fail( key, "str" );
+        cppy::type_error( key, "str" );
         return -1;
     }
     return test_dynamic_attr( self->owner, key );
@@ -436,80 +433,74 @@ Nonlocals_contains( Nonlocals* self, PyObject* key )
 
 static PyMappingMethods
 Nonlocals_as_mapping = {
-    (lenfunc)0,                             /*mp_length*/
-    (binaryfunc)Nonlocals_getitem,          /*mp_subscript*/
-    (objobjargproc)Nonlocals_setitem,       /*mp_ass_subscript*/
+    ( lenfunc )0,                             /*mp_length*/
+    ( binaryfunc )Nonlocals_getitem,          /*mp_subscript*/
+    ( objobjargproc )Nonlocals_setitem,       /*mp_ass_subscript*/
 };
 
 
 static PySequenceMethods
 Nonlocals_as_sequence = {
-    0,                                  /* sq_length */
-    0,                                  /* sq_concat */
-    0,                                  /* sq_repeat */
-    0,                                  /* sq_item */
-    0,                                  /* sq_slice */
-    0,                                  /* sq_ass_item */
-    0,                                  /* sq_ass_slice */
-    (objobjproc)Nonlocals_contains,     /* sq_contains */
-    0,                                  /* sq_inplace_concat */
-    0,                                  /* sq_inplace_repeat */
+    0,                                    /* sq_length */
+    0,                                    /* sq_concat */
+    0,                                    /* sq_repeat */
+    0,                                    /* sq_item */
+    0,                                    /* sq_slice */
+    0,                                    /* sq_ass_item */
+    0,                                    /* sq_ass_slice */
+    ( objobjproc )Nonlocals_contains,     /* sq_contains */
+    0,                                    /* sq_inplace_concat */
+    0,                                    /* sq_inplace_repeat */
 };
 
 
 PyTypeObject Nonlocals_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.dynamicscope.Nonlocals",             /* tp_name */
-    sizeof( Nonlocals ),                        /* tp_basicsize */
-    0,                                          /* tp_itemsize */
-    (destructor)Nonlocals_dealloc,              /* tp_dealloc */
-    (printfunc)0,                               /* tp_print */
-    (getattrfunc)0,                             /* tp_getattr */
-    (setattrfunc)0,                             /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                       /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                                /* tp_reserved */
-#else
-	( cmpfunc )0,                               /* tp_compare */
-#endif
-    (reprfunc)Nonlocals_repr,                   /* tp_repr */
-    (PyNumberMethods*)0,                        /* tp_as_number */
-    (PySequenceMethods*)&Nonlocals_as_sequence, /* tp_as_sequence */
-    (PyMappingMethods*)&Nonlocals_as_mapping,   /* tp_as_mapping */
-    (hashfunc)0,                                /* tp_hash */
-    (ternaryfunc)Nonlocals_call,                /* tp_call */
-    (reprfunc)0,                                /* tp_str */
-    (getattrofunc)Nonlocals_getattro,           /* tp_getattro */
-    (setattrofunc)Nonlocals_setattro,           /* tp_setattro */
-    (PyBufferProcs*)0,                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,      /* tp_flags */
-    0,                                          /* Documentation string */
-    (traverseproc)Nonlocals_traverse,           /* tp_traverse */
-    (inquiry)Nonlocals_clear,                   /* tp_clear */
-    (richcmpfunc)0,                             /* tp_richcompare */
-    0,                                          /* tp_weaklistoffset */
-    (getiterfunc)0,                             /* tp_iter */
-    (iternextfunc)0,                            /* tp_iternext */
-    (struct PyMethodDef*)0,                     /* tp_methods */
-    (struct PyMemberDef*)0,                     /* tp_members */
-    0,                                          /* tp_getset */
-    0,                                          /* tp_base */
-    0,                                          /* tp_dict */
-    (descrgetfunc)0,                            /* tp_descr_get */
-    (descrsetfunc)0,                            /* tp_descr_set */
-    0,                                          /* tp_dictoffset */
-    (initproc)0,                                /* tp_init */
-    (allocfunc)PyType_GenericAlloc,             /* tp_alloc */
-    (newfunc)0,                                 /* tp_new */
-    (freefunc)PyObject_GC_Del,                  /* tp_free */
-    (inquiry)0,                                 /* tp_is_gc */
-    0,                                          /* tp_bases */
-    0,                                          /* tp_mro */
-    0,                                          /* tp_cache */
-    0,                                          /* tp_subclasses */
-    0,                                          /* tp_weaklist */
-    (destructor)0                               /* tp_del */
+    "enaml.dynamicscope.Nonlocals",               /* tp_name */
+    sizeof( Nonlocals ),                          /* tp_basicsize */
+    0,                                            /* tp_itemsize */
+    ( destructor )Nonlocals_dealloc,              /* tp_dealloc */
+    ( printfunc )0,                               /* tp_print */
+    ( getattrfunc )0,                             /* tp_getattr */
+    ( setattrfunc )0,                             /* tp_setattr */
+	( PyAsyncMethods* )0,                         /* tp_as_async */
+    ( reprfunc )Nonlocals_repr,                   /* tp_repr */
+    ( PyNumberMethods* )0,                        /* tp_as_number */
+    ( PySequenceMethods* )&Nonlocals_as_sequence, /* tp_as_sequence */
+    ( PyMappingMethods* )&Nonlocals_as_mapping,   /* tp_as_mapping */
+    ( hashfunc )0,                                /* tp_hash */
+    ( ternaryfunc )Nonlocals_call,                /* tp_call */
+    ( reprfunc )0,                                /* tp_str */
+    ( getattrofunc )Nonlocals_getattro,           /* tp_getattro */
+    ( setattrofunc )Nonlocals_setattro,           /* tp_setattro */
+    ( PyBufferProcs* )0,                          /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,        /* tp_flags */
+    0,                                            /* Documentation string */
+    ( traverseproc )Nonlocals_traverse,           /* tp_traverse */
+    ( inquiry )Nonlocals_clear,                   /* tp_clear */
+    ( richcmpfunc )0,                             /* tp_richcompare */
+    0,                                            /* tp_weaklistoffset */
+    ( getiterfunc )0,                             /* tp_iter */
+    ( iternextfunc )0,                            /* tp_iternext */
+    ( struct PyMethodDef* )0,                     /* tp_methods */
+    ( struct PyMemberDef* )0,                     /* tp_members */
+    0,                                            /* tp_getset */
+    0,                                            /* tp_base */
+    0,                                            /* tp_dict */
+    ( descrgetfunc )0,                            /* tp_descr_get */
+    ( descrsetfunc )0,                            /* tp_descr_set */
+    0,                                            /* tp_dictoffset */
+    ( initproc) 0,                                /* tp_init */
+    ( allocfunc )PyType_GenericAlloc,             /* tp_alloc */
+    ( newfunc )0,                                 /* tp_new */
+    ( freefunc )PyObject_GC_Del,                  /* tp_free */
+    ( inquiry )0,                                 /* tp_is_gc */
+    0,                                            /* tp_bases */
+    0,                                            /* tp_mro */
+    0,                                            /* tp_cache */
+    0,                                            /* tp_subclasses */
+    0,                                            /* tp_weaklist */
+    ( destructor )0                               /* tp_del */
 };
 
 
@@ -541,14 +532,14 @@ DynamicScope_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
     if( !self )
         return 0;
     DynamicScope* scope = reinterpret_cast<DynamicScope*>( self );
-    scope->owner = newref( owner );
-    scope->f_locals = newref( f_locals );
-    scope->f_globals = newref( f_globals );
-    scope->f_builtins = newref( f_builtins );
+    scope->owner = cppy::incref( owner );
+    scope->f_locals = cppy::incref( f_locals );
+    scope->f_globals = cppy::incref( f_globals );
+    scope->f_builtins = cppy::incref( f_builtins );
     if( change && change != Py_None )
-        scope->change = newref( change );
+        scope->change = cppy::incref( change );
     if( tracer && tracer != Py_None )
-        scope->tracer = newref( tracer );
+        scope->tracer = cppy::incref( tracer );
     return self;
 }
 
@@ -594,8 +585,8 @@ DynamicScope_dealloc( DynamicScope* self )
 static PyObject*
 DynamicScope_getitem( DynamicScope* self, PyObject* key )
 {
-    if( !Py23Str_CheckExact( key ) )
-        return py_expected_type_fail( key, "str" );
+    if( !PyUnicode_CheckExact( key ) )
+        return type_error( key, "str" );
 
     PyObject* res;
 
@@ -604,19 +595,19 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
     {
         res = PyDict_GetItem( self->f_writes, key );
         if( res )
-            return newref( res );
+            return cppy::incref( res );
     }
 
     // 'self' magic
-    if( strcmp( (char *)Py23Str_AS_STRING( key ), "self" ) == 0 )
-        return newref( self->owner );
+    if( strcmp( (char *)PyUnicode_AsUTF8( key ), "self" ) == 0 )
+        return cppy::incref( self->owner );
 
     // 'change' magic
-    if( self->change && strcmp( (char *)Py23Str_AS_STRING( key ), "change" ) == 0 )
-        return newref( self->change );
+    if( self->change && strcmp( (char *)PyUnicode_AsUTF8( key ), "change" ) == 0 )
+        return cppy::incref( self->change );
 
     // 'nonlocals' magic
-    if( strcmp( (char *)Py23Str_AS_STRING( key ), "nonlocals" ) == 0 )
+    if( strcmp( (char *)PyUnicode_AsUTF8( key ), "nonlocals" ) == 0 )
     {
         if( !self->f_nonlocals )
         {
@@ -624,19 +615,19 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
             if( !self->f_nonlocals )
                 return 0;
             Nonlocals* nl = reinterpret_cast<Nonlocals*>( self->f_nonlocals );
-            nl->owner = newref( self->owner );
-            nl->tracer = xnewref( self->tracer );
+            nl->owner = cppy::incref( self->owner );
+            nl->tracer = cppy::xincref( self->tracer );
         }
-        return newref( self->f_nonlocals );
+        return cppy::incref( self->f_nonlocals );
     }
 
     // __scope__ magic
-    if( strcmp( (char *)Py23Str_AS_STRING( key ), "__scope__" ) == 0 )
-        return newref( pyobject_cast( self ) );
+    if( strcmp( (char *)PyUnicode_AsUTF8( key ), "__scope__" ) == 0 )
+        return cppy::incref( pyobject_cast( self ) );
 
     // _[tracer] magic
-    if( self->tracer && strcmp( (char *)Py23Str_AS_STRING( key ), "_[tracer]" ) == 0 )
-        return newref( pyobject_cast( self->tracer ) );
+    if( self->tracer && strcmp( (char *)PyUnicode_AsUTF8( key ), "_[tracer]" ) == 0 )
+        return cppy::incref( pyobject_cast( self->tracer ) );
 
     // value from the local scope
     res = PyObject_GetItem( self->f_locals, key );
@@ -652,12 +643,12 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
     // value from the global scope
     res = PyDict_GetItem( self->f_globals, key );
     if( res )
-        return newref( res );
+        return cppy::incref( res );
 
     // value from the builtin scope
     res = PyDict_GetItem( self->f_builtins, key );
     if( res )
-        return newref( res );
+        return cppy::incref( res );
 
     res = load_dynamic_attr( self->owner, key, self->tracer );
     if( res )
@@ -673,9 +664,9 @@ DynamicScope_getitem( DynamicScope* self, PyObject* key )
 static int
 DynamicScope_setitem( DynamicScope* self, PyObject* key, PyObject* value )
 {
-    if( !Py23Str_CheckExact( key ) )
+    if( !PyUnicode_CheckExact( key ) )
     {
-        py_expected_type_fail( key, "str" );
+        cppy::type_error( key, "str" );
         return -1;
     }
     if( !value )
@@ -698,9 +689,9 @@ DynamicScope_setitem( DynamicScope* self, PyObject* key, PyObject* value )
 static int
 DynamicScope_contains( DynamicScope* self, PyObject* key )
 {
-    if( !Py23Str_CheckExact( key ) )
+    if( !PyUnicode_CheckExact( key ) )
     {
-        py_expected_type_fail( key, "str" );
+        cppy::type_error( key, "str" );
         return -1;
     }
 
@@ -709,23 +700,23 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
         return 1;
 
     // 'self' magic
-    if( strcmp( (char *)Py23Str_AS_STRING( key ), "self" ) == 0 )
+    if( strcmp( (char *)PyUnicode_AsUTF8( key ), "self" ) == 0 )
         return 1;
 
     // 'change' magic
-    if( self->change && strcmp( (char *)Py23Str_AS_STRING( key ), "change" ) == 0 )
+    if( self->change && strcmp( (char *)PyUnicode_AsUTF8( key ), "change" ) == 0 )
         return 1;
 
     // 'nonlocals' magic
-    if( strcmp( (char *)Py23Str_AS_STRING( key ), "nonlocals" ) == 0 )
+    if( strcmp( (char *)PyUnicode_AsUTF8( key ), "nonlocals" ) == 0 )
         return 1;
 
     // __scope__ magic
-    if( strcmp( (char *)Py23Str_AS_STRING( key ), "__scope__" ) == 0 )
+    if( strcmp( (char *)PyUnicode_AsUTF8( key ), "__scope__" ) == 0 )
         return 1;
 
     // _[tracer] magic
-    if( self->tracer && strcmp( (char *)Py23Str_AS_STRING( key ), "_[tracer]" ) == 0 )
+    if( self->tracer && strcmp( (char *)PyUnicode_AsUTF8( key ), "_[tracer]" ) == 0 )
         return 1;
 
     // value from the local scope
@@ -753,80 +744,76 @@ DynamicScope_contains( DynamicScope* self, PyObject* key )
 
 static PyMappingMethods
 DynamicScope_as_mapping = {
-    (lenfunc)0,                             /*mp_length*/
-    (binaryfunc)DynamicScope_getitem,       /*mp_subscript*/
-    (objobjargproc)DynamicScope_setitem,    /*mp_ass_subscript*/
+    ( lenfunc )0,                             /*mp_length*/
+    ( binaryfunc )DynamicScope_getitem,       /*mp_subscript*/
+    ( objobjargproc )DynamicScope_setitem,    /*mp_ass_subscript*/
 };
 
 
 static PySequenceMethods
 DynamicScope_as_sequence = {
-    0,                                  /* sq_length */
-    0,                                  /* sq_concat */
-    0,                                  /* sq_repeat */
-    0,                                  /* sq_item */
-    0,                                  /* sq_slice */
-    0,                                  /* sq_ass_item */
-    0,                                  /* sq_ass_slice */
-    (objobjproc)DynamicScope_contains,  /* sq_contains */
-    0,                                  /* sq_inplace_concat */
-    0,                                  /* sq_inplace_repeat */
+    0,                                    /* sq_length */
+    0,                                    /* sq_concat */
+    0,                                    /* sq_repeat */
+    0,                                    /* sq_item */
+    0,                                    /* sq_slice */
+    0,                                    /* sq_ass_item */
+    0,                                    /* sq_ass_slice */
+    ( objobjproc )DynamicScope_contains,  /* sq_contains */
+    0,                                    /* sq_inplace_concat */
+    0,                                    /* sq_inplace_repeat */
 };
 
 
 PyTypeObject DynamicScope_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.dynamicscope.DynamicScope",             /* tp_name */
-    sizeof( DynamicScope ),                        /* tp_basicsize */
-    0,                                             /* tp_itemsize */
-    (destructor)DynamicScope_dealloc,              /* tp_dealloc */
-    (printfunc)0,                                  /* tp_print */
-    (getattrfunc)0,                                /* tp_getattr */
-    (setattrfunc)0,                                /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                          /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                                   /* tp_reserved */
-#else
-	( cmpfunc )0,                                  /* tp_compare */
-#endif
-    (reprfunc)0,                                   /* tp_repr */
-    (PyNumberMethods*)0,                           /* tp_as_number */
-    (PySequenceMethods*)&DynamicScope_as_sequence, /* tp_as_sequence */
-    (PyMappingMethods*)&DynamicScope_as_mapping,   /* tp_as_mapping */
-    (hashfunc)0,                                   /* tp_hash */
-    (ternaryfunc)0,                                /* tp_call */
-    (reprfunc)0,                                   /* tp_str */
-    (getattrofunc)0,                               /* tp_getattro */
-    (setattrofunc)0,                               /* tp_setattro */
-    (PyBufferProcs*)0,                             /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC|Py_TPFLAGS_DICT_SUBCLASS, /* tp_flags */
-    0,                                             /* Documentation string */
-    (traverseproc)DynamicScope_traverse,           /* tp_traverse */
-    (inquiry)DynamicScope_clear,                   /* tp_clear */
-    (richcmpfunc)0,                                /* tp_richcompare */
-    0,                                             /* tp_weaklistoffset */
-    (getiterfunc)0,                                /* tp_iter */
-    (iternextfunc)0,                               /* tp_iternext */
-    (struct PyMethodDef*)0,                        /* tp_methods */
-    (struct PyMemberDef*)0,                        /* tp_members */
-    0,                                             /* tp_getset */
-    0,                                             /* tp_base */
-    0,                                             /* tp_dict */
-    (descrgetfunc)0,                               /* tp_descr_get */
-    (descrsetfunc)0,                               /* tp_descr_set */
-    0,                                             /* tp_dictoffset */
-    (initproc)0,                                   /* tp_init */
-    (allocfunc)PyType_GenericAlloc,                /* tp_alloc */
-    (newfunc)DynamicScope_new,                     /* tp_new */
-    (freefunc)PyObject_GC_Del,                     /* tp_free */
-    (inquiry)0,                                    /* tp_is_gc */
-    0,                                             /* tp_bases */
-    0,                                             /* tp_mro */
-    0,                                             /* tp_cache */
-    0,                                             /* tp_subclasses */
-    0,                                             /* tp_weaklist */
-    (destructor)0                                  /* tp_del */
+    "enaml.dynamicscope.DynamicScope",               /* tp_name */
+    sizeof( DynamicScope ),                          /* tp_basicsize */
+    0,                                               /* tp_itemsize */
+    ( destructor )DynamicScope_dealloc,              /* tp_dealloc */
+    ( printfunc )0,                                  /* tp_print */
+    ( getattrfunc )0,                                /* tp_getattr */
+    ( setattrfunc )0,                                /* tp_setattr */
+	( PyAsyncMethods* )0,                            /* tp_as_async */
+    ( reprfunc )0,                                   /* tp_repr */
+    ( PyNumberMethods* )0,                           /* tp_as_number */
+    ( PySequenceMethods* )&DynamicScope_as_sequence, /* tp_as_sequence */
+    ( PyMappingMethods* )&DynamicScope_as_mapping,   /* tp_as_mapping */
+    ( hashfunc )0,                                   /* tp_hash */
+    ( ternaryfunc )0,                                /* tp_call */
+    ( reprfunc )0,                                   /* tp_str */
+    ( getattrofunc )0,                               /* tp_getattro */
+    ( setattrofunc )0,                               /* tp_setattro */
+    ( PyBufferProcs* )0,                             /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT
+    |Py_TPFLAGS_HAVE_GC
+    |Py_TPFLAGS_DICT_SUBCLASS,                       /* tp_flags */
+    0,                                               /* Documentation string */
+    ( traverseproc )DynamicScope_traverse,           /* tp_traverse */
+    ( inquiry )DynamicScope_clear,                   /* tp_clear */
+    ( richcmpfunc )0,                                /* tp_richcompare */
+    0,                                               /* tp_weaklistoffset */
+    ( getiterfunc )0,                                /* tp_iter */
+    ( iternextfunc )0,                               /* tp_iternext */
+    ( struct PyMethodDef* )0,                        /* tp_methods */
+    ( struct PyMemberDef* )0,                        /* tp_members */
+    0,                                               /* tp_getset */
+    0,                                               /* tp_base */
+    0,                                               /* tp_dict */
+    ( descrgetfunc) 0,                               /* tp_descr_get */
+    ( descrsetfunc )0,                               /* tp_descr_set */
+    0,                                               /* tp_dictoffset */
+    ( initproc )0,                                   /* tp_init */
+    ( allocfunc )PyType_GenericAlloc,                /* tp_alloc */
+    ( newfunc )DynamicScope_new,                     /* tp_new */
+    ( freefunc )PyObject_GC_Del,                     /* tp_free */
+    ( inquiry )0,                                    /* tp_is_gc */
+    0,                                               /* tp_bases */
+    0,                                               /* tp_mro */
+    0,                                               /* tp_cache */
+    0,                                               /* tp_subclasses */
+    0,                                               /* tp_weaklist */
+    ( destructor )0                                  /* tp_del */
 };
 
 struct module_state {
@@ -839,7 +826,6 @@ dynamicscope_methods[] = {
     { 0 } // sentinel
 };
 
-#if PY_MAJOR_VERSION >= 3
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
@@ -866,39 +852,27 @@ static struct PyModuleDef moduledef = {
         NULL
 };
 
-#else
 
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
-
-#endif
-
-MOD_INIT_FUNC(dynamicscope)
+PyMODINIT_FUNC PyInit_dynamicscope( void )
 {
-#if PY_MAJOR_VERSION >= 3
-    PyObject *mod = PyModule_Create(&moduledef);
-#else
-    PyObject* mod = Py_InitModule( "dynamicscope", dynamicscope_methods );
-#endif
+    cppy::ptr mod( PyModule_Create(&moduledef) );
     if( !mod )
-        INITERROR;
-    parent_str = Py23Str_FromString( "_parent" );
+        return NULL;
+    parent_str = PyUnicode_FromString( "_parent" );
     if( !parent_str )
-        INITERROR;
-    dynamic_load_str = Py23Str_FromString( "dynamic_load" );
+        return NULL;
+    dynamic_load_str = PyUnicode_FromString( "dynamic_load" );
     if( !dynamic_load_str )
-        INITERROR;
+        return NULL;
     UserKeyError = PyErr_NewException( "dynamicscope.UserKeyError", 0, 0 );
     if( !UserKeyError )
-        INITERROR;
+        return NULL;
     if( PyType_Ready( &Nonlocals_Type ) < 0 )
-        INITERROR;
+        return NULL;
     if( PyType_Ready( &DynamicScope_Type ) < 0 )
-        INITERROR;
-    PyModule_AddObject( mod, "UserKeyError", newref( UserKeyError ) );
-    PyModule_AddObject( mod, "DynamicScope", newref( pyobject_cast( &DynamicScope_Type ) ) );
+        return NULL;
+    PyModule_AddObject( mod.get(), "UserKeyError", cppy::incref( UserKeyError ) );
+    PyModule_AddObject( mod.get(), "DynamicScope", cppy::incref( pyobject_cast( &DynamicScope_Type ) ) );
 
-#if PY_MAJOR_VERSION >= 3
-    return mod;
-#endif
+    return mod.release();
 }

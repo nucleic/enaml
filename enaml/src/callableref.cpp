@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013, Nucleic Development Team.
+| Copyright (c) 2013-2018, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -7,8 +7,7 @@
 |----------------------------------------------------------------------------*/
 #include <iostream>
 #include <sstream>
-#include "pythonhelpers.h"
-#include "py23compat.h"
+#include <cppy/cppy.h>
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
@@ -18,7 +17,6 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
 
-using namespace PythonHelpers;
 
 extern "C" {
 
@@ -79,13 +77,13 @@ CallableRef_dealloc( CallableRef* self )
 static PyObject*
 CallableRef_call( CallableRef* self, PyObject* args, PyObject* kwargs )
 {
-    PyWeakrefPtr objrefptr( self->objref, true );
-    PyObjectPtr objptr( objrefptr.get_object() );
-    if( objptr.is_None() )
+    cppy::ptr objrefptr( cppy::incref( self->objref ) );
+    cppy::ptr objptr( PyWeakref_GET_OBJECT( objrefptr.get() ) );
+    if( objptr.is_none() )
         Py_RETURN_NONE;
-    PyObjectPtr argsptr( args, true );
-    PyObjectPtr kwargsptr( kwargs, true );
-    return objptr( argsptr, kwargsptr ).release();
+    cppy::ptr argsptr( cppy::incref( args ) );
+    cppy::ptr kwargsptr( cppy::incref( kwargs ) );
+    return objptr.call( argsptr, kwargsptr ).release();
 }
 
 
@@ -94,18 +92,18 @@ CallableRef_richcompare( CallableRef* self, PyObject* other, int opid )
 {
     if( opid == Py_EQ )
     {
-        PyObjectPtr sref( self->objref, true );
+        cppy::incref sref( cppy::incref( self->objref ) );
         if( CallableRef_Check( other ) )
         {
             CallableRef* cref_other = reinterpret_cast<CallableRef*>( other );
-            PyObjectPtr oref( cref_other->objref, true );
+            cppy::incref oref( cppy::incref( cref_other->objref ) );
             if( sref.richcompare( oref, Py_EQ ) )
                 Py_RETURN_TRUE;
             Py_RETURN_FALSE;
         }
         if( PyWeakref_CheckRef( other ) )
         {
-            PyObjectPtr oref( other, true );
+            cppy::ptr oref( cppy::incref( other ) );
             if( sref.richcompare( oref, Py_EQ ) )
                 Py_RETURN_TRUE;
             Py_RETURN_FALSE;
@@ -138,57 +136,53 @@ PyDoc_STRVAR(CallableRef__doc__,
 
 PyTypeObject CallableRef_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.callableref.CallableRef",        /* tp_name */
-    sizeof( CallableRef ),                  /* tp_basicsize */
-    0,                                      /* tp_itemsize */
-    (destructor)CallableRef_dealloc,        /* tp_dealloc */
-    (printfunc)0,                           /* tp_print */
-    (getattrfunc)0,                         /* tp_getattr */
-    (setattrfunc)0,                         /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                   /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                            /* tp_reserved */
-#else
-	( cmpfunc )0,                           /* tp_compare */
-#endif
-    (reprfunc)0,                            /* tp_repr */
-    (PyNumberMethods*)0,                    /* tp_as_number */
-    (PySequenceMethods*)0,                  /* tp_as_sequence */
-    (PyMappingMethods*)0,                   /* tp_as_mapping */
-    (hashfunc)0,                            /* tp_hash */
-    (ternaryfunc)CallableRef_call,          /* tp_call */
-    (reprfunc)0,                            /* tp_str */
-    (getattrofunc)0,                        /* tp_getattro */
-    (setattrofunc)0,                        /* tp_setattro */
-    (PyBufferProcs*)0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /* tp_flags */
-    CallableRef__doc__,                     /* Documentation string */
-    (traverseproc)CallableRef_traverse,     /* tp_traverse */
-    (inquiry)CallableRef_clear,             /* tp_clear */
-    (richcmpfunc)CallableRef_richcompare,   /* tp_richcompare */
-    0,                                      /* tp_weaklistoffset */
-    (getiterfunc)0,                         /* tp_iter */
-    (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)0,                 /* tp_methods */
-    (struct PyMemberDef*)0,                 /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    (descrgetfunc)0,                        /* tp_descr_get */
-    (descrsetfunc)0,                        /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)0,                            /* tp_init */
-    (allocfunc)PyType_GenericAlloc,         /* tp_alloc */
-    (newfunc)CallableRef_new,               /* tp_new */
-    (freefunc)0,                            /* tp_free */
-    (inquiry)0,                             /* tp_is_gc */
-    0,                                      /* tp_bases */
-    0,                                      /* tp_mro */
-    0,                                      /* tp_cache */
-    0,                                      /* tp_subclasses */
-    0,                                      /* tp_weaklist */
-    (destructor)0                           /* tp_del */
+    "enaml.callableref.CallableRef",          /* tp_name */
+    sizeof( CallableRef ),                    /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    ( destructor )CallableRef_dealloc,        /* tp_dealloc */
+    ( printfunc )0,                           /* tp_print */
+    ( getattrfunc )0,                         /* tp_getattr */
+    ( setattrfunc )0,                         /* tp_setattr */
+	( PyAsyncMethods* )0,                     /* tp_as_async */
+    ( reprfunc )0,                            /* tp_repr */
+    ( PyNumberMethods* )0,                    /* tp_as_number */
+    ( PySequenceMethods* )0,                  /* tp_as_sequence */
+    ( PyMappingMethods* )0,                   /* tp_as_mapping */
+    ( hashfunc )0,                            /* tp_hash */
+    ( ternaryfunc )CallableRef_call,          /* tp_call */
+    ( reprfunc )0,                            /* tp_str */
+    ( getattrofunc )0,                        /* tp_getattro */
+    ( setattrofunc )0,                        /* tp_setattro */
+    ( PyBufferProcs* )0,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT
+    |Py_TPFLAGS_BASETYPE
+    |Py_TPFLAGS_HAVE_GC,                      /* tp_flags */
+    CallableRef__doc__,                       /* Documentation string */
+    ( traverseproc )CallableRef_traverse,     /* tp_traverse */
+    ( inquiry )CallableRef_clear,             /* tp_clear */
+    ( richcmpfunc )CallableRef_richcompare,   /* tp_richcompare */
+    0,                                        /* tp_weaklistoffset */
+    ( getiterfunc )0,                         /* tp_iter */
+    ( iternextfunc )0,                        /* tp_iternext */
+    ( struct PyMethodDef* )0,                 /* tp_methods */
+    ( struct PyMemberDef* )0,                 /* tp_members */
+    0,                                        /* tp_getset */
+    0,                                        /* tp_base */
+    0,                                        /* tp_dict */
+    ( descrgetfunc )0,                        /* tp_descr_get */
+    ( descrsetfunc )0,                        /* tp_descr_set */
+    0,                                        /* tp_dictoffset */
+    ( initproc )0,                            /* tp_init */
+    ( allocfunc )PyType_GenericAlloc,         /* tp_alloc */
+    ( newfunc )CallableRef_new,               /* tp_new */
+    ( freefunc )0,                            /* tp_free */
+    ( inquiry )0,                             /* tp_is_gc */
+    0,                                        /* tp_bases */
+    0,                                        /* tp_mro */
+    0,                                        /* tp_cache */
+    0,                                        /* tp_subclasses */
+    0,                                        /* tp_weaklist */
+    ( destructor )0                           /* tp_del */
 };
 
 
@@ -209,7 +203,6 @@ callableref_methods[] = {
     { 0 } // Sentinel
 };
 
-#if PY_MAJOR_VERSION >= 3
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
@@ -235,33 +228,21 @@ static struct PyModuleDef moduledef = {
         NULL
 };
 
-#else
 
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
-
-#endif
-
-MOD_INIT_FUNC(callableref)
+PyMODINIT_FUNC PyInit_callableref( void )
 {
-#if PY_MAJOR_VERSION >= 3
-    PyObject *mod = PyModule_Create(&moduledef);
-#else
-    PyObject* mod = Py_InitModule( "callableref", callableref_methods );
-#endif
+    cppy::ptr mod( PyModule_Create(&moduledef) );
 
     if( !mod )
-        INITERROR;
+        return NULL;
 
     if( PyType_Ready( &CallableRef_Type ) )
-        INITERROR;
+        return NULL;
 
-    PyObjectPtr cr_type( reinterpret_cast<PyObject*>( &CallableRef_Type ), true );
-    PyModule_AddObject( mod, "CallableRef", cr_type.release() );
+    cppy::ptr cr_type( cppy::incref( reinterpret_cast<PyObject*>( &CallableRef_Type ) ) );
+    PyModule_AddObject( mod.get(), "CallableRef", cr_type.release() );
 
-#if PY_MAJOR_VERSION >= 3
-    return mod;
-#endif
+    return mod.release();
 }
 
 } // extern "C"

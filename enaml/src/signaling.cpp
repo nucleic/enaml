@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2013, Nucleic Development Team.
+| Copyright (c) 2013-2018, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
@@ -8,8 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include "pythonhelpers.h"
-#include "py23compat.h"
+#include <cppy/cppy.h>
 
 
 #ifdef __clang__
@@ -20,8 +19,6 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
 
-
-using namespace PythonHelpers;
 
 extern "C" {
 
@@ -66,31 +63,43 @@ static int
 BoundSignal_Check( PyObject* obj );
 
 
+inline bool load_obj_dict( cppy::ptr& objptr, cppy::ptr& out, bool forcecreate=false )
+{
+    PyObject** dict = _PyObject_GetDictPtr( objptr.get() );
+    if( !dict )
+        return false;
+    if( forcecreate && !*dict )
+        *dict = PyDict_New();
+    out = cppy::ptr( cppy::incref( *dict ) );
+    return true;
+}
+
+
 /*-----------------------------------------------------------------------------
 | Signal
 |----------------------------------------------------------------------------*/
 static PyObject*
 Signal_new( PyTypeObject* type, PyObject* args, PyObject* kwargs )
 {
-    PyDictPtr kwargsptr( kwargs, true );
-    if( ( kwargsptr ) && ( kwargsptr.size() > 0 ) )
+    cppy::ptr kwargsptr( kwargs, true );
+    if( ( kwargsptr ) && ( PyDict_Size( kwargsptr.get() ) > 0 ) )
     {
         std::ostringstream ostr;
         ostr << "Signal() takes no keyword arguments (";
-        ostr << kwargsptr.size() << " given)";
-        return py_type_fail( ostr.str().c_str() );
+        ostr << PyDict_Size( kwargsptr.get() ) << " given)";
+        return cppy::type::error( ostr.str().c_str() );
     }
 
-    PyTuplePtr argsptr( args, true );
-    if( argsptr.size() > 0 )
+    cppy::ptr argsptr( args, true );
+    if( PyTuple_Size( argsptr.get() ) > 0 )
     {
         std::ostringstream ostr;
         ostr << "Signal() takes no arguments (";
-        ostr << argsptr.size() << " given)";
-        return py_type_fail( ostr.str().c_str() );
+        ostr << PyTuple_Size( argsptr.get() ) << " given)";
+        return cppy::type_error( ostr.str().c_str() );
     }
 
-    PyObjectPtr self( PyType_GenericNew( type, args, kwargs ) );
+    cppy::ptr self( PyType_GenericNew( type, args, kwargs ) );
     if( !self )
         return 0;
 
@@ -125,13 +134,13 @@ Signal_dealloc( Signal* self )
 static PyObject*
 Signal__get__( PyObject* self, PyObject* obj, PyObject* type )
 {
-    PyObjectPtr selfptr( self, true );
+    cppy::ptr selfptr( cppy::incref( self ) );
     if( !obj )
         return selfptr.release();
-    PyObjectPtr objref( PyWeakref_NewRef( obj, 0 ) );
+    cppy::ptr objref( PyWeakref_NewRef( obj, 0 ) );
     if( !objref )
         return 0;
-    PyObjectPtr boundsig( _BoundSignal_New( self, objref.get() ) );
+    cppy::ptr boundsig( _BoundSignal_New( self, objref.get() ) );
     if( !boundsig )
         return 0;
     return boundsig.release();
@@ -143,38 +152,38 @@ Signal__set__( Signal* self, PyObject* obj, PyObject* value )
 {
     if( value )
     {
-        py_attr_fail( "can't set read only Signal" );
+        cppy::attribute_error( "can't set read only Signal" );
         return -1;
     }
 
-    PyObjectPtr objptr( obj, true );
-    PyDictPtr dict;
-    if( !objptr.load_dict( dict ) )
+    cppy::ptr objptr( cppy::incref( obj ) );
+    cppy::ptr dict;
+    if( !load_obj_dict( objptr, dict ) )
     {
-        py_no_attr_fail( objptr.get(), "__dict__" );
+        cppy::attribute_error( objptr.get(), "__dict__" );
         return -1;
     }
     if( !dict )
         return 0;
 
-    PyObjectPtr key( SignalsKey, true );
-    PyDictPtr signals( dict.get_item( key ) );
+    cppy::ptr key( cppy::incref( SignalsKey ) );
+    cppy::ptr signals( dict.getitem( key ) );
     if( !signals )
         return 0;
-    if( !signals.check_exact() )
+    if( !PyDict_CheckExact( signals.get() ) )
     {
-        py_expected_type_fail( signals.get(), "dict" );
+        cppy::type_error( signals.get(), "dict" );
         return -1;
     }
 
-    PyObjectPtr owner( reinterpret_cast<PyObject*>( self ), true );
-    if( signals.get_item( owner ) )
+    cppy::ptr owner( cppy::incref( pyobject_cast( self ) ) );
+    if( signals.getitem( owner ) )
     {
-        if( !signals.del_item( owner ) )
+        if( !signals.delitem( owner ) )
             return -1;
-        if( signals.size() == 0 )
+        if( PyDict_Size( signals.get() ) == 0 )
         {
-            if( !dict.del_item( key ) )
+            if( !dict.delitem( key ) )
                 return -1;
         }
     }
@@ -186,16 +195,16 @@ Signal__set__( Signal* self, PyObject* obj, PyObject* value )
 static PyObject*
 Signal_disconnect_all( PyObject* ignored, PyObject* obj )
 {
-    PyObjectPtr objptr( obj, true );
-    PyDictPtr dict;
-    if( !objptr.load_dict( dict ) )
-        return py_no_attr_fail( obj, "__dict__" );
+    cppy::ptr objptr( cppy::incref( obj ) );
+    cppy::ptr dict;
+    if( !load_obj_dict( objptr, dict ) )
+        return cppy::attribute_error( obj, "__dict__" );
     if( !dict )
         return 0;
-    PyObjectPtr key( SignalsKey, true );
-    if( dict.get_item( key ) )
+    cppy::ptr key( cppy::incref( SignalsKey ) );
+    if( dict.getitem( key ) )
     {
-        if( !dict.del_item( key ) )
+        if( !dict.delitem( key ) )
             return 0;
     }
     Py_RETURN_NONE;
@@ -226,57 +235,53 @@ PyDoc_STRVAR(Signal__doc__,
 
 PyTypeObject Signal_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.signaling.Signal",               /* tp_name */
-    sizeof( Signal ),                       /* tp_basicsize */
-    0,                                      /* tp_itemsize */
-    (destructor)Signal_dealloc,             /* tp_dealloc */
-    (printfunc)0,                           /* tp_print */
-    (getattrfunc)0,                         /* tp_getattr */
-    (setattrfunc)0,                         /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                   /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                            /* tp_reserved */
-#else
-	( cmpfunc )0,                           /* tp_compare */
-#endif
-    (reprfunc)0,                            /* tp_repr */
-    (PyNumberMethods*)0,                    /* tp_as_number */
-    (PySequenceMethods*)0,                  /* tp_as_sequence */
-    (PyMappingMethods*)0,                   /* tp_as_mapping */
-    (hashfunc)0,                            /* tp_hash */
-    (ternaryfunc)0,                         /* tp_call */
-    (reprfunc)0,                            /* tp_str */
-    (getattrofunc)0,                        /* tp_getattro */
-    (setattrofunc)0,                        /* tp_setattro */
-    (PyBufferProcs*)0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC, /* tp_flags */
-    Signal__doc__,                          /* Documentation string */
-    (traverseproc)Signal_traverse,          /* tp_traverse */
-    (inquiry)Signal_clear,                  /* tp_clear */
-    (richcmpfunc)0,                         /* tp_richcompare */
-    0,                                      /* tp_weaklistoffset */
-    (getiterfunc)0,                         /* tp_iter */
-    (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)Signal_methods,    /* tp_methods */
-    (struct PyMemberDef*)0,                 /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    (descrgetfunc)Signal__get__,            /* tp_descr_get */
-    (descrsetfunc)Signal__set__,            /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)0,                            /* tp_init */
-    (allocfunc)PyType_GenericAlloc,         /* tp_alloc */
-    (newfunc)Signal_new,                    /* tp_new */
-    (freefunc)0,                            /* tp_free */
-    (inquiry)0,                             /* tp_is_gc */
-    0,                                      /* tp_bases */
-    0,                                      /* tp_mro */
-    0,                                      /* tp_cache */
-    0,                                      /* tp_subclasses */
-    0,                                      /* tp_weaklist */
-    (destructor)0                           /* tp_del */
+    "enaml.signaling.Signal",                 /* tp_name */
+    sizeof( Signal ),                         /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    ( destructor )Signal_dealloc,             /* tp_dealloc */
+    ( printfunc )0,                           /* tp_print */
+    ( getattrfunc )0,                         /* tp_getattr */
+    ( setattrfunc )0,                         /* tp_setattr */
+	( PyAsyncMethods* )0,                     /* tp_as_async */
+    ( reprfunc )0,                            /* tp_repr */
+    ( PyNumberMethods* )0,                    /* tp_as_number */
+    ( PySequenceMethods* )0,                  /* tp_as_sequence */
+    ( PyMappingMethods* )0,                   /* tp_as_mapping */
+    ( hashfunc )0,                            /* tp_hash */
+    ( ternaryfunc )0,                         /* tp_call */
+    ( reprfunc )0,                            /* tp_str */
+    ( getattrofunc )0,                        /* tp_getattro */
+    ( setattrofunc )0,                        /* tp_setattro */
+    ( PyBufferProcs* )0,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT
+    |Py_TPFLAGS_BASETYPE
+    |Py_TPFLAGS_HAVE_GC,                      /* tp_flags */
+    Signal__doc__,                            /* Documentation string */
+    ( traverseproc )Signal_traverse,          /* tp_traverse */
+    ( inquiry )Signal_clear,                  /* tp_clear */
+    ( richcmpfunc )0,                         /* tp_richcompare */
+    0,                                        /* tp_weaklistoffset */
+    ( getiterfunc )0,                         /* tp_iter */
+    ( iternextfunc )0,                        /* tp_iternext */
+    ( struct PyMethodDef* )Signal_methods,    /* tp_methods */
+    ( struct PyMemberDef* )0,                 /* tp_members */
+    0,                                        /* tp_getset */
+    0,                                        /* tp_base */
+    0,                                        /* tp_dict */
+    ( descrgetfunc )Signal__get__,            /* tp_descr_get */
+    ( descrsetfunc )Signal__set__,            /* tp_descr_set */
+    0,                                        /* tp_dictoffset */
+    ( initproc )0,                            /* tp_init */
+    ( allocfunc )PyType_GenericAlloc,         /* tp_alloc */
+    ( newfunc )Signal_new,                    /* tp_new */
+    ( freefunc )0,                            /* tp_free */
+    ( inquiry )0,                             /* tp_is_gc */
+    0,                                        /* tp_bases */
+    0,                                        /* tp_mro */
+    0,                                        /* tp_cache */
+    0,                                        /* tp_subclasses */
+    0,                                        /* tp_weaklist */
+    ( destructor )0                           /* tp_del */
 };
 
 
@@ -325,71 +330,80 @@ _Disconnector_dealloc( _Disconnector* self )
 {
     PyObject_GC_UnTrack( self );
     _Disconnector_clear( self );
-    Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
+    Py_TYPE(self)->tp_free( pyobject_cast( self ) );
 }
 
 
 static PyObject*
 _Disconnector_call( _Disconnector* self, PyObject* args, PyObject* kwargs )
 {
-    PyDictPtr kwargsptr( kwargs, true );
-    if( ( kwargsptr ) && ( kwargsptr.size() > 0 ) )
+    cppy::ptr kwargsptr( kwargs, true );
+    if( ( kwargsptr ) && ( PyDict_Size( kwargsptr.get() ) > 0 ) )
     {
         std::ostringstream ostr;
         ostr << "_Disconnector.__call__() takes no keyword arguments (";
-        ostr << kwargsptr.size() << " given)";
-        return py_type_fail( ostr.str().c_str() );
+        ostr << PyDict_Size( kwargsptr.get() ) << " given)";
+        return cppy::type_error( ostr.str().c_str() );
     }
 
-    PyTuplePtr argsptr( args, true );
-    if( argsptr.size() != 1 )
+    cppy::ptr argsptr( args, true );
+    if( PyTuple_Size( argsptr.get() ) != 1 )
     {
         std::ostringstream ostr;
         ostr << "_Disconnector.__call__() takes 1 argument (";
-        ostr << argsptr.size() << " given)";
-        return py_type_fail( ostr.str().c_str() );
+        ostr << PyTuple_Size( argsptr.get() ) << " given)";
+        return cppy::type_error( ostr.str().c_str() );
     }
 
-    PyWeakrefPtr objref( self->objref, true );
-    PyObjectPtr obj( objref.get_object() );
-    if( obj.is_None() )
+    cppy::ptr objref( cppy::incref( self->objref ) );
+    cppy::ptr obj( cppy::incref( PyWeakref_GET_OBJECT( objref.get() ) ) );
+    if( obj.is_none() )
         Py_RETURN_NONE;
 
-    PyDictPtr dict;
-    if( !obj.load_dict( dict ) )
-        return py_no_attr_fail( obj.get(), "__dict__" );
+    cppy::ptr dict;
+    if( !load_obj_dict( obj, dict ) )
+        return cppy::attribute_error( obj.get(), "__dict__" );
     if( !dict )
         Py_RETURN_NONE;
 
-    PyObjectPtr key( SignalsKey, true );
-    PyDictPtr signals( dict.get_item( key ) );
+    cppy::ptr key( cppy::incref( SignalsKey ) );
+    cppy::ptr signals( dict.getitem( key ) );
     if( !signals )
         Py_RETURN_NONE;
-    if( !signals.check_exact() )
-        return py_expected_type_fail( signals.get(), "dict" );
+    if( !PyDict_CheckExact( signals.get() ) )
+        return cppy::type_error( signals.get(), "dict" );
 
-    PyObjectPtr owner( self->owner, true );
-    PyListPtr slots( signals.get_item( owner ) );
+    cppy::ptr owner( cppy::incref( self->owner ) );
+    cppy::ptr slots( signals.getitem( owner ) );
     if( !slots )
         Py_RETURN_NONE;
-    if( !slots.check_exact() )
-        return py_expected_type_fail( slots.get(), "list" );
+    if( !PyDict_CheckExact( slots.check_exact() ) )
+        return cppy::type_error( slots.get(), "list" );
 
-    PyObjectPtr slot( argsptr.get_item( 0 ) );
-    Py_ssize_t index = slots.index( slot );
+    cppy::ptr slot( cppy::incref( PyTuple_GET_ITEM( argsptr.get(), 0 ) ) );
+    Py_ssize_t index = -1;
+    Py_ssize_t maxidx = PyList_Size( slots.get() );
+    for( Py_ssize_t idx = 0; idx < maxidx; idx++ )
+    {
+        PyObject* other = PyList_GET_ITEM( idx ) );
+        if( slot.richcmp( other, Py_EQ ) )
+            index = idx;
+            break;
+    }
+
     if( index != -1 )
     {
-        if( !slots.del_item( index ) )
+        if( !slots.delitem( index ) )
             return 0;
         // A _Disconnector is the first item in the list and is created
         // on demand. The list is deleted when that is the only item left.
-        if( slots.size() == 1 )
+        if( PyList_Size( slots.get() ) == 1 )
         {
-            if( !signals.del_item( owner ) )
+            if( !signals.delitem( owner ) )
                 return 0;
             if( signals.size() == 0 )
             {
-                if( !dict.del_item( key ) )
+                if( !dict.delitem( key ) )
                     return 0;
             }
         }
@@ -409,66 +423,60 @@ PyDoc_STRVAR(_Disconnector__doc__,
 
 PyTypeObject _Disconnector_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-    "enaml.signaling._Disconnector",              /* tp_name */
-    sizeof( _Disconnector ),                /* tp_basicsize */
-    0,                                      /* tp_itemsize */
-    (destructor)_Disconnector_dealloc,      /* tp_dealloc */
-    (printfunc)0,                           /* tp_print */
-    (getattrfunc)0,                         /* tp_getattr */
-    (setattrfunc)0,                         /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                   /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                            /* tp_reserved */
-#else
-	( cmpfunc )0,                           /* tp_compare */
-#endif
-    (reprfunc)0,                            /* tp_repr */
-    (PyNumberMethods*)0,                    /* tp_as_number */
-    (PySequenceMethods*)0,                  /* tp_as_sequence */
-    (PyMappingMethods*)0,                   /* tp_as_mapping */
-    (hashfunc)0,                            /* tp_hash */
-    (ternaryfunc)_Disconnector_call,        /* tp_call */
-    (reprfunc)0,                            /* tp_str */
-    (getattrofunc)0,                        /* tp_getattro */
-    (setattrofunc)0,                        /* tp_setattro */
-    (PyBufferProcs*)0,                      /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC, /* tp_flags */
-    _Disconnector__doc__,                   /* Documentation string */
-    (traverseproc)_Disconnector_traverse,   /* tp_traverse */
-    (inquiry)_Disconnector_clear,           /* tp_clear */
-    (richcmpfunc)0,                         /* tp_richcompare */
-    0,                                      /* tp_weaklistoffset */
-    (getiterfunc)0,                         /* tp_iter */
-    (iternextfunc)0,                        /* tp_iternext */
-    (struct PyMethodDef*)0,                 /* tp_methods */
-    (struct PyMemberDef*)0,                 /* tp_members */
-    0,                                      /* tp_getset */
-    0,                                      /* tp_base */
-    0,                                      /* tp_dict */
-    (descrgetfunc)0,                        /* tp_descr_get */
-    (descrsetfunc)0,                        /* tp_descr_set */
-    0,                                      /* tp_dictoffset */
-    (initproc)0,                            /* tp_init */
-    (allocfunc)PyType_GenericAlloc,         /* tp_alloc */
-    (newfunc)_Disconnector_new,             /* tp_new */
-    (freefunc)0,                            /* tp_free */
-    (inquiry)0,                             /* tp_is_gc */
-    0,                                      /* tp_bases */
-    0,                                      /* tp_mro */
-    0,                                      /* tp_cache */
-    0,                                      /* tp_subclasses */
-    0,                                      /* tp_weaklist */
-    (destructor)0                           /* tp_del */
+    "enaml.signaling._Disconnector",          /* tp_name */
+    sizeof( _Disconnector ),                  /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    ( destructor )_Disconnector_dealloc,      /* tp_dealloc */
+    ( printfunc )0,                           /* tp_print */
+    ( getattrfunc )0,                         /* tp_getattr */
+    ( setattrfunc )0,                         /* tp_setattr */
+	( PyAsyncMethods* )0,                     /* tp_as_async */
+    ( reprfunc )0,                            /* tp_repr */
+    ( PyNumberMethods* )0,                    /* tp_as_number */
+    ( PySequenceMethods* )0,                  /* tp_as_sequence */
+    ( PyMappingMethods* )0,                   /* tp_as_mapping */
+    ( hashfunc )0,                            /* tp_hash */
+    ( ternaryfunc )_Disconnector_call,        /* tp_call */
+    ( reprfunc )0,                            /* tp_str */
+    ( getattrofunc )0,                        /* tp_getattro */
+    ( setattrofunc )0,                        /* tp_setattro */
+    ( PyBufferProcs* )0,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,    /* tp_flags */
+    _Disconnector__doc__,                     /* Documentation string */
+    ( traverseproc )_Disconnector_traverse,   /* tp_traverse */
+    ( inquiry )_Disconnector_clear,           /* tp_clear */
+    ( richcmpfunc )0,                         /* tp_richcompare */
+    0,                                        /* tp_weaklistoffset */
+    ( getiterfunc )0,                         /* tp_iter */
+    ( iternextfunc )0,                        /* tp_iternext */
+    ( struct PyMethodDef* )0,                 /* tp_methods */
+    ( struct PyMemberDef* )0,                 /* tp_members */
+    0,                                        /* tp_getset */
+    0,                                        /* tp_base */
+    0,                                        /* tp_dict */
+    ( descrgetfunc )0,                        /* tp_descr_get */
+    ( descrsetfunc )0,                        /* tp_descr_set */
+    0,                                        /* tp_dictoffset */
+    ( initproc )0,                            /* tp_init */
+    ( allocfunc )PyType_GenericAlloc,         /* tp_alloc */
+    ( newfunc )_Disconnector_new,             /* tp_new */
+    ( freefunc )0,                            /* tp_free */
+    ( inquiry )0,                             /* tp_is_gc */
+    0,                                        /* tp_bases */
+    0,                                        /* tp_mro */
+    0,                                        /* tp_cache */
+    0,                                        /* tp_subclasses */
+    0,                                        /* tp_weaklist */
+    ( destructor )0                           /* tp_del */
 };
 
 
 static PyObject*
 _Disconnector_New( PyObject* owner, PyObject* objref )
 {
-    PyObjectPtr ownerptr( owner, true );
-    PyObjectPtr objrefptr( objref, true );
-    PyObjectPtr self( PyType_GenericAlloc( &_Disconnector_Type, 0 ) );
+    cppy::ptr ownerptr( cppy::incref( owner ) );
+    cppy::ptr objrefptr( cppy::incref( objref ) );
+    cppy::ptr self( PyType_GenericAlloc( &_Disconnector_Type, 0 ) );
     if( !self )
         return 0;
     _Disconnector* disc = reinterpret_cast<_Disconnector*>( self.get() );
@@ -526,7 +534,7 @@ BoundSignal_dealloc( BoundSignal* self )
     if( numfree < FREELIST_MAX )
         freelist[ numfree++ ] = self;
     else
-        Py_TYPE(self)->tp_free( reinterpret_cast<PyObject*>( self ) );
+        Py_TYPE(self)->tp_free( pyobject_cast( self ) );
 }
 
 
@@ -540,9 +548,9 @@ BoundSignal_richcompare( BoundSignal* self, PyObject* other, int opid )
             BoundSignal* other_sig = reinterpret_cast<BoundSignal*>( other );
             if( self->owner == other_sig->owner )
             {
-                PyObjectPtr sref( self->objref, true );
-                PyObjectPtr oref( other_sig->objref, true );
-                if( sref.richcompare( oref, Py_EQ ) )
+                cppy::ptr sref( cppy::incref( self->objref ) );
+                cppy::ptr oref( cppy::incref( other_sig->objref ) );
+                if( sref.richcmp( oref, Py_EQ ) )
                     Py_RETURN_TRUE;
             }
         }
@@ -555,32 +563,31 @@ BoundSignal_richcompare( BoundSignal* self, PyObject* other, int opid )
 static PyObject*
 BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
 {
-    PyWeakrefPtr objref( self->objref, true );
-    PyObjectPtr obj( objref.get_object() );
-    if( obj.is_None() )
+    cppy::ptr objref( cppy::incref( self->objref ) );
+    cppy::ptr obj( cppy::incref( PyWeakref_GET_OBJECT( objref.get() ) ) );
+    if( obj.is_none() )
         Py_RETURN_NONE;
-
-    PyDictPtr dict;
-    if( !obj.load_dict( dict ) )
-        return py_no_attr_fail( obj.get(), "__dict__" );
+    cppy::ptr dict;
+    if( !load_obj_dict( obj, dict ) )
+        return cppy::attribute_error( obj.get(), "__dict__" );
     if( !dict )
         Py_RETURN_NONE;
 
-    PyObjectPtr key( SignalsKey, true );
-    PyDictPtr signals( dict.get_item( key ) );
+    cppy::ptr key( cppy::incref( SignalsKey ) );
+    cppy::ptr signals( dict.getitem( key ) );
     if( !signals )
         Py_RETURN_NONE;
-    if( !signals.check_exact() )
-        return py_expected_type_fail( signals.get(), "dict" );
+    if( !PyDict_CheckExact( signals.get() ) )
+        return cppy::type_error( signals.get(), "dict" );
 
-    PyObjectPtr owner( self->owner, true );
-    PyListPtr slots( signals.get_item( owner ) );
+    cppy::ptr owner( cppy::incref( self->owner ) );
+    cppy::ptr slots( signals.getitem( owner ) );
     if( !slots )
         Py_RETURN_NONE;
-    if( !slots.check_exact() )
-        return py_expected_type_fail( slots.get(), "list" );
+    if( !PyList_CheckExact( slots.get() ) )
+        return cppy::type_error( slots.get(), "list" );
 
-    Py_ssize_t size = slots.size();
+    Py_ssize_t size = PyList_Size( slots.get() );
     if( size <= 1 ) // First item is a _Disconnector
         Py_RETURN_NONE;
 
@@ -590,22 +597,22 @@ BoundSignal_emit( BoundSignal* self, PyObject* args, PyObject* kwargs )
     // or an std::vector since Python maintains an internal freelist of
     // small tuples (size < 20) as an optimization to avoid frequent
     // heap allocations.
-    PyTuplePtr cslots( PyTuple_New( size - 1 ) );
+    cppy::ptr cslots( PyTuple_New( size - 1 ) );
     if( !cslots )
         return 0;
     for( Py_ssize_t idx = 1; idx < size; idx++ )
     {
-        PyObjectPtr slot( slots.get_item( idx ) );
-        cslots.set_item( idx - 1, slot );
+        cppy::ptr slot( slots.getitem( idx ) );
+        PyTuple_SET_ITEM( cslots.get(), idx - 1, slot.release() );
     }
 
     size--;
-    PyTuplePtr argsptr( args, true );
-    PyDictPtr kwargsptr( kwargs, true );
+    cppy::ptr argsptr( cppy::incref( args ) );
+    cppy::ptr kwargsptr( cppy::incref( kwargs ) );
     for( Py_ssize_t idx = 0; idx < size; idx++ )
     {
-        PyObjectPtr slot( cslots.get_item( idx ) );
-        if( !slot( argsptr, kwargsptr ) )
+        cppy::ptr slot( cslots.getitem( idx ) );
+        if( !slot.call( argsptr, kwargsptr ) )
             return 0;
     }
 
@@ -623,83 +630,85 @@ BoundSignal_call( BoundSignal* self, PyObject* args, PyObject* kwargs )
 static PyObject*
 BoundSignal_connect( BoundSignal* self, PyObject* slot )
 {
-    PyWeakrefPtr objref( self->objref, true );
-    PyObjectPtr obj( objref.get_object() );
-    if( obj.is_None() )
+    cppy::ptr objref( cppy::incref( self->objref ) );
+    cppy::ptr obj( PyWeakref_GET_OBJECT( objref.get() ) );
+    if( obj.is_none() )
         Py_RETURN_NONE;
 
-    PyDictPtr dict;
-    if( !obj.load_dict( dict, true ) )
-        return py_no_attr_fail( obj.get(), "__dict__" );
+    cppy::ptr dict;
+    if( !load_obj_dict( obj, dict, true ) )
+        return cppy::attribute_error( obj.get(), "__dict__" );
     if( !dict )
         return 0;
 
-    PyObjectPtr key( SignalsKey, true );
-    PyDictPtr signals( dict.get_item( key ) );
+    cppy::ptr key( cppy::incref( SignalsKey ) );
+    cppy::ptr signals( dict.getitem( key ) );
     if( signals )
     {
-        if( !signals.check_exact() )
-            return py_expected_type_fail( signals.get(), "dict" );
+        if( !PyDict_CheckExact( signals.get() ) )
+            return cppy::type_error( signals.get(), "dict" );
     }
     else
     {
         signals = PyDict_New();
         if( !signals )
             return 0;
-        if( !dict.set_item( key, signals ) )
+        if( !dict.setitem( key, signals ) )
             return 0;
     }
 
-    PyObjectPtr owner( self->owner, true );
-    PyListPtr slots( signals.get_item( owner ) );
+    cppy::ptr owner( cppy::incref( self->owner ) );
+    cppy::ptr slots( signals.getitem( owner ) );
     if( slots )
     {
-        if( !slots.check_exact() )
-            return py_expected_type_fail( slots.get(), "list" );
+        if( !PyList_CheckExact( slots.check_exact() ) )
+            return cppy::type_error( slots.get(), "list" );
     }
     else
     {
         slots = PyList_New( 0 );
         if( !slots )
             return 0;
-        if( !signals.set_item( owner, slots ) )
+        if( !signals.setitem( owner, slots ) )
             return 0;
     }
 
-    if( slots.size() == 0 )
+    if( PyList_size( slots.size() == 0 ) )
     {
-        PyObjectPtr disc( _Disconnector_New( owner.get(), objref.get() ) );
+        cppy::ptr disc( _Disconnector_New( owner.get(), objref.get() ) );
         if( !disc )
             return 0;
-        if( !slots.append( disc ) )
+        if( !PyList_Append( slots.get(), disc.get() )
             return 0;
+        disc.release()
     }
 
-    PyObjectPtr slotptr( slot, true );
+    cppy::ptr slotptr( cppy::ptr( slot ) );
     if( PyMethod_Check( slot ) && PyMethod_GET_SELF( slot ) )
     {
-        PyTuplePtr args( PyTuple_New( 1 ) );
+        cppy::ptr args( PyTuple_New( 1 ) );
         if( !args )
             return 0;
-        args.set_item( 0, slotptr );
-        PyObjectPtr wm_cls( WeakMethod, true );
-        PyObjectPtr wm( wm_cls( args ) );
+        PyTuple_SET_ITEM( args.get(), 0, slotptr.release() );
+        cppy::ptr wm_cls( cppy::incref( WeakMethod ) );
+        cppy::ptr wm( wm_cls( args ) );
         if( !wm )
             return 0;
         args = PyTuple_New( 2 );
         if( !args )
             return 0;
-        PyObjectPtr disc( slots.get_item( 0 ) );
-        args.set_item( 0, wm );
-        args.set_item( 1, disc );
-        PyObjectPtr cr_cls( CallableRef, true );
+        cppy::ptr disc( slots.getitem( 0 ) );
+        PyTuple_SET_ITEM( args.get(), 0, wm.release() );
+        PyTuple_SET_ITEM( args.get(), 1, disc.release() );
+        cppy::ptr cr_cls( cppy::incref( CallableRef ) );
         slotptr = cr_cls( args );
         if( !slotptr )
             return 0;
     }
 
-    if( !slots.append( slotptr ) )
+    if( !PyList_Append( slots.get(), slotptr.get() ) )
         return 0;
+    slotptr.release()
 
     Py_RETURN_NONE;
 }
@@ -708,27 +717,27 @@ BoundSignal_connect( BoundSignal* self, PyObject* slot )
 static PyObject*
 BoundSignal_disconnect( BoundSignal* self, PyObject* slot )
 {
-    PyObjectPtr slotptr( slot, true );
-    PyTuplePtr args( PyTuple_New( 1 ) );
+    cppy::ptr slotptr( cppy::incref( slot ) );
+    cppy::ptr args( PyTuple_New( 1 ) );
     if( !args )
         return 0;
     if( PyMethod_Check( slot ) && PyMethod_GET_SELF( slot ) )
     {
-        args.set_item( 0, slotptr );
-        PyObjectPtr wm_cls( WeakMethod, true );
-        PyObjectPtr wm( wm_cls( args ) );
+        args.setitem( 0, slotptr.get() );
+        cppy::ptr wm_cls( cppy::incref( WeakMethod ) );
+        cppy::ptr wm( wm_cls( args ) );
         if( !wm )
             return 0;
-        args.set_item( 0, wm );
-        PyObjectPtr cr_cls( CallableRef, true );
+        args.setitem( 0, wm );
+        cppy::ptr cr_cls( cppy::incref( CallableRef ) );
         slotptr = cr_cls( args );
         if( !slotptr )
             return 0;
     }
-    PyObjectPtr disc( _Disconnector_New( self->owner, self->objref ) );
+    cppy::ptr disc( _Disconnector_New( self->owner, self->objref ) );
     if( !disc )
         return 0;
-    args.set_item( 0, slotptr );
+    PyTuple_SET_ITEM( args.get(), 0, slotptr.release() );
     return disc( args ).release();
 }
 
@@ -755,57 +764,51 @@ PyDoc_STRVAR(BoundSignal__doc__,
 
 PyTypeObject BoundSignal_Type = {
     PyVarObject_HEAD_INIT( &PyType_Type, 0 )
-"enaml.signaling.BoundSignal",                /* tp_name */
-    sizeof( BoundSignal ),                    /* tp_basicsize */
-    0,                                        /* tp_itemsize */
-    (destructor)BoundSignal_dealloc,          /* tp_dealloc */
-    (printfunc)0,                             /* tp_print */
-    (getattrfunc)0,                           /* tp_getattr */
-    (setattrfunc)0,                           /* tp_setattr */
-#if PY_VERSION_HEX >= 0x03050000
-	( PyAsyncMethods* )0,                     /* tp_as_async */
-#elif PY_VERSION_HEX >= 0x03000000
-	( void* ) 0,                              /* tp_reserved */
-#else
-	( cmpfunc )0,                             /* tp_compare */
-#endif
-    (reprfunc)0,                              /* tp_repr */
-    (PyNumberMethods*)0,                      /* tp_as_number */
-    (PySequenceMethods*)0,                    /* tp_as_sequence */
-    (PyMappingMethods*)0,                     /* tp_as_mapping */
-    (hashfunc)0,                              /* tp_hash */
-    (ternaryfunc)BoundSignal_call,            /* tp_call */
-    (reprfunc)0,                              /* tp_str */
-    (getattrofunc)0,                          /* tp_getattro */
-    (setattrofunc)0,                          /* tp_setattro */
-    (PyBufferProcs*)0,                        /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,    /* tp_flags */
-    BoundSignal__doc__,                       /* Documentation string */
-    (traverseproc)BoundSignal_traverse,       /* tp_traverse */
-    (inquiry)BoundSignal_clear,               /* tp_clear */
-    (richcmpfunc)BoundSignal_richcompare,     /* tp_richcompare */
-    0,                                        /* tp_weaklistoffset */
-    (getiterfunc)0,                           /* tp_iter */
-    (iternextfunc)0,                          /* tp_iternext */
-    (struct PyMethodDef*)BoundSignal_methods, /* tp_methods */
-    (struct PyMemberDef*)0,                   /* tp_members */
-    0,                                        /* tp_getset */
-    0,                                        /* tp_base */
-    0,                                        /* tp_dict */
-    (descrgetfunc)0,                          /* tp_descr_get */
-    (descrsetfunc)0,                          /* tp_descr_set */
-    0,                                        /* tp_dictoffset */
-    (initproc)0,                              /* tp_init */
-    (allocfunc)PyType_GenericAlloc,           /* tp_alloc */
-    (newfunc)BoundSignal_new,                 /* tp_new */
-    (freefunc)0,                              /* tp_free */
-    (inquiry)0,                               /* tp_is_gc */
-    0,                                        /* tp_bases */
-    0,                                        /* tp_mro */
-    0,                                        /* tp_cache */
-    0,                                        /* tp_subclasses */
-    0,                                        /* tp_weaklist */
-    (destructor)0                             /* tp_del */
+"enaml.signaling.BoundSignal",                  /* tp_name */
+    sizeof( BoundSignal ),                      /* tp_basicsize */
+    0,                                          /* tp_itemsize */
+    ( destructor )BoundSignal_dealloc,          /* tp_dealloc */
+    ( printfunc )0,                             /* tp_print */
+    ( getattrfunc )0,                           /* tp_getattr */
+    ( setattrfunc )0,                           /* tp_setattr */
+	( PyAsyncMethods* )0,                       /* tp_as_async */
+    ( reprfunc )0,                              /* tp_repr */
+    ( PyNumberMethods* )0,                      /* tp_as_number */
+    ( PySequenceMethods* )0,                    /* tp_as_sequence */
+    ( PyMappingMethods* )0,                     /* tp_as_mapping */
+    ( hashfunc )0,                              /* tp_hash */
+    ( ternaryfunc )BoundSignal_call,            /* tp_call */
+    ( reprfunc )0,                              /* tp_str */
+    ( getattrofunc )0,                          /* tp_getattro */
+    ( setattrofunc )0,                          /* tp_setattro */
+    ( PyBufferProcs* )0,                        /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,      /* tp_flags */
+    BoundSignal__doc__,                         /* Documentation string */
+    ( traverseproc )BoundSignal_traverse,       /* tp_traverse */
+    ( inquiry )BoundSignal_clear,               /* tp_clear */
+    ( richcmpfunc )BoundSignal_richcompare,     /* tp_richcompare */
+    0,                                          /* tp_weaklistoffset */
+    ( getiterfunc )0,                           /* tp_iter */
+    ( iternextfunc )0,                          /* tp_iternext */
+    ( struct PyMethodDef* )BoundSignal_methods, /* tp_methods */
+    ( struct PyMemberDef* )0,                   /* tp_members */
+    0,                                          /* tp_getset */
+    0,                                          /* tp_base */
+    0,                                          /* tp_dict */
+    ( descrgetfunc )0,                          /* tp_descr_get */
+    ( descrsetfunc )0,                          /* tp_descr_set */
+    0,                                          /* tp_dictoffset */
+    ( initproc )0,                              /* tp_init */
+    ( allocfunc )PyType_GenericAlloc,           /* tp_alloc */
+    ( newfunc )BoundSignal_new,                 /* tp_new */
+    ( freefunc )0,                              /* tp_free */
+    ( inquiry )0,                               /* tp_is_gc */
+    0,                                          /* tp_bases */
+    0,                                          /* tp_mro */
+    0,                                          /* tp_cache */
+    0,                                          /* tp_subclasses */
+    0,                                          /* tp_weaklist */
+    ( destructor )0                             /* tp_del */
 };
 
 
@@ -819,12 +822,12 @@ BoundSignal_Check( PyObject* obj )
 static PyObject*
 _BoundSignal_New( PyObject* owner, PyObject* objref )
 {
-    PyObjectPtr ownerptr( owner, true );
-    PyObjectPtr objrefptr( objref, true );
-    PyObjectPtr bsigptr;
+    cppy::ptr ownerptr( cppy::incref( owner ) );
+    cppy::ptr objrefptr( cppy::incref( objref ) );
+    cppy::ptr bsigptr;
     if( numfree > 0 )
     {
-        PyObject* o = reinterpret_cast<PyObject*>( freelist[ --numfree ] );
+        PyObject* o = pyobject_cast( freelist[ --numfree ] );
         _Py_NewReference( o );
         bsigptr = o;
     }
@@ -854,7 +857,6 @@ signaling_methods[] = {
     { 0 } // Sentinel
 };
 
-#if PY_MAJOR_VERSION >= 3
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
@@ -881,66 +883,54 @@ static struct PyModuleDef moduledef = {
         NULL
 };
 
-#else
 
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
-
-#endif
-
-MOD_INIT_FUNC(signaling)
+PyMODINIT_FUNC PyInit_signaling( void )
 {
-#if PY_MAJOR_VERSION >= 3
-    PyObjectPtr mod( PyModule_Create(&moduledef), true );
-#else
-    PyObjectPtr mod( Py_InitModule( "signaling", signaling_methods ), true );
-#endif
+    cppy::ptr mod( PyModule_Create(&moduledef) );
     if( !mod )
-        INITERROR;
+        return NULL;
     PyObject* mod_dict = PyModule_GetDict( mod.get() );
 
-    PyObjectPtr wm_mod( PyImport_ImportModuleLevel( "weakmethod", mod_dict, 0, 0 , 1) );
+    cppy::ptr wm_mod( PyImport_ImportModuleLevel( "weakmethod", mod_dict, 0, 0 , 1) );
     if( !wm_mod)
-        INITERROR;
-    PyObjectPtr wm_cls( wm_mod.get_attr( "WeakMethod" ) );
+        return NULL;
+    cppy::ptr wm_cls( wm_mod.get_attr( "WeakMethod" ) );
     if( !wm_cls )
-        INITERROR;
+        return NULL;
 
-    PyObjectPtr cr_mod( PyImport_ImportModuleLevel( "callableref", mod_dict, 0, 0, 1 ) );
+    cppy::ptr cr_mod( PyImport_ImportModuleLevel( "callableref", mod_dict, 0, 0, 1 ) );
     if( !cr_mod )
-        INITERROR;
-    PyObjectPtr cr_cls( cr_mod.get_attr( "CallableRef" ) );
+        return NULL;
+    cppy::ptr cr_cls( cr_mod.get_attr( "CallableRef" ) );
     if( !cr_cls )
-        INITERROR;
+        return NULL;
 
-    PyObjectPtr key( Py23Str_FromString( "_[signals]" ) );
+    cppy::ptr key( PyUnicode_FromString( "_[signals]" ) );
     if( !key )
-        INITERROR;
+        return NULL;
 
     SignalsKey = key.release();
     WeakMethod = wm_cls.release();
     CallableRef = cr_cls.release();
 
     if( PyType_Ready( &Signal_Type ) )
-        INITERROR;
+        return NULL;
     if( PyType_Ready( &_Disconnector_Type ) )
-        INITERROR;
+        return NULL;
     if( PyType_Ready( &BoundSignal_Type ) )
-        INITERROR;
+        return NULL;
 
-    PyObjectPtr sig_type( reinterpret_cast<PyObject*>( &Signal_Type ), true );
+    cppy::ptr sig_type( cppy::incref( pyobject_cast( &Signal_Type ) ) );
     if( PyModule_AddObject( mod.get(), "Signal", sig_type.release() ) == -1 )
-        INITERROR;
-    PyObjectPtr disc_type( reinterpret_cast<PyObject*>( &_Disconnector_Type ), true );
+        return NULL;
+    cppy::ptr disc_type( cppy::incref( pyobject_cast( &_Disconnector_Type ) ) );
     if( PyModule_AddObject( mod.get(), "_Disconnector", disc_type.release() ) == -1 )
-        INITERROR;
-    PyObjectPtr bsig_type( reinterpret_cast<PyObject*>( &BoundSignal_Type ), true );
+        return NULL;
+    cppy::ptr bsig_type( cppy::incref( pyobject_cast( &BoundSignal_Type ) ) );
     if( PyModule_AddObject( mod.get(), "BoundSignal", bsig_type.release() ) == -1 )
-        INITERROR;
+        return NULL;
 
-#if PY_MAJOR_VERSION >= 3
-    return mod.get();
-#endif
+    return mod.release();
 }
 
 } // extern "C"

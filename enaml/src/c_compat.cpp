@@ -1,13 +1,11 @@
 /*-----------------------------------------------------------------------------
-| Copyright (c) 2017, Nucleic Development Team.
+| Copyright (c) 2017-2018, Nucleic Development Team.
 |
 | Distributed under the terms of the Modified BSD License.
 |
 | The full license is in the file COPYING.txt, distributed with this software.
 |----------------------------------------------------------------------------*/
-
-#include "pythonhelpersex.h"
-#include "py23compat.h"
+#include <cppy/cppy.h>
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wdeprecated-writable-strings"
@@ -17,7 +15,6 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
 
-using namespace PythonHelpers;
 
 PyObject* _fix_co_filename;
 
@@ -29,13 +26,8 @@ update_code_filenames(PyCodeObject *co, PyObject *oldname, PyObject *newname)
     PyObject *constants, *tmp;
     Py_ssize_t i, n;
 
-    #if PY_MAJOR_VERSION >= 3
     if (PyUnicode_Compare(co->co_filename, oldname))
         return;
-    #else
-    if (!_PyString_Eq(co->co_filename, oldname))
-        return;
-    #endif
 
     tmp = co->co_filename;
     co->co_filename = newname;
@@ -57,13 +49,8 @@ update_compiled_module(PyCodeObject *co, PyObject *newname)
 {
     PyObject *oldname;
 
-    #if PY_MAJOR_VERSION >= 3
     if (PyUnicode_Compare(co->co_filename, newname) == 0)
         return;
-    #else
-    if (!_PyString_Eq(co->co_filename, newname) == 0)
-        return;
-    #endif
 
     oldname = co->co_filename;
     Py_INCREF(oldname);
@@ -82,9 +69,9 @@ _imp__fix_co_filename_impl(PyObject *module, PyObject* args, PyObject* kwargs )
     if( !PyArg_ParseTupleAndKeywords( args, kwargs, "OO", kwlist, &code, &path ) )
         return 0;
     if( !PyCode_Check( code ) )
-        return py_expected_type_fail( code, "CodeType" );
+        return cppy::type_error( code, "CodeType" );
     if( !Py23Str_Check( path ) )
-        return py_expected_type_fail( path, "str" );
+        return cppy::type_error( path, "str" );
     PyCodeObject* cc = reinterpret_cast<PyCodeObject*>( code );
     update_compiled_module(cc, path);
 
@@ -104,7 +91,6 @@ c_compat_methods[] = {
     { 0 } // sentinel
 };
 
-#if PY_MAJOR_VERSION >= 3
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
@@ -131,20 +117,10 @@ static struct PyModuleDef moduledef = {
         NULL
 };
 
-#else
 
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
-
-#endif
-
-MOD_INIT_FUNC(c_compat)
+PyMODINIT_FUNC PyInit_c_compat( void )
 {
-#if PY_MAJOR_VERSION >= 3
-    PyObjectPtr mod( xnewref( PyModule_Create(&moduledef) ) );
-#else
-    PyObjectPtr mod( xnewref( Py_InitModule( "c_compat", c_compat_methods ) ) );
-#endif
+    cppy::ptr mod( PyModule_Create(&moduledef) );
     if( !mod )
         INITERROR;
 
@@ -153,7 +129,5 @@ MOD_INIT_FUNC(c_compat)
         INITERROR;
     _fix_co_filename = up.release();
 
-#if PY_MAJOR_VERSION >= 3
-    return mod.get();
-#endif
+    return mod.release();
 }
