@@ -7,13 +7,11 @@
 #------------------------------------------------------------------------------
 from abc import ABCMeta, abstractmethod
 
-from enaml.compat import with_metaclass
-
 from .QtCore import Qt, QSize, QRect
 from .QtWidgets import QLayout, QWidgetItem
 
 
-class AbstractFlowWidget(with_metaclass(ABCMeta, object)):
+class AbstractFlowWidget(object, metaclass=ABCMeta):
     """ An abstract base class which defines the interface for widgets
     which can be used in a QFlowLayout.
 

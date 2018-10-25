@@ -13,7 +13,6 @@ from atom.api import (
 )
 from enaml.image import Image
 from enaml.core.declarative import d_
-from enaml.compat import str
 from enaml.widgets.control import Control, ProxyControl
 
 

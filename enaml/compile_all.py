@@ -12,7 +12,6 @@ import os
 import sys
 import compileall
 
-from enaml.compat import IS_PY3
 from enaml.core.import_hooks import EnamlImporter, make_file_info
 
 
@@ -34,13 +33,13 @@ def compile_enaml_file(fullname, ddir=None, force=0, rx=None, quiet=0,
             importer.compile_code()
         else:
             importer.get_code()
-        return True if IS_PY3 else 1
+        return True
     except Exception as e:
         if quiet:
             print('Compiling {}...'.format(fullname))
         print(str(e))
     # Failed
-    return False if IS_PY3 else 0
+    return False
 
 
 def compile_file(fullname, ddir=None, force=0, rx=None, quiet=0,
@@ -71,7 +70,7 @@ def compile_file(fullname, ddir=None, force=0, rx=None, quiet=0,
         elif tail == '.enaml':
             return compile_enaml_file(fullname, ddir, force, rx, quiet,
                                       *args, **kwargs)
-    return True if IS_PY3 else 1
+    return True
 
 
 if compileall.compile_file != compile_file:

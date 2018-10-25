@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2013, Nucleic Development Team.
+# Copyright (c) 2013-2018, Nucleic Development Team.
 #
 # Distributed under the terms of the Modified BSD License.
 #
@@ -8,12 +8,11 @@
 from abc import ABCMeta
 
 from atom.api import Atom, Constant, DefaultValue, Enum
-from enaml.compat import with_metaclass
 
 import kiwisolver as kiwi
 
 
-class Constrainable(with_metaclass(ABCMeta, object)):
+class Constrainable(object, metaclass=ABCMeta):
     """ An abstract base class for defining constrainable objects.
 
     Implementations must provide `top`, `bottom`, `left`, `right`,

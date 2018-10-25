@@ -5,7 +5,7 @@
 #
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
-from ..compat import IS_PY3, USE_WORDCODE
+from ..compat import USE_WORDCODE
 from .byteplay import (
     LOAD_ATTR, LOAD_CONST, ROT_TWO, DUP_TOP, CALL_FUNCTION, POP_TOP, LOAD_FAST,
     BUILD_TUPLE, ROT_THREE, UNPACK_SEQUENCE, BINARY_SUBSCR, GET_ITER,
@@ -14,10 +14,7 @@ from .byteplay import (
 
 
 from . import byteplay as bp
-if not IS_PY3:
-    from .byteplay import DUP_TOPX
-else:
-    from .byteplay import DUP_TOP_TWO
+from .byteplay import DUP_TOP_TWO
 
 if USE_WORDCODE:
     from .byteplay import CALL_FUNCTION_KW
@@ -307,7 +304,7 @@ def inject_tracing(codelist, nested=False):
                 n_stack_args = (op_arg & 0xFF) + 2 * ((op_arg >> 8) & 0xFF)
             code = [                                               # func -> arg(0) -> arg(1) -> ... -> arg(n-1)
                 (BUILD_TUPLE, n_stack_args),                       # func -> argtuple
-                (DUP_TOP_TWO, None) if IS_PY3 else (DUP_TOPX, 2),  # func -> argtuple -> func -> argtuple
+                (DUP_TOP_TWO, None),                               # func -> argtuple -> func -> argtuple
                 (tracer_op, '_[tracer]'),                          # func -> argtuple -> func -> argtuple -> tracer
                 (LOAD_ATTR, 'call_function'),                      # func -> argtuple -> func -> argtuple -> tracefunc
                 (ROT_THREE, None),                                 # func -> argtuple -> tracefunc -> func -> argtuple
@@ -332,7 +329,7 @@ def inject_tracing(codelist, nested=False):
             pass
         elif op == BINARY_SUBSCR:
             code = [                                               # obj -> idx
-                (DUP_TOP_TWO, None) if IS_PY3 else (DUP_TOPX, 2),  # obj -> idx -> obj -> idx
+                (DUP_TOP_TWO, None),                               # obj -> idx -> obj -> idx
                 (tracer_op, '_[tracer]'),                          # obj -> idx -> obj -> idx -> tracer
                 (LOAD_ATTR, 'binary_subscr'),                      # obj -> idx -> obj -> idx -> tracefunc
                 (ROT_THREE, None),                                 # obj -> idx -> tracefunc -> obj -> idx

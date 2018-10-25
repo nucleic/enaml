@@ -23,22 +23,16 @@ else:
 
 from .enaml_compiler import EnamlCompiler, COMPILER_VERSION
 from .parser import parse
-from ..compat import (read_source, detect_encoding, update_code_co_filename,
-                      with_metaclass, exec_)
+from ..compat import read_source, detect_encoding, update_code_co_filename
 
 
 # The magic number as symbols for the current Python interpreter. These
 # define the naming scheme used when create cached files and directories.
-try:
-    import importlib
-    MAGIC = importlib.util.MAGIC_NUMBER
-except (ImportError, AttributeError):
-    import imp
-    MAGIC = imp.get_magic()
-
+MAGIC = imp.get_magic()
 MAGIC_TAG = 'enaml-py%s%s-cv%s' % (
     sys.version_info.major, sys.version_info.minor, COMPILER_VERSION,
 )
+
 CACHEDIR = '__enamlcache__'
 
 
@@ -173,7 +167,8 @@ class AbstractEnamlImporter(with_metaclass(ABCMeta, object)):
         code, _ = self.get_code()
 
         try:
-            self.exec_module(mod, code)
+            with imports():
+                exec(code, mod.__dict__)
         except Exception:
             if not pre_exists:
                 del sys.modules[fullname]

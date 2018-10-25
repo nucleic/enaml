@@ -16,7 +16,6 @@ from contextlib import contextmanager
 from atom.api import Atom, Bool
 
 import enaml
-from enaml.compat import exec_
 from enaml.application import Application, timed_call
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
@@ -67,7 +66,7 @@ def compile_source(source, item, filename='<test>', namespace=None):
     ast = parse(source, filename)
     code = EnamlCompiler.compile(ast, filename)
     namespace = namespace or {}
-    exec_(code, namespace)
+    exec(code, namespace)
     return namespace[item]
 
 

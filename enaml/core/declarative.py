@@ -11,7 +11,6 @@ from atom.datastructures.api import sortedmap
 from .declarative_meta import DeclarativeMeta
 from .expression_engine import ExpressionEngine
 from .object import Object, flag_generator, flag_property
-from enaml.compat import with_metaclass
 
 
 def d_(member, readable=True, writable=True, final=True):
@@ -70,7 +69,7 @@ def d_func(func):
 INITIALIZED_FLAG = next(flag_generator)
 
 
-class Declarative(with_metaclass(DeclarativeMeta, Object)):
+class Declarative(Object, metaclass=DeclarativeMeta):
     """ The most base class of the Enaml declarative objects.
 
     This class provides the core functionality required of declarative

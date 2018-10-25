@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 import sys
 
-from ..compat import IS_PY3, USE_WORDCODE
+from ..compat import USE_WORDCODE
 from . import compiler_common as cmn
 from .enaml_ast import Module
 from .enamldef_compiler import EnamlDefCompiler
@@ -173,11 +173,6 @@ class EnamlCompiler(cmn.CompilerBase):
 
         """
         assert isinstance(node, Module), 'invalid node'
-
-        # On Python 2 protect against unicode filenames, which are incompatible
-        # with code objects created via types.CodeType
-        if not IS_PY3 and isinstance(filename, type(u'')):
-            filename = filename.encode(sys.getfilesystemencoding())
 
         # Create the compiler and generate the code.
         compiler = cls(filename=filename)

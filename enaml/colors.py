@@ -15,7 +15,6 @@ import re
 from atom.api import Coerced
 
 from .colorext import Color
-from enaml.compat import basestring
 
 #: Regex sub-expressions used for building more complex expression.
 _int = r'\s*((?:\+|\-)?[0-9]+)\s*'
@@ -347,7 +346,7 @@ def coerce_color(color):
     """ The coercing function for the ColorMember.
 
     """
-    if isinstance(color, basestring):
+    if isinstance(color, str):
         return parse_color(color)
 
 

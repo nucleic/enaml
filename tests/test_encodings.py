@@ -10,7 +10,6 @@ from ast import literal_eval
 from textwrap import dedent
 
 from utils import compile_source
-from enaml.compat import IS_PY3, exec_
 
 
 def test_unicode_literal():
@@ -75,30 +74,29 @@ def test_raw_bytes_literal1():
     raw_bytes_literal = br'I do bytes with\nescapes'
     assert raw_bytes_literal == myWindow.test
 
-if IS_PY3:
-    def test_raw_bytes_literal2():
-        source = dedent("""\
-        from enaml.widgets.api import Window
+def test_raw_bytes_literal2():
+    source = dedent("""\
+    from enaml.widgets.api import Window
 
-        enamldef MyWindow(Window): win:
-            attr test = rb'I do bytes with\\nescapes'
-        """)
-        myWindow = compile_source(source, 'MyWindow')()
-        raw_bytes_literal = literal_eval(r"rb'I do bytes with\nescapes'")
-        assert raw_bytes_literal == myWindow.test
+    enamldef MyWindow(Window): win:
+        attr test = rb'I do bytes with\\nescapes'
+    """)
+    myWindow = compile_source(source, 'MyWindow')()
+    raw_bytes_literal = literal_eval(r"rb'I do bytes with\nescapes'")
+    assert raw_bytes_literal == myWindow.test
 
-    def test_unicode_identifier():
-        source = dedent("""\
-        from enaml.widgets.api import Window
+def test_unicode_identifier():
+    source = dedent("""\
+    from enaml.widgets.api import Window
 
-        enamldef MyWindow(Window): win:
-            attr 𠁒 = 'test'
-            # Check we do not mistake this for an invalid identifier
-            attr a = 1.e6
-        """)
-        myWindow = compile_source(source, 'MyWindow')()
-        exec_("𠁒 = 'test'")
-        assert locals()['𠁒'] == getattr(myWindow, """𠁒""")
+    enamldef MyWindow(Window): win:
+        attr 𠁒 = 'test'
+        # Check we do not mistake this for an invalid identifier
+        attr a = 1.e6
+    """)
+    myWindow = compile_source(source, 'MyWindow')()
+    exec("𠁒 = 'test'")
+    assert locals()['𠁒'] == getattr(myWindow, """𠁒""")
 
 
 if __name__ == '__main__':
@@ -107,6 +105,5 @@ if __name__ == '__main__':
     test_raw_unicode_literal()
     test_bytes_literal()
     test_raw_bytes_literal1()
-    if IS_PY3:
-        test_raw_bytes_literal2()
-        test_unicode_identifier()
+    test_raw_bytes_literal2()
+    test_unicode_identifier()

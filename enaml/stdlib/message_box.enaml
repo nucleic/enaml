@@ -6,7 +6,6 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #------------------------------------------------------------------------------
 import sys
-from enaml.compat import basestring
 from enaml.core.dynamic_template import DynamicTemplate
 from enaml.image import Image
 from enaml.layout.layout_helpers import align, hbox, spacer
@@ -59,9 +58,9 @@ enamldef MessageBox(Dialog):
 
     """
     attr image: Image
-    attr text: basestring
-    attr content: basestring
-    attr details: basestring
+    attr text: str
+    attr content: str
+    attr details: str
     attr buttons: list = []
     TaskDialogStyleSheet:
         pass

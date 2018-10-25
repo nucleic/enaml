@@ -11,8 +11,6 @@ import types
 
 import pytest
 
-from enaml.compat import exec_
-
 from enaml import imports
 from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
@@ -234,7 +232,7 @@ def test_examples(enaml_qtbot, enaml_sleep, path, handler):
         # imports can work.
         sys.path.insert(0, os.path.abspath(os.path.dirname(enaml_file)))
         with imports():
-            exec_(code, ns)
+            exec(code, ns)
 
         window = ns['Main']()
         window.show()

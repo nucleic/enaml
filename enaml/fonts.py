@@ -12,7 +12,6 @@
 from atom.api import Coerced
 
 from .fontext import Font, FontStyle, FontCaps, FontStretch
-from enaml.compat import basestring
 
 
 #: A mapping from CSS font style keyword to style enum
@@ -193,7 +192,7 @@ def coerce_font(font):
     """ The coercing function for the FontMember.
 
     """
-    if isinstance(font, basestring):
+    if isinstance(font, str):
         return parse_font(font)
 
 

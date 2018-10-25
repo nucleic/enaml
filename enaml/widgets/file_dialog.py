@@ -11,7 +11,6 @@ from atom.api import (
 
 from enaml.application import deferred_call
 from enaml.core.declarative import d_
-from enaml.compat import str
 from .toolkit_object import ToolkitObject, ProxyToolkitObject
 
 

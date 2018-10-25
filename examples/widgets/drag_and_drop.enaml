@@ -46,7 +46,6 @@ declarative functions are available:
 
 << autodoc-me >>
 """
-from enaml.compat import bytes
 from enaml.drag_drop import DragData, DropAction
 from enaml.layout.api import hbox, vbox, align, spacer
 from enaml.styling import StyleSheet, Style, Setter
